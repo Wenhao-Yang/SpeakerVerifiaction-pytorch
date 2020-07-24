@@ -1,21 +1,26 @@
 #!/usr/bin/env python
 # encoding: utf-8
-import numpy as np
-from python_speech_features import fbank, delta
-
-from Process_Data import constants as c
-import torch
-import librosa
-
-from scipy import signal
-from scipy.io import wavfile
-import soundfile as sf
-from pydub import AudioSegment
-
 import os
 import pathlib
-import math
 import pdb
+import traceback
+
+import librosa
+import numpy as np
+import soundfile as sf
+import torch
+import torch.nn.utils.rnn as rnn_utils
+from pydub import AudioSegment
+from python_speech_features import fbank, delta, sigproc
+from scipy import signal
+from scipy.io import wavfile
+from scipy.signal import butter, sosfilt
+from speechpy.feature import mfe
+from speechpy.processing import cmvn, cmvnw
+
+from Process_Data import constants as c
+from Process_Data.Compute_Feat.compute_vad import ComputeVadEnergy
+from Process_Data.xfcc.common import local_fbank, local_mfcc
 
 
 def mk_MFB(filename, sample_rate=c.SAMPLE_RATE, use_delta=c.USE_DELTA, use_scale=c.USE_SCALE, use_logscale=c.USE_LOGSCALE):
@@ -44,8 +49,31 @@ def mk_MFB(filename, sample_rate=c.SAMPLE_RATE, use_delta=c.USE_DELTA, use_scale
 
     return
 
-def make_Fbank(filename,
-               write_path, # sample_rate=c.SAMPLE_RATE,
+
+def resample_wav(in_wav, out_wav, sr):
+    try:
+        samples, samplerate = sf.read(in_wav, dtype='float32')
+        samples = np.asfortranarray(samples)
+        samples = librosa.resample(samples, samplerate, sr)
+
+        sf.write(file=out_wav, data=samples, samplerate=sr, format='WAV')
+    except Exception as e:
+        traceback.print_exc()
+        raise (e)
+
+
+def butter_bandpass(cutoff, fs, order=15):
+    nyq = 0.5 * fs
+    sos = butter(order, np.array(cutoff) / nyq, btype='bandpass', analog=False, output='sos')
+    return sos
+
+
+def butter_bandpass_filter(data, cutoff, fs, order=15):
+    sos = butter_bandpass(cutoff, fs, order=order)
+    y = sosfilt(sos, data)
+    return y  # Filter requirements.
+
+def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
                use_delta=c.USE_DELTA,
                use_scale=c.USE_SCALE,
                nfilt=c.FILTER_BANK,
@@ -57,7 +85,7 @@ def make_Fbank(filename,
         raise ValueError('wav file does not exist.')
 
     sample_rate, audio = wavfile.read(filename)
-    # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
+    # audio, sr = librosa.load(filename, sr=None, mono=True)
     #audio = audio.flatten()
 
     filter_banks, energies = fbank(audio,
@@ -84,7 +112,7 @@ def make_Fbank(filename,
         delta_1 = normalize_frames(delta_1, Scale=use_scale)
         delta_2 = normalize_frames(delta_2, Scale=use_scale)
 
-        frames_features = np.hstack([filter_banks, delta_1, delta_2])
+        filter_banks = np.hstack([filter_banks, delta_1, delta_2])
 
     if normalize:
         filter_banks = normalize_frames(filter_banks, Scale=use_scale)
@@ -100,6 +128,61 @@ def make_Fbank(filename,
     # np.save(filename.replace('.wav', '.npy'), frames_features)
     return
 
+def compute_fbank_feat(filename, nfilt=c.FILTER_BANK, use_logscale=c.USE_LOGSCALE, use_energy=True, add_energy=True, normalize=c.CMVN, vad=c.VAD):
+    """
+    Making feats more like in kaldi.
+
+    :param filename:
+    :param use_delta:
+    :param nfilt:
+    :param use_logscale:
+    :param use_energy:
+    :param normalize:
+    :return:
+    """
+
+    if not os.path.exists(filename):
+        raise ValueError('Wav file does not exist.')
+
+    sample_rate, audio = wavfile.read(filename)
+    pad_size = np.ceil((len(audio) - 0.025 * sample_rate) / (0.01 * sample_rate)) * 0.01 * sample_rate - len(audio) + 0.025 * sample_rate
+
+    audio = np.lib.pad(audio, (0, int(pad_size)), 'symmetric')
+
+    filter_banks, energies = mfe(audio, sample_rate, frame_length=0.025, frame_stride=0.01, num_filters=nfilt, fft_length=512, low_frequency=0, high_frequency=None)
+
+    if use_energy:
+        if add_energy:
+            # Add an extra dimension to features
+            energies = energies.reshape(energies.shape[0], 1)
+            filter_banks = np.concatenate((energies, filter_banks), axis=1)
+        else:
+            # replace the 1st dim as energy
+            energies = energies.reshape(energies.shape[0], 1)
+            filter_banks[:, 0]=energies[:, 0]
+
+    if use_logscale:
+        filter_banks = np.log(np.maximum(filter_banks, 1e-5))
+        # filter_banks = np.log(filter_banks)
+
+    if normalize=='cmvn':
+        # vec(array): input_feature_matrix (size:(num_observation, num_features))
+        norm_fbank = cmvn(vec=filter_banks, variance_normalization=True)
+    elif normalize=='cmvnw':
+        norm_fbank = cmvnw(vec=filter_banks, win_size=301, variance_normalization=True)
+
+    if use_energy and vad:
+        voiced = []
+        ComputeVadEnergy(filter_banks, voiced)
+        voiced = np.array(voiced)
+        voiced_index = np.argwhere(voiced==1).squeeze()
+        norm_fbank = norm_fbank[voiced_index]
+
+        return norm_fbank, voiced
+
+    return norm_fbank
+
+
 def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT):
     """
     Pre-computing spectrograms for wav files
@@ -114,7 +197,8 @@ def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT
         raise ValueError('wav file does not exist.')
     #pdb.set_trace()
 
-    sample_rate, samples = wavfile.read(wav_path)
+    # samples, sample_rate = wavfile.read(wav_path)
+    sample_rate, samples = sf.read(wav_path, dtype='int16')
     sample_rate_norm = int(sample_rate / 1e3)
     frequencies, times, spectrogram = signal.spectrogram(x=samples, fs=sample_rate, window=signal.hamming(windowsize * sample_rate_norm), noverlap=(windowsize-stride) * sample_rate_norm, nfft=nfft)
 
@@ -132,7 +216,7 @@ def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT
     # spectrogram = spectrogram.astype(np.uint8)
 
     # For voxceleb1
-    # file_path = wav_path.replace('Data/Voxceleb1', 'Data/voxceleb1')
+    # file_path = wav_path.replace('Data/voxceleb1', 'Data/voxceleb1')
     # file_path = file_path.replace('.wav', '.npy')
 
     file_path = pathlib.Path(write_path)
@@ -144,9 +228,11 @@ def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT
     # return spectrogram
 
 
-def Make_Spect(wav_path, windowsize, stride, window=np.hamming):
+def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
+               bandpass=False, lowfreq=0, highfreq=0,
+               preemph=0.97, duration=False, nfft=None, normalize=True):
     """
-    read wav as float type.
+    read wav as float type. [-1.0 ,1.0]
     :param wav_path:
     :param windowsize:
     :param stride:
@@ -154,41 +240,69 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming):
     :return: return spectrogram with shape of (len(wav/stride), windowsize * samplerate /2 +1).
     """
 
-    samples, samplerate = sf.read(wav_path)
-    S = librosa.stft(samples, n_fft=int(windowsize * samplerate),
-                     hop_length=int((windowsize-stride) * samplerate),
-                     window=window(int(windowsize * samplerate)))  # 进行短时傅里叶变换，参数意义在一开始有定义
+    # samplerate, samples = wavfile.read(wav_path)
+    samples, samplerate = sf.read(wav_path, dtype='float32')
 
-    feature, _ = librosa.magphase(S)
-    feature = np.log1p(feature)  # log1p操作
-    feature = feature.transpose()
+    if bandpass and highfreq > lowfreq:
+        samples = butter_bandpass_filter(data=samples, cutoff=[lowfreq, highfreq], fs=samplerate)
 
-    return normalize_frames(feature)
+    signal = sigproc.preemphasis(samples, preemph)
+    frames = sigproc.framesig(signal, windowsize * samplerate, stride * samplerate, winfunc=window)
+
+    if nfft == None:
+        nfft = int(windowsize * samplerate)
+
+    pspec = sigproc.powspec(frames, nfft)
+    pspec = np.where(pspec == 0, np.finfo(float).eps, pspec)
+    # S = librosa.stft(samples, n_fft=int(windowsize * samplerate),
+    #                  hop_length=int((windowsize-stride) * samplerate),
+    #                  window=window(int(windowsize * samplerate)))  # 进行短时傅里叶变换，参数意义在一开始有定义
+    # feature, _ = librosa.magphase(S)
+    # feature = np.log1p(feature)  # log1p操作
+    feature = np.log(pspec).astype(np.float32)
+    # feature = feature.transpose()
+    if normalize:
+        feature = normalize_frames(feature)
+
+    if duration:
+        return feature, len(samples) / samplerate
+
+    return feature
 
 
 
 def Make_Fbank(filename,
                # sample_rate=c.SAMPLE_RATE,
+               filtertype='mel',
+               windowsize=0.025,
+               nfft=512,
                use_delta=c.USE_DELTA,
                use_scale=c.USE_SCALE,
+               lowfreq=0,
                nfilt=c.FILTER_BANK,
                use_logscale=c.USE_LOGSCALE,
                use_energy=c.USE_ENERGY,
-               normalize=c.NORMALIZE):
+               normalize=c.NORMALIZE,
+               duration=False,
+               multi_weight=False):
 
     if not os.path.exists(filename):
         raise ValueError('wav file does not exist.')
 
     # sample_rate, audio = wavfile.read(filename)
-    # audio, sample_rate = sf.read(filename)
-    audio, sample_rate = librosa.load(filename, sr=c.SAMPLE_RATE)
+    audio, sample_rate = sf.read(filename, dtype='int16')
+    # audio, sample_rate = librosa.load(filename, sr=None)
     #audio = audio.flatten()
 
-    filter_banks, energies = fbank(audio,
-                                   samplerate=sample_rate,
-                                   nfilt=nfilt,
-                                   winlen=0.025,
-                                   winfunc=np.hamming)
+    filter_banks, energies = local_fbank(audio,
+                                         samplerate=sample_rate,
+                                         nfilt=nfilt,
+                                         nfft=nfft,
+                                         lowfreq=lowfreq,
+                                         winlen=windowsize,
+                                         filtertype=filtertype,
+                                         winfunc=np.hamming,
+                                         multi_weight=multi_weight)
 
     if use_energy:
         energies = energies.reshape(energies.shape[0], 1)
@@ -197,7 +311,7 @@ def Make_Fbank(filename,
 
     if use_logscale:
         # filter_banks = 20 * np.log10(np.maximum(filter_banks, 1e-5))
-        filter_banks = np.log(np.maximum(filter_banks, 1e-5))
+        filter_banks = np.log(filter_banks)
 
     if use_delta:
         delta_1 = delta(filter_banks, N=1)
@@ -207,15 +321,60 @@ def Make_Fbank(filename,
         delta_1 = normalize_frames(delta_1, Scale=use_scale)
         delta_2 = normalize_frames(delta_2, Scale=use_scale)
 
-        frames_features = np.hstack([filter_banks, delta_1, delta_2])
+        filter_banks = np.hstack([filter_banks, delta_1, delta_2])
 
     if normalize:
         filter_banks = normalize_frames(filter_banks, Scale=use_scale)
 
     frames_features = filter_banks
 
+    if duration:
+        return frames_features, len(audio) / sample_rate
+
     # np.save(filename.replace('.wav', '.npy'), frames_features)
     return frames_features
+
+
+def Make_MFCC(filename,
+              filtertype='mel', winlen=0.025, winstep=0.01,
+              use_delta=c.USE_DELTA, use_scale=c.USE_SCALE,
+              nfilt=c.FILTER_BANK, numcep=c.FILTER_BANK,
+              use_energy=c.USE_ENERGY, lowfreq=0, nfft=512,
+              normalize=c.NORMALIZE,
+              duration=False):
+    if not os.path.exists(filename):
+        raise ValueError('wav file does not exist.')
+
+    # sample_rate, audio = wavfile.read(filename)
+    audio, sample_rate = sf.read(filename, dtype='int16')
+    # audio, sample_rate = librosa.load(filename, sr=None)
+    # audio = audio.flatten()
+    feats = local_mfcc(audio, samplerate=sample_rate,
+                       nfilt=nfilt, winlen=winlen,
+                       winstep=winstep, numcep=numcep,
+                       nfft=nfft, lowfreq=lowfreq,
+                       highfreq=None, preemph=0.97,
+                       ceplifter=0, appendEnergy=use_energy,
+                       winfunc=np.hamming, filtertype=filtertype)
+
+    if use_delta:
+        delta_1 = delta(feats, N=1)
+        delta_2 = delta(delta_1, N=1)
+
+        filter_banks = normalize_frames(feats, Scale=use_scale)
+        delta_1 = normalize_frames(delta_1, Scale=use_scale)
+        delta_2 = normalize_frames(delta_2, Scale=use_scale)
+
+        feats = np.hstack([filter_banks, delta_1, delta_2])
+
+    if normalize:
+        feats = normalize_frames(feats, Scale=use_scale)
+
+    if duration:
+        return feats, len(audio) / sample_rate
+
+    # np.save(filename.replace('.wav', '.npy'), frames_features)
+    return feats
 
 
 def conver_to_wav(filename, write_path, format='m4a'):
@@ -299,22 +458,26 @@ class concateinputfromMFB(object):
     size: size of the exactly size or the smaller edge
     interpolation: Default: PIL.Image.BILINEAR
     """
-    def __init__(self, input_per_file=1):
+    def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
 
         super(concateinputfromMFB, self).__init__()
         self.input_per_file = input_per_file
+        self.num_frames = num_frames
+        self.remove_vad = remove_vad
 
     def __call__(self, frames_features):
         network_inputs = []
 
         # pdb.set_trace()
         output = frames_features
-        while len(output)<c.NUM_FRAMES_SPECT:
+        while len(output)<self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
 
         for i in range(self.input_per_file):
-            start = np.random.randint(low=0, high=len(output)-c.NUM_FRAMES_SPECT+1)
-            frames_slice = output[start:start+c.NUM_FRAMES_SPECT]
+            start = np.random.randint(low=0, high=len(output)-self.num_frames+1)
+            frames_slice = output[start:start+self.num_frames]
+            if self.remove_vad:
+                frames_slice = frames_slice[:, 1:]
 
             network_inputs.append(frames_slice)
         # pdb.set_trace()
@@ -326,27 +489,33 @@ class concateinputfromMFB(object):
 
         return network_inputs
 
-
 class varLengthFeat(object):
     """
     prepare feats with true length.
     """
-    def __init__(self, min_chunk_size=300, max_chunk_size=500):
+
+    def __init__(self, min_chunk_size=300, max_chunk_size=500, remove_vad=False):
 
         super(varLengthFeat, self).__init__()
+        self.remove_vad = remove_vad
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
-        self.num_chunk = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
 
     def __call__(self, frames_features):
         # pdb.set_trace()
         network_inputs = []
         output = np.array(frames_features)
 
+        if self.remove_vad:
+            output = output[:, 1:]
+
         network_inputs.append(output)
         network_inputs = np.array(network_inputs)
+
         if network_inputs.shape[1]==0:
             pdb.set_trace()
+        # elif network_inputs.shape[1]>self.max_chunk_size:
+        #     network_inputs = network_inputs[:, :self.max_chunk_size]
 
         return network_inputs
 
@@ -363,7 +532,6 @@ def pad_tensor(vec, pad, dim):
         vec = torch.cat([vec, vec], dim=dim)
 
     start = np.random.randint(low=0, high=vec.shape[dim]-pad+1)
-
     return torch.Tensor.narrow(vec, dim=dim, start=start, length=pad)
 
 class PadCollate:
@@ -372,15 +540,19 @@ class PadCollate:
     a batch of sequences
     """
 
-    def __init__(self, dim=0):
+    def __init__(self, dim=0, min_chunk_size=300, max_chunk_size=400, normlize=True, fix_len=False):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
         """
         self.dim = dim
-        self.min_chunk_size = 300
-        self.max_chunk_size = 500
-        self.num_chunk = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+        self.min_chunk_size = min_chunk_size
+        self.max_chunk_size = max_chunk_size
+        self.fix_len = fix_len
+        self.normlize = normlize
+
+        if self.fix_len:
+            self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
 
     def pad_collate(self, batch):
         """
@@ -391,22 +563,73 @@ class PadCollate:
             ys - a LongTensor of all labels in batch
         """
         # pdb.set_trace()
-        # find longest sequence
+        if self.fix_len:
+            frame_len = self.frame_len
+        else:
+            frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
 
-        # max_len = max(map(lambda x: x[0].shape[self.dim], batch))
-        frame_len = self.num_chunk
         # pad according to max_len
-        map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim), x_y[1]), batch)
+        map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
         pad_batch = list(map_batch)
+        # print(frame_len)
         # stack all
-
+        # if self.normlize:
+        #     xs = torch.stack(list(map(lambda x: (x[0] - torch.mean(x[0], dim=1)) / torch.std(x[0], dim=1), pad_batch)),
+        #                      dim=0)
+        # else:
         xs = torch.stack(list(map(lambda x: x[0], pad_batch)), dim=0)
+
         ys = torch.LongTensor(list(map(lambda x: x[1], pad_batch)))
 
         return xs, ys
 
     def __call__(self, batch):
         return self.pad_collate(batch)
+
+class RNNPadCollate:
+    """
+    a variant of callate_fn that pads according to the longest sequence in
+    a batch of sequences
+    """
+    def __init__(self, dim=0):
+        """
+        args:
+            dim - the dimension to be padded (dimension of time in sequences)
+        """
+        self.dim = dim
+
+    def pad_collate(self, batch):
+        """
+        args:
+            batch - list of (tensor, label)
+        reutrn:
+            xs - a tensor of all examples in 'batch' after padding
+            ys - a LongTensor of all labels in batch
+        """
+        # pdb.set_trace()
+        # pad according to max_len
+        data = [x[0][0] for x in batch]
+        data = [x[:, :40].float() for x in data]
+        data_len = np.array([len(x) for x in data])
+        sort_idx = np.argsort(-data_len)
+        sort_data = [data[sort_idx[i]] for i in range(len(sort_idx))]
+
+        labels = [x[1] for x in batch]
+        sort_label = [labels[sort_idx[i]] for i in range(len(sort_idx))]
+        # data.sort(key=lambda x: len(x), reverse=True)
+
+        sort_label = torch.LongTensor(sort_label)
+
+        data_length = [len(sq) for sq in sort_data]
+        p_data = rnn_utils.pad_sequence(sort_data, batch_first=True, padding_value=0)
+        batch_x_pack = rnn_utils.pack_padded_sequence(p_data, data_length, batch_first=True)
+
+        return batch_x_pack, sort_label, data_length
+
+
+    def __call__(self, batch):
+        return self.pad_collate(batch)
+
 
 class TripletPadCollate:
     """
@@ -556,12 +779,13 @@ def normalize_frames(m, Scale=True):
     :return:
     """
     if Scale:
-        return (m - np.mean(m, axis=0)) / (np.std(m, axis=0) + 2e-12)
-    else:
-        return (m - np.mean(m, axis=0))
+        return (m - np.mean(m, axis=0)) / (np.std(m, axis=0) + 1e-12)
+
+    return (m - np.mean(m, axis=0))
 
 
-def pre_process_inputs(signal=np.random.uniform(size=32000), target_sample_rate=8000,use_delta = c.USE_DELTA):
+def pre_process_inputs(signal=np.random.uniform(size=32000), target_sample_rate=8000, use_delta=c.USE_DELTA):
+
     filter_banks, energies = fbank(signal, samplerate=target_sample_rate, nfilt=c.FILTER_BANK, winlen=0.025)
     delta_1 = delta(filter_banks, N=1)
     delta_2 = delta(delta_1, N=1)
@@ -588,6 +812,7 @@ def pre_process_inputs(signal=np.random.uniform(size=32000), target_sample_rate=
     frames_slice = frames_features[j - c.NUM_PREVIOUS_FRAME:j + c.NUM_NEXT_FRAME]
     network_inputs.append(frames_slice)
     return np.array(network_inputs)
+
 
 class truncatedinput(object):
     """Rescales the input PIL.Image to the given 'size'.
@@ -661,7 +886,7 @@ class totensor(object):
             #img = torch.from_numpy(pic)
             # backward compatibility
 
-class to4tensor(object):
+class to2tensor(object):
     """Rescales the input PIL.Image to the given 'size'.
     If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
     If 'size' is a number, it will indicate the size of the smaller edge.
@@ -679,23 +904,13 @@ class to4tensor(object):
         Returns:
             Tensor: Converted image.
         """
-        if isinstance(pic, np.ndarray):
+        # if isinstance(pic, np.ndarray):
             # handle numpy array
-            img = torch.from_numpy(pic.transpose((0, 2, 1)))
-            #return img.float()
-            # pdb.set_trace()
-            #img = torch.FloatTensor(pic.transpose((1, 0, 3, 2)))
-            #img = np.float32(pic.transpose((0, 2, 1)))
-            return img.unsqueeze(0)
-            #img = torch.from_numpy(pic)
-            # backward compatibility
+        img = torch.tensor(pic, dtype=torch.float32)
+        return img
+
 
 class tonormal(object):
-
-
-    def __init__(self):
-        self.mean = 0.013987
-        self.var = 1.008
 
     def __call__(self, tensor):
         """
@@ -706,9 +921,23 @@ class tonormal(object):
             Tensor: Normalized image.
         """
         # TODO: make efficient
+        tensor = tensor - torch.mean(tensor)
 
-        print(self.mean)
-        self.mean+=1
-        #for t, m, s in zip(tensor, self.mean, self.std):
-        #    t.sub_(m).div_(s)
-        return tensor
+        return tensor.float()
+
+
+class mvnormal(object):
+
+    def __call__(self, tensor):
+        """
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+
+        Returns:
+            Tensor: Normalized image.
+        """
+        # TODO: make efficient
+        tensor = (tensor - torch.mean(tensor, dim=-2, keepdim=True)) / torch.std(tensor, dim=-2, keepdim=True).add_(
+            1e-12)
+
+        return tensor.float()

@@ -12,33 +12,27 @@
 fork from:
 https://github.com/jonasvdd/TDNN/blob/master/tdnn.py
 """
-import pdb
-
-import torch
-import torch.nn as nn
-from torch.autograd import Variable
-from torch.nn.utils import weight_norm
-import torch.nn.functional as F
 
 __author__ = 'Jonas Van Der Donckt'
-
+import math
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
-import math
+
+from Define_Model.Pooling import AttentionStatisticPooling
 
 """Time Delay Neural Network as mentioned in the 1989 paper by Waibel et al. (Hinton) and the 2015 paper by Peddinti et al. (Povey)"""
 
-class TDNN(nn.Module):
+
+class TimeDelayLayer_v1(nn.Module):
     def __init__(self, context, input_dim, output_dim, full_context=True):
         """
         Definition of context is the same as the way it's defined in the Peddinti paper. It's a list of integers, eg: [-2,2]
         By deault, full context is chosen, which means: [-2,2] will be expanded to [-2,-1,0,1,2] i.e. range(-2,3)
         """
-        super(TDNN, self).__init__()
+        super(TimeDelayLayer_v1, self).__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.check_valid_context(context)
@@ -69,8 +63,9 @@ class TDNN(nn.Module):
         This function performs the weight multiplication given an arbitrary context. Cannot directly use convolution because in case of only particular frames of context, one needs to select only those frames and perform a convolution across all batch items and all output dimensions of the kernel.
         """
         # pdb.set_trace()
-        x = x.squeeze()
+        x = x.squeeze(1)
         input_size = x.size()
+
         assert len(input_size) == 3, 'Input tensor dimensionality is incorrect. Should be a 3D tensor'
         [batch_size, input_dim, input_sequence_length] = input_size
         #x = x.transpose(1,2).contiguous() # [batch_size, input_dim, input_length]
@@ -119,14 +114,94 @@ class TDNN(nn.Module):
         end = input_sequence_length if context[-1] <= 0 else input_sequence_length - context[-1]
         return range(start, end)
 
-class Time_Delay(nn.Module):
+
+# Implement of 'https://github.com/cvqluu/TDNN/blob/master/tdnn.py'
+class TimeDelayLayer_v2(nn.Module):
+
+    def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
+                 batch_norm=True, dropout_p=0.0, activation='relu'):
+        '''
+        TDNN as defined by https://www.danielpovey.com/files/2015_interspeech_multisplice.pdf
+        Affine transformation not applied globally to all frames but smaller windows with local context
+        batch_norm: True to include batch normalisation after the non linearity
+
+        Context size and dilation determine the frames selected
+        (although context size is not really defined in the traditional sense)
+        For example:
+            context size 5 and dilation 1 is equivalent to [-2,-1,0,1,2]
+            context size 3 and dilation 2 is equivalent to [-2, 0, 2]
+            context size 1 and dilation 1 is equivalent to [0]
+        '''
+        super(TimeDelayLayer_v2, self).__init__()
+        self.context_size = context_size
+        self.stride = stride
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.dilation = dilation
+        self.dropout_p = dropout_p
+        self.batch_norm = batch_norm
+
+        self.kernel = nn.Linear(input_dim * context_size, output_dim)
+        if activation == 'relu':
+            self.nonlinearity = nn.ReLU()
+        elif activation == 'leakyrelu':
+            self.nonlinearity = nn.LeakyReLU()
+
+        if self.batch_norm:
+            self.bn = nn.BatchNorm1d(output_dim)
+            self.bn.weight.data.fill_(1)
+            self.bn.bias.data.zero_()
+        if self.dropout_p:
+            self.drop = nn.Dropout(p=self.dropout_p)
+
+    def set_dropout(self, dropout_p):
+        self.dropout_p = dropout_p
+        self.drop.p = self.dropout_p
+
+    def forward(self, x):
+        '''
+        input: size (batch, seq_len, input_features)
+        outpu: size (batch, new_seq_len, output_features)
+        '''
+
+        _, _, d = x.shape
+        assert (d == self.input_dim), 'Input dimension was wrong. Expected ({}), got ({}) in ({})'.format(
+            self.input_dim, d, str(x.shape))
+        x = x.unsqueeze(1)
+
+        # Unfold input into smaller temporal contexts
+        x = F.unfold(
+            x,
+            (self.context_size, self.input_dim),
+            stride=(1, self.input_dim),
+            dilation=(self.dilation, 1)
+        )
+
+        # N, output_dim*context_size, new_t = x.shape
+        x = x.transpose(1, 2)
+        x = self.kernel(x)
+
+        x = self.nonlinearity(x)
+
+        if self.batch_norm:
+            x = x.transpose(1, 2)
+            x = self.bn(x)
+            x = x.transpose(1, 2)
+
+        if self.dropout_p:
+            x = self.drop(x)
+
+        return x
+
+
+class TDNN_v1(nn.Module):
     def __init__(self, context, input_dim, output_dim, node_num, full_context):
-        super(Time_Delay, self).__init__()
-        self.tdnn1 = TDNN(context[0], input_dim, node_num[0], full_context[0])
-        self.tdnn2 = TDNN(context[1], node_num[0], node_num[1], full_context[1])
-        self.tdnn3 = TDNN(context[2], node_num[1], node_num[2], full_context[2])
-        self.tdnn4 = TDNN(context[3], node_num[2], node_num[3], full_context[3])
-        self.tdnn5 = TDNN(context[4], node_num[3], node_num[4], full_context[4])
+        super(TDNN_v1, self).__init__()
+        self.tdnn1 = TimeDelayLayer_v1(context[0], input_dim, node_num[0], full_context[0])
+        self.tdnn2 = TimeDelayLayer_v1(context[1], node_num[0], node_num[1], full_context[1])
+        self.tdnn3 = TimeDelayLayer_v1(context[2], node_num[1], node_num[2], full_context[2])
+        self.tdnn4 = TimeDelayLayer_v1(context[3], node_num[2], node_num[3], full_context[3])
+        self.tdnn5 = TimeDelayLayer_v1(context[4], node_num[3], node_num[4], full_context[4])
         self.fc1 = nn.Linear(node_num[5], node_num[6])
         self.fc2 = nn.Linear(node_num[6], node_num[7])
         self.fc3 = nn.Linear(node_num[7], output_dim)
@@ -139,6 +214,11 @@ class Time_Delay(nn.Module):
         self.batch_norm7 = nn.BatchNorm1d(node_num[7])
         self.input_dim = input_dim
         self.output_dim = output_dim
+
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
     def statistic_pooling(self, x):
         mean_x = x.mean(dim=2)
@@ -165,52 +245,246 @@ class Time_Delay(nn.Module):
         return output
 
 
-# Create a TDNN layer
-# layer_context = [-2, 0, 2]
-# input = torch.ones(20, 257, 200)
-# input_n_feat = 257
-# con1 = torch.nn.Conv1d(257, 512, 3, stride=2)
+class TDNN_v2(nn.Module):
+    def __init__(self, num_classes, embedding_size, input_dim, alpha=0.,
+                 dropout_p=0.0, **kwargs):
+        super(TDNN_v2, self).__init__()
+        self.num_classes = num_classes
+        self.dropout_p = dropout_p
+        self.input_dim = input_dim
+        self.alpha = alpha
 
+        self.frame1 = TimeDelayLayer_v2(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
+        self.frame2 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=2)
+        self.frame3 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=3)
+        self.frame4 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1)
+        self.frame5 = TimeDelayLayer_v2(input_dim=512, output_dim=1500, context_size=1, dilation=1)
 
-# from tensorboardX import SummaryWriter
-# tdnn_layer = TDNN(context=layer_context, input_channels=input_n_feat, output_channels=512, full_context=False)
+        self.segment6 = nn.Sequential(
+            nn.Linear(3000, 512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512)
+        )
 
+        self.segment7 = nn.Sequential(
+            nn.Linear(512, embedding_size),
+            nn.ReLU(),
+            nn.BatchNorm1d(embedding_size)
+        )
+        self.classifier = nn.Linear(embedding_size, num_classes)
+        # self.bn = nn.BatchNorm1d(num_classes)
+        self.drop = nn.Dropout(p=self.dropout_p)
 
-# with SummaryWriter(comment='TDNN') as w:
-#     model = tdnn_layer
-#     w.add_graph(model, input, verbose=True)
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+            elif isinstance(m, TimeDelayLayer_v2):
+                # nn.init.normal(m.kernel.weight, mean=0., std=1.)
+                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
 
+    def l2_norm(self, input, alpha=1.0):
+        input_size = input.size()
+        buffer = torch.pow(input, 2)
 
-# Run a forward pass; batch.size = [BATCH_SIZE, INPUT_CHANNELS, SEQUENCE_LENGTH]
-# outc = con1(input)
-# out = tdnn_layer(input)
-#
-# class Net2(nn.Module):
-#     def __init__(self):
-#         super(Net2, self).__init__()
-#         self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-#         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-#         self.conv2_drop = nn.Dropout2d()
-#         self.fc1 = nn.Linear(320, 50)
-#         self.fc2 = nn.Linear(50, 10)
-#
-#     def forward(self, x):
-#         x = F.relu(F.max_pool2d(self.conv1(x), 2))
-#         x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-#         x = x.view(-1, 320)
-#         x = F.relu(self.fc1(x))
-#         x = F.dropout(x, training=self.training)
-#         x = self.fc2(x)
-#         x = F.log_softmax(x, dim=1)
-#         return x
-#
-# dummy_input = Variable(torch.rand(13, 1, 257, 32))
+        normp = torch.sum(buffer, 1).add_(1e-12)
+        norm = torch.sqrt(normp)
 
+        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
+        output = _output.view(input_size)
 
-# model = ResSpeakerModel(resnet_size=34, embedding_size=512, num_classes=1211, feature_dim=64)
-#
-# model = TDNN(context=layer_context, input_channels=input_n_feat, output_channels=512, full_context=False)
-# with SummaryWriter(comment='ResDeepSpeaker') as w:
-#     w.add_graph(model, (dummy_input, ))
-#
-# print('')
+        return output * alpha
+
+    def statistic_pooling(self, x):
+        mean_x = x.mean(dim=1)
+        std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
+        mean_std = torch.cat((mean_x, std_x), 1)
+        return mean_std
+
+    def set_global_dropout(self, dropout_p):
+        self.dropout_p = dropout_p
+        self.drop.p = dropout_p
+
+    def forward(self, x):
+        # pdb.set_trace()
+        x = x.squeeze(1).float()
+        x = self.frame1(x)
+        x = self.frame2(x)
+        x = self.frame3(x)
+        x = self.frame4(x)
+        x = self.frame5(x)
+
+        if self.dropout_p:
+            x = self.drop(x)
+
+        # print(x.shape)
+        x = self.statistic_pooling(x)
+
+        x = self.segment6(x)
+        embedding_b = self.segment7(x)
+
+        if self.alpha:
+            embedding_b = self.l2_norm(embedding_b, self.alpha)
+
+        logits = self.classifier(embedding_b)
+        # logits = self.out_act(x)
+
+        return logits, embedding_b
+
+class ASTDNN(nn.Module):
+    def __init__(self, num_classes, embedding_size, input_dim=24, dropout_p=0.0, **kwargs):
+        super(ASTDNN, self).__init__()
+        self.num_classes = num_classes
+        self.dropout_p = dropout_p
+        self.input_dim = input_dim
+
+        self.frame1 = TimeDelayLayer_v2(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1,
+                                        dropout_p=dropout_p)
+        self.frame2 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=2,
+                                        dropout_p=dropout_p)
+        self.frame3 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=3,
+                                        dropout_p=dropout_p)
+        self.frame4 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1,
+                                        dropout_p=dropout_p)
+        self.frame5 = TimeDelayLayer_v2(input_dim=512, output_dim=1500, context_size=1, dilation=1,
+                                        dropout_p=dropout_p)
+
+        self.attention_statistic = AttentionStatisticPooling(input_dim=1500, hidden_dim=64)
+
+        self.segment6 = nn.Sequential(
+            nn.Linear(3000, 512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512)
+        )
+
+        self.segment7 = nn.Sequential(
+            nn.Linear(512, embedding_size),
+            nn.ReLU(),
+            nn.BatchNorm1d(embedding_size)
+        )
+
+        self.classifier = nn.Linear(embedding_size, num_classes)
+        self.drop = nn.Dropout(p=self.dropout_p)
+
+        # self.out_act = nn.Sigmoid()
+        # self.relu = nn.LeakyReLU()
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+            elif isinstance(m, TimeDelayLayer_v2):
+                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
+
+    def set_global_dropout(self, dropout_p):
+        self.dropout_p = dropout_p
+        self.drop.p = self.dropout_p
+
+        self.frame1.set_dropout(dropout_p)
+        self.frame2.set_dropout(dropout_p)
+        self.frame3.set_dropout(dropout_p)
+        self.frame4.set_dropout(dropout_p)
+        self.frame5.set_dropout(dropout_p)
+
+    def forward(self, x):
+        # pdb.set_trace()
+        x = x.squeeze(1).float()
+        x = self.frame1(x)
+        x = self.frame2(x)
+        x = self.frame3(x)
+        x = self.frame4(x)
+        x = self.frame5(x)
+
+        # print(x.shape)
+        x = self.attention_statistic(x)
+        embedding_a = self.segment6(x)
+
+        if self.dropout_p:
+            embedding_a = self.drop(embedding_a)
+
+        embedding_b = self.segment7(embedding_a)
+
+        if self.dropout_p:
+            embedding_b = self.drop(embedding_b)
+
+        logits = self.classifier(embedding_b)
+
+        return logits, embedding_b
+
+class ETDNN(nn.Module):
+    def __init__(self, num_classes, embedding_size=256, batch_norm=True,
+                 input_dim=80, dropout_p=0.0, **kwargs):
+        super(ETDNN, self).__init__()
+        self.num_classes = num_classes
+        self.input_dim = input_dim
+        self.dropout_p = dropout_p
+
+        self.frame1 = TimeDelayLayer_v2(input_dim=input_dim, output_dim=512, context_size=5, dilation=1,
+                                        activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+        self.affine2 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1,
+                                         activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+        self.frame3 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=2,
+                                        activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+        self.affine4 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1,
+                                         activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+        self.frame5 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=3,
+                                        activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+        self.affine6 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1,
+                                         activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+        self.frame7 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=4,
+                                        activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+        self.frame8 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1,
+                                        activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+        self.frame9 = TimeDelayLayer_v2(input_dim=512, output_dim=1500, context_size=1, dilation=1,
+                                        activation='leakyrelu', batch_norm=batch_norm, dropout_p=dropout_p)
+
+        # self.segment11 = nn.Linear(3000, embedding_size)
+        # self.leakyrelu = nn.LeakyReLU()
+        # self.batchnorm = nn.BatchNorm1d(embedding_size)
+        self.segment11 = nn.Sequential(nn.Linear(3000, embedding_size),
+                                       nn.LeakyReLU(),
+                                       nn.BatchNorm1d(embedding_size))
+
+        self.classifier = nn.Linear(embedding_size, num_classes)
+
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+            elif isinstance(m, TimeDelayLayer_v2):
+                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='leaky_relu')
+
+    def statistic_pooling(self, x):
+        mean_x = x.mean(dim=1)
+        # std_x = x.std(dim=1)
+        std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
+        mean_std = torch.cat((mean_x, std_x), 1)
+        return mean_std
+
+    def set_global_dropout(self, dropout_p):
+        self.dropout_p = dropout_p
+
+        for m in self.modules():
+            if isinstance(m, TimeDelayLayer_v2):
+                m.set_dropout(dropout_p)
+
+    def forward(self, x):
+        # pdb.set_trace()
+        if x.shape[1] == 1:
+            x = x.squeeze(1).float()
+
+        x = self.frame1(x)
+        x = self.affine2(x)
+        x = self.frame3(x)
+        x = self.affine4(x)
+        x = self.frame5(x)
+        x = self.affine6(x)
+        x = self.frame7(x)
+        x = self.frame8(x)
+        x = self.frame9(x)
+
+        x = self.statistic_pooling(x)
+        embeddings = self.segment11(x)
+
+        logits = self.classifier(embeddings)
+
+        return logits, embeddings

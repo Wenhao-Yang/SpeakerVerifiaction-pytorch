@@ -1,61 +1,99 @@
-# Deep Speaker from Baidu Research - Pytorch Implementation 
+# Speaker Verification Systems - Pytorch Implementation 
 
-This project is forked from the [qqueing/DeepSpeaker-pytorch](https://github.com/qqueing/DeepSpeaker-pytorch). Parts of code was modified for the server to process. And some module will be added in the future.
+This project was stared from the [qqueing/DeepSpeaker-pytorch](https://github.com/qqueing/DeepSpeaker-pytorch). 
+And it will be my main work.
 
-## This will be my To do list
+## Datasets
+
+- Development:
+> Voxceleb1
+> Voxceleb2
+> CNCELEB
+> Aishell-2
+
+- Augmentation:
+> MUSAN
+> RIRS
+> RADIO NOISE
+
+- Test:
+> SITW
+> Librispeech
+> TIMIT
+
+## Pre-Processing
+
+- Resample
+
+- Butter Bandpass Filtering
+
+- Augmentation
+
+- [ ] LMS Filtering
+
+
+## Implemented DNN Verification Systems
+
+- TDNN
+The newest TDNN is  implemented from 'https://github.com/cvqluu/TDNN/blob/master/tdnn.py'
+
+- ResCNN
+
+- LSTM & Attention-based LSTM
+
+Input 40-dimensional MFCC.
+
+- ResNet
+
+ResNet34 with Fbank64.
+
+## Implemented Loss Type
+
+- A-Softmax
+
+- AM-Softmax
+
+- Center Loss
+
+## Implemented Pooling Type
+
+- Self-Attention
+
+- Statistic Pooling
+
+- Attention Statistic Pooling
+
+
+## To do list
 Work accomplished so far:
-- [x] Model implementation
-- [x] Data pipeline implementation - "Voxceleb"(Please note:Pytorch dataloader is so weak(High-load preprocessing and many thread))
+
+- [x] Models implementation
+- [x] Data pipeline implementation - "Voxceleb"
 - [x] Project structure cleanup.
 - [ ] Trained simple ResNet10 with softmax+triplet loss for pre-training 10 batch and triplet loss for 18 epoch , resulted in accuracy ???
 
-## Architecture of Deep Speaker Network:
-|LayerName|NumofDup|OutputSize|
-|:------------:|:----------:|:------------:|
-| conv1        |1           |              | 
-| conv2        |2           |              |
-| conv3        |2           |              |
-| conv4        |2           |              |
-| conv5        |2           |              |
-| avg_pool     |1           |              |
-| fc           |1           |              |
-
+## Timeline
 - [x] Extract x-vectors from trained Neural Network in 20190626
-- [ ] Code cleanup
-- [ ] Modified preprocessing
+- [x] Code cleanup (factory model creation) 20200725
+- [x] Modified preprocessing
 - [x] Modified model for ResNet34,50,101 in 20190625
 - [x] Added cosine distance in Triplet Loss(The previous distance is l2) in 20190703
 - [ ] Adding scoring for identification
 - [ ] Fork plda method for classification in python from: https://github.com/RaviSoji/plda/blob/master/plda/
 
-## Train Result
+## Performance
+
 |Stage|Resnet Model|epoch|Loss Type|Loss value|Accuracy on Train/Test|
 |:--------:|:------------:|:---:|:--------------:|:--------------:|:------------:|
 |1| Resnet-10    |1:22 |Triplet | 6.6420:0.0113 | 0.8553/0.8431  | 
 | | ResNet-34    |1:8  |Triplet | 8.0285:0.0301 | 0.8360/0.8302  |
 |2| ...          |..:..|        |
 
-
-The following is part of the original description:
-
->This is a slightly modified pytorch implementation of the model(modified Resnet + triplet loss) presented by Baidu Research in [Deep Speaker: an End-to-End Neural Speaker Embedding System](https://arxiv.org/pdf/1705.02304.pdf).
->This code was tested using Voxceleb database. [Voxceleb database paper](https://www.robots.ox.ac.uk/~vgg/publications/2017/Nagrani17/nagrani17.pdf) shows shows 7.8% EER using CNN. But in my code can't reach that point.
-This code contained a lot of editable point such as preprocessing, model, scoring(length nomalization and file processing) and etc.
->I hope this code helps researcher reach higher score.
->Also, use the part of code:
->- [liorshk's git repository](https://github.com/liorshk/facenet_pytorch)
->   - Baseline code - Facenet pytorch implimetation
->- [hbredin's git repository](https://github.com/hbredin/pyannote-db-voxceleb)
->   - Voxceleb Database reader
+### Reference:  
+> [1] Cai, Weicheng, Jinkun Chen, and Ming Li. "Analysis of Length Normalization in End-to-End Speaker Verification System.." conference of the international speech communication association (2018): 3618-3622.
 >
->## Features
-> - In test, length normalization
->   - This means extracting many input from single wave and averaging. This makes the results slightly better.
-> - In training, except pandas and preloading list. 
->   - This makes different training accuracy each epoch, but it does not matter.
->
-> ## Authors
-> qqueing@gmail.com( or kindsinu@naver.com)
+> [2] ...
+
 
 
 
