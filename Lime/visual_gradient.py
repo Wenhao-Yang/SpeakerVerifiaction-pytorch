@@ -23,7 +23,7 @@ from scipy import interpolate
 
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Model options
-parser.add_argument('--extract-path',
+parser.add_argument('--extract-path', default='Lime/LoResNet10/timit/soft_var',
                     help='folder to output model checkpoints')
 # Training options
 parser.add_argument('--feat-dim', type=int, default=161, metavar='ES',
@@ -192,6 +192,7 @@ def main():
     f = interpolate.interp1d(m[1:], n)
     xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / 161)
     ynew = f(xnew)
+    # ynew = 1/ ynew
     ynew = ynew / ynew.sum()
     plt.plot(xnew, ynew)
     # print(np.sum(ynew))
@@ -201,6 +202,7 @@ def main():
         f = interpolate.interp1d(x, s)
         xnew = np.linspace(np.min(x), np.max(x), 161)
         ynew = f(xnew)
+        ynew = 1 / ynew - 1
         # ynew = ynew - ynew.min()
         ynew = ynew / ynew.sum()
         plt.plot(xnew, ynew)
