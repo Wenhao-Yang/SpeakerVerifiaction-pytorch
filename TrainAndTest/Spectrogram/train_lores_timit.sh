@@ -42,9 +42,8 @@ if [ $stage -le 0 ]; then
       --epochs 12 \
       --lr 0.1 \
       --milestones 6,10 \
-      --inst-norm \
-      --check-path Data/checkpoint/LoResNet8/${datasets}/spect__inst/${loss}_var \
-      --resume Data/checkpoint/LoResNet8/${datasets}/spect_inst/${loss}_var/checkpoint_7.pth \
+      --check-path Data/checkpoint/LoResNet8/${datasets}/spect_max/${loss}_var \
+      --resume Data/checkpoint/LoResNet8/${datasets}/spect_max/${loss}_var/checkpoint_7.pth \
       --channels 4,16,64 \
       --embedding-size 128 \
       --input-per-spks 256 \
