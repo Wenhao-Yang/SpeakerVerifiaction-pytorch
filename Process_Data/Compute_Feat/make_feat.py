@@ -42,26 +42,27 @@ parser.add_argument('--feat-format', type=str,
                     default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--feat-type', type=str,
-                    default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
-                    help='number of jobs to make feats (default: 10)')
-parser.add_argument('--filter-type', type=str,
-                    default='mel',
+parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--filters', type=int,
-                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
+parser.add_argument('--filter-type', type=str, default='mel', help='number of jobs to make feats (default: 10)')
+
+parser.add_argument('--filters', type=int, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--multi-weight', action='store_true', default=False,
                     help='using Cosine similarity')
-parser.add_argument('--numcep', type=int, default=24,
-                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--numcep', type=int, default=24, help='number of cepstrum bin to make feats (default: 24)')
 parser.add_argument('--windowsize', type=float, default=0.02, choices=[0.02, 0.025],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--stride', type=float, default=0.01,
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--lowfreq', type=int, default=0,
-                    help='number of jobs to make feats (default: 10)')
 
+parser.add_argument('--bandpass', action='store_true', default=False,
+                    help='using butter bandpass filter for input wav signal')
+parser.add_argument('--lowfreq', type=int, default=300,
+                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--highfreq', type=int, default=3000,
+                    help='number of jobs to make feats (default: 10)')
 parser.add_argument('--nfft', type=int, required=True,
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--normalize', action='store_true', default=False,
@@ -144,7 +145,9 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                                                     multi_weight=args.multi_weight)
                     elif args.feat_type == 'spectrogram':
                         feat, duration = Make_Spect(wav_path=pair[1], windowsize=args.windowsize,
-                                                    lowfreq=args.lowfreq,
+                                                    bandpass=args.bandpass, lowfreq=args.lowfreq,
+                                                    highfreq=args.highfreq,
+                                                    log_scale=args.log_scale,
                                                     stride=args.stride, duration=True, nfft=args.nfft,
                                                     normalize=args.normalize)
                     elif args.feat_type == 'mfcc':
