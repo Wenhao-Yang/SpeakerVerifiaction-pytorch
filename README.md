@@ -63,6 +63,9 @@ ResNet34 with Fbank64.
 
 - Attention Statistic Pooling
 
+## Neural Network Analysis
+
+- Gradient
 
 ## To do list
 Work accomplished so far:
