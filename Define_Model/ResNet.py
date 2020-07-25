@@ -687,8 +687,8 @@ class LocalResNet(nn.Module):
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 3), stride=2, padding=(2, 1))
         self.bn1 = nn.BatchNorm2d(channels[0])
-
         self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
+
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
@@ -744,7 +744,6 @@ class LocalResNet(nn.Module):
         _output = torch.div(input, norm.view(-1, 1).expand_as(input))
         output = _output.view(input_size)
         # # # input = input.renorm(p=2, dim=1, maxnorm=1.0)
-        #
         # norm = input.norm(p=2, dim=1, keepdim=True).add(1e-14)
         # output = input / norm
 
@@ -773,7 +772,7 @@ class LocalResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        # x = self.maxpool(x)
+        x = self.maxpool(x)
 
         x = self.layer1(x)
 

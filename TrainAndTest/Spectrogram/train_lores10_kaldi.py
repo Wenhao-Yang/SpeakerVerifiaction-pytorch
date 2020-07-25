@@ -97,7 +97,7 @@ parser.add_argument('--milestones', default='10,15', type=str,
                     metavar='MIL', help='The optimizer to use (default: Adagrad)')
 parser.add_argument('--min-softmax-epoch', type=int, default=40, metavar='MINEPOCH',
                     help='minimum epoch for initial parameter using softmax (default: 2')
-parser.add_argument('--veri-pairs', type=int, default=12800, metavar='VP',
+parser.add_argument('--veri-pairs', type=int, default=20000, metavar='VP',
                     help='number of epochs to train (default: 10)')
 
 # Training options
