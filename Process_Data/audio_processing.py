@@ -229,8 +229,8 @@ def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT
 
 
 def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
-               bandpass=False, lowfreq=0, highfreq=0,
-               preemph=0.97, duration=False, nfft=None, normalize=True):
+               bandpass=False, lowfreq=0, highfreq=0, log_scale=True,
+               preemph=0.97, duration=False, nfft=None, normalize=False):
     """
     read wav as float type. [-1.0 ,1.0]
     :param wav_path:
@@ -252,14 +252,11 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
     if nfft == None:
         nfft = int(windowsize * samplerate)
 
-    pspec = sigproc.powspec(frames, nfft)
-    pspec = np.where(pspec == 0, np.finfo(float).eps, pspec)
-    # S = librosa.stft(samples, n_fft=int(windowsize * samplerate),
-    #                  hop_length=int((windowsize-stride) * samplerate),
-    #                  window=window(int(windowsize * samplerate)))  # 进行短时傅里叶变换，参数意义在一开始有定义
-    # feature, _ = librosa.magphase(S)
-    # feature = np.log1p(feature)  # log1p操作
-    feature = np.log(pspec).astype(np.float32)
+    if log_scale == True:
+        feature = sigproc.logpowspec(frames, nfft)
+    else:
+        feature = sigproc.powspec(frames, nfft)
+
     # feature = feature.transpose()
     if normalize:
         feature = normalize_frames(feature)

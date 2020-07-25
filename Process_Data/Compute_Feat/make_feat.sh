@@ -169,12 +169,22 @@ fi
 
 # timit
 if [ $stage -eq 7 ]; then
-  for name in test ; do
+  for name in train test ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
       --nj 12 \
-      --out-set ${name} \
+      --out-set ${name}_log10 \
+      --log-scale \
+      --feat-type spectrogram \
+      --nfft 320 \
+      --windowsize 0.02
+
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
+      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
+      --nj 12 \
+      --out-set ${name}_power \
       --feat-type spectrogram \
       --nfft 320 \
       --windowsize 0.02
