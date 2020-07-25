@@ -169,8 +169,8 @@ fi
 
 # timit
 if [ $stage -eq 7 ]; then
-  for name in train test ; do
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
+  for name in test ; do
+    python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
       --nj 12 \

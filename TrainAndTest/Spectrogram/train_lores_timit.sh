@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #stage=3
-stage=15
+stage=0
 
 waited=0
 while [ `ps 27212 | wc -l` -eq 2 ]; do
@@ -34,29 +34,28 @@ if [ $stage -le 0 ]; then
 #      --loss-type ${loss}
 
     python TrainAndTest/Spectrogram/train_lores10_var.py \
-      --model LoResNet10 \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_noc \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/test_noc \
+      --model LoResNet \
+      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train \
+      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/test \
       --nj 8 \
       --epochs 12 \
       --lr 0.1 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/LoResNet8/${datasets}/spect_noc/${loss}_var \
-      --resume Data/checkpoint/LoResNet8/${datasets}/spect_noc/${loss}_var/checkpoint_7.pth \
+      --check-path Data/checkpoint/LoResNet8/${datasets}/spect/${loss}_var \
+      --resume Data/checkpoint/LoResNet8/${datasets}/spect/${loss}_var/checkpoint_7.pth \
       --channels 4,16,64 \
-      --statis-pooling \
       --embedding-size 128 \
       --input-per-spks 256 \
       --num-valid 1 \
       --weight-decay 0.001 \
       --alpha 10.8 \
       --dropout-p 0.5 \
-      --gpu-id 1 \
+      --gpu-id 0 \
       --loss-type ${loss}
   done
 fi
 
-#stage=60
+stage=60
 if [ $stage -le 6 ]; then
   datasets=libri
   model=LoResNet
