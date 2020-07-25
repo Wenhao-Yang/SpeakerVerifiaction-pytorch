@@ -681,13 +681,12 @@ class LocalResNet(nn.Module):
         self.embedding_size = embedding_size
         # self.relu = nn.LeakyReLU()
         self.relu = nn.ReLU(inplace=True)
+        self.inst_norm = inst_norm
+        self.inst_layer = nn.InstanceNorm2d(1)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2, bias=False)
-        if inst_norm:
-            self.bn1 = nn.InstanceNorm2d(channels[0])
-        else:
-            self.bn1 = nn.BatchNorm2d(channels[0])
+        self.bn1 = nn.BatchNorm2d(channels[0])
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, channels[0], layers[0])
@@ -715,18 +714,12 @@ class LocalResNet(nn.Module):
         self.dropout = nn.Dropout(self.dropout_p)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
 
-        # if self.statis_pooling:
-        #     self.statis_pooling = statis_pooling
-        #     self.inplanes *= 2
-        #     self.std_pool = AdaptiveStdPooling2d((1, 4))
-
         self.fc = nn.Sequential(
             nn.Linear(self.inplanes * avg_size, embedding_size),
             nn.BatchNorm1d(embedding_size)
         )
 
         # self.fc = nn.Linear(self.inplanes * avg_size, embedding_size)
-
         self.classifier = nn.Linear(self.embedding_size, num_classes)
 
         for m in self.modules():  # 对于各层参数的初始化
@@ -774,11 +767,13 @@ class LocalResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        if self.inst_norm:
+            x = self.inst_layer(x)
+
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
         # x = self.maxpool(x)
-
         x = self.layer1(x)
 
         x = self.conv2(x)

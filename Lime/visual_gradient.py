@@ -202,7 +202,7 @@ def main():
         f = interpolate.interp1d(x, s)
         xnew = np.linspace(np.min(x), np.max(x), 161)
         ynew = f(xnew)
-        ynew = 1 / ynew - 1
+        ynew = 1 / ynew
         # ynew = ynew - ynew.min()
         ynew = ynew / ynew.sum()
         plt.plot(xnew, ynew)
