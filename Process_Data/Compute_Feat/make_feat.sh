@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=5
+stage=7
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -155,7 +155,7 @@ if [ $stage -le 5 ]; then
   done
 fi
 
-stage=50
+#stage=50
 # sitw
 if [ $stage -le 6 ]; then
   for name in dev eval ; do
@@ -174,14 +174,14 @@ if [ $stage -eq 7 ]; then
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
       --nj 12 \
-      --out-set ${name}_noc \
+      --out-set ${name} \
       --feat-type spectrogram \
       --nfft 320 \
       --windowsize 0.02
   done
 fi
 
-#stage=20
+stage=200
 if [ $stage -le 8 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
