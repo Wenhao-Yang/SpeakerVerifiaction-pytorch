@@ -229,8 +229,8 @@ def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT
 
 
 def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
-               bandpass=False, lowfreq=0, highfreq=0, log_scale=True,
-               preemph=0.97, duration=False, nfft=None, normalize=False):
+               bandpass=False, lowfreq=0, highfreq=0, log_scale='Euler',
+               preemph=0.97, duration=False, nfft=None, normalize=True):
     """
     read wav as float type. [-1.0 ,1.0]
     :param wav_path:
@@ -252,11 +252,13 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
     if nfft == None:
         nfft = int(windowsize * samplerate)
 
-    if log_scale == True:
-        feature = sigproc.logpowspec(frames, nfft)
-    else:
-        feature = sigproc.powspec(frames, nfft)
+    pspec = sigproc.powspec(frames, nfft)
 
+    if log_scale == True:
+        pspec = np.where(pspec == 0, np.finfo(float).eps, pspec)
+        feature = np.log(pspec).astype(np.float32)
+    else:
+        feature = pspec
     # feature = feature.transpose()
     if normalize:
         feature = normalize_frames(feature)
@@ -265,7 +267,6 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
         return feature, len(samples) / samplerate
 
     return feature
-
 
 
 def Make_Fbank(filename,
