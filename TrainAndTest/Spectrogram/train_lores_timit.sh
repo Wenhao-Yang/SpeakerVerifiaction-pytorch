@@ -85,6 +85,7 @@ if [ $stage -le 2 ]; then
       --num-valid 1 \
       --weight-decay 0.001 \
       --alpha 10 \
+      --feat-format npy \
       --dropout-p 0.5 \
       --gpu-id 0 \
       --loss-type ${loss}
