@@ -72,8 +72,8 @@ if [ $stage -le 2 ]; then
     python TrainAndTest/Spectrogram/train_lores10_var.py \
       --model LoResNet \
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/dev_3w \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test \
-      --nj 8 \
+      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_3w \
+      --nj 10 \
       --epochs 12 \
       --lr 0.1 \
       --milestones 6,10 \
@@ -85,7 +85,28 @@ if [ $stage -le 2 ]; then
       --num-valid 1 \
       --weight-decay 0.001 \
       --alpha 10 \
-      --feat-format npy \
+      --feat-format kaldi \
+      --dropout-p 0.5 \
+      --gpu-id 0 \
+      --loss-type ${loss}
+
+    python TrainAndTest/Spectrogram/train_lores10_var.py \
+      --model GradResNet \
+      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/dev_3w_power \
+      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_3w_power \
+      --nj 10 \
+      --epochs 12 \
+      --lr 0.1 \
+      --milestones 6,10 \
+      --check-path Data/checkpoint/GradResNet8/${datasets}_3w_power/spect/${loss}_var \
+      --resume Data/checkpoint/GradResNet8/${datasets}_3w_power/spect/${loss}_var/checkpoint_7.pth \
+      --channels 4,16,64 \
+      --embedding-size 128 \
+      --input-per-spks 256 \
+      --num-valid 1 \
+      --weight-decay 0.001 \
+      --alpha 10 \
+      --feat-format kaldi \
       --dropout-p 0.5 \
       --gpu-id 0 \
       --loss-type ${loss}

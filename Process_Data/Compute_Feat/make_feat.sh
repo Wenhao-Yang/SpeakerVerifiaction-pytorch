@@ -427,23 +427,30 @@ fi
 
 if [ $stage -le 70 ]; then
 #enroll
-  python Process_Data/Compute_Feat/make_feat.py \
-    --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_3w \
-    --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-    --out-set dev_3w \
-    --feat-type spectrogram \
-    --feat-format kaldi \
-    --nfft 320 \
-    --windowsize 0.02 \
-    --nj 15
+  for s in dev test; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s}_3w \
+      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+      --out-set ${s}_3w \
+      --log-scale \
+      --feat-type spectrogram \
+      --feat-format kaldi \
+      --nfft 320 \
+      --windowsize 0.02 \
+      --nj 15
+  done
+fi
 
-  python Process_Data/Compute_Feat/make_feat.py \
-    --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test \
-    --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-    --out-set test_3w \
-    --feat-type spectrogram \
-    --feat-format kaldi \
-    --nfft 320 \
-    --windowsize 0.02 \
-    --nj 15
+if [ $stage -le 70 ]; then
+  for s in dev test; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s}_3w \
+      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+      --out-set ${s}_3w_power \
+      --feat-type spectrogram \
+      --feat-format kaldi \
+      --nfft 320 \
+      --windowsize 0.02 \
+      --nj 15
+    done
 fi
