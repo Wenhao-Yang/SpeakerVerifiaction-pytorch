@@ -428,8 +428,8 @@ fi
 if [ $stage -le 70 ]; then
 #enroll
   python Process_Data/Compute_Feat/make_feat.py \
-    --data-dir /home/storage/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_3w \
-    --out-dir /home/storage/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+    --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_3w \
+    --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
     --out-set dev_3w \
     --feat-type spectrogram \
     --feat-format kaldi \
@@ -438,8 +438,8 @@ if [ $stage -le 70 ]; then
     --nj 15
 
   python Process_Data/Compute_Feat/make_feat.py \
-    --data-dir /home/storage/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test \
-    --out-dir /home/storage/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+    --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test \
+    --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
     --out-set test_3w \
     --feat-type spectrogram \
     --feat-format kaldi \
