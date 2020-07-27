@@ -1059,7 +1059,7 @@ class GradResNet(nn.Module):
         self.inst_layer = nn.InstanceNorm2d(1)
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(7, 5), stride=2, padding=(3, 2))
+        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
         self.bn1 = nn.BatchNorm2d(channels[0])
         self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
 
@@ -1106,9 +1106,7 @@ class GradResNet(nn.Module):
                 m.bias.data.zero_()
 
     def l2_norm(self, input, alpha=1.0):
-        # alpha = log(p * (
-        #
-        # class -2) / (1-p))
+        # alpha = log(p * (class -2) / (1-p))
         input_size = input.size()
         buffer = torch.pow(input, 2)
 
@@ -1148,8 +1146,7 @@ class GradResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x)
-
+        # x = self.maxpool(x)
         x = self.layer1(x)
 
         x = self.conv2(x)
