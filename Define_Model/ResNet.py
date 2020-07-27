@@ -1140,7 +1140,7 @@ class GradResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = 10. * torch.log10(x)
+        x = torch.log(x)
 
         if self.inst_norm:
             x = self.inst_layer(x)
