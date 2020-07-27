@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=7
+stage=70
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -191,7 +191,7 @@ if [ $stage -eq 7 ]; then
   done
 fi
 
-stage=200
+#stage=200
 if [ $stage -le 8 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
@@ -409,7 +409,7 @@ if [ $stage -le 50 ]; then
   done
 fi
 
-stage=100
+#stage=100
 if [ $stage -le 60 ]; then
 #enroll
   for name in dev test ; do
@@ -423,4 +423,27 @@ if [ $stage -le 60 ]; then
       --windowsize 0.02 \
       --nj 20
   done
+fi
+
+if [ $stage -le 70 ]; then
+#enroll
+  python Process_Data/Compute_Feat/make_feat.py \
+    --data-dir /home/storage/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_3w \
+    --out-dir /home/storage/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+    --out-set dev_3w \
+    --feat-type spectrogram \
+    --feat-format kaldi \
+    --nfft 320 \
+    --windowsize 0.02 \
+    --nj 15
+
+  python Process_Data/Compute_Feat/make_feat.py \
+    --data-dir /home/storage/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test \
+    --out-dir /home/storage/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+    --out-set test_3w \
+    --feat-type spectrogram \
+    --feat-format kaldi \
+    --nfft 320 \
+    --windowsize 0.02 \
+    --nj 15
 fi
