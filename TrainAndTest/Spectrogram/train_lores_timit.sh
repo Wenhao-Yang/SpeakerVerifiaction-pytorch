@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #stage=3
-stage=2
+stage=3
 
 waited=0
 while [ `ps 27212 | wc -l` -eq 2 ]; do
@@ -79,6 +79,34 @@ if [ $stage -le 2 ]; then
       --milestones 6,10 \
       --check-path Data/checkpoint/LoResNet8/${datasets}_3w_wcmvn/spect/${loss}_var \
       --resume Data/checkpoint/LoResNet8/${datasets}_3w_wcmvn/spect/${loss}_var/checkpoint_7.pth \
+      --channels 8,16,64 \
+      --embedding-size 128 \
+      --input-per-spks 256 \
+      --num-valid 1 \
+      --weight-decay 0.001 \
+      --alpha 10 \
+      --feat-format kaldi \
+      --dropout-p 0.5 \
+      --gpu-id 0 \
+      --loss-type ${loss}
+  done
+fi
+if [ $stage -le 3 ]; then
+  datasets=vox1_3w_power_25
+  model=GradResNet
+#  loss=soft
+  for loss in soft ; do
+    echo -e "\n\033[1;4;31m Training with ${loss}\033[0m\n"
+    python TrainAndTest/Spectrogram/train_lores10_var.py \
+      --model ${model} \
+      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/dev_3w_power_25 \
+      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_3w_power_25 \
+      --nj 10 \
+      --epochs 12 \
+      --lr 0.1 \
+      --milestones 6,10 \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect/${loss}_var \
+      --resume Data/checkpoint/${model}8/${datasets}/spect/${loss}_var/checkpoint_7.pth \
       --channels 8,16,64 \
       --embedding-size 128 \
       --input-per-spks 256 \
