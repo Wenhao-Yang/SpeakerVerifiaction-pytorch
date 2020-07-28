@@ -107,7 +107,7 @@ if [ $stage -le 3 ]; then
       --milestones 6,10 \
       --check-path Data/checkpoint/${model}8/${datasets}/spect/${loss}_var \
       --resume Data/checkpoint/${model}8/${datasets}/spect/${loss}_var/checkpoint_7.pth \
-      --channels 8,16,64 \
+      --channels 4,16,64 \
       --embedding-size 128 \
       --input-per-spks 256 \
       --num-valid 1 \
