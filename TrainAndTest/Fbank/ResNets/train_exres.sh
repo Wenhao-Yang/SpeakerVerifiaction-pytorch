@@ -14,13 +14,13 @@ if [ $stage -le 0 ]; then
 #  for loss in soft asoft ; do
   model=ExResNet
   datasets=vox1
-  feat=fb64
+  feat=fb64_3w
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_var.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
-      --nj 12 \
+      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
+      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
+      --nj 8 \
       --epochs 30 \
       --milestones 14,20,25 \
       --model ${model} \
@@ -34,8 +34,8 @@ if [ $stage -le 0 ]; then
       --test-batch-size 4 \
       --test-input-per-file 1 \
       --lr 0.1 \
-      --check-path Data/checkpoint/${model}10/${datasets}/${feat}/${loss}_var \
-      --resume Data/checkpoint/${model}10/${datasets}/${feat}_var/${loss}/checkpoint_1.pth \
+      --check-path Data/checkpoint/${model}10/${datasets}/${feat}/${loss} \
+      --resume Data/checkpoint/${model}10/${datasets}/${feat}/${loss}/checkpoint_1.pth \
       --input-per-spks 192 \
       --veri-pairs 9600 \
       --gpu-id 0 \
