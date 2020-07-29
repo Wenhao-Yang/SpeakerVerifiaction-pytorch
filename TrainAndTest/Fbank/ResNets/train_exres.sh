@@ -16,7 +16,7 @@ if [ $stage -le 0 ]; then
   datasets=vox1
   feat=fb64_3w
   loss=soft
-  for encod in STAP ; do
+  for encod in SAP SASP STAP None ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
@@ -38,8 +38,8 @@ if [ $stage -le 0 ]; then
       --test-input-per-file 1 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}10/${datasets}_${encod}/${feat}/${loss} \
-      --resume Data/checkpoint/${model}10/${datasets}_${encod}/${feat}/${loss}/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}10/${datasets}_${encod}_rmavg/${feat}/${loss} \
+      --resume Data/checkpoint/${model}10/${datasets}_${encod}_rmavg/${feat}/${loss}/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \

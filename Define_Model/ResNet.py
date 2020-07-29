@@ -213,7 +213,8 @@ class ExporingResNet(nn.Module):
         # [64, 128, 8, 37]
         freq_dim = avg_size
         time_dim = time_dim if encoder_type != 'None' else 1
-        self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+        self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
+        # self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
         # 300 is the length of features
 
         if encoder_type == 'SAP':
@@ -235,7 +236,7 @@ class ExporingResNet(nn.Module):
                 nn.BatchNorm1d(embedding_size)
             )
         else:
-            self.encoder = None
+            self.encoder = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3] * freq_dim * time_dim, embedding_size),
                 nn.BatchNorm1d(embedding_size)
