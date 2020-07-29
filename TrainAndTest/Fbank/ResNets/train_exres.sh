@@ -17,7 +17,7 @@ if [ $stage -le 0 ]; then
   feat=fb64_3w
   loss=soft
   for encod in SAP SASP None ; do
-    echo -e "\n\033[1;4;31m Training ${model} with ${loss}\033[0m\n"
+    echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
