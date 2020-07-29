@@ -1154,8 +1154,8 @@ class my_data_prefetcher:
     def __init__(self, loader, gpu):
         self.loader = iter(loader)
         self.gpu = gpu
-        if self.gpu:
-            self.stream = torch.cuda.Stream()
+        # if self.gpu:
+        #     self.stream = torch.cuda.Stream()
         self.preload()
 
     def __iter__(self):
@@ -1168,14 +1168,14 @@ class my_data_prefetcher:
             self.next_input = None
             raise StopIteration
 
-        if self.gpu:
-            with torch.cuda.stream(self.stream):
-                for i in range(len(self.next_data)):
-                    self.next_data[i] = self.next_data[i].cuda(non_blocking=True)
+        # if self.gpu:
+        #     with torch.cuda.stream(self.stream):
+        #         for i in range(len(self.next_data)):
+        #             self.next_data[i] = self.next_data[i].cuda(non_blocking=True)
 
     def __next__(self):
-        if self.gpu:
-            torch.cuda.current_stream().wait_stream(self.stream)
+        # if self.gpu:
+        #     torch.cuda.current_stream().wait_stream(self.stream)
 
         data = self.next_data
         self.preload()
