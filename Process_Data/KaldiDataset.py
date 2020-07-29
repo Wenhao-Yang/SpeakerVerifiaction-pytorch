@@ -1170,7 +1170,8 @@ class my_data_prefetcher:
 
         if self.gpu:
             with torch.cuda.stream(self.stream):
-                self.next_data = self.next_data.cuda(non_blocking=True)
+                for i in range(len(self.next_data)):
+                    self.next_data[i] = self.next_data[i].cuda(non_blocking=True)
 
     def __next__(self):
         if self.gpu:
