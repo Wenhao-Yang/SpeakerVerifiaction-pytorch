@@ -33,7 +33,7 @@ from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarg
 from Define_Model.model import PairwiseDistance
 from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput, concateinputfromMFB, to2tensor, mvnormal
+from Process_Data.audio_processing import toMFB, totensor, truncatedinput, concateinputfromMFB, to2tensor
 from TrainAndTest.common_func import create_optimizer, create_model, verification_extract, verification_test
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from logger import NewLogger
@@ -63,33 +63,24 @@ parser.add_argument('--train-dir', type=str,
 parser.add_argument('--test-dir', type=str,
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--nj', default=14, type=int, metavar='NJOB', help='num of job')
+parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
+                    help='number of jobs to make feats (default: 10)')
 
 # Model options
-parser.add_argument('--model', type=str,
-                    help='path to voxceleb1 test dataset')
-parser.add_argument('--resnet-size', default=34, type=int,
-                    metavar='RES', help='The channels of convs layers)')
-parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
-                    help='kernel size of conv filters')
-parser.add_argument('--stride', default=2, type=int, metavar='ST',
-                    help='kernel size of conv filters')
-parser.add_argument('--feat-dim', default=64, type=int, metavar='N',
-                    help='acoustic feature dimension')
+parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
+parser.add_argument('--resnet-size', default=34, type=int, metavar='RES', help='The channels of convs layers)')
+parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
+parser.add_argument('--stride', default=2, type=int, metavar='ST', help='kernel size of conv filters')
+parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
 
-parser.add_argument('--avg-size', type=int, default=4, metavar='ES',
-                    help='Dimensionality of the embedding')
-parser.add_argument('--time-dim', default=2, type=int, metavar='FEAT',
-                    help='acoustic feature dimension')
+parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
+parser.add_argument('--time-dim', default=2, type=int, metavar='FEAT', help='acoustic feature dimension')
 
-parser.add_argument('--check-path',
-                    help='folder to output model checkpoints')
-parser.add_argument('--save-init', action='store_true', default=True,
-                    help='using Cosine similarity')
-parser.add_argument('--resume',
-                    type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--check-path', help='folder to output model checkpoints')
+parser.add_argument('--save-init', action='store_true', default=True, help='using Cosine similarity')
+parser.add_argument('--resume', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -202,14 +193,13 @@ if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
         concateinputfromMFB(remove_vad=args.remove_vad),  # num_frames=np.random.randint(low=300, high=500)),
         to2tensor(),
-        mvnormal()
+        # mvnormal()
     ])
     transform_T = transforms.Compose([
         concateinputfromMFB(input_per_file=args.test_input_per_file, remove_vad=args.remove_vad),
         to2tensor(),
-        mvnormal()
+        #mvnormal()
     ])
-    file_loader = read_mat
 
 else:
     transform = transforms.Compose([
@@ -219,9 +209,15 @@ else:
         # tonormal()
     ])
 
+if args.feat_format == 'kaldi':
+    file_loader = read_mat
+elif args.feat_format == 'npy':
+    file_loader = np.load
+
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, transform=transform,
                                loader=file_loader, num_valid=args.num_valid)
 test_dir = ScriptTestDataset(dir=args.test_dir, transform=transform_T, loader=file_loader)
+
 if len(test_dir) < args.veri_pairs:
     args.veri_pairs = len(test_dir)
     print('There are %d verification pairs.' % len(test_dir))
@@ -345,7 +341,8 @@ def main():
         print(' \33[0m')
 
         train(train_loader, model, optimizer, ce, scheduler, epoch)
-        test(test_loader, valid_loader, model, epoch)
+        if epoch % 2 == 1 and epoch != (end - 1):
+            test(test_loader, valid_loader, model, epoch)
 
         scheduler.step()
         # break
@@ -377,8 +374,8 @@ def train(train_loader, model, optimizer, ce, scheduler, epoch):
     for batch_idx, (data, label) in pbar:
 
         if args.cuda:
-            data = data.cuda()
-            label = label.cuda()
+            data = data.cuda(non_blocking=True)
+            label = label.cuda(non_blocking=True)
         data, true_labels = Variable(data), Variable(label)
 
         # pdb.set_trace()

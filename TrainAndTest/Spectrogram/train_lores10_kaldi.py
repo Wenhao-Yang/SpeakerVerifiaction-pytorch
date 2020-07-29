@@ -73,8 +73,7 @@ parser.add_argument('--sitw-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
-parser.add_argument('--feat-format', type=str,
-                    default='kaldi', choices=['kaldi', 'npy'],
+parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--check-path', default='Data/checkpoint/LoResNet10/spect/soft',
