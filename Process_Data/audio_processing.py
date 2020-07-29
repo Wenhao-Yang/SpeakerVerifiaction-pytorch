@@ -287,11 +287,7 @@ def Make_Fbank(filename,
     if not os.path.exists(filename):
         raise ValueError('wav file does not exist.')
 
-    # sample_rate, audio = wavfile.read(filename)
-    audio, sample_rate = sf.read(filename, dtype='int16')
-    # audio, sample_rate = librosa.load(filename, sr=None)
-    #audio = audio.flatten()
-
+    audio, sample_rate = sf.read(filename, dtype='float32')
     filter_banks, energies = local_fbank(audio,
                                          samplerate=sample_rate,
                                          nfilt=nfilt,
@@ -309,7 +305,7 @@ def Make_Fbank(filename,
 
     if use_logscale:
         # filter_banks = 20 * np.log10(np.maximum(filter_banks, 1e-5))
-        filter_banks = np.log(filter_banks)
+        filter_banks = 10 * np.log10(filter_banks)
 
     if use_delta:
         delta_1 = delta(filter_banks, N=1)
