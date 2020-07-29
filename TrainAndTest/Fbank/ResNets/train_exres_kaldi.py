@@ -350,7 +350,7 @@ def main():
         print(' \33[0m')
 
         train(train_loader, model, optimizer, ce, scheduler, epoch)
-        if epoch % 2 == 1 and epoch != (end - 1):
+        if epoch % 2 == 1 and epoch < (end - 1):
             test(test_loader, valid_loader, model, epoch)
 
         scheduler.step()
