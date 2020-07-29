@@ -22,7 +22,7 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torchvision.transforms as transforms
-from kaldi_io import read_mat
+from kaldi_io import read_mat, read_vec_flt
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import MultiStepLR
@@ -31,9 +31,10 @@ from tqdm import tqdm
 from Define_Model.LossFunction import CenterLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
-from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput, concateinputfromMFB, to2tensor
-from TrainAndTest.common_func import create_optimizer, create_model
+from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
+    ScriptVerifyDataset
+from Process_Data.audio_processing import toMFB, totensor, truncatedinput, concateinputfromMFB, to2tensor, varLengthFeat
+from TrainAndTest.common_func import create_optimizer, create_model, verification_extract, verification_test
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from logger import NewLogger
 
@@ -61,6 +62,7 @@ parser.add_argument('--train-dir', type=str,
                     help='path to dataset')
 parser.add_argument('--test-dir', type=str,
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--nj', default=14, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
@@ -99,7 +101,7 @@ parser.add_argument('--cos-sim', action='store_true', default=True,
                     help='using Cosine similarity')
 parser.add_argument('--remove-vad', action='store_true', default=False,
                     help='using Cosine similarity')
-parser.add_argument('--encoder-type', type=str, default='SAP', choices=['SAP', 'SASP', None],
+parser.add_argument('--encoder-type', type=str, default='SAP', choices=['SAP', 'SASP', 'None'],
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                     help='Dimensionality of the embedding')
@@ -205,6 +207,10 @@ if args.acoustic_feature == 'fbank':
         to2tensor(),
         #mvnormal()
     ])
+    transform_V = transforms.Compose([
+        varLengthFeat(remove_vad=args.remove_vad),
+        to2tensor()
+    ])
 
 else:
     transform = transforms.Compose([
@@ -266,7 +272,7 @@ def main():
 
     model = create_model(args.model, **model_kwargs)
 
-    start = 1
+    start = 0
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -349,16 +355,19 @@ def main():
 
         scheduler.step()
         # break
-    # verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader)
-    # verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
-    #                                             **kwargs)
-    # verification_extract(verify_loader, model, args.xvector_dir)
-    # file_loader = read_vec_flt
-    # test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
-    #                                xvectors_dir=args.xvector_dir, loader=file_loader)
-    # test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
-    # verification_test(test_loader=test_loader, dist_type='cos' if args.cos_sim else 'l2',
-    #                   log_interval=args.log_interval)
+
+    extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
+    extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
+    xvector_dir = args.check_path
+    xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
+    verification_extract(extract_loader, model, xvector_dir)
+
+    verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
+                                     loader=read_vec_flt)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=64, shuffle=False, **kwargs)
+    verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
+                      log_interval=args.log_interval)
+
 
     writer.close()
 

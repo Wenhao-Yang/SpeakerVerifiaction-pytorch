@@ -58,9 +58,10 @@ class AttentionStatisticPooling(nn.Module):
         :param x:   [length,feat_dim] vector
         :return:   [feat_dim] vector
         """
-        if x.shape[1] == 1:
-            x = x.squeeze(1)
-        assert len(x.shape) == 3
+        x = x.squeeze()
+        assert len(x.shape) == 3, print(x.shape)
+        if x.shape[-2] == self.input_dim:
+            x = x.transpose(-1, -2)
 
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
