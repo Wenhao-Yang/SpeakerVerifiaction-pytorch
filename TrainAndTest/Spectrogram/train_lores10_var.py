@@ -35,7 +35,7 @@ from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarg
 from Define_Model.model import PairwiseDistance
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
-    ScriptVerifyDataset
+    ScriptVerifyDataset, my_data_prefetcher
 from Process_Data.audio_processing import to2tensor, varLengthFeat, PadCollate, concateinputfromMFB
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_extract, verification_test
@@ -448,7 +448,11 @@ def train(train_loader, model, ce, optimizer, epoch):
     # for param_group in optimizer.param_groups:
     #     print('\33[1;34m Optimizer \'{}\' learning rate is {}.\33[0m'.format(args.optimizer, param_group['lr']))
     ce_criterion, xe_criterion = ce
-    pbar = tqdm(enumerate(train_loader))
+
+    prefetcher = my_data_prefetcher(train_loader, gpu=True if args.cuda else False)
+    pbar = tqdm(enumerate(prefetcher))
+
+    # pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
 
     for batch_idx, (data, label) in pbar:

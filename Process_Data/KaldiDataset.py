@@ -1149,6 +1149,38 @@ class SitwTestDataset(data.Dataset):
     def __len__(self):
         return len(self.trials_pair)
 
+
+class my_data_prefetcher:
+    def __init__(self, loader, gpu):
+        self.loader = iter(loader)
+        self.gpu = gpu
+        if self.gpu:
+            self.stream = torch.cuda.Stream()
+        self.preload()
+
+    def __iter__(self):
+        return self
+
+    def preload(self):
+        try:
+            self.next_data = next(self.loader)
+        except StopIteration:
+            self.next_input = None
+            raise StopIteration
+
+        if self.gpu:
+            with torch.cuda.stream(self.stream):
+                self.next_data = self.next_data.cuda(non_blocking=True)
+
+    def __next__(self):
+        if self.gpu:
+            torch.cuda.current_stream().wait_stream(self.stream)
+
+        data = self.next_data
+        self.preload()
+
+        return data
+
 # uid = ['A.J._Buckley-1zcIwhmdeo4-0001.wav', 'A.J._Buckley-1zcIwhmdeo4-0002.wav', 'A.J._Buckley-1zcIwhmdeo4-0003.wav', 'A.J._Buckley-7gWzIy6yIIk-0001.wav']
 # xvector = np.random.randn(4, 512).astype(np.float32)
 #
