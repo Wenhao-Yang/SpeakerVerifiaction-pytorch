@@ -318,14 +318,11 @@ def main():
     end = args.epochs + 1
 
     # pdb.set_trace()
-    train_loader = torch.utils.data.DataLoader(train_dir,
-                                               batch_size=args.batch_size,
+    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size,
                                                shuffle=True, **kwargs)
-    valid_loader = torch.utils.data.DataLoader(valid_dir,
-                                               batch_size=int(args.batch_size / 2),
+    valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
                                                shuffle=False, **kwargs)
-    test_loader = torch.utils.data.DataLoader(test_dir,
-                                              batch_size=args.test_batch_size,
+    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size,
                                               shuffle=False, **kwargs)
 
     ce = [ce_criterion, xe_criterion]
@@ -348,7 +345,8 @@ def main():
 
         scheduler.step()
         # break
-    verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader)
+    verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T,
+                                      filer_loader=file_loader)
     verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                 **kwargs)
     verification_extract(verify_loader, model, args.xvector_dir)
