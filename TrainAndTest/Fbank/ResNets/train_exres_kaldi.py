@@ -22,7 +22,7 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torchvision.transforms as transforms
-from kaldi_io import read_mat, read_vec_flt
+from kaldi_io import read_mat
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import MultiStepLR
@@ -31,10 +31,9 @@ from tqdm import tqdm
 from Define_Model.LossFunction import CenterLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
-from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
-    ScriptVerifyDataset
+from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, concateinputfromMFB, to2tensor
-from TrainAndTest.common_func import create_optimizer, create_model, verification_extract, verification_test
+from TrainAndTest.common_func import create_optimizer, create_model
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from logger import NewLogger
 
@@ -238,8 +237,6 @@ def main():
     print('Parsed options: {}'.format(vars(args)))
     print('Number of Classes: {}\n'.format(train_dir.num_spks))
 
-    # instantiate
-    # model and initialize weights
     # instantiate model and initialize weights
     kernel_size = args.kernel_size.split(',')
     kernel_size = [int(x) for x in kernel_size]
@@ -322,8 +319,9 @@ def main():
                                                shuffle=True, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
                                                shuffle=False, **kwargs)
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size,
-                                              shuffle=False, **kwargs)
+
+    # test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size,
+    #                                            shuffle=False, **kwargs)
 
     ce = [ce_criterion, xe_criterion]
     if args.cuda:
@@ -341,21 +339,20 @@ def main():
 
         train(train_loader, model, optimizer, ce, scheduler, epoch)
         if epoch % 2 == 1 and epoch != (end - 1):
-            test(test_loader, valid_loader, model, epoch)
-
+            # test(test_loader, valid_loader, model, epoch)
+            pass
         scheduler.step()
         # break
-    verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T,
-                                      filer_loader=file_loader)
-    verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
-                                                **kwargs)
-    verification_extract(verify_loader, model, args.xvector_dir)
-    file_loader = read_vec_flt
-    test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
-                                   xvectors_dir=args.xvector_dir, loader=file_loader)
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
-    verification_test(test_loader=test_loader, dist_type='cos' if args.cos_sim else 'l2',
-                      log_interval=args.log_interval)
+    # verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader)
+    # verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
+    #                                             **kwargs)
+    # verification_extract(verify_loader, model, args.xvector_dir)
+    # file_loader = read_vec_flt
+    # test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
+    #                                xvectors_dir=args.xvector_dir, loader=file_loader)
+    # test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
+    # verification_test(test_loader=test_loader, dist_type='cos' if args.cos_sim else 'l2',
+    #                   log_interval=args.log_interval)
 
     writer.close()
 
