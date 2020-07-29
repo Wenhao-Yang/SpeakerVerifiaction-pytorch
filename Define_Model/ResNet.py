@@ -19,7 +19,7 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling
+from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -220,6 +220,12 @@ class ExporingResNet(nn.Module):
             self.encoder = SelfAttentionPooling(input_dim=num_filter[3], hidden_dim=num_filter[3])
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3], embedding_size),
+                nn.BatchNorm1d(embedding_size)
+            )
+        elif encoder_type == 'STAP':
+            self.encoder = StatisticPooling(input_dim=num_filter[3])
+            self.fc1 = nn.Sequential(
+                nn.Linear(num_filter[3] * 2, embedding_size),
                 nn.BatchNorm1d(embedding_size)
             )
         elif encoder_type == 'SASP':
