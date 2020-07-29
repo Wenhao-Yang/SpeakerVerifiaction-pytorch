@@ -30,7 +30,7 @@ if [ $stage -le 0 ]; then
       --feat-dim 64 \
       --remove-vad \
       --time-dim 1 \
-      --avg_size 8 \
+      --avg-size 8 \
       --kernel-size 5,5 \
       --test-batch-size 4 \
       --test-input-per-file 1 \
