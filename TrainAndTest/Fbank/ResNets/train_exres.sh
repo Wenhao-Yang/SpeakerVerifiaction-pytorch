@@ -29,7 +29,8 @@ if [ $stage -le 0 ]; then
       --embedding-size 128 \
       --feat-dim 64 \
       --remove-vad \
-      --time-dim 8 \
+      --time-dim 1 \
+      --avg_size 8 \
       --kernel-size 5,5 \
       --test-batch-size 4 \
       --test-input-per-file 1 \
