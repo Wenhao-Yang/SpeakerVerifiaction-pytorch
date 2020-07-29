@@ -28,7 +28,11 @@ class SelfAttentionPooling(nn.Module):
         :param x:   [batch, length, feat_dim] vector
         :return:   [batch, feat_dim] vector
         """
+        x_shape = x.shape
         x = x.squeeze()
+        if x_shape[0] == 1:
+            x = x.unsqueeze(0)
+
         assert len(x.shape) == 3, print(x.shape)
         if x.shape[-2] == self.input_dim:
             x = x.transpose(-1, -2)
@@ -58,7 +62,11 @@ class AttentionStatisticPooling(nn.Module):
         :param x:   [length,feat_dim] vector
         :return:   [feat_dim] vector
         """
+        x_shape = x.shape
         x = x.squeeze()
+        if x_shape[0] == 1:
+            x = x.unsqueeze(0)
+
         assert len(x.shape) == 3, print(x.shape)
         if x.shape[-2] == self.input_dim:
             x = x.transpose(-1, -2)
