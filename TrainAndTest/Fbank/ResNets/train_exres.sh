@@ -37,9 +37,9 @@ if [ $stage -le 0 ]; then
       --test-batch-size 16 \
       --test-input-per-file 1 \
       --lr 0.1 \
-      --encoder-type SAP \
-      --check-path Data/checkpoint/${model}10/${datasets}_sap/${feat}/${loss} \
-      --resume Data/checkpoint/${model}10/${datasets}_sap/${feat}/${loss}/checkpoint_100.pth \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}10/${datasets}_${encod}/${feat}/${loss} \
+      --resume Data/checkpoint/${model}10/${datasets}_${encod}/${feat}/${loss}/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \
