@@ -86,6 +86,8 @@ parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('--epochs', type=int, default=30, metavar='E',
                     help='number of epochs to train (default: 10)')
+parser.add_argument('--finetune', action='store_true', default=False,
+                    help='using Cosine similarity')
 parser.add_argument('--milestones', default='14,20,25', type=str,
                     metavar='MIL', help='The optimizer to use (default: Adagrad)')
 parser.add_argument('--veri-pairs', type=int, default=12800, metavar='VP',
