@@ -70,6 +70,8 @@ parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=34, type=int, metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
 parser.add_argument('--stride', default=2, type=int, metavar='ST', help='kernel size of conv filters')
+parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
@@ -97,6 +99,8 @@ parser.add_argument('--cos-sim', action='store_true', default=True,
                     help='using Cosine similarity')
 parser.add_argument('--remove-vad', action='store_true', default=False,
                     help='using Cosine similarity')
+parser.add_argument('--encoder-type', type=str, default='SAP', choices=['SAP', 'SASP', None],
+                    help='path to voxceleb1 test dataset')
 parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                     help='Dimensionality of the embedding')
 parser.add_argument('--batch-size', type=int, default=64, metavar='BS',
@@ -248,9 +252,11 @@ def main():
     model_kwargs = {'input_dim': args.feat_dim,
                     'kernel_size': kernel_size,
                     'stride': args.stride,
+                    'fast': args.fast,
                     'avg_size': args.avg_size,
                     'time_dim': args.time_dim,
                     'padding': padding,
+                    'encoder_type': args.encoder_type,
                     'resnet_size': args.resnet_size,
                     'embedding_size': args.embedding_size,
                     'num_classes': len(train_dir.speakers),
