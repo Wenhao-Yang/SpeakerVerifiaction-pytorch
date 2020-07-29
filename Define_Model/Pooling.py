@@ -30,7 +30,7 @@ class SelfAttentionPooling(nn.Module):
         """
         x = x.squeeze()
         assert len(x.shape) == 3, print(x.shape)
-
+        print(x.shape)
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
         alpha = self.attention_soft(vf)
