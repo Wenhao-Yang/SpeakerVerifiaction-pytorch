@@ -27,16 +27,17 @@ if [ $stage -le 0 ]; then
       --resnet-size 10 \
       --feat-format kaldi \
       --embedding-size 128 \
+      --batch-size 128 \
       --feat-dim 64 \
       --remove-vad \
       --time-dim 1 \
       --avg-size 8 \
       --kernel-size 5,5 \
-      --test-batch-size 4 \
+      --test-batch-size 16 \
       --test-input-per-file 1 \
       --lr 0.1 \
       --check-path Data/checkpoint/${model}10/${datasets}/${feat}/${loss} \
-      --resume Data/checkpoint/${model}10/${datasets}/${feat}/${loss}/checkpoint_1.pth \
+      --resume Data/checkpoint/${model}10/${datasets}/${feat}/${loss}/checkpoint_100.pth \
       --input-per-spks 192 \
       --veri-pairs 9600 \
       --gpu-id 0 \
