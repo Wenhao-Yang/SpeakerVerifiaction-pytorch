@@ -15,14 +15,15 @@ if [ $stage -le 0 ]; then
   model=ExResNet
   datasets=vox1
   feat=fb64_3w
-  for loss in soft ; do
+  loss=soft
+  for encod in SAP SASP None ; do
     echo -e "\n\033[1;4;31m Training ${model} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
       --nj 8 \
-      --epochs 17 \
-      --milestones 9,12,15 \
+      --epochs 18 \
+      --milestones 9,13,16 \
       --model ${model} \
       --resnet-size 10 \
       --feat-format kaldi \
@@ -37,13 +38,13 @@ if [ $stage -le 0 ]; then
       --test-input-per-file 1 \
       --lr 0.1 \
       --encoder-type SAP \
-      --check-path Data/checkpoint/${model}10_sap/${datasets}/${feat}/${loss} \
-      --resume Data/checkpoint/${model}10_sap/${datasets}/${feat}/${loss}/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}10/${datasets}_sap/${feat}/${loss} \
+      --resume Data/checkpoint/${model}10/${datasets}_sap/${feat}/${loss}/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \
       --num-valid 2 \
-      --loss-type ${loss}
+      --loss-type soft
   done
 fi
 stage=100
