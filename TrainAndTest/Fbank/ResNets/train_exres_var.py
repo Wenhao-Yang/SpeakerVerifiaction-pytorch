@@ -24,7 +24,7 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torchvision.transforms as transforms
-from kaldi_io import read_mat
+from kaldi_io import read_mat, read_vec_flt
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
@@ -33,10 +33,11 @@ from tqdm import tqdm
 from Define_Model.LossFunction import CenterLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
-from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset
+from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
+    ScriptVerifyDataset
 from Process_Data.audio_processing import to2tensor, varLengthFeat, PadCollate
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
-from TrainAndTest.common_func import create_optimizer, create_model
+from Process_Data.audio_processing import toMFB, totensor, truncatedinput
+from TrainAndTest.common_func import create_optimizer, create_model, verification_extract, verification_test
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from logger import NewLogger
 
@@ -66,6 +67,9 @@ parser.add_argument('--test-dir', type=str,
 parser.add_argument('--sitw-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
+                    help='number of jobs to make feats (default: 10)')
+
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
 
 parser.add_argument('--check-path',
@@ -79,6 +83,8 @@ parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('--epochs', type=int, default=20, metavar='E',
                     help='number of epochs to train (default: 10)')
+parser.add_argument('--finetune', action='store_true', default=False,
+                    help='using Cosine similarity')
 parser.add_argument('--scheduler', default='multi', type=str,
                     metavar='SCH', help='The optimizer to use (default: Adagrad)')
 parser.add_argument('--gamma', default=0.75, type=float,
@@ -92,12 +98,11 @@ parser.add_argument('--veri-pairs', type=int, default=12800, metavar='VP',
 
 # Training options
 # Model options
-parser.add_argument('--model', type=str, choices=['LoResNet10', 'ResNet20', 'ExResNet34', 'SuResCNN10'],
-                    help='path to voxceleb1 test dataset')
+parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
-parser.add_argument('--statis-pooling', action='store_true', default=False,
-                    help='using Cosine similarity')
+parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--feat-dim', default=161, type=int, metavar='FEAT',
@@ -135,8 +140,6 @@ parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
 parser.add_argument('--loss-type', type=str, default='soft',
                     choices=['soft', 'asoft', 'center', 'amsoft'],
                     help='path to voxceleb1 test dataset')
-parser.add_argument('--finetune', action='store_true', default=False,
-                    help='using Cosine similarity')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
 
@@ -227,6 +230,10 @@ if args.acoustic_feature == 'fbank':
         to2tensor(),
         # tonormal()
     ])
+    transform_V = transforms.Compose([
+        varLengthFeat(remove_vad=args.remove_vad),
+        to2tensor()
+    ])
 
 else:
     transform = transforms.Compose([
@@ -235,10 +242,12 @@ else:
         totensor(),
         # tonormal()
     ])
-    file_loader = read_audio
 
-# pdb.set_trace()
-file_loader = read_mat
+if args.feat_format == 'kaldi':
+    file_loader = read_mat
+elif args.feat_format == 'npy':
+    file_loader = np.load
+
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid)
 test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
@@ -285,15 +294,17 @@ def main():
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
 
-    model_kwargs = {'embedding_size': args.embedding_size,
-                    'resnet_size': args.resnet_size,
-                    'num_classes': train_dir.num_spks,
-                    'channels': channels,
+    model_kwargs = {'input_dim': args.feat_dim,
+                    'kernel_size': kernel_size,
                     'stride': args.stride,
+                    'fast': args.fast,
                     'avg_size': args.avg_size,
                     'time_dim': args.time_dim,
-                    'kernel_size': kernel_size,
                     'padding': padding,
+                    'encoder_type': args.encoder_type,
+                    'resnet_size': args.resnet_size,
+                    'embedding_size': args.embedding_size,
+                    'num_classes': len(train_dir.speakers),
                     'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
@@ -394,11 +405,25 @@ def main():
         print(' \33[0m')
 
         train(train_loader, model, ce, optimizer, epoch)
-        test(test_loader, valid_loader, model, epoch)
+        if epoch % 2 == 1 and epoch < (end - 1):
+            test(test_loader, valid_loader, model, epoch)
+
         # sitw_test(sitw_test_loader, model, epoch)
         # sitw_test(sitw_dev_loader, model, epoch)
         scheduler.step()
         # exit(1)
+
+    extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
+    extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
+    xvector_dir = args.check_path
+    xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
+    verification_extract(extract_loader, model, xvector_dir)
+
+    verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
+                                     loader=read_vec_flt)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=64, shuffle=False, **kwargs)
+    verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
+                      log_interval=args.log_interval)
 
     writer.close()
 
@@ -419,11 +444,12 @@ def train(train_loader, model, ce, optimizer, epoch):
     for batch_idx, (data, label) in pbar:
         if args.cuda:
             data = data.float().cuda()
-        data, label = Variable(data), Variable(label)
+            label = label.cuda()
+        data, true_labels = Variable(data), Variable(label)
 
         # pdb.set_trace()
         classfier, feats = model(data)
-        true_labels = label.cuda()
+
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
 
@@ -549,7 +575,7 @@ def test(test_loader, valid_loader, model, epoch):
         out_p = out_p_
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(axis=1)
+        dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
         dists = dists.data.cpu().numpy()
 
         distances.append(dists)
