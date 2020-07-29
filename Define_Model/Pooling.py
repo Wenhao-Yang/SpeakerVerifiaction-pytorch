@@ -25,12 +25,14 @@ class SelfAttentionPooling(nn.Module):
 
     def forward(self, x):
         """
-        :param x:   [batch, length,feat_dim] vector
+        :param x:   [batch, length, feat_dim] vector
         :return:   [batch, feat_dim] vector
         """
         x = x.squeeze()
         assert len(x.shape) == 3, print(x.shape)
-        print(x.shape)
+        if x.shape[-2] == self.input_dim:
+            x = x.transpose(-1, -2)
+        # print(x.shape)
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
         alpha = self.attention_soft(vf)
