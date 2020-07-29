@@ -278,7 +278,7 @@ def Make_Fbank(filename,
                use_scale=c.USE_SCALE,
                lowfreq=0,
                nfilt=c.FILTER_BANK,
-               use_logscale=c.USE_LOGSCALE,
+               log_scale=c.USE_LOGSCALE,
                use_energy=c.USE_ENERGY,
                normalize=c.NORMALIZE,
                duration=False,
@@ -303,7 +303,7 @@ def Make_Fbank(filename,
         filter_banks = np.concatenate((energies, filter_banks), axis=1)
         # frames_features[:, 0] = np.log(energies)
 
-    if use_logscale:
+    if log_scale:
         # filter_banks = 20 * np.log10(np.maximum(filter_banks, 1e-5))
         filter_banks = 10 * np.log10(filter_banks)
 
