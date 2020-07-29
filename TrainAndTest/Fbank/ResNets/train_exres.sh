@@ -21,8 +21,8 @@ if [ $stage -le 0 ]; then
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
       --nj 8 \
-      --epochs 30 \
-      --milestones 14,20,25 \
+      --epochs 17 \
+      --milestones 9,12,15 \
       --model ${model} \
       --resnet-size 10 \
       --feat-format kaldi \
@@ -36,9 +36,10 @@ if [ $stage -le 0 ]; then
       --test-batch-size 16 \
       --test-input-per-file 1 \
       --lr 0.1 \
-      --check-path Data/checkpoint/${model}10/${datasets}/${feat}/${loss} \
-      --resume Data/checkpoint/${model}10/${datasets}/${feat}/${loss}/checkpoint_100.pth \
-      --input-per-spks 192 \
+      --encoder-type SAP \
+      --check-path Data/checkpoint/${model}10_sap/${datasets}/${feat}/${loss} \
+      --resume Data/checkpoint/${model}10_sap/${datasets}/${feat}/${loss}/checkpoint_100.pth \
+      --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \
       --num-valid 2 \
