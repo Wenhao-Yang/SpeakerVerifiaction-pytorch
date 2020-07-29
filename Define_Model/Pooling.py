@@ -29,7 +29,7 @@ class SelfAttentionPooling(nn.Module):
         :return:   [batch, feat_dim] vector
         """
         x = x.squeeze()
-        assert len(x.shape) == 3
+        assert len(x.shape) == 3, print(x.shape)
 
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
