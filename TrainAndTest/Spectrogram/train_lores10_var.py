@@ -35,7 +35,7 @@ from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarg
 from Define_Model.model import PairwiseDistance
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
-    ScriptVerifyDataset, my_data_prefetcher
+    ScriptVerifyDataset
 from Process_Data.audio_processing import to2tensor, varLengthFeat, PadCollate, concateinputfromMFB
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_extract, verification_test
@@ -449,40 +449,42 @@ def train(train_loader, model, ce, optimizer, epoch):
     #     print('\33[1;34m Optimizer \'{}\' learning rate is {}.\33[0m'.format(args.optimizer, param_group['lr']))
     ce_criterion, xe_criterion = ce
 
-    prefetcher = my_data_prefetcher(train_loader, gpu=True if args.cuda else False)
-    pbar = tqdm(enumerate(prefetcher))
+    # prefetcher = my_data_prefetcher(train_loader, gpu=True if args.cuda else False)
+    # pbar = tqdm(enumerate(prefetcher))
 
-    # pbar = tqdm(enumerate(train_loader))
+    pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
 
     for batch_idx, (data, label) in pbar:
         if args.cuda:
-            data = data.float().cuda()
+            data = data.float().cuda(non_blocking=True)
+            label = label.cuda(non_blocking=True)
+
         data, label = Variable(data), Variable(label)
 
         # pdb.set_trace()
         classfier, feats = model(data)
-        true_labels = label.cuda()
+
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
 
         if args.loss_type == 'soft':
-            loss = ce_criterion(classfier, true_labels)
+            loss = ce_criterion(classfier, label)
         elif args.loss_type == 'asoft':
             classfier_label, _ = classfier
-            loss = xe_criterion(classfier, true_labels)
+            loss = xe_criterion(classfier, label)
         elif args.loss_type == 'center':
-            loss_cent = ce_criterion(classfier, true_labels)
-            loss_xent = xe_criterion(feats, true_labels)
+            loss_cent = ce_criterion(classfier, label)
+            loss_xent = xe_criterion(feats, label)
             loss = args.loss_ratio * loss_xent + loss_cent
         elif args.loss_type == 'amsoft':
-            loss = xe_criterion(classfier, true_labels)
+            loss = xe_criterion(classfier, label)
 
         predicted_labels = output_softmax(classfier_label)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-        minibatch_acc = float((predicted_one_labels.cuda() == true_labels.cuda()).sum().item()) / len(
+        minibatch_acc = float((predicted_one_labels.cuda() == label.cuda()).sum().item()) / len(
             predicted_one_labels)
-        correct += float((predicted_one_labels.cuda() == true_labels.cuda()).sum().item())
+        correct += float((predicted_one_labels.cuda() == label.cuda()).sum().item())
         total_datasize += len(predicted_one_labels)
         total_loss += float(loss.item())
 
