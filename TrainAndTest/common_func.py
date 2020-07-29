@@ -57,7 +57,7 @@ __factory = {
     'DomResNet': DomainResNet,
     'ResNet20': ResNet20,
     'SiResNet34': SimpleResNet,
-    'ExResNet34': ExporingResNet,
+    'ExResNet': ExporingResNet,
     'ResNet': ResNet,
     'ASTDNN': ASTDNN,
     'TDNN': TDNN_v2,
