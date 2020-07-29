@@ -448,7 +448,8 @@ def train(train_loader, model, ce, optimizer, epoch):
     for batch_idx, (data, label) in pbar:
 
         if args.cuda:
-            data = data.cuda()
+            label = label.cuda(non_blocking=True)
+            data = data.cuda(non_blocking=True)
 
         data, label = Variable(data), Variable(label)
         # end_time = time.time()
@@ -456,28 +457,27 @@ def train(train_loader, model, ce, optimizer, epoch):
         # this_time = end_time - start_time
         # print(this_time)
         # start_time = time.time()
-        # continue
         # pdb.set_trace()
+
         classfier, feats = model(data)
-        true_labels = label.cuda()
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
 
         if args.loss_type == 'soft':
-            loss = ce_criterion(classfier, true_labels)
+            loss = ce_criterion(classfier, label)
         elif args.loss_type == 'asoft':
             classfier_label, _ = classfier
-            loss = xe_criterion(classfier, true_labels)
+            loss = xe_criterion(classfier, label)
         elif args.loss_type == 'center':
-            loss_cent = ce_criterion(classfier, true_labels)
-            loss_xent = xe_criterion(feats, true_labels)
+            loss_cent = ce_criterion(classfier, label)
+            loss_xent = xe_criterion(feats, label)
             loss = args.loss_ratio * loss_xent + loss_cent
         elif args.loss_type == 'amsoft':
-            loss = xe_criterion(classfier, true_labels)
+            loss = xe_criterion(classfier, label)
 
         predicted_labels = output_softmax(classfier_label)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-        minibatch_correct = float((predicted_one_labels.cuda() == true_labels.cuda()).sum().item())
+        minibatch_correct = float((predicted_one_labels.cuda() == label).sum().item())
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
         correct += minibatch_correct
 

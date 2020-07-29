@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=72
+stage=73
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -463,6 +463,22 @@ if [ $stage -le 72 ]; then
       --feat-type spectrogram \
       --feat-format kaldi \
       --nfft 400 \
+      --windowsize 0.025 \
+      --nj 15
+    done
+fi
+
+if [ $stage -le 73 ]; then
+  for s in dev test; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s}_3w \
+      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb \
+      --out-set ${s}_fb64_3w \
+      --feat-type fbank \
+      --filters 64 \
+      --log-scale \
+      --feat-format kaldi \
+      --nfft 512 \
       --windowsize 0.025 \
       --nj 15
     done
