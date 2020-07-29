@@ -87,6 +87,27 @@ class AttentionStatisticPooling(nn.Module):
         return mean_sigma
 
 
+class StatisticPooling(nn.Module):
 
+    def __init__(self, input_dim):
+        super(StatisticPooling, self).__init__()
+        self.input_dim = input_dim
 
+    def forward(self, x):
+        """
+        :param x:   [length,feat_dim] vector
+        :return:   [feat_dim] vector
+        """
+        x_shape = x.shape
+        x = x.squeeze()
+        if x_shape[0] == 1:
+            x = x.unsqueeze(0)
 
+        assert len(x.shape) == 3, print(x.shape)
+        if x.shape[-2] == self.input_dim:
+            x = x.transpose(-1, -2)
+
+        mean_x = x.mean(dim=1)
+        std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
+        mean_std = torch.cat((mean_x, std_x), 1)
+        return mean_std
