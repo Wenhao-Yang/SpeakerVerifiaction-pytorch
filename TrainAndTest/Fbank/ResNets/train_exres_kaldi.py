@@ -320,8 +320,8 @@ def main():
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
                                                shuffle=False, **kwargs)
 
-    # test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size,
-    #                                            shuffle=False, **kwargs)
+    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size,
+                                              shuffle=False, **kwargs)
 
     ce = [ce_criterion, xe_criterion]
     if args.cuda:
@@ -339,8 +339,8 @@ def main():
 
         train(train_loader, model, optimizer, ce, scheduler, epoch)
         if epoch % 2 == 1 and epoch != (end - 1):
-            # test(test_loader, valid_loader, model, epoch)
-            pass
+            test(test_loader, valid_loader, model, epoch)
+
         scheduler.step()
         # break
     # verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader)
