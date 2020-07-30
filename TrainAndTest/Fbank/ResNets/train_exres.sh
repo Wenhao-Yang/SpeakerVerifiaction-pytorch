@@ -23,7 +23,7 @@ if [ $stage -le 0 ]; then
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
       --nj 8 \
       --epochs 30 \
-      --milestones 12,18,25 \
+      --milestones 12,19,25 \
       --model ${model} \
       --resnet-size 34 \
       --stride 2 \
@@ -40,8 +40,8 @@ if [ $stage -le 0 ]; then
       --test-input-per-file 1 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}34/${datasets}_${encod}_fast/${feat}/${loss} \
-      --resume Data/checkpoint/${model}34/${datasets}_${encod}_fast/${feat}/${loss}/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss} \
+      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \
