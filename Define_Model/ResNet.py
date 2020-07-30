@@ -215,7 +215,6 @@ class ExporingResNet(nn.Module):
         time_dim = time_dim if encoder_type != 'None' else 1
 
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
-
         # 300 is the length of features
 
         if encoder_type == 'SAP':
@@ -316,7 +315,6 @@ class ExporingResNet(nn.Module):
         # print(x.shape)
 
         x = self.avgpool(x)
-
         if self.encoder != None:
             x = self.encoder(x)
 
@@ -620,7 +618,7 @@ class LocalResNet(nn.Module):
         self.inst_layer = nn.InstanceNorm2d(1)
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(7, 5), stride=2, padding=(3, 2))
+        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=2, padding=(3, 2))
         self.bn1 = nn.BatchNorm2d(channels[0])
         self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
 
