@@ -35,7 +35,7 @@ if [ $stage -le 0 ]; then
       --time-dim 1 \
       --avg-size 8 \
       --kernel-size 5,5 \
-      --test-batch-size 16 \
+      --test-batch-size 1 \
       --test-input-per-file 1 \
       --lr 0.1 \
       --encoder-type ${encod} \
