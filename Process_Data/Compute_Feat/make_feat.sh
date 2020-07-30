@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=73
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -469,11 +469,11 @@ if [ $stage -le 72 ]; then
 fi
 
 if [ $stage -le 73 ]; then
-  for s in dev test; do
+  for s in dev ; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s}_3w \
+      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb \
-      --out-set ${s}_fb64_3w \
+      --out-set ${s}_fb64 \
       --feat-type fbank \
       --filters 64 \
       --log-scale \
@@ -484,6 +484,7 @@ if [ $stage -le 73 ]; then
     done
 fi
 
+stage=100
 if [ $stage -le 80 ]; then
   for s in dev test; do
     python Process_Data/Compute_Feat/make_feat.py \
