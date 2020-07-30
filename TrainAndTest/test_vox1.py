@@ -77,12 +77,9 @@ parser.add_argument('--extract', action='store_true', default=False,
 
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
 
-parser.add_argument('--xvector-dir',
-                    help='folder to output model checkpoints')
-parser.add_argument('--resume',
-                    default='Data/checkpoint/LoResNet10/timit_spect/soft_var/checkpoint_15.pth',
-                    metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--xvector-dir', help='folder to output model checkpoints')
+parser.add_argument('--resume', default='Data/checkpoint/LoResNet10/timit_spect/soft_var/checkpoint_15.pth',
+                    metavar='PATH', help='path to latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -94,14 +91,12 @@ parser.add_argument('--veri-pairs', type=int, default=12800, metavar='VP',
 # Training options
 # Model options
 # ALSTM  ASiResNet34  ExResNet34  LoResNet10  ResNet20  SiResNet34  SuResCNN10  TDNN
-parser.add_argument('--model', type=str, default='LoResNet10',
-                    help='path to voxceleb1 test dataset')
+parser.add_argument('--model', type=str, default='LoResNet', help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
 
-parser.add_argument('--encoder-type', type=str, default='SAP',
-                    help='path to voxceleb1 test dataset')
+parser.add_argument('--encoder-type', type=str, default='SAP', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--feat-dim', default=161, type=int, metavar='FEAT',
