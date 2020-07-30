@@ -478,7 +478,8 @@ class concateinputfromMFB(object):
         network_inputs = np.array(network_inputs)
 
         if network_inputs.shape[1]==0:
-            pdb.set_trace()
+            print(network_inputs.shape)
+            raise Exception('Input None?')
         #return_output = network_inputs.reshape((1, network_inputs.shape[0], network_inputs.shape[1], network_inputs.shape[2]))
 
         return network_inputs
