@@ -14,25 +14,25 @@ if [ $stage -le 0 ]; then
 #  for loss in soft asoft ; do
   model=ExResNet
   datasets=vox1
-  feat=fb64_3w
+  feat=fb64
   loss=soft
-  for encod in None ; do
+  for encod in None STAP ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
       --nj 8 \
-      --epochs 18 \
-      --milestones 9,13,16 \
+      --epochs 30 \
+      --milestones 12,18,25 \
       --model ${model} \
-      --resnet-size 10 \
+      --resnet-size 34 \
       --stride 2 \
       --feat-format kaldi \
       --embedding-size 128 \
-      --batch-size 128 \
+      --batch-size 64 \
+      --accu-steps 2 \
       --feat-dim 64 \
       --remove-vad \
-      --fast \
       --time-dim 8 \
       --avg-size 1 \
       --kernel-size 5,5 \
@@ -40,8 +40,8 @@ if [ $stage -le 0 ]; then
       --test-input-per-file 1 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}10/${datasets}_${encod}_fast/${feat}/${loss} \
-      --resume Data/checkpoint/${model}10/${datasets}_${encod}_fast/${feat}/${loss}/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}34/${datasets}_${encod}_fast/${feat}/${loss} \
+      --resume Data/checkpoint/${model}34/${datasets}_${encod}_fast/${feat}/${loss}/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \

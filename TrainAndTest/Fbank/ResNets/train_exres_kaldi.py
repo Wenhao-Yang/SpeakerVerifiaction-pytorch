@@ -84,6 +84,7 @@ parser.add_argument('--time-dim', default=2, type=int, metavar='FEAT', help='aco
 parser.add_argument('--check-path', help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='using Cosine similarity')
 parser.add_argument('--resume', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
+parser.add_argument('--accu-steps', default=1, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -416,14 +417,25 @@ def train(train_loader, model, optimizer, ce, scheduler, epoch):
         total_loss += float(loss.item())
         # pdb.set_trace()
         # compute gradient and update weights
-        optimizer.zero_grad()
+
+        # loss regularization and propagation
+        loss = loss / args.accu_steps
         loss.backward()
 
         if args.loss_type == 'center' and args.loss_ratio != 0:
             for param in xe_criterion.parameters():
                 param.grad.data *= (1. / args.loss_ratio)
 
-        optimizer.step()
+        # update parameters of net
+        if ((batch_idx + 1) % args.accu_steps) == 0:
+            # optimizer the net
+            optimizer.step()  # update parameters of net
+            optimizer.zero_grad()  # reset gradient
+
+        # optimizer.zero_grad()
+        # loss.backward()
+
+        # optimizer.step()
 
         if batch_idx % args.log_interval == 0:
             pbar.set_description(
