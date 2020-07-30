@@ -83,14 +83,14 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
     feat_scp_f = open(feat_scp, 'w')
     utt2dur_f = open(utt2dur, 'w')
 
-    if args.feat_format == 'kaldi':
-        feat_ark = os.path.join(out_dir, '%s_feat.%d.ark' % (ark_prefix, proid))
-        feat_ark_f = open(feat_ark, 'wb')
-
     utt2num_frames_f = open(utt2num_frames, 'w')
     feat_dir = os.path.join(ark_dir, ark_prefix)
     if not os.path.exists(feat_dir):
         os.makedirs(feat_dir)
+
+    if args.feat_format == 'kaldi':
+        feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % (ark_prefix, proid))
+        feat_ark_f = open(feat_ark, 'wb')
 
     temp_dir = out_dir + '/temp'
     if not os.path.exists(temp_dir):
