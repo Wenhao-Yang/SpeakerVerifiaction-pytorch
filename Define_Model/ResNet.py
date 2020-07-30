@@ -241,7 +241,7 @@ class ExporingResNet(nn.Module):
             )
         else:
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
-            # self.encoder = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.encoder = None
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3] * freq_dim * time_dim, embedding_size),
                 nn.BatchNorm1d(embedding_size)
@@ -317,7 +317,7 @@ class ExporingResNet(nn.Module):
 
         x = self.avgpool(x)
 
-        if self.encoder != 'None':
+        if self.encoder != None:
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
