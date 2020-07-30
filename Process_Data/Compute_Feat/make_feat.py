@@ -89,7 +89,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
         os.makedirs(feat_dir)
 
     if args.feat_format == 'kaldi':
-        feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % (ark_prefix, proid))
+        feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
         feat_ark_f = open(feat_ark, 'wb')
 
     temp_dir = out_dir + '/temp'
