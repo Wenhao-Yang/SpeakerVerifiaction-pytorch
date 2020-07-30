@@ -98,6 +98,8 @@ parser.add_argument('--model', type=str, default='LoResNet10',
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
+parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+
 parser.add_argument('--encoder-type', type=str, default='SAP',
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
