@@ -215,29 +215,33 @@ class ExporingResNet(nn.Module):
         time_dim = time_dim if encoder_type != 'None' else 1
 
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
-        self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+
         # 300 is the length of features
 
         if encoder_type == 'SAP':
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = SelfAttentionPooling(input_dim=num_filter[3], hidden_dim=num_filter[3])
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3], embedding_size),
                 nn.BatchNorm1d(embedding_size)
             )
-        elif encoder_type == 'STAP':
-            self.encoder = StatisticPooling(input_dim=num_filter[3])
-            self.fc1 = nn.Sequential(
-                nn.Linear(num_filter[3] * 2, embedding_size),
-                nn.BatchNorm1d(embedding_size)
-            )
         elif encoder_type == 'SASP':
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = AttentionStatisticPooling(input_dim=num_filter[3], hidden_dim=num_filter[3])
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3] * 2, embedding_size),
                 nn.BatchNorm1d(embedding_size)
             )
+        elif encoder_type == 'STAP':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = StatisticPooling(input_dim=num_filter[3])
+            self.fc1 = nn.Sequential(
+                nn.Linear(num_filter[3] * 2, embedding_size),
+                nn.BatchNorm1d(embedding_size)
+            )
         else:
-            self.encoder = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            # self.encoder = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3] * freq_dim * time_dim, embedding_size),
                 nn.BatchNorm1d(embedding_size)
@@ -313,7 +317,7 @@ class ExporingResNet(nn.Module):
 
         x = self.avgpool(x)
 
-        if self.encoder != None:
+        if self.encoder != 'None':
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
