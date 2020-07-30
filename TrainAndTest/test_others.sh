@@ -148,8 +148,8 @@ if [ $stage -le 7 ]; then
       --remove-vad \
       --kernel-size 5,5 \
       --embedding-size 128 \
-      --resume Data/checkpoint/${model}10/${datasets}_${encod}_rmavg/${feat}/${loss}/checkpoint_24.pth \
-      --xvector-dir Data/xvector/${model}10/${datasets}_${encod}_rmavg/${feat}/${loss} \
+      --resume Data/checkpoint/${model}10/${datasets}_${encod}/${feat}/${loss}/checkpoint_24.pth \
+      --xvector-dir Data/xvector/${model}10/${datasets}_${encod}/${feat}/${loss} \
       --loss-type ${loss} \
       --trials trials \
       --num-valid 2 \
