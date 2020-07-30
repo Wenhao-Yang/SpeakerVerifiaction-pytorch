@@ -21,7 +21,7 @@ if [ $stage -le 0 ]; then
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
-      --nj 10 \
+      --nj 4 \
       --epochs 30 \
       --milestones 12,19,25 \
       --model ${model} \
