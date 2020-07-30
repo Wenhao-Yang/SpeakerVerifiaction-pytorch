@@ -21,7 +21,7 @@ if [ $stage -le 0 ]; then
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
-      --nj 8 \
+      --nj 15 \
       --epochs 30 \
       --milestones 12,19,25 \
       --model ${model} \
@@ -29,8 +29,8 @@ if [ $stage -le 0 ]; then
       --stride 2 \
       --feat-format kaldi \
       --embedding-size 128 \
-      --batch-size 64 \
-      --accu-steps 2 \
+      --batch-size 128 \
+      --accu-steps 1 \
       --feat-dim 64 \
       --remove-vad \
       --time-dim 1 \
@@ -53,7 +53,7 @@ if [ $stage -le 0 ]; then
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
-      --nj 8 \
+      --nj 15 \
       --epochs 30 \
       --milestones 12,19,25 \
       --model ${model} \
@@ -61,8 +61,8 @@ if [ $stage -le 0 ]; then
       --stride 2 \
       --feat-format kaldi \
       --embedding-size 128 \
-      --batch-size 64 \
-      --accu-steps 2 \
+      --batch-size 128 \
+      --accu-steps 1 \
       --feat-dim 64 \
       --remove-vad \
       --time-dim 8 \
