@@ -212,7 +212,7 @@ class ExporingResNet(nn.Module):
 
         # [64, 128, 37, 8]
         freq_dim = avg_size
-        time_dim = time_dim if encoder_type != 'None' else 1
+        time_dim = time_dim
 
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
         # 300 is the length of features
