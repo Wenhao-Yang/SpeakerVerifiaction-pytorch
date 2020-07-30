@@ -471,7 +471,7 @@ fi
 if [ $stage -le 73 ]; then
   for s in test ; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
+      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s} \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb \
       --out-set ${s}_fb64 \
       --feat-type fbank \
