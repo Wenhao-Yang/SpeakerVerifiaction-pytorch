@@ -26,6 +26,7 @@ if [ $stage -le 0 ]; then
       --milestones 9,13,16 \
       --model ${model} \
       --resnet-size 10 \
+      --stride 2 \
       --feat-format kaldi \
       --embedding-size 128 \
       --batch-size 128 \
