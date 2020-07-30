@@ -830,20 +830,19 @@ class ScriptTrainDataset(data.Dataset):
         sid %= self.num_spks
         spk = self.idx_to_spk[sid]
         utts = self.dataset[spk]
+        num_utt = len(utts)
 
-        n_samples = 0
         y = np.array([[]]).reshape(0, self.feat_dim)
+        uid = utts[np.random.randint(0, num_utt)]
 
-        frames = c.N_SAMPLES
-        while n_samples < frames:
+        feature = self.loader(self.uid2feat[uid])
+        y = np.concatenate((y, feature), axis=0)
 
-            uid = random.randrange(0, len(utts))
-            feature = self.loader(self.uid2feat[utts[uid]])
+        while len(y) < c.N_SAMPLES:
+            uid = utts[np.random.randint(0, num_utt)]
+            feature = self.loader(self.uid2feat[uid])
+            y = np.concatenate((y, feature), axis=0)
 
-            start = 0
-            stop = int(min(len(feature) - 1, max(1.0, frames - n_samples)))
-            y = np.concatenate((y, feature[start:stop]), axis=0)
-            n_samples = len(y)
             # transform features if required
 
         feature = self.transform(y)
