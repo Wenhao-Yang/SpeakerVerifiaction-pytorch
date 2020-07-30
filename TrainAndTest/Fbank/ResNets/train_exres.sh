@@ -16,7 +16,7 @@ if [ $stage -le 0 ]; then
   datasets=vox1
   feat=fb64_3w
   loss=soft
-  for encod in SAP SASP STAP ; do
+  for encod in SAP SASP STAP None ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
@@ -32,8 +32,8 @@ if [ $stage -le 0 ]; then
       --batch-size 128 \
       --feat-dim 64 \
       --remove-vad \
-      --time-dim 1 \
-      --avg-size 8 \
+      --time-dim 8 \
+      --avg-size 1 \
       --kernel-size 5,5 \
       --test-batch-size 1 \
       --test-input-per-file 1 \
