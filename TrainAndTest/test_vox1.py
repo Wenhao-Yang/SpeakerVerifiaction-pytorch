@@ -62,6 +62,8 @@ parser.add_argument('--train-dir', type=str,
 parser.add_argument('--test-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_noc',
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
+                    help='number of jobs to make feats (default: 10)')
 parser.add_argument('--trials', type=str, default='trials',
                     help='path to voxceleb1 test dataset')
 
@@ -96,8 +98,8 @@ parser.add_argument('--model', type=str, default='LoResNet10',
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
-parser.add_argument('--statis-pooling', action='store_true', default=False,
-                    help='using Cosine similarity')
+parser.add_argument('--encoder-type', type=str, default='SAP',
+                    help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--feat-dim', default=161, type=int, metavar='FEAT',
@@ -271,12 +273,14 @@ def main():
     model_kwargs = {'embedding_size': args.embedding_size,
                     'resnet_size': args.resnet_size,
                     'input_dim': args.feat_dim,
+                    'fast': args.fast,
                     'num_classes': train_dir.num_spks,
                     'alpha': args.alpha,
                     'channels': channels,
                     'stride': args.stride,
                     'avg_size': args.avg_size,
                     'time_dim': args.time_dim,
+                    'encoder_type': args.encoder_type,
                     'kernel_size': kernel_size,
                     'padding': padding,
                     'dropout_p': args.dropout_p}

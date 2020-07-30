@@ -67,6 +67,7 @@ parser.add_argument('--test-dir', type=str,
 parser.add_argument('--sitw-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
 
@@ -75,9 +76,7 @@ parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of j
 parser.add_argument('--check-path',
                     help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--resume',
-                    metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--resume', metavar='PATH', help='path to latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -505,7 +504,7 @@ def train(train_loader, model, ce, optimizer, epoch):
           'Accuracy:{:.6f}%, Avg loss: {}.\33[0m'.format(epoch,
                                                          100 * float(correct) / total_datasize,
                                                          total_loss / len(train_loader)))
-    writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
+    writer.add_scalar('Train/Accuracy', 100. * correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
 
     torch.cuda.empty_cache()

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=6
+stage=7
 
 if [ $stage -le 0 ]; then
   for loss in asoft soft ; do
@@ -131,6 +131,31 @@ fi
 #    --loss-type amsoft \
 #    --lr 0.01 \
 #    --epochs 10
+
+if [ $stage -le 7 ]; then
+  model=ExResNet
+  datasets=vox1
+  feat=fb64_3w
+  loss=soft
+  for encod in SAP SASP STAP None ; do
+    echo -e "\n\033[1;4;31m Test ${model}_${encod} with ${loss}\033[0m\n"
+    python TrainAndTest/test_vox1.py \
+      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
+      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
+      --nj 12 \
+      --model ${model} \
+      --resnet-size 10 \
+      --remove-vad \
+      --kernel-size 5,5 \
+      --embedding-size 128 \
+      --resume Data/checkpoint/${model}10/${datasets}_${encod}_rmavg/${feat}/${loss}_var/checkpoint_24.pth \
+      --xvector-dir Data/xvector/${model}10/${datasets}_${encod}_rmavg/${feat}/${loss}_var \
+      --loss-type ${loss} \
+      --trials trials \
+      --num-valid 2 \
+      --gpu-id 0
+  done
+fi
 
 stage=200
 if [ $stage -le 15 ]; then
