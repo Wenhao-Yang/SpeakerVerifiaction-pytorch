@@ -210,11 +210,12 @@ class ExporingResNet(nn.Module):
         else:
             self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=2)
 
-        # [64, 128, 8, 37]
+        # [64, 128, 37, 8]
         freq_dim = avg_size
         time_dim = time_dim if encoder_type != 'None' else 1
-        self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
-        # self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+
+        # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
+        self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
         # 300 is the length of features
 
         if encoder_type == 'SAP':
