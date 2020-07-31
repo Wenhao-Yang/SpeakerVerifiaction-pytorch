@@ -414,7 +414,6 @@ def train(train_loader, model, optimizer, ce, scheduler, epoch):
         total_loss += float(loss.item())
         # pdb.set_trace()
         # compute gradient and update weights
-
         # loss regularization and propagation
         loss = loss / args.accu_steps
         loss.backward()
