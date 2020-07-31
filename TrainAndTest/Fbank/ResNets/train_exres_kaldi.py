@@ -33,7 +33,7 @@ from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarg
 from Define_Model.model import PairwiseDistance
 from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput, concateinputfromMFB, to2tensor, varLengthFeat
+from Process_Data.audio_processing import toMFB, totensor, truncatedinput, concateinputfromMFB, varLengthFeat
 from TrainAndTest.common_func import create_optimizer, create_model, verification_extract, verification_test
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from logger import NewLogger
@@ -200,17 +200,14 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDist
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
         concateinputfromMFB(remove_vad=args.remove_vad),  # num_frames=np.random.randint(low=300, high=500)),
-        to2tensor(),
         # mvnormal()
     ])
     transform_T = transforms.Compose([
         concateinputfromMFB(input_per_file=args.test_input_per_file, remove_vad=args.remove_vad),
-        to2tensor(),
         #mvnormal()
     ])
     transform_V = transforms.Compose([
         varLengthFeat(remove_vad=args.remove_vad),
-        to2tensor()
     ])
 
 else:

@@ -462,25 +462,19 @@ class concateinputfromMFB(object):
     def __call__(self, frames_features):
         network_inputs = []
 
-        # pdb.set_trace()
         output = frames_features
         while len(output)<self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
 
         for i in range(self.input_per_file):
-            start = np.random.randint(low=0, high=len(output)-self.num_frames+1)
+            start = np.random.randint(low=0, high=len(output) - self.num_frames)
             frames_slice = output[start:start+self.num_frames]
-            if self.remove_vad:
-                frames_slice = frames_slice[:, 1:]
-
             network_inputs.append(frames_slice)
-        # pdb.set_trace()
-        network_inputs = np.array(network_inputs)
 
-        if network_inputs.shape[1]==0:
-            print(network_inputs.shape)
-            raise Exception('Input None?')
-        #return_output = network_inputs.reshape((1, network_inputs.shape[0], network_inputs.shape[1], network_inputs.shape[2]))
+        # pdb.set_trace()
+        network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
+        if self.remove_vad:
+            network_inputs = network_inputs[:, :, 1:]
 
         return network_inputs
 
@@ -505,12 +499,7 @@ class varLengthFeat(object):
             output = output[:, 1:]
 
         network_inputs.append(output)
-        network_inputs = np.array(network_inputs)
-
-        if network_inputs.shape[1]==0:
-            pdb.set_trace()
-        # elif network_inputs.shape[1]>self.max_chunk_size:
-        #     network_inputs = network_inputs[:, :self.max_chunk_size]
+        network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
 
         return network_inputs
 
