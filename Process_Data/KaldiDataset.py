@@ -847,8 +847,7 @@ class ScriptTrainDataset(data.Dataset):
 
         feature = self.transform(y)
         label = sid
-        # end_time = time.time()
-        # print('Get %s used %d' % (uid, end_time - start_time))
+
         return feature, label
 
     def __len__(self):
