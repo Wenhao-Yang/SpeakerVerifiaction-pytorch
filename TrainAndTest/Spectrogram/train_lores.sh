@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=30
+stage=31
 
 waited=0
 while [ `ps 113458 | wc -l` -eq 2 ]; do
@@ -262,8 +262,8 @@ if [ $stage -le 31 ]; then
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 5,5\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model ${model} \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/spect/dev_power \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/spect/test_power \
+      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/dev_power \
+      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/test_power \
       --input-per-spks 224 \
       --feat-format kaldi \
       --nj 12 \
