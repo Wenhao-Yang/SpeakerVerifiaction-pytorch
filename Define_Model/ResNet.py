@@ -963,14 +963,14 @@ class GradResNet(nn.Module):
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
-        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size, stride=2,
-                               padding=padding, bias=False)
+        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size,
+                               stride=2, padding=padding, bias=False)
         self.bn2 = nn.BatchNorm2d(channels[1])
         self.layer2 = self._make_layer(block, channels[1], layers[1])
 
         self.inplanes = channels[2]
-        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size, stride=1,
-                               padding=padding, bias=False)
+        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size,
+                               stride=2, padding=padding, bias=False)
         self.bn3 = nn.BatchNorm2d(channels[2])
         self.layer3 = self._make_layer(block, channels[2], layers[2])
 
@@ -1045,7 +1045,8 @@ class GradResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x)
+        # x = self.maxpool(x)
+
         x = self.layer1(x)
 
         x = self.conv2(x)
