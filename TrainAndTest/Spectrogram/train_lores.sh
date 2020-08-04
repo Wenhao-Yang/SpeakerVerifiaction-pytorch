@@ -278,7 +278,7 @@ if [ $stage -le 31 ]; then
       --check-path Data/checkpoint/GradResNet8/${dataset}_power/spect/${loss}_dp25 \
       --resume Data/checkpoint/GradResNet8/${dataset}_power/spect/${loss}_dp25/checkpoint_13.pth \
       --loss-type ${loss} \
-      --lr 0.1 \
+      --lr 0.01 \
       --num-valid 2 \
       --gpu-id 0 \
       --dropout-p 0.25
