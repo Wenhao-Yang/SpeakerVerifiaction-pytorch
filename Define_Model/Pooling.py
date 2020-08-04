@@ -9,6 +9,7 @@
 @Time: 2020/4/15 10:57 PM
 @Overview:
 """
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -111,3 +112,59 @@ class StatisticPooling(nn.Module):
         std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
         mean_std = torch.cat((mean_x, std_x), 1)
         return mean_std
+
+
+class AdaptiveStdPool2d(nn.Module):
+    def __init__(self, output_size):
+        super(AdaptiveStdPool2d, self).__init__()
+        self.output_size = output_size
+
+    def forward(self, input):
+
+        input_shape = input.shape
+        if len(input_shape) == 3:
+            input = input.unsqueeze(1)
+            input_shape = input.shape
+
+        assert len(input_shape) == 4, print(input.shape)
+        output_shape = list(self.output_size)
+
+        if output_shape[1] == None:
+            output_shape[1] = input.shape[3]
+
+        if output_shape[0] == None:
+            output_shape[0] = input.shape[2]
+
+        output_shape[0] = int(output_shape[0] / 2)
+        # kernel_y = (input_shape[3] + self.output_size[1] - 1) // self.output_size[1]
+        x_stride = input_shape[3] / output_shape[1]
+        y_stride = input_shape[2] / output_shape[0]
+
+        print(x_stride, y_stride)
+
+        output = []
+
+        for x_idx in range(output_shape[1]):
+            x_output = []
+            x_start = int(np.floor(x_idx * x_stride))
+
+            x_end = int(np.ceil((x_idx + 1) * x_stride))
+            for y_idx in range(output_shape[0]):
+                y_start = int(np.floor(y_idx * y_stride))
+                y_end = int(np.ceil((y_idx + 1) * y_stride))
+                stds = input[:, :, y_start:y_end, x_start:x_end].var(dim=(2, 3), unbiased=False, keepdim=True).add_(
+                    1e-14).sqrt()
+                means = input[:, :, y_start:y_end, x_start:x_end].mean(dim=(2, 3), keepdim=True)
+                # print(stds.shape)
+                # stds = torch.std(input[:, :, y_start:y_end, x_start:x_end] , dim=2, )
+                # sum_std = torch.sum(stds, dim=3, keepdim=True)
+
+                x_output.append(means)
+                x_output.append(stds)
+
+            output.append(torch.cat(x_output, dim=2))
+        output = torch.cat(output, dim=3)
+
+        # print(output.isnan())
+
+        return output

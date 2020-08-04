@@ -13,13 +13,12 @@ This file define resnet in 'Deep Residual Learning for Image Recognition'
 For all model, the pre_forward function is for extract vectors and forward for classification.
 """
 
-import numpy as np
 import torch
 from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling
+from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -156,6 +155,7 @@ class SimpleResNet(nn.Module):
 
 # Analysis of Length Normalization in End-to-End Speaker Verification System
 # https://arxiv.org/abs/1806.03209
+
 class ExporingResNet(nn.Module):
 
     def __init__(self, resnet_size=34, block=BasicBlock,
@@ -211,8 +211,8 @@ class ExporingResNet(nn.Module):
             self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=2)
 
         # [64, 128, 37, 8]
-        freq_dim = avg_size
-        time_dim = time_dim
+        freq_dim = avg_size  # default 1
+        time_dim = time_dim  # default 4
 
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
         # 300 is the length of features
@@ -236,6 +236,13 @@ class ExporingResNet(nn.Module):
             self.encoder = StatisticPooling(input_dim=num_filter[3])
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3] * 2, embedding_size),
+                nn.BatchNorm1d(embedding_size)
+            )
+        elif encoder_type == 'ASTP':
+            self.avgpool = AdaptiveStdPool2d((time_dim, freq_dim))
+            self.encoder = None
+            self.fc1 = nn.Sequential(
+                nn.Linear(num_filter[3] * freq_dim * time_dim, embedding_size),
                 nn.BatchNorm1d(embedding_size)
             )
         else:
@@ -593,7 +600,8 @@ class LocalResNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, embedding_size, num_classes, block=BasicBlock,
+    def __init__(self, embedding_size, num_classes,
+                 input_dim=161, block=BasicBlock,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
                  inst_norm=False, alpha=12,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
@@ -615,7 +623,7 @@ class LocalResNet(nn.Module):
         # self.relu = nn.LeakyReLU()
         self.relu = nn.ReLU(inplace=True)
         self.inst_norm = inst_norm
-        self.inst_layer = nn.InstanceNorm2d(1)
+        self.inst_layer = nn.InstanceNorm2d(input_dim)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=2, padding=(3, 2))
@@ -698,7 +706,9 @@ class LocalResNet(nn.Module):
 
     def forward(self, x):
         if self.inst_norm:
+            x = x.squeeze(1)
             x = self.inst_layer(x)
+            x = x.unsqueeze(1)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -747,51 +757,6 @@ class LocalResNet(nn.Module):
         logits = self.classifier(x)
 
         return logits, x
-
-
-class AdaptiveStdPooling2d(nn.Module):
-    def __init__(self, output_size):
-        super(AdaptiveStdPooling2d, self).__init__()
-        self.output_size = output_size
-
-    def forward(self, input):
-
-        input_shape = input.shape
-        assert len(input_shape) == 4
-        output_shape = list(self.output_size)
-
-        if output_shape[1] == None:
-            output_shape[1] = input.shape[3]
-
-        if output_shape[0] == None:
-            output_shape[0] = input.shape[2]
-
-        # kernel_y = (input_shape[3] + self.output_size[1] - 1) // self.output_size[1]
-        x_stride = input_shape[3] / output_shape[1]
-        y_stride = input_shape[2] / output_shape[0]
-
-        output = []
-
-        for x_idx in range(output_shape[1]):
-            x_output = []
-            x_start = int(np.floor(x_idx * x_stride))
-
-            x_end = int(np.ceil((x_idx + 1) * x_stride))
-            for y_idx in range(output_shape[0]):
-                y_start = int(np.floor(y_idx * y_stride))
-                y_end = int(np.ceil((y_idx + 1) * y_stride))
-                stds = input[:, :, y_start:y_end, x_start:x_end].var(dim=2, unbiased=False, keepdim=True).add_(
-                    1e-14).sqrt()
-                # stds = torch.std(input[:, :, y_start:y_end, x_start:x_end] , dim=2, )
-                sum_std = torch.sum(stds, dim=3, keepdim=True)
-
-                x_output.append(sum_std)
-
-            output.append(torch.cat(x_output, dim=2))
-        output = torch.cat(output, dim=3)
-        # print(output.isnan())
-
-        return output
 
 
 class DomainResNet(nn.Module):
@@ -988,12 +953,12 @@ class GradResNet(nn.Module):
         # self.relu = nn.LeakyReLU()
         self.relu = nn.ReLU(inplace=True)
         self.inst_norm = inst_norm
-        self.inst_layer = nn.InstanceNorm2d(1)
+        self.inst_layer = nn.InstanceNorm2d(feat_dim)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
         self.bn1 = nn.BatchNorm2d(channels[0])
-        self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
@@ -1004,7 +969,7 @@ class GradResNet(nn.Module):
         self.layer2 = self._make_layer(block, channels[1], layers[1])
 
         self.inplanes = channels[2]
-        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size, stride=2,
+        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size, stride=1,
                                padding=padding, bias=False)
         self.bn3 = nn.BatchNorm2d(channels[2])
         self.layer3 = self._make_layer(block, channels[2], layers[2])
@@ -1073,7 +1038,9 @@ class GradResNet(nn.Module):
         x = torch.log(x)
 
         if self.inst_norm:
+            x = x.squeeze(1)
             x = self.inst_layer(x)
+            x = x.unsqueeze(1)
 
         x = self.conv1(x)
         x = self.bn1(x)
