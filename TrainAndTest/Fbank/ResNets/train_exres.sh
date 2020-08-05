@@ -53,7 +53,7 @@ if [ $stage -le 0 ]; then
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
-      --nj 10 \
+      --nj 12 \
       --epochs 30 \
       --milestones 12,19,25 \
       --model ${model} \
@@ -72,8 +72,8 @@ if [ $stage -le 0 ]; then
       --test-input-per-file 4 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_soft \
-      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_soft/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_fast \
+      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_fast/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \

@@ -350,7 +350,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        train(train_loader, model, optimizer, ce, scheduler, epoch)
+        # train(train_loader, model, optimizer, ce, scheduler, epoch)
         if epoch % 2 == 1 and epoch < (end - 1):
             test(test_loader, valid_loader, model, epoch)
 

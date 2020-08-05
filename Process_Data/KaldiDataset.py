@@ -971,11 +971,14 @@ class ScriptTestDataset(data.Dataset):
 
     def __getitem__(self, index):
         uid_a, uid_b, label = self.trials_pair[index]
-
-        feat_a = self.uid2feat[uid_a]
-        feat_b = self.uid2feat[uid_b]
-        y_a = self.loader(feat_a)
-        y_b = self.loader(feat_b)
+        try:
+            feat_a = self.uid2feat[uid_a]
+            feat_b = self.uid2feat[uid_b]
+            y_a = self.loader(feat_a)
+            y_b = self.loader(feat_b)
+        except Exception as e:
+            print(feat_a, feat_b)
+            raise e
 
         data_a = self.transform(y_a)
         data_b = self.transform(y_b)
