@@ -158,8 +158,8 @@ class SimpleResNet(nn.Module):
 
 class ExporingResNet(nn.Module):
 
-    def __init__(self, resnet_size=34, block=BasicBlock,
-                 kernel_size=5, stride=1, padding=2,
+    def __init__(self, resnet_size=34, block=BasicBlock, inst_norm=True,
+                 kernel_size=5, stride=1, padding=2, feat_dim=64,
                  num_classes=1000, embedding_size=128, fast=False,
                  time_dim=2, avg_size=4, alpha=12, encoder_type='SAP',
                  zero_init_residual=False, groups=1, width_per_group=64,
@@ -178,6 +178,7 @@ class ExporingResNet(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
+        self.inst_norm = inst_norm
         self._norm_layer = norm_layer
         self.embedding_size = embedding_size
         self.inplanes = 16
@@ -195,11 +196,12 @@ class ExporingResNet(nn.Module):
         self.groups = groups
         self.base_width = width_per_group
 
+        self.inst_layer = nn.InstanceNorm1d(feat_dim)
         self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
         self.bn1 = norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
         if self.fast:
-            self.maxpool = nn.MaxPool2d(kernel_size=3, stride=(2, 1), padding=1)
+            self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layer1 = self._make_layer(block, num_filter[0], layers[0])
         self.layer2 = self._make_layer(block, num_filter[1], layers[1], stride=2)
@@ -308,6 +310,11 @@ class ExporingResNet(nn.Module):
     def _forward(self, x):
         # pdb.set_trace()
         # print(x.shape)
+        if self.inst_norm:
+            x = x.squeeze(1)
+            x = self.inst_layer(x)
+            x = x.unsqueeze(1)
+
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)

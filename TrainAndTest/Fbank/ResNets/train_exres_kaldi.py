@@ -69,6 +69,8 @@ parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi'
 
 # Model options
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
+parser.add_argument('--inst-norm', action='store_true', default=False,
+                    help='replace batchnorm with instance norm')
 parser.add_argument('--resnet-size', default=34, type=int, metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
 parser.add_argument('--stride', default=2, type=int, metavar='ST', help='kernel size of conv filters')
@@ -255,6 +257,7 @@ def main():
 
     model_kwargs = {'input_dim': args.feat_dim,
                     'kernel_size': kernel_size,
+                    'inst_norm': args.inst_norm,
                     'stride': args.stride,
                     'fast': args.fast,
                     'avg_size': args.avg_size,
