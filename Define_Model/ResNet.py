@@ -312,8 +312,8 @@ class ExporingResNet(nn.Module):
         # print(x.shape)
         if self.inst_norm:
             x = x.squeeze(1)
-            x = self.inst_layer(x)
-            x = x.unsqueeze(1)
+            x = self.inst_layer(x.transpose(1, 2))
+            x = x.transpose(1, 2).unsqueeze(1)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -1046,8 +1046,8 @@ class GradResNet(nn.Module):
 
         if self.inst_norm:
             x = x.squeeze(1)
-            x = self.inst_layer(x)
-            x = x.unsqueeze(1)
+            x = self.inst_layer(x.transpose(1, 2))
+            x = x.transpose(1, 2).unsqueeze(1)
 
         x = self.conv1(x)
         x = self.bn1(x)
