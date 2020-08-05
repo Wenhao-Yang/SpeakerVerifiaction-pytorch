@@ -63,6 +63,7 @@ if [ $stage -le 0 ]; then
       --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
+      --fast \
       --feat-dim 64 \
       --remove-vad \
       --time-dim 8 \
@@ -71,8 +72,8 @@ if [ $stage -le 0 ]; then
       --test-input-per-file 4 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss} \
-      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_soft \
+      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_soft/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \
