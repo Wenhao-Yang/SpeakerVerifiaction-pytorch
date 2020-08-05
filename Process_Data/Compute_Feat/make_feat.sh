@@ -469,7 +469,7 @@ if [ $stage -le 72 ]; then
 fi
 
 if [ $stage -le 73 ]; then
-  for s in dev test; do
+  for s in test; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
@@ -478,7 +478,7 @@ if [ $stage -le 73 ]; then
       --feat-format kaldi \
       --nfft 320 \
       --windowsize 0.02 \
-      --nj 18
+      --nj 12
     done
 fi
 
