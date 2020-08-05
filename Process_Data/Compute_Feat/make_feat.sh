@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=73
+stage=74
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -482,7 +482,7 @@ if [ $stage -le 73 ]; then
     done
 fi
 
-stage=100
+
 
 if [ $stage -le 74 ]; then
   for s in test ; do
@@ -496,10 +496,11 @@ if [ $stage -le 74 ]; then
       --feat-format kaldi \
       --nfft 512 \
       --windowsize 0.025 \
-      --nj 15
+      --nj 12
     done
 fi
 
+stage=100
 
 if [ $stage -le 80 ]; then
   for s in dev test; do
