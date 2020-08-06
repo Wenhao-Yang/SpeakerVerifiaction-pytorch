@@ -830,10 +830,10 @@ class DomainResNet(nn.Module):
             self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
 
         self.dropout = nn.Dropout(self.dropout_p)
-        self.avg_pool = nn.AdaptiveAvgPool2d((avg_size, 1))
+        self.avg_pool = nn.AdaptiveAvgPool2d((None, 1))
 
-        self.encoder = nn.LSTM(input_size=input_dim,
-                               hidden_size=int(input_dim / 2),
+        self.encoder = nn.LSTM(input_size=channels[3],
+                               hidden_size=channels[3],
                                num_layers=1,
                                batch_first=True,
                                dropout=self.dropout_p)
@@ -896,9 +896,6 @@ class DomainResNet(nn.Module):
             x = self.inst_layer(x)
             x = x.unsqueeze(1)
 
-        x, (_, _) = self.encoder(x.squeeze())
-        x = x.unsqueeze(1)
-
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -921,11 +918,12 @@ class DomainResNet(nn.Module):
             x = self.relu(x)
             x = self.layer4(x)
 
-        if self.dropout_p > 0:
-            x = self.dropout(x)
-
-        x = self.avg_pool(x)
-        x = x.view(x.size(0), -1)
+        # if self.dropout_p > 0:
+        #     x = self.dropout(x)
+        x = self.avg_pool(x).transpose(1, 2)
+        x, (_, _) = self.encoder(x.squeeze().trans)
+        x = x[:, -1]
+        # x = x.view(x.size(0), -1)
 
         x = self.fc(x)
 
