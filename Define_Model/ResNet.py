@@ -832,8 +832,8 @@ class DomainResNet(nn.Module):
         self.dropout = nn.Dropout(self.dropout_p)
         self.avg_pool = nn.AdaptiveAvgPool2d((None, 1))
 
-        self.encoder = nn.LSTM(input_size=channels[3],
-                               hidden_size=channels[3],
+        self.encoder = nn.LSTM(input_size=channels[2],
+                               hidden_size=channels[2],
                                num_layers=1,
                                batch_first=True,
                                dropout=self.dropout_p)
