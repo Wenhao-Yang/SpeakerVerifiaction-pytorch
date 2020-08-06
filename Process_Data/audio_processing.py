@@ -463,13 +463,17 @@ class concateinputfromMFB(object):
         network_inputs = []
 
         output = frames_features
-        while len(output)<self.num_frames:
+        while len(output) < self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
 
         for i in range(self.input_per_file):
-            start = np.random.randint(low=0, high=len(output) - self.num_frames)
-            frames_slice = output[start:start+self.num_frames]
-            network_inputs.append(frames_slice)
+            try:
+                start = np.random.randint(low=0, high=len(output) - self.num_frames)
+                frames_slice = output[start:start + self.num_frames]
+                network_inputs.append(frames_slice)
+            except Exception as e:
+                print(len(output))
+                raise e
 
         # pdb.set_trace()
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
