@@ -896,8 +896,7 @@ class DomainResNet(nn.Module):
             x = self.inst_layer(x)
             x = x.unsqueeze(1)
 
-        out, (_, _) = self.encoder(x.squeeze())
-        x = out[:, -1, :]
+        x, (_, _) = self.encoder(x.squeeze())
         x = x.unsqueeze(1)
 
         x = self.conv1(x)
