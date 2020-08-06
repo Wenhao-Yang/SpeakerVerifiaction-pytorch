@@ -50,7 +50,7 @@ if [ $stage -le 40 ]; then
   done
 fi
 
-#stage=100
+stage=100
 
 if [ $stage -le 40 ]; then
   datasets=cnceleb
