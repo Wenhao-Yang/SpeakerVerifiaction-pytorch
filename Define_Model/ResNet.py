@@ -839,7 +839,7 @@ class DomainResNet(nn.Module):
         #                        dropout=self.dropout_p)
 
         self.fc = nn.Sequential(
-            nn.Linear(self.inplanes, self.embedding_size),
+            nn.Linear(self.inplanes * avg_size, self.embedding_size),
             nn.BatchNorm1d(self.embedding_size)
         )
 
