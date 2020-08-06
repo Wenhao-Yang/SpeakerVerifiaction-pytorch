@@ -468,7 +468,7 @@ class concateinputfromMFB(object):
 
         for i in range(self.input_per_file):
             try:
-                start = np.random.randint(low=0, high=len(output) - self.num_frames)
+                start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
                 frames_slice = output[start:start + self.num_frames]
                 network_inputs.append(frames_slice)
             except Exception as e:
