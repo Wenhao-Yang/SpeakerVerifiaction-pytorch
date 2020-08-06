@@ -921,7 +921,7 @@ class DomainResNet(nn.Module):
         # if self.dropout_p > 0:
         #     x = self.dropout(x)
         x = self.avg_pool(x).transpose(1, 2)
-        x, (_, _) = self.encoder(x.squeeze().trans)
+        x, (_, _) = self.encoder(x.squeeze())
         x = x[:, -1]
         # x = x.view(x.size(0), -1)
 
