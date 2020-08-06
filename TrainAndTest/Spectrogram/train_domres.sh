@@ -16,7 +16,7 @@ if [ $stage -le 40 ]; then
   model=DomResNet
   resnet_size=8
   kernel_size=5,5
-  channels=8,32,128
+  channels=16,32,128
   for loss in soft; do
     echo -e "\033[1;4;31m Train ${model} with ${loss} loss in ${datasets}, \n    kernel_size is ${kernel_size} for connection, channels are ${channels}.\033[0m\n"
     python TrainAndTest/Spectrogram/train_domres_kaldi.py \
