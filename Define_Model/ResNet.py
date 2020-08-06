@@ -774,7 +774,7 @@ class DomainResNet(nn.Module):
 
     def __init__(self, embedding_size_a, embedding_size_b, embedding_size_o,
                  num_classes_a, num_classes_b,
-                 block=BasicBlock,
+                 block=BasicBlock, input_dim=161,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
                  inst_norm=False, alpha=12,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
@@ -800,7 +800,7 @@ class DomainResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
         self.inst_norm = inst_norm
-        self.inst = nn.InstanceNorm2d(1)
+        self.inst = nn.InstanceNorm1d(input_dim)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2, bias=False)
@@ -886,7 +886,9 @@ class DomainResNet(nn.Module):
 
     def forward(self, x):
         if self.inst_norm:
-            x = self.inst(x)
+            x = x.squeeze(1)
+            x = self.inst_layer(x)
+            x = x.unsqueeze(1)
 
         x = self.conv1(x)
         x = self.bn1(x)

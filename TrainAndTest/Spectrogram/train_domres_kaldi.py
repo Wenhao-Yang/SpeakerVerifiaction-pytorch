@@ -146,7 +146,8 @@ parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO'
                     help='the ratio softmax loss - triplet loss (default: 2.0')
 parser.add_argument('--dom-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
-
+parser.add_argument('--sim-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
+                    help='the ratio softmax loss - triplet loss (default: 2.0')
 # args for additive margin-softmax
 parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
                     help='the margin value for the angualr softmax loss function (default: 3.0')
@@ -434,6 +435,8 @@ def train(train_loader, model, ce, optimizer, epoch):
     total_datasize = 0.
     total_loss_a = 0.
     total_loss_b = 0.
+    total_loss_c = 0.
+
     total_loss = 0.
     # for param_group in optimizer.param_groups:
     #     print('\33[1;34m Optimizer \'{}\' learning rate is {}.\33[0m'.format(args.optimizer, param_group['lr']))
@@ -474,7 +477,10 @@ def train(train_loader, model, ce, optimizer, epoch):
             spk_loss = xe_criterion(logits_spk, true_labels_a)
 
         dom_loss = (args.dom_ratio * ce_criterion(dom_lable, true_labels_b))
-        loss = spk_loss + dom_loss
+        spk_dom_sim_loss = torch.cosine_similarity(feat_spk, feat_dom, dim=1).pow(2).mean()
+        spk_dom_sim_loss = args.sim_ratio * spk_dom_sim_loss
+
+        loss = spk_loss + dom_loss + spk_dom_sim_loss
 
         predicted_labels_a = output_softmax(spk_label)
 
@@ -492,6 +498,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         total_datasize += len(predicted_one_labels_a)
         total_loss_a += float(spk_loss.item())
         total_loss_b += float(dom_loss.item())
+        total_loss_c += float(spk_dom_sim_loss.item())
         total_loss += float(loss.item())
 
         # compute gradient and update weights
@@ -507,7 +514,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         if batch_idx % args.log_interval == 0:
             pbar.set_description(
                 'Train Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Avg Loss: {:.4f} Spk Loss: {:.4f} Dom Loss: {:.4f} ' \
-                'Batch: Spk Accuracy: {:.4f}%, Dom Accuracy: {:.4f}%'.format(
+                'Sim Loss: {:.4f} Batch: Spk Accuracy: {:.4f}%, Dom Accuracy: {:.4f}%'.format(
                     epoch,
                     batch_idx * len(data),
                     len(train_loader.dataset),
@@ -515,6 +522,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                     total_loss / (batch_idx + 1),
                     total_loss_a / (batch_idx + 1),
                     total_loss_b / (batch_idx + 1),
+                    total_loss_c / (batch_idx + 1),
                     100. * minibatch_acc_a,
                     100. * minibatch_acc_b))
 
