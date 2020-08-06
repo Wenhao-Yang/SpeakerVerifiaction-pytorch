@@ -30,8 +30,8 @@ if [ $stage -le 40 ]; then
       --lr 0.1 \
       --milestones 7,11 \
       --kernel-size ${kernel_size} \
-      --check-path Data/checkpoint/${model}/${datasets}/spect_04/${loss}__sim \
-      --resume Data/checkpoint/${model}/${datasets}/spect_04/${loss}_sim/checkpoint_1.pth \
+      --check-path Data/checkpoint/${model}_lstm/${datasets}/spect_04/${loss}_sim \
+      --resume Data/checkpoint/${model}_lstm/${datasets}/spect_04/${loss}_sim/checkpoint_1.pth \
       --channels ${channels} \
       --inst-norm \
       --embedding-size-a 128 \
