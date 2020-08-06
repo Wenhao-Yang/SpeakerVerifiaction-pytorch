@@ -35,8 +35,8 @@ if [ $stage -le 40 ]; then
       --channels ${channels} \
       --inst-norm \
       --embedding-size-a 128 \
-      --embedding-size-b 64 \
-      --embedding-size-o 32 \
+      --embedding-size-b 128 \
+      --embedding-size-o 0 \
       --input-per-spks 192 \
       --num-valid 1 \
       --domain \
