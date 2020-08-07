@@ -278,6 +278,7 @@ if [ $stage -le 31 ]; then
       --channels 64,128,256 \
       --check-path Data/checkpoint/GradResNet8_inst/${dataset}_power/spect/${loss}_dp25 \
       --resume Data/checkpoint/GradResNet8_inst/${dataset}_power/spect/soft_dp25/checkpoint_24.pth \
+      --finetune \
       --loss-type ${loss} \
       --lr 0.01 \
       --num-valid 2 \
