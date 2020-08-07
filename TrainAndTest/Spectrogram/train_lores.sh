@@ -258,7 +258,7 @@ if [ $stage -le 31 ]; then
   dataset=vox1
   model=GradResNet
   resnet_size=8
-  for loss in soft ; do # 32,128,512; 8,32,128
+  for loss in asoft center ; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 5,5\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model ${model} \
@@ -277,9 +277,9 @@ if [ $stage -le 31 ]; then
       --milestones 8,13,18 \
       --channels 64,128,256 \
       --check-path Data/checkpoint/GradResNet8_inst/${dataset}_power/spect/${loss}_dp25 \
-      --resume Data/checkpoint/GradResNet8_inst/${dataset}_power/spect/${loss}_dp25/checkpoint_2.pth \
+      --resume Data/checkpoint/GradResNet8_inst/${dataset}_power/spect/soft_dp25/checkpoint_24.pth \
       --loss-type ${loss} \
-      --lr 0.1 \
+      --lr 0.01 \
       --num-valid 2 \
       --gpu-id 0 \
       --dropout-p 0.25
