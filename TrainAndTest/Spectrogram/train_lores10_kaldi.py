@@ -32,7 +32,6 @@ from tqdm import tqdm
 
 from Define_Model.LossFunction import CenterLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
-from Define_Model.model import PairwiseDistance
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -116,7 +115,7 @@ parser.add_argument('--alpha', default=12, type=float, metavar='FEAT',
                     help='acoustic feature dimension')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
                     help='kernel size of conv filters')
-parser.add_argument('--cos-sim', action='store_true', default=True,
+parser.add_argument('--cos-sim', action='store_true', default=False,
                     help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES',
                     help='Dimensionality of the embedding')
@@ -218,7 +217,7 @@ opt_kwargs = {'lr': args.lr,
               'dampening': args.dampening,
               'momentum': args.momentum}
 
-l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.PairwiseDistance(p=2)
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
