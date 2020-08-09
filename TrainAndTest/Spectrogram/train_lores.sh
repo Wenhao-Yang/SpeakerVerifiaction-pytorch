@@ -267,21 +267,21 @@ if [ $stage -le 31 ]; then
       --input-per-spks 224 \
       --feat-format kaldi \
       --nj 8 \
-      --epochs 12 \
+      --epochs 18 \
       --resnet-size ${resnet_size} \
       --embedding-size 128 \
       --avg-size 4 \
       --alpha 12 \
       --inst-norm \
       --batch-size 128 \
-      --milestones 6,10 \
+      --milestones 5,9,14 \
       --channels 64,128,256 \
-      --check-path Data/checkpoint/GradResNet8_inst/${dataset}_power/spect/${loss}_dp25_l2 \
+      --check-path Data/checkpoint/GradResNet8_inst/${dataset}_power/spect/${loss}_dp25_l2_01 \
       --resume Data/checkpoint/GradResNet8_inst/${dataset}_power/spect/soft_dp25/checkpoint_24.pth \
       --finetune \
       --loss-type ${loss} \
       --loss-ratio 0.5 \
-      --lr 0.01 \
+      --lr 0.1 \
       --num-valid 2 \
       --gpu-id 0 \
       --dropout-p 0.25
