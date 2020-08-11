@@ -430,16 +430,17 @@ if [ $stage -le 55 ]; then
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/dev_power \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_power \
       --nj 12 \
-      --epochs 24 \
+      --epochs 18 \
       --model ${model} \
       --resnet-size 8 \
+      --inst-norm \
       --embedding-size 128 \
       --feat-dim 161 \
       --valid \
       --input-length fix \
       --test-input-per-file 4 \
       --xvector-dir Data/xvector/GradResNet8_inst/vox1_power/spect_time/soft_dp25 \
-      --resume Data/checkpoint/GradResNet8_inst/vox1_power/spect_time/soft_dp25/checkpoint_24.pth  \
+      --resume Data/checkpoint/GradResNet8_inst/vox1_power/spect_time/soft_dp25/checkpoint_18.pth  \
       --input-per-spks 224 \
       --gpu-id 0 \
       --num-valid 2 \
