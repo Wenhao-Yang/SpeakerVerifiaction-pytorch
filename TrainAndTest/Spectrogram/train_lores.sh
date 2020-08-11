@@ -271,7 +271,7 @@ if [ $stage -le 31 ]; then
       --resnet-size ${resnet_size} \
       --embedding-size 128 \
       --avg-size 4 \
-      --alpha 0 \
+      --alpha 12 \
       --inst-norm \
       --batch-size 128 \
       --milestones 2 \
