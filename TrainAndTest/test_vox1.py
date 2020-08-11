@@ -76,7 +76,8 @@ parser.add_argument('--extract', action='store_true', default=False,
                     help='using Cosine similarity')
 
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
-
+parser.add_argument('--inst-norm', action='store_true', default=False,
+                    help='replace batchnorm with instance norm')
 parser.add_argument('--xvector-dir', help='folder to output model checkpoints')
 parser.add_argument('--resume', default='Data/checkpoint/LoResNet10/timit_spect/soft_var/checkpoint_15.pth',
                     metavar='PATH', help='path to latest checkpoint (default: none)')
@@ -265,6 +266,7 @@ def main():
 
     model_kwargs = {'embedding_size': args.embedding_size,
                     'resnet_size': args.resnet_size,
+                    'inst_norm': args.inst_norm,
                     'input_dim': args.feat_dim,
                     'fast': args.fast,
                     'num_classes': train_dir.num_spks,
