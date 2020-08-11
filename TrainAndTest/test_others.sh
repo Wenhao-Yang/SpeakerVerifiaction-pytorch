@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=7
+stage=55
 
 if [ $stage -le 0 ]; then
   for loss in asoft soft ; do
@@ -157,7 +157,7 @@ if [ $stage -le 7 ]; then
   done
 fi
 
-stage=200
+#stage=200
 if [ $stage -le 15 ]; then
   model=TDNN
 #  feat=fb40
@@ -414,6 +414,34 @@ if [ $stage -le 50 ]; then
       --resume Data/checkpoint/SiResNet34/vox1/fb64_cmvn/soft/checkpoint_21.pth  \
       --input-per-spks 192 \
       --gpu-id 1 \
+      --num-valid 2 \
+      --loss-type ${loss}
+  done
+fi
+
+if [ $stage -le 55 ]; then
+#  for loss in soft asoft ; do
+  model=GradResNet
+  datasets=vox1
+  feat=fb64_mvnorm
+  for loss in soft ; do
+    echo -e "\n\033[1;4;31m Training ${model} with ${loss}\033[0m\n"
+    python -W ignore TrainAndTest/test_vox1.py \
+      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/dev_power \
+      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_power \
+      --nj 12 \
+      --epochs 24 \
+      --model ${model} \
+      --resnet-size 8 \
+      --embedding-size 128 \
+      --feat-dim 161 \
+      --valid \
+      --input-length fix \
+      --test-input-per-file 4 \
+      --xvector-dir Data/xvector/GradResNet8_inst/vox1_power/spect_time/soft_dp25 \
+      --resume Data/checkpoint/GradResNet8_inst/vox1_power/spect_time/soft_dp25/checkpoint_24.pth  \
+      --input-per-spks 224 \
+      --gpu-id 0 \
       --num-valid 2 \
       --loss-type ${loss}
   done
