@@ -35,7 +35,7 @@ from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarg
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptTestDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.audio_processing import concateinputfromMFB, to2tensor, varLengthFeat
+from Process_Data.audio_processing import concateinputfromMFB, varLengthFeat
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -211,10 +211,7 @@ kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 if not os.path.exists(args.check_path):
     os.makedirs(args.check_path)
 
-opt_kwargs = {'lr': args.lr,
-              'lr_decay': args.lr_decay,
-              'weight_decay': args.weight_decay,
-              'dampening': args.dampening,
+opt_kwargs = {'lr': args.lr, 'lr_decay': args.lr_decay, 'weight_decay': args.weight_decay, 'dampening': args.dampening,
               'momentum': args.momentum}
 
 l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.PairwiseDistance(p=2)
@@ -222,18 +219,13 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
         concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, remove_vad=args.remove_vad),
-        # varLengthFeat(),
-        to2tensor()
     ])
     transform_T = transforms.Compose([
         concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, input_per_file=args.test_input_per_file,
                             remove_vad=args.remove_vad),
-        # varLengthFeat(),
-        to2tensor()
     ])
     transform_V = transforms.Compose([
         varLengthFeat(remove_vad=args.remove_vad),
-        to2tensor()
     ])
 
 else:
@@ -449,12 +441,6 @@ def train(train_loader, model, ce, optimizer, epoch):
             data = data.cuda(non_blocking=True)
 
         data, label = Variable(data), Variable(label)
-        # end_time = time.time()
-
-        # this_time = end_time - start_time
-        # print(this_time)
-        # start_time = time.time()
-        # pdb.set_trace()
 
         classfier, feats = model(data)
         # cos_theta, phi_theta = classfier
