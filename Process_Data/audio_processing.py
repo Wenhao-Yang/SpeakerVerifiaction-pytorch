@@ -258,7 +258,7 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
     if log_scale == True:
         feature = np.log(pspec).astype(np.float32)
     else:
-        feature = pspec
+        feature = pspec.astype(np.float32)
     # feature = feature.transpose()
     if normalize:
         feature = normalize_frames(feature)
@@ -269,33 +269,17 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
     return feature
 
 
-def Make_Fbank(filename,
-               # sample_rate=c.SAMPLE_RATE,
-               filtertype='mel',
-               windowsize=0.025,
-               nfft=512,
-               use_delta=c.USE_DELTA,
-               use_scale=c.USE_SCALE,
-               lowfreq=0,
-               nfilt=c.FILTER_BANK,
-               log_scale=c.USE_LOGSCALE,
-               use_energy=c.USE_ENERGY,
-               normalize=c.NORMALIZE,
-               duration=False,
-               multi_weight=False):
+def Make_Fbank(filename,  # sample_rate=c.SAMPLE_RATE,
+               filtertype='mel', windowsize=0.025, nfft=512, use_delta=c.USE_DELTA, use_scale=c.USE_SCALE,
+               lowfreq=0, nfilt=c.FILTER_BANK, log_scale=c.USE_LOGSCALE,
+               use_energy=c.USE_ENERGY, normalize=c.NORMALIZE, duration=False, multi_weight=False):
 
     if not os.path.exists(filename):
         raise ValueError('wav file does not exist.')
 
     audio, sample_rate = sf.read(filename, dtype='float32')
-    filter_banks, energies = local_fbank(audio,
-                                         samplerate=sample_rate,
-                                         nfilt=nfilt,
-                                         nfft=nfft,
-                                         lowfreq=lowfreq,
-                                         winlen=windowsize,
-                                         filtertype=filtertype,
-                                         winfunc=np.hamming,
+    filter_banks, energies = local_fbank(audio, samplerate=sample_rate, nfilt=nfilt, nfft=nfft, lowfreq=lowfreq,
+                                         winlen=windowsize, filtertype=filtertype, winfunc=np.hamming,
                                          multi_weight=multi_weight)
 
     if use_energy:
