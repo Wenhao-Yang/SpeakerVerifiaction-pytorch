@@ -266,7 +266,7 @@ if [ $stage -le 31 ]; then
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/test_power \
       --input-per-spks 224 \
       --feat-format kaldi \
-      --nj 12 \
+      --nj 8 \
       --epochs 24 \
       --resnet-size ${resnet_size} \
       --embedding-size 128 \
