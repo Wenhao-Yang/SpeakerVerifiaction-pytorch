@@ -267,7 +267,7 @@ if [ $stage -le 31 ]; then
       --input-per-spks 224 \
       --feat-format kaldi \
       --nj 12 \
-      --epochs 25 \
+      --epochs 24 \
       --resnet-size ${resnet_size} \
       --embedding-size 128 \
       --avg-size 4 \
