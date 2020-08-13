@@ -469,7 +469,7 @@ if [ $stage -le 72 ]; then
 fi
 
 if [ $stage -le 73 ]; then
-  for s in test; do
+  for s in dev ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
