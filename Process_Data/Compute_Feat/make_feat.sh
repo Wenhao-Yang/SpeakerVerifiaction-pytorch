@@ -478,7 +478,7 @@ if [ $stage -le 73 ]; then
       --feat-format kaldi \
       --nfft 320 \
       --windowsize 0.02 \
-      --nj 12
+      --nj 18
     done
 fi
 
