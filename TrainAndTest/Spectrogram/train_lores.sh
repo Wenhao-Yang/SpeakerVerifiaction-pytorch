@@ -283,6 +283,7 @@ if [ $stage -le 31 ]; then
       --lr 0.1 \
       --num-valid 2 \
       --gpu-id 0 \
+      --cos-sim \
       --dropout-p 0.25
   done
 
