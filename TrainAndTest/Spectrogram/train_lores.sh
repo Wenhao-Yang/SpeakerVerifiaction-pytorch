@@ -276,8 +276,8 @@ if [ $stage -le 31 ]; then
       --batch-size 128 \
       --milestones 10,15,20 \
       --channels 64,128,256 \
-      --check-path Data/checkpoint/GradResNet8_inst/${dataset}_power/spect_time/${loss}_dp25 \
-      --resume Data/checkpoint/GradResNet8_inst/${dataset}_power/spect_time/soft_dp25/checkpoint_18.pth \
+      --check-path Data/checkpoint/GradResNet8_mean/${dataset}_power/spect_time/${loss}_dp25 \
+      --resume Data/checkpoint/GradResNet8_mean/${dataset}_power/spect_time/soft_dp25/checkpoint_18.pth \
       --loss-type ${loss} \
       --loss-ratio 0.5 \
       --lr 0.1 \
