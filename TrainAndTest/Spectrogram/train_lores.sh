@@ -274,7 +274,7 @@ if [ $stage -le 31 ]; then
       --alpha 12 \
       --inst-norm \
       --batch-size 128 \
-      --milestones 4,8,12 \
+      --milestones 5,9,13 \
       --channels 64,128,256 \
       --check-path Data/checkpoint/GradResNet8_mean/${dataset}_power/spect_time/${loss}_dp25 \
       --resume Data/checkpoint/GradResNet8_mean/${dataset}_power/spect_time/soft_dp25/checkpoint_24.pth \
@@ -283,7 +283,7 @@ if [ $stage -le 31 ]; then
       --margin 0.3 \
       --s 30 \
       --loss-ratio 0.1 \
-      --lr 0.1 \
+      --lr 0.01 \
       --num-valid 2 \
       --gpu-id 0 \
       --cos-sim \
