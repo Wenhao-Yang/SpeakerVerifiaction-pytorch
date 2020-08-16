@@ -267,14 +267,14 @@ if [ $stage -le 31 ]; then
       --input-per-spks 224 \
       --feat-format kaldi \
       --nj 10 \
-      --epochs 15 \
+      --epochs 12 \
       --resnet-size ${resnet_size} \
       --embedding-size 128 \
       --avg-size 4 \
       --alpha 12 \
       --inst-norm \
       --batch-size 128 \
-      --milestones 5,9,13 \
+      --milestones 3,7,10 \
       --channels 64,128,256 \
       --check-path Data/checkpoint/GradResNet8_mean/${dataset}_power/spect_time/${loss}_dp25 \
       --resume Data/checkpoint/GradResNet8_mean/${dataset}_power/spect_time/soft_dp25/checkpoint_24.pth \
