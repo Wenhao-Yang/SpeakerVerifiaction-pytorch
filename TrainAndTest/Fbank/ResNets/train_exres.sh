@@ -59,6 +59,7 @@ if [ $stage -le 0 ]; then
       --model ${model} \
       --resnet-size 34 \
       --stride 2 \
+      --inst-norm \
       --feat-format kaldi \
       --embedding-size 128 \
       --batch-size 128 \
@@ -88,6 +89,7 @@ if [ $stage -le 0 ]; then
       --model ${model} \
       --resnet-size 34 \
       --stride 3,2 \
+      --inst-norm \
       --feat-format kaldi \
       --embedding-size 128 \
       --batch-size 128 \
