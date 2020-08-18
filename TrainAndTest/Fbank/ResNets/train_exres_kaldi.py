@@ -73,7 +73,7 @@ parser.add_argument('--inst-norm', action='store_true', default=False,
                     help='replace batchnorm with instance norm')
 parser.add_argument('--resnet-size', default=34, type=int, metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
-parser.add_argument('--stride', default=2, type=int, metavar='ST', help='kernel size of conv filters')
+parser.add_argument('--stride', default='2', type=str, metavar='ST', help='kernel size of conv filters')
 parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
 
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
@@ -250,6 +250,9 @@ def main():
     # instantiate model and initialize weights
     kernel_size = args.kernel_size.split(',')
     kernel_size = [int(x) for x in kernel_size]
+    stride = args.stride.split(',')
+    stride = [int(x) for x in stride]
+
     padding = [int((x - 1) / 2) for x in kernel_size]
 
     kernel_size = tuple(kernel_size)
@@ -258,7 +261,7 @@ def main():
     model_kwargs = {'input_dim': args.feat_dim,
                     'kernel_size': kernel_size,
                     'inst_norm': args.inst_norm,
-                    'stride': args.stride,
+                    'stride': stride,
                     'fast': args.fast,
                     'avg_size': args.avg_size,
                     'time_dim': args.time_dim,
