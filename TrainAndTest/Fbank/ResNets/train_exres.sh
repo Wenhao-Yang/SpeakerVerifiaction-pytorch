@@ -71,13 +71,43 @@ if [ $stage -le 0 ]; then
       --test-input-per-file 4 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_insttran \
-      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_insttran/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_mean \
+      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_mean/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \
       --num-valid 2 \
       --loss-type soft
+
+    python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
+      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
+      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
+      --nj 12 \
+      --epochs 25 \
+      --milestones 10,15,20 \
+      --model ${model} \
+      --resnet-size 34 \
+      --stride 3,2 \
+      --feat-format kaldi \
+      --embedding-size 128 \
+      --batch-size 128 \
+      --accu-steps 1 \
+      --feat-dim 64 \
+      --remove-vad \
+      --time-dim 8 \
+      --avg-size 1 \
+      --kernel-size 5,5 \
+      --test-input-per-file 4 \
+      --lr 0.1 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_mean3 \
+      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_mean3/checkpoint_100.pth \
+      --input-per-spks 384 \
+      --veri-pairs 9600 \
+      --gpu-id 0 \
+      --num-valid 2 \
+      --loss-type soft
+
   done
 fi
 stage=100

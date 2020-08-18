@@ -180,6 +180,7 @@ class ExporingResNet(nn.Module):
 
         self.inst_norm = inst_norm
         self._norm_layer = norm_layer
+
         self.embedding_size = embedding_size
         self.inplanes = 16
         self.dilation = 1
@@ -311,9 +312,10 @@ class ExporingResNet(nn.Module):
         # pdb.set_trace()
         # print(x.shape)
         if self.inst_norm:
-            x = x.squeeze(1)
-            x = self.inst_layer(x.transpose(1, 2))
-            x = x.transpose(1, 2).unsqueeze(1)
+            # x = x.squeeze(1)
+            # x = self.inst_layer(x.transpose(1, 2))
+            # x = x.transpose(1, 2).unsqueeze(1)
+            x = x - torch.mean(x, dim=-2, keepdim=True)
 
         x = self.conv1(x)
         x = self.bn1(x)
