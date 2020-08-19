@@ -58,8 +58,9 @@ if [ $stage -le 0 ]; then
       --milestones 10,15,20 \
       --model ${model} \
       --resnet-size 34 \
-      --stride 3,2 \
+      --stride 2 \
       --inst-norm \
+      --filter \
       --feat-format kaldi \
       --embedding-size 128 \
       --batch-size 128 \
@@ -72,8 +73,8 @@ if [ $stage -le 0 ]; then
       --test-input-per-file 4 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_mean3 \
-      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}_mean3/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean \
+      --resume Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean/checkpoint_100.pth \
       --input-per-spks 384 \
       --veri-pairs 9600 \
       --gpu-id 0 \

@@ -503,7 +503,7 @@ fi
 #stage=100
 
 if [ $stage -le 75 ]; then
-  for s in dev ; do
+  for s in test ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \

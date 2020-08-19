@@ -18,6 +18,7 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
+from Define_Model.FilterLayer import fDLR
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d
 
 
@@ -158,11 +159,10 @@ class SimpleResNet(nn.Module):
 
 class ExporingResNet(nn.Module):
 
-    def __init__(self, resnet_size=34, block=BasicBlock, inst_norm=True,
-                 kernel_size=5, stride=1, padding=2, feat_dim=64,
-                 num_classes=1000, embedding_size=128, fast=False,
-                 time_dim=2, avg_size=4, alpha=12, encoder_type='SAP',
-                 zero_init_residual=False, groups=1, width_per_group=64,
+    def __init__(self, resnet_size=34, block=BasicBlock, inst_norm=True, kernel_size=5, stride=1, padding=2,
+                 feat_dim=64,
+                 num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4, alpha=12, encoder_type='SAP',
+                 zero_init_residual=False, groups=1, width_per_group=64, input_dim=257, sr=16000, filter=True,
                  replace_stride_with_dilation=None,
                  norm_layer=None, **kwargs):
         super(ExporingResNet, self).__init__()
@@ -179,6 +179,8 @@ class ExporingResNet(nn.Module):
             norm_layer = nn.BatchNorm2d
 
         self.inst_norm = inst_norm
+        self.filter = filter
+
         self._norm_layer = norm_layer
 
         self.embedding_size = embedding_size
@@ -197,7 +199,8 @@ class ExporingResNet(nn.Module):
         self.groups = groups
         self.base_width = width_per_group
 
-        self.inst_layer = nn.InstanceNorm1d(feat_dim)
+        self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
+
         self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
         self.bn1 = norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
@@ -311,10 +314,10 @@ class ExporingResNet(nn.Module):
     def _forward(self, x):
         # pdb.set_trace()
         # print(x.shape)
+        if self.filter:
+            x = self.filter_layer(x)
+
         if self.inst_norm:
-            # x = x.squeeze(1)
-            # x = self.inst_layer(x.transpose(1, 2))
-            # x = x.transpose(1, 2).unsqueeze(1)
             x = x - torch.mean(x, dim=-2, keepdim=True)
 
         x = self.conv1(x)
