@@ -9,6 +9,8 @@
 @Time: 2020/8/19 20:30
 @Overview:
 """
+import pdb
+
 import numpy as np
 import torch
 from python_speech_features import hz2mel, mel2hz
@@ -40,6 +42,8 @@ class fDLR(nn.Module):
         new_centers = frequency_center.expand(self.num_filter, self.input_dim)
         if input.is_cuda:
             new_centers = new_centers.cuda()
+
+        pdb.set_trace()
         power = -1. * torch.pow(self.input_freq - new_centers, 2)
         power = torch.div(power, 2. * self.bandwidth.pow(2))
 
