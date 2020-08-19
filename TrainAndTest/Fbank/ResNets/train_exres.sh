@@ -14,7 +14,7 @@ if [ $stage -le 0 ]; then
 #  for loss in soft asoft ; do
   model=ExResNet
   datasets=vox1
-  feat=fb64
+  feat=power_257
   loss=soft
 #  for encod in None ; do
 #    echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
@@ -51,8 +51,8 @@ if [ $stage -le 0 ]; then
   for encod in STAP ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
-      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
-      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
+      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_${feat} \
+      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_${feat} \
       --nj 12 \
       --epochs 25 \
       --milestones 10,15,20 \
