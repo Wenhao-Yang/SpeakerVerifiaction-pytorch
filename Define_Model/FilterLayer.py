@@ -36,8 +36,9 @@ class fDLR(nn.Module):
         self.gain = nn.Parameter(torch.ones(num_filter, dtype=torch.float32)).reshape(num_filter, 1)
 
     def forward(self, input):
-        new_centers = self.frequency_center.expand(self.num_filter, self.input_dim)
-        power = -1. * torch.pow(self.input_freq - new_centers, 2).mul(self.bandwidth)
+        frequency_center = self.frequency_center.sort(dim=0).values
+        new_centers = frequency_center.expand(self.num_filter, self.input_dim)
+        power = -1. * torch.pow(self.input_freq - new_centers, 2).mul(0.5 / self.bandwidth.pow(2))
 
         weights = torch.exp(power).mul(self.gain).transpose(0, 1)
 
