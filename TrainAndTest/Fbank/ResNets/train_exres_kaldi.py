@@ -423,6 +423,10 @@ def train(train_loader, model, optimizer, ce, scheduler, epoch):
             for param in xe_criterion.parameters():
                 param.grad.data *= (1. / args.loss_ratio)
 
+        if args.filter:
+            for param in model.filter_layer.parameters():
+                param.grad.data *= args.loss_ratio
+
         # update parameters of net
         if ((batch_idx + 1) % args.accu_steps) == 0:
             # optimizer the net
