@@ -66,7 +66,6 @@ if [ $stage -le 0 ]; then
       --batch-size 128 \
       --accu-steps 1 \
       --feat-dim 64 \
-      --remove-vad \
       --time-dim 8 \
       --avg-size 1 \
       --kernel-size 5,5 \
