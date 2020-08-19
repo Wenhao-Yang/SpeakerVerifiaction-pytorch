@@ -258,6 +258,8 @@ if __name__ == "__main__":
     numofutt = 0
     with open(feat_scp, 'w') as feat_scp_f:
         for item in all_scp_path:
+            if not os.path.exists(item):
+                continue
             for txt in open(item, 'r').readlines():
                 feat_scp_f.write(txt)
                 numofutt += 1
@@ -269,6 +271,8 @@ if __name__ == "__main__":
     utt2dur = os.path.join(out_dir, 'utt2dur')
     with open(utt2dur, 'w') as utt2dur_f:
         for item in all_scp_path:
+            if not os.path.exists(item):
+                continue
             for txt in open(str(item), 'r').readlines():
                 utt2dur_f.write(txt)
                 numofutt += 1
@@ -280,6 +284,8 @@ if __name__ == "__main__":
     utt2num_frames = os.path.join(out_dir, 'utt2num_frames')
     with open(utt2num_frames, 'w') as utt2num_frames_f:
         for item in all_scp_path:
+            if not os.path.exists(item):
+                continue
             for txt in open(str(item), 'r').readlines():
                 utt2num_frames_f.write(txt)
                 numofutt += 1
