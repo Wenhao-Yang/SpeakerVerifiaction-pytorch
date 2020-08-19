@@ -9,6 +9,7 @@
 @Time: 2020/8/19 20:30
 @Overview:
 """
+import pdb
 
 import numpy as np
 import torch
@@ -43,7 +44,7 @@ class fDLR(nn.Module):
         if input.is_cuda:
             new_centers = new_centers.cuda()
 
-        # pdb.set_trace()
+        pdb.set_trace()
         power = -1. * torch.pow(self.input_freq - new_centers, 2)
         power = torch.div(power, 2. * self.bandwidth.pow(2))
 
