@@ -40,7 +40,8 @@ class fDLR(nn.Module):
         new_centers = frequency_center.expand(self.num_filter, self.input_dim)
         if input.is_cuda:
             new_centers = new_centers.cuda()
-        power = -1. * torch.pow(self.input_freq - new_centers, 2).mul(0.5 / self.bandwidth.pow(2))
+        power = -1. * torch.pow(self.input_freq - new_centers, 2)
+        power = torch.div(power, 2. * self.bandwidth.pow(2))
 
         weights = torch.exp(power).mul(self.gain).transpose(0, 1)
 
