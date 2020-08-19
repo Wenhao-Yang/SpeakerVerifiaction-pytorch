@@ -71,6 +71,7 @@ if [ $stage -le 0 ]; then
       --kernel-size 5,5 \
       --test-input-per-file 4 \
       --lr 0.1 \
+      --loss-ratio 0.1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean \
       --resume Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean/checkpoint_100.pth \
