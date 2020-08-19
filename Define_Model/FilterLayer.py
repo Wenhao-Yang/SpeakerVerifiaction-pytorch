@@ -36,7 +36,7 @@ class fDLR(nn.Module):
         for i in range(2, len(centers)):
             bandwidth.append(centers[i] - centers[i - 1])
         self.bandwidth = nn.Parameter(torch.tensor(bandwidth).reshape(num_filter, 1).float())
-        self.gain = nn.Parameter(torch.ones(num_filter, dtype=torch.float32)).reshape(num_filter, 1)
+        self.gain = nn.Parameter(torch.ones(num_filter, dtype=torch.float32).reshape(num_filter, 1))
 
     def forward(self, input):
         frequency_center = self.frequency_center.sort(dim=0).values
