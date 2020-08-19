@@ -261,10 +261,11 @@ def main():
     padding = tuple(padding)
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'inst_norm': args.inst_norm, 'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size,
-                    'time_dim': args.time_dim, 'padding': padding, 'encoder_type': args.encoder_type,
-                    'resnet_size': args.resnet_size, 'embedding_size': args.embedding_size,
-                    'num_classes': len(train_dir.speakers), 'dropout_p': args.dropout_p}
+                    'filter': args.filter, 'inst_norm': args.inst_norm, 'stride': stride, 'fast': args.fast,
+                    'avg_size': args.avg_size, 'time_dim': args.time_dim, 'padding': padding,
+                    'encoder_type': args.encoder_type, 'resnet_size': args.resnet_size,
+                    'embedding_size': args.embedding_size, 'num_classes': len(train_dir.speakers),
+                    'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
 
