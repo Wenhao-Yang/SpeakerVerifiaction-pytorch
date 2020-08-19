@@ -9,7 +9,6 @@
 @Time: 2020/8/19 20:30
 @Overview:
 """
-import pdb
 
 import numpy as np
 import torch
@@ -25,7 +24,8 @@ class fDLR(nn.Module):
         self.sr = sr
 
         input_freq = np.linspace(0, self.sr / 2, input_dim)
-        self.input_freq = torch.from_numpy(input_freq).expand(num_filter, input_dim).float()
+        self.input_freq = nn.Parameter(torch.from_numpy(input_freq).expand(num_filter, input_dim).float(),
+                                       requires_grad=False)
 
         centers = np.linspace(0, hz2mel(sr / 2), num_filter + 2)
         centers = mel2hz(centers)
@@ -43,7 +43,7 @@ class fDLR(nn.Module):
         if input.is_cuda:
             new_centers = new_centers.cuda()
 
-        pdb.set_trace()
+        # pdb.set_trace()
         power = -1. * torch.pow(self.input_freq - new_centers, 2)
         power = torch.div(power, 2. * self.bandwidth.pow(2))
 
