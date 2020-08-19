@@ -53,7 +53,7 @@ if [ $stage -le 0 ]; then
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_${feat} \
-      --nj 12 \
+      --nj 8 \
       --epochs 25 \
       --milestones 10,15,20 \
       --model ${model} \
