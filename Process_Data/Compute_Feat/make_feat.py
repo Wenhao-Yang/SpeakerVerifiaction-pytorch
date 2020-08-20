@@ -250,7 +250,7 @@ if __name__ == "__main__":
 
         task_queue.put(pairs)
     print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
-    num_utt, task_queue.qsize(), str(time.asctime()), nj))
+    task_queue.qsize(), num_utt, str(time.asctime()), nj))
 
     pool = Pool(processes=nj)  # 创建nj个进程
     for i in range(0, nj):
