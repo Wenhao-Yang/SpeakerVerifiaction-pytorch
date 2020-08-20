@@ -507,13 +507,23 @@ if [ $stage -le 75 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+      --out-set ${s}_power_spk \
+      --feat-type spectrogram \
+      --feat-format kaldi \
+      --nfft 320 \
+      --windowsize 0.02 \
+      --nj 18
+
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
+      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
       --out-set ${s}_power_32 \
       --feat-type spectrogram \
       --feat-format kaldi \
       --nfft 320 \
       --windowsize 0.02 \
       --nj 32
-    done
+  done
 fi
 
 stage=1000
