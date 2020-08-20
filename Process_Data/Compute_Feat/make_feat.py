@@ -92,76 +92,79 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
     while True:
         lock.acquire()  # 加上锁
         if not t_queue.empty():
-            comm = task_queue.get()
+            comms = task_queue.get()
             lock.release()  # 释放锁
-            pair = comm.split()
-            key = pair[0]
-            try:
-                if len(pair) > 2:
-                    command = ' '.join(pair[1:])
-                    if command.endswith('|'):
-                        command = command.rstrip('|')
-                    spid, stdout, error = RunCommand(command)
-                    # os.waitpid(spid, 0)
 
-                    temp_wav = temp_dir + '/%s.%s' % (key, args.data_format)
-                    with open(temp_wav, 'wb') as wav_f:
-                        wav_f.write(stdout)
-                    if args.feat_type == 'fbank':
-                        feat, duration = Make_Fbank(filename=temp_wav, filtertype=args.filter_type, use_energy=True,
-                                                    lowfreq=args.lowfreq, log_scale=args.log_scale,
-                                                    nfft=args.nfft, nfilt=args.filters, normalize=args.normalize,
-                                                    duration=True, windowsize=args.windowsize,
-                                                    multi_weight=args.multi_weight)
-                    elif args.feat_type == 'spectrogram':
-                        feat, duration = Make_Spect(wav_path=temp_wav, windowsize=args.windowsize,
-                                                    lowfreq=args.lowfreq, stride=args.stride, duration=True,
-                                                    nfft=args.nfft, normalize=args.normalize)
-                    elif args.feat_type == 'mfcc':
-                        feat, duration = Make_MFCC(filename=temp_wav, numcep=args.numcep, nfilt=args.filters,
-                                                   lowfreq=args.lowfreq, normalize=args.normalize, duration=True,
-                                                   use_energy=True)
+            for comm in comms:
+                pair = comm.split()
+                key = pair[0]
+                try:
+                    if len(pair) > 2:
+                        command = ' '.join(pair[1:])
+                        if command.endswith('|'):
+                            command = command.rstrip('|')
+                        spid, stdout, error = RunCommand(command)
+                        # os.waitpid(spid, 0)
 
-                    os.remove(temp_wav)
+                        temp_wav = temp_dir + '/%s.%s' % (key, args.data_format)
+                        with open(temp_wav, 'wb') as wav_f:
+                            wav_f.write(stdout)
+                        if args.feat_type == 'fbank':
+                            feat, duration = Make_Fbank(filename=temp_wav, filtertype=args.filter_type, use_energy=True,
+                                                        lowfreq=args.lowfreq, log_scale=args.log_scale,
+                                                        nfft=args.nfft, nfilt=args.filters, normalize=args.normalize,
+                                                        duration=True, windowsize=args.windowsize,
+                                                        multi_weight=args.multi_weight)
+                        elif args.feat_type == 'spectrogram':
+                            feat, duration = Make_Spect(wav_path=temp_wav, windowsize=args.windowsize,
+                                                        lowfreq=args.lowfreq, stride=args.stride, duration=True,
+                                                        nfft=args.nfft, normalize=args.normalize)
+                        elif args.feat_type == 'mfcc':
+                            feat, duration = Make_MFCC(filename=temp_wav, numcep=args.numcep, nfilt=args.filters,
+                                                       lowfreq=args.lowfreq, normalize=args.normalize, duration=True,
+                                                       use_energy=True)
 
-                else:
-                    if args.feat_type == 'fbank':
-                        feat, duration = Make_Fbank(filename=pair[1], filtertype=args.filter_type, use_energy=True,
-                                                    nfft=args.nfft, windowsize=args.windowsize, lowfreq=args.lowfreq,
-                                                    log_scale=args.log_scale, nfilt=args.filters, duration=True,
-                                                    normalize=args.normalize, multi_weight=args.multi_weight)
-                    elif args.feat_type == 'spectrogram':
-                        feat, duration = Make_Spect(wav_path=pair[1], windowsize=args.windowsize,
-                                                    bandpass=args.bandpass, lowfreq=args.lowfreq,
-                                                    highfreq=args.highfreq,
-                                                    log_scale=args.log_scale,
-                                                    stride=args.stride, duration=True, nfft=args.nfft,
-                                                    normalize=args.normalize)
-                    elif args.feat_type == 'mfcc':
-                        feat, duration = Make_MFCC(filename=pair[1], numcep=args.numcep, nfilt=args.filters,
-                                                   lowfreq=args.lowfreq,
-                                                   normalize=args.normalize, duration=True, use_energy=True)
-                    # feat = np.load(pair[1]).astype(np.float32)
+                        os.remove(temp_wav)
 
-                feat = feat.astype(np.float32)
-                if args.feat_format == 'kaldi':
-                    kaldi_io.write_mat(feat_ark_f, feat, key='')
-                    offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
-                    # print(offsets)
-                    feat_scp_f.write(key + ' ' + offsets + '\n')
-                elif args.feat_format == 'npy':
-                    npy_path = os.path.join(feat_dir, '%s.npy' % key)
-                    np.save(npy_path, feat)
-                    feat_scp_f.write(key + ' ' + npy_path + '\n')
+                    else:
+                        if args.feat_type == 'fbank':
+                            feat, duration = Make_Fbank(filename=pair[1], filtertype=args.filter_type, use_energy=True,
+                                                        nfft=args.nfft, windowsize=args.windowsize,
+                                                        lowfreq=args.lowfreq,
+                                                        log_scale=args.log_scale, nfilt=args.filters, duration=True,
+                                                        normalize=args.normalize, multi_weight=args.multi_weight)
+                        elif args.feat_type == 'spectrogram':
+                            feat, duration = Make_Spect(wav_path=pair[1], windowsize=args.windowsize,
+                                                        bandpass=args.bandpass, lowfreq=args.lowfreq,
+                                                        highfreq=args.highfreq,
+                                                        log_scale=args.log_scale,
+                                                        stride=args.stride, duration=True, nfft=args.nfft,
+                                                        normalize=args.normalize)
+                        elif args.feat_type == 'mfcc':
+                            feat, duration = Make_MFCC(filename=pair[1], numcep=args.numcep, nfilt=args.filters,
+                                                       lowfreq=args.lowfreq,
+                                                       normalize=args.normalize, duration=True, use_energy=True)
+                        # feat = np.load(pair[1]).astype(np.float32)
 
-                utt2dur_f.write('%s %.6f\n' % (key, duration))
-                utt2num_frames_f.write('%s %d\n' % (key, len(feat)))
-            except Exception as e:
-                print(e)
-                e_queue.put(key)
+                    feat = feat.astype(np.float32)
+                    if args.feat_format == 'kaldi':
+                        kaldi_io.write_mat(feat_ark_f, feat, key='')
+                        offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
+                        # print(offsets)
+                        feat_scp_f.write(key + ' ' + offsets + '\n')
+                    elif args.feat_format == 'npy':
+                        npy_path = os.path.join(feat_dir, '%s.npy' % key)
+                        np.save(npy_path, feat)
+                        feat_scp_f.write(key + ' ' + npy_path + '\n')
+
+                    utt2dur_f.write('%s %.6f\n' % (key, duration))
+                    utt2num_frames_f.write('%s %d\n' % (key, len(feat)))
+                except Exception as e:
+                    print(e)
+                    e_queue.put(key)
 
             # if t_queue.qsize() % 100 == 0:
-            print('\rProcess [%6s] There are [%6s] utterances' \
+            print('\rProcess [%6s] There are [%6s] speakers' \
                   ' left, with [%6s] errors.' % (str(os.getpid()), str(t_queue.qsize()), str(e_queue.qsize())),
                   end='')
         else:
@@ -199,8 +202,10 @@ if __name__ == "__main__":
         os.makedirs(out_dir)
 
     wav_scp_f = os.path.join(data_dir, 'wav.scp')
+    spk2utt_f = os.path.join(data_dir, 'spk2utt')
     assert os.path.exists(data_dir)
     assert os.path.exists(wav_scp_f)
+    assert os.path.exists(spk2utt_f)
 
     if data_dir != out_dir:
         print('Copy wav.scp, spk2utt, utt2spk, trials to %s' % out_dir)
@@ -210,11 +215,26 @@ if __name__ == "__main__":
             if os.path.exists(orig_f):
                 os.system('cp %s %s' % (orig_f, targ_f))
 
+    uid2path = {}
     with open(wav_scp_f, 'r') as f:
-        wav_scp = f.readlines()
-        assert len(wav_scp) > 0
+        for line in f.readlines():
+            ids = line.split()
+            uid = ids[0]
+            uid2path[uid] = line
 
-    num_utt = len(wav_scp)
+        assert len(uid2path.keys()) > 0
+
+    spk2utt = {}
+    with open(spk2utt_f, 'r') as f:
+        for line in f.readlines():
+            ids = line.split()
+            sid = ids[0]
+            uids = ids[1:]
+            spk2utt[sid] = uids
+
+        assert len(spk2utt.keys()) > 0
+
+    num_utt = len(uid2path.keys())
     start_time = time.time()
 
     manager = Manager()
@@ -222,9 +242,15 @@ if __name__ == "__main__":
     task_queue = manager.Queue()
     error_queue = manager.Queue()
 
-    for u in wav_scp:
-        task_queue.put(u)
-    print('Plan to make feats for %d utterances in %s with %d jobs.\n' % (task_queue.qsize(), str(time.asctime()), nj))
+    for sid in spk2utt.keys():
+        pairs = []
+        utts = spk2utt[sid]
+        for uid in utts:
+            pairs.append(uid2path[uid])
+
+        task_queue.put(pairs)
+    print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
+    num_utt, task_queue.qsize(), str(time.asctime()), nj))
 
     pool = Pool(processes=nj)  # 创建nj个进程
     for i in range(0, nj):
