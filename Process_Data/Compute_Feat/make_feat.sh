@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=75
+stage=101
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -516,7 +516,7 @@ if [ $stage -le 75 ]; then
     done
 fi
 
-stage=100
+#stage=100
 if [ $stage -le 80 ]; then
   for s in dev test; do
     python Process_Data/Compute_Feat/make_feat.py \
@@ -529,4 +529,13 @@ if [ $stage -le 80 ]; then
       --windowsize 0.02 \
       --nj 24
     done
+fi
+
+if [ $stage -le 101 ]; then
+  for s in dev test; do
+    python Process_Data/Compute_Feat/conver2lmdb.py \
+      --data-dir ${lstm_dir}/data/vox1/spect/${s}_power \
+      --out-dir ${lstm_dir}/data/vox1/lmdb/spect \
+      --out-set ${s}_power
+  done
 fi
