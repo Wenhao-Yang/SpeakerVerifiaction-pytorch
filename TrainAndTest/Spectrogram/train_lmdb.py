@@ -73,7 +73,7 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--sitw-dir', type=str,
                     default='/home/cca01/work2019/yangwenhao/mysoftware/lstm_speaker_verification/data/sitw',
                     help='path to voxceleb1 test dataset')
-parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
+parser.add_argument('--nj', default=8, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='lmdb', choices=['kaldi', 'npy', 'lmdb'],
                     help='number of jobs to make feats (default: 10)')
 
