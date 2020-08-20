@@ -19,11 +19,11 @@ from torch.utils.data import Dataset
 import Process_Data.constants as c
 
 
-def _read_data_lmdb(env, key, size):
+def _read_data_lmdb(txn, key, size):
     """read data array from lmdb with key (w/ and w/o fixed size)
     size: feat-dim"""
-    with env.begin(write=False) as txn:
-        buf = txn.get(key.encode('ascii'))
+    # with env.begin(write=False) as txn:
+    buf = txn.get(key.encode('ascii'))
     data_flat = np.frombuffer(buf, dtype=np.float32)
 
     return data_flat.reshape(int(data_flat.shape[0] / size), size)
@@ -205,8 +205,9 @@ class LmdbTrainDataset(Dataset):
         # for uid in uid2feat.keys():
         #     for i in range(int(np.ceil(utt2len_dict[uid] / c.NUM_FRAMES_SPECT))):
         #         self.all_utts.append(uid)
-        self.env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
-                             meminit=False)
+        env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
+                        meminit=False)
+        self.env = env.begin(write=False, buffers=True)  # as txn:
         self.speakers = speakers
         self.dataset = dataset
 
@@ -347,8 +348,9 @@ class LmdbTestDataset(Dataset):
 
         print('==>There are {} pairs in test Dataset with {} positive pairs'.format(len(trials_pair), positive_pairs))
 
-        self.env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
-                             meminit=False)
+        env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
+                        meminit=False)
+        self.env = env.begin(write=False, buffers=True)
         self.feat_dim = feat_dim
         self.speakers = speakers
         self.trials_pair = trials_pair
