@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=75
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -507,16 +507,16 @@ if [ $stage -le 75 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-      --out-set ${s}_power_257 \
+      --out-set ${s}_power_36 \
       --feat-type spectrogram \
       --feat-format kaldi \
-      --nfft 512 \
-      --windowsize 0.025 \
-      --nj 18
+      --nfft 320 \
+      --windowsize 0.02 \
+      --nj 36
     done
 fi
 
-#stage=100
+stage=1000
 if [ $stage -le 80 ]; then
   for s in dev test; do
     python Process_Data/Compute_Feat/make_feat.py \
