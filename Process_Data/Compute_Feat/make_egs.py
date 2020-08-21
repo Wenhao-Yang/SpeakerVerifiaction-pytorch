@@ -25,7 +25,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from Process_Data.KaldiDataset import ScriptTrainDataset
+from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptValidDataset
 from Process_Data.audio_augment.common import RunCommand
 from Process_Data.audio_processing import ConcateInput
 
@@ -170,6 +170,10 @@ elif args.feat_format == 'npy':
 train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid)
 
+valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
+                               valid_uid2feat=train_dir.valid_uid2feat, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                               transform=transform)
+
 if __name__ == "__main__":
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -204,9 +208,9 @@ if __name__ == "__main__":
     task_queue = manager.Queue()
     idx_queue = manager.Queue()
     error_queue = manager.Queue()
-    num_utt = len(train_dir)
+    num_utt = len(valid_dir)
 
-    for i in tqdm(range(len(train_dir))):
+    for i in tqdm(range(len(valid_dir))):
         idx_queue.put(i)
 
     # pbar = tqdm(train_dir)
@@ -233,7 +237,7 @@ if __name__ == "__main__":
         ark_dir = os.path.join(args.out_dir, args.feat_type)
         if not os.path.exists(ark_dir):
             os.makedirs(ark_dir)
-        pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
+        pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
         if (i + 1) % 2 == 1:
             pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                               i, task_queue, error_queue, idx_queue))

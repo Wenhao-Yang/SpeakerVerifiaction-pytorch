@@ -551,11 +551,11 @@ if [ $stage -le 101 ]; then
 fi
 
 if [ $stage -le 102 ]; then
-  for s in dev test; do
+  for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox1/spect/${s}_power \
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
       --feat-type spectrogram \
-      --out-set ${s}_power
+      --out-set valid_power
   done
 fi
