@@ -212,10 +212,10 @@ if __name__ == "__main__":
         ark_dir = os.path.join(args.out_dir, args.feat_type)
         if not os.path.exists(ark_dir):
             os.makedirs(ark_dir)
-        if i + 1 % 2 == 1:
-            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, task_queue, error_queue))
 
-        pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
+        pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, task_queue, error_queue))
+        if i + 1 % 2 == 1:
+            pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                  i, task_queue, error_queue))
 
     pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
