@@ -27,7 +27,7 @@ from Process_Data.audio_augment.common import RunCommand
 from Process_Data.audio_processing import ConcateInput
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
-parser.add_argument('--nj', type=int, default=16, metavar='E', help='number of jobs to make feats (default: 10)')
+parser.add_argument('--nj', type=int, default=12, metavar='E', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_reverb_fb64/dev',
                     help='number of jobs to make feats (default: 10)')
