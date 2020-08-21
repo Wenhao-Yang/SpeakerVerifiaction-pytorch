@@ -258,7 +258,7 @@ if [ $stage -le 31 ]; then
   dataset=vox1
   model=GradResNet
   resnet_size=8
-  for loss in asoft amsoft center; do # 32,128,512; 8,32,128
+  for loss in soft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 5,5\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model ${model} \
