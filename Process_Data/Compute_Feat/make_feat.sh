@@ -555,6 +555,7 @@ if [ $stage -le 102 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox1/spect/${s}_power \
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
+      --feat-type spectrogram \
       --out-set ${s}_power
   done
 fi
