@@ -21,7 +21,6 @@ from multiprocessing import Pool, Manager
 
 import kaldi_io
 import numpy as np
-from tqdm import tqdm
 
 from Process_Data.KaldiDataset import ScriptTrainDataset
 from Process_Data.audio_augment.common import RunCommand
@@ -54,7 +53,27 @@ parser.add_argument('--conf', type=str, default='condf/spect.conf', metavar='E',
 args = parser.parse_args()
 
 
-def PrepareEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue):
+def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
+    while True:
+        lock_i.acquire()  # 加上锁
+        if not idx_queue.empty():
+            idx = idx_queue.get()
+            lock_i.release()  # 释放锁
+
+            feature, label = train_dir.__getitem__(idx)
+            pairs = (label, feature)
+
+            lock_t.acquire()
+            t_queue.put(pairs)
+            lock_t.release()
+
+        else:
+            lock_i.release()  # 释放锁
+            # print('\n>> Process {}:  queue empty!'.format(os.getpid()))
+            break
+
+
+def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue):
     #  wav_scp = os.path.join(data_path, 'wav.scp')
     feat_scp = os.path.join(out_dir, 'feat.%d.temp.scp' % proid)
     feat_scp_f = open(feat_scp, 'w')
@@ -103,10 +122,13 @@ def PrepareEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                   ' left, with [%6s] errors.' % (str(os.getpid()), str(t_queue.qsize()), str(e_queue.qsize())),
                   end='')
         else:
-            lock.release()  # 释放锁
-            # print('\n>> Process {}:  queue empty!'.format(os.getpid()))
-            break
-
+            time.sleep(2)
+            if t_queue.empty():
+                lock.release()  # 释放锁
+                # print('\n>> Process {}:  queue empty!'.format(os.getpid()))
+                break
+            else:
+                lock.release()  # 释放锁
     feat_scp_f.close()
 
     if args.feat_format == 'kaldi':
@@ -163,18 +185,23 @@ if __name__ == "__main__":
     start_time = time.time()
 
     manager = Manager()
-    lock = manager.Lock()
+    lock_i = manager.Lock()
+    lock_t = manager.Lock()
     task_queue = manager.Queue()
+    idx_queue = manager.Queue()
     error_queue = manager.Queue()
     num_utt = len(train_dir)
 
-    pbar = tqdm(train_dir)
-    for feature, label in pbar:
-        pairs = (label, feature)
-        task_queue.put(pairs)
+    for i in range(len(train_dir)):
+        idx_queue.put(i)
+
+    # pbar = tqdm(train_dir)
+    # for feature, label in pbar:
+    #     pairs = (label, feature)
+    #     task_queue.put(pairs)
 
     print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
-        task_queue.qsize(), num_utt, str(time.asctime()), nj))
+        idx_queue.qsize(), num_utt, str(time.asctime()), nj))
 
     pool = Pool(processes=nj)  # 创建nj个进程
     for i in range(0, nj):
@@ -185,8 +212,10 @@ if __name__ == "__main__":
         ark_dir = os.path.join(args.out_dir, args.feat_type)
         if not os.path.exists(ark_dir):
             os.makedirs(ark_dir)
+        if i + 1 % 2 == 1:
+            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, task_queue, error_queue))
 
-        pool.apply_async(PrepareEgProcess, args=(lock, write_dir, ark_dir, args.out_set,
+        pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                  i, task_queue, error_queue))
 
     pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
