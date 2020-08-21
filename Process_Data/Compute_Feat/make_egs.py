@@ -46,6 +46,8 @@ parser.add_argument('--remove-vad', action='store_true', default=False, help='us
 parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--input-per-spks', type=int, default=384, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
+parser.add_argument('--num-valid', type=int, default=2, metavar='IPFT',
+                    help='input sample per file for testing (default: 8)')
 parser.add_argument('--conf', type=str, default='condf/spect.conf', metavar='E',
                     help='number of epochs to train (default: 10)')
 args = parser.parse_args()
