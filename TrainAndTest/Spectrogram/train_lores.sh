@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=31
+stage=50
 
 waited=0
 while [ `ps 113458 | wc -l` -eq 2 ]; do
@@ -292,7 +292,7 @@ if [ $stage -le 31 ]; then
 
 fi
 
-stage=50
+#stage=50
 if [ $stage -le 40 ]; then
   datasets=all_army
   model=LoResNet
@@ -322,6 +322,44 @@ if [ $stage -le 40 ]; then
       --weight-decay 0.001 \
       --dropout-p 0.25 \
       --gpu-id 0 \
+      --loss-type ${loss}
+  done
+fi
+
+#stage=50
+if [ $stage -le 50 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=vox1
+  model=GradResNet
+  resnet_size=8
+  for loss in soft; do
+    python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_power \
+      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_power \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_power \
+      --feat-format kaldi \
+      --inst-norm \
+      --resnet-size 8 \
+      --nj 10 \
+      --epochs 24 \
+      --lr 0.1 \
+      --milestones 10,15,20 \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_1.pth \
+      --channels 64,128,256 \
+      --embedding-size 128 \
+      --avg-size 4 \
+      --num-valid 2 \
+      --alpha 12 \
+      --margin 0.4 \
+      --s 30 \
+      --m 3 \
+      --loss-ratio 0.05 \
+      --weight-decay 0.001 \
+      --dropout-p 0.25 \
+      --gpu-id 0 \
+      --cos-sim \
       --loss-type ${loss}
   done
 fi
