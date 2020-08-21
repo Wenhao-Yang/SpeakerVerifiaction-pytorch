@@ -21,6 +21,7 @@ from multiprocessing import Pool, Manager
 
 import kaldi_io
 import numpy as np
+from tqdm import tqdm
 
 from Process_Data.KaldiDataset import ScriptTrainDataset
 from Process_Data.audio_augment.common import RunCommand
@@ -167,7 +168,8 @@ if __name__ == "__main__":
     error_queue = manager.Queue()
     num_utt = len(train_dir)
 
-    for feature, label in train_dir:
+    pbar = tqdm(train_dir)
+    for feature, label in pbar:
         pairs = (label, feature)
         task_queue.put(pairs)
 
