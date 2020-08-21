@@ -122,7 +122,10 @@ def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue):
                   ' left, with [%6s] errors.' % (str(os.getpid()), str(t_queue.qsize()), str(e_queue.qsize())),
                   end='')
         else:
-            time.sleep(2)
+            lock.release()
+
+            time.sleep(5)
+            lock.acquire()
             if t_queue.empty():
                 lock.release()  # 释放锁
                 # print('\n>> Process {}:  queue empty!'.format(os.getpid()))
