@@ -73,7 +73,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
             break
 
 
-def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue):
+def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queue):
     #  wav_scp = os.path.join(data_path, 'wav.scp')
     feat_scp = os.path.join(out_dir, 'feat.%d.temp.scp' % proid)
     feat_scp_f = open(feat_scp, 'w')
@@ -121,17 +121,12 @@ def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue):
             print('\rProcess [%6s] There are [%6s] egs' \
                   ' left, with [%6s] errors.' % (str(os.getpid()), str(t_queue.qsize()), str(e_queue.qsize())),
                   end='')
-        else:
+        elif i_queue.empty():
             lock.release()
-
             time.sleep(5)
-            lock.acquire()
-            if t_queue.empty():
-                lock.release()  # 释放锁
-                # print('\n>> Process {}:  queue empty!'.format(os.getpid()))
-                break
-            else:
-                lock.release()  # 释放锁
+            # print('\n>> Process {}:  queue empty!'.format(os.getpid()))
+            break
+
     feat_scp_f.close()
 
     if args.feat_format == 'kaldi':
