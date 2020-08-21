@@ -21,6 +21,7 @@ from multiprocessing import Pool, Manager
 
 import kaldi_io
 import numpy as np
+from tqdm import tqdm
 
 from Process_Data.KaldiDataset import ScriptTrainDataset
 from Process_Data.audio_augment.common import RunCommand
@@ -54,6 +55,7 @@ args = parser.parse_args()
 
 
 def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
+
     while True:
         lock_i.acquire()  # 加上锁
         if not idx_queue.empty():
@@ -62,7 +64,6 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
 
             feature, label = train_dir.__getitem__(idx)
             pairs = (label, feature)
-
             # lock_t.acquire()
             t_queue.put(pairs)
             # lock_t.release()
@@ -119,7 +120,8 @@ def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i
 
             # if t_queue.qsize() % 100 == 0:
             print('\rProcess [%6s] There are [%6s] egs' \
-                  ' left, with [%6s] errors.' % (str(os.getpid()), str(t_queue.qsize()), str(e_queue.qsize())),
+                  ' left, with [%6s] errors.' % (
+                  str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())),
                   end='')
         elif i_queue.empty():
             lock.release()
@@ -190,7 +192,7 @@ if __name__ == "__main__":
     error_queue = manager.Queue()
     num_utt = len(train_dir)
 
-    for i in range(len(train_dir)):
+    for i in tqdm(range(len(train_dir))):
         idx_queue.put(i)
 
     # pbar = tqdm(train_dir)
