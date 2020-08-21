@@ -63,9 +63,9 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
             feature, label = train_dir.__getitem__(idx)
             pairs = (label, feature)
 
-            lock_t.acquire()
+            # lock_t.acquire()
             t_queue.put(pairs)
-            lock_t.release()
+            # lock_t.release()
 
         else:
             lock_i.release()  # 释放锁
