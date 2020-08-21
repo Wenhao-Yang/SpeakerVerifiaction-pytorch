@@ -2,7 +2,6 @@
 # encoding: utf-8
 import os
 import pathlib
-import pdb
 import traceback
 
 import librosa
@@ -877,7 +876,7 @@ class totensor(object):
     interpolation: Default: PIL.Image.BILINEAR
     """
 
-    def __call__(self, pic):
+    def __call__(self, input):
         """
         Args:
             pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
@@ -885,20 +884,9 @@ class totensor(object):
         Returns:
             Tensor: Converted image.
         """
-        if isinstance(pic, np.ndarray):
-            # handle numpy array
-            #img = torch.from_numpy(pic.transpose((0, 2, 1)))
-            #return img.float()
-            # pdb.set_trace()
-            try:
-                img = torch.FloatTensor(pic.transpose((0, 2, 1)))
-            except Exception:
-                pdb.set_trace()
-            #img = np.float32(pic.transpose((0, 2, 1)))
-            return img
+        input = torch.tensor(input, dtype=torch.float32)
+        return input.unsqueeze(0)
 
-            #img = torch.from_numpy(pic)
-            # backward compatibility
 
 class to2tensor(object):
     """Rescales the input PIL.Image to the given 'size'.
