@@ -253,18 +253,6 @@ if len(test_dir) < args.veri_pairs:
 else:
     test_dir.partition(args.veri_pairs)
 
-# indices = list(range(len(test_dir)))
-# random.shuffle(indices)
-# indices = indices[:args.veri_pairs]
-# test_part = torch.utils.data.Subset(test_dir, indices)
-
-# sitw_test_dir = SitwTestDataset(sitw_dir=args.sitw_dir, sitw_set='eval', transform=transform_T, set_suffix='')
-# if len(sitw_test_dir) < args.veri_pairs:
-#     args.veri_pairs = len(sitw_test_dir)
-#     print('There are %d verification pairs in sitw eval.' % len(sitw_test_dir))
-# else:
-#     sitw_test_dir.partition(args.veri_pairs)
-
 valid_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
 
 
@@ -365,7 +353,7 @@ def main():
     # start = 0
     end = start + args.epochs
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=True, **kwargs)
+    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size, shuffle=False, **kwargs)
     # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
