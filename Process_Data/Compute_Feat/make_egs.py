@@ -74,7 +74,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
             break
 
 
-def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queue):
+def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queue):
     #  wav_scp = os.path.join(data_path, 'wav.scp')
     feat_scp = os.path.join(out_dir, 'feat.%d.temp.scp' % proid)
     feat_scp_f = open(feat_scp, 'w')
@@ -96,18 +96,20 @@ def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i
         os.makedirs(temp_dir)
 
     while True:
-        lock.acquire()  # 加上锁
+        lock_t.acquire()  # 加上锁
         if not t_queue.empty():
             comm = task_queue.get()
-            lock.release()  # 释放锁
+            lock_t.release()  # 释放锁
 
             try:
                 key = str(comm[0])
                 feat = comm[1].astype(np.float32)
+
                 # if args.feat_format == 'kaldi':
                 kaldi_io.write_mat(feat_ark_f, feat, key='')
                 offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
                 # print(offsets)
+
                 feat_scp_f.write(key + ' ' + offsets + '\n')
                 # elif args.feat_format == 'npy':
                 #     npy_path = os.path.join(feat_dir, '%s.npy' % key)
@@ -124,10 +126,12 @@ def SaveEgProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i
                   str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())),
                   end='')
         elif i_queue.empty():
-            lock.release()
+            lock_t.release()
             time.sleep(5)
             # print('\n>> Process {}:  queue empty!'.format(os.getpid()))
             break
+        else:
+            lock_t.release()
 
     feat_scp_f.close()
 
