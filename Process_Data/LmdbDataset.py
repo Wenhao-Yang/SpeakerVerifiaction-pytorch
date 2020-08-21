@@ -448,6 +448,7 @@ class EgsDataset(Dataset):
         print('==> There are {} speakers in Dataset.'.format(len(spks)))
         print('    There are {} utterances in Dataset'.format(len(dataset)))
 
+        self.dataset = dataset
         self.feat_dim = feat_dim
         self.loader = loader
         self.transform = transform
