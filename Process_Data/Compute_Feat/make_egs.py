@@ -235,7 +235,7 @@ if __name__ == "__main__":
         if not os.path.exists(ark_dir):
             os.makedirs(ark_dir)
         pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
-        if i + 1 % 2 == 1:
+        if (i + 1) % 2 == 1:
             pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                               i, task_queue, error_queue, idx_queue))
 
