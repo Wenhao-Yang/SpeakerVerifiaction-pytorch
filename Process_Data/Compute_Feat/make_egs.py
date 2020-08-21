@@ -127,11 +127,12 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                   end='')
         elif i_queue.empty():
             lock_t.release()
-            time.sleep(5)
-            # print('\n>> Process {}:  queue empty!'.format(os.getpid()))
+
+            print('\n>> Process {}: all queue empty!'.format(os.getpid()))
             break
         else:
             lock_t.release()
+            time.sleep(5)
 
     feat_scp_f.close()
 
