@@ -262,8 +262,8 @@ if [ $stage -le 31 ]; then
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 5,5\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model ${model} \
-      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/dev_power \
-      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/test_power \
+      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/dev_power_spk \
+      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/test_power_spk \
       --input-per-spks 224 \
       --feat-format kaldi \
       --nj 10 \
@@ -276,8 +276,8 @@ if [ $stage -le 31 ]; then
       --batch-size 128 \
       --milestones 3,7,10 \
       --channels 64,128,256 \
-      --check-path Data/checkpoint/GradResNet8_mean/${dataset}_power/spect_time/${loss}_dp25 \
-      --resume Data/checkpoint/GradResNet8_mean/${dataset}_power/spect_time/soft_dp25/checkpoint_24.pth \
+      --check-path Data/checkpoint/GradResNet8_mean/${dataset}_power_spk/spect_time/${loss}_dp25 \
+      --resume Data/checkpoint/GradResNet8_mean/${dataset}_power_spk/spect_time/soft_dp25/checkpoint_24.pth \
       --loss-type ${loss} \
       --finetune \
       --margin 0.3 \
