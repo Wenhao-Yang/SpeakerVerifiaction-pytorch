@@ -67,8 +67,8 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
             # lock_t.acquire()
             t_queue.put(pairs)
             # lock_t.release()
-            print('\rProcess [%6s] There are [%6s] egs' \
-                  ' left.' % (str(os.getpid()), str(idx_queue.qsize())), end='')
+            # print('\rProcess [%6s] There are [%6s] egs' \
+            #       ' left.' % (str(os.getpid()), str(idx_queue.qsize())), end='')
         else:
             lock_i.release()  # 释放锁
             print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
@@ -105,6 +105,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             try:
                 key = str(comm[0])
                 feat = comm[1].astype(np.float32)
+                print(feat.shape)
 
                 # if args.feat_format == 'kaldi':
                 kaldi_io.write_mat(feat_ark_f, feat, key='')
