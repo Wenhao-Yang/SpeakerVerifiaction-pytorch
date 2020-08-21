@@ -14,6 +14,7 @@ import random
 
 import lmdb
 import numpy as np
+from kaldi_io import read_mat
 from torch.utils.data import Dataset
 
 import Process_Data.constants as c
@@ -422,3 +423,46 @@ class LmdbTestDataset(Dataset):
 
     def __len__(self):
         return len(self.trials_pair)
+
+
+class EgsDataset(Dataset):
+    def __init__(self, dir, feat_dim, samples_per_speaker, transform, loader=read_mat,
+                 return_uid=False):
+
+        feat_scp = dir + '/feats.scp'
+
+        if not os.path.exists(feat_scp):
+            raise FileExistsError(feat_scp)
+
+        dataset = []
+        spks = []
+        with open(feat_scp, 'r') as u:
+            all_cls_upath = u.readlines()
+            for line in all_cls_upath:
+                cls, upath = line.split()
+                cls = int(cls)
+                if cls not in spks:
+                    spks.append(cls)
+
+                dataset.append((cls, upath))
+
+        print('==> There are {} speakers in Dataset.'.format(len(spks)))
+        print('    There are {} utterances in Dataset'.format(len(dataset)))
+
+        self.feat_dim = feat_dim
+        self.loader = loader
+        self.transform = transform
+        self.samples_per_speaker = samples_per_speaker
+        self.num_spks = len(spks)
+        self.return_uid = return_uid
+
+    def __getitem__(self, idx):
+
+        label, upath = self.dataset[idx]
+        y = self.loader(upath)
+        feature = self.transform(y)
+
+        return feature, label
+
+    def __len__(self):
+        return len(self.dataset)  # 返回一个epoch的采样数
