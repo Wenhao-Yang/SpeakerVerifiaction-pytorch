@@ -44,7 +44,8 @@ parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
-
+parser.add_argument('--input-per-spks', type=int, default=384, metavar='IPFT',
+                    help='input sample per file for testing (default: 8)')
 parser.add_argument('--conf', type=str, default='condf/spect.conf', metavar='E',
                     help='number of epochs to train (default: 10)')
 args = parser.parse_args()
@@ -130,7 +131,7 @@ if args.feat_format == 'kaldi':
 elif args.feat_format == 'npy':
     file_loader = np.load
 
-train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
+train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid)
 
 if __name__ == "__main__":
