@@ -543,9 +543,17 @@ fi
 if [ $stage -le 102 ]; then
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/vox1/spect/${s}_power \
+      --data-dir ${lstm_dir}/data/vox1/spect/${s}_power_257 \
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
       --feat-type spectrogram \
-      --out-set valid_power
+      --train \
+      --out-set dev_power_257
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox1/spect/${s}_power_257 \
+      --out-dir ${lstm_dir}/data/vox1/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --out-set valid_power_257
   done
 fi

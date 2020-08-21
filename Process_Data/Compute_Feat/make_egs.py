@@ -45,6 +45,8 @@ parser.add_argument('--num-frames', type=int, default=300, metavar='E',
 
 parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
                     help='number of jobs to make feats (default: 10)')
+parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
+
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--input-per-spks', type=int, default=384, metavar='IPFT',
@@ -208,42 +210,60 @@ if __name__ == "__main__":
     task_queue = manager.Queue()
     idx_queue = manager.Queue()
     error_queue = manager.Queue()
-    num_utt = len(valid_dir)
 
-    for i in tqdm(range(len(valid_dir))):
-        idx_queue.put(i)
+    if args.train:
 
-    # pbar = tqdm(train_dir)
-    # for feature, label in pbar:
-    #     pairs = (label, feature)
-    #     task_queue.put(pairs)
+        num_utt = len(train_dir)
 
-    print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
-        idx_queue.qsize(), num_utt, str(time.asctime()), nj))
+        for i in tqdm(range(len(train_dir))):
+            idx_queue.put(i)
 
-    # pool = Pool(processes=nj)  # 创建nj个进程
-    # for i in range(0, nj):
-    #
-    #
-    # pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
-    # pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
+        print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
+            idx_queue.qsize(), num_utt, str(time.asctime()), nj))
 
-    pool = Pool(processes=int(nj * 1.5))  # 创建nj个进程
-    for i in range(0, nj):
-        write_dir = os.path.join(out_dir, 'Split%d/%d' % (nj, i))
-        if not os.path.exists(write_dir):
-            os.makedirs(write_dir)
+        pool = Pool(processes=int(nj * 2))  # 创建nj个进程
+        for i in range(0, nj):
+            write_dir = os.path.join(out_dir, 'Split%d/%d' % (nj, i))
+            if not os.path.exists(write_dir):
+                os.makedirs(write_dir)
 
-        ark_dir = os.path.join(args.out_dir, args.feat_type)
-        if not os.path.exists(ark_dir):
-            os.makedirs(ark_dir)
-        pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
-        if (i + 1) % 2 == 1:
+            ark_dir = os.path.join(args.out_dir, args.feat_type)
+            if not os.path.exists(ark_dir):
+                os.makedirs(ark_dir)
+            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
+            # if (i + 1) % 2 == 1:
             pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
-                                              i, task_queue, error_queue, idx_queue))
+                                                  i, task_queue, error_queue, idx_queue))
 
-    pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
-    pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
+        pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
+        pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
+    else:
+
+        # valid set
+        num_utt = len(valid_dir)
+
+        for i in tqdm(range(len(valid_dir))):
+            idx_queue.put(i)
+
+        print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
+            idx_queue.qsize(), num_utt, str(time.asctime()), nj))
+
+        pool = Pool(processes=int(nj * 1.5))  # 创建nj个进程
+        for i in range(0, nj):
+            write_dir = os.path.join(out_dir, 'Split%d/%d' % (nj, i))
+            if not os.path.exists(write_dir):
+                os.makedirs(write_dir)
+
+            ark_dir = os.path.join(args.out_dir, args.feat_type)
+            if not os.path.exists(ark_dir):
+                os.makedirs(ark_dir)
+            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
+            if (i + 1) % 2 == 1:
+                pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
+                                                      i, task_queue, error_queue, idx_queue))
+
+        pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
+        pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
 
     if error_queue.qsize() > 0:
         print('\n>> Saving Completed with errors in: ')
@@ -272,6 +292,7 @@ if __name__ == "__main__":
     print('Delete tmp files in: %s' % Split_dir)
     if args.compress:
         shutil.rmtree(Split_dir)
+
     end_time = time.time()
     print('For multi process Completed, write all files in: %s. And %.2fs collapse.' % (out_dir, end_time - start_time))
     sys.exit()
