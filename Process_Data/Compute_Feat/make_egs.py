@@ -209,12 +209,12 @@ if __name__ == "__main__":
     print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
         idx_queue.qsize(), num_utt, str(time.asctime()), nj))
 
-    pool = Pool(processes=nj)  # 创建nj个进程
-    for i in range(0, nj):
-        pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
-
-    pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
-    pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
+    # pool = Pool(processes=nj)  # 创建nj个进程
+    # for i in range(0, nj):
+    #
+    #
+    # pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
+    # pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
 
 
     pool = Pool(processes=nj)  # 创建nj个进程
@@ -226,8 +226,9 @@ if __name__ == "__main__":
         ark_dir = os.path.join(args.out_dir, args.feat_type)
         if not os.path.exists(ark_dir):
             os.makedirs(ark_dir)
-
-        pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
+        pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
+        if i + 1 % 2 == 1:
+            pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                               i, task_queue, error_queue, idx_queue))
 
     pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
