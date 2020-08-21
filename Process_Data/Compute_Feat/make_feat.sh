@@ -553,7 +553,6 @@ if [ $stage -le 102 ]; then
       --data-dir ${lstm_dir}/data/vox1/spect/${s}_power_257 \
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
       --feat-type spectrogram \
-      --train \
       --out-set valid_power_257
   done
 fi
