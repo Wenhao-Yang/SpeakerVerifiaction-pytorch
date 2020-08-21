@@ -14,6 +14,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import random
 import shutil
 import sys
 import time
@@ -21,6 +22,7 @@ from multiprocessing import Pool, Manager
 
 import kaldi_io
 import numpy as np
+import torch
 from tqdm import tqdm
 
 from Process_Data.KaldiDataset import ScriptTrainDataset
@@ -49,6 +51,8 @@ parser.add_argument('--input-per-spks', type=int, default=384, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
 parser.add_argument('--num-valid', type=int, default=2, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
+parser.add_argument('--seed', type=int, default=123456, metavar='S',
+                    help='random seed (default: 0)')
 parser.add_argument('--conf', type=str, default='condf/spect.conf', metavar='E',
                     help='number of epochs to train (default: 10)')
 args = parser.parse_args()
@@ -167,6 +171,9 @@ train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input
                                transform=transform, num_valid=args.num_valid)
 
 if __name__ == "__main__":
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    random.seed(args.seed)
 
     nj = args.nj
     data_dir = args.data_dir
