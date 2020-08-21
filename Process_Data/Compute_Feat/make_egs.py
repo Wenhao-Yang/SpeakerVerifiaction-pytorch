@@ -30,7 +30,7 @@ from Process_Data.audio_augment.common import RunCommand
 from Process_Data.audio_processing import ConcateInput
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
-parser.add_argument('--nj', type=int, default=12, metavar='E', help='number of jobs to make feats (default: 10)')
+parser.add_argument('--nj', type=int, default=18, metavar='E', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_reverb_fb64/dev',
                     help='number of jobs to make feats (default: 10)')
@@ -224,8 +224,7 @@ if __name__ == "__main__":
     # pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
     # pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
 
-
-    pool = Pool(processes=nj)  # 创建nj个进程
+    pool = Pool(processes=int(nj * 1.5))  # 创建nj个进程
     for i in range(0, nj):
         write_dir = os.path.join(out_dir, 'Split%d/%d' % (nj, i))
         if not os.path.exists(write_dir):
