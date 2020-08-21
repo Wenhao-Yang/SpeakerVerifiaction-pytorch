@@ -42,7 +42,7 @@ parser.add_argument('--num-frames', type=int, default=300, metavar='E',
 
 parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
                     help='number of jobs to make feats (default: 10)')
-
+parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
 
 parser.add_argument('--conf', type=str, default='condf/spect.conf', metavar='E',
