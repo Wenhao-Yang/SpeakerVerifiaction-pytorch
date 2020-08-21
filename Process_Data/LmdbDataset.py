@@ -426,8 +426,7 @@ class LmdbTestDataset(Dataset):
 
 
 class EgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, samples_per_speaker, transform, loader=read_mat,
-                 return_uid=False):
+    def __init__(self, dir, feat_dim, transform, loader=read_mat):
 
         feat_scp = dir + '/feats.scp'
 
@@ -452,9 +451,7 @@ class EgsDataset(Dataset):
         self.feat_dim = feat_dim
         self.loader = loader
         self.transform = transform
-        self.samples_per_speaker = samples_per_speaker
         self.num_spks = len(spks)
-        self.return_uid = return_uid
 
     def __getitem__(self, idx):
 
