@@ -262,8 +262,8 @@ if [ $stage -le 31 ]; then
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 5,5\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model ${model} \
-      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/dev_power_spk \
-      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/test_power_spk \
+      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/dev_power_32 \
+      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/${dataset}/spect/test_power_32 \
       --input-per-spks 224 \
       --feat-format kaldi \
       --nj 10 \
