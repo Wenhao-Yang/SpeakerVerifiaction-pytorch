@@ -74,7 +74,7 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--sitw-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
                     help='path to voxceleb1 test dataset')
-parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
+parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
 
@@ -120,7 +120,7 @@ parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
 
-parser.add_argument('--embedding-size', type=int, default=1024, metavar='ES',
+parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                     help='Dimensionality of the embedding')
 parser.add_argument('--batch-size', type=int, default=128, metavar='BS',
                     help='input batch size for training (default: 128)')
