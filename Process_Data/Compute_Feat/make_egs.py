@@ -211,7 +211,7 @@ if __name__ == "__main__":
 
     pool = Pool(processes=nj)  # 创建nj个进程
     for i in range(0, nj):
-        pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, task_queue, error_queue))
+        pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
 
     pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
     pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
