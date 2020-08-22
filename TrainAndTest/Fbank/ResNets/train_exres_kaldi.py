@@ -102,10 +102,8 @@ parser.add_argument('--veri-pairs', type=int, default=12800, metavar='VP',
                     help='number of epochs to train (default: 10)')
 
 # Training options
-parser.add_argument('--cos-sim', action='store_true', default=True,
-                    help='using Cosine similarity')
-parser.add_argument('--remove-vad', action='store_true', default=False,
-                    help='using Cosine similarity')
+parser.add_argument('--cos-sim', action='store_true', default=True, help='using Cosine similarity')
+parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--encoder-type', type=str, default='SAP',
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',

@@ -183,3 +183,48 @@ if [ $stage -le 15 ]; then
       --loss-type ${loss}
   done
 fi
+
+if [ $stage -le 20 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  model=ExResNet
+  datasets=vox1
+  feat=power_257
+  loss=soft
+
+  for encod in STAP ; do
+    echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_${feat} \
+      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_${feat} \
+      --test-dir ${lstm_dir}n/data/vox1/egs/spect/test_${feat} \
+      --nj 10 \
+      --epochs 25 \
+      --milestones 10,15,20 \
+      --model ${model} \
+      --resnet-size 34 \
+      --stride 2 \
+      --inst-norm \
+      --filter \
+      --feat-format kaldi \
+      --embedding-size 128 \
+      --batch-size 128 \
+      --accu-steps 1 \
+      --feat-dim 64 \
+      --input-dim 257 \
+      --time-dim 8 \
+      --avg-size 1 \
+      --kernel-size 5,5 \
+      --test-input-per-file 4 \
+      --lr 0.1 \
+      --loss-ratio 0.1 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean \
+      --resume Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean/checkpoint_100.pth \
+      --input-per-spks 384 \
+      --veri-pairs 9600 \
+      --gpu-id 0 \
+      --num-valid 2 \
+      --loss-type soft
+
+  done
+fi

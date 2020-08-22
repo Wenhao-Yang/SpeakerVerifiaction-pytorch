@@ -74,6 +74,8 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--sitw-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
+
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
@@ -106,20 +108,22 @@ parser.add_argument('--veri-pairs', type=int, default=20000, metavar='VP',
 parser.add_argument('--model', type=str, default='GradResNet', help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
+parser.add_argument('--filter', action='store_true', default=False, help='replace batchnorm with instance norm')
 parser.add_argument('--inst-norm', action='store_true', default=False,
                     help='replace batchnorm with instance norm')
+parser.add_argument('--encoder-type', type=str, default='SAP',
+                    help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
-parser.add_argument('--feat-dim', default=161, type=int, metavar='FEAT',
-                    help='acoustic feature dimension')
-parser.add_argument('--remove-vad', action='store_true', default=False,
-                    help='using Cosine similarity')
+parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
+parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
+
 
 parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
-
+parser.add_argument('--time-dim', default=2, type=int, metavar='FEAT', help='acoustic feature dimension')
 parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                     help='Dimensionality of the embedding')
 parser.add_argument('--batch-size', type=int, default=128, metavar='BS',
@@ -271,19 +275,21 @@ def main():
 
     kernel_size = tuple(kernel_size)
     padding = tuple(padding)
+    stride = args.stride.split(',')
+    stride = [int(x) for x in stride]
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
 
-    model_kwargs = {'embedding_size': args.embedding_size,
-                    'inst_norm': args.inst_norm,
+    model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
+                    'filter': args.filter, 'inst_norm': args.inst_norm, 'stride': stride, 'fast': args.fast,
+                    'avg_size': args.avg_size, 'time_dim': args.time_dim, 'padding': padding,
+                    'encoder_type': args.encoder_type,
+                    'embedding_size': args.embedding_size,
                     'resnet_size': args.resnet_size,
                     'num_classes': train_dir.num_spks,
                     'channels': channels,
-                    'avg_size': args.avg_size,
                     'alpha': args.alpha,
-                    'kernel_size': kernel_size,
-                    'padding': padding,
                     'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
@@ -337,6 +343,13 @@ def main():
                                          {'params': rest_params}],
                                         lr=args.lr, weight_decay=args.weight_decay,
                                         momentum=args.momentum)
+    if args.filter:
+        filter_params = list(map(id, model.filter_layer.parameters()))
+        rest_params = filter(lambda p: id(p) not in filter_params, model.parameters())
+        optimizer = torch.optim.SGD([{'params': model.filter_layer.parameters(), 'lr': args.lr * 0.1},
+                                     {'params': rest_params}],
+                                    lr=args.lr, weight_decay=args.weight_decay,
+                                    momentum=args.momentum)
 
     if args.scheduler == 'exp':
         scheduler = ExponentialLR(optimizer, gamma=args.gamma)
