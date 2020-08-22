@@ -83,7 +83,7 @@ if [ $stage -le 0 ]; then
 
   done
 fi
-stage=100
+#stage=100
 
 if [ $stage -le 1 ]; then
 #  for loss in center amsoft ; do/
