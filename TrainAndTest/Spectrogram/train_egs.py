@@ -253,7 +253,7 @@ if len(test_dir) < args.veri_pairs:
 else:
     test_dir.partition(args.veri_pairs)
 
-valid_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
+valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
 
 
 def main():

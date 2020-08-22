@@ -340,7 +340,7 @@ if [ $stage -le 50 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_power \
       --feat-format kaldi \
       --inst-norm \
-      --resnet-size 8 \
+      --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 24 \
       --lr 0.1 \
