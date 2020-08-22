@@ -383,7 +383,10 @@ def main():
         for i in range(len(ce)):
             if ce[i] != None:
                 ce[i] = ce[i].cuda()
-        print('Dropout is {}.'.format(model.dropout_p))
+        try:
+            print('Dropout is {}.'.format(model.dropout_p))
+        except:
+            pass
 
     for epoch in range(start, end):
         # pdb.set_trace()
