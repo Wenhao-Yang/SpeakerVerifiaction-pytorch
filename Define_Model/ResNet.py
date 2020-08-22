@@ -316,6 +316,7 @@ class ExporingResNet(nn.Module):
         # print(x.shape)
         if self.filter:
             x = self.filter_layer(x)
+            x = torch.log(x)
 
         if self.inst_norm:
             x = x - torch.mean(x, dim=-2, keepdim=True)
