@@ -196,7 +196,7 @@ if [ $stage -le 20 ]; then
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_${feat} \
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_${feat} \
-      --test-dir ${lstm_dir}n/data/vox1/egs/spect/test_${feat} \
+      --test-dir ${lstm_dir}n/data/vox1/spect/test_${feat} \
       --nj 10 \
       --epochs 25 \
       --milestones 10,15,20 \
