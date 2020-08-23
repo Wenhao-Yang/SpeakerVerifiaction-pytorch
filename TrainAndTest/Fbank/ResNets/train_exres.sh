@@ -221,6 +221,7 @@ if [ $stage -le 20 ]; then
       --check-path Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean \
       --resume Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean/checkpoint_100.pth \
       --input-per-spks 384 \
+      --cos-sim \
       --veri-pairs 9600 \
       --gpu-id 0 \
       --num-valid 2 \
