@@ -347,13 +347,13 @@ def main():
                                          {'params': rest_params}],
                                         lr=args.lr, weight_decay=args.weight_decay,
                                         momentum=args.momentum)
-    if args.filter:
-        filter_params = list(map(id, model.filter_layer.parameters()))
-        rest_params = filter(lambda p: id(p) not in filter_params, model.parameters())
-        optimizer = torch.optim.SGD([{'params': model.filter_layer.parameters(), 'lr': args.lr * 0.1},
-                                     {'params': rest_params}],
-                                    lr=args.lr, weight_decay=args.weight_decay,
-                                    momentum=args.momentum)
+    # if args.filter:
+    #     filter_params = list(map(id, model.filter_layer.parameters()))
+    #     rest_params = filter(lambda p: id(p) not in filter_params, model.parameters())
+    #     optimizer = torch.optim.SGD([{'params': model.filter_layer.parameters(), 'lr': args.lr * 0.1},
+    #                                  {'params': rest_params}],
+    #                                 lr=args.lr, weight_decay=args.weight_decay,
+    #                                 momentum=args.momentum)
 
     if args.scheduler == 'exp':
         scheduler = ExponentialLR(optimizer, gamma=args.gamma)
