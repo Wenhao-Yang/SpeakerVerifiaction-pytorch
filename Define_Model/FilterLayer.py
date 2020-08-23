@@ -38,10 +38,10 @@ class fDLR(nn.Module):
         self.gain = nn.Parameter(torch.ones(num_filter, dtype=torch.float32).reshape(num_filter, 1))
 
     def forward(self, input):
-        frequency_center = self.frequency_center.sort(dim=0).values
-        new_centers = frequency_center.expand(self.num_filter, self.input_dim)
-        if input.is_cuda:
-            new_centers = new_centers.cuda()
+        # frequency_center = self.frequency_center.sort(dim=0).values
+        new_centers = self.frequency_center.expand(self.num_filter, self.input_dim)
+        # if input.is_cuda:
+        #     new_centers = new_centers.cuda()
 
         # pdb.set_trace()
         power = -1. * torch.pow(self.input_freq - new_centers, 2)
