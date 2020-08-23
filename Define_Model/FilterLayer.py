@@ -45,8 +45,11 @@ class fDLR(nn.Module):
 
         # pdb.set_trace()
         power = -1. * torch.pow(self.input_freq - new_centers, 2)
-        power = torch.div(power, 2. * self.bandwidth.pow(2))
+        power = torch.div(power, 0.5 * self.bandwidth.pow(2))
 
-        weights = torch.exp(power).mul(self.gain).transpose(0, 1)
+        weights = torch.exp(power)
+        weights = weights / weights.max(dim=1, keepdim=True).values
+
+        weights = weights.mul(self.gain).transpose(0, 1)
 
         return torch.matmul(input, weights)
