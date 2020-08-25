@@ -345,8 +345,8 @@ if [ $stage -le 50 ]; then
       --epochs 24 \
       --lr 0.1 \
       --milestones 10,15,20 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_1.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_0.5/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_0.5/${loss}_dp25/checkpoint_1.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
