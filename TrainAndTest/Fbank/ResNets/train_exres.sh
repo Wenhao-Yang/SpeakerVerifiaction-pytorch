@@ -218,8 +218,8 @@ if [ $stage -le 20 ]; then
       --lr 0.1 \
       --loss-ratio 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean_0.5 \
-      --resume Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean_0.5/checkpoint_100.pth \
+      --check-path Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean_0.5_0.05 \
+      --resume Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean_0.5_0.05/checkpoint_100.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
