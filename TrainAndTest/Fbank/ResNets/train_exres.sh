@@ -198,8 +198,8 @@ if [ $stage -le 20 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/spect/test_${feat} \
       --nj 10 \
-      --epochs 25 \
-      --milestones 10,15,20 \
+      --epochs 22 \
+      --milestones 8,13,18 \
       --model ${model} \
       --resnet-size 34 \
       --stride 2 \
