@@ -36,6 +36,8 @@ parser.add_argument('--data-dir', type=str,
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
+parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
+
 parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
@@ -68,8 +70,12 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
             idx = idx_queue.get()
             lock_i.release()  # 释放锁
 
-            feature, label = train_dir.__getitem__(idx)
-            pairs = (label, feature)
+            if args.domain:
+                feature, label, domlab = train_dir.__getitem__(idx)
+                pairs = (label, domlab, feature)
+            else:
+                feature, label = train_dir.__getitem__(idx)
+                pairs = (label, feature)
             # lock_t.acquire()
             t_queue.put(pairs)
             # lock_t.release()
@@ -109,8 +115,11 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             lock_t.release()  # 释放锁
 
             try:
-                key = str(comm[0])
-                feat = comm[1].astype(np.float32).squeeze()
+                if args.domain:
+                    key = ' '.join((str(comm[0]), str(comm[1])))
+                else:
+                    key = str(comm[0])
+                feat = comm[-1].astype(np.float32).squeeze()
                 # print(feat.shape)
 
                 # if args.feat_format == 'kaldi':
@@ -170,11 +179,12 @@ elif args.feat_format == 'npy':
     file_loader = np.load
 
 train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
-                               transform=transform, num_valid=args.num_valid)
+                               transform=transform, num_valid=args.num_valid, domain=args.domain)
 
 valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
+                               dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
                                valid_uid2feat=train_dir.valid_uid2feat, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
-                               transform=transform)
+                               transform=transform, domain=args.domain)
 
 if __name__ == "__main__":
     np.random.seed(args.seed)
