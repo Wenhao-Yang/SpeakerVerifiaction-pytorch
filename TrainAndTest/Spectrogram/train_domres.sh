@@ -103,7 +103,7 @@ if [ $stage -le 50 ]; then
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/egs/spect/dev_04 \
       --valid-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/egs/spect/valid_04 \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/spect/test \
-      --feat-format npy \
+      --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 15 \
