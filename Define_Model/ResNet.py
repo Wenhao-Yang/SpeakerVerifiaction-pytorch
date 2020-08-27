@@ -18,7 +18,7 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.FilterLayer import fDLR
+from Define_Model.FilterLayer import fDLR, GRL
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d
 
 
@@ -205,7 +205,9 @@ class ExporingResNet(nn.Module):
         self.bn1 = norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
         if self.fast:
-            self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+            self.maxpool = nn.Sequential(nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0)),
+                                         nn.AvgPool2d(kernel_size=(1, 3), stride=(1, 2), padding=(0, 1))
+                                         )
 
         self.layer1 = self._make_layer(block, num_filter[0], layers[0])
         self.layer2 = self._make_layer(block, num_filter[1], layers[1], stride=2)
@@ -850,7 +852,13 @@ class DomainResNet(nn.Module):
         )
 
         self.classifier_spk = nn.Linear(self.embedding_size_a, num_classes_a)
-        self.classifier_dom = nn.Linear(self.embedding_size_b, num_classes_b)
+
+        self.grl = GRL(lambda_=0.)
+        self.classifier_dom = nn.Sequential(nn.Linear(self.embedding_size_b, int(self.embedding_size_b / 4)),
+                                            nn.ReLU(inplace=True),
+                                            nn.Linear(int(self.embedding_size_b / 4), num_classes_b),
+                                            )
+
 
         for m in self.modules():  # 对于各层参数的初始化
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
@@ -941,6 +949,8 @@ class DomainResNet(nn.Module):
             spk_x = self.l2_norm(spk_x, alpha=self.alpha)
 
         spk_logits = self.classifier_spk(spk_x)
+
+        dom_x = self.grl(dom_x)
         dom_logits = self.classifier_dom(dom_x)
 
         return spk_logits, spk_x, dom_logits, dom_x

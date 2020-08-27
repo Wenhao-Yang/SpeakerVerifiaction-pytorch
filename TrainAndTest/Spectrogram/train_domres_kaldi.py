@@ -428,6 +428,8 @@ def main():
 def train(train_loader, model, ce, optimizer, epoch):
     # switch to evaluate mode
     model.train()
+    lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1.
+    model.grl.set_lambda(lambda_)
 
     correct_a = 0.
     correct_b = 0.
@@ -477,10 +479,12 @@ def train(train_loader, model, ce, optimizer, epoch):
             spk_loss = xe_criterion(logits_spk, true_labels_a)
 
         dom_loss = (args.dom_ratio * ce_criterion(dom_lable, true_labels_b))
-        spk_dom_sim_loss = torch.cosine_similarity(feat_spk, feat_dom, dim=1).pow(2).mean()
-        spk_dom_sim_loss = args.sim_ratio * spk_dom_sim_loss
+        loss = spk_loss + dom_loss
 
-        loss = spk_loss + dom_loss + spk_dom_sim_loss
+        if args.sim_ratio:
+            spk_dom_sim_loss = torch.cosine_similarity(feat_spk, feat_dom, dim=1).pow(2).mean()
+            spk_dom_sim_loss = args.sim_ratio * spk_dom_sim_loss
+            loss += spk_dom_sim_loss
 
         predicted_labels_a = output_softmax(spk_label)
 
@@ -498,7 +502,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         total_datasize += len(predicted_one_labels_a)
         total_loss_a += float(spk_loss.item())
         total_loss_b += float(dom_loss.item())
-        total_loss_c += float(spk_dom_sim_loss.item())
+        total_loss_c += float(spk_dom_sim_loss.item()) if args.sim_ratio else 0.
         total_loss += float(loss.item())
 
         # compute gradient and update weights
