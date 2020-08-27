@@ -37,7 +37,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, to2tensor, varLengthFeat
+from Process_Data.audio_processing import concateinputfromMFB, to2tensor, varLengthFeat, ConcateVarInput
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -133,7 +133,7 @@ parser.add_argument('--num-valid', type=int, default=5, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
 parser.add_argument('--test-input-per-file', type=int, default=4, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
-parser.add_argument('--test-batch-size', type=int, default=4, metavar='BST',
+parser.add_argument('--test-batch-size', type=int, default=1, metavar='BST',
                     help='input batch size for testing (default: 64)')
 parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
@@ -231,10 +231,8 @@ if args.acoustic_feature == 'fbank':
         to2tensor()
     ])
     transform_T = transforms.Compose([
-        concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, input_per_file=args.test_input_per_file,
-                            remove_vad=args.remove_vad),
-        # varLengthFeat(),
-        to2tensor()
+        ConcateVarInput(num_frames=c.NUM_FRAMES_SPECT, remove_vad=args.remove_vad),
+        # to2tensor()
     ])
     transform_V = transforms.Compose([
         varLengthFeat(remove_vad=args.remove_vad),
@@ -409,7 +407,7 @@ def main():
 
         # exit(1)
 
-    extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
+    extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=np.load)
     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
@@ -515,7 +513,7 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         if batch_idx % args.log_interval == 0:
             pbar.set_description(
-                'Train Epoch {:2d}: [{:4d}/{:4d} ({:3.0f}%)] AvgLoss: {:.4f} SpkLoss: {:.4f} DomLoss: {:.4f} ' \
+                'Train Epoch {:2d}: [{:4d}/{:4d}({:3.0f}%)] AvgLoss: {:.4f} SpkLoss: {:.4f} DomLoss: {:.4f} ' \
                 'SimLoss: {:.4f} Batch Accuracy: Spk: {:.4f}%, Dom: {:.4f}%'.format(
                     epoch,
                     batch_idx,
@@ -612,11 +610,11 @@ def test(test_loader, valid_loader, model, epoch):
     pbar = tqdm(enumerate(test_loader))
     for batch_idx, (data_a, data_p, label) in pbar:
 
-        vec_shape = data_a.shape
+        vec_a_shape = data_a.shape
+        vec_p_shape = data_p.shape
         # pdb.set_trace()
-        if vec_shape[1] != 1:
-            data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-            data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+        data_a = data_a.reshape(vec_a_shape[0] * vec_a_shape[1], 1, vec_a_shape[2], vec_a_shape[3])
+        data_p = data_p.reshape(vec_p_shape[0] * vec_p_shape[1], 1, vec_p_shape[2], vec_p_shape[3])
 
         if args.cuda:
             data_a, data_p = data_a.cuda(), data_p.cuda()
@@ -625,11 +623,15 @@ def test(test_loader, valid_loader, model, epoch):
         # compute output
         _, out_a_, _, _ = model(data_a)
         _, out_p_, _, _ = model(data_p)
-        out_a = out_a_
-        out_p = out_p_
+        # out_a = out_a_
+        # out_p = out_p_
+
+        out_a = out_a_.reshape(vec_a_shape[0], vec_a_shape[1], args.embedding_size_a).mean(dim=1)
+        out_p = out_p.reshape(vec_p_shape[0], vec_p_shape[1], args.embedding_size_a).mean(dim=1)
+
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
+        # dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
         dists = dists.data.cpu().numpy()
 
         distances.append(dists)
