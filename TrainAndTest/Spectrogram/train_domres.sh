@@ -98,9 +98,10 @@ if [ $stage -le 50 ]; then
   channels=16,64,128
   for loss in soft; do
     echo -e "\033[1;4;31m Train ${model} with ${loss} loss in ${datasets}, \n    kernel_size is ${kernel_size} for connection, channels are ${channels}.\033[0m\n"
-    python TrainAndTest/Spectrogram/train_domres_kaldi.py \
+    python TrainAndTest/Spectrogram/train_domres_egs.py \
       --model ${model} \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/spect/dev_04 \
+      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/egs/spect/dev_04 \
+      --valid-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/egs/spect/valid_04 \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/spect/test \
       --feat-format npy \
       --resnet-size ${resnet_size} \
