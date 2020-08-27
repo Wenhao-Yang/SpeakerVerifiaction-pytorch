@@ -460,7 +460,6 @@ def train(train_loader, model, ce, optimizer, epoch):
         true_labels_b = label_b.cuda()
 
         # pdb.set_trace()
-
         # cos_theta, phi_theta = classfier
         spk_label = logits_spk
         dom_lable = logits_dom
@@ -517,11 +516,11 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         if batch_idx % args.log_interval == 0:
             pbar.set_description(
-                'Train Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Avg Loss: {:.4f} Spk Loss: {:.4f} Dom Loss: {:.4f} ' \
-                'Sim Loss: {:.4f} Batch: Spk Accuracy: {:.4f}%, Dom Accuracy: {:.4f}%'.format(
+                'Train Epoch {:2d}: [{:4d}/{:4d} ({:3.0f}%)] AvgLoss: {:.4f} SpkLoss: {:.4f} DomLoss: {:.4f} ' \
+                'SimLoss: {:.4f} Batch Accuracy: Spk: {:.4f}%, Dom: {:.4f}%'.format(
                     epoch,
-                    batch_idx * len(data),
-                    len(train_loader.dataset),
+                    batch_idx,
+                    len(train_loader),
                     100. * batch_idx / len(train_loader),
                     total_loss / (batch_idx + 1),
                     total_loss_a / (batch_idx + 1),
