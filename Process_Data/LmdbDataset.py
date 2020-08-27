@@ -426,7 +426,7 @@ class LmdbTestDataset(Dataset):
 
 
 class EgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, loader=read_mat):
+    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False):
 
         feat_scp = dir + '/feats.scp'
 
@@ -435,15 +435,27 @@ class EgsDataset(Dataset):
 
         dataset = []
         spks = []
+        doms = []
         with open(feat_scp, 'r') as u:
             all_cls_upath = u.readlines()
             for line in all_cls_upath:
-                cls, upath = line.split()
-                cls = int(cls)
+                if domain:
+                    cls, dom_cls, upath = line.split()
+                    dom_cls = int(dom_cls)
+                    cls = int(cls)
+                    if dom_cls not in doms:
+                        doms.append(dom_cls)
+                    dataset.append((cls, dom_cls, upath))
+                else:
+                    cls, upath = line.split()
+
+                    cls = int(cls)
+                    dataset.append((cls, upath))
+
                 if cls not in spks:
                     spks.append(cls)
 
-                dataset.append((cls, upath))
+
 
         print('==> There are {} speakers in Dataset.'.format(len(spks)))
         print('    There are {} utterances in Dataset'.format(len(dataset)))
@@ -453,12 +465,20 @@ class EgsDataset(Dataset):
         self.loader = loader
         self.transform = transform
         self.num_spks = len(spks)
+        self.domain = domain
 
     def __getitem__(self, idx):
 
-        label, upath = self.dataset[idx]
+        if self.domain:
+            label, dom_label, upath = self.dataset[idx]
+        else:
+            label, upath = self.dataset[idx]
+
         y = self.loader(upath)
         feature = self.transform(y)
+
+        if self.domain:
+            return feature, label, dom_label
 
         return feature, label
 
