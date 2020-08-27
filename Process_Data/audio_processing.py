@@ -394,7 +394,8 @@ def read_from_npy(filename):
 
     return audio
 
-class truncatedinputfromMFB(object):
+
+class ConcateVarInput(object):
     """Rescales the input PIL.Image to the given 'size'.
     If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
     If 'size' is a number, it will indicate the size of the smaller edge.
@@ -403,28 +404,33 @@ class truncatedinputfromMFB(object):
     size: size of the exactly size or the smaller edge
     interpolation: Default: PIL.Image.BILINEAR
     """
-    def __init__(self, input_per_file=1):
 
-        super(truncatedinputfromMFB, self).__init__()
-        self.input_per_file = input_per_file
+    def __init__(self, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
+
+        super(ConcateVarInput, self).__init__()
+        self.num_frames = num_frames
+        self.remove_vad = remove_vad
 
     def __call__(self, frames_features):
 
         network_inputs = []
-        num_frames = len(frames_features)
-        import random
+        output = frames_features
+        while len(output) < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=0)
 
-        for i in range(self.input_per_file):
+        input_this_file = np.ceil(len(output) / self.num_frames)
 
-            j = random.randrange(c.NUM_PREVIOUS_FRAME, num_frames - c.NUM_NEXT_FRAME)
-            if not j:
-                frames_slice = np.zeros(c.NUM_FRAMES, c.FILTER_BANK, 'float64')
-                frames_slice[0:(frames_features.shape)[0]] = frames_features.shape
+        for i in range(input_this_file):
+            if i == input_this_file - 1:
+                network_inputs.append(output[len(output) - self.num_frames:])
             else:
-                frames_slice = frames_features[j - c.NUM_PREVIOUS_FRAME:j + c.NUM_NEXT_FRAME]
-            network_inputs.append(frames_slice)
+                network_inputs.append(output[i * self.num_frames:(i + 1) * self.num_frames])
 
-        return np.array(network_inputs)
+        network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
+        if self.remove_vad:
+            network_inputs = network_inputs[:, :, 1:]
+
+        return network_inputs
 
 
 class ConcateInput(object):

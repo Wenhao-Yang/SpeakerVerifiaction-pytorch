@@ -906,9 +906,10 @@ class DomainResNet(nn.Module):
 
     def forward(self, x):
         if self.inst_norm:
-            x = x.squeeze(1)
-            x = self.inst_layer(x)
-            x = x.unsqueeze(1)
+            # x = x.squeeze(1)
+            # x = self.inst_layer(x)
+            # x = x.unsqueeze(1)
+            x = x - torch.mean(x, dim=-2, keepdim=True)
 
         x = self.conv1(x)
         x = self.bn1(x)

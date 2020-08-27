@@ -105,6 +105,7 @@ if [ $stage -le 50 ]; then
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/spect/test \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
+      --inst-norm \
       --nj 10 \
       --epochs 15 \
       --lr 0.1 \
