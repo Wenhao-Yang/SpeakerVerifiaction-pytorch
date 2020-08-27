@@ -626,7 +626,7 @@ def test(test_loader, valid_loader, model, epoch):
         # out_p = out_p_
 
         out_a = out_a_.reshape(vec_a_shape[0], vec_a_shape[1], args.embedding_size_a).mean(dim=1)
-        out_p = out_p.reshape(vec_p_shape[0], vec_p_shape[1], args.embedding_size_a).mean(dim=1)
+        out_p = out_p_.reshape(vec_p_shape[0], vec_p_shape[1], args.embedding_size_a).mean(dim=1)
 
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
