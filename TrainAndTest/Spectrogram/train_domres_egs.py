@@ -69,8 +69,7 @@ parser.add_argument('--trials', type=str, default='trials', help='trials filenam
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
 
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
-parser.add_argument('--feat-format', type=str,
-                    default='kaldi', choices=['kaldi', 'npy'],
+parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--check-path', default='Data/checkpoint/LoResNet10/spect/soft',
