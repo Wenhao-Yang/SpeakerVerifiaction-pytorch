@@ -94,9 +94,9 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     if not os.path.exists(feat_dir):
         os.makedirs(feat_dir)
 
-    if args.feat_format == 'kaldi':
-        feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
-        feat_ark_f = open(feat_ark, 'wb')
+    # if args.feat_format == 'kaldi':
+    feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
+    feat_ark_f = open(feat_ark, 'wb')
 
     temp_dir = out_dir + '/temp'
     if not os.path.exists(temp_dir):
