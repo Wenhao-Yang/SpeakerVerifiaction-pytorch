@@ -564,12 +564,13 @@ if [ $stage -le 110 ]; then
       --out-dir ${lstm_dir}/data/cnceleb/egs/spect \
       --feat-type spectrogram \
       --train \
+      --domain \
       --input-per-spks 192 \
       --feat-format npy \
       --out-set dev_04
 
     mv ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp
+    sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/cnceleb/spect/dev_04 \
@@ -577,9 +578,10 @@ if [ $stage -le 110 ]; then
       --feat-type spectrogram \
       --input-per-spks 192 \
       --feat-format npy \
+      --domain \
       --out-set valid_04
 
     mv ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp
+    sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp
   done
 fi
