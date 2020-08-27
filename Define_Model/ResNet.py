@@ -808,13 +808,13 @@ class DomainResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
         self.inst_norm = inst_norm
-        self.inst_layer = nn.InstanceNorm1d(input_dim)
+        # self.inst_layer = nn.InstanceNorm1d(input_dim)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(channels[0])
 
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=1)
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
@@ -914,7 +914,8 @@ class DomainResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        # x = self.maxpool(x)
+        x = self.maxpool(x)
+
         x = self.layer1(x)
 
         x = self.conv2(x)
