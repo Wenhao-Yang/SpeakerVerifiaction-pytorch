@@ -111,8 +111,8 @@ if [ $stage -le 50 ]; then
       --lr 0.1 \
       --milestones 7,11 \
       --kernel-size ${kernel_size} \
-      --check-path Data/checkpoint/${model}_grl/${datasets}/spect_04/${loss} \
-      --resume Data/checkpoint/${model}_grl/${datasets}/spect_04/${loss}/checkpoint_1.pth \
+      --check-path Data/checkpoint/${model}_grl/${datasets}/spect_04/${loss}_inst \
+      --resume Data/checkpoint/${model}_grl/${datasets}/spect_04/${loss}_inst/checkpoint_1.pth \
       --channels ${channels} \
       --embedding-size-a 128 \
       --embedding-size-b 128 \
