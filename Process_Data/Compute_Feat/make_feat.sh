@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=102
+stage=110
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -554,5 +554,30 @@ if [ $stage -le 102 ]; then
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
       --feat-type spectrogram \
       --out-set valid_power_257
+  done
+fi
+
+if [ $stage -le 110 ]; then
+  for s in dev ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/cnceleb/spect/dev_04 \
+      --out-dir ${lstm_dir}/data/cnceleb/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --feat-format npy \
+      --out-set dev_04
+
+    mv ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp.back
+    sort -k 2 ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/cnceleb/spect/dev_04 \
+      --out-dir ${lstm_dir}/data/cnceleb/egs/spect \
+      --feat-type spectrogram \
+      --feat-format npy \
+      --out-set valid_04
+
+    mv ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back
+    sort -k 2 ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp
   done
 fi
