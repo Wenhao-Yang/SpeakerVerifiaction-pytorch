@@ -418,7 +418,7 @@ class ConcateVarInput(object):
         while len(output) < self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
 
-        input_this_file = np.ceil(len(output) / self.num_frames)
+        input_this_file = int(np.ceil(len(output) / self.num_frames))
 
         for i in range(input_this_file):
             if i == input_this_file - 1:
