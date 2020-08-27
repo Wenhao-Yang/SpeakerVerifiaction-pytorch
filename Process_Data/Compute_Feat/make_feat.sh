@@ -564,6 +564,7 @@ if [ $stage -le 110 ]; then
       --out-dir ${lstm_dir}/data/cnceleb/egs/spect \
       --feat-type spectrogram \
       --train \
+      --input-per-spks 192 \
       --feat-format npy \
       --out-set dev_04
 
@@ -574,6 +575,7 @@ if [ $stage -le 110 ]; then
       --data-dir ${lstm_dir}/data/cnceleb/spect/dev_04 \
       --out-dir ${lstm_dir}/data/cnceleb/egs/spect \
       --feat-type spectrogram \
+      --input-per-spks 192 \
       --feat-format npy \
       --out-set valid_04
 
