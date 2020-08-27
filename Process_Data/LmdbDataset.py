@@ -465,6 +465,7 @@ class EgsDataset(Dataset):
         self.loader = loader
         self.transform = transform
         self.num_spks = len(spks)
+        self.num_doms = len(doms)
         self.domain = domain
 
     def __getitem__(self, idx):
