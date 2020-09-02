@@ -21,7 +21,8 @@ class SelfVadPooling(nn.Module):
         nn.init.uniform(self.fc1.weight, a=0.8, b=1.2)
 
     def forward(self, x):
-        x_energy = torch.abs(self.fc1(x)).log()
+        # x_energy = torch.abs(self.fc1(x)).log()
+        x_energy = self.fc1(x)
         x_weight = self.activation(x_energy)
 
         x_weight = 2. * x_weight - x_weight.pow(2)
