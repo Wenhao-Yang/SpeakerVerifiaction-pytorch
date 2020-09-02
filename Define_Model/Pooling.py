@@ -23,7 +23,7 @@ class SelfVadPooling(nn.Module):
 
     def forward(self, x):
         # x_energy = torch.abs(self.fc1(x)).log()
-        x_energy = self.fc1(x)
+        x_energy = self.fc1(x).log()
         x_weight = self.activation(x_energy)
 
         # x_weight = 2. * x_weight - x_weight.pow(2)
