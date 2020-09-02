@@ -18,7 +18,7 @@ class SelfVadPooling(nn.Module):
     def __init__(self, input_dim):
         self.fc1 = nn.Linear(input_dim, 1, bias=False)
         self.activation = nn.Hardtanh(min_val=0., max_val=1.)
-        nn.init.uniform(self.fc1.weight, a=0.8, b=1.2)
+        nn.init.constant(self.fc1.weight, 1.)
 
     def forward(self, x):
         # x_energy = torch.abs(self.fc1(x)).log()
