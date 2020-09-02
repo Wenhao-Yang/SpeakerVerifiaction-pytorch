@@ -412,6 +412,7 @@ if [ $stage -le 51 ]; then
       --lr 0.1 \
       --milestones 10,15,20 \
       --vad \
+      --input-dim 161 \
       --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_vad/${loss}_dp25 \
       --resume Data/checkpoint/${model}8/${datasets}/spect_egs_vad/${loss}_dp25/checkpoint_1.pth \
       --channels 16,64,128 \
