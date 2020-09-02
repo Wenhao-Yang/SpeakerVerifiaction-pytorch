@@ -19,7 +19,8 @@ from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
 from Define_Model.FilterLayer import fDLR, GRL
-from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d
+from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
+    SelfVadPooling
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -967,7 +968,7 @@ class GradResNet(nn.Module):
     def __init__(self, embedding_size, num_classes,
                  block=BasicBlock, feat_dim=161,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
-                 inst_norm=False, alpha=12,
+                 inst_norm=False, alpha=12, vad=False,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(GradResNet, self).__init__()
@@ -986,6 +987,10 @@ class GradResNet(nn.Module):
         self.embedding_size = embedding_size
         # self.relu = nn.LeakyReLU()
         self.relu = nn.ReLU(inplace=True)
+        self.vad = vad
+        if self.vad:
+            self.vad_layer = SelfVadPooling(feat_dim)
+
         self.inst_norm = inst_norm
         self.inst_layer = nn.InstanceNorm1d(feat_dim)
 
@@ -1069,6 +1074,9 @@ class GradResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        if self.vad:
+            x = self.vad_layer(x)
+
         x = torch.log(x)
 
         if self.inst_norm:
