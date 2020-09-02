@@ -1075,7 +1075,7 @@ class GradResNet(nn.Module):
         if self.vad:
             x = self.vad_layer(x)
 
-        x = torch.log(x)
+        # x = torch.log(x)
 
         if self.inst_norm:
             # x = self.inst_layer(x)
