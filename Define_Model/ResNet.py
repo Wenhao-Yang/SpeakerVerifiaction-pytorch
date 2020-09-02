@@ -965,11 +965,9 @@ class GradResNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, embedding_size, num_classes,
-                 block=BasicBlock, feat_dim=161,
+    def __init__(self, embedding_size, num_classes, block=BasicBlock, input_dim=161,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
-                 inst_norm=False, alpha=12, vad=False,
-                 avg_size=4, kernal_size=5, padding=2, **kwargs):
+                 inst_norm=False, alpha=12, vad=False, avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(GradResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -989,10 +987,10 @@ class GradResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.vad = vad
         if self.vad:
-            self.vad_layer = SelfVadPooling(feat_dim)
+            self.vad_layer = SelfVadPooling(input_dim)
 
         self.inst_norm = inst_norm
-        self.inst_layer = nn.InstanceNorm1d(feat_dim)
+        # self.inst_layer = nn.InstanceNorm1d(input_dim)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
@@ -1080,12 +1078,8 @@ class GradResNet(nn.Module):
         x = torch.log(x)
 
         if self.inst_norm:
-            # x = x.squeeze(1)
             # x = self.inst_layer(x)
-            # x = x.unsqueeze(1)
             x = x - torch.mean(x, dim=-2, keepdim=True)
-            # x = self.inst_layer(x.transpose(1, 2))
-            # x = x.transpose(1, 2).unsqueeze(1)
 
         x = self.conv1(x)
         x = self.bn1(x)
