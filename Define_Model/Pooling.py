@@ -19,14 +19,14 @@ class SelfVadPooling(nn.Module):
         super(SelfVadPooling, self).__init__()
         self.conv = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
         self.fc1 = nn.Linear(input_dim, 1)
-        self.activation = nn.Sigmoid()
+        self.relu = nn.ReLU()
+        self.activation = nn.Hardtanh(min_val=0.001, max_val=1.0)
         # nn.init.constant(self.fc1.weight, 0.1)
 
     def forward(self, x):
-
-        # x_energy = torch.abs(self.fc1(x)).log()
-
-        x_energy = torch.sum(x, dim=-1)  # .log()
+        x_energy = self.fc1(x)  # .log()
+        x_energy = self.relu(x_energy).squeeze(-1)
+        # x_energy = torch.sum(x, dim=-1)  # .log()
         vad = self.conv(x_energy).unsqueeze(-1)
         x_weight = self.activation(vad)
 
