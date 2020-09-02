@@ -25,7 +25,7 @@ class SelfVadPooling(nn.Module):
         x_energy = self.fc1(x)
         x_weight = self.activation(x_energy)
 
-        x_weight = 2. * x_weight - x_weight.pow(2)
+        # x_weight = 2. * x_weight - x_weight.pow(2)
         return x * x_weight
 
 
