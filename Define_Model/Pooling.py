@@ -20,7 +20,7 @@ class SelfVadPooling(nn.Module):
         self.conv = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
         self.fc1 = nn.Linear(input_dim, 1)
         self.bn = nn.BatchNorm1d(1)
-        self.activation = nn.Hardtanh(min_val=0., max_val=1.0)
+        self.activation = nn.Hardtanh(min_val=0.001, max_val=1.0)
         # nn.init.constant(self.fc1.weight, 0.1)
 
     def forward(self, x):
