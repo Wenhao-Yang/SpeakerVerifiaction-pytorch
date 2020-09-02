@@ -373,7 +373,7 @@ if [ $stage -le 51 ]; then
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_04 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_p04 \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_04 \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test \
       --feat-format kaldi \
       --inst-norm \
@@ -402,7 +402,7 @@ if [ $stage -le 51 ]; then
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_04 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_p04 \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_04 \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test \
       --feat-format kaldi \
       --inst-norm \
