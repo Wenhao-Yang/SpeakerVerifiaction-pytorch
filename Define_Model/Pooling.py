@@ -17,7 +17,7 @@ import torch.nn as nn
 class SelfVadPooling(nn.Module):
     def __init__(self, input_dim):
         super(SelfVadPooling, self).__init__()
-        self.conv = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=3)
+        self.conv = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
         self.fc1 = nn.Linear(input_dim, 1)
         self.bn = nn.BatchNorm1d(1)
         self.activation = nn.Hardtanh(min_val=0., max_val=1.0)
