@@ -255,7 +255,7 @@ elif args.feat_format == 'npy':
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
-test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
+test_dir = ScriptTestDataset(dir=args.test_dir, loader=np.load, transform=transform_T)
 
 if len(test_dir) < args.veri_pairs:
     args.veri_pairs = len(test_dir)
