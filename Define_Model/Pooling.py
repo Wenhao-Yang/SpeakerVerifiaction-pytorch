@@ -26,8 +26,8 @@ class SelfVadPooling(nn.Module):
         # x_energy = torch.abs(self.fc1(x)).log()
 
         x_energy = torch.sum(x, dim=-1).log()
-
         vad = self.conv(x_energy).unsqueeze(-1)
+
         x_weight = self.activation(vad)
 
         # x_weight = 2. * x_weight - x_weight.pow(2)
