@@ -14,6 +14,19 @@ import torch
 import torch.nn as nn
 
 
+class SelfVadPooling(nn.Module):
+    def __init__(self, input_dim):
+        self.fc1 = nn.Linear(input_dim, 1, bias=False)
+        nn.init.uniform(self.fc1.weight, a=0.8, b=1.2)
+
+    def forward(self, x):
+        x_energy = torch.abs(self.fc1(x)).add(1e-12).log()
+        x_weight = x_energy / torch.max(x_energy)
+
+        x_weight = 2. * x_weight - x_weight.pow(2)
+        return x * x_weight
+
+
 class SelfAttentionPooling(nn.Module):
     def __init__(self, input_dim, hidden_dim):
         super(SelfAttentionPooling, self).__init__()
