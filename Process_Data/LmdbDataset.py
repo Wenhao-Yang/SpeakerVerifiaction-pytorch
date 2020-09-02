@@ -447,7 +447,10 @@ class EgsDataset(Dataset):
                         doms.append(dom_cls)
                     dataset.append((cls, dom_cls, upath))
                 else:
-                    cls, upath = line.split()
+                    try:
+                        cls, upath = line.split()
+                    except:
+                        cls, dom_cls, upath = line.split()
 
                     cls = int(cls)
                     dataset.append((cls, upath))
