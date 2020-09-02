@@ -403,7 +403,7 @@ if [ $stage -le 51 ]; then
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_04 \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_p04 \
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_power \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
       --feat-format kaldi \
       --inst-norm \
       --resnet-size ${resnet_size} \
