@@ -24,8 +24,6 @@ from torch.autograd import Variable
 from Define_Model.Pooling import AttentionStatisticPooling
 
 """Time Delay Neural Network as mentioned in the 1989 paper by Waibel et al. (Hinton) and the 2015 paper by Peddinti et al. (Povey)"""
-
-
 class TimeDelayLayer_v1(nn.Module):
     def __init__(self, context, input_dim, output_dim, full_context=True):
         """
@@ -178,6 +176,89 @@ class TimeDelayLayer_v2(nn.Module):
         )
 
         # N, output_dim*context_size, new_t = x.shape
+        x = x.transpose(1, 2)
+        x = self.kernel(x)
+
+        x = self.nonlinearity(x)
+
+        if self.batch_norm:
+            x = x.transpose(1, 2)
+            x = self.bn(x)
+            x = x.transpose(1, 2)
+
+        if self.dropout_p:
+            x = self.drop(x)
+
+        return x
+
+
+class TimeDelayLayer_v3(nn.Module):
+
+    def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, context=[-2, -1, 0, 1, 2],
+                 batch_norm=True, dropout_p=0.0, activation='relu'):
+        '''
+        TDNN as defined by https://www.danielpovey.com/files/2015_interspeech_multisplice.pdf
+        Affine transformation not applied globally to all frames but smaller windows with local context
+        batch_norm: True to include batch normalisation after the non linearity
+
+        Context size and dilation determine the frames selected
+        (although context size is not really defined in the traditional sense)
+        For example:
+            context size 5 and dilation 1 is equivalent to [-2,-1,0,1,2]
+            context size 3 and dilation 2 is equivalent to [-2, 0, 2]
+            context size 1 and dilation 1 is equivalent to [0]
+        '''
+        super(TimeDelayLayer_v3, self).__init__()
+        self.context_size = context_size
+        self.stride = stride
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.context = torch.tensor(context) + int((context_size - 1) / 2)
+        self.dropout_p = dropout_p
+        self.batch_norm = batch_norm
+
+        self.kernel = nn.Linear(input_dim * len(context), output_dim)
+        if activation == 'relu':
+            self.nonlinearity = nn.ReLU()
+        elif activation == 'leakyrelu':
+            self.nonlinearity = nn.LeakyReLU()
+
+        if self.batch_norm:
+            self.bn = nn.BatchNorm1d(output_dim)
+            self.bn.weight.data.fill_(1)
+            self.bn.bias.data.zero_()
+        if self.dropout_p:
+            self.drop = nn.Dropout(p=self.dropout_p)
+
+    def set_dropout(self, dropout_p):
+        self.dropout_p = dropout_p
+        self.drop.p = self.dropout_p
+
+    def forward(self, x):
+        '''
+        input: size (batch, seq_len, input_features)
+        outpu: size (batch, new_seq_len, output_features)
+        '''
+
+        b, l, d = x.shape
+        assert (d == self.input_dim), 'Input dimension was wrong. Expected ({}), got ({}) in ({})'.format(
+            self.input_dim, d, str(x.shape))
+        x = x.unsqueeze(1)
+
+        # Unfold input into smaller temporal contexts
+        x = F.unfold(
+            x,
+            (self.context_size, self.input_dim),
+            stride=(1, self.input_dim),
+            dilation=(1, 1)
+        )
+        if self.context.shape[0] != self.context_size:
+            _, _, new_t = x.shape
+
+            x = x.view(b, new_t, -1, self.context_size, 1)
+            x = x.index_select(3, self.context)
+            x = x.view(b, -1, new_t)
+
         x = x.transpose(1, 2)
         x = self.kernel(x)
 
