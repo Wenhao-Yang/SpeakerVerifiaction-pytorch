@@ -590,7 +590,7 @@ if [ $stage -le 111 ]; then
 #enroll
   for name in test ; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir ${lstm_dir}/data/cnceleb/{name} \
+      --data-dir ${lstm_dir}/data/cnceleb/${name} \
       --out-dir ${lstm_dir}/data/cnceleb/spect \
       --out-set ${name} \
       --feat-type spectrogram \
