@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=110
+stage=111
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -583,5 +583,18 @@ if [ $stage -le 110 ]; then
 
     mv ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back
     sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp
+  done
+fi
+
+if [ $stage -le 111 ]; then
+#enroll
+  for name in test ; do
+    python Process_Data/Compute_Feat/make_feat_kaldi.py \
+      --data-dir ${lstm_dir}/data/cnceleb/{name} \
+      --out-dir ${lstm_dir}/data/cnceleb/spect \
+      --out-set ${name} \
+      --feat-type spectrogram \
+      --nfft 320 \
+      --windowsize 0.02
   done
 fi
