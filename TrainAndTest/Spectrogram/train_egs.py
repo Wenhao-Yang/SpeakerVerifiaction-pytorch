@@ -110,8 +110,8 @@ parser.add_argument('--model', type=str, default='GradResNet', help='path to vox
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--filter', action='store_true', default=False, help='replace batchnorm with instance norm')
-parser.add_argument('--vad', action='store_true', default=False,
-                    help='replace batchnorm with instance norm')
+parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
+parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
 parser.add_argument('--inst-norm', action='store_true', default=False,
                     help='replace batchnorm with instance norm')
 parser.add_argument('--encoder-type', type=str, default='SAP',
@@ -292,12 +292,9 @@ def main():
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'stride': stride, 'fast': args.fast,
                     'avg_size': args.avg_size, 'time_dim': args.time_dim, 'padding': padding,
                     'encoder_type': args.encoder_type, 'vad': args.vad,
-                    'embedding_size': args.embedding_size,
-                    'resnet_size': args.resnet_size,
-                    'num_classes': train_dir.num_spks,
-                    'channels': channels,
-                    'alpha': args.alpha,
-                    'dropout_p': args.dropout_p}
+                    'embedding_size': args.embedding_size, 'ince': args.inception,
+                    'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
     model = create_model(args.model, **model_kwargs)
