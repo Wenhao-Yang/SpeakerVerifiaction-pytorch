@@ -588,16 +588,15 @@ fi
 
 if [ $stage -le 111 ]; then
 #enroll
-  for name in test ; do
+  for name in dev test ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/cnceleb/${name} \
       --out-dir ${lstm_dir}/data/cnceleb/spect \
       --out-set ${name} \
       --feat-type spectrogram \
       --nfft 320 \
-      --log-scale \
       --windowsize 0.02 \
       --feat-format kaldi \
-      --nj 8
+      --nj 18
   done
 fi
