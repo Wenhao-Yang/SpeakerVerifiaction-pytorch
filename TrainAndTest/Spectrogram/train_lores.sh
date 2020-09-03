@@ -430,6 +430,7 @@ if [ $stage -le 51 ]; then
       --gpu-id 0 \
       --cos-sim \
       --extract \
-      --loss-type ${loss}
+      --loss-type ${loss} \
+      --save-score Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25
   done
 fi
