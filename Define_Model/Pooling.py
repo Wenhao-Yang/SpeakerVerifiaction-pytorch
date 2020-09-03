@@ -29,7 +29,7 @@ class SelfVadPooling(nn.Module):
         # nn.init.constant(self.fc1.weight, 0.1)
 
     def forward(self, x):
-        x_energy = self.fc1(x).squeeze(-1).log()
+        x_energy = self.fc1(x).squeeze(-1)  # .log()
         x_energy = self.bn1(x_energy)
         vad = self.conv1(x_energy).unsqueeze(-1)
         vad_weight = self.activation(vad)
