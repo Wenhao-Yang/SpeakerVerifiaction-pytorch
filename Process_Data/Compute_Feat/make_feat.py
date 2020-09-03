@@ -203,7 +203,7 @@ if __name__ == "__main__":
 
     wav_scp_f = os.path.join(data_dir, 'wav.scp')
     spk2utt_f = os.path.join(data_dir, 'spk2utt')
-    assert os.path.exists(data_dir)
+    assert os.path.exists(data_dir), print(data_dir)
     assert os.path.exists(wav_scp_f)
     assert os.path.exists(spk2utt_f)
 
