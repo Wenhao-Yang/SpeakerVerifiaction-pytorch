@@ -383,7 +383,7 @@ if [ $stage -le 51 ]; then
       --lr 0.1 \
       --milestones 10,15,20 \
       --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_1.pth \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 16,64,128 \
       --embedding-size 128 \
       --avg-size 4 \
@@ -414,7 +414,7 @@ if [ $stage -le 51 ]; then
       --vad \
       --input-dim 161 \
       --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_vad/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_vad/${loss}_dp25/checkpoint_1.pth \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_vad/${loss}_dp25/checkpoint_24.pth \
       --channels 16,64,128 \
       --embedding-size 128 \
       --avg-size 4 \
