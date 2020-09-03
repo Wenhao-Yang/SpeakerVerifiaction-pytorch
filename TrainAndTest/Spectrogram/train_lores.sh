@@ -397,6 +397,7 @@ if [ $stage -le 51 ]; then
       --dropout-p 0.25 \
       --gpu-id 0 \
       --cos-sim \
+      --extract \
       --loss-type ${loss}
 
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -428,6 +429,7 @@ if [ $stage -le 51 ]; then
       --dropout-p 0.25 \
       --gpu-id 0 \
       --cos-sim \
+      --extract \
       --loss-type ${loss}
   done
 fi
