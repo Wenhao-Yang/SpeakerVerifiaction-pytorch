@@ -203,7 +203,7 @@ def ComputeErrorRates(scores, labels):
     sorted_indexes, thresholds = zip(*sorted([(index, threshold) for index, threshold in enumerate(scores)],
                                              key=itemgetter(1)))
     sorted_labels = []
-    labels = [labels[i] for i in sorted_indexes]
+    labels = [int(labels[i]) for i in sorted_indexes]
     fnrs = []  # 小于阈值的正例数目
     fprs = []  # 小于阈值的反例数目
 
@@ -284,22 +284,22 @@ def evaluate_kaldi_mindcf(scores, labels, return_threshold=False):
 # from https://blog.csdn.net/qq_28228605/article/details/103728793
 def plot_DET_curve():
     # 设置刻度范围
-    pmiss_min = 0.001
-    pmiss_max = 0.6
-    pfa_min = 0.001
-    pfa_max = 0.6
+    pmiss_min = 0.005
+    pmiss_max = 0.3
+    pfa_min = 0.005
+    pfa_max = 0.3
 
     # 刻度设置
-    pticks = [0.00001, 0.00002, 0.00005, 0.0001, 0.0002, 0.0005,
-              0.001, 0.002, 0.005, 0.01, 0.02, 0.05,
-              0.1, 0.2, 0.4, 0.6, 0.8, 0.9,
+    pticks = [0.00005, 0.0001, 0.0002, 0.0005, 0.001, 0.002,
+              0.005, 0.01, 0.02, 0.03, 0.05, 0.07,
+              0.1, 0.15, 0.25, 0.6, 0.8, 0.9,
               0.95, 0.98, 0.99, 0.995, 0.998, 0.999,
               0.9995, 0.9998, 0.9999, 0.99995, 0.99998, 0.99999]
 
     # 刻度*100
-    xlabels = [' 0.001', ' 0.002', ' 0.005', ' 0.01 ', ' 0.02 ', ' 0.05 ',
-               '  0.1 ', '  0.2 ', ' 0.5  ', '  1   ', '  2   ', '  5   ',
-               '  10  ', '  20  ', '  40  ', '  60  ', '  80  ', '  90  ',
+    xlabels = [' 0.005', ' 0.01 ', ' 0.02 ', ' 0.05 ', '  0.1 ', '  0.2 ',
+               ' 0.5  ', '  1   ', '  2   ', '  3   ', '  5   ', '  7   ',
+               '  10  ', '  15  ', '  25  ', '  60  ', '  80  ', '  90  ',
                '  95  ', '  98  ', '  99  ', ' 99.5 ', ' 99.8 ', ' 99.9 ',
                ' 99.95', ' 99.98', ' 99.99', '99.995', '99.998', '99.999']
 
@@ -332,6 +332,7 @@ def plot_DET_curve():
     plt.yticks(norm.ppf(pticks[tmin_miss:tmax_miss]), ylabels[tmin_miss:tmax_miss])
     plt.ylabel('Miss probability (in %)')
     plt.grid()
+    plt.plot([-40, 1], [-40, 1], alpha=0.5, color='gray', linestyle='--', linewidth=1)
 
     return plt
 
