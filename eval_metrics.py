@@ -3,10 +3,13 @@
 For l2 distacne: when the distance is less than the theshold, it should be true;
 For cosine distance: when the distance is greater than the theshold, it's true.
 """
-import pdb
 from operator import itemgetter
+
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate
+from scipy.stats import norm
+
 
 def evaluate(distances, labels):
     # Calculate evaluation metrics
@@ -276,3 +279,65 @@ def evaluate_kaldi_mindcf(scores, labels, return_threshold=False):
         return (mindcf_01, threshold_01, mindcf_001, threshold_001)
 
     return mindcf_01, mindcf_001
+
+
+# from https://blog.csdn.net/qq_28228605/article/details/103728793
+def plot_DET_curve():
+    # 设置刻度范围
+    pmiss_min = 0.001
+    pmiss_max = 0.6
+    pfa_min = 0.001
+    pfa_max = 0.6
+
+    # 刻度设置
+    pticks = [0.00001, 0.00002, 0.00005, 0.0001, 0.0002, 0.0005,
+              0.001, 0.002, 0.005, 0.01, 0.02, 0.05,
+              0.1, 0.2, 0.4, 0.6, 0.8, 0.9,
+              0.95, 0.98, 0.99, 0.995, 0.998, 0.999,
+              0.9995, 0.9998, 0.9999, 0.99995, 0.99998, 0.99999]
+
+    # 刻度*100
+    xlabels = [' 0.001', ' 0.002', ' 0.005', ' 0.01 ', ' 0.02 ', ' 0.05 ',
+               '  0.1 ', '  0.2 ', ' 0.5  ', '  1   ', '  2   ', '  5   ',
+               '  10  ', '  20  ', '  40  ', '  60  ', '  80  ', '  90  ',
+               '  95  ', '  98  ', '  99  ', ' 99.5 ', ' 99.8 ', ' 99.9 ',
+               ' 99.95', ' 99.98', ' 99.99', '99.995', '99.998', '99.999']
+
+    ylabels = xlabels
+
+    # 确定刻度范围
+    n = len(pticks)
+    # 倒叙
+    for k, v in enumerate(pticks[::-1]):
+        if pmiss_min <= v:
+            tmin_miss = n - k - 1  # 移动最小值索引位置
+        if pfa_min <= v:
+            tmin_fa = n - k - 1  # 移动最小值索引位置
+    # 正序
+    for k, v in enumerate(pticks):
+        if pmiss_max >= v:
+            tmax_miss = k + 1  # 移动最大值索引位置
+        if pfa_max >= v:
+            tmax_fa = k + 1  # 移动最大值索引位置
+
+    # FRR
+    plt.figure()
+    plt.xlim(norm.ppf(pfa_min), norm.ppf(pfa_max))
+
+    plt.xticks(norm.ppf(pticks[tmin_fa:tmax_fa]), xlabels[tmin_fa:tmax_fa])
+    plt.xlabel('False Alarm probability (in %)')
+
+    # FAR
+    plt.ylim(norm.ppf(pmiss_min), norm.ppf(pmiss_max))
+    plt.yticks(norm.ppf(pticks[tmin_miss:tmax_miss]), ylabels[tmin_miss:tmax_miss])
+    plt.ylabel('Miss probability (in %)')
+    plt.grid()
+
+    return plt
+
+# fnrs, fprs, = ComputeErrorRates(scores, labels)
+# x, y = norm.ppf(fnr), norm.ppf(fpr)
+# plt.plot(x, y)
+# plt.plot([-40, 1], [-40, 1])
+# plt.plot(np.arange(0,40,1),np.arange(0,40,1))
+# plt.show()

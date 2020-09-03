@@ -196,6 +196,8 @@ parser.add_argument('--makemfb', action='store_true', default=False,
                     help='need to make mfb file')
 parser.add_argument('--makespec', action='store_true', default=False,
                     help='need to make spectrograms file')
+parser.add_argument('--save-score', type=str, default='', help='save tmp score')
+
 
 args = parser.parse_args()
 
@@ -422,7 +424,7 @@ def main():
                                      loader=read_vec_flt)
     verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=64, shuffle=False, **kwargs)
     verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
-                      log_interval=args.log_interval)
+                      log_interval=args.log_interval, save=args.save_score)
 
     writer.close()
 

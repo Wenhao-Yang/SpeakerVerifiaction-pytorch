@@ -157,7 +157,7 @@ def verification_extract(extract_loader, model, xvector_dir, ark_num=50000, gpu=
     torch.cuda.empty_cache()
 
 
-def verification_test(test_loader, dist_type, log_interval):
+def verification_test(test_loader, dist_type, log_interval, save=''):
     # switch to evaluate mode
     labels, distances = [], []
     dist_fn = nn.CosineSimilarity() if dist_type == 'cos' else nn.PairwiseDistance(2)
@@ -179,6 +179,9 @@ def verification_test(test_loader, dist_type, log_interval):
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
+    if save != '':
+        np.save('%s/labels.npy' % save, labels)
+        np.save('%s/distance.npy' % save, distances)
 
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
                                                       cos=True if dist_type == 'cos' else False, re_thre=True)
