@@ -595,6 +595,7 @@ if [ $stage -le 111 ]; then
       --out-set ${name} \
       --feat-type spectrogram \
       --nfft 320 \
+      --log-scale \
       --windowsize 0.02 \
       --feat-format kaldi \
       --nj 8
