@@ -29,7 +29,7 @@ And it will be my main work.
 
 - Augmentation
 
-- [ ] LMS Filtering
+- [] LMS Filtering ( Defected )
 
 
 ## Implemented DNN Verification Systems
@@ -74,6 +74,7 @@ Work accomplished so far:
 - [x] Data pipeline implementation - "Voxceleb"
 - [x] Project structure cleanup.
 - [ ] Trained simple ResNet10 with softmax+triplet loss for pre-training 10 batch and triplet loss for 18 epoch , resulted in accuracy ???
+- [ ] DET curve
 
 ## Timeline
 - [x] Extract x-vectors from trained Neural Network in 20190626
