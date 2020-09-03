@@ -540,6 +540,34 @@ class InstBlock3x3(nn.Module):
 
         return out
 
+
+class VarSizeConv(nn.Module):
+
+    def __init__(self, inplanes, planes, stride=1, kernel_size=[3, 5, 7]):
+        super(VarSizeConv, self).__init__()
+
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
+        self.bn1 = nn.InstanceNorm2d(planes)
+
+        self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
+        self.bn2 = nn.InstanceNorm2d(planes)
+
+        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=3)
+        self.bn3 = nn.InstanceNorm2d(planes)
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x1 = self.bn1(x1)
+
+        x2 = self.conv2(x)
+        x2 = self.bn2(x2)
+
+        x3 = self.conv3(x)
+        x3 = self.bn3(x3)
+
+        return torch.cat([x1, x2, x3], dim=1)
+
+
 class ResNet20(nn.Module):
     def __init__(self, num_classes=1000, embedding_size=128, dropout_p=0.0,
                  block=BasicBlock, input_frames=300, **kwargs):
@@ -966,7 +994,7 @@ class GradResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes, block=BasicBlock, input_dim=161,
-                 resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., ince=False,
                  inst_norm=False, alpha=12, vad=False, avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(GradResNet, self).__init__()
@@ -978,6 +1006,7 @@ class GradResNet(nn.Module):
                        101: [3, 4, 23, 3]}
 
         layers = resnet_type[resnet_size]
+        self.ince = ince
         self.alpha = alpha
         self.layers = layers
         self.dropout_p = dropout_p
@@ -992,11 +1021,16 @@ class GradResNet(nn.Module):
         self.inst_norm = inst_norm
         # self.inst_layer = nn.InstanceNorm1d(input_dim)
 
-        self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
+        if self.ince:
+            self.pre_conv = VarSizeConv(1, 1)
+            self.conv1 = nn.Conv2d(3, channels[0], kernel_size=5, stride=2, padding=2)
+        else:
+            self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
+
         self.bn1 = nn.BatchNorm2d(channels[0])
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
+        self.inplanes = channels[0]
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
@@ -1080,6 +1114,9 @@ class GradResNet(nn.Module):
         if self.inst_norm:
             # x = self.inst_layer(x)
             x = x - torch.mean(x, dim=-2, keepdim=True)
+
+        if self.ince:
+            x = self.pre_conv(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
