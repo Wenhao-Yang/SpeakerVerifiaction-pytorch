@@ -20,10 +20,10 @@ class SelfVadPooling(nn.Module):
         self.conv1 = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
         self.fc1 = nn.Linear(input_dim, 1)
         self.bn1 = nn.BatchNorm1d(1)
-
-        self.conv2 = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
-        self.fc2 = nn.Linear(input_length, 1)
-        self.bn2 = nn.BatchNorm1d(1)
+        #
+        # self.conv2 = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
+        # self.fc2 = nn.Linear(input_length, 1)
+        # self.bn2 = nn.BatchNorm1d(1)
 
         self.activation = nn.Hardtanh(min_val=0.001, max_val=1.0)
         # nn.init.constant(self.fc1.weight, 0.1)
@@ -34,13 +34,13 @@ class SelfVadPooling(nn.Module):
         vad = self.conv1(x_energy).unsqueeze(-1)
         vad_weight = self.activation(vad)
 
-        x_freq = self.fc2(x.transpose(2, 3)).squeeze(-1).log()
-        x_freq = self.bn2(x_freq)
-        freq = self.conv2(x_freq).unsqueeze(2)
-        freq_weight = self.activation(freq)
+        # x_freq = self.fc2(x.transpose(2, 3)).squeeze(-1).log()
+        # x_freq = self.bn2(x_freq)
+        # freq = self.conv2(x_freq).unsqueeze(2)
+        # freq_weight = self.activation(freq)
 
         # x_weight = 2. * x_weight - x_weight.pow(2)
-        return x * vad_weight * freq_weight
+        return x * vad_weight  # * freq_weight
 
 
 class SelfAttentionPooling(nn.Module):
