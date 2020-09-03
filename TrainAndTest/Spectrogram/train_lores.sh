@@ -372,8 +372,8 @@ if [ $stage -le 51 ]; then
   for loss in soft; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_04 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_04 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test \
       --feat-format kaldi \
       --inst-norm \
@@ -382,8 +382,8 @@ if [ $stage -le 51 ]; then
       --epochs 24 \
       --lr 0.1 \
       --milestones 10,15,20 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 16,64,128 \
       --embedding-size 128 \
       --avg-size 4 \
@@ -402,8 +402,8 @@ if [ $stage -le 51 ]; then
 
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_04 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_04 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test \
       --feat-format kaldi \
       --inst-norm \
@@ -414,8 +414,8 @@ if [ $stage -le 51 ]; then
       --milestones 10,15,20 \
       --vad \
       --input-dim 161 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_vad/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_vad/${loss}_dp25/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25/checkpoint_24.pth \
       --channels 16,64,128 \
       --embedding-size 128 \
       --avg-size 4 \
