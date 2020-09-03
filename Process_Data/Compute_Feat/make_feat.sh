@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=111
+stage=110
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -560,32 +560,33 @@ fi
 if [ $stage -le 110 ]; then
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/cnceleb/spect/dev_04 \
+      --data-dir ${lstm_dir}/data/cnceleb/spect/dev_4w \
       --out-dir ${lstm_dir}/data/cnceleb/egs/spect \
       --feat-type spectrogram \
       --train \
       --domain \
       --input-per-spks 192 \
-      --feat-format npy \
-      --out-set dev_04
+      --feat-format kaldi \
+      --out-set dev_4w
 
-    mv ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp.back
-    sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/dev_04/feats.scp
+    mv ${lstm_dir}/data/cnceleb/egs/spect/dev_4w/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/dev_4w/feats.scp.back
+    sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/dev_4w/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/dev_4w/feats.scp
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/cnceleb/spect/dev_04 \
+      --data-dir ${lstm_dir}/data/cnceleb/spect/dev_4w \
       --out-dir ${lstm_dir}/data/cnceleb/egs/spect \
       --feat-type spectrogram \
       --input-per-spks 192 \
-      --feat-format npy \
+      --feat-format kaldi \
       --domain \
-      --out-set valid_04
+      --out-set valid_4w
 
-    mv ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back
-    sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/valid_04/feats.scp
+    mv ${lstm_dir}/data/cnceleb/egs/spect/valid_4w/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/valid_4w/feats.scp.back
+    sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/valid_4w/feats.scp.back > ${lstm_dir}/data/cnceleb/egs/spect/valid_4w/feats.scp
   done
 fi
 
+stage=1000
 if [ $stage -le 111 ]; then
 #enroll
   for name in dev test ; do
