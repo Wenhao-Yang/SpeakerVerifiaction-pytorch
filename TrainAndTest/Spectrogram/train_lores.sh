@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=51
+stage=50
 
 waited=0
 while [ `ps 113458 | wc -l` -eq 2 ]; do
@@ -360,10 +360,11 @@ if [ $stage -le 50 ]; then
       --dropout-p 0.25 \
       --gpu-id 0 \
       --cos-sim \
+      --save-score Data/checkpoint/${model}8/${datasets}/spect_egs_0.5/${loss}_dp25 \
       --loss-type ${loss}
   done
 fi
-
+stage=100
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
