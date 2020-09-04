@@ -172,6 +172,7 @@ def verification_test(test_loader, dist_type, log_interval, save=''):
 
         distances.append(dists)
         labels.append(label.numpy())
+        del out_a, out_p
 
         if batch_idx % log_interval == 0:
             pbar.set_description('Verification: [{}/{} ({:.0f}%)]'.format(
