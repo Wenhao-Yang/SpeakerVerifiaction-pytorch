@@ -462,7 +462,6 @@ if [ $stage -le 51 ]; then
       --cos-sim \
       --vad \
       --inception \
-      --extract \
       --loss-type ${loss}
   done
 fi

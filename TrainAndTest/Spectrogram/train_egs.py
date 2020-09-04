@@ -422,7 +422,7 @@ def main():
                                      loader=read_vec_flt)
     verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=64, shuffle=False, **kwargs)
     verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
-                      log_interval=args.log_interval, save=xvector_dir)
+                      log_interval=args.log_interval, save=xvector_dir, embedding_size=args.embedding_size)
 
     writer.close()
 
