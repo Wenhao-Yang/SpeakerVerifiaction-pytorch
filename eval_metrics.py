@@ -322,6 +322,7 @@ def plot_DET_curve():
 
     # FRR
     plt.figure()
+    plt.title('DET')
     plt.xlim(norm.ppf(pfa_min), norm.ppf(pfa_max))
 
     plt.xticks(norm.ppf(pticks[tmin_fa:tmax_fa]), xlabels[tmin_fa:tmax_fa])
@@ -337,7 +338,7 @@ def plot_DET_curve():
     return plt
 
 # fnrs, fprs, = ComputeErrorRates(scores, labels)
-# x, y = norm.ppf(fnr), norm.ppf(fpr)
+# x, y = norm.ppf(fnrs), norm.ppf(fprs)
 # plt.plot(x, y)
 # plt.plot([-40, 1], [-40, 1])
 # plt.plot(np.arange(0,40,1),np.arange(0,40,1))

@@ -180,8 +180,9 @@ def verification_test(test_loader, dist_type, log_interval, save=''):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
     if save != '':
-        np.save('%s/labels.npy' % save, labels)
-        np.save('%s/distance.npy' % save, distances)
+        with open('%s/scores' % save, 'w') as f:
+            for d, l in zip(distances, labels):
+                f.write(str(d) + ' ' + str(l) + '\n')
 
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
                                                       cos=True if dist_type == 'cos' else False, re_thre=True)
