@@ -172,7 +172,7 @@ def verification_test(test_loader, dist_type, log_interval, embedding_size, save
         p_len = out_p.shape[0]
 
         ae = out_a.unsqueeze(1).repeat(1, p_len, 1).reshape(p_len * a_len, embedding_size)
-        pe = out_a.repeat(a_len, 1)
+        pe = out_p.repeat(a_len, 1)
 
         dists = dist_fn.forward(ae, pe).mean(dim=0).numpy()
 
