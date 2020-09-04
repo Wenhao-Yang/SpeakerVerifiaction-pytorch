@@ -360,7 +360,6 @@ if [ $stage -le 50 ]; then
       --dropout-p 0.25 \
       --gpu-id 0 \
       --cos-sim \
-      --save-score Data/checkpoint/${model}8/${datasets}/spect_egs_0.5/${loss}_dp25 \
       --loss-type ${loss}
   done
 fi
