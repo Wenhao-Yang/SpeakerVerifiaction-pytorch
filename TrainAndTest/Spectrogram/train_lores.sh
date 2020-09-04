@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=51
 
 waited=0
 while [ `ps 113458 | wc -l` -eq 2 ]; do
@@ -363,7 +363,7 @@ if [ $stage -le 50 ]; then
       --loss-type ${loss}
   done
 fi
-stage=100
+#stage=100
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
