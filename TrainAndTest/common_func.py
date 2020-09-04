@@ -160,7 +160,7 @@ def verification_extract(extract_loader, model, xvector_dir, ark_num=50000, gpu=
 def verification_test(test_loader, dist_type, log_interval, embedding_size, save=''):
     # switch to evaluate mode
     labels, distances = [], []
-    dist_fn = nn.CosineSimilarity(dim=1) if dist_type == 'cos' else nn.PairwiseDistance(2)
+    dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
 
     pbar = tqdm(enumerate(test_loader))
     for batch_idx, (data_a, data_p, label) in pbar:
@@ -171,8 +171,8 @@ def verification_test(test_loader, dist_type, log_interval, embedding_size, save
         a_len = out_a.shape[0]
         p_len = out_p.shape[0]
 
-        ae = out_a.unsqueeze(1).repeat(1, p_len, 1).reshape(p_len * a_len, embedding_size)
-        pe = out_p.repeat(a_len, 1)
+        ae = out_a.unsqueeze(1).repeat(1, p_len, 1).reshape(p_len * a_len, embedding_size).cuda()
+        pe = out_p.repeat(a_len, 1).cuda()
 
         dists = dist_fn.forward(ae, pe).mean(dim=0).numpy()
 
