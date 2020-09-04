@@ -126,7 +126,7 @@ def verification_extract(extract_loader, model, xvector_dir, ark_num=50000, gpu=
             _, out = model_out
 
         if vec_shape[1] != 1:
-            out = out.reshape(vec_shape[0], vec_shape[1] * out.shape[-1])  # .mean(dim=1)
+            out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
 
         uid2vectors[uid[0]] = out.squeeze().data.cpu().numpy()
 
@@ -165,8 +165,8 @@ def verification_test(test_loader, dist_type, log_interval, embedding_size, save
     pbar = tqdm(enumerate(test_loader))
     for batch_idx, (data_a, data_p, label) in pbar:
 
-        out_a = torch.tensor(data_a).view(-1, 4, embedding_size)
-        out_p = torch.tensor(data_p).view(-1, 4, embedding_size)
+        out_a = torch.tensor(data_a)  # .view(-1, 4, embedding_size)
+        out_p = torch.tensor(data_p)  # .view(-1, 4, embedding_size)
 
         # a_len = out_a.shape[0]
         # p_len = out_p.shape[0]
