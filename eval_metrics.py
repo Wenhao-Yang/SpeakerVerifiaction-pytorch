@@ -3,6 +3,7 @@
 For l2 distacne: when the distance is less than the theshold, it should be true;
 For cosine distance: when the distance is greater than the theshold, it's true.
 """
+import os
 from operator import itemgetter
 
 import matplotlib.pyplot as plt
@@ -280,7 +281,6 @@ def evaluate_kaldi_mindcf(scores, labels, return_threshold=False):
 
     return mindcf_01, mindcf_001
 
-
 # from https://blog.csdn.net/qq_28228605/article/details/103728793
 def plot_DET_curve():
     # 设置刻度范围
@@ -321,21 +321,46 @@ def plot_DET_curve():
             tmax_fa = k + 1  # 移动最大值索引位置
 
     # FRR
-    plt.figure()
-    plt.title('DET')
+    plt.figure(figsize=(9, 9))
+    plt.rc('font', family='Times New Roman')
+    plt.title('DET', fontsize=22)
     plt.xlim(norm.ppf(pfa_min), norm.ppf(pfa_max))
 
     plt.xticks(norm.ppf(pticks[tmin_fa:tmax_fa]), xlabels[tmin_fa:tmax_fa])
-    plt.xlabel('False Alarm probability (in %)')
+    plt.xlabel('False Alarm probability (in %)', fontsize=18)
+    plt.xticks(fontsize=16)
 
     # FAR
     plt.ylim(norm.ppf(pmiss_min), norm.ppf(pmiss_max))
     plt.yticks(norm.ppf(pticks[tmin_miss:tmax_miss]), ylabels[tmin_miss:tmax_miss])
-    plt.ylabel('Miss probability (in %)')
+    plt.ylabel('Miss probability (in %)', fontsize=18)
+    plt.yticks(fontsize=16)
     plt.grid()
     plt.plot([-40, 1], [-40, 1], alpha=0.5, color='gray', linestyle='--', linewidth=1)
 
     return plt
+
+
+def plot_det(save_path, score_files=[], names=[]):
+    if len(score_files) > 0 and len(score_files) == len(names):
+        det_plt = plot_DET_curve()
+
+        for i, scf in enumerate(score_files):
+            if os.path.exists(scf):
+
+                scores, labels = [], []
+                with open(scf, 'r') as f:
+                    for line in f.readlines():
+                        score, label = line.split()
+                        scores.append(float(score))
+                        labels.append(int(label))
+
+                fnrs, fprs, _ = ComputeErrorRates(scores, labels)
+                x, y = norm.ppf(fnrs), norm.ppf(fprs)
+                det_plt.plot(x, y, label=names[i])
+
+        det_plt.legend(loc='upper right', fontsize=18)
+        det_plt.savefig(save_path + "/det.png")
 
 # fnrs, fprs, = ComputeErrorRates(scores, labels)
 # x, y = norm.ppf(fnrs), norm.ppf(fprs)

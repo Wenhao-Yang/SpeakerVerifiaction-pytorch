@@ -407,6 +407,7 @@ if [ $stage -le 51 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/spect/test \
       --feat-format kaldi \
       --inst-norm \
+      --inception \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 24 \
@@ -414,8 +415,8 @@ if [ $stage -le 51 ]; then
       --milestones 10,15,20 \
       --vad \
       --input-dim 161 \
-      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs_ince/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs_ince/${loss}_dp25/checkpoint_24.pth \
       --channels 16,64,128 \
       --embedding-size 128 \
       --avg-size 4 \
@@ -430,7 +431,6 @@ if [ $stage -le 51 ]; then
       --gpu-id 0 \
       --cos-sim \
       --extract \
-      --loss-type ${loss} \
-      --save-score Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25
+      --loss-type ${loss}
   done
 fi
