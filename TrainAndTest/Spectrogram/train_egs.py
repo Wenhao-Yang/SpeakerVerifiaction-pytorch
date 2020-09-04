@@ -422,7 +422,7 @@ def main():
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
                                      loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=64, shuffle=False, **kwargs)
     verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
                       log_interval=args.log_interval, save=xvector_dir, embedding_size=args.embedding_size)
 
