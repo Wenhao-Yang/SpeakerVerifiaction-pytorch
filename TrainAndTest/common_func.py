@@ -165,20 +165,20 @@ def verification_test(test_loader, dist_type, log_interval, embedding_size, save
     pbar = tqdm(enumerate(test_loader))
     for batch_idx, (data_a, data_p, label) in pbar:
 
-        out_a = torch.tensor(data_a).view(-1, embedding_size)
-        out_p = torch.tensor(data_p).view(-1, embedding_size)
+        out_a = torch.tensor(data_a)  # .view(-1, embedding_size)
+        out_p = torch.tensor(data_p)  # W.view(-1, embedding_size)
 
-        a_len = out_a.shape[0]
-        p_len = out_p.shape[0]
+        # a_len = out_a.shape[0]
+        # p_len = out_p.shape[0]
+        #
+        # ae = out_a.unsqueeze(1).repeat(1, p_len, 1).reshape(p_len * a_len, embedding_size).cuda()
+        # pe = out_p.repeat(a_len, 1).cuda()
 
-        ae = out_a.unsqueeze(1).repeat(1, p_len, 1).reshape(p_len * a_len, embedding_size).cuda()
-        pe = out_p.repeat(a_len, 1).cuda()
-
-        dists = dist_fn.forward(ae, pe).mean(dim=0).cpu().numpy()
+        dists = dist_fn.forward(out_a, out_p).cpu().numpy()
 
         distances.append(dists)
         labels.append(label.numpy())
-        del out_a, out_p, ae, pe
+        del out_a, out_p  #, ae, pe
 
         if batch_idx % log_interval == 0:
             pbar.set_description('Verification: [{}/{} ({:.0f}%)]'.format(

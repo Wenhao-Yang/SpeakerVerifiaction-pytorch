@@ -36,7 +36,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput
+from Process_Data.audio_processing import concateinputfromMFB
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -236,7 +236,9 @@ if args.acoustic_feature == 'fbank':
                             remove_vad=args.remove_vad),
     ])
     transform_V = transforms.Compose([
-        ConcateVarInput(remove_vad=args.remove_vad),
+        # ConcateVarInput(remove_vad=args.remove_vad),
+        concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, input_per_file=args.test_input_per_file,
+                            remove_vad=args.remove_vad),
     ])
 
 else:
@@ -420,7 +422,7 @@ def main():
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
                                      loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=1, shuffle=False, **kwargs)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
     verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
                       log_interval=args.log_interval, save=xvector_dir, embedding_size=args.embedding_size)
 
