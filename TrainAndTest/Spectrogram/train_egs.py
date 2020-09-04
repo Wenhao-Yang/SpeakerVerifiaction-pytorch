@@ -36,7 +36,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, varLengthFeat
+from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -236,7 +236,7 @@ if args.acoustic_feature == 'fbank':
                             remove_vad=args.remove_vad),
     ])
     transform_V = transforms.Compose([
-        varLengthFeat(remove_vad=args.remove_vad),
+        ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
 else:
