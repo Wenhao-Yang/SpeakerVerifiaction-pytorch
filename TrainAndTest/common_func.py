@@ -126,7 +126,7 @@ def verification_extract(extract_loader, model, xvector_dir, ark_num=50000, gpu=
             _, out = model_out
 
         if vec_shape[1] != 1:
-            out = out.reshape(vec_shape[0], vec_shape[1] * out.shape[-1])  # .mean(dim=1)
+            out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
 
         uid2vectors[uid[0]] = out.squeeze().data.cpu().numpy()
 
