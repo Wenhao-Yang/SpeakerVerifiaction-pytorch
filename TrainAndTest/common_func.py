@@ -174,7 +174,7 @@ def verification_test(test_loader, dist_type, log_interval, embedding_size, save
         ae = out_a.unsqueeze(1).repeat(1, p_len, 1).reshape(p_len * a_len, embedding_size).cuda()
         pe = out_p.repeat(a_len, 1).cuda()
 
-        dists = dist_fn.forward(ae, pe).mean(dim=0).numpy()
+        dists = dist_fn.forward(ae, pe).mean(dim=0).cpu().numpy()
 
         distances.append(dists)
         labels.append(label.numpy())
