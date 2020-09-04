@@ -460,6 +460,7 @@ if [ $stage -le 51 ]; then
       --dropout-p 0.25 \
       --gpu-id 0 \
       --cos-sim \
+      --vad \
       --inception \
       --extract \
       --loss-type ${loss}
