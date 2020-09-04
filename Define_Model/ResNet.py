@@ -565,7 +565,8 @@ class VarSizeConv(nn.Module):
         x3 = self.conv3(x)
         x3 = self.bn3(x3)
 
-        return torch.cat([x, x1, x2, x3], dim=1)
+        return torch.cat([x1, x2, x3], dim=1)
+        # return torch.cat([x, x1, x2, x3], dim=1)
 
 
 class ResNet20(nn.Module):
@@ -1023,7 +1024,7 @@ class GradResNet(nn.Module):
 
         if self.ince:
             self.pre_conv = VarSizeConv(1, 1)
-            self.conv1 = nn.Conv2d(4, channels[0], kernel_size=5, stride=2, padding=2)
+            self.conv1 = nn.Conv2d(3, channels[0], kernel_size=5, stride=2, padding=2)
         else:
             self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
 
