@@ -381,6 +381,7 @@ if [ $stage -le 51 ]; then
       --nj 10 \
       --epochs 24 \
       --lr 0.1 \
+      --input-dim 161 \
       --milestones 10,15,20 \
       --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25/checkpoint_24.pth \
