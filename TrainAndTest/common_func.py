@@ -126,7 +126,7 @@ def verification_extract(extract_loader, model, xvector_dir, ark_num=50000, gpu=
             _, out = model_out
 
         if vec_shape[1] != 1:
-            out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
+            out = out.reshape(vec_shape[0], vec_shape[1] * out.shape[-1])  # .mean(dim=1)
 
         uid2vectors[uid[0]] = out.squeeze().data.cpu().numpy()
 
@@ -157,22 +157,28 @@ def verification_extract(extract_loader, model, xvector_dir, ark_num=50000, gpu=
     torch.cuda.empty_cache()
 
 
-def verification_test(test_loader, dist_type, log_interval, save=''):
+def verification_test(test_loader, dist_type, log_interval, embedding_size, save=''):
     # switch to evaluate mode
     labels, distances = [], []
-    dist_fn = nn.CosineSimilarity() if dist_type == 'cos' else nn.PairwiseDistance(2)
+    dist_fn = nn.CosineSimilarity(dim=1) if dist_type == 'cos' else nn.PairwiseDistance(2)
 
     pbar = tqdm(enumerate(test_loader))
     for batch_idx, (data_a, data_p, label) in pbar:
 
-        out_a = torch.tensor(data_a)
-        out_p = torch.tensor(data_p)
+        out_a = torch.tensor(data_a).view(-1, embedding_size)
+        out_p = torch.tensor(data_p).view(-1, embedding_size)
 
-        dists = dist_fn.forward(out_a, out_p).numpy()
+        a_len = out_a.shape[0]
+        p_len = out_p.shape[0]
+
+        ae = out_a.unsqueeze(1).repeat(1, p_len, 1).reshape(p_len * a_len, embedding_size)
+        pe = out_a.repeat(a_len, 1)
+
+        dists = dist_fn.forward(ae, pe).mean(dim=0).numpy()
 
         distances.append(dists)
         labels.append(label.numpy())
-        del out_a, out_p
+        del out_a, out_p, ae, pe
 
         if batch_idx % log_interval == 0:
             pbar.set_description('Verification: [{}/{} ({:.0f}%)]'.format(
