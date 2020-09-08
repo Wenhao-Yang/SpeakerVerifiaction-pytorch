@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #stage=3
-stage=4
+stage=1
 
 waited=0
 while [ `ps 27212 | wc -l` -eq 2 ]; do
@@ -41,7 +41,7 @@ if [ $stage -le 1 ]; then
   datasets=timit
 #  loss=soft
   for loss in soft ; do
-    echo -e "\n\033[1;4;31m Training with ${loss}\033[0m\n"
+    echo -e "\n\033[1;4;31m Training with ${loss} minus mean \033[0m\n"
     python TrainAndTest/Spectrogram/train_lores10_var.py \
       --model GradResNet \
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_power \
@@ -50,12 +50,13 @@ if [ $stage -le 1 ]; then
       --epochs 12 \
       --lr 0.1 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/GradResNet8/${datasets}/spect_power_ln/${loss}_var \
-      --resume Data/checkpoint/GradResNet8/${datasets}/spect_power_ln/${loss}_var/checkpoint_7.pth \
+      --check-path Data/checkpoint/GradResNet8/${datasets}/spect_power_inst/${loss}_var \
+      --resume Data/checkpoint/GradResNet8/${datasets}/spect_power_inst/${loss}_var/checkpoint_7.pth \
       --channels 4,16,64 \
       --embedding-size 128 \
       --input-per-spks 256 \
       --num-valid 1 \
+      --inst-norm \
       --weight-decay 0.001 \
       --alpha 10.8 \
       --dropout-p 0.5 \
@@ -64,6 +65,7 @@ if [ $stage -le 1 ]; then
   done
 fi
 
+stage=100
 if [ $stage -le 2 ]; then
   datasets=vox1
 #  loss=soft
