@@ -1208,7 +1208,7 @@ class TimeFreqResNet(nn.Module):
         self.inst_norm = inst_norm
         # self.inst_layer = nn.InstanceNorm1d(input_dim)
 
-        self.conv1 = nn.Sequential(nn.Conv2d(3, channels[0], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+        self.conv1 = nn.Sequential(nn.Conv2d(1, channels[0], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
                                    nn.BatchNorm2d(channels[0]),
                                    nn.Conv2d(channels[0], channels[0], kernel_size=(1, 5), stride=(1, 2),
                                              padding=(0, 1)),
