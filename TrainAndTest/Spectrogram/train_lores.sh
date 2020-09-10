@@ -505,3 +505,41 @@ if [ $stage -le 52 ]; then
       --loss-type ${loss}
   done
 fi
+
+if [ $stage -le 52 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=timit
+  model=TimeFreqResNet
+  resnet_size=8
+  for loss in soft; do
+    python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_power\
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_power \
+      --feat-format kaldi \
+      --resnet-size ${resnet_size} \
+      --nj 10 \
+      --epochs 12 \
+      --lr 0.1 \
+      --input-dim 161 \
+      --milestones 6,10 \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
+      --channels 4,16,64 \
+      --embedding-size 128 \
+      --avg-size 4 \
+      --num-valid 2 \
+      --alpha 12 \
+      --margin 0.4 \
+      --s 30 \
+      --m 3 \
+      --loss-ratio 0.05 \
+      --weight-decay 0.001 \
+      --dropout-p 0.25 \
+      --gpu-id 0 \
+      --cos-sim \
+      --extract \
+      --loss-type ${loss}
+  done
+fi
