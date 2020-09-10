@@ -543,8 +543,9 @@ class InstBlock3x3(nn.Module):
 
 class VarSizeConv(nn.Module):
 
-    def __init__(self, inplanes, planes, stride=1, kernel_size=[3, 5, 7]):
+    def __init__(self, inplanes, planes, stride=1, kernel_size=[3, 5, 9]):
         super(VarSizeConv, self).__init__()
+        self.stide = stride
 
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
         self.bn1 = nn.InstanceNorm2d(planes)
@@ -554,6 +555,8 @@ class VarSizeConv(nn.Module):
 
         self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=3)
         self.bn3 = nn.InstanceNorm2d(planes)
+
+        self.avg = nn.AvgPool2d(kernel_size=int(stride * 2 + 1), stride=stride, padding=stride)
 
     def forward(self, x):
         x1 = self.conv1(x)
@@ -565,7 +568,10 @@ class VarSizeConv(nn.Module):
         x3 = self.conv3(x)
         x3 = self.bn3(x3)
 
-        return torch.cat([x1, x2, x3], dim=1)
+        if self.stide != 1:
+            x = self.avg(x)
+
+        return torch.cat([x, x1, x2, x3], dim=1)
         # return torch.cat([x, x1, x2, x3], dim=1)
 
 
@@ -1024,7 +1030,190 @@ class GradResNet(nn.Module):
 
         if self.ince:
             self.pre_conv = VarSizeConv(1, 1)
-            self.conv1 = nn.Conv2d(3, channels[0], kernel_size=5, stride=2, padding=2)
+            self.conv1 = nn.Conv2d(4, channels[0], kernel_size=5, stride=2, padding=2)
+        else:
+            self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
+
+        self.bn1 = nn.BatchNorm2d(channels[0])
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        self.inplanes = channels[0]
+        self.layer1 = self._make_layer(block, channels[0], layers[0])
+
+        self.inplanes = channels[1]
+        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size,
+                               stride=2, padding=padding, bias=False)
+        self.bn2 = nn.BatchNorm2d(channels[1])
+        self.layer2 = self._make_layer(block, channels[1], layers[1])
+
+        self.inplanes = channels[2]
+        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size,
+                               stride=2, padding=padding, bias=False)
+        self.bn3 = nn.BatchNorm2d(channels[2])
+        self.layer3 = self._make_layer(block, channels[2], layers[2])
+
+        if layers[3] != 0:
+            assert len(channels) == 4
+            self.inplanes = channels[3]
+            self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernal_size, stride=2,
+                                   padding=padding, bias=False)
+            self.bn4 = nn.BatchNorm2d(channels[3])
+            self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
+
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
+
+        self.fc = nn.Sequential(
+            nn.Linear(self.inplanes * avg_size, embedding_size),
+            nn.BatchNorm1d(embedding_size)
+        )
+
+        # self.fc = nn.Linear(self.inplanes * avg_size, embedding_size)
+        self.classifier = nn.Linear(self.embedding_size, num_classes)
+
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
+                # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                # m.weight.data.normal_(0, math.sqrt(2. / n))
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
+    def l2_norm(self, input, alpha=1.0):
+        # alpha = log(p * (class -2) / (1-p))
+        input_size = input.size()
+        buffer = torch.pow(input, 2)
+
+        normp = torch.sum(buffer, 1).add_(1e-12)
+        norm = torch.sqrt(normp)
+
+        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
+        output = _output.view(input_size)
+        # # # input = input.renorm(p=2, dim=1, maxnorm=1.0)
+        # norm = input.norm(p=2, dim=1, keepdim=True).add(1e-14)
+        # output = input / norm
+
+        return output * alpha
+
+    def _make_layer(self, block, planes, blocks, stride=1):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                conv1x1(self.inplanes, planes * block.expansion, stride),
+                nn.BatchNorm2d(planes * block.expansion),
+            )
+
+        layers = []
+        layers.append(block(self.inplanes, planes, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for _ in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        if self.vad:
+            x = self.vad_layer(x)
+
+        x = torch.log(x)
+
+        if self.inst_norm:
+            # x = self.inst_layer(x)
+            x = x - torch.mean(x, dim=-2, keepdim=True)
+
+        if self.ince:
+            x = self.pre_conv(x)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        # x = self.maxpool(x)
+
+        x = self.layer1(x)
+
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = self.relu(x)
+        x = self.layer3(x)
+
+        if self.layers[3] != 0:
+            x = self.conv4(x)
+            x = self.bn4(x)
+            x = self.relu(x)
+            x = self.layer4(x)
+
+        if self.dropout_p > 0:
+            x = self.dropout(x)
+
+        # if self.statis_pooling:
+        #     mean_x = self.avg_pool(x)
+        #     mean_x = mean_x.view(mean_x.size(0), -1)
+        #
+        #     std_x = self.std_pool(x)
+        #     std_x = std_x.view(std_x.size(0), -1)
+        #
+        #     x = torch.cat((mean_x, std_x), dim=1)
+        #
+        # else:
+        # print(x.shape)
+        x = self.avg_pool(x)
+        x = x.view(x.size(0), -1)
+
+        x = self.fc(x)
+        if self.alpha:
+            x = self.l2_norm(x, alpha=self.alpha)
+
+        logits = self.classifier(x)
+
+        return logits, x
+
+
+class TimeFreqResNet(nn.Module):
+    """
+    Define the ResNet model with A-softmax and AM-softmax loss.
+    Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
+    """
+
+    def __init__(self, embedding_size, num_classes, block=BasicBlock, input_dim=161,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., ince=False,
+                 inst_norm=False, alpha=12, vad=False, avg_size=4, kernal_size=5, padding=2, **kwargs):
+
+        super(GradResNet, self).__init__()
+        resnet_type = {8: [1, 1, 1, 0],
+                       10: [1, 1, 1, 1],
+                       18: [2, 2, 2, 2],
+                       34: [3, 4, 6, 3],
+                       50: [3, 4, 6, 3],
+                       101: [3, 4, 23, 3]}
+
+        layers = resnet_type[resnet_size]
+        self.ince = ince
+        self.alpha = alpha
+        self.layers = layers
+        self.dropout_p = dropout_p
+
+        self.embedding_size = embedding_size
+        # self.relu = nn.LeakyReLU()
+        self.relu = nn.ReLU(inplace=True)
+        self.vad = vad
+        if self.vad:
+            self.vad_layer = SelfVadPooling(input_dim)
+
+        self.inst_norm = inst_norm
+        # self.inst_layer = nn.InstanceNorm1d(input_dim)
+
+        if self.ince:
+            self.pre_conv = VarSizeConv(1, 1)
+            self.conv1 = nn.Sequential(nn.Conv2d(3, channels[0], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+                                       nn.Conv2d(channels[0], channels[0], kernel_size=(1, 5), stride=(1, 2),
+                                                 padding=(0, 1)))
+
         else:
             self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
 

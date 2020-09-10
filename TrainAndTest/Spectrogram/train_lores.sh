@@ -370,36 +370,36 @@ if [ $stage -le 51 ]; then
   model=GradResNet
   resnet_size=8
   for loss in soft; do
-    python TrainAndTest/Spectrogram/train_egs.py \
-      --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
-      --feat-format kaldi \
-      --inst-norm \
-      --resnet-size ${resnet_size} \
-      --nj 10 \
-      --epochs 24 \
-      --lr 0.1 \
-      --input-dim 161 \
-      --milestones 10,15,20 \
-      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25/checkpoint_24.pth \
-      --channels 16,64,128 \
-      --embedding-size 128 \
-      --avg-size 4 \
-      --num-valid 2 \
-      --alpha 12 \
-      --margin 0.4 \
-      --s 30 \
-      --m 3 \
-      --loss-ratio 0.05 \
-      --weight-decay 0.001 \
-      --dropout-p 0.25 \
-      --gpu-id 0 \
-      --cos-sim \
-      --extract \
-      --loss-type ${loss}
+#    python TrainAndTest/Spectrogram/train_egs.py \
+#      --model ${model} \
+#      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
+#      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
+#      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
+#      --feat-format kaldi \
+#      --inst-norm \
+#      --resnet-size ${resnet_size} \
+#      --nj 10 \
+#      --epochs 24 \
+#      --lr 0.1 \
+#      --input-dim 161 \
+#      --milestones 10,15,20 \
+#      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25 \
+#      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25/checkpoint_24.pth \
+#      --channels 16,64,128 \
+#      --embedding-size 128 \
+#      --avg-size 4 \
+#      --num-valid 2 \
+#      --alpha 12 \
+#      --margin 0.4 \
+#      --s 30 \
+#      --m 3 \
+#      --loss-ratio 0.05 \
+#      --weight-decay 0.001 \
+#      --dropout-p 0.25 \
+#      --gpu-id 0 \
+#      --cos-sim \
+#      --extract \
+#      --loss-type ${loss}
 
 #    python TrainAndTest/Spectrogram/train_egs.py \
 #      --model ${model} \
@@ -433,36 +433,36 @@ if [ $stage -le 51 ]; then
 #      --extract \
 #      --loss-type ${loss}
 #
-#        python TrainAndTest/Spectrogram/train_egs.py \
-#      --model ${model} \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
-#      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
-#      --feat-format kaldi \
-#      --inst-norm \
-#      --resnet-size ${resnet_size} \
-#      --nj 10 \
-#      --epochs 24 \
-#      --lr 0.1 \
-#      --milestones 10,15,20 \
-#      --input-dim 161 \
-#      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs_ince/${loss}_dp25 \
-#      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs_ince/${loss}_dp25/checkpoint_24.pth \
-#      --channels 16,64,128 \
-#      --embedding-size 128 \
-#      --avg-size 4 \
-#      --num-valid 2 \
-#      --alpha 12 \
-#      --margin 0.4 \
-#      --s 30 \
-#      --m 3 \
-#      --loss-ratio 0.05 \
-#      --weight-decay 0.001 \
-#      --dropout-p 0.25 \
-#      --gpu-id 0 \
-#      --cos-sim \
-#      --inception \
-#      --extract \
-#      --loss-type ${loss}
+        python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
+      --feat-format kaldi \
+      --inst-norm \
+      --resnet-size ${resnet_size} \
+      --nj 10 \
+      --epochs 24 \
+      --lr 0.1 \
+      --milestones 10,15,20 \
+      --input-dim 161 \
+      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs_ince4/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs_ince4/${loss}_dp25/checkpoint_24.pth \
+      --channels 16,64,128 \
+      --embedding-size 128 \
+      --avg-size 4 \
+      --num-valid 2 \
+      --alpha 12 \
+      --margin 0.4 \
+      --s 30 \
+      --m 3 \
+      --loss-ratio 0.05 \
+      --weight-decay 0.001 \
+      --dropout-p 0.25 \
+      --gpu-id 0 \
+      --cos-sim \
+      --inception \
+      --extract \
+      --loss-type ${loss}
   done
 fi
