@@ -605,27 +605,27 @@ fi
 
 if [ $stage -le 120 ]; then
   for s in dev ; do
+#    python Process_Data/Compute_Feat/make_egs.py \
+#      --data-dir ${lstm_dir}/data/timit/spect/train_power \
+#      --out-dir ${lstm_dir}/data/timit/egs/spect \
+#      --feat-type spectrogram \
+#      --train \
+#      --input-per-spks 192 \
+#      --feat-format kaldi \
+#      --out-set train_power
+#
+#    mv ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back
+#    sort -k 3 ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp
+
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/timit/spect/train_power \
       --out-dir ${lstm_dir}/data/timit/egs/spect \
-      --feat-type spectrogram \
-      --train \
-      --input-per-spks 192 \
-      --feat-format kaldi \
-      --out-set train_power
-
-    mv ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back
-    sort -k 3 ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp
-
-    python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/train_power/spect/train_power \
-      --out-dir ${lstm_dir}/data/train_power/egs/spect \
       --feat-type spectrogram \
       --input-per-spks 192 \
       --feat-format kaldi \
       --out-set valid_power
 
-    mv ${lstm_dir}/data/train_power/egs/spect/valid_power/feats.scp ${lstm_dir}/data/train_power/egs/spect/valid_power/feats.scp.back
-    sort -k 3 ${lstm_dir}/data/train_power/egs/spect/valid_power/feats.scp.back > ${lstm_dir}/data/train_power/egs/spect/valid_power/feats.scp
+    mv ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back
+    sort -k 3 ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp
   done
 fi
