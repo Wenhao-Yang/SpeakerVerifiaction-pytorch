@@ -553,7 +553,7 @@ class VarSizeConv(nn.Module):
         self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
         self.bn2 = nn.InstanceNorm2d(planes)
 
-        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=3)
+        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=4)
         self.bn3 = nn.InstanceNorm2d(planes)
 
         self.avg = nn.AvgPool2d(kernel_size=int(stride * 2 + 1), stride=stride, padding=stride)
