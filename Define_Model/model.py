@@ -20,6 +20,9 @@ from torch.nn import CosineSimilarity
 from Define_Model.SoftmaxLoss import AngleLinear
 
 
+def get_layer_param(model):
+    return sum([torch.numel(param) for param in model.parameters()])
+
 class PairwiseDistance(Function):
     def __init__(self, p):
         super(PairwiseDistance, self).__init__()

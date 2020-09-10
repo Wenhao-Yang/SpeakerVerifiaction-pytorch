@@ -1211,7 +1211,7 @@ class TimeFreqResNet(nn.Module):
         self.conv1 = nn.Sequential(nn.Conv2d(1, channels[0], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
                                    nn.BatchNorm2d(channels[0]),
                                    nn.Conv2d(channels[0], channels[0], kernel_size=(1, 5), stride=(1, 2),
-                                             padding=(0, 1)),
+                                             padding=(0, 2)),
                                    )
 
 
@@ -1229,7 +1229,7 @@ class TimeFreqResNet(nn.Module):
             nn.Conv2d(channels[0], channels[1], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
             nn.BatchNorm2d(channels[1]),
             nn.Conv2d(channels[1], channels[1], kernel_size=(1, 5), stride=(1, 2),
-                      padding=(0, 1)),
+                      padding=(0, 2)),
             )
 
         self.bn2 = nn.BatchNorm2d(channels[1])
@@ -1241,7 +1241,7 @@ class TimeFreqResNet(nn.Module):
         self.conv3 = nn.Sequential(
             nn.Conv2d(channels[1], channels[2], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
             nn.BatchNorm2d(channels[2]),
-            nn.Conv2d(channels[2], channels[2], kernel_size=(1, 5), stride=(1, 2), padding=(0, 1)),
+            nn.Conv2d(channels[2], channels[2], kernel_size=(1, 5), stride=(1, 2), padding=(0, 2)),
         )
 
         self.bn3 = nn.BatchNorm2d(channels[2])
