@@ -1184,7 +1184,7 @@ class TimeFreqResNet(nn.Module):
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0., ince=False,
                  inst_norm=False, alpha=12, vad=False, avg_size=4, kernal_size=5, padding=2, **kwargs):
 
-        super(GradResNet, self).__init__()
+        super(TimeFreqResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
                        18: [2, 2, 2, 2],
