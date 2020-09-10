@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=110
+stage=120
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -586,7 +586,7 @@ if [ $stage -le 110 ]; then
   done
 fi
 
-stage=1000
+#stage=1000
 if [ $stage -le 111 ]; then
 #enroll
   for name in dev test ; do
@@ -599,5 +599,33 @@ if [ $stage -le 111 ]; then
       --windowsize 0.02 \
       --feat-format kaldi \
       --nj 18
+  done
+fi
+
+
+if [ $stage -le 120 ]; then
+  for s in dev ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/timit/spect/train_power \
+      --out-dir ${lstm_dir}/data/timit/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 192 \
+      --feat-format kaldi \
+      --out-set train_power
+
+    mv ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back
+    sort -k 3 ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/train_power/spect/train_power \
+      --out-dir ${lstm_dir}/data/train_power/egs/spect \
+      --feat-type spectrogram \
+      --input-per-spks 192 \
+      --feat-format kaldi \
+      --out-set valid_power
+
+    mv ${lstm_dir}/data/train_power/egs/spect/valid_power/feats.scp ${lstm_dir}/data/train_power/egs/spect/valid_power/feats.scp.back
+    sort -k 3 ${lstm_dir}/data/train_power/egs/spect/valid_power/feats.scp.back > ${lstm_dir}/data/train_power/egs/spect/valid_power/feats.scp
   done
 fi
