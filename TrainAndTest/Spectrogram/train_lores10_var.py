@@ -401,26 +401,26 @@ def main():
                 ce[i] = ce[i].cuda()
         print('Dropout is {}.'.format(model.dropout_p))
 
-    for epoch in range(start, end):
-        # pdb.set_trace()
-        print('\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer), end='')
-        for param_group in optimizer.param_groups:
-            print('{:.5f} '.format(param_group['lr']), end='')
-        print(' \33[0m')
-
-        train(train_loader, model, ce, optimizer, epoch)
-        if epoch % 4 == 1 or epoch == (end - 1):
-            check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-            torch.save({'epoch': epoch,
-                        'state_dict': model.state_dict(),
-                        'criterion': ce},
-                       check_path)
-
-        if epoch % 2 == 1 and epoch != (end - 1):
-            test(test_loader, valid_loader, model, epoch)
-        # sitw_test(sitw_test_loader, model, epoch)
-        # sitw_test(sitw_dev_loader, model, epoch)
-        scheduler.step()
+    # for epoch in range(start, end):
+    #     # pdb.set_trace()
+    #     print('\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer), end='')
+    #     for param_group in optimizer.param_groups:
+    #         print('{:.5f} '.format(param_group['lr']), end='')
+    #     print(' \33[0m')
+    #
+    #     train(train_loader, model, ce, optimizer, epoch)
+    #     if epoch % 4 == 1 or epoch == (end - 1):
+    #         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
+    #         torch.save({'epoch': epoch,
+    #                     'state_dict': model.state_dict(),
+    #                     'criterion': ce},
+    #                    check_path)
+    #
+    #     if epoch % 2 == 1 and epoch != (end - 1):
+    #         test(test_loader, valid_loader, model, epoch)
+    #     # sitw_test(sitw_test_loader, model, epoch)
+    #     # sitw_test(sitw_dev_loader, model, epoch)
+    #     scheduler.step()
         # exit(1)
 
     extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
@@ -431,9 +431,9 @@ def main():
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
                                      loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=64, shuffle=False, **kwargs)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
     verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
-                      log_interval=args.log_interval)
+                      log_interval=args.log_interval, embedding_size=args.embedding_size, )
 
     writer.close()
 

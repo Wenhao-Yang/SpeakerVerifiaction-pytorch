@@ -51,7 +51,7 @@ if [ $stage -le 1 ]; then
       --lr 0.1 \
       --milestones 6,10 \
       --check-path Data/checkpoint/GradResNet8/${datasets}/spect_power_inst/${loss}_var \
-      --resume Data/checkpoint/GradResNet8/${datasets}/spect_power_inst/${loss}_var/checkpoint_7.pth \
+      --resume Data/checkpoint/GradResNet8/${datasets}/spect_power_inst/${loss}_var/checkpoint_12.pth \
       --channels 4,16,64 \
       --embedding-size 128 \
       --input-per-spks 256 \
