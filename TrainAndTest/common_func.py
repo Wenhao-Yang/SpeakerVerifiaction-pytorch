@@ -20,7 +20,8 @@ from torch.autograd import Variable
 from tqdm import tqdm
 
 from Define_Model.CNN import AlexNet
-from Define_Model.ResNet import LocalResNet, ResNet20, ExporingResNet, ResNet, SimpleResNet, DomainResNet, GradResNet
+from Define_Model.ResNet import LocalResNet, ResNet20, ExporingResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
+    TimeFreqResNet
 from Define_Model.TDNN import ASTDNN, TDNN_v2, ETDNN
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
@@ -62,7 +63,8 @@ __factory = {
     'ASTDNN': ASTDNN,
     'TDNN': TDNN_v2,
     'ETDNN': ETDNN,
-    'GradResNet': GradResNet
+    'GradResNet': GradResNet,
+    'TimeFreqResNet': TimeFreqResNet
 }
 
 

@@ -1208,14 +1208,12 @@ class TimeFreqResNet(nn.Module):
         self.inst_norm = inst_norm
         # self.inst_layer = nn.InstanceNorm1d(input_dim)
 
-        if self.ince:
-            self.pre_conv = VarSizeConv(1, 1)
-            self.conv1 = nn.Sequential(nn.Conv2d(3, channels[0], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
-                                       nn.Conv2d(channels[0], channels[0], kernel_size=(1, 5), stride=(1, 2),
-                                                 padding=(0, 1)))
+        self.conv1 = nn.Sequential(nn.Conv2d(3, channels[0], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+                                   nn.BatchNorm2d(channels[0]),
+                                   nn.Conv2d(channels[0], channels[0], kernel_size=(1, 5), stride=(1, 2),
+                                             padding=(0, 1)),
+                                   )
 
-        else:
-            self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
 
         self.bn1 = nn.BatchNorm2d(channels[0])
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -1224,14 +1222,28 @@ class TimeFreqResNet(nn.Module):
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
-        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size,
-                               stride=2, padding=padding, bias=False)
+
+        # self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size,
+        #                        stride=2, padding=padding, bias=False)
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(channels[0], channels[1], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+            nn.BatchNorm2d(channels[0]),
+            nn.Conv2d(channels[1], channels[1], kernel_size=(1, 5), stride=(1, 2),
+                      padding=(0, 1)),
+            )
+
         self.bn2 = nn.BatchNorm2d(channels[1])
         self.layer2 = self._make_layer(block, channels[1], layers[1])
 
         self.inplanes = channels[2]
-        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size,
-                               stride=2, padding=padding, bias=False)
+        # self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size,
+        #                        stride=2, padding=padding, bias=False)
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(channels[1], channels[2], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+            nn.BatchNorm2d(channels[0]),
+            nn.Conv2d(channels[2], channels[2], kernel_size=(1, 5), stride=(1, 2), padding=(0, 1)),
+        )
+
         self.bn3 = nn.BatchNorm2d(channels[2])
         self.layer3 = self._make_layer(block, channels[2], layers[2])
 
@@ -1250,7 +1262,6 @@ class TimeFreqResNet(nn.Module):
             nn.Linear(self.inplanes * avg_size, embedding_size),
             nn.BatchNorm1d(embedding_size)
         )
-
         # self.fc = nn.Linear(self.inplanes * avg_size, embedding_size)
         self.classifier = nn.Linear(self.embedding_size, num_classes)
 
@@ -1273,9 +1284,6 @@ class TimeFreqResNet(nn.Module):
 
         _output = torch.div(input, norm.view(-1, 1).expand_as(input))
         output = _output.view(input_size)
-        # # # input = input.renorm(p=2, dim=1, maxnorm=1.0)
-        # norm = input.norm(p=2, dim=1, keepdim=True).add(1e-14)
-        # output = input / norm
 
         return output * alpha
 
@@ -1334,17 +1342,6 @@ class TimeFreqResNet(nn.Module):
         if self.dropout_p > 0:
             x = self.dropout(x)
 
-        # if self.statis_pooling:
-        #     mean_x = self.avg_pool(x)
-        #     mean_x = mean_x.view(mean_x.size(0), -1)
-        #
-        #     std_x = self.std_pool(x)
-        #     std_x = std_x.view(std_x.size(0), -1)
-        #
-        #     x = torch.cat((mean_x, std_x), dim=1)
-        #
-        # else:
-        # print(x.shape)
         x = self.avg_pool(x)
         x = x.view(x.size(0), -1)
 
