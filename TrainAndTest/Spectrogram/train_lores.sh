@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=61
 
 waited=0
 while [ `ps 113458 | wc -l` -eq 2 ]; do
@@ -582,7 +582,7 @@ if [ $stage -le 61 ]; then
   datasets=timit
   model=GradResNet
   resnet_size=8
-  for loss in soft; do
+  for loss in amsoft; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power \
