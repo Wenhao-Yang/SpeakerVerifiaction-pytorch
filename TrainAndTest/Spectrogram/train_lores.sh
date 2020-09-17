@@ -614,3 +614,42 @@ if [ $stage -le 61 ]; then
       --loss-type ${loss}
   done
 fi
+
+if [ $stage -le 2 ]; then
+  datasets=vox1
+  model=LoResNet
+  resnet_size=8
+  for loss in soft; do
+    echo -e "\n\033[1;4;31m Training LoResNet in vox1 with ${loss} kernel 5,5 \033[0m\n"
+    python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_8k_radio_v2 \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_8k_radio_v2\
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k_radio_v2 \
+      --feat-format kaldi \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 24 \
+      --lr 0.1 \
+      --input-dim 81 \
+      --milestones 10,15,20 \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
+      --channels 64,128,256 \
+      --embedding-size 128 \
+      --avg-size 4 \
+      --num-valid 2 \
+      --stride 2,1 \
+      --alpha 12 \
+      --margin 0.4 \
+      --s 30 \
+      --m 3 \
+      --loss-ratio 0.05 \
+      --weight-decay 0.001 \
+      --dropout-p 0.25 \
+      --gpu-id 2 \
+      --cos-sim \
+      --extract \
+      --loss-type ${loss}
+  done
+fi
