@@ -648,29 +648,29 @@ if [ $stage -le 130 ]; then
 
 
   for s in dev ; do
-#    python Process_Data/Compute_Feat/make_egs.py \
-#      --data-dir ${lstm_dir}/data/timit/spect/train_power \
-#      --out-dir ${lstm_dir}/data/timit/egs/spect \
-#      --feat-type spectrogram \
-#      --train \
-#      --input-per-spks 192 \
-#      --feat-format kaldi \
-#      --num-valid 1 \
-#      --out-set train_power
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox1/spect/dev_8k_radio_v2 \
+      --out-dir ${lstm_dir}/data/vox1/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 192 \
+      --feat-format kaldi \
+      --num-valid 1 \
+      --out-set dev_8k_radio_v2
 
-    mv ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp
+    mv ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp.back
+    sort -k 2 ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp.back > ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp
 
-#    python Process_Data/Compute_Feat/make_egs.py \
-#      --data-dir ${lstm_dir}/data/timit/spect/train_power \
-#      --out-dir ${lstm_dir}/data/timit/egs/spect \
-#      --feat-type spectrogram \
-#      --input-per-spks 192 \
-#      --feat-format kaldi \
-#      --num-valid 1 \
-#      --out-set valid_power
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox1/spect/dev_8k_radio_v2 \
+      --out-dir ${lstm_dir}/data/vox1/egs/spect \
+      --feat-type spectrogram \
+      --input-per-spks 192 \
+      --feat-format kaldi \
+      --num-valid 1 \
+      --out-set valid_8k_radio_v2
 
-    mv ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp
+    mv ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp.back
+    sort -k 2 ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp.back > ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp
   done
 fi
