@@ -616,6 +616,7 @@ if [ $stage -le 61 ]; then
 fi
 
 if [ $stage -le 62 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   model=LoResNet
   resnet_size=8
@@ -624,7 +625,7 @@ if [ $stage -le 62 ]; then
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_8k_radio_v2 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_8k_radio_v2\
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_8k_radio_v2 \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k_radio_v2 \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
