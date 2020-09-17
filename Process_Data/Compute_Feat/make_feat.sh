@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=120
+stage=130
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -604,6 +604,49 @@ fi
 
 
 if [ $stage -le 120 ]; then
+  for s in dev ; do
+#    python Process_Data/Compute_Feat/make_egs.py \
+#      --data-dir ${lstm_dir}/data/timit/spect/train_power \
+#      --out-dir ${lstm_dir}/data/timit/egs/spect \
+#      --feat-type spectrogram \
+#      --train \
+#      --input-per-spks 192 \
+#      --feat-format kaldi \
+#      --num-valid 1 \
+#      --out-set train_power
+
+    mv ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back
+    sort -k 2 ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp
+
+#    python Process_Data/Compute_Feat/make_egs.py \
+#      --data-dir ${lstm_dir}/data/timit/spect/train_power \
+#      --out-dir ${lstm_dir}/data/timit/egs/spect \
+#      --feat-type spectrogram \
+#      --input-per-spks 192 \
+#      --feat-format kaldi \
+#      --num-valid 1 \
+#      --out-set valid_power
+
+    mv ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back
+    sort -k 2 ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp
+  done
+fi
+
+if [ $stage -le 130 ]; then
+  for s in dev test ; do
+    python Process_Data/Compute_Feat/make_feat.py \
+        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k_radio_v2/${s} \
+        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+        --out-set ${s}_8k_radio_v2 \
+        --feat-type spectrogram \
+        --feat-format kaldi \
+        --nfft 160 \
+        --windowsize 0.02 \
+        --log-scale \
+        --nj 18
+  done
+
+
   for s in dev ; do
 #    python Process_Data/Compute_Feat/make_egs.py \
 #      --data-dir ${lstm_dir}/data/timit/spect/train_power \
