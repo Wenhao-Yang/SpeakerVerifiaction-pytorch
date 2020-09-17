@@ -639,6 +639,9 @@ if [ $stage -le 130 ]; then
         --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
         --out-set ${s}_8k_radio_v2 \
         --feat-type spectrogram \
+        --lowfreq 300 \
+        --highfreq 3000 \
+        --bandpass \
         --feat-format kaldi \
         --nfft 160 \
         --windowsize 0.02 \
@@ -647,30 +650,30 @@ if [ $stage -le 130 ]; then
   done
 
 
-  for s in dev ; do
-    python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/vox1/spect/dev_8k_radio_v2 \
-      --out-dir ${lstm_dir}/data/vox1/egs/spect \
-      --feat-type spectrogram \
-      --train \
-      --input-per-spks 192 \
-      --feat-format kaldi \
-      --num-valid 1 \
-      --out-set dev_8k_radio_v2
-
-    mv ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp.back > ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp
-
-    python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/vox1/spect/dev_8k_radio_v2 \
-      --out-dir ${lstm_dir}/data/vox1/egs/spect \
-      --feat-type spectrogram \
-      --input-per-spks 192 \
-      --feat-format kaldi \
-      --num-valid 1 \
-      --out-set valid_8k_radio_v2
-
-    mv ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp.back > ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp
-  done
+#  for s in dev ; do
+#    python Process_Data/Compute_Feat/make_egs.py \
+#      --data-dir ${lstm_dir}/data/vox1/spect/dev_8k_radio_v2 \
+#      --out-dir ${lstm_dir}/data/vox1/egs/spect \
+#      --feat-type spectrogram \
+#      --train \
+#      --input-per-spks 192 \
+#      --feat-format kaldi \
+#      --num-valid 1 \
+#      --out-set dev_8k_radio_v2
+#
+#    mv ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp.back
+#    sort -k 2 ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp.back > ${lstm_dir}/data/vox1/egs/spect/dev_8k_radio_v2/feats.scp
+#
+#    python Process_Data/Compute_Feat/make_egs.py \
+#      --data-dir ${lstm_dir}/data/vox1/spect/dev_8k_radio_v2 \
+#      --out-dir ${lstm_dir}/data/vox1/egs/spect \
+#      --feat-type spectrogram \
+#      --input-per-spks 192 \
+#      --feat-format kaldi \
+#      --num-valid 1 \
+#      --out-set valid_8k_radio_v2
+#
+#    mv ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp.back
+#    sort -k 2 ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp.back > ${lstm_dir}/data/vox1/egs/spect/valid_8k_radio_v2/feats.scp
+#  done
 fi
