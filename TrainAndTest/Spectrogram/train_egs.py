@@ -375,7 +375,7 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 16), shuffle=False, **kwargs)
+    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 64), shuffle=False, **kwargs)
     # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
     #                                                shuffle=False, **kwargs)
     # sitw_dev_loader = torch.utils.data.DataLoader(sitw_dev_part, batch_size=args.test_batch_size, shuffle=False,
@@ -398,7 +398,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        # train(train_loader, model, ce, optimizer, epoch)
+        train(train_loader, model, ce, optimizer, epoch)
         if epoch % 4 == 1 or epoch == (end - 1):
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             torch.save({'epoch': epoch,
