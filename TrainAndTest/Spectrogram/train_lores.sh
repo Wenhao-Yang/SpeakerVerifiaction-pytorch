@@ -617,18 +617,19 @@ fi
 
 if [ $stage -le 62 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=vox1
+  datasets=army
   model=LoResNet
   resnet_size=8
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training LoResNet in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_8k_radio_v2 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_8k_radio_v2 \
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k_radio_v2 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/vox1_dev_clear_radio \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/vox1_valid_clear_radio \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/vox1_test_clear_radio \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
+      --batch-size 256 \
       --nj 12 \
       --epochs 24 \
       --lr 0.1 \

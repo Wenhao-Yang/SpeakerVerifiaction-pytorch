@@ -229,7 +229,7 @@ if __name__ == "__main__":
             idx_queue.put(i)
 
         print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
-            idx_queue.qsize(), num_utt, str(time.asctime()), nj))
+            idx_queue.qsize(), train_dir.num_spks, str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 2))  # 创建nj个进程
         for i in range(0, nj):
