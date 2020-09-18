@@ -112,16 +112,13 @@ parser.add_argument('--resnet-size', default=8, type=int,
 parser.add_argument('--filter', action='store_true', default=False, help='replace batchnorm with instance norm')
 parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
 parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
-parser.add_argument('--inst-norm', action='store_true', default=False,
-                    help='replace batchnorm with instance norm')
-parser.add_argument('--encoder-type', type=str, default='SAP',
-                    help='path to voxceleb1 test dataset')
+parser.add_argument('--inst-norm', action='store_true', default=False, help='replace batchnorm with instance norm')
+parser.add_argument('--encoder-type', type=str, default='SAP', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--accu-steps', default=1, type=int, metavar='N', help='manual epoch number (useful on restarts)')
-
 
 parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
@@ -375,7 +372,7 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 64), shuffle=False, **kwargs)
+    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 32), shuffle=False, **kwargs)
     # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
     #                                                shuffle=False, **kwargs)
     # sitw_dev_loader = torch.utils.data.DataLoader(sitw_dev_part, batch_size=args.test_batch_size, shuffle=False,

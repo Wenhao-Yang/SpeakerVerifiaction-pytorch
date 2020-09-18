@@ -629,14 +629,15 @@ if [ $stage -le 62 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/spect/vox1_test_clear_radio \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
+      --inst-norm \
       --batch-size 256 \
       --nj 12 \
       --epochs 24 \
       --lr 0.1 \
       --input-dim 81 \
       --milestones 10,15,20 \
-      --check-path Data/checkpoint/${model}10/${datasets}/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}10/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}10/${datasets}/spect_egs_inst/${loss}_dp25 \
+      --resume Data/checkpoint/${model}10/${datasets}/spect_egs_inst/${loss}_dp25/checkpoint_24.pth \
       --channels 64,128,256,256 \
       --embedding-size 128 \
       --avg-size 4 \

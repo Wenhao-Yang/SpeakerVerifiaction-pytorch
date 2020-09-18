@@ -674,7 +674,7 @@ class LocalResNet(nn.Module):
         # self.relu = nn.LeakyReLU()
         self.relu = nn.ReLU(inplace=True)
         self.inst_norm = inst_norm
-        self.inst_layer = nn.InstanceNorm2d(input_dim)
+        self.inst_layer = nn.InstanceNorm1d(input_dim)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=stride, padding=(3, 2))
@@ -757,9 +757,9 @@ class LocalResNet(nn.Module):
 
     def forward(self, x):
         if self.inst_norm:
-            x = x.squeeze(1)
+            x = x.squeeze(1).transpose(1, 2)
             x = self.inst_layer(x)
-            x = x.unsqueeze(1)
+            x = x.transpose(1, 2).unsqueeze(1)
 
         x = self.conv1(x)
         x = self.bn1(x)
