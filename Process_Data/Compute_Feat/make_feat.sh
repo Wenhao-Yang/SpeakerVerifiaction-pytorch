@@ -633,21 +633,21 @@ if [ $stage -le 120 ]; then
 fi
 
 if [ $stage -le 130 ]; then
-#  for s in dev test ; do
-#    python Process_Data/Compute_Feat/make_feat.py \
-#        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k_radio_v2/${s} \
-#        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-#        --out-set ${s}_8k_radio_v2 \
-#        --feat-type spectrogram \
-#        --lowfreq 300 \
-#        --highfreq 3000 \
-#        --bandpass \
-#        --feat-format kaldi \
-#        --nfft 160 \
-#        --windowsize 0.02 \
-#        --log-scale \
-#        --nj 18
-#  done
+  for s in dev test ; do
+    python Process_Data/Compute_Feat/make_feat.py \
+        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k_radio_v3/${s} \
+        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+        --out-set ${s}_8k_radio_v3 \
+        --feat-type spectrogram \
+        --lowfreq 300 \
+        --highfreq 3000 \
+        --bandpass \
+        --feat-format kaldi \
+        --nfft 160 \
+        --windowsize 0.02 \
+        --log-scale \
+        --nj 18
+  done
 
 #  for s in dev test ; do
 #    python Process_Data/Compute_Feat/make_feat.py \
@@ -666,30 +666,30 @@ if [ $stage -le 130 ]; then
 #  done
 
 
-  for s in dev ; do
-    python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/army/spect/vox1_dev_clear_radio \
-      --out-dir ${lstm_dir}/data/army/egs/spect \
-      --feat-type spectrogram \
-      --train \
-      --input-per-spks 384 \
-      --feat-format kaldi \
-      --num-valid 4 \
-      --out-set vox1_dev_clear_radio
-
-    mv ${lstm_dir}/data/army/egs/spect/vox1_dev_clear_radio/feats.scp ${lstm_dir}/data/army/egs/spect/vox1_dev_clear_radio/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/army/egs/spect/vox1_dev_clear_radio/feats.scp.back > ${lstm_dir}/data/army/egs/spect/vox1_dev_clear_radio/feats.scp
-
-    python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/army/spect/vox1_dev_clear_radio \
-      --out-dir ${lstm_dir}/data/army/egs/spect \
-      --feat-type spectrogram \
-      --input-per-spks 384 \
-      --feat-format kaldi \
-      --num-valid 4 \
-      --out-set vox1_valid_clear_radio
-
-    mv ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp.back > ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp
-  done
+#  for s in dev ; do
+#    python Process_Data/Compute_Feat/make_egs.py \
+#      --data-dir ${lstm_dir}/data/army/spect/vox1_dev_clear_radio \
+#      --out-dir ${lstm_dir}/data/army/egs/spect \
+#      --feat-type spectrogram \
+#      --train \
+#      --input-per-spks 384 \
+#      --feat-format kaldi \
+#      --num-valid 4 \
+#      --out-set vox1_dev_clear_radio
+#
+#    mv ${lstm_dir}/data/army/egs/spect/vox1_dev_clear_radio/feats.scp ${lstm_dir}/data/army/egs/spect/vox1_dev_clear_radio/feats.scp.back
+#    sort -k 2 ${lstm_dir}/data/army/egs/spect/vox1_dev_clear_radio/feats.scp.back > ${lstm_dir}/data/army/egs/spect/vox1_dev_clear_radio/feats.scp
+#
+#    python Process_Data/Compute_Feat/make_egs.py \
+#      --data-dir ${lstm_dir}/data/army/spect/vox1_dev_clear_radio \
+#      --out-dir ${lstm_dir}/data/army/egs/spect \
+#      --feat-type spectrogram \
+#      --input-per-spks 384 \
+#      --feat-format kaldi \
+#      --num-valid 4 \
+#      --out-set vox1_valid_clear_radio
+#
+#    mv ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp.back
+#    sort -k 2 ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp.back > ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp
+#  done
 fi
