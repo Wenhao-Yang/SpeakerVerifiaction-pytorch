@@ -769,8 +769,7 @@ if [ $stage -le 132 ]; then
       --num-valid 4 \
       --out-set dev_v1
 
-    mv ${lstm_dir}/data/army/egs/spect/dev_v1/feats.scp ${lstm_dir}/data/army/egs/spect/dev_v1/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/army/egs/spect/dev_v1/feats.scp.back > ${lstm_dir}/data/army/egs/spect/dev_v1/feats.scp
+    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/dev_v1
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/army/spect/dev_v1 \
@@ -781,7 +780,6 @@ if [ $stage -le 132 ]; then
       --num-valid 4 \
       --out-set valid_v1
 
-    mv ${lstm_dir}/data/army/egs/spect/valid_v1/feats.scp ${lstm_dir}/data/army/egs/spect/valid_v1/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/army/egs/spect/valid_v1/feats.scp.back > ${lstm_dir}/data/army/egs/spect/valid_v1/feats.scp
+    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/valid_v1
   done
 fi
