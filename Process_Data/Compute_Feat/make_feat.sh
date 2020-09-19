@@ -695,9 +695,9 @@ if [ $stage -le 130 ]; then
 fi
 
 if [ $stage -le 131 ]; then
-  for s in dev_8k-radio-v3 test_8k-radio-v3 ; do
+  for s in dev test ; do
     python Process_Data/Compute_Feat/make_feat.py \
-        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k_radio_v3/${s} \
+        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k_radio_v3/${s}_8k-radio-v3 \
         --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
         --out-set ${s}_8k_radio_v3 \
         --feat-type spectrogram \
