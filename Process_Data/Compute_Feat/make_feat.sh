@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=131
+stage=132
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -754,4 +754,34 @@ if [ $stage -le 131 ]; then
 #    mv ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp.back
 #    sort -k 2 ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp.back > ${lstm_dir}/data/army/egs/spect/vox1_valid_clear_radio/feats.scp
 #  done
+fi
+
+if [ $stage -le 132 ]; then
+
+  for s in dev ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/army/spect/dev_v1 \
+      --out-dir ${lstm_dir}/data/army/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 192 \
+      --feat-format kaldi \
+      --num-valid 4 \
+      --out-set dev_v1
+
+    mv ${lstm_dir}/data/army/egs/spect/dev_v1/feats.scp ${lstm_dir}/data/army/egs/spect/dev_v1/feats.scp.back
+    sort -k 2 ${lstm_dir}/data/army/egs/spect/dev_v1/feats.scp.back > ${lstm_dir}/data/army/egs/spect/dev_v1/feats.scp
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/army/spect/dev_v1 \
+      --out-dir ${lstm_dir}/data/army/egs/spect \
+      --feat-type spectrogram \
+      --input-per-spks 192 \
+      --feat-format kaldi \
+      --num-valid 4 \
+      --out-set valid_v1
+
+    mv ${lstm_dir}/data/army/egs/spect/valid_v1/feats.scp ${lstm_dir}/data/army/egs/spect/valid_v1/feats.scp.back
+    sort -k 2 ${lstm_dir}/data/army/egs/spect/valid_v1/feats.scp.back > ${lstm_dir}/data/army/egs/spect/valid_v1/feats.scp
+  done
 fi
