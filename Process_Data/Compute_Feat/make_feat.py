@@ -322,7 +322,8 @@ if __name__ == "__main__":
     if args.compress:
         shutil.rmtree(Split_dir)
     end_time = time.time()
-    print('For multi process Completed, write all files in: %s. And %.2fs collapse.' % (out_dir, end_time - start_time))
+    print(
+        'For multi process Completed, write all files in: %s. And %.2fs collapse.\n' % (out_dir, end_time - start_time))
     sys.exit()
 
 """
