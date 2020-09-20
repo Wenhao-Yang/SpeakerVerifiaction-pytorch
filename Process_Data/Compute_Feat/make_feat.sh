@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=130
+stage=132
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -813,16 +813,16 @@ if [ $stage -le 131 ]; then
 #  done
 fi
 
-stage=2100
+#stage=2100
 if [ $stage -le 132 ]; then
 
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/army/spect/dev_v1 \
+      --data-dir ${lstm_dir}/data/army/spect/dev_8k \
       --out-dir ${lstm_dir}/data/army/egs/spect \
       --feat-type spectrogram \
       --train \
-      --input-per-spks 192 \
+      --input-per-spks 224 \
       --feat-format kaldi \
       --num-valid 4 \
       --out-set dev_v1
@@ -830,10 +830,10 @@ if [ $stage -le 132 ]; then
     Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/dev_v1
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/army/spect/dev_v1 \
+      --data-dir ${lstm_dir}/data/army/spect/dev_8k \
       --out-dir ${lstm_dir}/data/army/egs/spect \
       --feat-type spectrogram \
-      --input-per-spks 192 \
+      --input-per-spks 224 \
       --feat-format kaldi \
       --num-valid 4 \
       --out-set valid_v1
