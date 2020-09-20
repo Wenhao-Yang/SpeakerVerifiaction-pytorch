@@ -635,7 +635,7 @@ fi
 if [ $stage -le 130 ]; then
   for s in dev test ; do
     python Process_Data/Compute_Feat/make_feat.py \
-        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k/${s} \
+        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s}_8k \
         --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
         --out-set ${s}_8k \
         --feat-type spectrogram \
@@ -648,35 +648,35 @@ if [ $stage -le 130 ]; then
         --log-scale \
         --nj 18
 
-    python Process_Data/Compute_Feat/make_feat.py \
-        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k_radio_v2/${s}_1w \
-        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-        --out-set ${s}_8k_radio_v2_1w \
-        --feat-type spectrogram \
-        --lowfreq 300 \
-        --highfreq 3000 \
-        --bandpass \
-        --feat-format kaldi \
-        --nfft 160 \
-        --windowsize 0.02 \
-        --log-scale \
-        --nj 18
+#    python Process_Data/Compute_Feat/make_feat.py \
+#        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k_radio_v2/${s}_1w \
+#        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+#        --out-set ${s}_8k_radio_v2_1w \
+#        --feat-type spectrogram \
+#        --lowfreq 300 \
+#        --highfreq 3000 \
+#        --bandpass \
+#        --feat-format kaldi \
+#        --nfft 160 \
+#        --windowsize 0.02 \
+#        --log-scale \
+#        --nj 18
 
-    python Process_Data/Compute_Feat/make_feat.py \
-        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k_radio_v3/${s} \
-        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-        --out-set ${s}_8k_radio_v3 \
-        --feat-type spectrogram \
-        --lowfreq 300 \
-        --highfreq 3000 \
-        --bandpass \
-        --feat-format kaldi \
-        --nfft 160 \
-        --windowsize 0.02 \
-        --log-scale \
-        --nj 18
+
   done
-
+  python Process_Data/Compute_Feat/make_feat.py \
+        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/test_8k_radio_v3 \
+        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+        --out-set test_8k_radio_v3 \
+        --feat-type spectrogram \
+        --lowfreq 300 \
+        --highfreq 3000 \
+        --bandpass \
+        --feat-format kaldi \
+        --nfft 160 \
+        --windowsize 0.02 \
+        --log-scale \
+        --nj 18
 #  for s in dev test ; do
 #    python Process_Data/Compute_Feat/make_feat.py \
 #        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s}_8k_wav \
@@ -752,19 +752,21 @@ if [ $stage -le 131 ]; then
         --log-scale \
         --nj 18
   done
-  python Process_Data/Compute_Feat/make_feat.py \
-        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k_musan/dev_musan_dev \
-        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
-        --out-set dev_8k_musan \
-        --feat-type spectrogram \
-        --lowfreq 300 \
-        --highfreq 3000 \
-        --bandpass \
-        --feat-format kaldi \
-        --nfft 160 \
-        --windowsize 0.02 \
-        --log-scale \
-        --nj 18
+
+
+#  python Process_Data/Compute_Feat/make_feat.py \
+#        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k_musan/dev_musan_dev \
+#        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
+#        --out-set dev_8k_musan \
+#        --feat-type spectrogram \
+#        --lowfreq 300 \
+#        --highfreq 3000 \
+#        --bandpass \
+#        --feat-format kaldi \
+#        --nfft 160 \
+#        --windowsize 0.02 \
+#        --log-scale \
+#        --nj 18
 
 #  for s in dev test ; do
 #    python Process_Data/Compute_Feat/make_feat.py \

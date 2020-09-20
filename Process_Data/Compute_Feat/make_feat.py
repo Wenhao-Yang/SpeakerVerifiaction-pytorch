@@ -205,7 +205,7 @@ if __name__ == "__main__":
     spk2utt_f = os.path.join(data_dir, 'spk2utt')
     assert os.path.exists(data_dir), print(data_dir)
     assert os.path.exists(wav_scp_f)
-    assert os.path.exists(spk2utt_f)
+    assert os.path.exists(spk2utt_f), print(spk2utt_f)
 
     if data_dir != out_dir:
         print('Copy wav.scp, spk2utt, utt2spk, trials to %s' % out_dir)
