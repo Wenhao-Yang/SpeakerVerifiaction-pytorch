@@ -620,7 +620,7 @@ if [ $stage -le 62 ]; then
   datasets=army
   model=LoResNet
   resnet_size=10
-  for loss in amsoft asoft ; do
+  for loss in soft ; do
     echo -e "\n\033[1;4;31m Training LoResNet in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -636,10 +636,10 @@ if [ $stage -le 62 ]; then
       --lr 0.01 \
       --input-dim 81 \
       --milestones 5,10 \
-      --check-path Data/checkpoint/${model}10/${datasets}_v1/spect_egs_inst/${loss}_dp01 \
-      --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_inst/soft_dp01/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}18/${datasets}_v1/spect_egs_512/${loss}_dp01 \
+      --resume Data/checkpoint/${model}18/${datasets}_v1/spect_egs_512/soft_dp01/checkpoint_24.pth \
       --finetune \
-      --channels 64,128,256,256 \
+      --channels 64,128,256,512 \
       --embedding-size 128 \
       --avg-size 4 \
       --num-valid 4 \
