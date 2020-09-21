@@ -632,12 +632,12 @@ if [ $stage -le 62 ]; then
       --inst-norm \
       --batch-size 256 \
       --nj 12 \
-      --epochs 24 \
+      --epochs 19 \
       --lr 0.1 \
       --input-dim 81 \
-      --milestones 10,15,20 \
+      --milestones 5,10,15 \
       --check-path Data/checkpoint/${model}10/${datasets}_v1/spect_egs_inst/${loss}_dp01 \
-      --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_inst/${loss}_dp01/checkpoint_24.pth \
+      --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_inst/${loss}_dp01/checkpoint_5.pth \
       --channels 64,128,256,256 \
       --embedding-size 128 \
       --avg-size 4 \

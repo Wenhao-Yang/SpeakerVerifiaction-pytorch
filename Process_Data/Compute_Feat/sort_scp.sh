@@ -8,5 +8,5 @@ for dir in $*; do
   fi
 
   mv $dir/feats.scp $dir/feats.scp.back
-  sort -n -k 2 $dir/feats.scp.back > $dir/feats.scp
+  sort -k 2 $dir/feats.scp.back > $dir/feats.scp
 done
