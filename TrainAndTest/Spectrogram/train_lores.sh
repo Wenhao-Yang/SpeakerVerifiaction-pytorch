@@ -638,13 +638,12 @@ if [ $stage -le 62 ]; then
       --milestones 5,10 \
       --check-path Data/checkpoint/${model}18/${datasets}_v1/spect_egs_512/${loss}_dp01 \
       --resume Data/checkpoint/${model}18/${datasets}_v1/spect_egs_512/soft_dp01/checkpoint_24.pth \
-      --finetune \
       --channels 64,128,256,512 \
       --embedding-size 128 \
       --avg-size 4 \
       --num-valid 4 \
       --alpha 12 \
-      --margin 0.4 \
+      --margin 0.3 \
       --s 30 \
       --m 3 \
       --loss-ratio 0.05 \
