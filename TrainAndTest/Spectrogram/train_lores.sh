@@ -633,7 +633,7 @@ if [ $stage -le 62 ]; then
       --batch-size 256 \
       --nj 12 \
       --epochs 12 \
-      --lr 0.01 \
+      --lr 0.1 \
       --input-dim 81 \
       --milestones 5,10 \
       --check-path Data/checkpoint/${model}10/${datasets}_v1/spect_egs_512/${loss}_dp01 \
