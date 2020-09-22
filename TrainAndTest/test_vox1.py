@@ -324,7 +324,7 @@ def main():
     test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
                                    xvectors_dir=args.xvector_dir, loader=file_loader)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
-    test(test_loader)
+    test(test_loader, save=args.xvector_dir)
 
     # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
     #                                                shuffle=False, **kwargs)
@@ -443,7 +443,7 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
     torch.cuda.empty_cache()
 
 
-def test(test_loader):
+def test(test_loader, save=''):
     # switch to evaluate mode
     labels, distances = [], []
     pbar = tqdm(enumerate(test_loader))
@@ -467,6 +467,10 @@ def test(test_loader):
 
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
+    if save != '':
+        with open('%s/scores' % save, 'w') as f:
+            for d, l in zip(distances, labels):
+                f.write(str(d) + ' ' + str(l) + '\n')
 
     dist_type = 'cos' if args.cos_sim else 'l2'
     print('\nFor %s_distance, %d pairs:' % (dist_type, len(labels)))
