@@ -458,7 +458,7 @@ if [ $stage -le 60 ]; then
     python -W ignore TrainAndTest/test_vox1.py \
       --model LoResNet \
       --train-dir ${lstm_dir}/data/${dataset}/spect/dev_8k \
-      --test-dir ${lstm_dir}/data/data/radio/spect/example_8k \
+      --test-dir ${lstm_dir}/data/radio/spect/example_8k \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --input-per-spks 224 \
