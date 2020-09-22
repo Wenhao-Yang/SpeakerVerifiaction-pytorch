@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=55
+stage=60
 
 if [ $stage -le 0 ]; then
   for loss in asoft soft ; do
@@ -446,4 +446,31 @@ if [ $stage -le 55 ]; then
       --num-valid 2 \
       --loss-type ${loss}
   done
+fi
+
+if [ $stage -le 60 ]; then
+  dataset=army
+  resnet_size=10
+  for loss in soft ; do # 32,128,512; 8,32,128
+#  Data/xvector/LoResNet10/army_v1/spect_egs_mean/soft_dp01
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_vox1.py \
+      --model LoResNet \
+      --train-dir ${lstm_dir}/data/${dataset}/spect/dev_8k \
+      --test-dir ${lstm_dir}/data/data/radio/spect/example_8k \
+      --feat-format kaldi \
+      --resnet-size ${resnet_size} \
+      --input-per-spks 224 \
+      --nj 16 \
+      --embedding-size 128 \
+      --channels 64,128,256 \
+      --loss-type ${loss} \
+      --input-length var \
+      --test-input-per-file 4 \
+      --xvector-dir Data/xvector/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01_example \
+      --resume  Data/checkpoint/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01/checkpoint_24.pth \
+      --trials trials \
+      --gpu-id 1
+  done
+
 fi
