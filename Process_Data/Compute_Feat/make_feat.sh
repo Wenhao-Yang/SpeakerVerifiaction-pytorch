@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=132
+stage=140
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -840,4 +840,20 @@ if [ $stage -le 132 ]; then
 
     Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/valid_v1
   done
+fi
+
+if [ $stage -le 140 ]; then
+  python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/radio/example_8k \
+      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/radio/spect \
+      --out-set example_8k \
+      --feat-type spectrogram \
+      --lowfreq 300 \
+      --highfreq 3000 \
+      --bandpass \
+      --feat-format kaldi \
+      --nfft 160 \
+      --windowsize 0.02 \
+      --log-scale \
+      --nj 4
 fi
