@@ -9,6 +9,8 @@
 @Time: 2020/1/8 3:46 PM
 @Overview:
 """
+import pdb
+
 import torch
 import torch.nn as nn
 from geomloss import SamplesLoss
@@ -166,6 +168,7 @@ class Wasserstein_Loss(nn.Module):
         self.loss = SamplesLoss(loss="sinkhorn", p=2, blur=.05)
 
     def forward(self, feats, label):
+        pdb.set_trace()
         idx = torch.nonzero(torch.lt(label, self.source_cls))
         vectors_s = feats.index_select(dim=0, index=idx)
 

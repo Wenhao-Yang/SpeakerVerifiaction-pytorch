@@ -620,7 +620,7 @@ if [ $stage -le 62 ]; then
   datasets=army
   model=LoResNet
   resnet_size=10
-  for loss in soft wasse ; do
+  for loss in wasse ; do
     echo -e "\n\033[1;4;31m Training LoResNet in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
