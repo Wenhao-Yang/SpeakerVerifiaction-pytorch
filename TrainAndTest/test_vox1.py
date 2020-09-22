@@ -407,7 +407,7 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
         _, out = model(data)
 
         if vec_shape[1] != 1:
-            out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(axis=1)
+            out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
 
         # pdb.set_trace()
 
@@ -495,7 +495,7 @@ def sitw_test(sitw_test_loader, model, epoch):
         _, out_p = model(data_p)
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         if vec_shape[1] != 1:
-            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(axis=1)
+            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
 
         dists = dists.data.cpu().numpy()
 
