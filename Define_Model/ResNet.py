@@ -813,7 +813,8 @@ class LocalResNet(nn.Module):
 
         x = self.fc(x)
         if self.transform:
-            x += self.trans_layer(x)
+            t_x = self.trans_layer(x)
+            x = t_x + x
 
         if self.alpha:
             x = self.l2_norm(x, alpha=self.alpha)
