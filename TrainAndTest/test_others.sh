@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 stage=60
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
   for loss in asoft soft ; do
