@@ -465,7 +465,8 @@ if [ $stage -le 60 ]; then
       --embedding-size 128 \
       --channels 64,128,256 \
       --loss-type ${loss} \
-      --input-length var \
+      --input-length fix \
+      --extract \
       --test-input-per-file 4 \
       --xvector-dir Data/xvector/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01_example \
       --resume  Data/checkpoint/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01/checkpoint_24.pth \
