@@ -640,6 +640,7 @@ if [ $stage -le 62 ]; then
       --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_tran/soft_dp01/checkpoint_24.pth \
       --channels 64,128,256,256 \
       --embedding-size 128 \
+      --transform \
       --avg-size 4 \
       --num-valid 4 \
       --alpha 12 \
