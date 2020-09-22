@@ -30,7 +30,7 @@ from torch.autograd import Variable
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
-from Define_Model.LossFunction import CenterLoss
+from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
@@ -144,8 +144,11 @@ parser.add_argument('--dropout-p', type=float, default=0.25, metavar='BST',
                     help='input batch size for testing (default: 64)')
 
 # loss configure
-parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft'],
+parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft', 'wasse'],
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--source-cls', type=int, default=1951,
+                    help='the num of source classes')
+
 parser.add_argument('--finetune', action='store_true', default=False,
                     help='using Cosine similarity')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
@@ -332,6 +335,8 @@ def main():
         ce_criterion = None
         model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+    elif args.loss_type == 'wasse':
+        xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
     if args.loss_type == 'center':
@@ -457,7 +462,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         elif args.loss_type == 'asoft':
             classfier_label, _ = classfier
             loss = xe_criterion(classfier, label)
-        elif args.loss_type == 'center':
+        elif args.loss_type == 'center' or args.loss_type == 'wasse':
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
             loss = args.loss_ratio * loss_xent + loss_cent
