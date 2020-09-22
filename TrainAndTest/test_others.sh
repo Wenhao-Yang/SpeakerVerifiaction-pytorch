@@ -464,7 +464,7 @@ if [ $stage -le 60 ]; then
       --input-per-spks 224 \
       --nj 16 \
       --embedding-size 128 \
-      --channels 64,128,256 \
+      --channels 64,128,256,256 \
       --loss-type ${loss} \
       --input-length fix \
       --extract \
