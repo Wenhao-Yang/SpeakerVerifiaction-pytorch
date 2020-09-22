@@ -110,6 +110,9 @@ parser.add_argument('--model', type=str, default='GradResNet', help='path to vox
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--filter', action='store_true', default=False, help='replace batchnorm with instance norm')
+parser.add_argument('--transform', action='store_true', default=False,
+                    help='add a transform layer after embedding layer')
+
 parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
 parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
 parser.add_argument('--inst-norm', action='store_true', default=False, help='replace batchnorm with instance norm')
@@ -294,7 +297,7 @@ def main():
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'stride': stride, 'fast': args.fast,
                     'avg_size': args.avg_size, 'time_dim': args.time_dim, 'padding': padding,
-                    'encoder_type': args.encoder_type, 'vad': args.vad,
+                    'encoder_type': args.encoder_type, 'vad': args.vad, 'transform': args.transform,
                     'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}

@@ -654,7 +654,7 @@ class LocalResNet(nn.Module):
     def __init__(self, embedding_size, num_classes,
                  input_dim=161, block=BasicBlock,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
-                 inst_norm=False, alpha=12, stride=2,
+                 inst_norm=False, alpha=12, stride=2, transform=False,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(LocalResNet, self).__init__()
@@ -669,6 +669,7 @@ class LocalResNet(nn.Module):
         self.alpha = alpha
         self.layers = layers
         self.dropout_p = dropout_p
+        self.transform = transform
 
         self.embedding_size = embedding_size
         # self.relu = nn.LeakyReLU()
@@ -710,6 +711,13 @@ class LocalResNet(nn.Module):
             nn.Linear(self.inplanes * avg_size, embedding_size),
             nn.BatchNorm1d(embedding_size)
         )
+
+        if self.transform:
+            self.trans_layer = nn.Sequential(
+                nn.Linear(embedding_size, embedding_size, bias=False),
+                nn.BatchNorm1d(embedding_size),
+                nn.ReLU()
+            )
 
         # self.fc = nn.Linear(self.inplanes * avg_size, embedding_size)
         self.classifier = nn.Linear(self.embedding_size, num_classes)
@@ -757,11 +765,11 @@ class LocalResNet(nn.Module):
 
     def forward(self, x):
         if self.inst_norm:
-            # x = x.squeeze(1).transpose(1, 2)
-            # x = self.inst_layer(x)
-            # x = x.transpose(1, 2).unsqueeze(1)
+            x = x.squeeze(1).transpose(1, 2)
+            x = self.inst_layer(x)
+            x = x.transpose(1, 2).unsqueeze(1)
 
-            x = x - torch.mean(x, dim=-2, keepdim=True)
+            # x = x - torch.mean(x, dim=-2, keepdim=True)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -804,6 +812,9 @@ class LocalResNet(nn.Module):
         x = x.view(x.size(0), -1)
 
         x = self.fc(x)
+        if self.transform:
+            x += self.trans_layer(x)
+
         if self.alpha:
             x = self.l2_norm(x, alpha=self.alpha)
 
