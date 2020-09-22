@@ -168,10 +168,16 @@ class Wasserstein_Loss(nn.Module):
 
     def forward(self, feats, label):
         # pdb.set_trace()
-        idx = torch.nonzero(torch.lt(label, self.source_cls))
-        vectors_s = feats.index_select(dim=0, index=idx.squeeze())
+        idx = torch.nonzero(torch.lt(label, self.source_cls)).squeeze()
+        if len(idx) == 0:
+            return self.loss(feats, feats)
 
-        idx = torch.nonzero(torch.ge(label, self.source_cls))
-        vectors_t = feats.index_select(dim=0, index=idx.squeeze())
+        vectors_s = feats.index_select(dim=0, index=idx)
+
+        idx = torch.nonzero(torch.ge(label, self.source_cls)).squeeze()
+        if len(idx) == 0:
+            return self.loss(feats, feats)
+
+        vectors_t = feats.index_select(dim=0, index=idx)
 
         return self.loss(vectors_s, vectors_t)
