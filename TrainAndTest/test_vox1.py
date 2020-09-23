@@ -96,7 +96,8 @@ parser.add_argument('--model', type=str, default='LoResNet', help='path to voxce
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
-
+parser.add_argument('--transform', action='store_true', default=False,
+                    help='add a transform layer after embedding layer')
 parser.add_argument('--encoder-type', type=str, default='SAP', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
@@ -277,6 +278,7 @@ def main():
                     'stride': args.stride,
                     'avg_size': args.avg_size,
                     'time_dim': args.time_dim,
+                    'transform': args.transform,
                     'encoder_type': args.encoder_type,
                     'kernel_size': kernel_size,
                     'padding': padding,

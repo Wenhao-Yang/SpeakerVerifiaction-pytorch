@@ -470,8 +470,9 @@ if [ $stage -le 60 ]; then
       --extract \
       --test-input-per-file 4 \
       --inst-norm \
-      --xvector-dir Data/xvector/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01_example \
-      --resume  Data/checkpoint/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01/checkpoint_24.pth \
+      --transform \
+      --xvector-dir Data/xvector/LoResNet${resnet_size}/army_v1/spect_egs_tran/soft_dp01_example \
+      --resume  Data/checkpoint/LoResNet${resnet_size}/army_v1/spect_egs_tran/soft_dp01/checkpoint_20.pth \
       --trials trials \
       --gpu-id 0
   done
