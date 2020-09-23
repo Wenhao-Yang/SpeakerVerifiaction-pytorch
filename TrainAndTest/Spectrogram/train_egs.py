@@ -125,7 +125,8 @@ parser.add_argument('--accu-steps', default=1, type=int, metavar='N', help='manu
 
 parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
-parser.add_argument('--stride', default='2', type=str, metavar='ST', help='kernel size of conv filters')
+parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
+parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
 parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
 
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
@@ -284,7 +285,11 @@ def main():
     # instantiate model and initialize weights
     kernel_size = args.kernel_size.split(',')
     kernel_size = [int(x) for x in kernel_size]
-    padding = [int((x - 1) / 2) for x in kernel_size]
+    if args.padding == '':
+        padding = [int((x - 1) / 2) for x in kernel_size]
+    else:
+        padding = args.padding.split(',')
+        padding = [int(x) for x in padding]
 
     kernel_size = tuple(kernel_size)
     padding = tuple(padding)

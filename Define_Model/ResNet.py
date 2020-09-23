@@ -678,7 +678,7 @@ class LocalResNet(nn.Module):
         self.inst_layer = nn.InstanceNorm1d(input_dim)
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=stride, padding=(3, 2))
+        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=stride, padding=padding)
         self.bn1 = nn.BatchNorm2d(channels[0])
         self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
 
