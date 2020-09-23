@@ -636,8 +636,9 @@ if [ $stage -le 62 ]; then
       --lr 0.1 \
       --input-dim 81 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}10/${datasets}_v1/spect_egs_pad2/${loss}_dp01 \
-      --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_pad2/soft_dp01/checkpoint_24.pth \
+      --padding 0,0 \
+      --check-path Data/checkpoint/${model}10/${datasets}_v1/spect_egs_pad0/${loss}_dp01 \
+      --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_pad0/soft_dp01/checkpoint_24.pth \
       --channels 64,128,256,256 \
       --embedding-size 128 \
       --avg-size 4 \
