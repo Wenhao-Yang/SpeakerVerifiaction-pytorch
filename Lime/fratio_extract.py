@@ -154,7 +154,7 @@ def main():
     if not os.path.exists(args.file_dir):
         os.makedirs(args.file_dir)
 
-    if not args.extract_frames:
+    if args.extract_frames:
         frames_extract(data_loader, args.out_dir, 'vox1_train')
 
     fratio_extract(args.out_dir, 'vox1_train')
