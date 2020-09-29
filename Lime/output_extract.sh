@@ -325,7 +325,7 @@ if [ $stage -le 80 ]; then
       --file-dir ${lstm_dir}/data/${dataset}/spect/dev_power \
       --out-dir Data/fratio/vox1/dev_power \
       --nj 14 \
-      --input-per-spks 1500 \
+      --input-per-spks 4500 \
       --extract-frames \
       --feat-dim 161
   done
