@@ -323,6 +323,7 @@ if [ $stage -le 80 ]; then
     python Lime/fratio_extract.py \
       --extract-frames \
       --file-dir ${lstm_dir}/data/${dataset}/spect/dev_power \
+      --out-dir Data/fratio/vox1/dev_power
       --nj 14 \
       --input-per-spks 1500 \
       --feat-dim 161

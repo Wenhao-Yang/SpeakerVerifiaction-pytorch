@@ -56,6 +56,7 @@ warnings.filterwarnings("ignore")
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
 parser.add_argument('--file-dir', type=str, help='path to dataset')
+parser.add_argument('--out-dir', type=str, help='path to dataset')
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N',
                     help='acoustic feature dimension')
 
@@ -154,9 +155,9 @@ def main():
         os.makedirs(args.file_dir)
 
     if not args.extract_frames:
-        frames_extract(data_loader, args.file_dir, 'vox1_train')
+        frames_extract(data_loader, args.out_dir, 'vox1_train')
 
-    fratio_extract(args.file_dir, 'vox1_train')
+    fratio_extract(args.out_dir, 'vox1_train')
 
 
 if __name__ == '__main__':
