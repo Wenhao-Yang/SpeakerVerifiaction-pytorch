@@ -32,6 +32,7 @@ from Define_Model.model import PairwiseDistance
 from Process_Data.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.Subband.f_ratio import fratio
+from Process_Data.Subband.fratio_dataset import SpeakerDataset
 from Process_Data.audio_processing import varLengthFeat, to2tensor, mvnormal, concateinputfromMFB
 from TrainAndTest.common_func import create_model
 
@@ -111,7 +112,7 @@ if args.mvnorm:
     transform.transforms.append(mvnormal())
 
 file_loader = read_mat
-data_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
+data_dir = SpeakerDataset(dir=args.file_dir, samples_per_speaker=args.input_per_spks,
                                loader=file_loader, transform=transform, return_uid=True)
 
 if args.sample_spk > 0:
