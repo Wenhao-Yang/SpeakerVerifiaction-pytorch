@@ -102,7 +102,6 @@ if args.cuda:
 
 # Define visulaize SummaryWriter instance
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
 
 transform = transforms.Compose([
     varLengthFeat(remove_vad=args.remove_vad),
