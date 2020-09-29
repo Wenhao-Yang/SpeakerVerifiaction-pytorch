@@ -10,7 +10,6 @@ joblib==0.14.1
 kaldi-io==0.9.1
 netifaces==0.10.9
 matplotlib==3.0.3
-numba==0.47.0
 numpy==1.18.1
 Pillow==5.2.0
 protobuf==3.11.2
@@ -19,7 +18,6 @@ pycparser==2.19
 pydub==0.23.1
 python-speech-features==0.6
 requests==2.22.0
-resampy==0.2.2
 scikit-learn==0.22.1
 scipy==1.4.1
 six==1.11.0

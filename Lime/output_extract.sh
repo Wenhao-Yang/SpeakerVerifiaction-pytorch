@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=80
 waited=0
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ `ps 15414 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
@@ -312,5 +313,17 @@ if [ $stage -le 60 ]; then
       --extract-path Data/gradient/LoResNet18/${dataset}/spect/${loss}_dp25 \
       --loss-type soft \
       --gpu-id 1
+  done
+fi
+
+if [ $stage -le 80 ]; then
+  dataset=vox1
+  for loss in soft ; do
+    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
+    python Lime/output_extract.py \
+      --data-dir ${lstm_dir}/data/${dataset}/spect/dev_power \
+      --nj 14 \
+      --input-per-spks 1500 \
+      --feat-dim 161
   done
 fi
