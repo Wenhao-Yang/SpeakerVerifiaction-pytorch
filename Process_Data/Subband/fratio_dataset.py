@@ -8,7 +8,6 @@
 @Overview: 
 """
 import random
-
 from torch.utils.data import Dataset
 import os
 from kaldi_io import read_mat
@@ -77,15 +76,6 @@ class SpeakerDataset(Dataset):
         self.transform = transform
         self.samples_per_speaker = samples_per_speaker
 
-        if self.return_uid :
-            self.utt_dataset = []
-            for i in range(self.samples_per_speaker * self.num_spks):
-                sid = i % self.num_spks
-                spk = self.idx_to_spk[sid]
-                utts = self.dataset[spk]
-                uid = utts[random.randrange(0, len(utts))]
-                self.utt_dataset.append([uid, sid])
-
     def __getitem__(self, sid):
         # start_time = time.time()
         if self.return_uid:
@@ -108,8 +98,7 @@ class SpeakerDataset(Dataset):
             uid = utts[np.random.randint(0, num_utt)]
             feature = self.loader(self.uid2feat[uid])
             y = np.concatenate((y, feature), axis=0)
-            # transform features if required
-
+        # transform features if required
         feature = self.transform(y)
         label = sid
 
