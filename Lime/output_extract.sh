@@ -326,6 +326,7 @@ if [ $stage -le 80 ]; then
       --out-dir Data/fratio/vox1/dev_power
       --nj 14 \
       --input-per-spks 1500 \
+      --extract-frames \
       --feat-dim 161
   done
 fi
