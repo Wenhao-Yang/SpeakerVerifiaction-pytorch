@@ -146,7 +146,7 @@ def frames_extract(train_loader, file_dir, set_name):
 def fratio_extract(file_dir, set_name):
     input_data = np.load(os.path.join(file_dir, '%s.npy'%set_name), allow_pickle=True)
     f_ratio = fratio(args.feat_dim, input_data)
-    np.save(os.path.join((file_dir, 'fratio.npy')), f_ratio)
+    np.save(os.path.join(file_dir, 'fratio.npy'), f_ratio)
 
 
 def main():
