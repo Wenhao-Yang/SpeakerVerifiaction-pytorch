@@ -319,7 +319,7 @@ fi
 if [ $stage -le 80 ]; then
   dataset=vox1
   for numframes in 1500 4500 15000 ; do
-    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
+    echo -e "\033[31m==> num of frames per speaker : ${numframes} \033[0m"
     python Lime/fratio_extract.py \
       --extract-frames \
       --file-dir ${lstm_dir}/data/${dataset}/spect/dev_power \
