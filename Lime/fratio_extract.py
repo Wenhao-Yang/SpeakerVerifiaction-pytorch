@@ -10,9 +10,7 @@
 from __future__ import print_function
 
 import argparse
-import json
 import os
-import pickle
 import random
 import time
 
@@ -20,21 +18,14 @@ import numpy as np
 import torch
 import torch._utils
 import torch.backends.cudnn as cudnn
-import torch.nn as nn
 import torchvision.transforms as transforms
 from kaldi_io import read_mat
-from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
-from Define_Model.model import PairwiseDistance
-from Process_Data.KaldiDataset import ScriptTrainDataset, \
-    ScriptTestDataset, ScriptValidDataset
 from Process_Data.Subband.f_ratio import fratio
 from Process_Data.Subband.fratio_dataset import SpeakerDataset
-from Process_Data.audio_processing import varLengthFeat, to2tensor, mvnormal, concateinputfromMFB
-from TrainAndTest.common_func import create_model
+from Process_Data.audio_processing import varLengthFeat, mvnormal
 
 # Version conflict
 
@@ -136,17 +127,24 @@ def frames_extract(train_loader, file_dir, set_name):
 
         input_data.append(data)
 
-    filename = file_dir + '/%s.npy' % set_name
+    filename = file_dir + '/%s_%d.npy' % (set_name, args.input_per_spks)
     input_data = np.array(input_data)
     if not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
     print('Saving arrays to %s' % str(input_data.shape))
     np.save(filename, np.array(input_data))
 
-def fratio_extract(file_dir, set_name):
-    input_data = np.load(os.path.join(file_dir, '%s.npy'%set_name), allow_pickle=True)
+
+def fratio_extract(file_dir, set_name, log_scale=True):
+    input_data = np.load(os.path.join(file_dir, '%s_%d.npy' % (set_name, args.input_per_spks)), allow_pickle=True)
+
     f_ratio = fratio(args.feat_dim, input_data)
-    np.save(os.path.join(file_dir, 'fratio.npy'), f_ratio)
+    np.save(os.path.join(file_dir, 'fratio_%d.npy' % args.input_per_spks), f_ratio)
+
+    if log_scale:
+        input_data = np.log(input_data)
+        f_ratio = fratio(args.feat_dim, input_data)
+        np.save(os.path.join(file_dir, 'fratio_%d_log.npy' % args.input_per_spks), f_ratio)
 
 
 def main():

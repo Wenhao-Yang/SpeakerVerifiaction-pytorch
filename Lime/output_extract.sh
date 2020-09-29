@@ -318,14 +318,14 @@ fi
 
 if [ $stage -le 80 ]; then
   dataset=vox1
-  for loss in soft ; do
+  for numframes in 1500 4500 15000 ; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     python Lime/fratio_extract.py \
       --extract-frames \
       --file-dir ${lstm_dir}/data/${dataset}/spect/dev_power \
       --out-dir Data/fratio/vox1/dev_power \
       --nj 14 \
-      --input-per-spks 15000 \
+      --input-per-spks ${numframes} \
       --extract-frames \
       --feat-dim 161
   done
