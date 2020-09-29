@@ -320,7 +320,7 @@ if [ $stage -le 80 ]; then
   dataset=vox1
   for loss in soft ; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-    python Lime/output_extract.py \
+    python Lime/fratio_extract.py \
       --data-dir ${lstm_dir}/data/${dataset}/spect/dev_power \
       --nj 14 \
       --input-per-spks 1500 \
