@@ -131,13 +131,16 @@ def frames_extract(train_loader, file_dir, set_name):
 
     for batch_idx, (data, label) in pbar:
         data = data.squeeze().numpy()
-        print(data.shape)
+        data = data[:args.input_per_spks].transpose()
+        # print(data.shape)
+
         input_data.append(data)
 
     filename = file_dir + '/%s.npy' % set_name
-
+    input_data = np.array(input_data)
     if not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
+    print('Saving arrays to %s' % str(input_data.shape))
     np.save(filename, np.array(input_data))
 
 def fratio_extract(file_dir, set_name):
