@@ -134,6 +134,9 @@ def frames_extract(train_loader, file_dir, set_name):
         input_data.append(data)
 
     filename = file_dir + '/%s.npy' % set_name
+
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
     np.save(filename, np.array(input_data))
 
 def fratio_extract(file_dir, set_name):
