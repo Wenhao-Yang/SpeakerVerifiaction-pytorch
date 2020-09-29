@@ -78,12 +78,6 @@ class SpeakerDataset(Dataset):
 
     def __getitem__(self, sid):
         # start_time = time.time()
-        if self.return_uid:
-            uid, label = self.utt_dataset[sid]
-            y = self.loader(self.uid2feat[uid])
-            feature = self.transform(y)
-            return feature, label, uid
-
         spk = self.idx_to_spk[sid]
         utts = self.dataset[spk]
         num_utt = len(utts)
