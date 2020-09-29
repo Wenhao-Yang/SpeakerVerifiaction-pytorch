@@ -20,7 +20,11 @@ def fratio(k, all_frames):
 
     :return:
     """
-    num_spk, num_k, num_fram = all_frames.shape
+    try:
+        num_spk, num_k, num_fram = all_frames.shape
+    except Exception as e:
+        print(all_frames.shape)
+        raise e
     assert num_k == k
 
     u_i = np.mean(all_frames, axis=2)  # [spk, k]
