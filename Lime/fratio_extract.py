@@ -131,6 +131,7 @@ def frames_extract(train_loader, file_dir, set_name):
 
     for batch_idx, (data, label) in pbar:
         data = data.squeeze().numpy()
+        print(data.shape)
         input_data.append(data)
 
     filename = file_dir + '/%s.npy' % set_name
