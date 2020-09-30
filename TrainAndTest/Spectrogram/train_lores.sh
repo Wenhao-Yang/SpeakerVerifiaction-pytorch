@@ -356,7 +356,7 @@ if [ $stage -le 50 ]; then
       --margin 0.4 \
       --s 30 \
       --m 3 \
-      --loss-ratio 0.05 \
+      --loss-ratio 0.01 \
       --weight-decay 0.001 \
       --dropout-p 0.25 \
       --gpu-id 0 \
