@@ -30,7 +30,7 @@ from torch.autograd import Variable
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
-from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss
+from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
@@ -148,8 +148,10 @@ parser.add_argument('--dropout-p', type=float, default=0.25, metavar='BST',
                     help='input batch size for testing (default: 64)')
 
 # loss configure
-parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft', 'wasse'],
+parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft',
+                                                                      'wasse', 'mulcenter'],
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--num-center', type=int, default=2, help='the num of source classes')
 parser.add_argument('--source-cls', type=int, default=1951,
                     help='the num of source classes')
 
@@ -339,6 +341,9 @@ def main():
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+    elif args.loss_type == 'mulcenter':
+        xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
+                                       num_center=args.num_center)
     elif args.loss_type == 'amsoft':
         ce_criterion = None
         model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
@@ -347,7 +352,7 @@ def main():
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
-    if args.loss_type == 'center':
+    if args.loss_type == 'center' or args.loss_type == 'mulcenter':
         optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
                                      {'params': model.parameters()}],
                                     lr=args.lr, weight_decay=args.weight_decay,
@@ -474,6 +479,10 @@ def train(train_loader, model, ce, optimizer, epoch):
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
             loss = args.loss_ratio * loss_xent + loss_cent
+        elif args.loss_type == 'mulcenter':
+            loss_cent = ce_criterion(classfier, label)
+            loss_xent = xe_criterion(feats, label)
+            loss = args.loss_ratio * loss_xent + loss_cent
         elif args.loss_type == 'amsoft':
             loss = xe_criterion(classfier, label)
 
@@ -490,21 +499,33 @@ def train(train_loader, model, ce, optimizer, epoch):
         optimizer.zero_grad()
         loss.backward()
 
-        if args.loss_type == 'center' and args.loss_ratio != 0:
-            for param in xe_criterion.parameters():
-                param.grad.data *= (1. / args.loss_ratio)
+        if args.loss_ratio != 0:
+            if args.loss_type == 'center' or args.loss_type == 'mulcenter':
+                for param in xe_criterion.parameters():
+                    param.grad.data *= (1. / args.loss_ratio)
 
         optimizer.step()
 
         if batch_idx % args.log_interval == 0:
-            pbar.set_description(
-                'Train Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
-                    epoch,
-                    batch_idx * len(data),
-                    len(train_loader.dataset),
-                    100. * batch_idx / len(train_loader),
-                    total_loss / (batch_idx + 1),
-                    100. * minibatch_acc))
+            if args.loss_type == 'center' or args.loss_type == 'mulcenter':
+                pbar.set_description(
+                    'Train Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Center Loss: {:.4f} Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
+                        epoch,
+                        batch_idx * len(data),
+                        len(train_loader.dataset),
+                        100. * batch_idx / len(train_loader),
+                        loss_xent.float(),
+                        total_loss / (batch_idx + 1),
+                        100. * minibatch_acc))
+            else:
+                pbar.set_description(
+                    'Train Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
+                        epoch,
+                        batch_idx * len(data),
+                        len(train_loader.dataset),
+                        100. * batch_idx / len(train_loader),
+                        total_loss / (batch_idx + 1),
+                        100. * minibatch_acc))
 
     print('\n\33[91mTrain Epoch {}: Train Accuracy:{:.6f}%, Avg loss: {}.\33[0m'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader)))

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=62
+stage=50
 
 waited=0
 while [ `ps 113458 | wc -l` -eq 2 ]; do
@@ -332,7 +332,7 @@ if [ $stage -le 50 ]; then
   datasets=vox1
   model=GradResNet
   resnet_size=8
-  for loss in soft; do
+  for loss in mulcenter center ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_power \
@@ -350,6 +350,7 @@ if [ $stage -le 50 ]; then
       --channels 64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
+      --num-center 2 \
       --num-valid 2 \
       --alpha 12 \
       --margin 0.4 \
@@ -363,7 +364,7 @@ if [ $stage -le 50 ]; then
       --loss-type ${loss}
   done
 fi
-#stage=100
+stage=100
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
