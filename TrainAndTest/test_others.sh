@@ -468,6 +468,7 @@ if [ $stage -le 56 ]; then
       --feat-dim 161 \
       --valid \
       --input-length fix \
+      --stride 2 \
       --xvector-dir Data/xvector/GradResNet8/vox1_power/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/GradResNet8/vox1/spect_egs/${loss}_dp25/checkpoint_24.pth  \
       --input-per-spks 224 \
