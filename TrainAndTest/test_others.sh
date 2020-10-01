@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=56
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -449,6 +449,36 @@ if [ $stage -le 55 ]; then
   done
 fi
 
+if [ $stage -le 56 ]; then
+#  for loss in soft asoft ; do
+  model=GradResNet
+  datasets=vox1
+  feat=spect
+  for loss in mulcenter center ; do
+    echo -e "\n\033[1;4;31m Training ${model} with ${loss}\033[0m\n"
+    python -W ignore TrainAndTest/test_vox1.py \
+      --train-dir ${lstm_dir}/data/vox1/spect/dev_power \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_power \
+      --nj 12 \
+      --epochs 18 \
+      --model ${model} \
+      --resnet-size 8 \
+      --inst-norm \
+      --embedding-size 128 \
+      --feat-dim 161 \
+      --valid \
+      --input-length fix \
+      --xvector-dir Data/xvector/GradResNet8/vox1_power/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/GradResNet8/vox1_power/spect_egs/${loss}_dp25/checkpoint_24.pth  \
+      --input-per-spks 224 \
+      --gpu-id 0 \
+      --num-valid 2 \
+      --extract \
+      --loss-type ${loss}
+  done
+fi
+
+stage=100
 if [ $stage -le 60 ]; then
   dataset=army
   resnet_size=10

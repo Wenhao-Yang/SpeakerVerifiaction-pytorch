@@ -135,7 +135,7 @@ parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
 
 # loss configure
-parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft'],
+parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft', 'mulcenter'],
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
