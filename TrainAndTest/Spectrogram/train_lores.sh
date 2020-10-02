@@ -332,7 +332,7 @@ if [ $stage -le 50 ]; then
   datasets=vox1
   model=GradResNet
   resnet_size=8
-  for loss in mulcenter center ; do
+  for loss in soft mulcenter center ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_power \
@@ -342,17 +342,17 @@ if [ $stage -le 50 ]; then
       --inst-norm \
       --resnet-size ${resnet_size} \
       --nj 10 \
-      --epochs 24 \
+      --epochs 20 \
       --lr 0.1 \
-      --milestones 10,15,20 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
+      --milestones 5,10,15 \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25_nol2 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25_n0l2/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
       --num-center 2 \
       --num-valid 2 \
-      --alpha 12 \
+      --alpha 0 \
       --margin 0.4 \
       --s 30 \
       --m 3 \
