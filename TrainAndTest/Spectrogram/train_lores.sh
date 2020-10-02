@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=61
 
 waited=0
 while [ `ps 113458 | wc -l` -eq 2 ]; do
@@ -333,6 +333,7 @@ if [ $stage -le 50 ]; then
   model=GradResNet
   resnet_size=8
   for loss in soft mulcenter center ; do
+    echo -e "\n\033[1;4;31m Training GradResNet in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_power \
@@ -346,7 +347,7 @@ if [ $stage -le 50 ]; then
       --lr 0.1 \
       --milestones 5,10,15 \
       --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25_nol2 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25_n0l2/checkpoint_24.pth \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25_nol2/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
@@ -364,7 +365,7 @@ if [ $stage -le 50 ]; then
       --loss-type ${loss}
   done
 fi
-stage=100
+#stage=100
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
@@ -583,7 +584,7 @@ if [ $stage -le 61 ]; then
   datasets=timit
   model=GradResNet
   resnet_size=8
-  for loss in amsoft; do
+  for loss in soft center asoft ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power \
@@ -596,13 +597,14 @@ if [ $stage -le 61 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_chn8/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_chn8/${loss}_dp25/checkpoint_24.pth \
-      --channels 4,8,64 \
+      --check-path Data/checkpoint/${model}8_mean/${datasets}/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8_mean/${datasets}/spect_egs/${loss}_dp25/checkpoint_12.pth \
+      --alpha 10.8 \
+      --channels 4,16,64 \
+      --inst-norm \
       --embedding-size 128 \
       --avg-size 4 \
       --num-valid 2 \
-      --alpha 12 \
       --margin 0.4 \
       --s 30 \
       --m 3 \
@@ -616,6 +618,7 @@ if [ $stage -le 61 ]; then
   done
 fi
 
+stage=100
 if [ $stage -le 62 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
