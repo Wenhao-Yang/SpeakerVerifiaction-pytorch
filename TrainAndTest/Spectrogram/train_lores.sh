@@ -3,7 +3,7 @@
 stage=61
 
 waited=0
-while [ `ps 113458 | wc -l` -eq 2 ]; do
+while [ `ps 27300 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -597,11 +597,10 @@ if [ $stage -le 61 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8_mean/${datasets}/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8_mean/${datasets}/spect_egs/${loss}_dp25/checkpoint_12.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp05 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp05/checkpoint_12.pth \
       --alpha 10.8 \
       --channels 4,16,64 \
-      --inst-norm \
       --embedding-size 128 \
       --avg-size 4 \
       --num-valid 2 \
@@ -610,7 +609,7 @@ if [ $stage -le 61 ]; then
       --m 3 \
       --loss-ratio 0.05 \
       --weight-decay 0.001 \
-      --dropout-p 0.25 \
+      --dropout-p 0.5 \
       --gpu-id 0 \
       --cos-sim \
       --extract \
