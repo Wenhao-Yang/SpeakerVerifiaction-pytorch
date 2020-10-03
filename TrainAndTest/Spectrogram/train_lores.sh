@@ -597,8 +597,8 @@ if [ $stage -le 61 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp05 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp05/checkpoint_12.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp05_4c \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp05_4c/checkpoint_12.pth \
       --alpha 10.8 \
       --channels 4,16,64 \
       --embedding-size 128 \
@@ -613,6 +613,7 @@ if [ $stage -le 61 ]; then
       --gpu-id 0 \
       --cos-sim \
       --extract \
+      --num-center 4 \
       --loss-type ${loss}
   done
 fi
