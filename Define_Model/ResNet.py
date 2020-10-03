@@ -1015,7 +1015,7 @@ class GradResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes, block=BasicBlock, input_dim=161,
-                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., ince=False,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., ince=False, transform=False,
                  inst_norm=False, alpha=12, vad=False, avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(GradResNet, self).__init__()
@@ -1031,6 +1031,7 @@ class GradResNet(nn.Module):
         self.alpha = alpha
         self.layers = layers
         self.dropout_p = dropout_p
+        self.transform = transform
 
         self.embedding_size = embedding_size
         # self.relu = nn.LeakyReLU()
@@ -1076,6 +1077,13 @@ class GradResNet(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_p)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
+
+        if self.transform:
+            self.trans_layer = nn.Sequential(
+                nn.Linear(embedding_size, embedding_size, bias=False),
+                nn.BatchNorm1d(embedding_size),
+                nn.ReLU()
+            )
 
         self.fc = nn.Sequential(
             nn.Linear(self.inplanes * avg_size, embedding_size),
@@ -1180,6 +1188,10 @@ class GradResNet(nn.Module):
         x = x.view(x.size(0), -1)
 
         x = self.fc(x)
+        if self.transform:
+            t_x = self.trans_layer(x)
+            x = t_x + x
+
         if self.alpha:
             x = self.l2_norm(x, alpha=self.alpha)
 

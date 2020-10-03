@@ -584,7 +584,7 @@ if [ $stage -le 61 ]; then
   datasets=timit
   model=GradResNet
   resnet_size=8
-  for loss in mulcenter ; do
+  for loss in soft center asoft ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power \
@@ -597,9 +597,10 @@ if [ $stage -le 61 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp05_max \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp05_max/checkpoint_12.pth \
+      --check-path Data/checkpoint/${model}8_trans/${datasets}/spect_egs/${loss}_dp05 \
+      --resume Data/checkpoint/${model}8_trans/${datasets}/spect_egs/${loss}_dp05/checkpoint_12.pth \
       --alpha 10.8 \
+      --transform \
       --channels 4,16,64 \
       --embedding-size 128 \
       --avg-size 4 \
@@ -613,7 +614,6 @@ if [ $stage -le 61 ]; then
       --gpu-id 0 \
       --cos-sim \
       --extract \
-      --num-center 2 \
       --loss-type ${loss}
   done
 fi
