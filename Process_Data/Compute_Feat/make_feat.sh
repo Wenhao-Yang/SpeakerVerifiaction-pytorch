@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=140
+stage=120
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -605,33 +605,37 @@ fi
 
 if [ $stage -le 120 ]; then
   for s in dev ; do
-#    python Process_Data/Compute_Feat/make_egs.py \
-#      --data-dir ${lstm_dir}/data/timit/spect/train_power \
-#      --out-dir ${lstm_dir}/data/timit/egs/spect \
-#      --feat-type spectrogram \
-#      --train \
-#      --input-per-spks 192 \
-#      --feat-format kaldi \
-#      --num-valid 1 \
-#      --out-set train_power
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/timit/spect/train_power \
+      --out-dir ${lstm_dir}/data/timit/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 224 \
+      --feat-format kaldi \
+      --num-valid 1 \
+      --out-set train_power_v2
 
-    mv ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp
+    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/train_power_v2
 
-#    python Process_Data/Compute_Feat/make_egs.py \
-#      --data-dir ${lstm_dir}/data/timit/spect/train_power \
-#      --out-dir ${lstm_dir}/data/timit/egs/spect \
-#      --feat-type spectrogram \
-#      --input-per-spks 192 \
-#      --feat-format kaldi \
-#      --num-valid 1 \
-#      --out-set valid_power
+#    mv ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back
+#    sort -k 2 ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp
 
-    mv ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back
-    sort -k 2 ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/timit/spect/train_power \
+      --out-dir ${lstm_dir}/data/timit/egs/spect \
+      --feat-type spectrogram \
+      --input-per-spks 224 \
+      --feat-format kaldi \
+      --num-valid 1 \
+      --out-set valid_power_v2
+
+    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/valid_power_v2
+#    mv ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back
+#    sort -k 2 ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp
   done
 fi
 
+stage=1000
 if [ $stage -le 130 ]; then
   for s in dev test ; do
     python Process_Data/Compute_Feat/make_feat.py \
