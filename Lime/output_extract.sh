@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=62
+stage=61
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ `ps 15414 | wc -l` -eq 2 ]; do
@@ -321,7 +321,7 @@ if [ $stage -le 61 ]; then
   feat=spect
   dataset=timit
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  for loss in soft ; do
+  for loss in asoft ; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     python Lime/output_extract.py \
       --train-dir ${lstm_dir}/data/${dataset}/spect/train_power \
@@ -338,11 +338,12 @@ if [ $stage -le 61 ]; then
       --resnet-size 8 \
       --check-path Data/checkpoint/GradResNet8/${dataset}/spect_egs_v2/${loss}_dp05 \
       --extract-path Data/gradient/GradResNet8/${dataset}/spect_egs_v2/${loss}_dp05 \
-      --loss-type soft \
+      --loss-type ${loss} \
       --gpu-id 0
   done
 fi
 
+stage=100
 if [ $stage -le 62 ]; then
   dataset=timit
   for numframes in 1500 ; do
@@ -358,7 +359,7 @@ if [ $stage -le 62 ]; then
   done
 fi
 
-stage=100
+
 
 if [ $stage -le 80 ]; then
   dataset=vox1
