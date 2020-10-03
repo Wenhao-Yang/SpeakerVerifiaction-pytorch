@@ -122,7 +122,7 @@ class MultiCenterLoss(nn.Module):
                                                                                   batch_size).transpose(0, -1)
 
             distmat -= 2 * self.centers.matmul(x.t()).transpose(0, -1)
-            distmat = distmat.min(dim=1).values
+            distmat = distmat.max(dim=1).values
 
         classes = torch.arange(self.num_classes).long()
 
