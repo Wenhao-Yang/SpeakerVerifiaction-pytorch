@@ -587,8 +587,8 @@ if [ $stage -le 61 ]; then
   for loss in soft center asoft ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_power\
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power_v2 \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_power_v2\
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_power \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
@@ -597,8 +597,8 @@ if [ $stage -le 61 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8_trans/${datasets}/spect_egs/${loss}_dp05 \
-      --resume Data/checkpoint/${model}8_trans/${datasets}/spect_egs/${loss}_dp05/checkpoint_12.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_v2/${loss}_dp05 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_v2/${loss}_dp05/checkpoint_12.pth \
       --alpha 10.8 \
       --transform \
       --channels 4,16,64 \
