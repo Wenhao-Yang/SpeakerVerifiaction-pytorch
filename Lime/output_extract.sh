@@ -324,8 +324,8 @@ if [ $stage -le 61 ]; then
   for loss in soft ; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     python Lime/output_extract.py \
-      --train-dir ${lstm_dir}/data/${datasets}/spect/train_power \
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_power \
+      --train-dir ${lstm_dir}/data/${dataset}/spect/train_power \
+      --test-dir ${lstm_dir}/data/${dataset}/spect/test_power \
       --nj 12 \
       --start-epochs 12 \
       --epochs 12 \
