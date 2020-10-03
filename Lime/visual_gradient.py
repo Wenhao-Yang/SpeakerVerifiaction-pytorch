@@ -50,10 +50,10 @@ def main():
     # inputs [train/valid/test]
     try:
         with open(args.extract_path + '/freq.data.pickle', 'rb') as f:
-            freq_data = pickle.load(f)
+            freq_data = pickle.load(f)  # avg on time axis
 
         with open(args.extract_path + '/time.data.pickle', 'rb') as f:
-            time_data = pickle.load(f)
+            time_data = pickle.load(f)  # avg on freq axis
 
     except:
         train_lst = list(dir_path.glob('*train*bin'))
@@ -206,7 +206,7 @@ def main():
         x = mel2hz(m)
 
     # y = np.sum(all_data, axis=2)  # [5, 2, 162]
-    pdf = PdfPages(args.extract_path + '/grad.veri.pdf')
+    pdf = PdfPages(args.extract_path + '/grad.veri.time.mean.pdf')
     plt.rc('font', family='Times New Roman')
 
     plt.figure(figsize=(12, 9))
@@ -240,7 +240,7 @@ def main():
     ynew = veri_grad
     ynew = ynew / ynew.sum()
 
-    np.save(args.extract_path + '/grad.veri.npy', ynew)
+    np.save(args.extract_path + '/train.grad.veri.npy', veri_grad)
 
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Test_a', 'Test_b'], loc='upper right', fontsize=18)
     plt.legend(['Train', 'Valid', 'Train Verify', 'Test'], loc='upper right', fontsize=24)

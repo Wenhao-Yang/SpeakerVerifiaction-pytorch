@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=61
+stage=62
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ `ps 15414 | wc -l` -eq 2 ]; do
@@ -342,6 +342,22 @@ if [ $stage -le 61 ]; then
       --gpu-id 0
   done
 fi
+
+if [ $stage -le 62 ]; then
+  dataset=timit
+  for numframes in 1500 ; do
+    echo -e "\033[31m==> num of frames per speaker : ${numframes} \033[0m"
+    python Lime/fratio_extract.py \
+      --extract-frames \
+      --file-dir ${lstm_dir}/data/${dataset}/spect/train_power \
+      --out-dir Data/fratio/${dataset}/dev_power \
+      --nj 14 \
+      --input-per-spks ${numframes} \
+      --extract-frames \
+      --feat-dim 161
+  done
+fi
+
 stage=100
 
 if [ $stage -le 80 ]; then
