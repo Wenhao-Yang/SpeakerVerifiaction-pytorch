@@ -600,7 +600,6 @@ if [ $stage -le 61 ]; then
       --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_v2/${loss}_dp05 \
       --resume Data/checkpoint/${model}8/${datasets}/spect_egs_v2/${loss}_dp05/checkpoint_12.pth \
       --alpha 10.8 \
-      --transform \
       --channels 4,16,64 \
       --embedding-size 128 \
       --avg-size 4 \
