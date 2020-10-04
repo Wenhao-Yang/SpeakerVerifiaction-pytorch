@@ -303,6 +303,35 @@ class AMSoftmax(nn.Module):
         return costh, loss
 
 
+class ArcSoftmaxLoss(nn.Module):
+
+    def __init__(self, margin=0.5, s=64):
+        super(ArcSoftmaxLoss, self).__init__()
+        self.s = s
+        self.margin = margin
+        self.ce = nn.CrossEntropyLoss()
+
+    def forward(self, costh, label):
+        lb_view = label.view(-1, 1)
+
+        theta = Variable(costh.data.acos())
+
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
+
+        delt_thata = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+
+        if costh.is_cuda:
+            delt_costh = Variable(delt_thata.cuda())
+
+        costh_m = (theta + delt_costh).cos()
+        costh_m_s = self.s * costh_m
+
+        loss = self.ce(costh_m_s, label)
+
+        return loss
+
+
 class CenterLoss(nn.Module):
     """Center loss.
 

@@ -12,7 +12,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-
+import torch.nn.functional as F
 
 class SelfVadPooling(nn.Module):
     def __init__(self, input_dim, input_length=300):
@@ -197,3 +197,52 @@ class AdaptiveStdPool2d(nn.Module):
         # print(output.isnan())
 
         return output
+
+
+# https://github.com/keetsky/Net_ghostVLAD-pytorch
+
+class GhostVLAD(nn.Module):
+    def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=True):
+        super(GhostVLAD, self).__init__()
+        self.num_clusters = num_clusters
+        self.dim = dim
+        self.gost = gost
+        self.normalize_input = normalize_input
+        self.fc = nn.Linear(dim, num_clusters + gost)
+        self.centroids = nn.Parameter(torch.rand(num_clusters + gost, dim))
+        self._init_params()
+
+    def _init_params(self):
+        nn.init.xavier_normal_(self.fc.weight.data)
+        nn.init.constant_(self.fc.bias.data, 0.0)
+
+    def forward(self, x):
+        '''
+        x: N x D
+        '''
+        N, C = x.shape[:2]  # 10,128
+        assert C == self.dim, "feature dim not correct"
+
+        if self.normalize_input:
+            x = F.normalize(x, p=2, dim=0)
+
+        soft_assign = self.fc(x).unsqueeze(0).permute(0, 2, 1)  # (N, C+g)->(1, N, C+g)->(1, C+g, N)
+        soft_assign = F.softmax(soft_assign, dim=1)  # (1, C+g, N)
+
+        # soft_assign=soft_assign[:,:self.num_clusters,:]#(1,8,10)
+        x_flatten = x.unsqueeze(0).permute(0, 2, 1)  # x.view(1, C, N)
+
+        residual = x_flatten.expand(self.num_clusters + self.gost, -1, -1, -1).permute(1, 0, 2, 3) - \
+                   self.centroids.expand(x_flatten.size(-1), -1, -1).permute(1, 2, 0).unsqueeze(0)
+        # (1, c+g, C, N)
+
+        residual *= soft_assign.unsqueeze(2)
+        print(residual.shape)
+
+        vlad = residual.sum(dim=-1)  # (1,9,128)
+        vlad = vlad[:, :self.num_clusters, :]  # (1,8,128)
+        vlad = F.normalize(vlad, p=2, dim=2)
+        vlad = vlad.view(1, -1)
+        vlad = F.normalize(vlad, p=2, dim=1)  # (1,8*128)
+
+        return vlad
