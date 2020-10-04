@@ -276,7 +276,8 @@ def Make_Fbank(filename,  # sample_rate=c.SAMPLE_RATE,
     if not os.path.exists(filename):
         raise ValueError('wav file does not exist.')
 
-    audio, sample_rate = sf.read(filename, dtype='float32')
+    # audio, sample_rate = sf.read(filename, dtype='float32')
+    audio, sample_rate = sf.read(filename, dtype='int16')
     filter_banks, energies = local_fbank(audio, samplerate=sample_rate, nfilt=nfilt, nfft=nfft, lowfreq=lowfreq,
                                          winlen=windowsize, filtertype=filtertype, winfunc=np.hamming,
                                          multi_weight=multi_weight)
