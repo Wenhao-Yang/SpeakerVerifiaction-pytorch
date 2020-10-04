@@ -912,7 +912,7 @@ fi
 
 if [ $stage -le 200 ]; then
   for name in train test ; do
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
+    python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
       --out-set ${name}_fb24_power \
