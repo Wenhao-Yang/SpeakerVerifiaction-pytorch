@@ -915,9 +915,9 @@ if [ $stage -le 200 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
-      --out-set ${name}_mel \
+      --out-set ${name}_var \
       --feat-type fbank \
-      --filter-type mel \
+      --filter-type dnn.timit.var \
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \
