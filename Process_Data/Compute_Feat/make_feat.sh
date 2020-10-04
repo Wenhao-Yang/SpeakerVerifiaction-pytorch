@@ -920,6 +920,6 @@ if [ $stage -le 200 ]; then
       --filter-type dnn.timit.power \
       --nfft 320 \
       --windowsize 0.02 \
-      --filters 24
+       --filters 23
   done
 fi

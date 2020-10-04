@@ -289,7 +289,8 @@ def Make_Fbank(filename,  # sample_rate=c.SAMPLE_RATE,
 
     if log_scale:
         # filter_banks = 20 * np.log10(np.maximum(filter_banks, 1e-5))
-        filter_banks = 10 * np.log10(filter_banks)
+        # filter_banks = 10 * np.log10(filter_banks)
+        filter_banks = np.log(filter_banks)
 
     if use_delta:
         delta_1 = delta(filter_banks, N=1)
