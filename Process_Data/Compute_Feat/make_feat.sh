@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=150
+stage=200
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -907,5 +907,20 @@ if [ $stage -le 151 ]; then
     Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/vox2/egs/spect/valid_power
 #    mv ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back
 #    sort -k 2 ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/valid_power/feats.scp
+  done
+fi
+
+if [ $stage -le 200 ]; then
+  for name in train test ; do
+    python Process_Data/Compute_Feat/make_feat_kaldi.py \
+      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
+      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
+      --out-set ${name}_fb24_power \
+      --feat-type fbank \
+      --filter-type timit.power \
+      --nfft 320 \
+      --windowsize 0.02 \
+      --log-scale \
+      --filters 24
   done
 fi
