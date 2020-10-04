@@ -917,7 +917,7 @@ if [ $stage -le 200 ]; then
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
       --out-set ${name}_fb24_power \
       --feat-type fbank \
-      --filter-type timit.power \
+      --filter-type dnn.timit.power \
       --nfft 320 \
       --windowsize 0.02 \
       --log-scale \
