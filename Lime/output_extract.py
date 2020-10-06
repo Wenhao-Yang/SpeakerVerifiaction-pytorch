@@ -14,7 +14,6 @@ from __future__ import print_function
 import argparse
 import json
 import os
-import pdb
 import pickle
 import random
 import time
@@ -96,7 +95,7 @@ parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--epochs', type=int, default=36, metavar='E',
                     help='number of epochs to train (default: 10)')
-parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft'],
+parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft', 'arcsoft'],
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
@@ -303,7 +302,7 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
     # for batch_idx, (data_a, data_b, label) in pbar:
     for batch_idx, (data_a, data_b, label, uid_a, uid_b) in pbar:
 
-        pdb.set_trace()
+        # pdb.set_trace()
         data_a = Variable(data_a.cuda(), requires_grad=True)
         data_b = Variable(data_b.cuda(), requires_grad=True)
 
@@ -391,7 +390,7 @@ def main():
     model = create_model(args.model, **model_kwargs)
     if args.loss_type == 'asoft':
         model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
-    elif args.loss_type == 'amsoft':
+    elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
         model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
 
     train_loader = DataLoader(train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
@@ -439,8 +438,8 @@ def main():
             #     model_conv1 = model.conv1.weight.cpu().detach().numpy()
             #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
-            # train_extract(train_loader, model, file_dir, 'vox1_train')
-            # train_extract(valid_loader, model, file_dir, 'vox1_valid')
+            train_extract(train_loader, model, file_dir, 'vox1_train')
+            train_extract(valid_loader, model, file_dir, 'vox1_valid')
             test_extract(veri_loader, model, file_dir, 'vox1_veri')
 
         test_extract(test_loader, model, file_dir, 'vox1_test')

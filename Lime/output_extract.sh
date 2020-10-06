@@ -321,7 +321,7 @@ if [ $stage -le 61 ]; then
   feat=spect
   dataset=timit
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  for loss in soft ; do
+  for loss in arcsoft ; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     python Lime/output_extract.py \
       --train-dir ${lstm_dir}/data/${dataset}/spect/train_log \
