@@ -19,6 +19,7 @@ https://github.com/CoinCheung/pytorch-loss/blob/master/amsoftmax.py
 "Center Loss" is based on https://github.com/KaiyangZhou/pytorch-center-loss/blob/master/center_loss.py
 """
 import math
+import pdb
 
 import torch
 import torch.nn as nn
@@ -320,6 +321,7 @@ class ArcSoftmaxLoss(nn.Module):
             lb_view = lb_view.cpu()
 
         delt_thata = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+        pdb.set_trace()
 
         if costh.is_cuda:
             delt_costh = Variable(delt_thata.cuda())
