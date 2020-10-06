@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=7
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -174,24 +174,49 @@ if [ $stage -eq 7 ]; then
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
       --nj 12 \
-      --out-set ${name}_log10 \
+      --out-set ${name}_log \
       --log-scale \
       --feat-type spectrogram \
       --nfft 320 \
       --windowsize 0.02
 
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
-      --nj 12 \
-      --out-set ${name}_power \
+#    python Process_Data/Compute_Feat/make_feat.py \
+#      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
+#      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
+#      --nj 12 \
+#      --out-set ${name}_power \
+#      --feat-type spectrogram \
+#      --nfft 320 \
+#      --windowsize 0.02
+  for s in dev ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/timit/spect/train_log \
+      --out-dir ${lstm_dir}/data/timit/egs/spect \
       --feat-type spectrogram \
-      --nfft 320 \
-      --windowsize 0.02
+      --train \
+      --input-per-spks 224 \
+      --feat-format kaldi \
+      --num-valid 1 \
+      --out-set train_log
+    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/train_log
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/timit/spect/train_log \
+      --out-dir ${lstm_dir}/data/timit/egs/spect \
+      --feat-type spectrogram \
+      --input-per-spks 224 \
+      --feat-format kaldi \
+      --num-valid 1 \
+      --out-set valid_log
+
+    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/valid_log
+  done
+
   done
 fi
 
-#stage=200
+
+stage=2000
 if [ $stage -le 8 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
