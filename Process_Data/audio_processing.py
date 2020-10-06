@@ -951,3 +951,18 @@ class mvnormal(object):
             1e-12)
 
         return tensor.float()
+
+
+class tolog(object):
+
+    def __call__(self, tensor):
+        """
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+
+        Returns:
+            Tensor: Normalized image.
+        """
+        tensor = torch.log(tensor)
+
+        return tensor.float()

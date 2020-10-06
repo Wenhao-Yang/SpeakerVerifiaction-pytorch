@@ -36,7 +36,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput
+from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -70,6 +70,8 @@ parser.add_argument('--valid-dir', type=str,
 parser.add_argument('--test-dir', type=str,
                     default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_power',
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
+
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--sitw-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
@@ -256,6 +258,11 @@ else:
         # tonormal()
     ])
     file_loader = read_audio
+
+if args.log_scale:
+    transform.append(tolog())
+    transform_T.append(tolog())
+    transform_V.append(tolog())
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':

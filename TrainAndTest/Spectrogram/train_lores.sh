@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=61
+stage=50
 
 waited=0
 while [ `ps 27300 | wc -l` -eq 2 ]; do
@@ -330,9 +330,9 @@ fi
 if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
-  model=GradResNet
+  model=LoResNet
   resnet_size=8
-  for loss in soft mulcenter center ; do
+  for loss in soft arcsoft ; do
     echo -e "\n\033[1;4;31m Training GradResNet in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -340,14 +340,15 @@ if [ $stage -le 50 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_power \
       --test-dir ${lstm_dir}/data/vox1/spect/test_power \
       --feat-format kaldi \
+      --log-scale \
       --inst-norm \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 20 \
       --lr 0.1 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25_nol2 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25_nol2/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
@@ -365,7 +366,7 @@ if [ $stage -le 50 ]; then
       --loss-type ${loss}
   done
 fi
-#stage=100
+stage=1000
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
@@ -581,15 +582,16 @@ if [ $stage -le 60 ]; then
 fi
 if [ $stage -le 61 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=timit
+  datasets=vox1
   model=LoResNet
   resnet_size=8
-  for loss in arcsoft ; do
+  for loss in soft arcsoft ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_power \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_power \
+      --log-scale \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --nj 10 \
@@ -599,7 +601,7 @@ if [ $stage -le 61 ]; then
       --milestones 6,10 \
       --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_log/${loss}_dp05 \
       --resume Data/checkpoint/${model}8/${datasets}/spect_egs_log/${loss}_dp05/checkpoint_12.pth \
-      --alpha 10.8 \
+      --alpha 12 \
       --channels 4,16,64 \
       --embedding-size 128 \
       --avg-size 4 \
