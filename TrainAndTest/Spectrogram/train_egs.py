@@ -260,9 +260,9 @@ else:
     file_loader = read_audio
 
 if args.log_scale:
-    transform.append(tolog())
-    transform_T.append(tolog())
-    transform_V.append(tolog())
+    transform.transforms.append(tolog())
+    transform_T.transforms.append(tolog())
+    transform_V.transforms.append(tolog())
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':

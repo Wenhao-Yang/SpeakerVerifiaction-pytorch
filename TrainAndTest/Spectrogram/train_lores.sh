@@ -333,7 +333,7 @@ if [ $stage -le 50 ]; then
   model=LoResNet
   resnet_size=8
   for loss in soft arcsoft ; do
-    echo -e "\n\033[1;4;31m Training GradResNet in vox1_egs with ${loss} with mean normalization \033[0m\n"
+    echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_power \
