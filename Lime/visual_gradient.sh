@@ -125,8 +125,13 @@ if [ $stage -le 61 ]; then
 #      --feat-dim 161 \
 #      --acoustic-feature spectrogram
 
+#    python Lime/visual_gradient.py \
+#      --extract-path Data/gradient/GradResNet8/timit/spect_egs_v2/asoft_dp05/epoch_12 \
+#      --feat-dim 161 \
+#      --acoustic-feature spectrogram
+
     python Lime/visual_gradient.py \
-      --extract-path Data/gradient/GradResNet8/timit/spect_egs_v2/asoft_dp05/epoch_12 \
+      --extract-path Data/gradient/LoResNet8/timit/spect_egs_log/asoft_dp05/epoch_12 \
       --feat-dim 161 \
       --acoustic-feature spectrogram
 
