@@ -317,15 +317,15 @@ if [ $stage -le 60 ]; then
 fi
 
 if [ $stage -le 61 ]; then
-  model=GradResNet
+  model=LoResNet
   feat=spect
   dataset=timit
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  for loss in asoft ; do
+  for loss in soft ; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     python Lime/output_extract.py \
-      --train-dir ${lstm_dir}/data/${dataset}/spect/train_power \
-      --test-dir ${lstm_dir}/data/${dataset}/spect/test_power \
+      --train-dir ${lstm_dir}/data/${dataset}/spect/train_log \
+      --test-dir ${lstm_dir}/data/${dataset}/spect/test_log \
       --nj 12 \
       --start-epochs 12 \
       --epochs 12 \
@@ -336,8 +336,8 @@ if [ $stage -le 61 ]; then
       --kernel-size 5,5 \
       --channels 4,16,64 \
       --resnet-size 8 \
-      --check-path Data/checkpoint/GradResNet8/${dataset}/spect_egs_v2/${loss}_dp05 \
-      --extract-path Data/gradient/GradResNet8/${dataset}/spect_egs_v2/${loss}_dp05 \
+      --check-path Data/checkpoint/${model}8/${dataset}/spect_egs_log/${loss}_dp05 \
+      --extract-path Data/gradient/${model}8/${dataset}/spect_egs_log/${loss}_dp05 \
       --loss-type ${loss} \
       --gpu-id 0
   done
