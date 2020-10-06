@@ -487,7 +487,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
             loss = args.loss_ratio * loss_xent + loss_cent
-        elif args.loss_type == 'amsoft':
+        elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
             loss = xe_criterion(classfier, label)
 
         predicted_labels = output_softmax(classfier_label)
