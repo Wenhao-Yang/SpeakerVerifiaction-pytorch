@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import json
 import os
+import pdb
 import pickle
 import random
 import time
@@ -302,6 +303,7 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
     # for batch_idx, (data_a, data_b, label) in pbar:
     for batch_idx, (data_a, data_b, label, uid_a, uid_b) in pbar:
 
+        pdb.set_trace()
         data_a = Variable(data_a.cuda(), requires_grad=True)
         data_b = Variable(data_b.cuda(), requires_grad=True)
 
@@ -437,8 +439,8 @@ def main():
             #     model_conv1 = model.conv1.weight.cpu().detach().numpy()
             #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
-            train_extract(train_loader, model, file_dir, 'vox1_train')
-            train_extract(valid_loader, model, file_dir, 'vox1_valid')
+            # train_extract(train_loader, model, file_dir, 'vox1_train')
+            # train_extract(valid_loader, model, file_dir, 'vox1_valid')
             test_extract(veri_loader, model, file_dir, 'vox1_veri')
 
         test_extract(test_loader, model, file_dir, 'vox1_test')
