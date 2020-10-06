@@ -584,7 +584,7 @@ if [ $stage -le 61 ]; then
   datasets=timit
   model=LoResNet
   resnet_size=8
-  for loss in soft ; do
+  for loss in asoft arcsoft ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \

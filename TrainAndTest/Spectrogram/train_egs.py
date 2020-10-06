@@ -31,7 +31,7 @@ from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
 from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss
-from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
+from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -149,7 +149,7 @@ parser.add_argument('--dropout-p', type=float, default=0.25, metavar='BST',
 
 # loss configure
 parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft',
-                                                                      'wasse', 'mulcenter'],
+                                                                      'wasse', 'mulcenter', 'arcsoft'],
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--num-center', type=int, default=2, help='the num of source classes')
 parser.add_argument('--source-cls', type=int, default=1951,
@@ -348,6 +348,10 @@ def main():
         ce_criterion = None
         model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+    elif args.loss_type == 'arcsoft':
+        ce_criterion = None
+        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
+        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
