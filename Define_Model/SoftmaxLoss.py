@@ -325,7 +325,7 @@ class ArcSoftmaxLoss(nn.Module):
         if costh.is_cuda:
             delt_costh = Variable(delt_thata.cuda())
 
-        costh_m = (theta - delt_costh).cos()
+        costh_m = (theta + delt_costh).cos()
         costh_m_s = self.s * costh_m
 
         loss = self.ce(costh_m_s, label)
