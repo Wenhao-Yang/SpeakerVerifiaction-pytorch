@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=7
+stage=200
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -215,7 +215,7 @@ if [ $stage -eq 7 ]; then
 fi
 
 
-stage=2000
+#stage=2000
 if [ $stage -le 8 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
@@ -939,9 +939,9 @@ if [ $stage -le 200 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
-      --out-set ${name}_power_v2 \
+      --out-set ${name}_var_v2 \
       --feat-type fbank \
-      --filter-type dnn.timit.power.v2 \
+      --filter-type dnn.timit.var.v2 \
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \

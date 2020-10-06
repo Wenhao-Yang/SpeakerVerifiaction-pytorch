@@ -79,6 +79,8 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
             y = np.array(c.TIMIT_FIlTER_FIX)
         elif filtertype.endswith('timit.var'):
             y = np.array(c.TIMIT_FIlTER_VAR)
+        elif filtertype.endswith('timit.var.v2'):
+            y = np.array(c.TIMIT_FIlTER_v2)
         elif filtertype.endswith('timit.mdv'):
             y = np.array(c.TIMIT_FIlTER_MDV)
         elif filtertype.endswith('timit.power'):
