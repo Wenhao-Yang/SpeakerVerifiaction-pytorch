@@ -218,14 +218,14 @@ def main():
 
     m = np.arange(0, 2840.0230467083188)
     m = 700 * (10 ** (m / 2595.0) - 1)
-    # n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-    # n = 1 / n
-    #
-    # f = interpolate.interp1d(m[1:], n)
-    # xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / 161)
-    # ynew = f(xnew)
-    # ynew = ynew / ynew.sum()
-    # plt.plot(xnew, ynew)
+    n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
+    n = 1 / n
+
+    f = interpolate.interp1d(m[1:], n)
+    xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / 161)
+    ynew = f(xnew)
+    ynew = ynew / ynew.sum()
+    plt.plot(xnew, ynew)
     # print(np.sum(ynew))
 
     for s in train_grad, valid_grad, veri_grad, test_grad:
