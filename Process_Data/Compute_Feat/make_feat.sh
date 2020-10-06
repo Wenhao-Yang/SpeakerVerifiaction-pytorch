@@ -188,6 +188,7 @@ if [ $stage -eq 7 ]; then
 #      --feat-type spectrogram \
 #      --nfft 320 \
 #      --windowsize 0.02
+  done
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/timit/spect/train_log \
@@ -210,8 +211,6 @@ if [ $stage -eq 7 ]; then
       --out-set valid_log
 
     Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/valid_log
-  done
-
   done
 fi
 

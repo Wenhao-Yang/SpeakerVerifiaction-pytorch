@@ -768,14 +768,12 @@ class LocalResNet(nn.Module):
             x = x.squeeze(1).transpose(1, 2)
             x = self.inst_layer(x)
             x = x.transpose(1, 2).unsqueeze(1)
-
             # x = x - torch.mean(x, dim=-2, keepdim=True)
 
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x)
-
+        # x = self.maxpool(x)
         x = self.layer1(x)
 
         x = self.conv2(x)

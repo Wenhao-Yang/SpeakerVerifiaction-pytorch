@@ -582,14 +582,14 @@ fi
 if [ $stage -le 61 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=timit
-  model=GradResNet
+  model=LoResNet
   resnet_size=8
-  for loss in amsoft ; do
+  for loss in soft ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power_v2 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_power_v2\
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_power \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --nj 10 \
@@ -597,8 +597,8 @@ if [ $stage -le 61 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_v2/${loss}_dp05 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_v2/${loss}_dp05/checkpoint_12.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_log/${loss}_dp05 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_log/${loss}_dp05/checkpoint_12.pth \
       --alpha 10.8 \
       --channels 4,16,64 \
       --embedding-size 128 \
