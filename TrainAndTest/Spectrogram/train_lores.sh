@@ -332,7 +332,7 @@ if [ $stage -le 50 ]; then
   datasets=vox1
   model=LoResNet
   resnet_size=8
-  for loss in soft arcsoft ; do
+  for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -362,6 +362,7 @@ if [ $stage -le 50 ]; then
       --weight-decay 0.001 \
       --dropout-p 0.25 \
       --gpu-id 0 \
+      --extract \
       --cos-sim \
       --loss-type ${loss}
   done
