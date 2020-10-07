@@ -354,7 +354,7 @@ if [ $stage -le 50 ]; then
       --avg-size 4 \
       --num-center 2 \
       --num-valid 2 \
-      --alpha 0 \
+      --alpha 12 \
       --margin 0.4 \
       --s 30 \
       --m 3 \
