@@ -14,6 +14,7 @@ For all model, the pre_forward function is for extract vectors and forward for c
 """
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
@@ -733,19 +734,19 @@ class LocalResNet(nn.Module):
 
     def l2_norm(self, input, alpha=1.0):
         # alpha = log(p * ( class -2) / (1-p))
-        input_size = input.size()
-        buffer = torch.pow(input, 2)
+        output = F.normalize(input, dim=1) * alpha
 
-        normp = torch.sum(buffer, 1).add_(1e-12)
-        norm = torch.sqrt(normp)
-
-        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
-        output = _output.view(input_size)
+        # input_size = input.size()
+        # buffer = torch.pow(input, 2)
+        # normp = torch.sum(buffer, 1).add_(1e-12)
+        # norm = torch.sqrt(normp)
+        # _output = torch.div(input, norm.view(-1, 1).expand_as(input))
+        # output = _output.view(input_size)
         # # # input = input.renorm(p=2, dim=1, maxnorm=1.0)
         # norm = input.norm(p=2, dim=1, keepdim=True).add(1e-14)
         # output = input / norm
 
-        return output * alpha
+        return output  # * alpha
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
@@ -1371,7 +1372,7 @@ class TimeFreqResNet(nn.Module):
 
         x = self.fc(x)
         if self.alpha:
-            x = self.l2_norm(x, alpha=self.alpha)
+            x = F.self.l2_norm(x, alpha=self.alpha)
 
         logits = self.classifier(x)
 
