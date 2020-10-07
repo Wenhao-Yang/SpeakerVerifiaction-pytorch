@@ -356,7 +356,7 @@ if [ $stage -le 50 ]; then
       --num-valid 2 \
       --alpha 12 \
       --margin 0.3 \
-      --s 30 \
+      --s 15 \
       --m 3 \
       --loss-ratio 0.01 \
       --weight-decay 0.001 \
