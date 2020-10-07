@@ -355,7 +355,7 @@ if [ $stage -le 50 ]; then
       --num-center 2 \
       --num-valid 2 \
       --alpha 12 \
-      --margin 0.4 \
+      --margin 0.3 \
       --s 30 \
       --m 3 \
       --loss-ratio 0.01 \
