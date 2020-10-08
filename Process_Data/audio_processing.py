@@ -240,7 +240,7 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
     """
 
     # samplerate, samples = wavfile.read(wav_path)
-    samples, samplerate = sf.read(wav_path, dtype='float32')
+    samples, samplerate = sf.read(wav_path, dtype='int16')
 
     if bandpass and highfreq > lowfreq:
         samples = butter_bandpass_filter(data=samples, cutoff=[lowfreq, highfreq], fs=samplerate)
