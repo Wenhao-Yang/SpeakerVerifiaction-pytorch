@@ -23,6 +23,7 @@ from multiprocessing import Pool, Manager
 import kaldi_io
 import numpy as np
 import torch
+from kaldiio import WriteHelper
 from tqdm import tqdm
 
 from Process_Data.KaldiDataset import ScriptTrainDataset, ScriptValidDataset
@@ -32,7 +33,6 @@ from Process_Data.audio_processing import ConcateInput
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
 parser.add_argument('--nj', type=int, default=18, metavar='E', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-dir', type=str,
-                    default='/home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_reverb_fb64/dev',
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
@@ -40,7 +40,9 @@ parser.add_argument('--domain', action='store_true', default=False, help='set do
 
 parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
-parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
+parser.add_argument('--feat-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp'],
+                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--out-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
@@ -89,20 +91,23 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
 
 def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queue):
     #  wav_scp = os.path.join(data_path, 'wav.scp')
+    feat_dir = os.path.join(ark_dir, ark_prefix)
+    if not os.path.exists(feat_dir):
+        os.makedirs(feat_dir)
+
     feat_scp = os.path.join(out_dir, 'feat.%d.temp.scp' % proid)
+    feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
     feat_scp_f = open(feat_scp, 'w')
 
     # utt2dur = os.path.join(out_dir, 'utt2dur.%d' % proid)
     # utt2num_frames = os.path.join(out_dir, 'utt2num_frames.%d' % proid)
     # utt2dur_f = open(utt2dur, 'w')
     # utt2num_frames_f = open(utt2num_frames, 'w')
-    feat_dir = os.path.join(ark_dir, ark_prefix)
-    if not os.path.exists(feat_dir):
-        os.makedirs(feat_dir)
 
-    # if args.feat_format == 'kaldi':
-    feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
-    feat_ark_f = open(feat_ark, 'wb')
+    if args.out_format == 'kaldi':
+        feat_ark_f = open(feat_ark, 'wb')
+    if args.out_format == 'kaldi_cmp':
+        writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp), compression_method=1)
 
     temp_dir = out_dir + '/temp'
     if not os.path.exists(temp_dir):
@@ -122,16 +127,19 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 feat = comm[-1].astype(np.float32).squeeze()
                 # print(feat.shape)
 
-                # if args.feat_format == 'kaldi':
-                kaldi_io.write_mat(feat_ark_f, feat, key='')
-                offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
-                # print(offsets)
+                if args.out_format == 'kaldi':
+                    kaldi_io.write_mat(feat_ark_f, feat, key='')
+                    offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
+                    # print(offsets)
+                    feat_scp_f.write(key + ' ' + offsets + '\n')
 
-                feat_scp_f.write(key + ' ' + offsets + '\n')
-                # elif args.feat_format == 'npy':
-                #     npy_path = os.path.join(feat_dir, '%s.npy' % key)
-                #     np.save(npy_path, feat)
-                #     feat_scp_f.write(key + ' ' + npy_path + '\n')
+                elif args.out_format == 'kaldi_cmp':
+                    writer(str(key), feat)
+
+                elif args.feat_format == 'npy':
+                    npy_path = os.path.join(feat_dir, '%s.npy' % key)
+                    np.save(npy_path, feat)
+                    feat_scp_f.write(key + ' ' + npy_path + '\n')
 
             except Exception as e:
                 print(e)
@@ -140,12 +148,12 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             # if t_queue.qsize() % 100 == 0:
             print('\rProcess [%6s] There are [%6s] egs' \
                   ' left, with [%6s] errors.' % (
-                  str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())),
+                      str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())),
                   end='')
         elif i_queue.empty():
             lock_t.release()
 
-            print('\n>> Process {}: all queue empty!'.format(os.getpid()))
+            # print('\n>> Process {}: all queue empty!'.format(os.getpid()))
             break
         else:
             lock_t.release()
@@ -155,6 +163,8 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
     if args.feat_format == 'kaldi':
         feat_ark_f.close()
+    elif args.feat_format == 'kaldi_cmp':
+        writer.close()
 
     new_feat_scp = os.path.join(out_dir, 'feat.%d.scp' % proid)
     if args.feat_format == 'kaldi' and args.compress:
@@ -173,10 +183,10 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
 transform = ConcateInput(num_frames=args.num_frames, remove_vad=args.remove_vad)
 
-if args.feat_format == 'kaldi':
-    file_loader = kaldi_io.read_mat
-elif args.feat_format == 'npy':
+if args.feat_format == 'npy':
     file_loader = np.load
+elif args.feat_format == 'kaldi':
+    file_loader = kaldi_io.read_mat
 
 train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid, domain=args.domain)
@@ -228,8 +238,8 @@ if __name__ == "__main__":
         for i in tqdm(range(len(train_dir))):
             idx_queue.put(i)
 
-        print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
-            train_dir.num_spks, idx_queue.qsize(), str(time.asctime()), nj))
+        print('Plan to make egs for %d speakers with %d utterances in %s with %d jobs.\n' % (
+            train_dir.num_spks, num_utt, str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 2))  # 创建nj个进程
         for i in range(0, nj):
@@ -255,7 +265,7 @@ if __name__ == "__main__":
         for i in tqdm(range(len(valid_dir))):
             idx_queue.put(i)
 
-        print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
+        print('>>Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
             idx_queue.qsize(), num_utt, str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 1.5))  # 创建nj个进程
@@ -284,7 +294,7 @@ if __name__ == "__main__":
         print('\n>> Saving Completed without errors.!')
 
     Split_dir = os.path.join(out_dir, 'Split%d' % nj)
-    print('  >> Splited Data root is %s. Concat all scripts together.' % str(Split_dir))
+    print('  >> Splited Data root is \n\t%s. \n\tConcat all scripts together.' % str(Split_dir))
 
     all_scp_path = [os.path.join(Split_dir, '%d/feat.%d.scp' % (i, i)) for i in range(nj)]
     feat_scp = os.path.join(out_dir, 'feats.scp')
@@ -299,12 +309,11 @@ if __name__ == "__main__":
     if numofutt != num_utt:
         print('Errors in %s ?' % feat_scp)
 
-    print('Delete tmp files in: %s' % Split_dir)
-    if args.compress:
-        shutil.rmtree(Split_dir)
+    # print('Delete tmp files in: %s' % Split_dir)
 
     end_time = time.time()
-    print('For multi process Completed, write all files in: %s. And %.2fs collapse.' % (out_dir, end_time - start_time))
+    print('For multi process Completed, write all files in: \n\t%s. \n\tAnd %.2fs collapse.' % (
+    out_dir, end_time - start_time))
     sys.exit()
 
 """

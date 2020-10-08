@@ -465,32 +465,6 @@ if [ $stage -le 70 ]; then
   done
 fi
 
-if [ $stage -le 71 ]; then
-  for s in dev test; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s}_3w \
-      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-      --out-set ${s}_3w_power \
-      --feat-type spectrogram \
-      --feat-format kaldi \
-      --nfft 320 \
-      --windowsize 0.02 \
-      --nj 15
-    done
-fi
-if [ $stage -le 72 ]; then
-  for s in dev test; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s}_3w \
-      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-      --out-set ${s}_3w_power_25 \
-      --feat-type spectrogram \
-      --feat-format kaldi \
-      --nfft 400 \
-      --windowsize 0.025 \
-      --nj 15
-    done
-fi
 
 if [ $stage -le 73 ]; then
   for s in dev test ; do
@@ -500,7 +474,7 @@ if [ $stage -le 73 ]; then
       --out-set ${s}_log \
       --log-scale \
       --feat-type spectrogram \
-      --feat-format kaldi \
+      --feat-format kaldi_cmp \
       --nfft 320 \
       --windowsize 0.02 \
       --nj 18
@@ -509,11 +483,12 @@ if [ $stage -le 73 ]; then
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox1/spect/dev_log \
-      --out-dir ${lstm_dir}/data/vox2/egs/spect \
+      --out-dir ${lstm_dir}/data/vox1/egs/spect \
       --feat-type spectrogram \
       --train \
-      --input-per-spks 224 \
+      --input-per-spks 384 \
       --feat-format kaldi \
+      --out-format kaldi_cmp \
       --num-valid 2 \
       --out-set dev_log
     Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/vox1/egs/spect/dev_log
@@ -522,8 +497,9 @@ if [ $stage -le 73 ]; then
       --data-dir ${lstm_dir}/data/vox1/spect/dev_log \
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
       --feat-type spectrogram \
-      --input-per-spks 224 \
+      --input-per-spks 384 \
       --feat-format kaldi \
+      --out-format kaldi_cmp \
       --num-valid 2 \
       --out-set valid_log
     Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/vox1/egs/spect/valid_log

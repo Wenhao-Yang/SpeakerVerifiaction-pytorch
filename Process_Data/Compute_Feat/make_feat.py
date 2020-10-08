@@ -263,7 +263,7 @@ if __name__ == "__main__":
             pairs.append(uid2path[uid])
 
         task_queue.put(pairs)
-    print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
+    print('>>>Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
         task_queue.qsize(), num_utt, str(time.asctime()), nj))
 
     pool = Pool(processes=nj)  # 创建nj个进程
@@ -291,7 +291,7 @@ if __name__ == "__main__":
         print('\n>> Saving Completed without errors.!')
 
     Split_dir = os.path.join(out_dir, 'Split%d' % nj)
-    print('  >> Splited Data root is %s. Concat all scripts together.' % str(Split_dir))
+    print('  >> Splited Data root is \n\t%s. \n\tConcat all scripts together.' % str(Split_dir))
 
     all_scp_path = [os.path.join(Split_dir, '%d/feat.%d.scp' % (i, i)) for i in range(nj)]
     feat_scp = os.path.join(out_dir, 'feats.scp')
@@ -332,11 +332,11 @@ if __name__ == "__main__":
     if numofutt != num_utt:
         print('Errors in %s ?' % utt2num_frames)
 
-    print('Delete tmp files in: %s' % Split_dir)
+    print('Delete tmp files in: \n\t%s' % Split_dir)
     if args.compress:
         shutil.rmtree(Split_dir)
     end_time = time.time()
-    print('Write all files in: %s. \nAnd %.2fs collapse.' % (out_dir, end_time - start_time))
+    print('Write all files in: \n\t%s. \nAnd %.2fs collapse.\n' % (out_dir, end_time - start_time))
     sys.exit()
 
 """
