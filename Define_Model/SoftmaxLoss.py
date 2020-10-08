@@ -329,7 +329,7 @@ class ArcSoftmaxLoss(nn.Module):
         costh_m_s = self.s * costh_m
 
         if self.iteraion < self.all_iteraion:
-            costh_m_s = 0.8 * costh + 0.2 * costh_m_s
+            costh_m_s = 0.5 * costh + 0.5 * costh_m_s
             self.iteraion += 1
 
         loss = self.ce(costh_m_s, label)
