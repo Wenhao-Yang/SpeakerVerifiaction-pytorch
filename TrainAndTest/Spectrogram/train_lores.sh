@@ -350,7 +350,7 @@ if [ $stage -le 50 ]; then
       --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 64,128,256 \
-      --embedding-size 128 \
+      --embedding-size 256 \
       --avg-size 4 \
       --num-center 2 \
       --num-valid 2 \
