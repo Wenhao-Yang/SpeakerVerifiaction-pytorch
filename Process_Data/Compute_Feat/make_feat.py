@@ -35,9 +35,8 @@ parser.add_argument('--data-format', type=str, default='wav', choices=['flac', '
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
-parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
+parser.add_argument('--feat-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp'],
                     help='number of jobs to make feats (default: 10)')
-
 parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
                     help='number of jobs to make feats (default: 10)')
 
