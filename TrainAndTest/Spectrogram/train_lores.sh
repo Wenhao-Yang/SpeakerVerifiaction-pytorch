@@ -336,11 +336,10 @@ if [ $stage -le 50 ]; then
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_power \
-      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_power \
-      --test-dir ${lstm_dir}/data/vox1/spect/test_power \
+      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
-      --log-scale \
       --inst-norm \
       --resnet-size ${resnet_size} \
       --nj 10 \
