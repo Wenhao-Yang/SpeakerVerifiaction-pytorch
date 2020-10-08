@@ -85,7 +85,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
             #       ' left.' % (str(os.getpid()), str(idx_queue.qsize())), end='')
         else:
             lock_i.release()  # 释放锁
-            print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
+            # print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
             break
 
 
@@ -146,10 +146,8 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 e_queue.put(key)
 
             if t_queue.qsize() % 100 == 0:
-                print('\rProcess [%6s] There are [%6s] egs' \
-                      ' left, with [%6s] errors.' % (
-                      str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())),
-                  end='')
+                print('\rProcess [%6s] There are [%6s] egs left, with [%6s] errors.' %
+                      (str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())), end='')
         elif i_queue.empty():
             lock_t.release()
 
@@ -210,9 +208,9 @@ if __name__ == "__main__":
 
     wav_scp_f = os.path.join(data_dir, 'wav.scp')
     spk2utt_f = os.path.join(data_dir, 'spk2utt')
-    assert os.path.exists(data_dir)
-    assert os.path.exists(wav_scp_f)
-    assert os.path.exists(spk2utt_f)
+    assert os.path.exists(data_dir), data_dir
+    assert os.path.exists(wav_scp_f), wav_scp_f
+    assert os.path.exists(spk2utt_f), spk2utt_f
 
     if data_dir != out_dir:
         print('Copy wav.scp, spk2utt, utt2spk, trials to %s' % out_dir)
@@ -220,7 +218,7 @@ if __name__ == "__main__":
             orig_f = os.path.join(data_dir, f)
             targ_f = os.path.join(out_dir, f)
             if os.path.exists(orig_f):
-                os.system('cp %s %s' % (orig_f, targ_f))
+                os.system('Cp %s %s' % (orig_f, targ_f))
 
     start_time = time.time()
 
@@ -238,7 +236,7 @@ if __name__ == "__main__":
         for i in tqdm(range(len(train_dir))):
             idx_queue.put(i)
 
-        print('Plan to make egs for %d speakers with %d utterances in %s with %d jobs.\n' % (
+        print('\n>> Plan to make egs for %d speakers with %d utterances in %s with %d jobs.\n' % (
             train_dir.num_spks, num_utt, str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 2))  # 创建nj个进程
@@ -261,11 +259,10 @@ if __name__ == "__main__":
 
         # valid set
         num_utt = len(valid_dir)
-
         for i in tqdm(range(len(valid_dir))):
             idx_queue.put(i)
 
-        print('>>Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
+        print('\n>> Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
             idx_queue.qsize(), num_utt, str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 1.5))  # 创建nj个进程
@@ -294,7 +291,7 @@ if __name__ == "__main__":
         print('\n>> Saving Completed without errors.!')
 
     Split_dir = os.path.join(out_dir, 'Split%d' % nj)
-    print('  >> Splited Data root is \n\t%s. \n\tConcat all scripts together.' % str(Split_dir))
+    print('   Splited Data root is \n     %s. \n   Concat all scripts together.' % str(Split_dir))
 
     all_scp_path = [os.path.join(Split_dir, '%d/feat.%d.scp' % (i, i)) for i in range(nj)]
     assert len(all_scp_path) > 0, print(Split_dir)
@@ -313,7 +310,7 @@ if __name__ == "__main__":
     # print('Delete tmp files in: %s' % Split_dir)
 
     end_time = time.time()
-    print('For multi process Completed, write all files in: \n\t%s. \n\tAnd %.2fs collapse.' % (
+    print('For multi process Completed, write all files in: \n\t%s. \nAnd %.2fs collapse.\n' % (
     out_dir, end_time - start_time))
     sys.exit()
 
