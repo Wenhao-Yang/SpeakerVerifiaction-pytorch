@@ -311,7 +311,7 @@ class ArcSoftmaxLoss(nn.Module):
         self.margin = margin
         self.ce = nn.CrossEntropyLoss()
         self.iteraion = 0
-        self.all_iteraion =
+        self.all_iteraion = all_iteraion
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
