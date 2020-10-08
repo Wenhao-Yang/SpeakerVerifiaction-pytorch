@@ -86,8 +86,6 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
         feat_ark_f = open(feat_ark, 'wb')
     elif args.feat_format == 'kaldi_cmp':
         feat_scp_f.close()  # kaldiio
-        utt2dur_f.close()
-
         feat_ark = os.path.join(out_dir, '%s_feat.%d.ark' % (ark_prefix, proid))
         writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp), compression_method=1)
 
