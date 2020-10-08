@@ -145,9 +145,9 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 print(e)
                 e_queue.put(key)
 
-            # if t_queue.qsize() % 100 == 0:
-            print('\rProcess [%6s] There are [%6s] egs' \
-                  ' left, with [%6s] errors.' % (
+            if t_queue.qsize() % 100 == 0:
+                print('\rProcess [%6s] There are [%6s] egs' \
+                      ' left, with [%6s] errors.' % (
                       str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())),
                   end='')
         elif i_queue.empty():
@@ -171,7 +171,6 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         new_feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
         compress_command = "copy-feats --compress=true scp:{} ark,scp:{},{}".format(feat_scp, new_feat_ark,
                                                                                     new_feat_scp)
-
         pid, stdout, stderr = RunCommand(compress_command)
         # print(stdout)
         if os.path.exists(new_feat_scp) and os.path.exists(new_feat_ark):
@@ -179,6 +178,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     else:
         shutil.copy(feat_scp, new_feat_scp)
         # pass
+    assert os.path.exists(new_feat_scp)
 
 
 transform = ConcateInput(num_frames=args.num_frames, remove_vad=args.remove_vad)
@@ -297,6 +297,7 @@ if __name__ == "__main__":
     print('  >> Splited Data root is \n\t%s. \n\tConcat all scripts together.' % str(Split_dir))
 
     all_scp_path = [os.path.join(Split_dir, '%d/feat.%d.scp' % (i, i)) for i in range(nj)]
+    assert len(all_scp_path) > 0, print(Split_dir)
     feat_scp = os.path.join(out_dir, 'feats.scp')
     numofutt = 0
     with open(feat_scp, 'w') as feat_scp_f:

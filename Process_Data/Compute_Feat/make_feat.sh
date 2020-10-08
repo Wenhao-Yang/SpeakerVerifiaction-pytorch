@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=73
+stage=7
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -169,16 +169,16 @@ fi
 
 # timit
 if [ $stage -eq 7 ]; then
-  for name in train test ; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
-      --nj 12 \
-      --out-set ${name}_log \
-      --log-scale \
-      --feat-type spectrogram \
-      --nfft 320 \
-      --windowsize 0.02
+#  for name in train test ; do
+#    python Process_Data/Compute_Feat/make_feat.py \
+#      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
+#      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
+#      --nj 12 \
+#      --out-set ${name}_log \
+#      --log-scale \
+#      --feat-type spectrogram \
+#      --nfft 320 \
+#      --windowsize 0.02
 
 #    python Process_Data/Compute_Feat/make_feat.py \
 #      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
@@ -188,7 +188,7 @@ if [ $stage -eq 7 ]; then
 #      --feat-type spectrogram \
 #      --nfft 320 \
 #      --windowsize 0.02
-  done
+#  done
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/timit/spect/train_log \
@@ -215,7 +215,7 @@ if [ $stage -eq 7 ]; then
 fi
 
 
-#stage=2000
+stage=2000
 if [ $stage -le 8 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
@@ -492,7 +492,7 @@ if [ $stage -le 73 ]; then
       --num-valid 2 \
       --out-set dev_log
     Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/vox1/egs/spect/dev_log
-
+Process_Data/Compute_Feat/sort_scp.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/egs/spect/dev_log
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox1/spect/dev_log \
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
