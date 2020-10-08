@@ -195,7 +195,7 @@ if [ $stage -eq 7 ]; then
       --out-dir ${lstm_dir}/data/timit/egs/spect \
       --feat-type spectrogram \
       --train \
-      --input-per-spks 224 \
+      --input-per-spks 128 \
       --feat-format kaldi \
       --num-valid 1 \
       --out-set train_log
@@ -205,7 +205,7 @@ if [ $stage -eq 7 ]; then
       --data-dir ${lstm_dir}/data/timit/spect/train_log \
       --out-dir ${lstm_dir}/data/timit/egs/spect \
       --feat-type spectrogram \
-      --input-per-spks 224 \
+      --input-per-spks 128 \
       --feat-format kaldi \
       --num-valid 1 \
       --out-set valid_log
