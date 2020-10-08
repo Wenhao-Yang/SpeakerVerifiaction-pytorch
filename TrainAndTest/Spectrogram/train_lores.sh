@@ -332,7 +332,7 @@ if [ $stage -le 50 ]; then
   datasets=vox1
   model=LoResNet
   resnet_size=8
-  for loss in arcsoft ; do
+  for loss in soft arcsoft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -347,10 +347,10 @@ if [ $stage -le 50 ]; then
       --epochs 20 \
       --lr 0.1 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_em2/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_em2/${loss}_dp25/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 64,128,256 \
-      --embedding-size 256 \
+      --embedding-size 128 \
       --avg-size 4 \
       --num-center 2 \
       --num-valid 2 \
