@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=7
+stage=73
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -200,7 +200,6 @@ if [ $stage -eq 7 ]; then
       --out-format kaldi_cmp \
       --num-valid 1 \
       --out-set train_log
-#    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/train_log
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/timit/spect/train_log \
@@ -212,12 +211,11 @@ if [ $stage -eq 7 ]; then
       --num-valid 1 \
       --out-set valid_log
 
-#    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/valid_log
   done
 fi
 
 
-stage=2000
+#stage=2000
 if [ $stage -le 8 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
@@ -469,18 +467,18 @@ fi
 
 
 if [ $stage -le 73 ]; then
-  for s in dev test ; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
-      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-      --out-set ${s}_log \
-      --log-scale \
-      --feat-type spectrogram \
-      --feat-format kaldi_cmp \
-      --nfft 320 \
-      --windowsize 0.02 \
-      --nj 18
-    done
+#  for s in dev test ; do
+#    python Process_Data/Compute_Feat/make_feat.py \
+#      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/${s} \
+#      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+#      --out-set ${s}_log \
+#      --log-scale \
+#      --feat-type spectrogram \
+#      --feat-format kaldi_cmp \
+#      --nfft 320 \
+#      --windowsize 0.02 \
+#      --nj 18
+#  done
 
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
@@ -488,23 +486,22 @@ if [ $stage -le 73 ]; then
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
       --feat-type spectrogram \
       --train \
-      --input-per-spks 384 \
+      --input-per-spks 512 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --out-set dev_log
-    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/vox1/egs/spect/dev_log
-Process_Data/Compute_Feat/sort_scp.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/egs/spect/dev_log
+
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox1/spect/dev_log \
       --out-dir ${lstm_dir}/data/vox1/egs/spect \
       --feat-type spectrogram \
-      --input-per-spks 384 \
+      --input-per-spks 512 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --out-set valid_log
-    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/vox1/egs/spect/valid_log
+#    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/vox1/egs/spect/valid_log
   done
 
 fi
