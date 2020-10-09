@@ -241,7 +241,7 @@ if __name__ == "__main__":
             idx_queue.put(i)
 
         print('\n>> Plan to make egs for %d speakers with %d utterances in %s with %d jobs.\n' % (
-            train_dir.num_spks, num_utt, str(time.asctime()), nj))
+            train_dir.num_spks, len(num_utt), str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 2))  # 创建nj个进程
         for i in range(0, nj):
