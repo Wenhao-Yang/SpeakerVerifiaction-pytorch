@@ -165,6 +165,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         writer.close()
 
     new_feat_scp = os.path.join(out_dir, 'feat.%d.scp' % proid)
+    print(new_feat_scp)
     if args.feat_format == 'kaldi' and args.compress:
         new_feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
         compress_command = "copy-feats --compress=true scp:{} ark,scp:{},{}".format(feat_scp, new_feat_ark,
@@ -174,6 +175,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         if os.path.exists(new_feat_scp) and os.path.exists(new_feat_ark):
             os.remove(feat_ark)
     else:
+        print('Cp %s to %s' % (feat_scp, new_feat_scp))
         shutil.copy(feat_scp, new_feat_scp)
         # pass
     assert os.path.exists(new_feat_scp)
@@ -218,7 +220,7 @@ if __name__ == "__main__":
             orig_f = os.path.join(data_dir, f)
             targ_f = os.path.join(out_dir, f)
             if os.path.exists(orig_f):
-                os.system('Cp %s %s' % (orig_f, targ_f))
+                os.system('cp %s %s' % (orig_f, targ_f))
 
     start_time = time.time()
 
