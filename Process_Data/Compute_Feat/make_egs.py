@@ -80,9 +80,6 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                 pairs = (label, feature)
             # lock_t.acquire()
             t_queue.put(pairs)
-            # lock_t.release()
-            # print('\rProcess [%6s] There are [%6s] egs' \
-            #       ' left.' % (str(os.getpid()), str(idx_queue.qsize())), end='')
         else:
             lock_i.release()  # 释放锁
             # print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
@@ -98,11 +95,6 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     feat_scp = os.path.join(out_dir, 'feat.%d.temp.scp' % proid)
     feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
     feat_scp_f = open(feat_scp, 'w')
-
-    # utt2dur = os.path.join(out_dir, 'utt2dur.%d' % proid)
-    # utt2num_frames = os.path.join(out_dir, 'utt2num_frames.%d' % proid)
-    # utt2dur_f = open(utt2dur, 'w')
-    # utt2num_frames_f = open(utt2num_frames, 'w')
 
     if args.out_format == 'kaldi':
         feat_ark_f = open(feat_ark, 'wb')
@@ -157,7 +149,10 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             lock_t.release()
             time.sleep(5)
 
-    feat_scp_f.close()
+    try:
+        feat_scp_f.close()
+    except:
+        pass
 
     if args.feat_format == 'kaldi':
         feat_ark_f.close()
@@ -165,7 +160,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         writer.close()
 
     new_feat_scp = os.path.join(out_dir, 'feat.%d.scp' % proid)
-    print(new_feat_scp)
+    print('new feat.scp is : ', new_feat_scp)
     if args.feat_format == 'kaldi' and args.compress == True:
         new_feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
         compress_command = "copy-feats --compress=true scp:{} ark,scp:{},{}".format(feat_scp, new_feat_ark,
