@@ -166,7 +166,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
     new_feat_scp = os.path.join(out_dir, 'feat.%d.scp' % proid)
     print(new_feat_scp)
-    if args.feat_format == 'kaldi' and args.compress:
+    if args.feat_format == 'kaldi' and args.compress == True:
         new_feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
         compress_command = "copy-feats --compress=true scp:{} ark,scp:{},{}".format(feat_scp, new_feat_ark,
                                                                                     new_feat_scp)
