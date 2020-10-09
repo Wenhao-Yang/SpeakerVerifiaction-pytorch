@@ -3,7 +3,7 @@
 stage=50
 
 waited=0
-while [ `ps 27300 | wc -l` -eq 2 ]; do
+while [ `ps 8217 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -332,7 +332,7 @@ if [ $stage -le 50 ]; then
   datasets=vox1
   model=LoResNet
   resnet_size=8
-  for loss in soft ; do
+  for loss in soft arcsoft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -349,6 +349,7 @@ if [ $stage -le 50 ]; then
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 64,128,256 \
+      --batch-size 192 \
       --embedding-size 128 \
       --avg-size 4 \
       --num-center 2 \
@@ -384,6 +385,7 @@ if [ $stage -le 50 ]; then
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 64,128,256,512 \
+      --batch-size 192 \
       --embedding-size 128 \
       --avg-size 1 \
       --num-valid 2 \
