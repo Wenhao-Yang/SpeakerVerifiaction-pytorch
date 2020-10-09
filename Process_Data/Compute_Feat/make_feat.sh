@@ -197,6 +197,7 @@ if [ $stage -eq 7 ]; then
       --train \
       --input-per-spks 12 \
       --feat-format kaldi \
+      --out-format kaldi_cmp \
       --num-valid 1 \
       --out-set train_log
 #    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/train_log
@@ -207,6 +208,7 @@ if [ $stage -eq 7 ]; then
       --feat-type spectrogram \
       --input-per-spks 12 \
       --feat-format kaldi \
+      --out-format kaldi_cmp \
       --num-valid 1 \
       --out-set valid_log
 
