@@ -150,13 +150,16 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             time.sleep(5)
 
     try:
+        print('1')
         feat_scp_f.close()
     except:
         pass
-
+    print('2')
     if args.feat_format == 'kaldi':
         feat_ark_f.close()
+
     elif args.feat_format == 'kaldi_cmp':
+        print('2')
         writer.close()
 
     new_feat_scp = os.path.join(out_dir, 'feat.%d.scp' % proid)
