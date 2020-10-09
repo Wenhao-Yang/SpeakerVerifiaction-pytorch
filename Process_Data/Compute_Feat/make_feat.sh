@@ -199,7 +199,7 @@ if [ $stage -eq 7 ]; then
       --feat-format kaldi \
       --num-valid 1 \
       --out-set train_log
-    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/train_log
+#    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/train_log
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/timit/spect/train_log \
@@ -210,7 +210,7 @@ if [ $stage -eq 7 ]; then
       --num-valid 1 \
       --out-set valid_log
 
-    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/valid_log
+#    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/valid_log
   done
 fi
 

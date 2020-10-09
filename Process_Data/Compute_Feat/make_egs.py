@@ -231,9 +231,11 @@ if __name__ == "__main__":
 
     if args.train:
 
-        num_utt = len(train_dir)
+        num_utt = [i for i in range(len(train_dir))]
 
-        for i in tqdm(range(len(train_dir))):
+        random.seed(args.seed)
+        random.shuffle(num_utt)
+        for i in tqdm(num_utt):
             idx_queue.put(i)
 
         print('\n>> Plan to make egs for %d speakers with %d utterances in %s with %d jobs.\n' % (
