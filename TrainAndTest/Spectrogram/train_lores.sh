@@ -340,7 +340,7 @@ if [ $stage -le 50 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
-      --inst-norm \
+      --input-norm Mean \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 20 \
@@ -376,7 +376,7 @@ if [ $stage -le 50 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
-      --inst-norm \
+      --input-norm Mean \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 20 \

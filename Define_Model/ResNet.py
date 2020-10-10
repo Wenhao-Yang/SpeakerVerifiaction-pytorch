@@ -19,7 +19,7 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.FilterLayer import fDLR, GRL
+from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling
 
@@ -654,7 +654,7 @@ class LocalResNet(nn.Module):
 
     def __init__(self, embedding_size, num_classes, input_dim=161, block=BasicBlock,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
-                 inst_norm=False, alpha=12, stride=2, transform=False,
+                 input_norm=None, alpha=12, stride=2, transform=False,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(LocalResNet, self).__init__()
@@ -674,8 +674,13 @@ class LocalResNet(nn.Module):
         self.embedding_size = embedding_size
         # self.relu = nn.LeakyReLU()
         self.relu = nn.ReLU(inplace=True)
-        self.inst_norm = inst_norm
-        self.inst_layer = nn.InstanceNorm1d(input_dim)
+        self.input_norm = input_norm
+        if input_norm == 'Instance':
+            self.inst_layer = nn.InstanceNorm1d(input_dim)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        else:
+            self.inst_layer = None
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=stride, padding=padding)
@@ -712,6 +717,9 @@ class LocalResNet(nn.Module):
             nn.BatchNorm1d(embedding_size)
         )
 
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
         if self.transform:
             self.trans_layer = nn.Sequential(
                 nn.Linear(embedding_size, embedding_size, bias=False),
@@ -731,18 +739,6 @@ class LocalResNet(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def l2_norm(self, input):
-        # alpha = log(p * ( class -2) / (1-p))
-
-        input_size = input.size()
-        buffer = torch.pow(input, 2)
-        normp = torch.sum(buffer, 1).add_(1e-12)
-        norm = torch.sqrt(normp)
-        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
-        output = _output.view(input_size)
-
-        return output * self.alpha
-
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
@@ -760,11 +756,9 @@ class LocalResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        if self.inst_norm:
-            # x = x.squeeze(1).transpose(1, 2)
-            # x = self.inst_layer(x)
-            # x = x.transpose(1, 2).unsqueeze(1)
-            x = x - torch.mean(x, dim=-2, keepdim=True)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
 
         x = self.conv1(x)
         x = self.bn1(x)

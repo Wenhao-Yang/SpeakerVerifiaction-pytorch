@@ -80,3 +80,31 @@ class GRL(nn.Module):
 
     def forward(self, x):
         return grl_func.apply(x, self.lambda_)
+
+
+class Mean_Norm(nn.Module):
+    def __init__(self, dim=-2):
+        super(Mean_Norm, self).__init__()
+        self.dim = dim
+
+    def forward(self, x):
+        return x - torch.mean(x, dim=self.dim, keepdim=True)
+
+
+class L2_Norm(nn.Module):
+
+    def __init__(self, alpha):
+        super(L2_Norm, self).__init__()
+        self.alpha = alpha
+
+    def forward(self, input):
+        # alpha = log(p * ( class -2) / (1-p))
+
+        input_size = input.size()
+        buffer = torch.pow(input, 2)
+        normp = torch.sum(buffer, 1).add_(1e-12)
+        norm = torch.sqrt(normp)
+        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
+        output = _output.view(input_size)
+
+        return output * self.alpha

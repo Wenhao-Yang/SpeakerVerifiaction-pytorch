@@ -117,7 +117,8 @@ parser.add_argument('--transform', action='store_true', default=False,
 
 parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
 parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
-parser.add_argument('--inst-norm', action='store_true', default=False, help='replace batchnorm with instance norm')
+parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
+parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
 parser.add_argument('--encoder-type', type=str, default='SAP', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
@@ -309,10 +310,10 @@ def main():
     channels = [int(x) for x in channels]
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'filter': args.filter, 'inst_norm': args.inst_norm, 'stride': stride, 'fast': args.fast,
-                    'avg_size': args.avg_size, 'time_dim': args.time_dim, 'padding': padding,
-                    'encoder_type': args.encoder_type, 'vad': args.vad, 'transform': args.transform,
-                    'embedding_size': args.embedding_size, 'ince': args.inception,
+                    'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
+                    'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
+                    'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
+                    'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
 
@@ -364,9 +365,9 @@ def main():
 
     # Save model config txt
     with open(osp.join(args.check_path, 'model.%s.cfg' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
-        f.write(str(model))
-        f.write('CrossEntropy: ' + str(ce_criterion))
-        f.write('Other Loss: ' + str(xe_criterion))
+        f.write('model: ' + str(model) + '\n')
+        f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
+        f.write('Other Loss: ' + str(xe_criterion) + '\n')
 
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
