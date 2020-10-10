@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=73
+stage=7
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -191,21 +191,23 @@ if [ $stage -eq 7 ]; then
 #  done
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
+      --nj 12 \
       --data-dir ${lstm_dir}/data/timit/spect/train_log \
       --out-dir ${lstm_dir}/data/timit/egs/spect \
       --feat-type spectrogram \
       --train \
-      --input-per-spks 12 \
+      --input-per-spks 192 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 1 \
       --out-set train_log
 
     python Process_Data/Compute_Feat/make_egs.py \
+      --nj 12 \
       --data-dir ${lstm_dir}/data/timit/spect/train_log \
       --out-dir ${lstm_dir}/data/timit/egs/spect \
       --feat-type spectrogram \
-      --input-per-spks 12 \
+      --input-per-spks 192 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 1 \
@@ -215,7 +217,7 @@ if [ $stage -eq 7 ]; then
 fi
 
 
-#stage=2000
+stage=2000
 if [ $stage -le 8 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
@@ -506,7 +508,7 @@ if [ $stage -le 73 ]; then
 
 fi
 
-stage=1000
+#stage=1000
 
 if [ $stage -le 74 ]; then
   for s in test ; do
