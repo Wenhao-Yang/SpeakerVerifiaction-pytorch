@@ -349,7 +349,7 @@ if [ $stage -le 50 ]; then
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 64,128,256 \
-      --batch-size 128 \
+      --batch-size 192 \
       --embedding-size 128 \
       --avg-size 4 \
       --num-center 2 \
@@ -385,7 +385,7 @@ if [ $stage -le 50 ]; then
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
       --channels 64,128,256,512 \
-      --batch-size 128 \
+      --batch-size 192 \
       --embedding-size 128 \
       --avg-size 1 \
       --num-valid 2 \
