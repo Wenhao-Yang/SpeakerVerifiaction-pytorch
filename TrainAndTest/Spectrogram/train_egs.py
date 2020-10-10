@@ -224,7 +224,7 @@ if args.cuda:
 # Define visulaize SummaryWriter instance
 writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
 
-sys.stdout = NewLogger(osp.join(args.check_path, 'log.txt'))
+sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 if not os.path.exists(args.check_path):
@@ -363,7 +363,7 @@ def main():
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
         # Save model config txt
-        with open(osp.join(args.check_path, 'model.cfg'), 'w') as f:
+        with open(osp.join(args.check_path, 'model.%s.cfg' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
             f.write(str(model))
             f.write('CrossEntropy: ' + str(ce_criterion))
             f.write('Other Loss: ' + str(xe_criterion))
