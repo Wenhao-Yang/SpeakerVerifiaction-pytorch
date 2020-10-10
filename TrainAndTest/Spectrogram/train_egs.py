@@ -362,11 +362,11 @@ def main():
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
-        # Save model config txt
-        with open(osp.join(args.check_path, 'model.%s.cfg' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
-            f.write(str(model))
-            f.write('CrossEntropy: ' + str(ce_criterion))
-            f.write('Other Loss: ' + str(xe_criterion))
+    # Save model config txt
+    with open(osp.join(args.check_path, 'model.%s.cfg' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
+        f.write(str(model))
+        f.write('CrossEntropy: ' + str(ce_criterion))
+        f.write('Other Loss: ' + str(xe_criterion))
 
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
