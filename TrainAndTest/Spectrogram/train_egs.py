@@ -195,7 +195,7 @@ parser.add_argument('--gpu-id', default='0', type=str,
                     help='id(s) for CUDA_VISIBLE_DEVICES')
 parser.add_argument('--seed', type=int, default=123456, metavar='S',
                     help='random seed (default: 0)')
-parser.add_argument('--log-interval', type=int, default=1, metavar='LI',
+parser.add_argument('--log-interval', type=int, default=10, metavar='LI',
                     help='how many batches to wait before logging training status')
 
 parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
@@ -361,6 +361,13 @@ def main():
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
+
+        # Save model config txt
+        with open(osp.join(args.check_path, 'model.cfg'), 'w') as f:
+            f.write(str(model))
+            f.write('CrossEntropy: ' + str(ce_criterion))
+            f.write('Other Loss: ' + str(xe_criterion))
+
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
     if args.loss_type == 'center' or args.loss_type == 'mulcenter':
