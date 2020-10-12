@@ -943,6 +943,7 @@ if [ $stage -le 200 ]; then
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
       --out-set ${name}_soft_new \
       --feat-type fbank \
+      --feat-format kaldi_cmp \
       --filter-type dnn.timit.soft \
       --log-scale \
       --nfft 320 \
