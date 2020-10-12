@@ -511,19 +511,33 @@ fi
 #stage=1000
 
 if [ $stage -le 74 ]; then
-  for s in test ; do
+  for s in dev test ; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s} \
-      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb \
-      --out-set ${s}_fb64 \
+      --data-dir ${lstm_dir}/data/vox1/${s} \
+      --out-dir ${lstm_dir}/data/vox1/pydb \
+      --out-set ${s}_fb24_mel \
+      --filter-type mel \
       --feat-type fbank \
-      --filters 64 \
+      --filters 23 \
       --log-scale \
-      --feat-format kaldi \
-      --nfft 512 \
-      --windowsize 0.025 \
+      --feat-format kaldi_cmp \
+      --nfft 320 \
+      --windowsize 0.02 \
       --nj 12
-    done
+
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/vox1/${s} \
+      --out-dir ${lstm_dir}/data/vox1/pydb \
+      --out-set ${s}_fb24_soft_new \
+      --filter-type dnn.vox1.soft \
+      --feat-type fbank \
+      --filters 23 \
+      --log-scale \
+      --feat-format kaldi_cmp \
+      --nfft 320 \
+      --windowsize 0.02 \
+      --nj 12
+  done
 fi
 
 #stage=100
