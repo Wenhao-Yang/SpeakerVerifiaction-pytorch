@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=74
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -540,7 +540,7 @@ if [ $stage -le 74 ]; then
   done
 fi
 
-#stage=100
+stage=1000
 
 if [ $stage -le 75 ]; then
   for s in test ; do
