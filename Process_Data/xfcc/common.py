@@ -116,25 +116,30 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
         bin = []
         bin.append(lowfreq_idx[0])
 
-        for j in range(nfilt):
+        for j in range(nfilt - 1):
             num_wei = 0.
             for i in range(nfft // 2 + 1):
                 num_wei += weight[i]
-                if num_wei > (j + 1) / (nfilt + 1):
-                    bin.append(i - 1)
+                if num_wei > j / (nfilt - 1):
+                    bin.append(min(max(i - 1, 0), nfft // 2))
                     break
                 else:
                     continue
 
         bin.append(highfreq_idx[-1])
-
+        bin.append(highfreq_idx[-1] + 1)
+        # print(bin)
     fbank = np.zeros([nfilt, nfft // 2 + 1])
     for j in range(0, nfilt):
         for i in range(int(bin[j]), int(bin[j + 1])):
             fbank[j, i] = (i - bin[j]) / (bin[j + 1] - bin[j])
 
         for i in range(int(bin[j + 1]), int(bin[j + 2])):
-            fbank[j, i] = (bin[j + 2] - i) / (bin[j + 2] - bin[j + 1])
+            if (bin[j + 2] - bin[j + 1]) == 0:
+                print(bin[j + 2], i)
+                fbank[j, i] = (bin[j + 2] - i) / (bin[j + 2] - i)
+            else:
+                fbank[j, i] = (bin[j + 2] - i) / (bin[j + 2] - bin[j + 1])
 
     if multi_weight:
         y = np.array(c.TIMIT_FIlTER_VAR)
