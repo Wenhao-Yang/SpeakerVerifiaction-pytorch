@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=210
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -959,6 +959,35 @@ if [ $stage -le 200 ]; then
       --feat-type fbank \
       --feat-format kaldi_cmp \
       --filter-type linear \
+      --log-scale \
+      --nfft 320 \
+      --windowsize 0.02 \
+       --filters 23
+  done
+
+#    for name in train test ; do
+#    python Process_Data/Compute_Feat/make_feat.py \
+#      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
+#      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
+#      --out-set ${name}_arcsoft \
+#      --feat-type fbank \
+#      --filter-type dnn.timit.arcsoft \
+#      --log-scale \
+#      --nfft 320 \
+#      --windowsize 0.02 \
+#       --filters 23
+#  done
+fi
+
+if [ $stage -le 210 ]; then
+  for name in dev_2w ; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/${name} \
+      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pyfb \
+      --out-set ${name}_2w_mel \
+      --feat-type fbank \
+      --feat-format kaldi_cmp \
+      --filter-type mel \
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \
