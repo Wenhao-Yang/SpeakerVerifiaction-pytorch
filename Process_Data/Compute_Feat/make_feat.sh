@@ -981,7 +981,7 @@ fi
 
 #stage=10000
 if [ $stage -le 210 ]; then
-  for name in dev_2w ; do
+  for name in test ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pyfb \
