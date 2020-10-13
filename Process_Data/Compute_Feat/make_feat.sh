@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 
-stage=152
+stage=74
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+
+waited=0
+while [ `ps 13153 | wc -l` -eq 2 ]; do
+  sleep 60
+  waited=$(expr $waited + 1)
+  echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
+done
+
 if [ $stage -le 0 ]; then
   for name in dev test ; do
 #    python Process_Data/Compute_Feat/make_feat.py \
@@ -540,7 +548,7 @@ if [ $stage -le 74 ]; then
   done
 fi
 
-#stage=1000
+stage=1000
 
 if [ $stage -le 75 ]; then
   for s in test ; do
