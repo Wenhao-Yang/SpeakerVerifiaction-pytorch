@@ -955,10 +955,10 @@ if [ $stage -le 200 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
-      --out-set ${name}_fratio \
+      --out-set ${name}_fratio_log \
       --feat-type fbank \
       --feat-format kaldi_cmp \
-      --filter-type dnn.timit.fratio \
+      --filter-type dnn.timit.fratio.log \
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \
