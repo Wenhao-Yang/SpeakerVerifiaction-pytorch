@@ -957,6 +957,7 @@ if [ $stage -le 152 ]; then
       --data-dir ${lstm_dir}/data/vox2/${name} \
       --out-dir ${lstm_dir}/data/vox2/spect \
       --out-set ${name}_log \
+      --log-scale \
       --feat-type spectrogram \
       --nfft 320 \
       --windowsize 0.02 \
