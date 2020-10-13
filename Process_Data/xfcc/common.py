@@ -91,6 +91,10 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
             y = np.array(c.TIMIT_FIlTER_SOFT)
         elif filtertype.endswith('timit.arcsoft'):
             y = np.array(c.TIMIT_FIlTER_ARCSOFT)
+        elif filtertype.endswith('timit.fratio'):
+            y = np.array(c.TIMIT_FIlTER_FRATIO)
+        elif filtertype.endswith('timit.fratio.log'):
+            y = np.array(c.TIMIT_FIlTER_FRATIO_LOG)
 
         elif filtertype.endswith('libri.fix'):
             y = np.array(c.LIBRI_FILTER_FIX)
