@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=210
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -979,7 +979,7 @@ if [ $stage -le 200 ]; then
 #  done
 fi
 
-stage=10000
+#stage=10000
 if [ $stage -le 210 ]; then
   for name in dev_2w ; do
     python Process_Data/Compute_Feat/make_feat.py \
@@ -992,7 +992,7 @@ if [ $stage -le 210 ]; then
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \
-       --filters 23
+       --filters 24
   done
 
 #    for name in train test ; do
