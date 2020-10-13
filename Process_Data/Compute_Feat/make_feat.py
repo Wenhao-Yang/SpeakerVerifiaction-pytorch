@@ -37,6 +37,8 @@ parser.add_argument('--out-dir', type=str, required=True, help='number of jobs t
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--feat-format', type=str, required=True, choices=['kaldi', 'npy', 'kaldi_cmp'],
                     help='number of jobs to make feats (default: 10)')
+parser.add_argument('--out-format', type=str, required=True, choices=['kaldi', 'npy', 'kaldi_cmp'],
+                    help='number of jobs to make feats (default: 10)')
 parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
                     help='number of jobs to make feats (default: 10)')
 
@@ -81,10 +83,10 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
     if not os.path.exists(feat_dir):
         os.makedirs(feat_dir)
 
-    if args.feat_format == 'kaldi':
+    if args.out_format == 'kaldi':
         feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
         feat_ark_f = open(feat_ark, 'wb')
-    elif args.feat_format == 'kaldi_cmp':
+    elif args.out_format == 'kaldi_cmp':
         feat_scp_f.close()  # kaldiio
         feat_ark = os.path.join(out_dir, '%s_feat.%d.ark' % (ark_prefix, proid))
         writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp), compression_method=1)
@@ -183,9 +185,9 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
     except:
         pass
 
-    if args.feat_format == 'kaldi':
+    if args.out_format == 'kaldi':
         feat_ark_f.close()
-    elif args.feat_format == 'kaldi_cmp':
+    elif args.out_format == 'kaldi_cmp':
         writer.close()
 
     utt2num_frames_f.close()
