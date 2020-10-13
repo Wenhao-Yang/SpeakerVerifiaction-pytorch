@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=210
+stage=152
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -950,6 +950,50 @@ if [ $stage -le 151 ]; then
   done
 fi
 
+if [ $stage -le 152 ]; then
+#enroll
+  for name in dev ; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/vox2/${name} \
+      --out-dir ${lstm_dir}/data/vox2/spect \
+      --out-set ${name}_log \
+      --feat-type spectrogram \
+      --nfft 320 \
+      --windowsize 0.02 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --nj 18
+  done
+fi
+
+
+if [ $stage -le 153 ]; then
+  for s in dev ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox2/spect/dev_log \
+      --out-dir ${lstm_dir}/data/vox2/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 192 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --out-set dev_log
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox2/spect/dev_log \
+      --out-dir ${lstm_dir}/data/vox2/egs/spect \
+      --feat-type spectrogram \
+      --input-per-spks 192 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --out-set valid_log
+
+  done
+fi
+
+stage=10000
 if [ $stage -le 200 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat.py \
