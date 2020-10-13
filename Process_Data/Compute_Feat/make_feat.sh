@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=74
+stage=200
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
@@ -540,7 +540,7 @@ if [ $stage -le 74 ]; then
   done
 fi
 
-stage=1000
+#stage=1000
 
 if [ $stage -le 75 ]; then
   for s in test ; do
@@ -955,10 +955,10 @@ if [ $stage -le 200 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
-      --out-set ${name}_soft_new \
+      --out-set ${name}_linear_new \
       --feat-type fbank \
       --feat-format kaldi_cmp \
-      --filter-type dnn.timit.soft \
+      --filter-type linear \
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \
