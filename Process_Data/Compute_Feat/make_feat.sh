@@ -960,8 +960,7 @@ if [ $stage -le 152 ]; then
       --feat-type spectrogram \
       --nfft 320 \
       --windowsize 0.02 \
-      --feat-format kaldi \
-      --out-format kaldi_cmp \
+      --feat-format kaldi_cmp \
       --nj 18
   done
 fi
