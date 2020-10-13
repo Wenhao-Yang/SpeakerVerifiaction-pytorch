@@ -985,7 +985,7 @@ if [ $stage -le 210 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pyfb \
-      --out-set ${name}_mel \
+      --out-set ${name}_mel_fb25 \
       --feat-type fbank \
       --feat-format kaldi_cmp \
       --filter-type mel \
