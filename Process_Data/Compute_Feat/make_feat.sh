@@ -522,7 +522,7 @@ if [ $stage -le 74 ]; then
   for s in dev test ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/vox1/${s} \
-      --out-dir ${lstm_dir}/data/vox1/pydb \
+      --out-dir ${lstm_dir}/data/vox1/pyfb \
       --out-set ${s}_fb24_mel \
       --filter-type mel \
       --feat-type fbank \
@@ -535,7 +535,7 @@ if [ $stage -le 74 ]; then
 
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/vox1/${s} \
-      --out-dir ${lstm_dir}/data/vox1/pydb \
+      --out-dir ${lstm_dir}/data/vox1/pyfb \
       --out-set ${s}_fb24_soft_new \
       --filter-type dnn.vox1.soft \
       --feat-type fbank \
