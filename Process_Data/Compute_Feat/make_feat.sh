@@ -523,28 +523,27 @@ if [ $stage -le 74 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/vox1/${s} \
       --out-dir ${lstm_dir}/data/vox1/pyfb \
-      --out-set ${s}_fb24_mel \
+      --out-set ${s}_fb64 \
       --filter-type mel \
       --feat-type fbank \
-      --filters 23 \
+      --filters 64 \
       --log-scale \
       --feat-format kaldi_cmp \
-      --nfft 320 \
-      --windowsize 0.02 \
+      --nfft 512 \
+      --windowsize 0.025 \
       --nj 12
-
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir ${lstm_dir}/data/vox1/${s} \
-      --out-dir ${lstm_dir}/data/vox1/pyfb \
-      --out-set ${s}_fb24_soft_new \
-      --filter-type dnn.vox1.soft \
-      --feat-type fbank \
-      --filters 23 \
-      --log-scale \
-      --feat-format kaldi_cmp \
-      --nfft 320 \
-      --windowsize 0.02 \
-      --nj 12
+#    python Process_Data/Compute_Feat/make_feat.py \
+#      --data-dir ${lstm_dir}/data/vox1/${s} \
+#      --out-dir ${lstm_dir}/data/vox1/pyfb \
+#      --out-set ${s}_fb24_soft_new \
+#      --filter-type dnn.vox1.soft \
+#      --feat-type fbank \
+#      --filters 23 \
+#      --log-scale \
+#      --feat-format kaldi_cmp \
+#      --nfft 320 \
+#      --windowsize 0.02 \
+#      --nj 12
   done
 fi
 
