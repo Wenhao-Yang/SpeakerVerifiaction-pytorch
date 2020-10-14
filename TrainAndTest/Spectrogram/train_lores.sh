@@ -735,13 +735,13 @@ if [ $stage -le 80 ]; then
   datasets=vox2
   model=LoResNet
   resnet_size=8
-  for loss in soft arcsoft ; do
-    echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
+  for loss in soft ; do
+    echo -e "\n\033[1;4;31m Training ${model} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
       --input-norm Mean \
       --resnet-size ${resnet_size} \
