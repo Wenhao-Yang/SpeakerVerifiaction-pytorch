@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=80
 
 waited=0
 while [ `ps 8217 | wc -l` -eq 2 ]; do
@@ -656,7 +656,7 @@ if [ $stage -le 61 ]; then
   done
 fi
 
-stage=100
+#stage=100
 if [ $stage -le 62 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
@@ -728,4 +728,45 @@ if [ $stage -le 62 ]; then
 #      --cos-sim \
 #      --extract \
 #      --loss-type soft
+fi
+
+if [ $stage -le 80 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=vox2
+  model=LoResNet
+  resnet_size=8
+  for loss in soft arcsoft ; do
+    echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
+    python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --resnet-size ${resnet_size} \
+      --nj 10 \
+      --epochs 20 \
+      --lr 0.1 \
+      --milestones 5,10,15 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
+      --channels 64,128,256 \
+      --batch-size 256 \
+      --embedding-size 128 \
+      --avg-size 4 \
+      --num-center 2 \
+      --num-valid 2 \
+      --alpha 12 \
+      --margin 0.3 \
+      --s 15 \
+      --m 3 \
+      --loss-ratio 0.01 \
+      --weight-decay 0.001 \
+      --dropout-p 0.25 \
+      --gpu-id 0 \
+      --extract \
+      --cos-sim \
+      --loss-type ${loss}
+  done
 fi
