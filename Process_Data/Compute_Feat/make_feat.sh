@@ -547,6 +547,34 @@ if [ $stage -le 74 ]; then
   done
 fi
 
+
+if [ $stage -le 74 ]; then
+  for s in dev ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_fb64 \
+      --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
+      --feat-type fbank \
+      --train \
+      --input-per-spks 384 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --remove-vad \
+      --num-valid 2 \
+      --out-set dev_fb64
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_fb64 \
+      --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
+      --input-per-spks 384 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --remove-vad \
+      --num-valid 2 \
+      --feat-type fbank \
+      --out-set valid_fb64
+  done
+fi
+
 stage=1000
 
 if [ $stage -le 75 ]; then
