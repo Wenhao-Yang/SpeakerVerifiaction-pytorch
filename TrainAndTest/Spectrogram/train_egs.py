@@ -108,7 +108,7 @@ parser.add_argument('--veri-pairs', type=int, default=20000, metavar='VP',
 
 # Training options
 # Model options
-parser.add_argument('--model', type=str, default='GradResNet', help='path to voxceleb1 test dataset')
+parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--filter', action='store_true', default=False, help='replace batchnorm with instance norm')

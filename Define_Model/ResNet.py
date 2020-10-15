@@ -159,15 +159,13 @@ class SimpleResNet(nn.Module):
 # Analysis of Length Normalization in End-to-End Speaker Verification System
 # https://arxiv.org/abs/1806.03209
 
-class ExporingResNet(nn.Module):
+class ThinResNet(nn.Module):
 
     def __init__(self, resnet_size=34, block=BasicBlock, inst_norm=True, kernel_size=5, stride=1, padding=2,
-                 feat_dim=64,
-                 num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4, alpha=12, encoder_type='SAP',
-                 zero_init_residual=False, groups=1, width_per_group=64, input_dim=257, sr=16000, filter=True,
-                 replace_stride_with_dilation=None,
-                 norm_layer=None, **kwargs):
-        super(ExporingResNet, self).__init__()
+                 feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4,
+                 alpha=12, encoder_type='SAP', zero_init_residual=False, groups=1, width_per_group=64,
+                 input_dim=257, sr=16000, filter=False, replace_stride_with_dilation=None, norm_layer=None, **kwargs):
+        super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
                        18: [2, 2, 2, 2],
@@ -176,14 +174,11 @@ class ExporingResNet(nn.Module):
                        101: [3, 4, 23, 3]}
 
         layers = resnet_type[resnet_size]
-
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
-
+        freq_dim = avg_size  # default 1
+        time_dim = time_dim  # default 4
         self.inst_norm = inst_norm
         self.filter = filter
-
-        self._norm_layer = norm_layer
+        self._norm_layer = nn.BatchNorm2d
 
         self.embedding_size = embedding_size
         self.inplanes = 16
@@ -201,29 +196,23 @@ class ExporingResNet(nn.Module):
         self.groups = groups
         self.base_width = width_per_group
 
-        self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
+        if self.filter:
+            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
 
         self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
         self.bn1 = norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
         if self.fast:
-            self.maxpool = nn.Sequential(nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0)),
-                                         nn.AvgPool2d(kernel_size=(1, 3), stride=(1, 2), padding=(0, 1))
-                                         )
+            self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
 
         self.layer1 = self._make_layer(block, num_filter[0], layers[0])
         self.layer2 = self._make_layer(block, num_filter[1], layers[1], stride=2)
         self.layer3 = self._make_layer(block, num_filter[2], layers[2], stride=2)
-
+        self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=2)
         if self.fast:
             self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=1)
-        else:
-            self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=2)
 
         # [64, 128, 37, 8]
-        freq_dim = avg_size  # default 1
-        time_dim = time_dim  # default 4
-
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
         # 300 is the length of features
 
@@ -264,6 +253,9 @@ class ExporingResNet(nn.Module):
             )
 
         self.alpha = alpha
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
         self.classifier = nn.Linear(embedding_size, num_classes)
 
         for m in self.modules():
@@ -345,10 +337,12 @@ class ExporingResNet(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
 
-        feat = self.l2_norm(x)
-        x = self.classifier(feat)
+        if self.alpha:
+            x = self.l2_norm(x)
 
-        return x, feat
+        logits = self.classifier(x)
+
+        return logits, x
 
     # Allow for accessing forward method in a inherited class
     forward = _forward
