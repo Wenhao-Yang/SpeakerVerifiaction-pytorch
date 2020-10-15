@@ -199,7 +199,7 @@ class ThinResNet(nn.Module):
         if self.filter:
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
 
-        self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
+        self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
         if self.fast:
@@ -275,21 +275,6 @@ class ThinResNet(nn.Module):
                     nn.init.constant(m.bn3.weight, 0)
                 elif isinstance(m, BasicBlock):
                     nn.init.constant(m.bn2.weight, 0)
-
-    def l2_norm(self, input):
-        if self.alpha > 0:
-            input_size = input.size()
-            buffer = torch.pow(input, 2)
-
-            normp = torch.sum(buffer, 1).add_(1e-12)
-            norm = torch.sqrt(normp)
-
-            _output = torch.div(input, norm.view(-1, 1).expand_as(input))
-            output = _output.view(input_size)
-
-            return output * self.alpha
-        else:
-            return input
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
