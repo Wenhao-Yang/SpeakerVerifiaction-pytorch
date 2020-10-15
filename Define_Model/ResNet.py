@@ -200,7 +200,7 @@ class ThinResNet(nn.Module):
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
 
         self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
-        self.bn1 = norm_layer(num_filter[0])
+        self.bn1 = self._norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
         if self.fast:
             self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
