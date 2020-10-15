@@ -523,10 +523,10 @@ if [ $stage -le 74 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/vox1/${s} \
       --out-dir ${lstm_dir}/data/vox1/pyfb \
-      --out-set ${s}_fb64 \
+      --out-set ${s}_fb40 \
       --filter-type mel \
       --feat-type fbank \
-      --filters 64 \
+      --filters 40 \
       --log-scale \
       --feat-format kaldi_cmp \
       --nfft 512 \
@@ -551,7 +551,7 @@ fi
 if [ $stage -le 74 ]; then
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_fb64 \
+      --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_fb40 \
       --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
       --feat-type fbank \
       --train \
@@ -560,10 +560,10 @@ if [ $stage -le 74 ]; then
       --out-format kaldi_cmp \
       --remove-vad \
       --num-valid 2 \
-      --out-set dev_fb64
+      --out-set dev_fb40
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_fb64 \
+      --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_fb40 \
       --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
       --input-per-spks 384 \
       --feat-format kaldi \
@@ -571,7 +571,7 @@ if [ $stage -le 74 ]; then
       --remove-vad \
       --num-valid 2 \
       --feat-type fbank \
-      --out-set valid_fb64
+      --out-set valid_fb40
   done
 fi
 
