@@ -267,7 +267,8 @@ if [ $stage -le 40 ]; then
       --veri-pairs 9600 \
       --gpu-id 0 \
       --num-valid 2 \
-      --loss-type soft
+      --loss-type soft \
+      --remove-vad \
 
   done
 fi
