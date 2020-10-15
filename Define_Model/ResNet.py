@@ -164,7 +164,8 @@ class ThinResNet(nn.Module):
     def __init__(self, resnet_size=34, block=BasicBlock, inst_norm=True, kernel_size=5, stride=1, padding=2,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4,
                  alpha=12, encoder_type='SAP', zero_init_residual=False, groups=1, width_per_group=64,
-                 input_dim=257, sr=16000, filter=False, replace_stride_with_dilation=None, norm_layer=None, **kwargs):
+                 input_dim=257, sr=16000, filter=False, replace_stride_with_dilation=None, norm_layer=None,
+                 input_norm='', **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
@@ -198,6 +199,13 @@ class ThinResNet(nn.Module):
 
         if self.filter:
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
+        self.input_norm = input_norm
+        if input_norm == 'Instance':
+            self.inst_layer = nn.InstanceNorm1d(input_dim)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        else:
+            self.inst_layer = None
 
         self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(num_filter[0])
@@ -299,8 +307,8 @@ class ThinResNet(nn.Module):
             x = self.filter_layer(x)
             x = torch.log(x)
 
-        if self.inst_norm:
-            x = x - torch.mean(x, dim=-2, keepdim=True)
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
