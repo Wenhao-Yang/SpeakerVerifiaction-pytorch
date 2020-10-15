@@ -77,7 +77,7 @@ parser.add_argument('--sitw-dir', type=str,
                     default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--extract', action='store_true', default=False, help='need to make mfb file')
+parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
@@ -425,26 +425,26 @@ def main():
         except:
             pass
 
-    for epoch in range(start, end):
-        # pdb.set_trace()
-        print('\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer), end='')
-        for param_group in optimizer.param_groups:
-            print('{:.5f} '.format(param_group['lr']), end='')
-        print(' \33[0m')
-
-        train(train_loader, model, ce, optimizer, epoch)
-        if epoch % 4 == 1 or epoch == (end - 1):
-            check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-            torch.save({'epoch': epoch,
-                        'state_dict': model.state_dict(),
-                        'criterion': ce},
-                       check_path)
-
-        if epoch % 2 == 1 and epoch != (end - 1):
-            test(test_loader, valid_loader, model, epoch)
-        # sitw_test(sitw_test_loader, model, epoch)
-        # sitw_test(sitw_dev_loader, model, epoch)
-        scheduler.step()
+    # for epoch in range(start, end):
+    #     # pdb.set_trace()
+    #     print('\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer), end='')
+    #     for param_group in optimizer.param_groups:
+    #         print('{:.5f} '.format(param_group['lr']), end='')
+    #     print(' \33[0m')
+    #
+    #     train(train_loader, model, ce, optimizer, epoch)
+    #     if epoch % 4 == 1 or epoch == (end - 1):
+    #         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
+    #         torch.save({'epoch': epoch,
+    #                     'state_dict': model.state_dict(),
+    #                     'criterion': ce},
+    #                    check_path)
+    #
+    #     if epoch % 2 == 1 and epoch != (end - 1):
+    #         test(test_loader, valid_loader, model, epoch)
+    #     # sitw_test(sitw_test_loader, model, epoch)
+    #     # sitw_test(sitw_dev_loader, model, epoch)
+    #     scheduler.step()
 
         # exit(1)
     xvector_dir = args.check_path

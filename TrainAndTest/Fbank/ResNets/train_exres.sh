@@ -261,7 +261,7 @@ if [ $stage -le 40 ]; then
       --lr 0.1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}/checkpoint_100.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}/checkpoint_22.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
