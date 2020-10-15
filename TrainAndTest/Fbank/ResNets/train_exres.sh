@@ -238,7 +238,7 @@ if [ $stage -le 40 ]; then
   feat=fb64
   loss=soft
 
-  for encod in STAP ; do
+  for encod in None ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
@@ -268,6 +268,7 @@ if [ $stage -le 40 ]; then
       --gpu-id 0 \
       --num-valid 2 \
       --loss-type soft \
-      --remove-vad \
+      --remove-vad
+
   done
 fi
