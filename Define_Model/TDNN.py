@@ -12,7 +12,7 @@
 fork from:
 https://github.com/jonasvdd/TDNN/blob/master/tdnn.py
 """
-from Define_Model.FilterLayer import L2_Norm
+from Define_Model.FilterLayer import L2_Norm, Mean_Norm
 
 __author__ = 'Jonas Van Der Donckt'
 import math
@@ -22,7 +22,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from Define_Model.Pooling import AttentionStatisticPooling
+from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
 
 """Time Delay Neural Network as mentioned in the 1989 paper by Waibel et al. (Hinton) and the 2015 paper by Peddinti et al. (Povey)"""
 class TimeDelayLayer_v1(nn.Module):
@@ -328,19 +328,33 @@ class TDNN_v1(nn.Module):
 
 
 class TDNN_v2(nn.Module):
-    def __init__(self, num_classes, embedding_size, input_dim, alpha=0.,
-                 dropout_p=0.0, **kwargs):
+    def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
+                 dropout_p=0.0, encoder_type='STAP', **kwargs):
         super(TDNN_v2, self).__init__()
         self.num_classes = num_classes
         self.dropout_p = dropout_p
         self.input_dim = input_dim
         self.alpha = alpha
 
+        if input_norm == 'Instance':
+            self.inst_layer = nn.InstanceNorm1d(input_dim)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        else:
+            self.inst_layer = None
+
         self.frame1 = TimeDelayLayer_v2(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
         self.frame2 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=2)
         self.frame3 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=3)
         self.frame4 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1)
         self.frame5 = TimeDelayLayer_v2(input_dim=512, output_dim=1500, context_size=1, dilation=1)
+
+        if encoder_type == 'STAP':
+            self.encoder = StatisticPooling(input_dim=1500)
+        elif encoder_type == 'SASP':
+            self.encoder = AttentionStatisticPooling(input_dim=1500, hidden_dim=512)
+        else:
+            raise ValueError(encoder_type)
 
         self.segment6 = nn.Sequential(
             nn.Linear(3000, 512),
@@ -353,7 +367,7 @@ class TDNN_v2(nn.Module):
             nn.ReLU(),
             nn.BatchNorm1d(embedding_size)
         )
-        self.alpha = alpha
+
         if self.alpha:
             self.l2_norm = L2_Norm(self.alpha)
 
@@ -369,12 +383,6 @@ class TDNN_v2(nn.Module):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
                 nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
 
-    def statistic_pooling(self, x):
-        mean_x = x.mean(dim=1)
-        std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
-        mean_std = torch.cat((mean_x, std_x), 1)
-        return mean_std
-
     def set_global_dropout(self, dropout_p):
         self.dropout_p = dropout_p
         self.drop.p = dropout_p
@@ -382,6 +390,8 @@ class TDNN_v2(nn.Module):
     def forward(self, x):
         # pdb.set_trace()
         x = x.squeeze(1).float()
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
         x = self.frame1(x)
         x = self.frame2(x)
         x = self.frame3(x)
@@ -392,7 +402,7 @@ class TDNN_v2(nn.Module):
             x = self.drop(x)
 
         # print(x.shape)
-        x = self.statistic_pooling(x)
+        x = self.encoder(x)
 
         x = self.segment6(x)
         embedding_b = self.segment7(x)
