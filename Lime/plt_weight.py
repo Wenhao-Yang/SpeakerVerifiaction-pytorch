@@ -23,8 +23,13 @@ timit_soft = get_filterbanks(nfilt=23, nfft=320, samplerate=16000, lowfreq=0,
 mel = get_filterbanks(nfilt=23, nfft=320, samplerate=16000, lowfreq=0,
                       highfreq=None, filtertype='mel', multi_weight=False)
 
-tim_so = np.array(c.TIMIT_FIlTER_SOFT)
-tim_fr = np.load('Lime/Analysis/fratio/timit/fratio_1500.npy')
+vox1_so = np.array(c.VOX_FILTER_SOFT)
+
+vox1_res20 = np.load('Lime/ResNet20/soft_wcmvn/epoch_24/grad.veri.npy')
+x_257 = np.linspace(0, 8000, 257)
+
+vox1_thi = np.load('Lime/ExResNet34/vox1/soft_wcmvn_l/grad.veri.npy')
+
 
 tim_fr = gassuan_weight(tim_fr)
 tim_fr = tim_fr / tim_fr.sum()

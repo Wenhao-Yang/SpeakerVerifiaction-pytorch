@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=15
+stage=40
 waited=0
 while [ `ps 103374 | wc -l` -eq 2 ]; do
   sleep 60
@@ -149,7 +149,7 @@ if [ $stage -le 15 ]; then
   done
 fi
 
-stage=100
+#stage=100
 if [ $stage -le 16 ]; then
   model=ETDNN
   feat=fb80
@@ -178,5 +178,45 @@ if [ $stage -le 16 ]; then
       --gpu-id 1 \
       --veri-pairs 9600 \
       --lr 0.001
+  done
+fi
+
+if [ $stage -le 40 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  model=TDNN
+  resnet_size=34
+  datasets=vox1
+  feat=fb40
+  loss=soft
+
+  for encod in STAP ; do
+    echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
+      --valid-dir ${lstm_dir}/data/vox1/egs/pyfb/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/pyfb/test_${feat} \
+      --nj 10 \
+      --epochs 20 \
+      --milestones 10,15 \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --alpha 0 \
+      --feat-format kaldi \
+      --embedding-size 128 \
+      --batch-size 128 \
+      --accu-steps 1 \
+      --input-dim 40 \
+      --lr 0.1 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat}_${encod}/${loss} \
+      --resume Data/checkpoint/${model/${datasets}/${feat}_${encod}/${loss}/checkpoint_22.pth \
+      --input-per-spks 384 \
+      --cos-sim \
+      --veri-pairs 9600 \
+      --gpu-id 0 \
+      --num-valid 2 \
+      --loss-type soft \
+      --remove-vad
+
   done
 fi

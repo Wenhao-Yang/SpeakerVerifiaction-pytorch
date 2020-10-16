@@ -12,6 +12,7 @@
 fork from:
 https://github.com/jonasvdd/TDNN/blob/master/tdnn.py
 """
+from Define_Model.FilterLayer import L2_Norm
 
 __author__ = 'Jonas Van Der Donckt'
 import math
@@ -352,6 +353,10 @@ class TDNN_v2(nn.Module):
             nn.ReLU(),
             nn.BatchNorm1d(embedding_size)
         )
+        self.alpha = alpha
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
         self.classifier = nn.Linear(embedding_size, num_classes)
         # self.bn = nn.BatchNorm1d(num_classes)
         self.drop = nn.Dropout(p=self.dropout_p)
@@ -363,18 +368,6 @@ class TDNN_v2(nn.Module):
             elif isinstance(m, TimeDelayLayer_v2):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
                 nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
-
-    def l2_norm(self, input, alpha=1.0):
-        input_size = input.size()
-        buffer = torch.pow(input, 2)
-
-        normp = torch.sum(buffer, 1).add_(1e-12)
-        norm = torch.sqrt(normp)
-
-        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
-        output = _output.view(input_size)
-
-        return output * alpha
 
     def statistic_pooling(self, x):
         mean_x = x.mean(dim=1)
@@ -405,7 +398,7 @@ class TDNN_v2(nn.Module):
         embedding_b = self.segment7(x)
 
         if self.alpha:
-            embedding_b = self.l2_norm(embedding_b, self.alpha)
+            embedding_b = self.l2_norm(embedding_b)
 
         logits = self.classifier(embedding_b)
         # logits = self.out_act(x)

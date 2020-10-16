@@ -44,27 +44,30 @@ ynew = ynew / ynew.sum()
 pdf = PdfPages('Lime/LoResNet8/timit/soft/grad_filter.pdf')
 plt.rc('font', family='Times New Roman')
 
-fig = plt.figure(tight_layout=True)
+fig = plt.figure(figsize=(9, 7), tight_layout=True)
 gs = gridspec.GridSpec(4, 1)
 ax = fig.add_subplot(gs[0:2, 0])
+from pylab import *
 
+style.use('grayscale')
 # ax.set_title('Resolution')
 ax.plot(xnew, ynew)
 ax.plot(x, tim_fr)
 ax.plot(x, tim_so)
-ax.legend(['Mel Scale', 'F-ratio', 'NN Gradient'])
-ax.set_ylabel('Weight')
-
-
+ax.legend(['Mel Scale', 'F-ratio', 'NN Gradient'], fontsize=16)
+ax.set_ylabel('Weight', fontsize=16)
+# ax.set_xticks([])
 ax = fig.add_subplot(gs[2, 0])
 for m in mel:
     ax.plot(xnew, m, color='#1f77b4', linewidth=0.8)
-ax.set_ylabel('Weight')
+ax.set_ylabel('Weight', fontsize=16)
+# ax.set_xticks([])
+
 ax = fig.add_subplot(gs[3, 0])
 for m in timit_soft:
     ax.plot(x, m, color='#2ca02c', linewidth=0.8)
-ax.set_ylabel('Weight')
-ax.set_xlabel('Frequency')
+ax.set_ylabel('Weight', fontsize=16)
+ax.set_xlabel('Frequency', fontsize=16)
 pdf.savefig()
 pdf.close()
 plt.show()

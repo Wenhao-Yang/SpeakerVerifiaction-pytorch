@@ -60,6 +60,18 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
         melpoints = np.linspace(lowmel, highmel, nfilt + 2)
         # our points are in Hz, but we use fft bins, so we have to convert from Hz to fft bin number
         bin = np.floor((nfft + 1) * mel2hz(melpoints) / samplerate)
+
+    elif filtertype == 'mel.new':
+        # compute points evenly spaced in mels
+        lowmel = hz2mel(lowfreq)
+        highmel = hz2mel(highfreq)
+        melpoints = np.linspace(lowmel, highmel, nfilt)
+
+        # our points are in Hz, but we use fft bins, so we have to convert from Hz to fft bin number
+        bin = np.floor((nfft + 1) * mel2hz(melpoints) / samplerate)
+        bin_0 = np.append([bin[0]], bin)
+        bin_1 = np.append(bin_0, [int(nfft / 2)])
+        bin = bin_1
     elif filtertype == 'amel':
         # compute points evenly spaced in mels
         lowmel = hz2amel(lowfreq)
@@ -134,22 +146,24 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
         bin.append(highfreq_idx[-1] + 1)
         # print(bin)
     fbank = np.zeros([nfilt, nfft // 2 + 1])
+    print(bin)
     for j in range(0, nfilt):
         for i in range(int(bin[j]), int(bin[j + 1])):
             fbank[j, i] = (i - bin[j]) / (bin[j + 1] - bin[j])
 
+        if bin[j + 2] == bin[j + 1]:
+            # print(bin[j + 2], i)
+            fbank[j, int(bin[j + 1])] = 1
+            print(bin[j + 1])
+
         for i in range(int(bin[j + 1]), int(bin[j + 2])):
-            if (bin[j + 2] - bin[j + 1]) == 0:
-                print(bin[j + 2], i)
-                fbank[j, i] = (bin[j + 2] - i) / (bin[j + 2] - i)
-            else:
-                fbank[j, i] = (bin[j + 2] - i) / (bin[j + 2] - bin[j + 1])
+            fbank[j, i] = (bin[j + 2] - i) / (bin[j + 2] - bin[j + 1])
 
     if multi_weight:
         y = np.array(c.TIMIT_FIlTER_VAR)
         fbank = fbank * (y / y.max())
 
-    return fbank
+    return fbank  # , bin
 
 
 def local_fbank(signal, samplerate=16000, winlen=0.025, winstep=0.01,
