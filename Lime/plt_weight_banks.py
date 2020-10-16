@@ -41,6 +41,11 @@ xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) /
 ynew = f(xnew)
 ynew = ynew / ynew.sum()
 
+xmore = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / 1024)
+ymore = f(xmore)
+ymore = ymore / ymore.sum()
+
+
 pdf = PdfPages('Lime/LoResNet8/timit/soft/grad_filter.pdf')
 plt.rc('font', family='Times New Roman')
 
@@ -51,9 +56,19 @@ from pylab import *
 
 style.use('grayscale')
 # ax.set_title('Resolution')
-ax.plot(xnew, ynew)
-ax.plot(x, tim_fr)
-ax.plot(x, tim_so)
+ax.plot(xmore, ymore)
+
+ff = interpolate.interp1d(x, tim_fr)
+tim_fr_enw = ff(xmore)
+tim_fr_enw /= tim_fr_enw.sum()
+
+ax.plot(xmore, tim_fr_enw)
+
+ff = interpolate.interp1d(x, tim_so)
+tim_so_enw = ff(xmore)
+tim_so_enw = tim_so_enw / tim_so_enw.sum()
+
+ax.plot(xmore, tim_so_enw)
 ax.legend(['Mel Scale', 'F-ratio', 'NN Gradient'], fontsize=16)
 ax.set_ylabel('Weight', fontsize=16)
 # ax.set_xticks([])

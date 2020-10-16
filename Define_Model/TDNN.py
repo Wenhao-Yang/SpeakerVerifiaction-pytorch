@@ -348,7 +348,7 @@ class TDNN_v2(nn.Module):
         self.frame3 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=3)
         self.frame4 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1)
         self.frame5 = TimeDelayLayer_v2(input_dim=512, output_dim=1500, context_size=1, dilation=1)
-
+        self.drop = nn.Dropout(p=self.dropout_p)
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=1500)
         elif encoder_type == 'SASP':
@@ -373,7 +373,6 @@ class TDNN_v2(nn.Module):
 
         self.classifier = nn.Linear(embedding_size, num_classes)
         # self.bn = nn.BatchNorm1d(num_classes)
-        self.drop = nn.Dropout(p=self.dropout_p)
 
         for m in self.modules():  # 对于各层参数的初始化
             if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
