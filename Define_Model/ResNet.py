@@ -640,8 +640,8 @@ class LocalResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes, input_dim=161, block=BasicBlock,
-                 resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
-                 input_norm=None, alpha=12, stride=2, transform=False,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
+                 input_norm=None, alpha=12, stride=2, transform=False, time_dim=1,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(LocalResNet, self).__init__()
@@ -697,12 +697,43 @@ class LocalResNet(nn.Module):
             self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
 
         self.dropout = nn.Dropout(self.dropout_p)
-        self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
 
-        self.fc = nn.Sequential(
-            nn.Linear(self.inplanes * avg_size, embedding_size),
-            nn.BatchNorm1d(embedding_size)
-        )
+        if encoder_type == 'SAP':
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, avg_size))
+            self.encoder = SelfAttentionPooling(input_dim=channels[-1], hidden_dim=channels[-1])
+            self.fc1 = nn.Sequential(
+                nn.Linear(channels[-1], embedding_size),
+                nn.BatchNorm1d(embedding_size)
+            )
+        elif encoder_type == 'SASP':
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, avg_size))
+            self.encoder = AttentionStatisticPooling(input_dim=channels[-1], hidden_dim=channels[-1])
+            self.fc1 = nn.Sequential(
+                nn.Linear(channels[-1] * 2, embedding_size),
+                nn.BatchNorm1d(embedding_size)
+            )
+        elif encoder_type == 'STAP':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, avg_size))
+            self.encoder = StatisticPooling(input_dim=channels[-1])
+            self.fc1 = nn.Sequential(
+                nn.Linear(channels[-1] * 2, embedding_size),
+                nn.BatchNorm1d(embedding_size)
+            )
+        elif encoder_type == 'ASTP':
+            self.avgpool = AdaptiveStdPool2d((time_dim, avg_size))
+            self.encoder = None
+            self.fc1 = nn.Sequential(
+                nn.Linear(channels[-1] * avg_size * time_dim, embedding_size),
+                nn.BatchNorm1d(embedding_size)
+            )
+        else:
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, avg_size))
+            self.encoder = None
+            self.fc1 = nn.Sequential(
+                nn.Linear(channels[-1] * avg_size * time_dim, embedding_size),
+                nn.BatchNorm1d(embedding_size)
+            )
+
 
         if self.alpha:
             self.l2_norm = L2_Norm(self.alpha)
@@ -772,21 +803,13 @@ class LocalResNet(nn.Module):
         if self.dropout_p > 0:
             x = self.dropout(x)
 
-        # if self.statis_pooling:
-        #     mean_x = self.avg_pool(x)
-        #     mean_x = mean_x.view(mean_x.size(0), -1)
-        #
-        #     std_x = self.std_pool(x)
-        #     std_x = std_x.view(std_x.size(0), -1)
-        #
-        #     x = torch.cat((mean_x, std_x), dim=1)
-        #
-        # else:
-        # print(x.shape)
-        x = self.avg_pool(x)
-        x = x.view(x.size(0), -1)
+        x = self.avgpool(x)
+        if self.encoder != None:
+            x = self.encoder(x)
 
-        x = self.fc(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc1(x)
+
         if self.transform:
             x = self.trans_layer(x)
             # x = t_x + x
