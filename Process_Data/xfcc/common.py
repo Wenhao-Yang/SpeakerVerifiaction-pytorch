@@ -148,7 +148,7 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
         bin.append(highfreq_idx[-1] + 1)
         # print(bin)
     fbank = np.zeros([nfilt, nfft // 2 + 1])
-    print(bin)
+    # print(bin)
     for j in range(0, nfilt):
         for i in range(int(bin[j]), int(bin[j + 1])):
             fbank[j, i] = (i - bin[j]) / (bin[j + 1] - bin[j])
@@ -156,7 +156,7 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
         if bin[j + 2] == bin[j + 1]:
             # print(bin[j + 2], i)
             fbank[j, int(bin[j + 1])] = 1
-            print(bin[j + 1])
+            # print(bin[j + 1])
 
         for i in range(int(bin[j + 1]), int(bin[j + 2])):
             fbank[j, i] = (bin[j + 2] - i) / (bin[j + 2] - bin[j + 1])
