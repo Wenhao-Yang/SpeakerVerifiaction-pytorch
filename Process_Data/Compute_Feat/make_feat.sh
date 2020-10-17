@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=7
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -225,7 +225,7 @@ if [ $stage -eq 7 ]; then
 fi
 
 
-#stage=2000
+stage=2000
 if [ $stage -le 8 ]; then
   for name in train test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
