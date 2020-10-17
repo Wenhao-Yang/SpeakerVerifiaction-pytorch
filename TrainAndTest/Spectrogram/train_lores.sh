@@ -550,10 +550,10 @@ if [ $stage -le 60 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=timit
   model=LoResNet
-  resnet_size=8
+  resnet_size=10
   loss=soft
 
-  for encoder in None STAP; do
+  for encoder in None ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
@@ -567,9 +567,10 @@ if [ $stage -le 60 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${encoder}/${loss}_dp05 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${encoder}/${loss}_dp05/checkpoint_24.pth \
-      --channels 4,16,64 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05/checkpoint_24.pth \
+      --channels 4,8,16,64 \
+      --stride 1 \
       --embedding-size 128 \
       --avg-size 1 \
       --time-dim 1 \
