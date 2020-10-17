@@ -331,7 +331,7 @@ if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   model=LoResNet
-  resnet_size=8
+  resnet_size=10
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -346,9 +346,10 @@ if [ $stage -le 50 ]; then
       --epochs 20 \
       --lr 0.1 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25/checkpoint_24.pth \
-      --channels 64,128,256 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_13 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_13/checkpoint_24.pth \
+      --channels 64,64,128,256 \
+      --stride 1,3 \
       --batch-size 128 \
       --embedding-size 128 \
       --avg-size 1 \
@@ -358,7 +359,7 @@ if [ $stage -le 50 ]; then
       --s 15 \
       --m 3 \
       --loss-ratio 0.01 \
-      --weight-decay 0.001 \
+      --weight-decay 0.0001 \
       --dropout-p 0.25 \
       --gpu-id 0 \
       --encoder-type STAP \
