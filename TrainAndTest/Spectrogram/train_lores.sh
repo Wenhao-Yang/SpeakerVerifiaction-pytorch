@@ -572,7 +572,7 @@ if [ $stage -le 60 ]; then
       --channels 4,4,16,64 \
       --stride 1 \
       --embedding-size 128 \
-      --avg-size 1 \
+      --avg-size 4 \
       --time-dim 1 \
       --num-valid 2 \
       --alpha 10.8 \
