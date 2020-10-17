@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=60
 
 waited=0
 while [ `ps 8217 | wc -l` -eq 2 ]; do
@@ -549,15 +549,16 @@ fi
 if [ $stage -le 60 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=timit
-  model=TimeFreqResNet
+  model=LoResNet
   resnet_size=8
+  loss=soft
 
-  for loss in asoft; do
+  for encoder in None STAP; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_power\
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_power \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --nj 10 \
@@ -565,11 +566,12 @@ if [ $stage -le 60 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${encoder}/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${encoder}/${loss}_dp25/checkpoint_24.pth \
       --channels 4,16,64 \
       --embedding-size 128 \
-      --avg-size 4 \
+      --avg-size 1 \
+      --time-dim 1 \
       --num-valid 2 \
       --alpha 12 \
       --margin 0.4 \
@@ -581,6 +583,7 @@ if [ $stage -le 60 ]; then
       --gpu-id 0 \
       --cos-sim \
       --extract \
+      --encoder-type ${encoder} \
       --loss-type ${loss}
   done
 
@@ -730,6 +733,7 @@ if [ $stage -le 62 ]; then
 #      --loss-type soft
 fi
 
+stage=10000
 if [ $stage -le 80 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
