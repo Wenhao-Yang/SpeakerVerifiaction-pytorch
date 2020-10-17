@@ -622,6 +622,8 @@ if [ $stage -le 60 ]; then
 #  done
 
 fi
+
+stage=10000
 if [ $stage -le 61 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
