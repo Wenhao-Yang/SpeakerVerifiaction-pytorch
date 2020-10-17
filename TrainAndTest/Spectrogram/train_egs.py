@@ -188,7 +188,8 @@ parser.add_argument('--dampening', default=0, type=float,
                     metavar='DAM', help='dampening for sgd (default: 0.0)')
 parser.add_argument('--optimizer', default='sgd', type=str,
                     metavar='OPT', help='The optimizer to use (default: Adagrad)')
-
+parser.add_argument('--grad-clip', default=10., type=float,
+                    help='momentum for sgd (default: 0.9)')
 # Device options
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
@@ -525,6 +526,12 @@ def train(train_loader, model, ce, optimizer, epoch):
             if args.loss_type == 'center' or args.loss_type == 'mulcenter':
                 for param in xe_criterion.parameters():
                     param.grad.data *= (1. / args.loss_ratio)
+
+        if args.grad_clip > 0:
+            this_lr = args.lr
+            for param_group in optimizer.param_groups:
+                this_lr = min(param_group['lr'], this_lr)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), this_lr * args.grad_clip)
 
         optimizer.step()
 
