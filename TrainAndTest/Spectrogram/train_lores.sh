@@ -567,12 +567,12 @@ if [ $stage -le 60 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_clip_RMSprop \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_clip_RMSprop/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_clip_0001 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_clip_0001/checkpoint_24.pth \
       --channels 4,4,16,64 \
       --stride 1 \
       --embedding-size 128 \
-      --optimizer RMSprop \
+      --optimizer sgd \
       --avg-size 4 \
       --time-dim 1 \
       --num-valid 2 \
@@ -581,7 +581,7 @@ if [ $stage -le 60 ]; then
       --s 30 \
       --m 3 \
       --loss-ratio 0.05 \
-      --weight-decay 0.001 \
+      --weight-decay 0.0001 \
       --dropout-p 0.5 \
       --gpu-id 0 \
       --cos-sim \
