@@ -108,7 +108,7 @@ class AttentionStatisticPooling(nn.Module):
         alpha_ht = x.mul(alpha)
         mean = torch.sum(alpha_ht, dim=-2, keepdim=True)
 
-        sigma_power = torch.sum(torch.pow(x, 2).mul(alpha) - torch.pow(mean, 2), dim=-2).add_(1e-12)
+        sigma_power = torch.sum(torch.pow(x, 2).mul(alpha), dim=-2) - torch.pow(mean, 2)
         # alpha_ht_ht = x*x.mul(alpha)
         sigma = torch.sqrt(sigma_power)
 
