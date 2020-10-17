@@ -9,7 +9,6 @@
 @Time: 2020/4/15 10:57 PM
 @Overview:
 """
-import pdb
 
 import numpy as np
 import torch
@@ -109,14 +108,14 @@ class AttentionStatisticPooling(nn.Module):
         alpha = self.attention_soft(vf)
 
         alpha_ht = x.mul(alpha)
-        mean = torch.sum(alpha_ht, dim=-2, keepdim=True)
+        mean = torch.sum(alpha_ht, dim=-2)
 
-        pdb.set_trace()
+        # pdb.set_trace()
         sigma_power = torch.sum(torch.pow(x, 2).mul(alpha), dim=-2) - torch.pow(mean, 2)
         # alpha_ht_ht = x*x.mul(alpha)
         sigma = torch.sqrt(sigma_power)
 
-        mean_sigma = torch.cat((mean.squeeze(1), sigma), 1)
+        mean_sigma = torch.cat((mean, sigma), 1)
 
         return mean_sigma
 
