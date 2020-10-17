@@ -550,7 +550,7 @@ if [ $stage -le 60 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=timit
   model=LoResNet
-  resnet_size=10
+  resnet_size=8
   loss=soft
 
   for encoder in None ; do
@@ -569,7 +569,7 @@ if [ $stage -le 60 ]; then
       --milestones 6,10 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_clip_0001 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_clip_0001/checkpoint_24.pth \
-      --channels 4,4,16,64 \
+      --channels 4,16,64 \
       --stride 1 \
       --embedding-size 128 \
       --optimizer sgd \
