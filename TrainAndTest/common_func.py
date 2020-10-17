@@ -46,6 +46,11 @@ def create_optimizer(parameters, optimizer, **kwargs):
                                   lr=kwargs['lr'],
                                   lr_decay=kwargs['lr_decay'],
                                   weight_decay=kwargs['weight_decay'])
+    elif optimizer == 'RMSprop':
+        opt = optim.RMSprop(parameters,
+                            lr=kwargs['lr'],
+                            momentum=kwargs['momentum'],
+                            weight_decay=kwargs['weight_decay'])
 
     return opt
 
