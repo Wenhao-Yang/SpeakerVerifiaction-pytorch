@@ -113,7 +113,7 @@ class AttentionStatisticPooling(nn.Module):
         # pdb.set_trace()
         sigma_power = torch.sum(torch.pow(x, 2).mul(alpha), dim=-2) - torch.pow(mean, 2)
         # alpha_ht_ht = x*x.mul(alpha)
-        sigma = torch.sqrt(sigma_power)
+        sigma = torch.sqrt(sigma_power.clamp(min=1e-12))
 
         mean_sigma = torch.cat((mean, sigma), 1)
 
