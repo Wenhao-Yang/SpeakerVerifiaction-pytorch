@@ -189,7 +189,7 @@ if [ $stage -le 40 ]; then
   feat=fb40
   loss=soft
 
-  for encod in STAP SASP ; do
+  for encod in SASP ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
