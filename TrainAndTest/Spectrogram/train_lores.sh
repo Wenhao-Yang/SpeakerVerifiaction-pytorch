@@ -569,13 +569,13 @@ if [ $stage -le 60 ]; then
       --milestones 6,10 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05/checkpoint_24.pth \
-      --channels 4,8,16,64 \
+      --channels 4,4,16,64 \
       --stride 1 \
       --embedding-size 128 \
       --avg-size 1 \
       --time-dim 1 \
       --num-valid 2 \
-      --alpha 12 \
+      --alpha 10.8 \
       --margin 0.4 \
       --s 30 \
       --m 3 \
