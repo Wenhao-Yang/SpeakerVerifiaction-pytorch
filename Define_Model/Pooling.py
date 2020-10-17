@@ -9,10 +9,13 @@
 @Time: 2020/4/15 10:57 PM
 @Overview:
 """
+import pdb
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 
 class SelfVadPooling(nn.Module):
     def __init__(self, input_dim, input_length=300):
@@ -108,6 +111,7 @@ class AttentionStatisticPooling(nn.Module):
         alpha_ht = x.mul(alpha)
         mean = torch.sum(alpha_ht, dim=-2, keepdim=True)
 
+        pdb.set_trace()
         sigma_power = torch.sum(torch.pow(x, 2).mul(alpha), dim=-2) - torch.pow(mean, 2)
         # alpha_ht_ht = x*x.mul(alpha)
         sigma = torch.sqrt(sigma_power)
