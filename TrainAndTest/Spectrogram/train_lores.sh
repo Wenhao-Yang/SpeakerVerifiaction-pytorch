@@ -560,6 +560,7 @@ if [ $stage -le 60 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
       --feat-format kaldi \
+      --input-norm None \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 12 \
