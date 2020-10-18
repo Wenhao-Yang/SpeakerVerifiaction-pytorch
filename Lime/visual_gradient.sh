@@ -149,8 +149,13 @@ fi
 
 if [ $stage -le 80 ]; then
 
+#    python Lime/visual_gradient.py \
+#      --extract-path Data/gradient/TDNN/vox1/fb40_STAP/soft/epoch_20 \
+#      --feat-dim 40 \
+#      --acoustic-feature fbank
     python Lime/visual_gradient.py \
-      --extract-path Data/gradient/TDNN/vox1/fb40_STAP/soft/epoch_20 \
-      --feat-dim 40 \
+      --extract-path Data/gradient/ThinResNet34/vox1/fb64_None/soft/epoch_22 \
+      --feat-dim 64 \
       --acoustic-feature fbank
+
 fi
