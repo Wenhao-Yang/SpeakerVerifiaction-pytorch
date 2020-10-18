@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=61
+stage=80
 if [ $stage -le 0 ]; then
   for model in LoResNet10 ; do
     python Lime/visual_gradient.py \
@@ -145,4 +145,12 @@ if [ $stage -le 61 ]; then
 #      --feat-dim 40 \
 #      --acoustic-feature fbank
 
+fi
+
+if [ $stage -le 80 ]; then
+
+    python Lime/visual_gradient.py \
+      --extract-path Data/gradient/TDNN/vox1/fb40_STAP/soft/epoch_20 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
 fi

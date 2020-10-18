@@ -252,6 +252,7 @@ if [ $stage -le 40 ]; then
         --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${datasets}/pyfb/test_${feat} \
         --nj 14 \
         --start-epochs 20 \
+        --epochs 21 \
         --model ${model} \
         --embedding-size 128 \
         --sample-utt 5000 \
