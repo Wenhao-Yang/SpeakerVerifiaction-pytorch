@@ -148,9 +148,8 @@ if [ $stage -le 3 ]; then
       --sample-utt 5000
 fi
 
-stage=1000
 if [ $stage -le 12 ]; then
-  model=ThinResNet34
+  model=ThinResNet
   datasets=vox1
   feat=fb64
   loss=soft
@@ -176,6 +175,7 @@ if [ $stage -le 12 ]; then
       --sample-utt 5000
 fi
 #stage=300
+stage=1000
 
 if [ $stage -le 20 ]; then
   model=LoResNet10
