@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=210
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -1058,16 +1058,16 @@ if [ $stage -le 200 ]; then
 #  done
 fi
 
-stage=10000
+#stage=10000
 if [ $stage -le 210 ]; then
   for name in test ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pyfb \
-      --out-set ${name}_mel_fb25 \
+      --out-set ${name}_mel_new \
       --feat-type fbank \
       --feat-format kaldi_cmp \
-      --filter-type mel \
+      --filter-type mel.new \
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \
