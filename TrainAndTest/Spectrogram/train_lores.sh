@@ -349,7 +349,7 @@ if [ $stage -le 50 ]; then
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_13 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_13/checkpoint_24.pth \
       --channels 64,64,128,256 \
-      --stride 1,3 \
+      --stride 2 \
       --batch-size 128 \
       --embedding-size 128 \
       --avg-size 1 \
