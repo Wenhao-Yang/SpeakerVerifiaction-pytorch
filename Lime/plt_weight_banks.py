@@ -25,7 +25,7 @@ mel = get_filterbanks(nfilt=23, nfft=320, samplerate=16000, lowfreq=0,
                       highfreq=None, filtertype='mel', multi_weight=False)
 
 tim_so = np.array(c.TIMIT_FIlTER_SOFT)
-tim_fr = np.load('Lime/Analysis/fratio/timit/fratio_1500.npy')
+tim_fr = np.load('Lime/Analysis/fratio/timit/fratio_1500_log.npy')
 
 tim_fr = gassuan_weight(tim_fr)
 tim_fr = tim_fr / tim_fr.sum()
@@ -45,8 +45,7 @@ xmore = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) 
 ymore = f(xmore)
 ymore = ymore / ymore.sum()
 
-
-pdf = PdfPages('Lime/LoResNet8/timit/soft/grad_filter.pdf')
+pdf = PdfPages('Lime/LoResNet8/timit/soft/grad_filter_noedge.pdf')
 plt.rc('font', family='Times New Roman')
 
 fig = plt.figure(figsize=(9, 7), tight_layout=True)
