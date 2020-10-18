@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=61
+stage=40
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ `ps 15414 | wc -l` -eq 2 ]; do
@@ -243,26 +243,28 @@ fi
 
 if [ $stage -le 40 ]; then
   model=TDNN
-  feat=fb40_wcmvn
+  feat=fb40
+  datasets=vox1
     for loss in soft ; do
       echo -e "\033[31m==> Loss type: ${loss} \033[0m"
       python Lime/output_extract.py \
-        --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
-        --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
+        --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${datasets}/pyfb/dev_${feat} \
+        --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${datasets}/pyfb/test_${feat} \
         --nj 14 \
-        --start-epochs 18 \
+        --start-epochs 20 \
         --model ${model} \
         --embedding-size 128 \
         --sample-utt 5000 \
         --feat-dim 40 \
         --remove-vad \
-        --check-path Data/checkpoint/TDNN/fb40_wcmvn/soft \
-        --extract-path Data/gradient/TDNN/fb40_wcmvn/soft \
+        --check-path Data/checkpoint/${model}/${datasets}/${feat}_STAP/soft \
+        --extract-path Data/gradient/${model}/${datasets}/${feat}_STAP/soft \
         --loss-type soft \
         --gpu-id 0
     done
 fi
 
+stage=1000
 if [ $stage -le 50 ]; then
   model=SiResNet34
   feat=fb40_wcmvn
@@ -343,7 +345,7 @@ if [ $stage -le 61 ]; then
   done
 fi
 
-stage=100
+#stage=100
 if [ $stage -le 62 ]; then
   dataset=timit
   for numframes in 1500 ; do
