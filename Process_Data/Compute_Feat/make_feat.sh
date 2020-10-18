@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=210
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -1034,7 +1034,7 @@ if [ $stage -le 200 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/pyfb \
-      --out-set ${name}_soft_noed \
+      --out-set ${name}_soft \
       --feat-type fbank \
       --feat-format kaldi_cmp \
       --filter-type dnn.timit.soft \
@@ -1058,20 +1058,20 @@ if [ $stage -le 200 ]; then
 #  done
 fi
 
-stage=10000
+#stage=10000
 if [ $stage -le 210 ]; then
   for name in dev test ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pyfb \
-      --out-set ${name}_soft_noed \
+      --out-set ${name}_fb24_soft \
       --feat-type fbank \
       --feat-format kaldi_cmp \
-      --filter-type dnn.timit.soft \
+      --filter-type dnn.vox1.soft \
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \
-       --filters 23
+      --filters 23
   done
 
 #    for name in train test ; do
