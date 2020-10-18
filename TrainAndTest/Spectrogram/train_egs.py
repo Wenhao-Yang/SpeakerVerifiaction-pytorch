@@ -364,13 +364,6 @@ def main():
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
-    # Save model config txt
-    with open(osp.join(args.check_path, 'model.%s.cfg' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
-        f.write('model: ' + str(model) + '\n')
-        f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
-        f.write('Other Loss: ' + str(xe_criterion) + '\n')
-
-
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
     if args.loss_type == 'center' or args.loss_type == 'mulcenter':
         optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
@@ -392,6 +385,13 @@ def main():
                                      {'params': rest_params}],
                                     lr=args.lr, weight_decay=args.weight_decay,
                                     momentum=args.momentum)
+
+    # Save model config txt
+    with open(osp.join(args.check_path, 'model.%s.cfg' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
+        f.write('model: ' + str(model) + '\n')
+        f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
+        f.write('Other Loss: ' + str(xe_criterion) + '\n')
+        f.write('Optimizer: ' + str(optimizer) + '\n')
 
     if args.scheduler == 'exp':
         scheduler = ExponentialLR(optimizer, gamma=args.gamma)
