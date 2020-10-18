@@ -81,6 +81,8 @@ parser.add_argument('--mvnorm', action='store_true', default=False,
 
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
+parser.add_argument('--encoder-type', type=str, help='path to voxceleb1 test dataset')
+
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
@@ -379,6 +381,7 @@ def main():
                     'alpha': args.alpha,
                     'avg_size': args.avg_size,
                     'time_dim': args.time_dim,
+                    'encoder_type': args.encoder_type,
                     'resnet_size': args.resnet_size,
                     'embedding_size': args.embedding_size,
                     'time_dim': args.time_dim,
