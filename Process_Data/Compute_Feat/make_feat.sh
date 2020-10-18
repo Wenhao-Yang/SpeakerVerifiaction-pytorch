@@ -1071,7 +1071,7 @@ if [ $stage -le 210 ]; then
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \
-       --filters 24
+       --filters 23
   done
 
 #    for name in train test ; do
