@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=40
+stage=12
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ `ps 15414 | wc -l` -eq 2 ]; do
@@ -148,6 +148,33 @@ if [ $stage -le 3 ]; then
       --sample-utt 5000
 fi
 
+stage=1000
+if [ $stage -le 12 ]; then
+  model=ThinResNet34
+  datasets=vox1
+  feat=fb64
+  loss=soft
+  python Lime/output_extract.py \
+      --model ThinResNet \
+      --start-epochs 22 \
+      --epochs 23 \
+      --resnet-size 34 \
+      --train-dir ${lstm_dir}/data/${datasets}/pyfb/dev_${feat} \
+      --test-dir ${lstm_dir}/data/${datasets}/pyfb/test_${feat} \
+      --loss-type ${loss} \
+      --stride 1 \
+      --remove-vad \
+      --kernel-size 5,5 \
+      --encoder-type None \
+      --check-path Data/checkpoint/ThinResNet34/vox1/fb64_None/soft \
+      --extract-path Data/gradient/ThinResNet34/vox1/fb64_None/soft \
+      --dropout-p 0.0 \
+      --gpu-id 0 \
+      --time-dim 1 \
+      --avg-size 1 \
+      --embedding-size 128 \
+      --sample-utt 5000
+fi
 #stage=300
 
 if [ $stage -le 20 ]; then
