@@ -1064,10 +1064,10 @@ if [ $stage -le 210 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pyfb \
-      --out-set ${name}_mel_new \
+      --out-set ${name}_soft_noed \
       --feat-type fbank \
       --feat-format kaldi_cmp \
-      --filter-type mel.new \
+      --filter-type dnn.timit.soft \
       --log-scale \
       --nfft 320 \
       --windowsize 0.02 \

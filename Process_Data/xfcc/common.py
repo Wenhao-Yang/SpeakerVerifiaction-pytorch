@@ -134,18 +134,18 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
         bin = []
         bin.append(lowfreq_idx[0])
 
-        for j in range(nfilt - 1):
+        for j in range(nfilt):
             num_wei = 0.
             for i in range(nfft // 2 + 1):
                 num_wei += weight[i]
-                if num_wei > j / (nfilt - 1):
+                if num_wei >= (j + 1) / (nfilt + 1):
                     bin.append(min(max(i - 1, 0), nfft // 2))
                     break
                 else:
                     continue
 
         bin.append(highfreq_idx[-1])
-        bin.append(highfreq_idx[-1] + 1)
+        # bin.append(highfreq_idx[-1] + 1)
         # print(bin)
     fbank = np.zeros([nfilt, nfft // 2 + 1])
     # print(bin)
