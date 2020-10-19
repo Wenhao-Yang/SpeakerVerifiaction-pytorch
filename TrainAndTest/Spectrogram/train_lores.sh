@@ -346,11 +346,11 @@ if [ $stage -le 50 ]; then
       --epochs 20 \
       --lr 0.1 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_1512 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_1512/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_5723 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_5723/checkpoint_24.pth \
       --channels 32,64,128,256 \
-      --kernel-size 1,5 \
-      --stride 1,2 \
+      --kernel-size 5,7 \
+      --stride 2,3 \
       --batch-size 128 \
       --embedding-size 128 \
       --avg-size 1 \
