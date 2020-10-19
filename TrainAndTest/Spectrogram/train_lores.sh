@@ -360,7 +360,7 @@ if [ $stage -le 50 ]; then
       --s 15 \
       --m 3 \
       --loss-ratio 0.01 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.001 \
       --dropout-p 0.25 \
       --gpu-id 0 \
       --encoder-type STAP \
