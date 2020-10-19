@@ -3,7 +3,7 @@
 stage=50
 
 waited=0
-while [ `ps 8217 | wc -l` -eq 2 ]; do
+while [ `ps 23863 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -346,8 +346,8 @@ if [ $stage -le 50 ]; then
       --epochs 20 \
       --lr 0.1 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_5723 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_5723/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_5723_0001 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_5723_0001/checkpoint_24.pth \
       --channels 32,64,128,256 \
       --kernel-size 5,7 \
       --stride 2,3 \
