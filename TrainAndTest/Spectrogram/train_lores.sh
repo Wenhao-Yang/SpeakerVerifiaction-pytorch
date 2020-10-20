@@ -420,8 +420,8 @@ if [ $stage -le 51 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --nj 10 \
-      --epochs 22 \
-      --milestones 8,13,18 \
+      --epochs 13 \
+      --milestones 4,9 \
       --model ${model} \
       --resnet-size ${resnet_size} \
       --stride 2 \
@@ -433,10 +433,10 @@ if [ $stage -le 51 ]; then
       --time-dim 1 \
       --avg-size 1 \
       --kernel-size 5,5 \
-      --lr 0.1 \
+      --lr 0.01 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}/checkpoint_22.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}/checkpoint_9.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
