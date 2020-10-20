@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=51
 
 waited=0
 while [ `ps 23863 | wc -l` -eq 2 ]; do
@@ -404,6 +404,50 @@ if [ $stage -le 50 ]; then
 #  done
 
 fi
+
+if [ $stage -le 51 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  model=ThinResNet
+  resnet_size=34
+  datasets=vox1
+  feat=spect_161
+  loss=soft
+
+  for encod in STAP ; do
+    echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+      --nj 10 \
+      --epochs 22 \
+      --milestones 8,13,18 \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --stride 2 \
+      --feat-format kaldi \
+      --embedding-size 128 \
+      --batch-size 128 \
+      --accu-steps 1 \
+      --feat-dim 161 \
+      --time-dim 1 \
+      --avg-size 1 \
+      --kernel-size 5,5 \
+      --lr 0.1 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}/checkpoint_22.pth \
+      --input-per-spks 384 \
+      --cos-sim \
+      --veri-pairs 9600 \
+      --gpu-id 0 \
+      --num-valid 2 \
+      --loss-type soft \
+      --remove-vad
+
+  done
+fi
+
 stage=1000
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
