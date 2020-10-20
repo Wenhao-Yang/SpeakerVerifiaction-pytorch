@@ -420,11 +420,11 @@ if [ $stage -le 51 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --nj 10 \
-      --epochs 13 \
-      --milestones 4,9 \
+      --epochs 22 \
+      --milestones 8,13,18 \
       --model ${model} \
       --resnet-size ${resnet_size} \
-      --stride 2 \
+      --stride 1,2 \
       --feat-format kaldi \
       --embedding-size 128 \
       --batch-size 128 \
@@ -433,10 +433,10 @@ if [ $stage -le 51 ]; then
       --time-dim 1 \
       --avg-size 1 \
       --kernel-size 5,5 \
-      --lr 0.01 \
+      --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_12 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_12/checkpoint_9.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
@@ -444,7 +444,6 @@ if [ $stage -le 51 ]; then
       --num-valid 2 \
       --loss-type soft \
       --remove-vad
-
   done
 fi
 
