@@ -200,7 +200,7 @@ class ThinResNet(nn.Module):
         if self.filter == 'fDLR':
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
         elif self.filter == 'Avg':
-            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 5), stride=(1, 2))
+            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
         else:
             self.filter_layer = None
 
