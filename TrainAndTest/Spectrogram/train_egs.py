@@ -111,7 +111,7 @@ parser.add_argument('--veri-pairs', type=int, default=20000, metavar='VP',
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
-parser.add_argument('--filter', action='store_true', default=False, help='replace batchnorm with instance norm')
+parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', action='store_true', default=False,
                     help='add a transform layer after embedding layer')
 

@@ -17,3 +17,5 @@ Data/
 *.bin
 Lime/SuResCNN10/data
 *.pickle
+*.egs
+*.eps

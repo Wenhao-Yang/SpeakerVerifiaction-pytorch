@@ -164,7 +164,7 @@ class ThinResNet(nn.Module):
     def __init__(self, resnet_size=34, block=BasicBlock, inst_norm=True, kernel_size=5, stride=1, padding=2,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4,
                  alpha=12, encoder_type='SAP', zero_init_residual=False, groups=1, width_per_group=64,
-                 input_dim=257, sr=16000, filter=False, replace_stride_with_dilation=None, norm_layer=None,
+                 input_dim=257, sr=16000, filter=None, replace_stride_with_dilation=None, norm_layer=None,
                  input_norm='', **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -197,8 +197,13 @@ class ThinResNet(nn.Module):
         self.groups = groups
         self.base_width = width_per_group
 
-        if self.filter:
+        if self.filter == 'fDLR':
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
+        elif self.filter == 'Avg':
+            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 5), stride=(1, 2))
+        else:
+            self.filter_layer = None
+
         self.input_norm = input_norm
         if input_norm == 'Instance':
             self.inst_layer = nn.InstanceNorm1d(input_dim)
@@ -303,9 +308,8 @@ class ThinResNet(nn.Module):
     def _forward(self, x):
         # pdb.set_trace()
         # print(x.shape)
-        if self.filter:
+        if self.filter != None:
             x = self.filter_layer(x)
-            x = torch.log(x)
 
         if self.inst_layer != None:
             x = self.inst_layer(x)

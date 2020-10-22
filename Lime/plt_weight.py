@@ -82,7 +82,7 @@ ynew = ynew / ynew.sum()
 
 pdf = PdfPages('Lime/Analysis/vox1.grad.pdf')
 plt.rc('font', family='Times New Roman')
-
+plt.figure(figsize=(8.5, 5))
 # ax.set_title('Resolution')
 # plt.plot(xnew, ynew)
 
@@ -104,6 +104,8 @@ plt.plot(xnew, f(xnew) / f(xnew).sum())
 # plt.plot(fb40_m, vox1_tdnn_g)
 # plt.plot(x, tim_so)
 # plt.ylim(0, 0.03)
+plt.annotate(s='Drop', xy=(1800, 0.0042), xytext=(1000, 0.002), fontsize=16,
+             arrowprops=dict(arrowstyle='-|>', connectionstyle='arc3', color='red'))
 plt.legend(['ResCNN', 'ResNet20', 'ThinResNet34', 'TDNN'], fontsize=18)
 
 plt.ylabel('Weight', fontsize=18)

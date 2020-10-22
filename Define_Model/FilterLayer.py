@@ -42,7 +42,6 @@ class fDLR(nn.Module):
         new_centers = self.frequency_center.expand(self.num_filter, self.input_dim)
         # if input.is_cuda:
         #     new_centers = new_centers.cuda()
-
         # pdb.set_trace()
         power = -1. * torch.pow(self.input_freq - new_centers, 2)
         power = torch.div(power, 0.5 * self.bandwidth.pow(2))
@@ -51,7 +50,7 @@ class fDLR(nn.Module):
         weights = weights / weights.max(dim=1, keepdim=True).values
         weights = weights.mul(self.gain).transpose(0, 1)
 
-        return torch.matmul(input, weights)
+        return torch.log(torch.matmul(input, weights))
 
 
 class grl_func(torch.autograd.Function):

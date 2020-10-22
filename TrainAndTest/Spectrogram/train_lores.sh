@@ -424,8 +424,9 @@ if [ $stage -le 51 ]; then
       --milestones 8,13,18 \
       --model ${model} \
       --resnet-size ${resnet_size} \
-      --stride 1,2 \
+      --stride 1 \
       --feat-format kaldi \
+      --filter Avg \
       --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
@@ -435,8 +436,8 @@ if [ $stage -le 51 ]; then
       --kernel-size 5,5 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_12 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_12/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_Avg \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_Avg/checkpoint_9.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
