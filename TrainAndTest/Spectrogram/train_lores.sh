@@ -830,7 +830,7 @@ stage=10000
 if [ $stage -le 80 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
-  model=LoResNet
+  model=MultiResNet
   resnet_size=8
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
