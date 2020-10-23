@@ -381,12 +381,12 @@ def main():
     # start = 0
     end = start + args.epochs
 
-    train_loader_a = torch.utils.data.DataLoader(train_dir_a, batch_size=args.batch_size, shuffle=False, **kwargs)
+    batch_size_a = int(args.batch_size * len(train_dir_a) / (len(train_dir_a) + len(train_dir_b)))
+    train_loader_a = torch.utils.data.DataLoader(train_dir_a, batch_size=batch_size_a, shuffle=False, **kwargs)
 
-    num_iteration = np.floor(len(train_dir_a) / args.batch_size)
-    batch_size = int(len(train_dir_b) / num_iteration)
-
-    train_loader_b = torch.utils.data.DataLoader(train_dir_b, batch_size=batch_size, shuffle=False, **kwargs)
+    # num_iteration = np.floor(len(train_dir_a) / args.batch_size)
+    batch_size_b = args.batch_size - batch_size_a
+    train_loader_b = torch.utils.data.DataLoader(train_dir_b, batch_size=batch_size_b, shuffle=False, **kwargs)
     train_loader = [train_loader_a, train_loader_b]
 
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
@@ -475,10 +475,11 @@ def train(train_loader, model, ce, optimizer, epoch):
         data_a, label_a = Variable(data_a), Variable(label_a)
         data_b, label_b = Variable(data_b), Variable(label_b)
 
-        feats_a = model.pre_forward(data_a)
-        feats_b = model.pre_forward(data_b)
+        data = torch.cat((data_a, data_b), dim=0)
+        feats = model.pre_forward(data)
 
-        classfier_a, classfier_b = model(feats_a, feats_b)
+        # feats_b = model.pre_forward(data_b)
+        classfier_a, classfier_b = model(feats[:len(data_a)], feats[len(data_a):])
 
         # cos_theta, phi_theta = classfier
 

@@ -9,10 +9,8 @@
 @Time: 2020/10/12 23:16
 @Overview:
 """
-import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.backends.backend_pdf import PdfPages
 from scipy import interpolate
 
 import Process_Data.constants as c
@@ -48,7 +46,7 @@ ymore = ymore / ymore.sum()
 # pdf = PdfPages('Lime/LoResNet8/timit/soft/grad_filter_noedge.pdf')
 plt.rc('font', family='Times New Roman')
 
-fig = plt.figure(figsize=(8, 3), tight_layout=True)
+fig = plt.figure(figsize=(8, 2.4), tight_layout=True)
 
 # style.use('grayscale')
 # ax.set_title('Resolution')
@@ -68,28 +66,37 @@ tim_so_enw = tim_so_enw / tim_so_enw.sum()
 
 plt.plot(xmore, tim_so_enw, marker='^', markevery=64)
 plt.legend(['Mel', 'F-ratio', 'Gradient'], fontsize=16)
-plt.ylabel('Weight', fontsize=18)
-plt.title('a) Scale Comparison', y=-1)
+plt.ylabel('Weight', fontsize=12)
+plt.xlabel('Frequency(Hz)', fontsize=12)
+
+# plt.title('a) Scale Comparison', y=-1)
 # ax.set_xticks([])
-plt.savefig('Lime/LoResNet8/timit/soft/grad.egs', format='eps')
+plt.subplots_adjust(left=0, bottom=0, right=1, top=1)
+plt.savefig('Lime/LoResNet8/timit/soft/grad.eps', format='eps')
 plt.show()
 
-plt.figure(figsize=(4, 1), tight_layout=True)
+plt.figure(figsize=(8, 1.5), tight_layout=True)
 for m in mel:
     plt.plot(xnew, m, color='#1f77b4', linewidth=0.8)
 plt.ylabel('Weight', fontsize=12)
+plt.xlabel('Frequency(Hz)', fontsize=12)
+
 # plt.title('b) Mel filters')
-plt.savefig('Lime/LoResNet8/timit/soft/mel.egs', format='eps')
+fig.tight_layout()
+
+plt.savefig('Lime/LoResNet8/timit/soft/mel.eps', format='eps')
 plt.show()
 # ax.set_xticks([])
 
-plt.figure(figsize=(4, 1), tight_layout=True)
+plt.figure(figsize=(8, 1.5), tight_layout=True)
 for m in timit_soft:
     plt.plot(x, m, color='#2ca02c', linewidth=0.8)
 # plt.set_title('c) Gradient filters')
 plt.ylabel('Weight', fontsize=12)
+plt.xlabel('Frequency(Hz)', fontsize=12)
+
 # plt.xlabel('Frequency', fontsize=18)
-plt.savefig('Lime/LoResNet8/timit/soft/gradient.egs', format='eps')
+plt.savefig('Lime/LoResNet8/timit/soft/gradient.eps', format='eps')
 plt.show()
 
 # pdf.savefig()

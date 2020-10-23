@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=210
+stage=230
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -1086,4 +1086,31 @@ if [ $stage -le 210 ]; then
 #      --windowsize 0.02 \
 #       --filters 23
 #  done
+fi
+
+if [ $stage -le 230 ]; then
+  datasets=army
+  for s in aishell2 vox1 ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${datasets}/spect/${s}_dev_8k \
+      --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 224 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --out-set ${s}_dev_8k
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${datasets}/spect/${s}_dev_8k \
+      --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
+      --feat-type spectrogram \
+      --input-per-spks 224 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --out-set ${s}_valid_8k
+
+  done
 fi
