@@ -789,7 +789,7 @@ if [ $stage -le 63 ]; then
   model=MultiResNet
   resnet_size=8
   for loss in soft ; do
-    echo -e "\n\033[1;4;31m Training LoResNet in vox1 with ${loss} kernel 5,5 \033[0m\n"
+    echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
       --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/dev_v1 \

@@ -1388,8 +1388,7 @@ class MultiResNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, embedding_size, num_classes_a, num_classes_b,
-                 block=BasicBlock, input_dim=161,
+    def __init__(self, embedding_size, num_classes_a, num_classes_b, block=BasicBlock, input_dim=161,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
                  inst_norm=False, alpha=12,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):

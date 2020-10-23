@@ -475,11 +475,10 @@ def train(train_loader, model, ce, optimizer, epoch):
         data_a, label_a = Variable(data_a), Variable(label_a)
         data_b, label_b = Variable(data_b), Variable(label_b)
 
-        feats_a = model(data_a)
-        feats_b = model(data_b)
+        feats_a = model.pre_forward(data_a)
+        feats_b = model.pre_forward(data_b)
 
-        classfier_a = model(feats_a)
-        classfier_b = model(feats_b)
+        classfier_a, classfier_b = model(feats_a, feats_b)
 
         # cos_theta, phi_theta = classfier
 
