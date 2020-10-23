@@ -448,7 +448,7 @@ if [ $stage -le 51 ]; then
   done
 fi
 
-stage=1000
+#stage=1000
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
