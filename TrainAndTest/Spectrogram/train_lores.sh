@@ -786,7 +786,7 @@ fi
 if [ $stage -le 63 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
-  model=LoResNet
+  model=MultiResNet
   resnet_size=8
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training LoResNet in vox1 with ${loss} kernel 5,5 \033[0m\n"
