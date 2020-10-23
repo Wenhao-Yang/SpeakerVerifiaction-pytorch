@@ -1409,7 +1409,7 @@ class MultiResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
         self.inst_norm = inst_norm
-        # self.inst_layer = nn.InstanceNorm1d(input_dim)
+        self.inst_layer = nn.InstanceNorm1d(input_dim)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2, bias=False)
