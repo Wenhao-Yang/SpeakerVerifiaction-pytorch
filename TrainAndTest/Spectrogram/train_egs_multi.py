@@ -542,7 +542,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                     total_loss / (batch_idx + 1),
                     100. * minibatch_a,
                     100. * minibatch_b))
-            break
+            # break
 
     print(
         '\n\33[91mTrain Epoch {}: Train A Accuracy:{:.6f}%, Train B Accuracy:{:.6f}%, Avg loss: {}.\33[0m'.format(epoch,
@@ -611,14 +611,14 @@ def valid(valid_loader, model, epoch):
                 100. * minibatch_a,
                 100. * minibatch_b
             ))
-            break
+            # break
 
     valid_accuracy_a = 100. * correct_a / total_datasize_a
     valid_accuracy_b = 100. * correct_b / total_datasize_b
     writer.add_scalar('Test/Valid_Accuracy_A', valid_accuracy_a, epoch)
     writer.add_scalar('Test/Valid_Accuracy_B', valid_accuracy_b, epoch)
 
-    print('  Valid on A Accuracy is %.4f %%. Valid on B Accuracy is %.4f %%.\33[0m' % (
+    print('\n\33[91mValid on A Accuracy is %.4f %%. Valid on B Accuracy is %.4f %%.\33[0m\n' % (
     valid_accuracy_a, valid_accuracy_b))
 
     torch.cuda.empty_cache()
