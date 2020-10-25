@@ -583,7 +583,7 @@ def valid(valid_loader, model, epoch):
         # compute output
         data = torch.cat((data_a, data_b), dim=0)
 
-        feats = model.pre_foward(data)
+        feats = model.pre_forward(data)
         classfier_a, classfier_b = model(feats[:len(data_a)], feats[len(data_a):])
 
         # pdb.set_trace()
@@ -643,8 +643,8 @@ def test(test_loader, model, epoch):
         data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
 
         # compute output
-        _, out_a_ = model.pre_foward(data_a)
-        _, out_p_ = model.pre_foward(data_p)
+        _, out_a_ = model.pre_forward(data_a)
+        _, out_p_ = model.pre_forward(data_p)
         out_a = out_a_
         out_p = out_p_
 
