@@ -651,7 +651,7 @@ def test(test_loader, model, epoch):
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
-        dists = dists.data.cpu().numpy()
+        dists = dists.cpu().numpy()
 
         distances.append(dists)
         labels.append(label.data.cpu().numpy())
