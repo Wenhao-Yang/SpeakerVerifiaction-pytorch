@@ -484,10 +484,10 @@ def train(train_loader, model, ce, optimizer, epoch):
         data_b, label_b = Variable(data_b), Variable(label_b)
 
         data = torch.cat((data_a, data_b), dim=0)
-        feats = model.pre_forward(data)
+        _, feats = model(data)
 
         # feats_b = model.pre_forward(data_b)
-        classfier_a, classfier_b = model(feats[:len(data_a)], feats[len(data_a):])
+        classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
         # cos_theta, phi_theta = classfier
 
         if args.loss_type == 'soft':
@@ -542,7 +542,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                     total_loss / (batch_idx + 1),
                     100. * minibatch_a,
                     100. * minibatch_b))
-            # break
+            break
 
     print(
         '\n\33[91mTrain Epoch {}: Train A Accuracy:{:.6f}%, Train B Accuracy:{:.6f}%, Avg loss: {}.\33[0m'.format(epoch,
@@ -583,8 +583,8 @@ def valid(valid_loader, model, epoch):
         # compute output
         data = torch.cat((data_a, data_b), dim=0)
 
-        feats = model.pre_forward(data)
-        classfier_a, classfier_b = model(feats[:len(data_a)], feats[len(data_a):])
+        _, feats = model(data)
+        classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
 
         # pdb.set_trace()
         predicted_labels = output_softmax(classfier_a)
@@ -611,7 +611,7 @@ def valid(valid_loader, model, epoch):
                 100. * minibatch_a,
                 100. * minibatch_b
             ))
-            # break
+            break
 
     valid_accuracy_a = 100. * correct_a / total_datasize_a
     valid_accuracy_b = 100. * correct_b / total_datasize_b
@@ -644,7 +644,7 @@ def test(test_loader, model, epoch):
         # compute output
         data = torch.cat((data_a, data_p), dim=0)
 
-        feats = model.pre_forward(data)
+        _, feats = model(data)
         out_a = feats[:len(data_a)]
         out_p = feats[len(data_a):]
 

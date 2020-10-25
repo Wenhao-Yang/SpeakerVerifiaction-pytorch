@@ -1487,7 +1487,7 @@ class MultiResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def pre_forward(self, x):
+    def forward(self, x):
         if self.inst_norm:
             x = x.squeeze(1)
             x = self.inst_layer(x)
@@ -1528,9 +1528,9 @@ class MultiResNet(nn.Module):
         if self.alpha:
             embeddings = self.l2_norm(embeddings, alpha=self.alpha)
 
-        return embeddings
+        return _, embeddings
 
-    def forward(self, a, b):
+    def cls_forward(self, a, b):
 
         logits_a = self.classifier_a(a)
         logits_b = self.classifier_b(b)
