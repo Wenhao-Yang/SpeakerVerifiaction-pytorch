@@ -640,8 +640,7 @@ def test(test_loader, model, epoch):
 
         if args.cuda:
             data_a, data_p = data_a.cuda(), data_p.cuda()
-        data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-
+        # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
         # compute output
         data = torch.cat((data_a, data_p), dim=0)
 
