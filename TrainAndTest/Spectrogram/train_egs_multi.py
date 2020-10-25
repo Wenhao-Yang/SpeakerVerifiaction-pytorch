@@ -63,9 +63,8 @@ parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
 parser.add_argument('--train-dir-a', type=str, help='path to dataset')
 parser.add_argument('--train-dir-b', type=str, help='path to dataset')
-parser.add_argument('--valid-dir', type=str,
-                    default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/egs/spect/valid_power',
-                    help='path to dataset')
+parser.add_argument('--valid-dir-a', type=str, help='path to dataset')
+parser.add_argument('--valid-dir-b', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str,
                     default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_power',
                     help='path to voxceleb1 test dataset')
@@ -283,7 +282,9 @@ if len(test_dir) < args.veri_pairs:
 else:
     test_dir.partition(args.veri_pairs)
 
-valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
+valid_dir_a = EgsDataset(dir=args.valid_dir_a, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
+valid_dir_b = EgsDataset(dir=args.valid_dir_b, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
+
 
 
 def main():
@@ -389,7 +390,12 @@ def main():
     train_loader_b = torch.utils.data.DataLoader(train_dir_b, batch_size=batch_size_b, shuffle=False, **kwargs)
     train_loader = [train_loader_a, train_loader_b]
 
-    valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
+    valid_loader_a = torch.utils.data.DataLoader(valid_dir_a, batch_size=int(args.batch_size / 4), shuffle=False,
+                                                 **kwargs)
+    valid_loader_b = torch.utils.data.DataLoader(valid_dir_b, batch_size=int(args.batch_size / 4), shuffle=False,
+                                                 **kwargs)
+    valid_loader = valid_loader_a, valid_loader_b
+
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 32), shuffle=False, **kwargs)
     # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
     #                                                shuffle=False, **kwargs)
@@ -422,7 +428,9 @@ def main():
                        check_path)
 
         if epoch % 2 == 1 and epoch != (end - 1):
-            test(test_loader, valid_loader, model, epoch)
+            valid(valid_loader, model, epoch)
+            test(test_loader, model, epoch)
+
         # sitw_test(sitw_test_loader, model, epoch)
         # sitw_test(sitw_dev_loader, model, epoch)
         scheduler.step()
@@ -480,7 +488,6 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         # feats_b = model.pre_forward(data_b)
         classfier_a, classfier_b = model(feats[:len(data_a)], feats[len(data_a):])
-
         # cos_theta, phi_theta = classfier
 
         if args.loss_type == 'soft':
@@ -535,6 +542,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                     total_loss / (batch_idx + 1),
                     100. * minibatch_a,
                     100. * minibatch_b))
+            break
 
     print(
         '\n\33[91mTrain Epoch {}: Train A Accuracy:{:.6f}%, Train B Accuracy:{:.6f}%, Avg loss: {}.\33[0m'.format(epoch,
@@ -554,101 +562,71 @@ def train(train_loader, model, ce, optimizer, epoch):
 def valid(valid_loader, model, epoch):
     # switch to evaluate mode
     model.eval()
+    correct_a = 0.
+    correct_b = 0.
+
+    total_datasize_a = 0.
+    total_datasize_b = 0.
 
     valid_loader_a, valid_loader_b = valid_loader
 
     valid_pbar = tqdm(enumerate(zip(valid_loader_a, valid_loader_b)))
-    softmax = nn.Softmax(dim=1)
-
-    correct = 0.
-    total_datasize = 0.
+    output_softmax = nn.Softmax(dim=1)
 
     for batch_idx, ((data_a, label_a), (data_b, label_b)) in valid_pbar:
-        data_a = Variable(data_a.cuda())
-        data_b = Variable(data_b.cuda())
+        data_a = data_a.cuda()
+        data_b = data_b.cuda()
+
+        label_a = label_a.cuda()
+        label_b = label_a.cuda()
 
         # compute output
-        feat_a = model.pre_foward(data_a)
-        out_a = model(feat_a)
+        data = torch.cat((data_a, data_b), dim=0)
 
-        feat_b = model.pre_foward(data_b)
-        out_b = model(feat_b)
-
-        if args.loss_type == 'asoft':
-            predicted_labels, _ = out_a
-        else:
-            predicted_labels = out_a
-
-        true_labels = Variable(label_a.cuda())
+        feats = model.pre_foward(data)
+        classfier_a, classfier_b = model(feats[:len(data_a)], feats[len(data_a):])
 
         # pdb.set_trace()
-        predicted_one_labels = softmax(predicted_labels)
-        predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+        predicted_labels = output_softmax(classfier_a)
+        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+        minibatch_correct = float((predicted_one_labels.cuda() == label_a).sum().item())
+        minibatch_a = minibatch_correct / len(predicted_one_labels)
+        correct_a += minibatch_correct
+        total_datasize_a += len(predicted_one_labels)
 
-        batch_correct = (predicted_one_labels.cuda() == true_labels.cuda()).sum().item()
-        minibatch_acc = float(batch_correct / len(predicted_one_labels))
-        correct += batch_correct
-        total_datasize += len(predicted_one_labels)
+        predicted_labels = output_softmax(classfier_b)
+        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+        minibatch_correct = float((predicted_one_labels.cuda() == label_b).sum().item())
+        minibatch_b = minibatch_correct / len(predicted_one_labels)
+        correct_b += minibatch_correct
+        total_datasize_b += len(predicted_one_labels)
 
         if batch_idx % args.log_interval == 0:
-            valid_pbar.set_description('Valid Epoch: {:2d} [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
+            valid_pbar.set_description(
+                'Valid Epoch: {:2d} [{:8d}/{:8d} ({:3.0f}%)] A set Accuracy: {:.4f}%, B set Accuracy: {:.4f}%'.format(
                 epoch,
                 batch_idx * len(data_a),
-                len(valid_loader.dataset),
-                100. * batch_idx / len(valid_loader),
-                100. * minibatch_acc
+                    len(valid_loader_a.dataset),
+                100. * batch_idx / len(valid_loader_a),
+                100. * minibatch_a,
+                100. * minibatch_b
             ))
+            break
 
-    valid_accuracy = 100. * correct / total_datasize
-    writer.add_scalar('Test/Valid_Accuracy', valid_accuracy, epoch)
-    print('  Valid Accuracy is %.4f %%.\33[0m' % valid_accuracy)
+    valid_accuracy_a = 100. * correct_a / total_datasize_a
+    valid_accuracy_b = 100. * correct_b / total_datasize_b
+    writer.add_scalar('Test/Valid_Accuracy_A', valid_accuracy_a, epoch)
+    writer.add_scalar('Test/Valid_Accuracy_B', valid_accuracy_b, epoch)
+
+    print('  Valid on A Accuracy is %.4f %%. Valid on B Accuracy is %.4f %%.\33[0m' % (
+    valid_accuracy_a, valid_accuracy_b))
 
     torch.cuda.empty_cache()
 
 
-def test(test_loader, valid_loader, model, epoch):
+def test(test_loader, model, epoch):
     # switch to evaluate mode
     model.eval()
-
-    valid_pbar = tqdm(enumerate(valid_loader))
-    softmax = nn.Softmax(dim=1)
-
-    correct = 0.
-    total_datasize = 0.
-
-    for batch_idx, (data, label) in valid_pbar:
-        data = Variable(data.cuda())
-
-        # compute output
-        out, _ = model(data)
-        if args.loss_type == 'asoft':
-            predicted_labels, _ = out
-        else:
-            predicted_labels = out
-
-        true_labels = Variable(label.cuda())
-
-        # pdb.set_trace()
-        predicted_one_labels = softmax(predicted_labels)
-        predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
-
-        batch_correct = (predicted_one_labels.cuda() == true_labels.cuda()).sum().item()
-        minibatch_acc = float(batch_correct / len(predicted_one_labels))
-        correct += batch_correct
-        total_datasize += len(predicted_one_labels)
-
-        if batch_idx % args.log_interval == 0:
-            valid_pbar.set_description('Valid Epoch: {:2d} [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
-                epoch,
-                batch_idx * len(data),
-                len(valid_loader.dataset),
-                100. * batch_idx / len(valid_loader),
-                100. * minibatch_acc
-            ))
-
-    valid_accuracy = 100. * correct / total_datasize
-    writer.add_scalar('Test/Valid_Accuracy', valid_accuracy, epoch)
-    torch.cuda.empty_cache()
 
     labels, distances = [], []
     pbar = tqdm(enumerate(test_loader))
@@ -665,8 +643,8 @@ def test(test_loader, valid_loader, model, epoch):
         data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
 
         # compute output
-        _, out_a_ = model(data_a)
-        _, out_p_ = model(data_p)
+        _, out_a_ = model.pre_foward(data_a)
+        _, out_p_ = model.pre_foward(data_p)
         out_a = out_a_
         out_p = out_p_
 
@@ -680,6 +658,7 @@ def test(test_loader, valid_loader, model, epoch):
         if batch_idx % args.log_interval == 0:
             pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
                 epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+            break
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
@@ -695,8 +674,7 @@ def test(test_loader, valid_loader, model, epoch):
     dist_type = 'cos' if args.cos_sim else 'l2'
     print('\nFor %s_distance, ' % dist_type)
     print('  \33[91mTest ERR is {:.4f}%, Threshold is {}'.format(100. * eer, eer_threshold))
-    print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f},'.format(mindcf_01, mindcf_001))
-    print('  Valid Accuracy is %.4f %%.\33[0m' % valid_accuracy)
+    print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.\33[0m'.format(mindcf_01, mindcf_001))
 
     torch.cuda.empty_cache()
 

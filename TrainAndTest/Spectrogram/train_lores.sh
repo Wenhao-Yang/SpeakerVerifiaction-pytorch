@@ -792,9 +792,10 @@ if [ $stage -le 63 ]; then
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
-      --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/dev_v1 \
-      --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/dev_v1 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_v1 \
+      --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k \
+      --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox1_dev_8k \
+      --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k \
+      --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox1_valid_8k \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
