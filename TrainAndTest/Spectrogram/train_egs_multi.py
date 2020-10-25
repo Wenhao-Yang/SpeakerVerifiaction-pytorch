@@ -15,7 +15,6 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
-import pdb
 import sys
 import time
 # Version conflict
@@ -653,7 +652,7 @@ def test(test_loader, model, epoch):
         dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
         dists = dists.cpu().detach().numpy()
 
-        pdb.set_trace()
+        # pdb.set_trace()
         # print(dists.shape)
         distances.append(dists)
         labels.append(label.data.cpu().numpy())
@@ -661,7 +660,7 @@ def test(test_loader, model, epoch):
         if batch_idx % args.log_interval == 0:
             pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
                 epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-            break
+            # break
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
