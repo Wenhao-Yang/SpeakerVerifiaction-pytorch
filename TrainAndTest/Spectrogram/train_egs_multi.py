@@ -15,6 +15,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import pdb
 import sys
 import time
 # Version conflict
@@ -652,6 +653,8 @@ def test(test_loader, model, epoch):
         dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
         dists = dists.cpu().detach().numpy()
 
+        pdb.set_trace()
+        # print(dists.shape)
         distances.append(dists)
         labels.append(label.data.cpu().numpy())
 
