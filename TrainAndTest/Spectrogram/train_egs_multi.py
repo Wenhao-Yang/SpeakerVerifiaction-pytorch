@@ -643,10 +643,11 @@ def test(test_loader, model, epoch):
         data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
 
         # compute output
-        _, out_a_ = model.pre_forward(data_a)
-        _, out_p_ = model.pre_forward(data_p)
-        out_a = out_a_
-        out_p = out_p_
+        data = torch.cat((data_a, data_p), dim=0)
+
+        feats = model.pre_forward(data)
+        out_a = feats[:len(data_a)]
+        out_p = feats[len(data_a):]
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
