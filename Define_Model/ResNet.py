@@ -1528,7 +1528,7 @@ class MultiResNet(nn.Module):
         if self.alpha:
             embeddings = self.l2_norm(embeddings, alpha=self.alpha)
 
-        return _, embeddings
+        return '', embeddings
 
     def cls_forward(self, a, b):
 
