@@ -574,14 +574,13 @@ def valid(valid_loader, model, epoch):
 
     with torch.no_grad():
         for batch_idx, ((data_a, label_a), (data_b, label_b)) in valid_pbar:
-            data_a = data_a.cuda()
-            data_b = data_b.cuda()
 
             label_a = label_a.cuda()
             label_b = label_b.cuda()
 
             # compute output
             data = torch.cat((data_a, data_b), dim=0)
+            data = data.cuda()
 
             _, feats = model(data)
             classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
