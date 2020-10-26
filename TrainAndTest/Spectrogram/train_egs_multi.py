@@ -476,17 +476,15 @@ def train(train_loader, model, ce, optimizer, epoch):
     # start_time = time.time()
     for batch_idx, ((data_a, label_a), (data_b, label_b)) in pbar:
 
-        if args.cuda:
-            label_a = label_a.cuda(non_blocking=True)
-            data_a = data_a.cuda(non_blocking=True)
-
-            label_b = label_b.cuda(non_blocking=True)
-            data_b = data_b.cuda(non_blocking=True)
-
-        data_a, label_a = Variable(data_a), Variable(label_a)
-        data_b, label_b = Variable(data_b), Variable(label_b)
-
         data = torch.cat((data_a, data_b), dim=0)
+        if args.cuda:
+            data = data.cuda(non_blocking=True)
+            label_a = label_a.cuda(non_blocking=True)
+            label_b = label_b.cuda(non_blocking=True)
+
+        data = Variable(data)
+        label_a, label_b = Variable(label_a), Variable(label_b)
+
         _, feats = model(data)
 
         # feats_b = model.pre_forward(data_b)
@@ -537,7 +535,7 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         if batch_idx % args.log_interval == 0:
             pbar.set_description(
-                'Train Epoch {}({:.0f}%): Avg_Loss: {:.4f} Accuracy: A, {:.4f}%  B, {:.4f}%'.format(
+                'Train Epoch {}({:.0f}%): Avg_Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
                     epoch,
                     100 * (batch_idx / len(train_loader_a)),
                     total_loss / (batch_idx + 1),
