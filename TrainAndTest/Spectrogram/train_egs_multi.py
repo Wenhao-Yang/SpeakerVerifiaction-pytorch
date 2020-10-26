@@ -581,7 +581,7 @@ def valid(valid_loader, model, epoch):
         data_b = data_b.cuda()
 
         label_a = label_a.cuda()
-        label_b = label_a.cuda()
+        label_b = label_b.cuda()
 
         # compute output
         data = torch.cat((data_a, data_b), dim=0)
