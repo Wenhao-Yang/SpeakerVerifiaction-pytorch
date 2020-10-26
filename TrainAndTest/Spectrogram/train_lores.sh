@@ -800,14 +800,14 @@ if [ $stage -le 63 ]; then
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --input-norm Mean \
-      --batch-size 128 \
+      --batch-size 192 \
       --nj 12 \
       --epochs 24 \
       --lr 0.1 \
       --input-dim 81 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/soft_dp25/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/${loss}_dp25_b192 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/soft_dp25_b192/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
