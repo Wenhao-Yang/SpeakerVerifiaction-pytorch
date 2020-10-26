@@ -1390,7 +1390,7 @@ class MultiResNet(nn.Module):
 
     def __init__(self, embedding_size, num_classes_a, num_classes_b, block=BasicBlock, input_dim=161,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
-                 inst_norm=False, alpha=12,
+                 inst_norm=False, alpha=12, input_norm='None',
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(MultiResNet, self).__init__()
@@ -1408,14 +1408,19 @@ class MultiResNet(nn.Module):
         self.embedding_size = embedding_size
         self.relu = nn.ReLU(inplace=True)
 
-        self.inst_norm = inst_norm
-        self.inst_layer = nn.InstanceNorm1d(input_dim)
+        self.input_norm = input_norm
+        if input_norm == 'Instance':
+            self.inst_layer = nn.InstanceNorm1d(input_dim)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        else:
+            self.inst_layer = None
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(channels[0])
 
-        self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=1)
+        # self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=1)
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
@@ -1446,6 +1451,9 @@ class MultiResNet(nn.Module):
             nn.BatchNorm1d(self.embedding_size)
         )
 
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
         self.classifier_a = nn.Linear(self.embedding_size, num_classes_a)
         self.classifier_b = nn.Linear(self.embedding_size, num_classes_b)
 
@@ -1457,19 +1465,6 @@ class MultiResNet(nn.Module):
             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
-
-    def l2_norm(self, input, alpha=1.0):
-        # alpha = log(p * (class -2) / (1-p))
-        input_size = input.size()
-        buffer = torch.pow(input, 2)
-
-        normp = torch.sum(buffer, 1).add_(1e-12)
-        norm = torch.sqrt(normp)
-
-        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
-        output = _output.view(input_size)
-
-        return output * alpha
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
@@ -1488,11 +1483,8 @@ class MultiResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        if self.inst_norm:
-            x = x.squeeze(1)
+        if self.inst_layer != None:
             x = self.inst_layer(x)
-            x = x.unsqueeze(1)
-            # x = x - torch.mean(x, dim=-2, keepdim=True)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -1525,7 +1517,8 @@ class MultiResNet(nn.Module):
         embeddings = self.fc(x)
 
         if self.alpha:
-            embeddings = self.l2_norm(embeddings, alpha=self.alpha)
+            embeddings = self.l2_norm(embeddings)
+            # embeddings = self.l2_norm(embeddings, alpha=self.alpha)
 
         return '', embeddings
 
