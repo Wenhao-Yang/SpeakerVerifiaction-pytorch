@@ -188,7 +188,7 @@ parser.add_argument('--dampening', default=0, type=float,
                     metavar='DAM', help='dampening for sgd (default: 0.0)')
 parser.add_argument('--optimizer', default='sgd', type=str,
                     metavar='OPT', help='The optimizer to use (default: Adagrad)')
-parser.add_argument('--grad-clip', default=10., type=float,
+parser.add_argument('--grad-clip', default=0., type=float,
                     help='momentum for sgd (default: 0.9)')
 # Device options
 parser.add_argument('--no-cuda', action='store_true', default=False,
