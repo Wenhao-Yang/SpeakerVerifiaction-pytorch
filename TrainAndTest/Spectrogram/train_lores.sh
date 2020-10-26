@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=63
+stage=51
 
 waited=0
 while [ `ps 23863 | wc -l` -eq 2 ]; do
@@ -412,8 +412,9 @@ if [ $stage -le 51 ]; then
   datasets=vox1
   feat=spect_161
   loss=soft
+  encod=STAP
 
-  for encod in STAP ; do
+  for filter in Avg None ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
@@ -426,7 +427,7 @@ if [ $stage -le 51 ]; then
       --resnet-size ${resnet_size} \
       --stride 1 \
       --feat-format kaldi \
-      --filter Avg \
+      --filter ${filter} \
       --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
@@ -436,8 +437,8 @@ if [ $stage -le 51 ]; then
       --kernel-size 5,5 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_Avg \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_Avg/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_${filter} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_${filter}/checkpoint_9.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
@@ -448,7 +449,7 @@ if [ $stage -le 51 ]; then
   done
 fi
 
-#stage=1000
+stage=1000
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
