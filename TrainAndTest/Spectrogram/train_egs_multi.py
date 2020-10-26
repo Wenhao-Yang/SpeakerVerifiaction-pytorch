@@ -394,7 +394,7 @@ def main():
     valid_loader_a = torch.utils.data.DataLoader(valid_dir_a, batch_size=batch_size_a, shuffle=False,
                                                  **kwargs)
 
-    batch_size_b = int(len(valid_dir_b) * len(valid_dir_a) / batch_size_a)
+    batch_size_b = int(len(valid_dir_b) / len(valid_dir_a) * batch_size_a)
     valid_loader_b = torch.utils.data.DataLoader(valid_dir_b, batch_size=batch_size_b, shuffle=False,
                                                  **kwargs)
     valid_loader = valid_loader_a, valid_loader_b
