@@ -806,9 +806,8 @@ if [ $stage -le 63 ]; then
       --lr 0.1 \
       --input-dim 81 \
       --milestones 5,10,15 \
-      --padding 0,0 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs_pad0/${loss}_dp01 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs_pad0/soft_dp01/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/${loss}_dp25 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/soft_dp25/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
@@ -819,7 +818,7 @@ if [ $stage -le 63 ]; then
       --m 3 \
       --loss-ratio 0.5 \
       --weight-decay 0.001 \
-      --dropout-p 0.1 \
+      --dropout-p 0.25 \
       --gpu-id 0 \
       --cos-sim \
       --extract \
