@@ -399,7 +399,7 @@ def main():
                                                  **kwargs)
     valid_loader = valid_loader_a, valid_loader_b
 
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 32), shuffle=False, **kwargs)
+    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 16), shuffle=False, **kwargs)
     # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
     #                                                shuffle=False, **kwargs)
     # sitw_dev_loader = torch.utils.data.DataLoader(sitw_dev_part, batch_size=args.test_batch_size, shuffle=False,
