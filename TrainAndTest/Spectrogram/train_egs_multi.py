@@ -537,11 +537,9 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         if batch_idx % args.log_interval == 0:
             pbar.set_description(
-                'Train Epoch {:2d}: [{:4d}/{:4d} ({:3.0f}%)] AvgLoss: {:.4f} Accuracy: A, {:.4f}%  B, {:.4f}%'.format(
+                'Train Epoch {:2d} for {:4d} Iteration: Avg_Loss: {:.4f} Accuracy: A, {:.4f}%  B, {:.4f}%'.format(
                     epoch,
-                    batch_idx,
                     len(train_loader_a),
-                    100. * batch_idx / len(train_loader_a),
                     total_loss / (batch_idx + 1),
                     100. * minibatch_a,
                     100. * minibatch_b))
@@ -554,7 +552,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                                                                                                                   100 * float(
                                                                                                                       correct_b) / total_datasize_b,
                                                                                                                   total_loss / len(
-                                                                                                                      train_loader)))
+                                                                                                                      train_loader_a)))
     writer.add_scalar('Train/Accuracy_A', correct_a / total_datasize_a, epoch)
     writer.add_scalar('Train/Accuracy_B', correct_b / total_datasize_b, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
@@ -576,52 +574,51 @@ def valid(valid_loader, model, epoch):
     valid_pbar = tqdm(enumerate(zip(valid_loader_a, valid_loader_b)))
     output_softmax = nn.Softmax(dim=1)
 
-    for batch_idx, ((data_a, label_a), (data_b, label_b)) in valid_pbar:
-        data_a = data_a.cuda()
-        data_b = data_b.cuda()
+    with torch.no_grad():
+        for batch_idx, ((data_a, label_a), (data_b, label_b)) in valid_pbar:
+            data_a = data_a.cuda()
+            data_b = data_b.cuda()
 
-        label_a = label_a.cuda()
-        label_b = label_b.cuda()
+            label_a = label_a.cuda()
+            label_b = label_b.cuda()
 
-        # compute output
-        data = torch.cat((data_a, data_b), dim=0)
+            # compute output
+            data = torch.cat((data_a, data_b), dim=0)
 
-        _, feats = model(data)
-        classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
+            _, feats = model(data)
+            classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
 
-        # pdb.set_trace()
-        predicted_labels = output_softmax(classfier_a)
-        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-        minibatch_correct = float((predicted_one_labels.cuda() == label_a).sum().item())
-        minibatch_a = minibatch_correct / len(predicted_one_labels)
-        correct_a += minibatch_correct
-        total_datasize_a += len(predicted_one_labels)
+            # pdb.set_trace()
+            predicted_labels = output_softmax(classfier_a)
+            predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+            minibatch_correct = float((predicted_one_labels.cuda() == label_a).sum().item())
+            minibatch_a = minibatch_correct / len(predicted_one_labels)
+            correct_a += minibatch_correct
+            total_datasize_a += len(predicted_one_labels)
 
-        predicted_labels = output_softmax(classfier_b)
-        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-        minibatch_correct = float((predicted_one_labels.cuda() == label_b).sum().item())
-        minibatch_b = minibatch_correct / len(predicted_one_labels)
-        correct_b += minibatch_correct
-        total_datasize_b += len(predicted_one_labels)
+            predicted_labels = output_softmax(classfier_b)
+            predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+            minibatch_correct = float((predicted_one_labels.cuda() == label_b).sum().item())
+            minibatch_b = minibatch_correct / len(predicted_one_labels)
+            correct_b += minibatch_correct
+            total_datasize_b += len(predicted_one_labels)
 
-        if batch_idx % args.log_interval == 0:
-            valid_pbar.set_description(
-                'Valid Epoch: {:2d} [{:8d}/{:8d} ({:3.0f}%)] A set Accuracy: {:.4f}%, B set Accuracy: {:.4f}%'.format(
-                epoch,
-                batch_idx * len(data_a),
+            if batch_idx % args.log_interval == 0:
+                valid_pbar.set_description(
+                    'Valid Epoch: {:2d} for {:4d} Batch Accuracy: A set: {:.4f}%, B set: {:.4f}%'.format(
+                        epoch,
                     len(valid_loader_a.dataset),
-                100. * batch_idx / len(valid_loader_a),
-                100. * minibatch_a,
-                100. * minibatch_b
-            ))
-            # break
+                        100. * minibatch_a,
+                        100. * minibatch_b
+                    ))
+                # break
 
     valid_accuracy_a = 100. * correct_a / total_datasize_a
     valid_accuracy_b = 100. * correct_b / total_datasize_b
     writer.add_scalar('Test/Valid_Accuracy_A', valid_accuracy_a, epoch)
     writer.add_scalar('Test/Valid_Accuracy_B', valid_accuracy_b, epoch)
 
-    print('\n\33[91mValid on A Accuracy is %.4f %%. Valid on B Accuracy is %.4f %%.\33[0m\n' % (
+    print('\n\33[91mValid on A Accuracy is %.4f %%. Valid on B Accuracy is %.4f %%.\33[0m' % (
     valid_accuracy_a, valid_accuracy_b))
 
     torch.cuda.empty_cache()
@@ -633,37 +630,39 @@ def test(test_loader, model, epoch):
 
     labels, distances = [], []
     pbar = tqdm(enumerate(test_loader))
-    for batch_idx, (data_a, data_p, label) in pbar:
+    with torch.no_grad():
 
-        vec_shape = data_a.shape
-        # pdb.set_trace()
-        if vec_shape[1] != 1:
-            data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-            data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+        for batch_idx, (data_a, data_p, label) in pbar:
+            vec_shape = data_a.shape
+            # pdb.set_trace()
+            if vec_shape[1] != 1:
+                data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+                data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
-        if args.cuda:
-            data_a, data_p = data_a.cuda(), data_p.cuda()
-        # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-        # compute output
-        data = torch.cat((data_a, data_p), dim=0)
+            data = torch.cat((data_a, data_p), dim=0)
+            if args.cuda:
+                data = data.cuda()
+            # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
+            # compute output
 
-        _, feats = model(data)
-        out_a = feats[:len(data_a)]
-        out_p = feats[len(data_a):]
+            _, feats = model(data)
+            out_a = feats[:len(data_a)]
+            out_p = feats[len(data_a):]
 
-        dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
-        dists = dists.cpu().detach().numpy()
+            dists = l2_dist.forward(out_a,
+                                    out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
+            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
+            dists = dists.cpu().detach().numpy()
 
-        # pdb.set_trace()
-        # print(dists.shape)
-        distances.append(dists)
-        labels.append(label.data.cpu().numpy())
+            # pdb.set_trace()
+            # print(dists.shape)
+            distances.append(dists)
+            labels.append(label.data.cpu().numpy())
 
-        if batch_idx % args.log_interval == 0:
-            pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-                epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-            # break
+            if batch_idx % args.log_interval == 0:
+                pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
+                    epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+                # break
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
