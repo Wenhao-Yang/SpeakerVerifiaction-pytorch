@@ -799,7 +799,7 @@ if [ $stage -le 63 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
-      --inst-norm \
+      --input-norm Mean \
       --batch-size 256 \
       --nj 12 \
       --epochs 20 \
