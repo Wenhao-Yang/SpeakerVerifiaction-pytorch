@@ -802,7 +802,7 @@ if [ $stage -le 63 ]; then
       --input-norm Mean \
       --batch-size 192 \
       --nj 12 \
-      --epochs 24 \
+      --epochs 6 \
       --lr 0.1 \
       --input-dim 81 \
       --milestones 8,14,20 \
