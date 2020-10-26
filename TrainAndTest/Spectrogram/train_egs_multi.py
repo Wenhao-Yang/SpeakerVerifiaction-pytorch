@@ -390,7 +390,7 @@ def main():
     train_loader_b = torch.utils.data.DataLoader(train_dir_b, batch_size=batch_size_b, shuffle=False, **kwargs)
     train_loader = [train_loader_a, train_loader_b]
 
-    batch_size_a = int(args.batch_size / 4)
+    batch_size_a = int(args.batch_size / 8)
     valid_loader_a = torch.utils.data.DataLoader(valid_dir_a, batch_size=batch_size_a, shuffle=False,
                                                  **kwargs)
 
