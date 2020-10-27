@@ -1390,7 +1390,7 @@ class MultiResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes_a, num_classes_b, block=BasicBlock, input_dim=161,
-                 resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., stride=2,
                  inst_norm=False, alpha=12, input_norm='None',
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
@@ -1418,7 +1418,7 @@ class MultiResNet(nn.Module):
             self.inst_layer = None
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=stride, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(channels[0])
 
         # self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=1)
