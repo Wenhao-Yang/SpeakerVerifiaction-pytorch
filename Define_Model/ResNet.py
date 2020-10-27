@@ -308,7 +308,7 @@ class ThinResNet(nn.Module):
     def _forward(self, x):
         # pdb.set_trace()
         # print(x.shape)
-        if self.filter != None:
+        if self.filter_layer != None:
             x = self.filter_layer(x)
 
         if self.inst_layer != None:
