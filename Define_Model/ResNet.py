@@ -222,9 +222,11 @@ class ThinResNet(nn.Module):
         self.layer1 = self._make_layer(block, num_filter[0], layers[0])
         self.layer2 = self._make_layer(block, num_filter[1], layers[1], stride=2)
         self.layer3 = self._make_layer(block, num_filter[2], layers[2], stride=2)
-        self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=2)
+
         if self.fast:
             self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=1)
+        else:
+            self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=2)
 
         # [64, 128, 37, 8]
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
