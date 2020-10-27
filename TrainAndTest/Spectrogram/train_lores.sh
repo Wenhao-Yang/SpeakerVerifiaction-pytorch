@@ -438,8 +438,8 @@ if [ $stage -le 51 ]; then
       --kernel-size 5,5 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_${filter} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_${filter}/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}_fast/${loss}_${filter} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}_fast/${loss}_${filter}/checkpoint_9.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
