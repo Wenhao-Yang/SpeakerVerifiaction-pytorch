@@ -425,7 +425,8 @@ if [ $stage -le 51 ]; then
       --milestones 8,13,18 \
       --model ${model} \
       --resnet-size ${resnet_size} \
-      --stride 2 \
+      --stride 1 \
+      --fast \
       --feat-format kaldi \
       --filter ${filter} \
       --embedding-size 128 \
@@ -449,7 +450,7 @@ if [ $stage -le 51 ]; then
   done
 fi
 
-#stage=1000
+stage=63
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
@@ -806,10 +807,11 @@ if [ $stage -le 63 ]; then
       --epochs 24 \
       --lr 0.1 \
       --input-dim 81 \
+      --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/${loss}_dp25_b192 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/soft_dp25_b192/checkpoint_24.pth \
-      --channels 64,128,256,256 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/${loss}_dp25_16 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/soft_dp25_16/checkpoint_24.pth \
+      --channels 16,64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
       --num-valid 4 \

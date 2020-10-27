@@ -216,7 +216,8 @@ class ThinResNet(nn.Module):
         self.bn1 = self._norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
         if self.fast:
-            self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
 
         self.layer1 = self._make_layer(block, num_filter[0], layers[0])
         self.layer2 = self._make_layer(block, num_filter[1], layers[1], stride=2)
