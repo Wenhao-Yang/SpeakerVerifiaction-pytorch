@@ -788,7 +788,7 @@ if [ $stage -le 63 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
   model=MultiResNet
-  resnet_size=8
+  resnet_size=10
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs_multi.py \
@@ -803,13 +803,13 @@ if [ $stage -le 63 ]; then
       --input-norm Mean \
       --batch-size 192 \
       --nj 12 \
-      --epochs 6 \
+      --epochs 24 \
       --lr 0.1 \
       --input-dim 81 \
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/${loss}_dp25_b192 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/soft_dp25_b192/checkpoint_24.pth \
-      --channels 64,128,256 \
+      --channels 64,128,256,256 \
       --embedding-size 128 \
       --avg-size 4 \
       --num-valid 4 \
