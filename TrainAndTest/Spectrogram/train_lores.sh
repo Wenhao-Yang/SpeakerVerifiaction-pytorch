@@ -425,7 +425,7 @@ if [ $stage -le 51 ]; then
       --milestones 8,13,18 \
       --model ${model} \
       --resnet-size ${resnet_size} \
-      --stride 1 \
+      --stride 2 \
       --feat-format kaldi \
       --filter ${filter} \
       --embedding-size 128 \
