@@ -736,7 +736,7 @@ class LocalResNet(nn.Module):
         else:
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, avg_size))
             self.encoder = None
-            self.fc = nn.Sequential(
+            self.fc1 = nn.Sequential(
                 nn.Linear(channels[-1] * avg_size * time_dim, embedding_size),
                 nn.BatchNorm1d(embedding_size)
             )
@@ -815,7 +815,7 @@ class LocalResNet(nn.Module):
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
-        x = self.fc(x)
+        x = self.fc1(x)
 
         if self.transform:
             x = self.trans_layer(x)
