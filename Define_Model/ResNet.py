@@ -648,7 +648,7 @@ class LocalResNet(nn.Module):
 
     def __init__(self, embedding_size, num_classes, input_dim=161, block=BasicBlock,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
-                 input_norm=None, alpha=12, stride=2, transform=False, time_dim=1,
+                 input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(LocalResNet, self).__init__()
@@ -664,6 +664,7 @@ class LocalResNet(nn.Module):
         self.layers = layers
         self.dropout_p = dropout_p
         self.transform = transform
+        self.fast = fast
 
         self.embedding_size = embedding_size
         # self.relu = nn.LeakyReLU()
