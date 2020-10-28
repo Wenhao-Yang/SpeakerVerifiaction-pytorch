@@ -791,7 +791,8 @@ if [ $stage -le 63 ]; then
   datasets=army
   model=MultiResNet
   resnet_size=10
-  for loss in soft ; do
+  loss=soft
+  for encod in None SAP ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
@@ -810,10 +811,12 @@ if [ $stage -le 63 ]; then
       --input-dim 81 \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/${loss}_dp25_16 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs/soft_dp25_16/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs_${encod}/${loss}_dp25_16 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x/spect_egs_${encod}/soft_dp25_16/checkpoint_24.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
+      --encoder-type ${encod} \
+      --time-size 1 \
       --avg-size 4 \
       --num-valid 4 \
       --alpha 12 \
