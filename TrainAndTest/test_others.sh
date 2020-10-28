@@ -498,6 +498,7 @@ if [ $stage -le 60 ]; then
       --channels 64,128,256,256 \
       --loss-type ${loss} \
       --input-length fix \
+      --time-dim 1 \
       --extract \
       --test-input-per-file 4 \
       --inst-norm \
