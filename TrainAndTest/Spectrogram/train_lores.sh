@@ -738,7 +738,7 @@ if [ $stage -le 62 ]; then
       --channels 32,64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
-      --stried 1 \
+      --stride 1 \
       --fast \
       --num-valid 4 \
       --alpha 12 \
@@ -785,7 +785,7 @@ if [ $stage -le 62 ]; then
 #      --extract \
 #      --loss-type soft
 fi
-
+stage=10000
 if [ $stage -le 63 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
