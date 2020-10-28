@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=51
+stage=62
 
 waited=0
 while [ `ps 23863 | wc -l` -eq 2 ]; do
@@ -450,7 +450,7 @@ if [ $stage -le 51 ]; then
   done
 fi
 
-stage=63
+# stage=63
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
@@ -718,7 +718,7 @@ if [ $stage -le 62 ]; then
   model=LoResNet
   resnet_size=10
   for loss in soft ; do
-    echo -e "\n\033[1;4;31m Training LoResNet in vox1 with ${loss} kernel 5,5 \033[0m\n"
+    echo -e "\n\033[1;4;31m Training LoResNet${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_v1 \
@@ -726,19 +726,20 @@ if [ $stage -le 62 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
-      --inst-norm \
+      --input-norm Mean \
       --batch-size 256 \
       --nj 12 \
       --epochs 20 \
       --lr 0.1 \
       --input-dim 81 \
       --milestones 5,10,15 \
-      --padding 0,0 \
-      --check-path Data/checkpoint/${model}10/${datasets}_v1/spect_egs_pad0/${loss}_dp01 \
-      --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_pad0/soft_dp01/checkpoint_24.pth \
-      --channels 64,128,256,256 \
+      --check-path Data/checkpoint/${model}10/${datasets}_v1/spect_egs_fast/${loss}_dp01 \
+      --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_fast/soft_dp01/checkpoint_24.pth \
+      --channels 32,64,128,256 \
       --embedding-size 128 \
       --avg-size 4 \
+      --stried 1 \
+      --fast \
       --num-valid 4 \
       --alpha 12 \
       --margin 0.3 \
