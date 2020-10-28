@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=56
+stage=60
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -479,7 +479,7 @@ if [ $stage -le 56 ]; then
   done
 fi
 
-stage=100
+# stage=100
 if [ $stage -le 60 ]; then
   dataset=army
   resnet_size=10
@@ -489,7 +489,7 @@ if [ $stage -le 60 ]; then
     python -W ignore TrainAndTest/test_vox1.py \
       --model LoResNet \
       --train-dir ${lstm_dir}/data/${dataset}/spect/dev_8k \
-      --test-dir ${lstm_dir}/data/radio/spect/example_8k \
+      --test-dir ${lstm_dir}/data/${dataset}/spect/test_8k \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --input-per-spks 224 \
