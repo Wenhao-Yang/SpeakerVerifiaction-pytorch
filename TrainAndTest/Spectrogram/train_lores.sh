@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=62
+stage=50
 
 waited=0
 while [ `ps 23863 | wc -l` -eq 2 ]; do
@@ -407,6 +407,8 @@ if [ $stage -le 50 ]; then
 
 fi
 
+stage=6300
+
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   model=ThinResNet
@@ -452,7 +454,7 @@ if [ $stage -le 51 ]; then
   done
 fi
 
-# stage=63
+stage=6300
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
