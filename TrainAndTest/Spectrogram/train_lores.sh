@@ -331,7 +331,8 @@ if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   model=LoResNet
-  resnet_size=10
+  resnet_size=8
+  encod=None
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -341,16 +342,17 @@ if [ $stage -le 50 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
       --input-norm Mean \
+      --transform GhostVLAD \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 20 \
       --lr 0.1 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_5723_0001 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_STAP/${loss}_dp25_32_5723_0001/checkpoint_24.pth \
-      --channels 32,64,128,256 \
-      --kernel-size 5,7 \
-      --stride 2,3 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_log_${encod}/${loss}_dp25_GhostVLAD \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_log_${encod}/${loss}_dp25_GhostVLAD/checkpoint_24.pth \
+      --channels 64,128,256 \
+      --kernel-size 5,5 \
+      --stride 2 \
       --batch-size 128 \
       --embedding-size 128 \
       --avg-size 1 \
@@ -363,7 +365,7 @@ if [ $stage -le 50 ]; then
       --weight-decay 0.001 \
       --dropout-p 0.25 \
       --gpu-id 0 \
-      --encoder-type STAP \
+      --encoder-type ${encod} \
       --cos-sim \
       --loss-type ${loss}
   done

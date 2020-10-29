@@ -204,9 +204,9 @@ class AdaptiveStdPool2d(nn.Module):
 
 # https://github.com/keetsky/Net_ghostVLAD-pytorch
 
-class GhostVLAD(nn.Module):
+class GhostVLAD_v1(nn.Module):
     def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=True):
-        super(GhostVLAD, self).__init__()
+        super(GhostVLAD_v1, self).__init__()
         self.num_clusters = num_clusters
         self.dim = dim
         self.gost = gost
@@ -249,3 +249,54 @@ class GhostVLAD(nn.Module):
         vlad = F.normalize(vlad, p=2, dim=1)  # (1,8*128)
 
         return vlad
+
+
+# https://github.com/taylorlu/Speaker-Diarization/blob/master/ghostvlad/model.py
+class GhostVLAD_v2(nn.Module):
+    def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=True):
+        super(GhostVLAD_v2, self).__init__()
+        self.num_clusters = num_clusters
+        self.dim = dim
+        self.gost = gost
+        self.normalize_input = normalize_input
+        self.fc = nn.Linear(dim, num_clusters + gost)
+        self.centroids = nn.Parameter(torch.rand(num_clusters + gost, dim))
+        self._init_params()
+
+    def _init_params(self):
+        nn.init.xavier_normal_(self.fc.weight.data)
+        nn.init.constant_(self.fc.bias.data, 0.0)
+
+    def forward(self, x):
+        '''
+        x: N x D
+        '''
+        if self.normalize_input:
+            x = F.normalize(x, p=2, dim=0)
+
+        feat = x
+        cluster_score = self.fc(x)  # bz x cluster
+
+        # num_features = feat.shape[-1]
+        # softmax normalization to get soft-assignment.
+        # A : bz  x clusters
+        max_cluster_score = torch.max(cluster_score, dim=-1, keepdim=True).values
+
+        exp_cluster_score = torch.exp(cluster_score - max_cluster_score)
+        A = exp_cluster_score / torch.sum(exp_cluster_score, dim=-1, keepdim=True)
+        # Now, need to compute the residual, self.cluster: clusters x D
+        A = A.unsqueeze(-1)  # A : bz x clusters x 1
+
+        feat_broadcast = feat.unsqueeze(-2)  # feat_broadcast : bz x 1 x D
+        feat_res = feat_broadcast - self.centroids  # feat_res : bz x clusters x D
+
+        weighted_res = torch.mul(A, feat_res)  # weighted_res : bz x clusters x D
+        # cluster_res = torch.sum(weighted_res, [1, 2])
+        cluster_res = weighted_res
+        cluster_res = cluster_res[:, :self.num_clusters, :]
+        # cluster_l2 = torch.nn.functional.l2_normalize(cluster_res, -1)
+        # outputs = cluster_res.reshape([-1, int(self.num_clusters) * int(num_features)])
+
+        outputs = cluster_res.sum(dim=-2)
+
+        return outputs

@@ -21,7 +21,7 @@ from torchvision.models.resnet import Bottleneck
 
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
-    SelfVadPooling
+    SelfVadPooling, GhostVLAD_v2
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -750,16 +750,19 @@ class LocalResNet(nn.Module):
                 nn.BatchNorm1d(embedding_size)
             )
 
-
-        if self.alpha:
-            self.l2_norm = L2_Norm(self.alpha)
-
-        if self.transform:
+        if self.transform == 'Linear':
             self.trans_layer = nn.Sequential(
                 nn.Linear(embedding_size, embedding_size, bias=False),
                 nn.BatchNorm1d(embedding_size),
                 nn.ReLU()
             )
+        elif self.transform == 'GhostVLAD':
+            self.trans_layer = GhostVLAD_v2(num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
+        else:
+            self.trans_layer = None
+
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
 
         # self.fc = nn.Linear(self.inplanes * avg_size, embedding_size)
         self.classifier = nn.Linear(self.embedding_size, num_classes)
@@ -827,7 +830,7 @@ class LocalResNet(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
 
-        if self.transform:
+        if self.trans_layer != None:
             x = self.trans_layer(x)
             # x = t_x + x
 
