@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=230
+stage=132
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -901,26 +901,29 @@ if [ $stage -le 132 ]; then
       --out-dir ${lstm_dir}/data/army/egs/spect \
       --feat-type spectrogram \
       --train \
-      --input-per-spks 224 \
+      --input-per-spks 512 \
       --feat-format kaldi \
+      --out-format kaldi_cmp \
       --num-valid 4 \
-      --out-set dev_v1
+      --out-set dev_v2
 
-    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/dev_v1
+#    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/dev_v2
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/army/spect/dev_8k \
       --out-dir ${lstm_dir}/data/army/egs/spect \
       --feat-type spectrogram \
-      --input-per-spks 224 \
+      --input-per-spks 512 \
+      --out-format kaldi_cmp \
       --feat-format kaldi \
       --num-valid 4 \
-      --out-set valid_v1
+      --out-set valid_v2
 
-    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/valid_v1
+#    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/valid_v2
   done
 fi
 
+stage=230
 if [ $stage -le 140 ]; then
   python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/radio/example_8k \
@@ -1096,21 +1099,21 @@ if [ $stage -le 230 ]; then
       --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
       --feat-type spectrogram \
       --train \
-      --input-per-spks 224 \
+      --input-per-spks 324 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
-      --num-valid 2 \
-      --out-set ${s}_dev_8k
+      --num-valid 4 \
+      --out-set ${s}_dev_8k_v2
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${datasets}/spect/${s}_dev_8k \
       --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
       --feat-type spectrogram \
-      --input-per-spks 224 \
+      --input-per-spks 512 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
-      --num-valid 2 \
-      --out-set ${s}_valid_8k
+      --num-valid 4 \
+      --out-set ${s}_valid_8k_v2
 
   done
 fi
