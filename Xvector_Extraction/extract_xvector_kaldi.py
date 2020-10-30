@@ -239,7 +239,7 @@ def extract(data_loader, model, set_id, extract_path):
     uids, xvector = [], []
     pbar = tqdm(enumerate(data_loader))
 
-    for batch_idx, (data, label, uid) in pbar:
+    for batch_idx, (data, uid) in pbar:
 
         vec_shape = data.shape
         if vec_shape[1] != 1:
