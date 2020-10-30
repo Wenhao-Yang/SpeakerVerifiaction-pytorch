@@ -58,7 +58,7 @@ if [ $stage -le 2 ]; then
 fi
 
 if [ $stage -le 20 ]; then
-  model=LoResNet10
+  model=LoResNet
   dataset=army
   feat=spect_81
   loss=soft
@@ -80,7 +80,7 @@ if [ $stage -le 20 ]; then
     --encoder-type None \
     --extract-path Data/xvector/${model}/${dataset}/${feat}/${loss} \
     --model ${model} \
+    --resnet-size 10 \
     --dropout-p 0.0 \
-    --epoch 20 \
-    --embedding-size 1024
+    --epoch 20
 fi
