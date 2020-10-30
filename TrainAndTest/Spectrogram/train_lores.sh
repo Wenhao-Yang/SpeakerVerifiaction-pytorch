@@ -726,8 +726,8 @@ if [ $stage -le 62 ]; then
     echo -e "\n\033[1;4;31m Training LoResNet${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_v1 \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_v1 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_v2 \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_v2 \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
@@ -738,8 +738,8 @@ if [ $stage -le 62 ]; then
       --lr 0.1 \
       --input-dim 81 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}10/${datasets}_v1/spect_egs_fast_${encod}/${loss}_dp01 \
-      --resume Data/checkpoint/${model}10/${datasets}_v1/spect_egs_fast_${encod}/soft_dp01/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_v2/spect_egs_fast_${encod}/${loss}_dp01 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_v2/spect_egs_fast_${encod}/soft_dp01/checkpoint_24.pth \
       --channels 32,64,128,256 \
       --embedding-size 128 \
       --encoder-type ${encod} \
@@ -818,11 +818,11 @@ if [ $stage -le 63 ]; then
       --input-dim 81 \
       --stride 2 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_GhostVLAD \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_GhostVLAD/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_Linear \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_Linear/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
-      --transform GhostVLAD \
+      --transform Linear \
       --encoder-type ${encod} \
       --time-dim 1 \
       --avg-size 4 \
