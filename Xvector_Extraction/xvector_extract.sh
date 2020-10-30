@@ -68,6 +68,7 @@ if [ $stage -le 20 ]; then
     --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/army/spect/thre_enrolled \
     --resume Data/checkpoint/LoResNet10/army_v1/spect_egs_fast_None/soft_dp01/checkpoint_20.pth \
     --feat-dim 81 \
+    --train-spk 3162 \
     --embedding-size 128 \
     --fast \
     --time-dim 1 \

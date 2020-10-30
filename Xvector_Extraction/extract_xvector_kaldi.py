@@ -52,6 +52,8 @@ warnings.filterwarnings("ignore")
 parser = argparse.ArgumentParser(description='Extract x-vector for plda')
 # Model options
 parser.add_argument('--train-dir', type=str, help='path to dataset')
+parser.add_argument('--train-spk', type=int, metavar='NJOB', help='num of job')
+
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 
@@ -286,7 +288,7 @@ def main():
     # print the experiment configuration
     print('\nCurrent time is\33[91m {}\33[0m.'.format(str(time.asctime())))
     print('Parsed options: {}'.format(vars(args)))
-    print('Number of Speakers: {}\n'.format(len(train_dir.classes)))
+    print('Number of Speakers: {}\n'.format(args.train_spk))
 
     # instantiate model and initialize weights
     kernel_size = args.kernel_size.split(',')
@@ -310,7 +312,7 @@ def main():
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                    'resnet_size': args.resnet_size,
+                    'resnet_size': args.resnet_size, 'num_classes': args.train_spk,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
