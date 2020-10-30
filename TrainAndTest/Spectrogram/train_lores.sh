@@ -823,7 +823,7 @@ if [ $stage -le 63 ]; then
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --encoder-type ${encod} \
-      --time-size 1 \
+      --time-dim 1 \
       --avg-size 4 \
       --num-valid 4 \
       --alpha 12 \
