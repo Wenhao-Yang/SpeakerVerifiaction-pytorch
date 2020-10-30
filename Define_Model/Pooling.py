@@ -307,7 +307,7 @@ class LinearTransform(nn.Module):
         super(LinearTransform, self).__init__()
         self.dim = dim
         self.normalize_input = normalize_input
-        self.linear_trans = nn.Sequential(nn.Linear(dim, dim),
+        self.linear_trans = nn.Sequential(nn.Linear(dim, dim, bias=False),
                                           nn.BatchNorm1d(dim),
                                           nn.ReLU())
 
