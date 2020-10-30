@@ -390,6 +390,8 @@ def main():
     train_loader_b = torch.utils.data.DataLoader(train_dir_b, batch_size=batch_size_b, shuffle=False, **kwargs)
     train_loader = [train_loader_a, train_loader_b]
 
+    print('Batch_size is {} for A, and {} for B.'.format(batch_size_a, batch_size_b))
+
     batch_size_a = int(args.batch_size / 8)
     valid_loader_a = torch.utils.data.DataLoader(valid_dir_a, batch_size=batch_size_a, shuffle=False,
                                                  **kwargs)
@@ -404,7 +406,7 @@ def main():
     #                                                shuffle=False, **kwargs)
     # sitw_dev_loader = torch.utils.data.DataLoader(sitw_dev_part, batch_size=args.test_batch_size, shuffle=False,
     #                                               **kwargs)
-
+    # print('Batcch_size is {} for A, and {} for B.'.format(batch_size_a, batch_size_b))
     if args.cuda:
         model = model.cuda()
         for i in range(len(ce)):
