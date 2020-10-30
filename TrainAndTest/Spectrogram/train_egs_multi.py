@@ -554,7 +554,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                                                                                                                       train_loader_a)))
     writer.add_scalar('Train/Accuracy_A', correct_a / total_datasize_a, epoch)
     writer.add_scalar('Train/Accuracy_B', correct_b / total_datasize_b, epoch)
-    writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
+    writer.add_scalar('Train/Loss', total_loss / len(train_loader_a), epoch)
 
     torch.cuda.empty_cache()
 
