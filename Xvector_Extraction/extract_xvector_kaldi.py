@@ -321,9 +321,9 @@ def main():
     if args.cuda:
         model.cuda()
     # optionally resume from a checkpoint
-    resume = args.ckp_dir + '/checkpoint_{}.pth'.format(args.epoch)
+    # resume = args.ckp_dir + '/checkpoint_{}.pth'.format(args.epoch)
 
-    if os.path.isfile(resume):
+    if os.path.isfile(args.resume):
         # print('=> loading checkpoint {}'.format(resume))
         checkpoint = torch.load(args.resume)
         filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
@@ -333,7 +333,7 @@ def main():
         model.load_state_dict(model_dict)
 
     else:
-        raise Exception('=> no checkpoint found at {}'.format(resume))
+        raise Exception('=> no checkpoint found at {}'.format(args.resume))
 
     # train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
