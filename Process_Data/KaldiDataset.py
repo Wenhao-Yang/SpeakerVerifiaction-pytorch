@@ -530,7 +530,7 @@ class KaldiExtractDataset(data.Dataset):
 
         feat_scp = dir + '/feats.scp'
 
-        assert os.path.exists(feat_scp)
+        assert os.path.exists(feat_scp), feat_scp
 
         uid2feat = {}
         with open(feat_scp, 'r') as u:
