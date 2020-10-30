@@ -341,7 +341,7 @@ def main():
     # Extract Train set vectors
     # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
     # Extract test set vectors
-    extract(test_loader, model, dataset='test', extract_path=args.extract_path + '/x_vector')
+    extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
 
     print('Extract x-vector completed for train and test!\n')
 
