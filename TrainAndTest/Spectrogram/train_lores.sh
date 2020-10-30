@@ -722,7 +722,7 @@ if [ $stage -le 62 ]; then
   model=LoResNet
   resnet_size=10
   loss=soft
-  for encod in None SAP ; do
+  for encod in None ; do
     echo -e "\n\033[1;4;31m Training LoResNet${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -799,7 +799,8 @@ if [ $stage -le 63 ]; then
   model=MultiResNet
   resnet_size=8
   loss=soft
-  for encod in None ; do
+  encod=None
+  for transform in Linear GhostVLAD ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
@@ -818,11 +819,11 @@ if [ $stage -le 63 ]; then
       --input-dim 81 \
       --stride 2 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_Linear \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_Linear/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_${transform} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_${transform}/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
-      --transform Linear \
+      --transform ${transform} \
       --encoder-type ${encod} \
       --time-dim 1 \
       --avg-size 4 \
