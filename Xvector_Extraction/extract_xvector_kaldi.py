@@ -56,9 +56,6 @@ parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
-parser.add_argument('--sitw-dir', type=str,
-                    default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
-                    help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
