@@ -272,7 +272,7 @@ class GhostVLAD_v2(nn.Module):
         x: N x D
         '''
         if self.normalize_input:
-            x = F.normalize(x, p=2, dim=0)
+            x = F.normalize(x, p=2, dim=-1)
 
         feat = x
         cluster_score = self.fc(x)  # bz x cluster
@@ -300,3 +300,20 @@ class GhostVLAD_v2(nn.Module):
         outputs = cluster_res.sum(dim=-2)
 
         return outputs
+
+
+class LinearTransform(nn.Module):
+    def __init__(self, dim=128, normalize_input=True):
+        self.dim = dim
+        self.normalize_input = normalize_input
+        self.linear_trans = nn.Sequential(nn.Linear(dim, dim),
+                                          nn.BatchNorm1d(dim),
+                                          nn.ReLU())
+
+    def forward(self, x):
+        if self.normalize_input:
+            x = F.normalize(x, p=2, dim=-1)
+
+        trans = self.linear_trans(x)
+
+        return x + trans
