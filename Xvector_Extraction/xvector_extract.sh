@@ -70,6 +70,7 @@ if [ $stage -le 20 ]; then
     --feat-dim 81 \
     --train-spk 3162 \
     --embedding-size 128 \
+    --batch-size 1 \
     --fast \
     --time-dim 1 \
     --stride 1 \
