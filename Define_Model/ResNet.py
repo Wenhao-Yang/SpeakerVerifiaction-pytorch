@@ -1406,7 +1406,7 @@ class MultiResNet(nn.Module):
 
     def __init__(self, embedding_size, num_classes_a, num_classes_b, block=BasicBlock, input_dim=161,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0., stride=2,
-                 inst_norm=False, alpha=12, input_norm='None',
+                 inst_norm=False, alpha=12, input_norm='None', transform=False,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
         super(MultiResNet, self).__init__()
@@ -1423,6 +1423,7 @@ class MultiResNet(nn.Module):
         self.dropout_p = dropout_p
         self.embedding_size = embedding_size
         self.relu = nn.ReLU(inplace=True)
+        self.transform = transform
 
         self.input_norm = input_norm
         if input_norm == 'Instance':
@@ -1466,7 +1467,16 @@ class MultiResNet(nn.Module):
             nn.Linear(self.inplanes * avg_size, self.embedding_size),
             nn.BatchNorm1d(self.embedding_size)
         )
-
+        if self.transform == 'Linear':
+            self.trans_layer = nn.Sequential(
+                nn.Linear(embedding_size, embedding_size, bias=False),
+                nn.BatchNorm1d(embedding_size),
+                nn.ReLU()
+            )
+        elif self.transform == 'GhostVLAD':
+            self.trans_layer = GhostVLAD_v2(num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
+        else:
+            self.trans_layer = None
         if self.alpha:
             self.l2_norm = L2_Norm(self.alpha)
 
@@ -1531,6 +1541,9 @@ class MultiResNet(nn.Module):
         x = x.view(x.size(0), -1)
 
         embeddings = self.fc(x)
+
+        if self.trans_layer != None:
+            embeddings = self.trans_layer(embeddings)
 
         if self.alpha:
             embeddings = self.l2_norm(embeddings)

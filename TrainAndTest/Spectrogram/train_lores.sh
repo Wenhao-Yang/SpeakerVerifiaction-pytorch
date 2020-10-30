@@ -818,10 +818,11 @@ if [ $stage -le 63 ]; then
       --input-dim 81 \
       --stride 2 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_GhostVLAD \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_GhostVLAD/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
+      --transform GhostVLAD \
       --encoder-type ${encod} \
       --time-dim 1 \
       --avg-size 4 \
