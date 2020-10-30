@@ -304,6 +304,7 @@ class GhostVLAD_v2(nn.Module):
 
 class LinearTransform(nn.Module):
     def __init__(self, dim=128, normalize_input=True):
+        super(LinearTransform, self).__init__()
         self.dim = dim
         self.normalize_input = normalize_input
         self.linear_trans = nn.Sequential(nn.Linear(dim, dim),
