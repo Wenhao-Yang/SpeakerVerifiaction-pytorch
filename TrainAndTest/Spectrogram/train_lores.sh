@@ -797,7 +797,7 @@ if [ $stage -le 63 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
   model=MultiResNet
-  resnet_size=10
+  resnet_size=8
   loss=soft
   for encod in None ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
@@ -816,11 +816,11 @@ if [ $stage -le 63 ]; then
       --epochs 24 \
       --lr 0.1 \
       --input-dim 81 \
-      --stride 1 \
+      --stride 2 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_16 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_16/checkpoint_24.pth \
-      --channels 16,64,128,256 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192/checkpoint_24.pth \
+      --channels 64,128,256 \
       --embedding-size 128 \
       --encoder-type ${encod} \
       --time-dim 1 \
