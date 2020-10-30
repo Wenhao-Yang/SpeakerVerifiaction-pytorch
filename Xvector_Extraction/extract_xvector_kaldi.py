@@ -226,8 +226,8 @@ else:
     file_loader = read_audio
 
 # pdb.set_trace()
-train_dir = KaldiExtractDataset(dir=args.train_dir, loader=file_loader, transform=transform)
-test_dir = KaldiExtractDataset(dir=args.test_dir, loader=file_loader, transform=transform)
+train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform)
+test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform)
 
 # test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
 
