@@ -27,8 +27,7 @@ from tqdm import tqdm
 from Define_Model.model import PairwiseDistance
 # from Process_Data.voxceleb2_wav_reader import voxceleb2_list_reader
 from Process_Data.KaldiDataset import KaldiExtractDataset
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
-from Process_Data.audio_processing import varLengthFeat
+from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio, ConcateVarInput
 from TrainAndTest.common_func import create_model
 
 # Version conflict
@@ -212,10 +211,10 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDist
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
-        varLengthFeat(),
+        ConcateVarInput(),
     ])
     transform_T = transforms.Compose([
-        varLengthFeat(),
+        ConcateVarInput(),
     ])
     file_loader = read_mat
 else:
