@@ -800,7 +800,7 @@ if [ $stage -le 63 ]; then
   resnet_size=8
   loss=soft
   encod=None
-  for transform in Linear GhostVLAD ; do
+  for transform in Linear ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
@@ -819,8 +819,8 @@ if [ $stage -le 63 ]; then
       --input-dim 81 \
       --stride 2 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_${transform} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_${transform}/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_${transform}nobi \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_${transform}nobi/checkpoint_24.pth \
       --channels 64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
