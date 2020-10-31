@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-stage=20
+stage=0
 if [ $stage -le 0 ]; then
 
   python Vector_Score/enroll_eval.py \
