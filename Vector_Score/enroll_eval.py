@@ -347,8 +347,9 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     # spk_pro = torch.mul(dur_factor.unsqueeze(1).expand(spk_pro.shape[0], spk_pro.shape[1]), spk_pro)
     # spk_pro = torch.mul(spk_pro, spk_dur_factor.unsqueeze(0).expand(spk_pro.shape[0], spk_pro.shape[1]), )
 
-    np.save('eval_dir/result.npy', spk_pro.numpy())
-    np.save('eval_dir/answer.npy', real_uid2sid)
+    np.save('%s/result.npy' % eval_dir, spk_pro.numpy())
+    np.save('%s/answer.npy' % eval_dir, real_uid2sid)
+
 
     # num_gthre = torch.where(spk_pro > 0.4, torch.tensor([1.]), torch.tensor([0.])).sum(dim=1)
     #
