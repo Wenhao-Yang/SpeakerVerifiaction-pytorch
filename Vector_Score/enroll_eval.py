@@ -81,10 +81,12 @@ if args.cuda:
 kwargs = {'num_workers': 12, 'pin_memory': True} if args.cuda else {}
 
 dist_type = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
-file_loader = np.load
 
 
-def Split_Set(data_dir, xvector_dir, file_loader, split_set=True):
+# file_loader = np.load
+
+
+def Split_Set(data_dir, xvector_dir, file_loader=np.load, split_set=True):
     if not split_set:
         return os.path.join(xvector_dir, 'enroll'), os.path.join(xvector_dir, 'test')
 
