@@ -92,6 +92,9 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
         return os.path.join(xvector_dir, 'enroll'), os.path.join(xvector_dir, 'test')
 
     feats_scp = os.path.join(data_dir, 'feats.scp')
+    utt2dur = os.path.join(data_dir, 'utt2dur')
+    utt2num_frames = os.path.join(data_dir, 'utt2num_frames')
+
     utt2vec_scp = os.path.join(xvector_dir, 'utt2vec')
     spk2utt_scp = os.path.join(xvector_dir, 'spk2utt')
 
@@ -103,11 +106,24 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
     utt2spk_test_scp = os.path.join(xvector_dir, 'test', 'utt2spk')
     test_utt2vec_scp = os.path.join(data_dir, 'test', 'utt2vec')
 
+    print("Getting duration for utterances...")
     utt2len = {}  # utt2seconds
-    with open(feats_scp, 'r') as f:
-        for l in f.readlines():
-            utt, vec = l.split()
-            utt2len[utt] = len(file_loader(vec)) / 100.
+    if os.path.exists(utt2dur):
+        with open(utt2dur, 'r') as f:
+            for l in f.readlines():
+                utt, ulen = l.split()
+                utt2len[utt] = float(ulen)
+    elif os.path.exists(utt2num_frames):
+        with open(utt2num_frames, 'r') as f:
+            for l in f.readlines():
+                utt, ulen = l.split()
+                utt2len[utt] = int(ulen) / 100.
+    else:
+        with open(feats_scp, 'r') as f:
+            for l in f.readlines():
+                utt, vec = l.split()
+                utt2len[utt] = len(file_loader(vec)) / 100.
+
 
     utt2vec = {}
     with open(utt2vec_scp, 'r') as s2u:
@@ -118,6 +134,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
     spk2utt = {}
     enroll_spk2utt = {}
     test_spk2utt = {}
+    print("Splitting enroll and test set for utterances...")
     with open(spk2utt_scp, 'r') as s2u:
         for l in s2u.readlines():
             spkutts = l.split()
@@ -140,6 +157,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
             else:
                 test_spk2utt[spk].append(u)
 
+    print("Writing enroll files in %s..." % os.path.join(xvector_dir, 'enroll'))
     with open(spk2utt_enroll_scp, 'w') as f1, \
             open(enroll_utt2vec_scp, 'w') as f2, \
             open(utt2spk_enroll_scp, 'w') as f3:
@@ -152,6 +170,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
                 f2.write(u + ' ' + utt2vec[u] + '\n')
                 f3.write(u + ' ' + spk + '\n')
 
+    print("Writing test files in %s..." % os.path.join(xvector_dir, 'test'))
     with open(spk2utt_test_scp, 'w') as f1, \
             open(test_utt2vec_scp, 'w') as f2, \
             open(utt2spk_test_scp, 'w') as f3:
@@ -163,6 +182,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
             for u in test_spk2utt[spk]:
                 f2.write(u + ' ' + utt2vec[u] + '\n')
                 f3.write(u + ' ' + spk + '\n')
+
     return os.path.join(xvector_dir, 'enroll'), os.path.join(xvector_dir, 'test')
 
 
@@ -198,6 +218,7 @@ def Enroll(enroll_dir, file_loader=np.load):
     sids = list(spk2utt_dict.keys())
     sids.sort()
 
+    print("Averaging enrolled spk vector...")
     spk2xve_dict = {}
     # print('[', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), '] Saving in npy')
     for sid in sids:
@@ -221,6 +242,7 @@ def Enroll(enroll_dir, file_loader=np.load):
     if not os.path.exists(os.path.dirname(spk2xve_scp)):
         os.makedirs(os.path.dirname(spk2xve_scp))
 
+    print("Saving enrolled spk vector list...")
     with open(spk2xve_scp, 'w') as f:
         for sid in sids:
             xve_path = spk2xve_dict[sid]
@@ -270,6 +292,8 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     uids = list(utt2vec_dict.keys())
     sids.sort()
     uids.sort()
+
+    print("Getting the ground truth for utterraces...")
     real_uid2sid = []
     for uid in uids:
         sid = eval_utt2spk_dict[uid]
@@ -298,6 +322,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         # dur_factor.append(vec[0])
 
     # dur_factor = torch.tensor(dur_factor)# .clamp(0.85, 1.0)
+    print("Normalization and Cosine similarity...")
     uids_tensor = uids_tensor / uids_tensor.norm(p=2, dim=1, keepdim=True)
     spks_tensor = spks_tensor / spks_tensor.norm(p=2, dim=0, keepdim=True)
     spk_pro = torch.matmul(uids_tensor, spks_tensor)
