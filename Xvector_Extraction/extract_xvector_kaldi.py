@@ -262,6 +262,7 @@ def extract(data_loader, model, set_id, extract_path):
                     batch_idx * len(data),
                     len(data_loader.dataset),
                     100. * batch_idx / len(data_loader)))
+            break
 
     if not os.path.exists(extract_path):
         os.makedirs(extract_path)
