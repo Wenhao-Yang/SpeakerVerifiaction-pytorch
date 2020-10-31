@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=63
+stage=64
 
 waited=0
 while [ `ps 23863 | wc -l` -eq 2 ]; do
@@ -867,13 +867,13 @@ if [ $stage -le 64 ]; then
       --input-norm Mean \
       --batch-size 192 \
       --nj 12 \
-      --epochs 24 \
-      --lr 0.1 \
+      --epochs 11 \
+      --lr 0.01 \
       --input-dim 81 \
       --stride 1 \
-      --milestones 8,14,20 \
+      --milestones 1,7 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_16/checkpoint_24.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_16/checkpoint_13.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
