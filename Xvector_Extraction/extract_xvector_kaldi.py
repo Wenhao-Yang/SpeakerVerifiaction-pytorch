@@ -247,11 +247,9 @@ def extract(data_loader, model, set_id, extract_path):
 
         data = data.cuda()
         _, feats = model(data)
-
         feats = feats.data.cpu().numpy
 
         xvector.append(feats)
-
         uids.append(uid[0])
         # xvector = torch.cat((xvector, feats), dim=0)
         # for i in range(len(uid)):
@@ -265,9 +263,6 @@ def extract(data_loader, model, set_id, extract_path):
                     len(data_loader.dataset),
                     100. * batch_idx / len(data_loader)))
 
-    # np_xvector = xvector.numpy().astype(np.float32)
-    # write_vec_ark(uid=uids, feats=np_xvector,
-    #               write_path=extract_path, set_id=set_id)
     if not os.path.exists(extract_path):
         os.makedirs(extract_path)
 
@@ -278,7 +273,7 @@ def extract(data_loader, model, set_id, extract_path):
 
         assert len(uids) == len(xvector)
         for i in range(len(uids)):
-            xvector_path = os.path.join((extract_path, 'npy_vectors', uids[i] + '.npy'))
+            xvector_path = os.path.join(extract_path, 'npy_vectors', uids[i] + '.npy')
             np.save(xvector[i], xvector_path)
             scp.write(uids[i] + " " + xvector_path + '\n')
 
