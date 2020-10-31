@@ -98,13 +98,21 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
     utt2vec_scp = os.path.join(xvector_dir, 'utt2vec')
     spk2utt_scp = os.path.join(data_dir, 'spk2utt')
 
-    spk2utt_enroll_scp = os.path.join(xvector_dir, 'enroll', 'spk2utt')
-    utt2spk_enroll_scp = os.path.join(xvector_dir, 'enroll', 'utt2spk')
-    enroll_utt2vec_scp = os.path.join(data_dir, 'enroll', 'utt2vec')
+    enroll_dir, test_dir = os.path.join(xvector_dir, 'enroll'), os.path.join(xvector_dir, 'test')
 
-    spk2utt_test_scp = os.path.join(xvector_dir, 'test', 'spk2utt')
-    utt2spk_test_scp = os.path.join(xvector_dir, 'test', 'utt2spk')
-    test_utt2vec_scp = os.path.join(data_dir, 'test', 'utt2vec')
+    if not os.path.exists(enroll_dir):
+        os.makedirs(enroll_dir)
+
+    if not os.path.exists(test_dir):
+        os.makedirs(test_dir)
+
+    spk2utt_enroll_scp = os.path.join(enroll_dir, 'spk2utt')
+    utt2spk_enroll_scp = os.path.join(enroll_dir, 'utt2spk')
+    enroll_utt2vec_scp = os.path.join(enroll_dir, 'utt2vec')
+
+    spk2utt_test_scp = os.path.join(test_dir, 'spk2utt')
+    utt2spk_test_scp = os.path.join(test_dir, 'utt2spk')
+    test_utt2vec_scp = os.path.join(test_dir, 'utt2vec')
 
     print("Getting duration for utterances...")
     utt2len = {}  # utt2seconds
@@ -183,7 +191,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
                 f2.write(u + ' ' + utt2vec[u] + '\n')
                 f3.write(u + ' ' + spk + '\n')
 
-    return os.path.join(xvector_dir, 'enroll'), os.path.join(xvector_dir, 'test')
+    return enroll_dir, test_dir
 
 
 def Enroll(enroll_dir, file_loader=np.load):
