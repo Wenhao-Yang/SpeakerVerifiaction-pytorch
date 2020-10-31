@@ -240,7 +240,7 @@ def Enroll(enroll_dir, file_loader=np.load):
         for xve_path in spk2utt_dict[sid]:
             this_xve = file_loader(xve_path, allow_pickle=True)
             if len(this_xve.shape) == 0:
-                print('Empty??')
+                print('%s isEmpty??' % xve_path)
                 continue
             xvector.append(this_xve)
         all_xvector = np.concatenate(xvector, axis=0)
