@@ -216,12 +216,18 @@ def Enroll(enroll_dir, file_loader=np.load):
     assert os.path.exists(spk2utt_scp), print('%s Existed??' % spk2utt_scp)
     with open(spk2utt_scp, 'r') as f:
         for l in f.readlines():
-            sid, uid = l.split()
-            xve_path = uid2xve_dict[uid]
-            if sid in spk2utt_dict.keys():
-                spk2utt_dict[sid].append(xve_path)
-            else:
-                spk2utt_dict[sid] = [xve_path]
+            siduids = l.split()
+            sid = siduids[0]
+            uid = siduids[1:]
+            # xve_path = uid2xve_dict[uid]
+            spk2utt_dict[sid] = []
+            for u in uid:
+                spk2utt_dict[sid].append(uid2xve_dict[u])
+
+            # if sid in spk2utt_dict.keys():
+            #     spk2utt_dict[sid].append(xve_path)
+            # else:
+            #     spk2utt_dict[sid] = [xve_path]
 
     sids = list(spk2utt_dict.keys())
     sids.sort()
