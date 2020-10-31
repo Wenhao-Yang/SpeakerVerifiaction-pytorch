@@ -422,7 +422,7 @@ class GaussianLoss(nn.Module):
         # distmat.addmm_(1, -2, x, self.centers.t())
         classes = torch.arange(self.num_classes).long()
         # if self.use_gpu: classes = classes.cuda()
-        if self.centers.is_cuda:
+        if self.means.is_cuda:
             classes = classes.cuda()
 
         labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
