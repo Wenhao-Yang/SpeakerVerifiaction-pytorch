@@ -21,6 +21,7 @@ import torch._utils
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 from kaldi_io import read_mat
+from tqdm import tqdm
 
 from Define_Model.model import PairwiseDistance
 
@@ -232,7 +233,7 @@ def Enroll(enroll_dir, file_loader=np.load):
     sids = list(spk2utt_dict.keys())
     sids.sort()
 
-    print("Averaging enrolled spk vector...")
+    print("\nAveraging enrolled spk vector...")
     spk2xve_dict = {}
     # print('[', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), '] Saving in npy')
     for sid in sids:
@@ -307,7 +308,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     sids.sort()
     uids.sort()
 
-    print("Getting the ground truth for utterraces...")
+    print("\nGetting the ground truth for utterances...")
     real_uid2sid = []
     for uid in uids:
         sid = eval_utt2spk_dict[uid]
@@ -326,9 +327,11 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
 
     # spk_dur_factor = torch.tensor(spk_dur_factor)# .clamp_max(1.0)
 
+    print("Load the spk vector for utterances...")
     uids_tensor = torch.tensor([])
+    pbar = tqdm(uids)
     # dur_factor = []
-    for uid in uids:
+    for uid in pbar:
         num_eval += 1
         uid2vec = utt2vec_dict[uid]
         # vec = torch.tensor(file_loader(uid2vec).mean(axis=0)).unsqueeze(0).float()
