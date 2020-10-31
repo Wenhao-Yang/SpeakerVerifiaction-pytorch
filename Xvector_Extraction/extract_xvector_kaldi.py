@@ -275,7 +275,8 @@ def extract(data_loader, model, set_id, extract_path):
         assert len(uids) == len(xvector)
         for i in range(len(uids)):
             xvector_path = os.path.join(extract_path, 'npy_vectors', uids[i] + '.npy')
-            np.save(xvector[i], xvector_path)
+
+            np.save(xvector_path, xvector[i])
             scp.write(uids[i] + " " + xvector_path + '\n')
 
 
