@@ -268,9 +268,13 @@ def extract(data_loader, model, set_id, extract_path):
     # np_xvector = xvector.numpy().astype(np.float32)
     # write_vec_ark(uid=uids, feats=np_xvector,
     #               write_path=extract_path, set_id=set_id)
+    if not os.path.exists(extract_path):
+        os.makedirs(extract_path)
+
+    if not os.path.exists(extract_path + '/npy_vectors'):
+        os.makedirs(extract_path + '/npy_vectors')
+
     with open(extract_path + '/uid2vec.scp', 'w') as scp:
-        if not os.path.exists(extract_path + '/npy_vectors'):
-            os.makedirs(extract_path + '/npy_vectors')
 
         assert len(uids) == len(xvector)
         for i in range(len(uids)):

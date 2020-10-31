@@ -62,6 +62,7 @@ if [ $stage -le 20 ]; then
   dataset=army
   feat=spect_81
   loss=soft
+  resnet_size=10
 
   python Xvector_Extraction/extract_xvector_kaldi.py \
     --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/army/spect/dev_8k \
@@ -79,9 +80,9 @@ if [ $stage -le 20 ]; then
     --alpha 12.0 \
     --input-norm Mean \
     --encoder-type None \
-    --extract-path Data/xvector/${model}/${dataset}/${feat}/${loss} \
+    --extract-path Data/xvector/${model}${resnet_size}/${dataset}/${feat}/${loss} \
     --model ${model} \
-    --resnet-size 10 \
+    --resnet-size ${resnet_size} \
     --dropout-p 0.0 \
     --epoch 20
 fi
