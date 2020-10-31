@@ -48,6 +48,7 @@ parser.add_argument('--enroll-dir', type=str, help='path to voxceleb1 test datas
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
 
 parser.add_argument('--split-set', action='store_true', default=False, help='using Cosine similarity')
+parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
 
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--extract-path', type=str, help='need to make mfb file')
