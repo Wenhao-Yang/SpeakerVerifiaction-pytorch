@@ -245,7 +245,7 @@ def Enroll(enroll_dir, file_loader=np.load):
             xvector.append(this_xve)
         all_xvector = np.concatenate(xvector, axis=0)
         this_vec_len = len(all_xvector)
-        mean_xvector = np.mean(xvector, axis=0)
+        mean_xvector = np.mean(all_xvector, axis=0)
         new_xvector = np.append([this_vec_len], mean_xvector)
 
         vec_path = '/'.join((spk_xvector_dir, '%s.npy' % sid))

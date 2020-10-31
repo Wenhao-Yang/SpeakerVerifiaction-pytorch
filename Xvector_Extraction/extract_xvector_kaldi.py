@@ -61,7 +61,7 @@ parser.add_argument('--remove-vad', action='store_true', default=False, help='us
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 parser.add_argument('--extract-path', type=str, help='need to make mfb file')
 
-parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
+parser.add_argument('--nj', default=8, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
 
