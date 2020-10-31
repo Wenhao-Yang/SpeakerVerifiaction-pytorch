@@ -141,6 +141,53 @@ class MultiCenterLoss(nn.Module):
         return loss
 
 
+class CenterCosLoss(nn.Module):
+    """Center loss.
+
+    Reference:
+    Wen et al. A Discriminative Feature Learning Approach for Deep Face Recognition. ECCV 2016.
+
+    Args:
+        num_classes (int): number of classes.
+        feat_dim (int): feature dimension.
+    """
+
+    def __init__(self, num_classes=10, feat_dim=2, use_gpu=True, alpha=0.0):
+        super(CenterCosLoss, self).__init__()
+        self.num_classes = num_classes
+        self.feat_dim = feat_dim
+        self.use_gpu = use_gpu
+        self.alpha = alpha
+
+        if self.use_gpu:
+            self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim).cuda())
+        else:
+            self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim))
+
+        self.centers.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)
+
+    def forward(self, x, labels):
+        """
+        Args:
+            x: feature matrix with shape (batch_size, feat_dim).
+            labels: ground truth labels with shape (batch_size).
+        """
+        if self.alpha:
+            norms = self.centers.data.norm(p=2, dim=1, keepdim=True).clamp(min=1e-12, max=1e+12)
+            self.centers.data = self.centers.data / norms * self.alpha
+
+        batch_size = x.size(0)
+        # pdb.set_trace()
+        classes = self.centers.index_select(dim=0, index=labels)
+        all_cos = torch.cosine_similarity(x, classes)
+
+        # lab_class = len(torch.unique(labels))
+        dist = torch.exp(-all_cos)
+        loss = dist.sum() / batch_size
+
+        return loss
+
+
 class TupleLoss(nn.Module):
 
     def __init__(self, batch_size, tuple_size):
