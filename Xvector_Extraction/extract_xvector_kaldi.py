@@ -262,7 +262,7 @@ def extract(data_loader, model, set_id, extract_path):
                     batch_idx * len(data),
                     len(data_loader.dataset),
                     100. * batch_idx / len(data_loader)))
-            break
+            # break
 
     if not os.path.exists(extract_path):
         os.makedirs(extract_path)
@@ -343,7 +343,7 @@ def main():
     # Extract test set vectors
     extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
 
-    print('Extract x-vector completed for train and test!\n')
+    print('Extract x-vector completed for train and test in %s!\n' % (args.extract_path + '/x_vector'))
 
 
 
