@@ -270,7 +270,7 @@ def extract(data_loader, model, set_id, extract_path):
     if not os.path.exists(extract_path + '/npy_vectors'):
         os.makedirs(extract_path + '/npy_vectors')
 
-    with open(extract_path + '/utt2vec.scp', 'w') as scp:
+    with open(extract_path + '/utt2vec', 'w') as scp:
 
         assert len(uids) == len(xvector)
         for i in range(len(uids)):
