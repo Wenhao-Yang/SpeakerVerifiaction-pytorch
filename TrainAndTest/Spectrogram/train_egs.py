@@ -31,7 +31,8 @@ from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
 from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss
-from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss
+from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
+    GaussianLoss
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -156,7 +157,6 @@ parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'a
 parser.add_argument('--num-center', type=int, default=2, help='the num of source classes')
 parser.add_argument('--source-cls', type=int, default=1951,
                     help='the num of source classes')
-
 parser.add_argument('--finetune', action='store_true', default=False,
                     help='using Cosine similarity')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
@@ -349,6 +349,10 @@ def main():
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+
+    elif args.loss_type == 'gaussian':
+        xe_criterion = GaussianLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+
     elif args.loss_type == 'mulcenter':
         xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
                                        num_center=args.num_center)
@@ -364,7 +368,7 @@ def main():
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
-    if args.loss_type == 'center' or args.loss_type == 'mulcenter':
+    if args.loss_type == 'center' or args.loss_type == 'mulcenter' or args.loss_type == 'gaussian':
         optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
                                      {'params': model.parameters()}],
                                     lr=args.lr, weight_decay=args.weight_decay,
@@ -494,7 +498,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         elif args.loss_type == 'asoft':
             classfier_label, _ = classfier
             loss = xe_criterion(classfier, label)
-        elif args.loss_type == 'center' or args.loss_type == 'wasse':
+        elif args.loss_type == 'center' or args.loss_type == 'wasse' or args.loss_type == 'gaussian':
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
             loss = args.loss_ratio * loss_xent + loss_cent
@@ -522,7 +526,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         loss.backward()
 
         if args.loss_ratio != 0:
-            if args.loss_type == 'center' or args.loss_type == 'mulcenter':
+            if args.loss_type == 'center' or args.loss_type == 'mulcenter' or args.loss_type == 'gaussian':
                 for param in xe_criterion.parameters():
                     param.grad.data *= (1. / args.loss_ratio)
 
@@ -535,7 +539,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         optimizer.step()
 
         if batch_idx % args.log_interval == 0:
-            if args.loss_type == 'center' or args.loss_type == 'mulcenter':
+            if args.loss_type == 'center' or args.loss_type == 'mulcenter' or args.loss_type == 'gaussian':
                 pbar.set_description(
                     'Train Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Center Loss: {:.4f} Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
                         epoch,

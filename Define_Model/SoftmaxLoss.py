@@ -20,6 +20,7 @@ https://github.com/CoinCheung/pytorch-loss/blob/master/amsoftmax.py
 """
 import math
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -377,6 +378,58 @@ class CenterLoss(nn.Module):
 
         dist = distmat * mask.float()
         loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
+
+        return loss
+
+
+class GaussianLoss(nn.Module):
+    """Center loss.
+
+    Reference:
+    Wen et al. A Discriminative Feature Learning Approach for Deep Face Recognition. ECCV 2016.
+
+    Args:
+        num_classes (int): number of classes.
+        feat_dim (int): feature dimension.
+    """
+
+    def __init__(self, num_classes=10, feat_dim=2):
+        super(GaussianLoss, self).__init__()
+        self.num_classes = num_classes
+        self.feat_dim = feat_dim
+
+        norm_ceneters = F.normalize(torch.randn(self.num_classes, self.feat_dim), p=2, dim=0)
+        self.means = nn.Parameter(norm_ceneters)
+
+        # 初始化权重，在第一维度上做normalize
+        # cov = torch.eye(self.feat_dim, self.feat_dim).unsqueeze(0).repeat(self.num_classes, 1, 1)
+        # self.covs_invers = nn.Parameter(cov)
+
+    def forward(self, x, labels):
+        """
+        Args:
+            x: feature matrix with shape (batch_size, feat_dim).
+            labels: ground truth labels with shape (batch_size).
+        """
+        batch_size = x.size(0)
+        x_expand = x.unsqueeze(1).expand(batch_size, self.num_classes, self.feat_dim)
+        x_expand_mean = x_expand - self.means
+        log_pro = torch.log((2 * np.pi) ** self.feat_dim) + x_expand_mean.unsqueeze(2).matmul(
+            x_expand_mean.unsqueeze(3)).squeeze()
+
+        # distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
+        #           torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(self.num_classes, batch_size).t()
+        # distmat.addmm_(1, -2, x, self.centers.t())
+        classes = torch.arange(self.num_classes).long()
+        # if self.use_gpu: classes = classes.cuda()
+        if self.centers.is_cuda:
+            classes = classes.cuda()
+
+        labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
+        mask = labels.eq(classes.expand(batch_size, self.num_classes))
+
+        dist = log_pro * mask.float()
+        loss = dist.mean()
 
         return loss
 
