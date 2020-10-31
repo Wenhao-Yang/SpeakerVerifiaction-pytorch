@@ -429,7 +429,7 @@ class GaussianLoss(nn.Module):
         mask = labels.eq(classes.expand(batch_size, self.num_classes))
 
         dist = log_pro * mask.float()
-        loss = dist.mean()
+        loss = dist.sum() / batch_size
 
         return loss
 
