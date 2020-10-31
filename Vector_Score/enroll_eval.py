@@ -323,7 +323,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         vec = torch.tensor(file_loader(sid2vec)).float()
         # print(vec.shape)
         # spk_dur_factor.append(vec[0])
-        spks_tensor = torch.cat((spks_tensor, vec[1:]), dim=0)
+        spks_tensor = torch.cat((spks_tensor, vec[1:].unsqueeze(1)), dim=1)
 
     # spk_dur_factor = torch.tensor(spk_dur_factor)# .clamp_max(1.0)
 
