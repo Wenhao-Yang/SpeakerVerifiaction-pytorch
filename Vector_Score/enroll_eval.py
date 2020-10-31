@@ -238,7 +238,7 @@ def Enroll(enroll_dir, file_loader=np.load):
     for sid in sids:
         xvector = []
         for xve_path in spk2utt_dict[sid]:
-            this_xve = file_loader(xve_path)
+            this_xve = file_loader(xve_path, allow_pickle=True)
             if len(this_xve.shape) == 0:
                 print('Empty??')
                 continue
