@@ -279,7 +279,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
 
     utt2vec_scp = os.path.join(eval_dir, 'utt2vec')
     utt2spk_scp = os.path.join(eval_dir, 'utt2spk')
-    enroll_spk2xve_scp = os.path.join(enroll_dir, 'spk2xve')
+    enroll_spk2xve_scp = os.path.join(enroll_dir, 'spk2vec')
 
     utt2vec_dict = {}
     assert os.path.exists(utt2vec_scp), print('%s ?' % utt2vec_scp)
