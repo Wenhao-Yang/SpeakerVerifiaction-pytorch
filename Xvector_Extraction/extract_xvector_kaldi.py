@@ -247,7 +247,7 @@ def extract(data_loader, model, set_id, extract_path):
 
         data = data.cuda()
         _, feats = model(data)
-        feats = feats.data.cpu().numpy
+        feats = feats.data.cpu().numpy()
 
         xvector.append(feats)
         uids.append(uid[0])
