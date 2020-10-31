@@ -289,7 +289,7 @@ if [ $stage -le 60 ]; then
   loss=center
   encoder=None
 
-  for loss in center gaussian ; do
+  for loss in gaussian ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
