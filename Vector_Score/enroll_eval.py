@@ -96,7 +96,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
     utt2num_frames = os.path.join(data_dir, 'utt2num_frames')
 
     utt2vec_scp = os.path.join(xvector_dir, 'utt2vec')
-    spk2utt_scp = os.path.join(xvector_dir, 'spk2utt')
+    spk2utt_scp = os.path.join(data_dir, 'spk2utt')
 
     spk2utt_enroll_scp = os.path.join(xvector_dir, 'enroll', 'spk2utt')
     utt2spk_enroll_scp = os.path.join(xvector_dir, 'enroll', 'utt2spk')
