@@ -414,7 +414,7 @@ class GaussianLoss(nn.Module):
         batch_size = x.size(0)
         x_expand = x.unsqueeze(1).expand(batch_size, self.num_classes, self.feat_dim)
         x_expand_mean = x_expand - self.means
-        log_pro = torch.log((2 * np.pi) ** self.feat_dim) + x_expand_mean.unsqueeze(2).matmul(
+        log_pro = np.log((2 * np.pi) ** self.feat_dim) + x_expand_mean.unsqueeze(2).matmul(
             x_expand_mean.unsqueeze(3)).squeeze()
 
         # distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
