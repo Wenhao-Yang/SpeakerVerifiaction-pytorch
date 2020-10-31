@@ -20,6 +20,7 @@ import torch
 import torch._utils
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
+from kaldi_io import read_mat
 
 from Define_Model.model import PairwiseDistance
 
@@ -86,7 +87,7 @@ dist_type = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDi
 # file_loader = np.load
 
 
-def Split_Set(data_dir, xvector_dir, file_loader=np.load, split_set=True):
+def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
     if not split_set:
         return os.path.join(xvector_dir, 'enroll'), os.path.join(xvector_dir, 'test')
 
