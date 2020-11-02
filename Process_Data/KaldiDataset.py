@@ -526,25 +526,25 @@ class KaldiTupleDataset(data.Dataset):
 
 
 class KaldiExtractDataset(data.Dataset):
-    def __init__(self, dir, transform, filer_loader):
+    def __init__(self, dir, transform, filer_loader, trials_file='trials'):
 
         feat_scp = dir + '/feats.scp'
-        # trials = dir + '/trials'
+        trials = dir + '/%s' % trials_file
 
-        # assert os.path.exists(trials), trials
+        assert os.path.exists(trials), trials
         assert os.path.exists(feat_scp), feat_scp
 
-        # utts = []
-        # with open(trials, 'r') as u:
-        #     all_cls = u.readlines()
-        #     for line in all_cls:
-        #         utt_a,utt_b,target = line.split(' ')
-        #
-        #         if utt_a not in utts:
-        #             utts.append(utt_a)
-        #
-        #         if utt_b not in utts:
-        #             utts.append(utt_b)
+        trials_utts = []
+        with open(trials, 'r') as u:
+            all_cls = u.readlines()
+            for line in all_cls:
+                utt_a, utt_b, target = line.split(' ')
+
+                if utt_a not in trials_utts:
+                    trials_utts.append(utt_a)
+
+                if utt_b not in trials_utts:
+                    trials_utts.append(utt_b)
 
 
         uid2feat = {}
@@ -553,15 +553,15 @@ class KaldiExtractDataset(data.Dataset):
             for line in all_cls:
                 utt_path = line.split(' ')
                 uid = utt_path[0]
-                # if uid in utts:
-                if uid not in uid2feat.keys():
-                    utt_path[-1] = utt_path[-1].rstrip('\n')
-                    uid2feat[uid] = utt_path[-1]
+                if uid in trials_utts:
+                    if uid not in uid2feat.keys():
+                        utt_path[-1] = utt_path[-1].rstrip('\n')
+                        uid2feat[uid] = utt_path[-1]
 
         # pdb.set_trace()
-
         utts = [uid for uid in uid2feat.keys()]
         utts.sort()
+        assert len(utts) == len(trials_utts)
         # print('\n==> There are {} utterance in Verifcation set to extract vectors.'.format(len(utts)))
 
         self.uid2feat = uid2feat

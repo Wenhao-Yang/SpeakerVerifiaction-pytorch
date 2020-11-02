@@ -34,13 +34,12 @@ from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterL
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
     GaussianLoss
 from Process_Data import constants as c
-from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
+from Process_Data.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
 from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
-from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -62,24 +61,16 @@ except AttributeError:
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
-parser.add_argument('--train-dir', type=str,
-                    default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/egs/spect/dev_power',
-                    help='path to dataset')
-parser.add_argument('--train-test-dir', type=str,
-                    default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/egs/spect/dev_power',
-                    help='path to dataset')
-parser.add_argument('--valid-dir', type=str,
-                    default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/egs/spect/valid_power',
-                    help='path to dataset')
-parser.add_argument('--test-dir', type=str,
-                    default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_power',
-                    help='path to voxceleb1 test dataset')
+parser.add_argument('--train-dir', type=str, help='path to dataset')
+parser.add_argument('--train-test-dir', type=str, help='path to dataset')
+parser.add_argument('--valid-dir', type=str, help='path to dataset')
+parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
 
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
-parser.add_argument('--sitw-dir', type=str,
-                    default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
-                    help='path to voxceleb1 test dataset')
+parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
+
+parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
@@ -275,17 +266,14 @@ elif args.feat_format == 'npy':
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
-train_test_dir = ScriptTestDataset(dir=args.train_test_dir, loader=file_loader, transform=transform_T)
 
-test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
+train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
+                                        transform=transform_V,
+                                        filer_loader=file_loader,
+                                        trials_file=args.train_trials)
 
-if len(test_dir) < args.veri_pairs:
-    args.veri_pairs = len(test_dir)
-    print('There are %d verification pairs.' % len(test_dir))
-else:
-    train_test_dir.partition(args.veri_pairs)
-    test_dir.partition(args.veri_pairs)
-
+# train_test_dir = ScriptTestDataset(dir=args.train_test_dir, loader=file_loader, transform=transform_T)
+# test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
 valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
 
 
@@ -421,9 +409,10 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
+    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **kwargs)
 
-    train_test_loader = torch.utils.data.DataLoader(train_test_dir, batch_size=int(args.batch_size / 32), shuffle=False,
-                                                    **kwargs)
+    # train_test_loader = torch.utils.data.DataLoader(train_test_dir, batch_size=int(args.batch_size / 32), shuffle=False,
+    #                                                 **kwargs)
     # test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 32), shuffle=False, **kwargs)
     # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
     #                                                shuffle=False, **kwargs)
@@ -459,9 +448,13 @@ def main():
                        check_path)
 
         if epoch % 2 == 1 and epoch != (end - 1):
-            valid_test(train_test_loader, valid_loader, model, epoch)
+            valid_test(train_extract_loader, valid_loader, model, epoch)
 
         if epoch in milestones:
+            test(model, epoch, writer, xvector_dir)
+
+        if epoch == end:
+            valid_test(train_extract_loader, valid_loader, model, epoch)
             test(model, epoch, writer, xvector_dir)
 
         scheduler.step()
@@ -570,7 +563,7 @@ def train(train_loader, model, ce, optimizer, epoch):
     torch.cuda.empty_cache()
 
 
-def valid_test(test_loader, valid_loader, model, epoch):
+def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
     # switch to evaluate mode
     model.eval()
 
@@ -614,62 +607,75 @@ def valid_test(test_loader, valid_loader, model, epoch):
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
 
-    labels, distances = [], []
-    pbar = tqdm(enumerate(test_loader))
+    # labels, distances = [], []
+    # pbar = tqdm(enumerate(test_loader))
+    # 
+    # with torch.no_grad():
+    #     for batch_idx, (data_a, data_p, label) in pbar:
+    # 
+    #         vec_shape = data_a.shape
+    #         # pdb.set_trace()
+    #         if vec_shape[1] != 1:
+    #             data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+    #             data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+    # 
+    #         data = torch.cat((data_a, data_p), dim=0)
+    #         if args.cuda:
+    #             data = data.cuda()
+    #         # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
+    #         # compute output
+    # 
+    #         _, feats = model(data)
+    #         out_a = feats[:len(data_a)]
+    #         out_p = feats[len(data_a):]
+    # 
+    #         dists = l2_dist.forward(out_a, out_p)
+    #         # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
+    #         dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
+    #         dists = dists.cpu().numpy()
+    # 
+    #         distances.append(dists)
+    #         labels.append(label.cpu().numpy())
+    # 
+    #         if batch_idx % args.log_interval == 0:
+    #             pbar.set_description('Train Test Epoch {:2d} [{}/{} ({:.0f}%)]'.format(
+    #                 epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+    # 
+    # labels = np.array([sublabel for label in labels for sublabel in label])
+    # distances = np.array([subdist for dist in distances for subdist in dist])
+    # 
+    # eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
+    # writer.add_scalar('Train/EER', 100. * eer, epoch)
+    # writer.add_scalar('Train/Threshold', eer_threshold, epoch)
+    # 
+    # mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
+    # writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
+    # writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
+    this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
+    verification_extract(train_extract_loader, model, this_xvector_dir, epoch)
 
-    with torch.no_grad():
-        for batch_idx, (data_a, data_p, label) in pbar:
+    verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
+                                     xvectors_dir=this_xvector_dir,
+                                     loader=read_vec_flt)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
+    eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
+                                                                  dist_type=('cos' if args.cos_sim else 'l2'),
+                                                                  log_interval=args.log_interval,
+                                                                  xvector_dir=this_xvector_dir)
 
-            vec_shape = data_a.shape
-            # pdb.set_trace()
-            if vec_shape[1] != 1:
-                data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-                data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-
-            data = torch.cat((data_a, data_p), dim=0)
-            if args.cuda:
-                data = data.cuda()
-            # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-            # compute output
-
-            _, feats = model(data)
-            out_a = feats[:len(data_a)]
-            out_p = feats[len(data_a):]
-
-            dists = l2_dist.forward(out_a, out_p)
-            # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
-            dists = dists.cpu().numpy()
-
-            distances.append(dists)
-            labels.append(label.cpu().numpy())
-
-            if batch_idx % args.log_interval == 0:
-                pbar.set_description('Train Test Epoch {:2d} [{}/{} ({:.0f}%)]'.format(
-                    epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-
-    labels = np.array([sublabel for label in labels for sublabel in label])
-    distances = np.array([subdist for dist in distances for subdist in dist])
-
-    eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
-    writer.add_scalar('Train/EER', 100. * eer, epoch)
-    writer.add_scalar('Train/Threshold', eer_threshold, epoch)
-
-    mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
-    writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
-    writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
-
-    print('  \33[91mTrain ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.'.format(100. * eer,
-                                                                                                            eer_threshold,
-                                                                                                            mindcf_01,
-                                                                                                            mindcf_001))
-    print('  Valid Accuracy is %.4f %%.\33[0m' % valid_accuracy)
+    print(' \33[91mEpoch {}, Train EER: {:.4f}%, Threshold: {:.4f}, ' \
+          'mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.'.format(epoch,
+                                                            100. * eer,
+                                                            eer_threshold,
+                                                            mindcf_01,
+                                                            mindcf_001))
+    print('            Valid Accuracy is %.4f %%.\33[0m' % valid_accuracy)
 
     torch.cuda.empty_cache()
 
 
 def test(model, epoch, writer, xvector_dir):
-    this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
+    this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
     extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
@@ -733,7 +739,7 @@ def test(model, epoch, writer, xvector_dir):
 #     writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
 #     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
 #
-#     print('  \33[91mTest set ERR: {:.4f}%, Threshold: {}'.format(100. * eer, eer_threshold))
+#     print('  \33[91mTest set EER: {:.4f}%, Threshold: {}'.format(100. * eer, eer_threshold))
 #     print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}\33[0m'.format(mindcf_01, mindcf_001))
 #
 #     torch.cuda.empty_cache()

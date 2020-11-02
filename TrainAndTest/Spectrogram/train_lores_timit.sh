@@ -299,6 +299,7 @@ if [ $stage -le 60 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
       --feat-format kaldi \
       --input-norm None \
+      --train-trials trials_2w \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 12 \
