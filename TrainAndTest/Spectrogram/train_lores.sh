@@ -853,7 +853,7 @@ if [ $stage -le 64 ]; then
   loss=soft
   encod=None
   transform=None
-  for loss in soft ; do
+  for loss in center coscenter ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \

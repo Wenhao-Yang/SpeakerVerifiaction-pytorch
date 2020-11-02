@@ -348,13 +348,10 @@ def main():
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
-
     elif args.loss_type == 'gaussian':
         xe_criterion = GaussianLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
-
     elif args.loss_type == 'coscenter':
         xe_criterion = CenterCosLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
-
     elif args.loss_type == 'mulcenter':
         xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
                                        num_center=args.num_center)
@@ -504,9 +501,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
             loss = args.loss_ratio * loss_xent + loss_cent
-        elif args.loss_type == 'mulcenter':
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = xe_criterion(feats, label)
+
             loss = args.loss_ratio * loss_xent + loss_cent
         elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
             loss = xe_criterion(classfier, label)

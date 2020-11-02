@@ -31,7 +31,9 @@ from torch.autograd import Variable
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
-from Define_Model.LossFunction import Wasserstein_Loss
+from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss
+from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
+    GaussianLoss
 from Process_Data import constants as c
 from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -157,6 +159,8 @@ parser.add_argument('--source-cls', type=int, default=1951,
 
 parser.add_argument('--finetune', action='store_true', default=False,
                     help='using Cosine similarity')
+parser.add_argument('--set-ratio', type=float, default=0.6, metavar='LOSSRATIO',
+                    help='the ratio softmax loss - triplet loss (default: 2.0')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
 
@@ -347,6 +351,39 @@ def main():
     ce_criterion = nn.CrossEntropyLoss()
     if args.loss_type == 'soft':
         xe_criterion = None
+    elif args.loss_type == 'asoft':
+        ce_criterion = None
+        model.classifier_a = AngleLinear(in_features=args.embedding_size, out_features=train_dir_a.num_spks, m=args.m)
+        model.classifier_b = AngleLinear(in_features=args.embedding_size, out_features=train_dir_b.num_spks, m=args.m)
+        xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
+
+    elif args.loss_type == 'center':
+        xe_criterion = CenterLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
+                                  feat_dim=args.embedding_size)
+
+    elif args.loss_type == 'gaussian':
+        xe_criterion = GaussianLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
+                                    feat_dim=args.embedding_size)
+
+    elif args.loss_type == 'coscenter':
+        xe_criterion = CenterCosLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
+                                     feat_dim=args.embedding_size)
+
+    elif args.loss_type == 'mulcenter':
+        xe_criterion = MultiCenterLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
+                                       feat_dim=args.embedding_size,
+                                       num_center=args.num_center)
+    elif args.loss_type == 'amsoft':
+        ce_criterion = None
+        model.classifier_a = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir_a.num_spks)
+        model.classifier_b = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir_b.num_spks)
+        xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+    elif args.loss_type == 'arcsoft':
+        ce_criterion = None
+        model.classifier_a = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir_a.num_spks)
+        model.classifier_b = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir_b.num_spks)
+        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
+    elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
@@ -491,21 +528,47 @@ def train(train_loader, model, ce, optimizer, epoch):
         # feats_b = model.pre_forward(data_b)
         classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
         # cos_theta, phi_theta = classfier
+        classfier_label_a = classfier_a
+        classfier_label_b = classfier_b
 
         if args.loss_type == 'soft':
             loss_a = ce_criterion(classfier_a, label_a)
             loss_b = ce_criterion(classfier_b, label_b)
+            loss = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
 
-        loss = (1 - args.loss_ratio) * loss_a + args.loss_ratio * loss_b
+        elif args.loss_type == 'asoft':
+            classfier_label_a, _ = classfier_a
+            loss_a = xe_criterion(classfier_a, label_a)
+            classfier_label_b, _ = classfier_a
+            loss_b = xe_criterion(classfier_a, label_a)
 
-        predicted_labels = output_softmax(classfier_a)
+            loss = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
+
+        elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+            label_b_plus = label_b + train_dir_a.num_spks
+            label = torch.cat((label_a, label_b_plus))
+
+            loss_a = ce_criterion(classfier_a, label_a)
+            loss_b = ce_criterion(classfier_b, label_b)
+            loss_cent = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
+
+            loss_xent = xe_criterion(feats, label)
+            loss = args.loss_ratio * loss_xent + loss_cent
+
+        elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
+            loss_a = xe_criterion(classfier_a, label_a)
+            loss_b = xe_criterion(classfier_b, label_b)
+            loss = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
+            # loss = xe_criterion(classfier, label)
+
+        predicted_labels = output_softmax(classfier_label_a)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
         minibatch_correct = float((predicted_one_labels.cuda() == label_a).sum().item())
         minibatch_a = minibatch_correct / len(predicted_one_labels)
         correct_a += minibatch_correct
         total_datasize_a += len(predicted_one_labels)
 
-        predicted_labels = output_softmax(classfier_b)
+        predicted_labels = output_softmax(classfier_label_b)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
         minibatch_correct = float((predicted_one_labels.cuda() == label_b).sum().item())
         minibatch_b = minibatch_correct / len(predicted_one_labels)
@@ -522,7 +585,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         loss.backward()
 
         if args.loss_ratio != 0:
-            if args.loss_type == 'center' or args.loss_type == 'mulcenter':
+            if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 for param in xe_criterion.parameters():
                     param.grad.data *= (1. / args.loss_ratio)
 
@@ -535,13 +598,31 @@ def train(train_loader, model, ce, optimizer, epoch):
         optimizer.step()
 
         if batch_idx % args.log_interval == 0:
-            pbar.set_description(
-                'Train Epoch {} ({:.0f}%): Avg_Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
-                    epoch,
-                    100 * (batch_idx / len(train_loader_a)),
-                    total_loss / (batch_idx + 1),
-                    100. * minibatch_a,
-                    100. * minibatch_b))
+            if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+                pbar.set_description(
+                    'Train Epoch {:2d} ({:3.0f}%): Center Loss: {:.4f} Avg Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
+                        epoch,
+                        100. * batch_idx / len(train_loader_a),
+                        loss_xent.float(),
+                        total_loss / (batch_idx + 1),
+                        100. * minibatch_a,
+                        100. * minibatch_b))
+            else:
+                pbar.set_description(
+                    'Train Epoch {:2d} ({:3.0f}%): Avg Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
+                        epoch,
+                        100. * batch_idx / len(train_loader_a),
+                        total_loss / (batch_idx + 1),
+                        100. * minibatch_a,
+                        100. * minibatch_b))
+
+            # pbar.set_description(
+            #     'Train Epoch {} ({:.0f}%): Avg_Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
+            #         epoch,
+            #         100 * (batch_idx / len(train_loader_a)),
+            #         total_loss / (batch_idx + 1),
+            #         100. * minibatch_a,
+            #         100. * minibatch_b))
             # break
 
     print(
