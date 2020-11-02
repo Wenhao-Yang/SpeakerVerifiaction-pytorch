@@ -529,8 +529,23 @@ class KaldiExtractDataset(data.Dataset):
     def __init__(self, dir, transform, filer_loader):
 
         feat_scp = dir + '/feats.scp'
+        # trials = dir + '/trials'
 
+        # assert os.path.exists(trials), trials
         assert os.path.exists(feat_scp), feat_scp
+
+        # utts = []
+        # with open(trials, 'r') as u:
+        #     all_cls = u.readlines()
+        #     for line in all_cls:
+        #         utt_a,utt_b,target = line.split(' ')
+        #
+        #         if utt_a not in utts:
+        #             utts.append(utt_a)
+        #
+        #         if utt_b not in utts:
+        #             utts.append(utt_b)
+
 
         uid2feat = {}
         with open(feat_scp, 'r') as u:
@@ -538,9 +553,11 @@ class KaldiExtractDataset(data.Dataset):
             for line in all_cls:
                 utt_path = line.split(' ')
                 uid = utt_path[0]
+                # if uid in utts:
                 if uid not in uid2feat.keys():
                     utt_path[-1] = utt_path[-1].rstrip('\n')
                     uid2feat[uid] = utt_path[-1]
+
         # pdb.set_trace()
 
         utts = [uid for uid in uid2feat.keys()]
@@ -996,6 +1013,8 @@ class ScriptTestDataset(data.Dataset):
         return data_a, data_b, label
 
     def partition(self, num):
+        random.seed(123456)
+
         if num > len(self.trials_pair):
             print('%d is greater than the total number of pairs')
 
