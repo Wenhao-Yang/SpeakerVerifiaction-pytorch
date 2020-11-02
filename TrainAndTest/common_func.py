@@ -114,29 +114,30 @@ def verification_extract(extract_loader, model, xvector_dir, epoch=24, ark_num=5
 
     pbar = tqdm(enumerate(extract_loader))
     uid2vectors = {}
-    for batch_idx, (data, uid) in pbar:
-        vec_shape = data.shape
+    with torch.no_grad:
+        for batch_idx, (data, uid) in pbar:
+            vec_shape = data.shape
 
-        if vec_shape[1] != 1:
-            data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+            if vec_shape[1] != 1:
+                data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
-        if gpu:
-            data = data.cuda()
+            if gpu:
+                data = data.cuda()
 
-        # compute output
-        model_out = model(data)
-        try:
-            _, out, _, _ = model_out
-        except:
-            _, out = model_out
+            # compute output
+            model_out = model(data)
+            try:
+                _, out, _, _ = model_out
+            except:
+                _, out = model_out
 
-        if vec_shape[1] != 1:
-            out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
+            if vec_shape[1] != 1:
+                out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
 
-        uid2vectors[uid[0]] = out.squeeze().cpu().numpy()
+            uid2vectors[uid[0]] = out.squeeze().cpu().numpy()
 
-        pbar.set_description('Extract Epoch {}: [{}/{} ({:.0f}%)]'.format(
-            epoch, batch_idx, len(extract_loader.dataset), 100. * batch_idx / len(extract_loader)))
+            pbar.set_description('Extract Epoch {}: [{}/{} ({:.0f}%)]'.format(
+                epoch, batch_idx, len(extract_loader.dataset), 100. * batch_idx / len(extract_loader)))
 
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
