@@ -11,6 +11,8 @@ import numpy as np
 from scipy import interpolate
 from scipy.stats import norm
 
+from Lime import cValue_1
+
 
 def evaluate(distances, labels):
     # Calculate evaluation metrics
@@ -321,7 +323,7 @@ def plot_DET_curve(pf_max=0.3):
             tmax_fa = k + 1  # 移动最大值索引位置
 
     # FRR
-    plt.figure(figsize=(9, 9))
+    plt.figure(figsize=(12, 12))
     plt.rc('font', family='Times New Roman')
     plt.title('DET', fontsize=22)
     plt.xlim(norm.ppf(pfa_min), norm.ppf(pfa_max))
@@ -357,7 +359,7 @@ def save_det(save_path, score_files=[], names=[], pf_max=0.3):
 
                 fnrs, fprs, _ = ComputeErrorRates(scores, labels)
                 x, y = norm.ppf(fnrs), norm.ppf(fprs)
-                det_plt.plot(x, y, label=names[i])
+                det_plt.plot(x, y, label=names[i], color=cValue_1[i])
 
         det_plt.legend(loc='upper right', fontsize=18)
         det_plt.savefig(save_path + "/det.png")

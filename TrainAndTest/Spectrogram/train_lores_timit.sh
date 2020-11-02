@@ -286,10 +286,11 @@ if [ $stage -le 60 ]; then
   datasets=timit
   model=LoResNet
   resnet_size=8
-  loss=coscenter
+#  loss=coscenter
   encoder=None
+  loss_ratio=0.1
 
-  for loss_ratio in 0.5 0.1 0.05 0.01 ; do
+  for loss in amsoft ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
@@ -303,8 +304,8 @@ if [ $stage -le 60 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_3.51_dp05_${loss_ratio} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_3.51_dp05_${loss_ratio}/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio}/checkpoint_24.pth \
       --channels 4,16,64 \
       --stride 2 \
       --embedding-size 128 \

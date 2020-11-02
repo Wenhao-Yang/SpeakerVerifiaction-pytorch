@@ -11,12 +11,10 @@
 """
 import argparse
 
-import kaldiio
-from kaldiio import ReadHelper
 import matplotlib.pyplot as plt
 import numpy as np
+from kaldiio import ReadHelper
 from sklearn.manifold import TSNE
-
 
 # Training settings
 from Lime import cValue_1
@@ -24,9 +22,11 @@ from Lime import cValue_1
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
 parser.add_argument('--scp-file', type=str,
-                    default='Data/xvector/LoResNet8/vox1/spect_egs/soft_dp25/xvectors.scp',
+                    default='Data/xvector/LoResNet8/timit/spect_egs_None/soft_dp05/xvectors.scp',
                     help='path to scp file for xvectors')
-parser.add_argument('--num-spk', default=5, type=int,
+parser.add_argument('--spk-len', default=5, type=int,
+                    help='num of speakers to plot (default: 10)')
+parser.add_argument('--num-spk', default=15, type=int,
                     help='num of speakers to plot (default: 10)')
 
 args = parser.parse_args()
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     spks = []
     for key in vects:
-        s = key[:7]
+        s = key[:args.spk_len]
         if s not in spks:
             spks.append(s)
 
@@ -50,10 +50,10 @@ if __name__ == '__main__':
     for s in spks_this:
         spk2vec[s] = []
     for key in vects:
-        if key[:7] in spks_this:
+        if key[:args.spk_len] in spks_this:
             this_vec = vects[key]
             vec_len = len(this_vec)
-            spk2vec[key[:7]].append(this_vec.reshape(1, vec_len))
+            spk2vec[key[:args.spk_len]].append(this_vec.reshape(1, vec_len))
 
     all = []
     all_len = [0]
@@ -81,6 +81,6 @@ if __name__ == '__main__':
             leng.append(spks_this[idx])
             plt.scatter(group[:,0], group[:, 1], color=c, s=10)
 
-    plt.legend(leng)
+    plt.legend(leng, loc="best")
     plt.show()
 
