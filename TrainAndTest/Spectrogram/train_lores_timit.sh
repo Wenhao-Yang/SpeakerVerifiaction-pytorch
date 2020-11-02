@@ -294,6 +294,7 @@ if [ $stage -le 60 ]; then
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
+      --train-test-dir ${lstm_dir}/data/${datasets}/spect/train_log \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
       --feat-format kaldi \
