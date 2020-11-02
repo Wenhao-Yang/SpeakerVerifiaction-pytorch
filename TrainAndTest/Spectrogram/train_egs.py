@@ -579,36 +579,36 @@ def valid_test(test_loader, valid_loader, model, epoch):
 
     correct = 0.
     total_datasize = 0.
+    with torch.no_grad():
+        for batch_idx, (data, label) in valid_pbar:
+            data = Variable(data.cuda())
 
-    for batch_idx, (data, label) in valid_pbar:
-        data = Variable(data.cuda())
+            # compute output
+            out, _ = model(data)
+            if args.loss_type == 'asoft':
+                predicted_labels, _ = out
+            else:
+                predicted_labels = out
 
-        # compute output
-        out, _ = model(data)
-        if args.loss_type == 'asoft':
-            predicted_labels, _ = out
-        else:
-            predicted_labels = out
+            true_labels = Variable(label.cuda())
 
-        true_labels = Variable(label.cuda())
+            # pdb.set_trace()
+            predicted_one_labels = softmax(predicted_labels)
+            predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
 
-        # pdb.set_trace()
-        predicted_one_labels = softmax(predicted_labels)
-        predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+            batch_correct = (predicted_one_labels.cuda() == true_labels.cuda()).sum().item()
+            minibatch_acc = float(batch_correct / len(predicted_one_labels))
+            correct += batch_correct
+            total_datasize += len(predicted_one_labels)
 
-        batch_correct = (predicted_one_labels.cuda() == true_labels.cuda()).sum().item()
-        minibatch_acc = float(batch_correct / len(predicted_one_labels))
-        correct += batch_correct
-        total_datasize += len(predicted_one_labels)
-
-        if batch_idx % args.log_interval == 0:
-            valid_pbar.set_description('Valid Epoch: {:2d} [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
-                epoch,
-                batch_idx * len(data),
-                len(valid_loader.dataset),
-                100. * batch_idx / len(valid_loader),
-                100. * minibatch_acc
-            ))
+            if batch_idx % args.log_interval == 0:
+                valid_pbar.set_description('Valid Epoch: {:2d} [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
+                    epoch,
+                    batch_idx * len(data),
+                    len(valid_loader.dataset),
+                    100. * batch_idx / len(valid_loader),
+                    100. * minibatch_acc
+                ))
 
     valid_accuracy = 100. * correct / total_datasize
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
@@ -616,34 +616,37 @@ def valid_test(test_loader, valid_loader, model, epoch):
 
     labels, distances = [], []
     pbar = tqdm(enumerate(test_loader))
-    for batch_idx, (data_a, data_p, label) in pbar:
 
-        vec_shape = data_a.shape
-        # pdb.set_trace()
-        if vec_shape[1] != 1:
-            data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-            data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+    with torch.no_grad():
+        for batch_idx, (data_a, data_p, label) in pbar:
 
-        data = torch.cat((data_a, data_p), dim=0)
-        if args.cuda:
-            data = data.cuda()
-        # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-        # compute output
+            vec_shape = data_a.shape
+            # pdb.set_trace()
+            if vec_shape[1] != 1:
+                data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+                data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
-        _, feats = model(data)
-        out_a = feats[:len(data_a)]
-        out_p = feats[len(data_a):]
+            data = torch.cat((data_a, data_p), dim=0)
+            if args.cuda:
+                data = data.cuda()
+            # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
+            # compute output
 
-        dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
-        dists = dists.data.cpu().numpy()
+            _, feats = model(data)
+            out_a = feats[:len(data_a)]
+            out_p = feats[len(data_a):]
 
-        distances.append(dists)
-        labels.append(label.data.cpu().numpy())
+            dists = l2_dist.forward(out_a,
+                                    out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
+            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
+            dists = dists.data.cpu().numpy()
 
-        if batch_idx % args.log_interval == 0:
-            pbar.set_description('Train Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-                epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+            distances.append(dists)
+            labels.append(label.data.cpu().numpy())
+
+            if batch_idx % args.log_interval == 0:
+                pbar.set_description('Train Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
+                    epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
@@ -677,8 +680,8 @@ def test(model, epoch, writer, xvector_dir):
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
                                                                   dist_type=('cos' if args.cos_sim else 'l2'),
                                                                   log_interval=args.log_interval,
-                                                                  save=this_xvector_dir,
-                                                                  embedding_size=args.embedding_size)
+                                                                  xvector_dir=this_xvector_dir,
+                                                                  epoch=epoch)
 
     writer.add_scalar('Test/EER', 100. * eer, epoch)
     writer.add_scalar('Test/Threshold', eer_threshold, epoch)
