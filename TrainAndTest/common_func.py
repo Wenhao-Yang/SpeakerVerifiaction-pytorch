@@ -114,7 +114,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch=24, ark_num=5
 
     pbar = tqdm(enumerate(extract_loader))
     uid2vectors = {}
-    with torch.no_grad:
+    with torch.no_grad():
         for batch_idx, (data, uid) in pbar:
             vec_shape = data.shape
 

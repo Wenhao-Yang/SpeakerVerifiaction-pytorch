@@ -458,8 +458,8 @@ def main():
                         'criterion': ce},
                        check_path)
 
-        if epoch % 2 == 1 and epoch != (end - 1):
-            valid_test(train_test_loader, valid_loader, model, epoch)
+        # if epoch % 2 == 1 and epoch != (end - 1):
+        #     valid_test(train_test_loader, valid_loader, model, epoch)
 
         if epoch in milestones:
             test(model, epoch, writer, xvector_dir)
