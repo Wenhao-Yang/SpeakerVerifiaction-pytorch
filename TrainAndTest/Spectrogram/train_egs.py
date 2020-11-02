@@ -670,7 +670,12 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
                                                             eer_threshold,
                                                             mindcf_01,
                                                             mindcf_001))
-    print('            Valid Accuracy is %.4f %%.\33[0m' % valid_accuracy)
+    print('          Valid Accuracy is %.4f %%.\33[0m' % valid_accuracy)
+
+    writer.add_scalar('Train/EER', 100. * eer, epoch)
+    writer.add_scalar('Train/Threshold', eer_threshold, epoch)
+    writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
+    writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
 
     torch.cuda.empty_cache()
 

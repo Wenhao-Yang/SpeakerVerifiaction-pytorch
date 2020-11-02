@@ -111,10 +111,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
         os.makedirs(xvector_dir)
         # print('Creating xvector path: %s' % xvector_dir)
 
-    pbar = tqdm(enumerate(extract_loader))
+    # pbar = tqdm(enumerate(extract_loader))
     uid2vectors = {}
     with torch.no_grad():
-        for batch_idx, (data, uid) in pbar:
+        for batch_idx, (data, uid) in enumerate(extract_loader):
             vec_shape = data.shape
 
             if vec_shape[1] != 1:
@@ -134,8 +134,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
 
             uid2vectors[uid[0]] = out.squeeze().cpu().numpy()
 
-            pbar.set_description('Extraction Epoch {}: [{}/{} ({:.0f}%)]'.format(
-                epoch, batch_idx, len(extract_loader.dataset), 100. * batch_idx / len(extract_loader)))
+            # pbar.set_description('Extraction Epoch {}: [{}/{} ({:.0f}%)]'.format(
+            #     epoch, batch_idx, len(extract_loader.dataset), 100. * batch_idx / len(extract_loader)))
 
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
@@ -171,16 +171,15 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
 
         out_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
         out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
-
         dists = dist_fn.forward(out_a, out_p).cpu().numpy()
 
         distances.append(dists)
         labels.append(label.numpy())
         del out_a, out_p  #, ae, pe
 
-        if batch_idx % log_interval == 0:
-            pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
-                epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+        # if batch_idx % log_interval == 0:
+        #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
+        #         epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
@@ -190,7 +189,8 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
             f.write(str(d) + ' ' + str(l) + '\n')
 
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
-                                                      cos=True if dist_type == 'cos' else False, re_thre=True)
+                                                      cos=True if dist_type == 'cos' else False,
+                                                      re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
     return eer, eer_threshold, mindcf_01, mindcf_001
