@@ -665,12 +665,12 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
                                                                   epoch=epoch)
 
     print('\33[91mEpoch {}:\nTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
-          'mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}. Valid Accuracy is %.4f %%.\33[0m'.format(epoch,
-                                                                                             100. * eer,
-                                                                                             eer_threshold,
-                                                                                             mindcf_01,
-                                                                                             mindcf_001,
-                                                                                             valid_accuracy))
+          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. Valid Accuracy is {:.4f}%.\33[0m'.format(epoch,
+                                                                                               100. * eer,
+                                                                                               eer_threshold,
+                                                                                               mindcf_01,
+                                                                                               mindcf_001,
+                                                                                               valid_accuracy))
 
     writer.add_scalar('Train/EER', 100. * eer, epoch)
     writer.add_scalar('Train/Threshold', eer_threshold, epoch)
@@ -695,7 +695,7 @@ def test(model, epoch, writer, xvector_dir):
                                                                   log_interval=args.log_interval,
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
-    print('  \33[91mTest ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
+    print('\33[91mTest  ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
         100. * eer, eer_threshold, mindcf_01, mindcf_001))
 
     writer.add_scalar('Test/EER', 100. * eer, epoch)
