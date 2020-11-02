@@ -286,7 +286,7 @@ if [ $stage -le 60 ]; then
   datasets=timit
   model=LoResNet
   resnet_size=8
-  loss=center
+  loss=coscenter
   encoder=None
 
   for loss_ratio in 0.5 0.1 0.05 0.01 ; do
