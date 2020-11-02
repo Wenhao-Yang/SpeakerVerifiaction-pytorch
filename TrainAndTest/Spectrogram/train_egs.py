@@ -618,15 +618,15 @@ def test(test_loader, valid_loader, model, epoch):
             data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
             data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
+        data = torch.cat((data_a, data_p), dim=0)
         if args.cuda:
-            data_a, data_p = data_a.cuda(), data_p.cuda()
-        data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-
+            data = data.cuda()
+        # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
         # compute output
-        _, out_a_ = model(data_a)
-        _, out_p_ = model(data_p)
-        out_a = out_a_
-        out_p = out_p_
+
+        _, feats = model(data)
+        out_a = feats[:len(data_a)]
+        out_p = feats[len(data_a):]
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
