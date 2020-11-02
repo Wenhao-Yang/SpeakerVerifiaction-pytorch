@@ -595,7 +595,7 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
             total_datasize += len(predicted_one_labels)
 
             if batch_idx % args.log_interval == 0:
-                valid_pbar.set_description('Valid Epoch {:2d} [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
+                valid_pbar.set_description('Valid Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
                     epoch,
                     batch_idx * len(data),
                     len(valid_loader.dataset),
