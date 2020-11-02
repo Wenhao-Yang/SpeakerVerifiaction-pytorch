@@ -360,15 +360,12 @@ def main():
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                   feat_dim=args.embedding_size)
-
     elif args.loss_type == 'gaussian':
         xe_criterion = GaussianLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                     feat_dim=args.embedding_size)
-
     elif args.loss_type == 'coscenter':
         xe_criterion = CenterCosLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                      feat_dim=args.embedding_size)
-
     elif args.loss_type == 'mulcenter':
         xe_criterion = MultiCenterLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                        feat_dim=args.embedding_size,
@@ -463,6 +460,7 @@ def main():
         train(train_loader, model, ce, optimizer, epoch)
         if epoch % 4 == 1 or epoch == (end - 1):
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
+
             torch.save({'epoch': epoch,
                         'state_dict': model.state_dict(),
                         'criterion': ce},

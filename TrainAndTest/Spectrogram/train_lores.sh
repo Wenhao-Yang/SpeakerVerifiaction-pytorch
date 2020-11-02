@@ -867,13 +867,13 @@ if [ $stage -le 64 ]; then
       --input-norm Mean \
       --batch-size 192 \
       --nj 12 \
-      --epochs 11 \
-      --lr 0.01 \
+      --epochs 24 \
+      --lr 0.1 \
       --input-dim 81 \
       --stride 1 \
-      --milestones 1,7 \
+      --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/soft_dp25_b192_16/checkpoint_13.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16/checkpoint_13.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
@@ -885,7 +885,8 @@ if [ $stage -le 64 ]; then
       --margin 0.3 \
       --s 30 \
       --m 3 \
-      --loss-ratio 0.6 \
+      --loss-ratio 0.1 \
+      --set-ratio 0.6 \
       --grad-clip 0 \
       --weight-decay 0.001 \
       --dropout-p 0.25 \
