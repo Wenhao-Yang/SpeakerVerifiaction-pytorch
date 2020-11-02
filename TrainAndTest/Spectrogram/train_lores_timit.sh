@@ -289,7 +289,7 @@ if [ $stage -le 60 ]; then
   loss=center
   encoder=None
 
-  for loss in gaussian ; do
+  for loss_ratio in 0.5 0.1 0.05 0.01 ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
@@ -303,8 +303,8 @@ if [ $stage -le 60 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --milestones 6,10 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_nocon_dp05 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_nocon_dp05/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio} /checkpoint_24.pth \
       --channels 4,16,64 \
       --stride 2 \
       --embedding-size 128 \
@@ -316,7 +316,7 @@ if [ $stage -le 60 ]; then
       --margin 0.4 \
       --s 30 \
       --m 3 \
-      --loss-ratio 0.01 \
+      --loss-ratio ${loss_ratio} \
       --weight-decay 0.001 \
       --dropout-p 0.5 \
       --gpu-id 0 \
