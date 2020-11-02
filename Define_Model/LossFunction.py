@@ -182,7 +182,7 @@ class CenterCosLoss(nn.Module):
         all_cos = torch.cosine_similarity(x, classes)
 
         # lab_class = len(torch.unique(labels))
-        dist = torch.exp(1 - all_cos)
+        dist = torch.exp(2 * (1 - all_cos))
         loss = dist.sum() / batch_size
 
         return loss
