@@ -555,7 +555,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                         total_loss / (batch_idx + 1),
                         100. * minibatch_acc))
 
-    print('\n\33[91mTrain Epoch {}: Train Accuracy:{:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
+    print('\nTrain Epoch {}: \33[91mTrain Accuracy:{:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader)))
     writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
@@ -664,7 +664,7 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
 
-    print('\33[91mEpoch {}:\nTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
+    print('Test  Epoch {}:\n\33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
           'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. Valid Accuracy is {:.4f}%.\33[0m'.format(epoch,
                                                                                                100. * eer,
                                                                                                eer_threshold,
@@ -702,7 +702,6 @@ def test(model, epoch, writer, xvector_dir):
     writer.add_scalar('Test/Threshold', eer_threshold, epoch)
     writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
-
 
 # def test(test_loader, model, epoch):
 #     # switch to evaluate mode
