@@ -282,12 +282,12 @@ def evaluate_kaldi_mindcf(scores, labels, return_threshold=False):
     return mindcf_01, mindcf_001
 
 # from https://blog.csdn.net/qq_28228605/article/details/103728793
-def plot_DET_curve():
+def plot_DET_curve(pf_max=0.3):
     # 设置刻度范围
     pmiss_min = 0.005
-    pmiss_max = 0.4
+    pmiss_max = pf_max
     pfa_min = 0.005
-    pfa_max = 0.4
+    pfa_max = pf_max
 
     # 刻度设置
     pticks = [0.00005, 0.0001, 0.0002, 0.0005, 0.001, 0.002,
@@ -341,9 +341,9 @@ def plot_DET_curve():
     return plt
 
 
-def plot_det(save_path, score_files=[], names=[]):
+def save_det(save_path, score_files=[], names=[], pf_max=0.3):
     if len(score_files) > 0 and len(score_files) == len(names):
-        det_plt = plot_DET_curve()
+        det_plt = plot_DET_curve(pf_max=pf_max)
 
         for i, scf in enumerate(score_files):
             if os.path.exists(scf):
@@ -362,7 +362,14 @@ def plot_det(save_path, score_files=[], names=[]):
         det_plt.legend(loc='upper right', fontsize=18)
         det_plt.savefig(save_path + "/det.png")
 
-# fnrs, fprs, = ComputeErrorRates(scores, labels)
+# save_det(save_path="Data/xvector/LoResNet8/timit/spect_egs_None",
+#          score_files=["Data/xvector/LoResNet8/timit/spect_egs_None/soft_dp05/scores",
+#                       "Data/xvector/LoResNet8/timit/spect_egs_None/center_dp05/scores",
+#                       "Data/xvector/LoResNet8/timit/spect_egs_None/coscenter_dp05/scores",
+#                       "Data/xvector/LoResNet8/timit/spect_egs_None/gaussian_cov_dp05/scores",
+#                       "Data/xvector/LoResNet8/timit/spect_egs_None/gaussian_dp05/scores"],
+#         names=["soft", "center", "coscenter", "gasscov", "gass"])
+# # fnrs, fprs, = ComputeErrorRates(scores, labels)
 # x, y = norm.ppf(fnrs), norm.ppf(fprs)
 # plt.plot(x, y)
 # plt.plot([-40, 1], [-40, 1])
