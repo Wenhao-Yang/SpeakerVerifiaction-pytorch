@@ -304,7 +304,7 @@ if [ $stage -le 60 ]; then
       --input-dim 161 \
       --milestones 6,10 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio} /checkpoint_24.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio}/checkpoint_24.pth \
       --channels 4,16,64 \
       --stride 2 \
       --embedding-size 128 \
