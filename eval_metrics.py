@@ -11,7 +11,7 @@ import numpy as np
 from scipy import interpolate
 from scipy.stats import norm
 
-from Lime import cValue_1
+from Process_Data.constants import cValue_1
 
 
 def evaluate(distances, labels):
