@@ -537,7 +537,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         if batch_idx % args.log_interval == 0:
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 pbar.set_description(
-                    'Train Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Center Loss: {:.4f} Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
+                    'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)] Center Loss: {:.4f} Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
                         epoch,
                         batch_idx * len(data),
                         len(train_loader.dataset),
@@ -547,7 +547,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                         100. * minibatch_acc))
             else:
                 pbar.set_description(
-                    'Train Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
+                    'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)] Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
                         epoch,
                         batch_idx * len(data),
                         len(train_loader.dataset),
@@ -595,7 +595,7 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
             total_datasize += len(predicted_one_labels)
 
             if batch_idx % args.log_interval == 0:
-                valid_pbar.set_description('Valid Epoch {:2d}: [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
+                valid_pbar.set_description('Valid Epoch {}: [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
                     epoch,
                     batch_idx * len(data),
                     len(valid_loader.dataset),
