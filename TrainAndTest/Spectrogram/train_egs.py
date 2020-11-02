@@ -665,17 +665,19 @@ def valid_test(test_loader, valid_loader, model, epoch):
 
 
 def test(model, epoch, writer, xvector_dir):
+    this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
+
     extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
-    verification_extract(extract_loader, model, xvector_dir)
+    verification_extract(extract_loader, model, this_xvector_dir, epoch)
 
-    verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
+    verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
     verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
                                                                   dist_type=('cos' if args.cos_sim else 'l2'),
                                                                   log_interval=args.log_interval,
-                                                                  save=xvector_dir,
+                                                                  save=this_xvector_dir,
                                                                   embedding_size=args.embedding_size)
 
     writer.add_scalar('Test/EER', 100. * eer, epoch)

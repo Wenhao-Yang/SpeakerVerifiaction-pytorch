@@ -104,12 +104,11 @@ class AverageMeter(object):
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 
-def verification_extract(extract_loader, model, xvector_dir, epoch=24, ark_num=50000, gpu=True):
+def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=50000, gpu=True):
     model.eval()
 
-    this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
-    if not os.path.exists(this_xvector_dir):
-        os.makedirs(this_xvector_dir)
+    if not os.path.exists(xvector_dir):
+        os.makedirs(xvector_dir)
         # print('Creating xvector path: %s' % xvector_dir)
 
     pbar = tqdm(enumerate(extract_loader))
@@ -141,13 +140,13 @@ def verification_extract(extract_loader, model, xvector_dir, epoch=24, ark_num=5
 
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
-    scp_file = this_xvector_dir + '/xvectors.scp'
+    scp_file = xvector_dir + '/xvectors.scp'
     scp = open(scp_file, 'w')
 
     # write scp and ark file
     # pdb.set_trace()
     for set_id in range(int(np.ceil(len(uids) / ark_num))):
-        ark_file = this_xvector_dir + '/xvector.{}.ark'.format(set_id)
+        ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
         with open(ark_file, 'wb') as ark:
             ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
             for i in ranges:
@@ -159,7 +158,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch=24, ark_num=5
                 # print(ark.tell())
                 scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
     scp.close()
-    print('Saving %d xvectors to %s' % (len(uids), this_xvector_dir))
+    print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
 
@@ -186,8 +185,8 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
-    this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
-    with open('%s/scores' % this_xvector_dir, 'w') as f:
+    # this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
+    with open('%s/scores' % xvector_dir, 'w') as f:
         for d, l in zip(distances, labels):
             f.write(str(d) + ' ' + str(l) + '\n')
 
