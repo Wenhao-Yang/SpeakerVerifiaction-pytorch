@@ -661,7 +661,8 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
                                                                   dist_type=('cos' if args.cos_sim else 'l2'),
                                                                   log_interval=args.log_interval,
-                                                                  xvector_dir=this_xvector_dir)
+                                                                  xvector_dir=this_xvector_dir,
+                                                                  epoch=epoch)
 
     print(' \33[91mEpoch {}, Train EER: {:.4f}%, Threshold: {:.4f}, ' \
           'mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.'.format(epoch,
@@ -689,6 +690,8 @@ def test(model, epoch, writer, xvector_dir):
                                                                   log_interval=args.log_interval,
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
+    print('  \33[91mTest ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
+        100. * eer, eer_threshold, mindcf_01, mindcf_001))
 
     writer.add_scalar('Test/EER', 100. * eer, epoch)
     writer.add_scalar('Test/Threshold', eer_threshold, epoch)

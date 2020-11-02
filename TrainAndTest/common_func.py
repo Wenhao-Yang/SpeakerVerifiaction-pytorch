@@ -193,7 +193,4 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
                                                       cos=True if dist_type == 'cos' else False, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
-    print('  \33[91mTest ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
-        100. * eer, eer_threshold, mindcf_01, mindcf_001))
-
     return eer, eer_threshold, mindcf_01, mindcf_001
