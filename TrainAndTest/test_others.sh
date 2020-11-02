@@ -499,13 +499,12 @@ if [ $stage -le 60 ]; then
       --loss-type ${loss} \
       --input-length fix \
       --time-dim 1 \
-      --extract \
       --test-input-per-file 4 \
       --inst-norm \
       --stride 2 \
       --dropout-p 0.1 \
-      --xvector-dir Data/xvector/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01 \
-      --resume  Data/checkpoint/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01/checkpoint_24.pth \
+      --xvector-dir Data/xvector/LoResNet${resnet_size}/army_v1/spect_egs_mean/soft_dp01 \
+      --resume  Data/checkpoint/LoResNet${resnet_size}/army_v1/spect_egs_mean/soft_dp01/checkpoint_24.pth \
       --trials trials \
       --gpu-id 0
   done
