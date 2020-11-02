@@ -664,7 +664,7 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
 
-    print(' \33[91mEpoch {}, Train EER: {:.4f}%, Threshold: {:.4f}, ' \
+    print('\33[91mEpoch {}:\nTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
           'mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.'.format(epoch,
                                                             100. * eer,
                                                             eer_threshold,

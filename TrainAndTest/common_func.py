@@ -16,7 +16,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tqdm import tqdm
 
 from Define_Model.CNN import AlexNet
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
@@ -166,8 +165,8 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     labels, distances = [], []
     dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
 
-    pbar = tqdm(enumerate(test_loader))
-    for batch_idx, (data_a, data_p, label) in pbar:
+    # pbar = tqdm(enumerate(test_loader))
+    for batch_idx, (data_a, data_p, label) in enumerate(test_loader):
 
         out_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
         out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
