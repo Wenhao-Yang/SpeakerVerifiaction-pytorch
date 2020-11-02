@@ -122,7 +122,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
 
             if gpu:
                 data = data.cuda()
-
             # compute output
             model_out = model(data)
             try:
@@ -135,7 +134,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
 
             uid2vectors[uid[0]] = out.squeeze().cpu().numpy()
 
-            pbar.set_description('Extract Epoch {}: [{}/{} ({:.0f}%)]'.format(
+            pbar.set_description('Extraction Epoch {}: [{}/{} ({:.0f}%)]'.format(
                 epoch, batch_idx, len(extract_loader.dataset), 100. * batch_idx / len(extract_loader)))
 
     uids = list(uid2vectors.keys())
@@ -180,7 +179,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
         del out_a, out_p  #, ae, pe
 
         if batch_idx % log_interval == 0:
-            pbar.set_description('Verification Epoch{}: [{}/{} ({:.0f}%)]'.format(
+            pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
                 epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
     labels = np.array([sublabel for label in labels for sublabel in label])
@@ -194,7 +193,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
                                                       cos=True if dist_type == 'cos' else False, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
-    print('  \33[91m Final Test ERR is {:.4f}%, Threshold is {}'.format(100. * eer, eer_threshold))
-    print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.\33[0m\n'.format(mindcf_01, mindcf_001))
+    print('  \33[91mTest ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
+        100. * eer, eer_threshold, mindcf_01, mindcf_001))
 
     return eer, eer_threshold, mindcf_01, mindcf_001

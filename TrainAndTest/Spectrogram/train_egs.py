@@ -562,7 +562,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                         total_loss / (batch_idx + 1),
                         100. * minibatch_acc))
 
-    print('\n\33[91mTrain Epoch {}: Train Accuracy:{:.6f}%, Avg loss: {}.\33[0m'.format(epoch, 100 * float(
+    print('\n\33[91mTrain Epoch {}: Train Accuracy:{:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader)))
     writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
@@ -602,7 +602,7 @@ def valid_test(test_loader, valid_loader, model, epoch):
             total_datasize += len(predicted_one_labels)
 
             if batch_idx % args.log_interval == 0:
-                valid_pbar.set_description('Valid Epoch: {:2d} [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
+                valid_pbar.set_description('Valid Epoch {:2d} [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
                     epoch,
                     batch_idx * len(data),
                     len(valid_loader.dataset),
@@ -645,7 +645,7 @@ def valid_test(test_loader, valid_loader, model, epoch):
             labels.append(label.cpu().numpy())
 
             if batch_idx % args.log_interval == 0:
-                pbar.set_description('Train Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
+                pbar.set_description('Train Test Epoch {:2d} [{}/{} ({:.0f}%)]'.format(
                     epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
     labels = np.array([sublabel for label in labels for sublabel in label])
@@ -659,9 +659,10 @@ def valid_test(test_loader, valid_loader, model, epoch):
     writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
 
-    dist_type = 'cos' if args.cos_sim else 'l2'
-    print('  \33[91mTrain ERR is {:.4f}%, Threshold is {}'.format(100. * eer, eer_threshold))
-    print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f},'.format(mindcf_01, mindcf_001))
+    print('  \33[91mTrain ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.'.format(100. * eer,
+                                                                                                            eer_threshold,
+                                                                                                            mindcf_01,
+                                                                                                            mindcf_001))
     print('  Valid Accuracy is %.4f %%.\33[0m' % valid_accuracy)
 
     torch.cuda.empty_cache()
