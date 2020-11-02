@@ -504,7 +504,7 @@ if [ $stage -le 60 ]; then
       --inst-norm \
       --stride 2 \
       --dropout-p 0.1 \
-      --xvector-dir Data/xvector/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01_example \
+      --xvector-dir Data/xvector/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01 \
       --resume  Data/checkpoint/LoResNet${resnet_size}/army_v1/spect_egs_inst/soft_dp01/checkpoint_24.pth \
       --trials trials \
       --gpu-id 0
