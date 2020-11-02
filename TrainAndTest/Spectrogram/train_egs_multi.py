@@ -384,6 +384,11 @@ def main():
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
+    if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+        optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
+                                     {'params': model.parameters()}],
+                                    lr=args.lr, weight_decay=args.weight_decay,
+                                    momentum=args.momentum)
 
     if args.filter == 'fDLR':
         filter_params = list(map(id, model.filter_layer.parameters()))
