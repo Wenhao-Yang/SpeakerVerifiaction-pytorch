@@ -597,7 +597,7 @@ class ScriptVerifyDataset(data.Dataset):
                 uid, feat_offset = line.split()
                 uid2feat[uid] = feat_offset
 
-        print('\n==> There are {} utterances in Verification trials.'.format(len(uid2feat)))
+        # print('\n==> There are {} utterances in Verification trials.'.format(len(uid2feat)))
 
         trials_pair = []
         positive_pairs = 0
@@ -616,8 +616,8 @@ class ScriptVerifyDataset(data.Dataset):
         trials_pair = np.array(trials_pair)
         trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
 
-        print('    There are {} pairs in trials with {} positive pairs'.format(len(trials_pair),
-                                                                               positive_pairs))
+        # print('    There are {} pairs in trials with {} positive pairs'.format(len(trials_pair),
+        #                                                                        positive_pairs))
 
         self.uid2feat = uid2feat
         self.trials_pair = trials_pair

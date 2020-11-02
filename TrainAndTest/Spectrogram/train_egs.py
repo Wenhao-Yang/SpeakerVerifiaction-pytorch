@@ -458,8 +458,8 @@ def main():
                         'criterion': ce},
                        check_path)
 
-        # if epoch % 2 == 1 and epoch != (end - 1):
-        #     valid_test(train_test_loader, valid_loader, model, epoch)
+        if epoch % 2 == 1 and epoch != (end - 1):
+            valid_test(train_test_loader, valid_loader, model, epoch)
 
         if epoch in milestones:
             test(model, epoch, writer, xvector_dir)
@@ -581,7 +581,7 @@ def valid_test(test_loader, valid_loader, model, epoch):
     total_datasize = 0.
     with torch.no_grad():
         for batch_idx, (data, label) in valid_pbar:
-            data = Variable(data.cuda())
+            data = data.cuda()
 
             # compute output
             out, _ = model(data)
@@ -590,7 +590,7 @@ def valid_test(test_loader, valid_loader, model, epoch):
             else:
                 predicted_labels = out
 
-            true_labels = Variable(label.cuda())
+            true_labels = label.cuda()
 
             # pdb.set_trace()
             predicted_one_labels = softmax(predicted_labels)
@@ -636,13 +636,13 @@ def valid_test(test_loader, valid_loader, model, epoch):
             out_a = feats[:len(data_a)]
             out_p = feats[len(data_a):]
 
-            dists = l2_dist.forward(out_a,
-                                    out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
+            dists = l2_dist.forward(out_a, out_p)
+            # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
             dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
-            dists = dists.data.cpu().numpy()
+            dists = dists.cpu().numpy()
 
             distances.append(dists)
-            labels.append(label.data.cpu().numpy())
+            labels.append(label.cpu().numpy())
 
             if batch_idx % args.log_interval == 0:
                 pbar.set_description('Train Test Epoch: {} [{}/{} ({:.0f}%)]'.format(

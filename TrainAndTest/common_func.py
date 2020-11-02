@@ -158,7 +158,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
                 # print(ark.tell())
                 scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
     scp.close()
-    print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
+    # print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
 
