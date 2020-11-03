@@ -554,8 +554,7 @@ class KaldiExtractDataset(data.Dataset):
             for line in all_cls:
                 utt_path = line.split(' ')
                 uid = utt_path[0]
-                if uid == "id10003-5ablueV_1tw-00004-8k-radio":
-                    print(utt_path[-1])
+
                 tmp_uid2feat[uid] = utt_path[-1]
 
         uid2feat = {}
