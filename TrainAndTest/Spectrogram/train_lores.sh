@@ -855,6 +855,13 @@ if [ $stage -le 64 ]; then
   transform=None
   for loss in center coscenter ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
+    if [ $loss == "center" ] ; then
+      loss_ratio=0.1
+    elif [ $loss == "coscenter" ] ;then
+      loss_ratio=0.01
+    fi
+
+
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
       --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v2 \
@@ -873,8 +880,8 @@ if [ $stage -le 64 ]; then
       --input-dim 81 \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16/checkpoint_13.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio}/checkpoint_13.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
@@ -886,7 +893,7 @@ if [ $stage -le 64 ]; then
       --margin 0.3 \
       --s 30 \
       --m 3 \
-      --loss-ratio 0.01 \
+      --loss-ratio ${loss_ratio} \
       --set-ratio 0.6 \
       --grad-clip 0 \
       --weight-decay 0.001 \
