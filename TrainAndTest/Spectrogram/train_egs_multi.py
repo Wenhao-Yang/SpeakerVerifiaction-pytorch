@@ -35,7 +35,7 @@ from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterL
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
     GaussianLoss
 from Process_Data import constants as c
-from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
+from Process_Data.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
 from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
@@ -88,10 +88,7 @@ parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi'
 parser.add_argument('--check-path', default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25',
                     help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--resume',
-                    default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25/checkpoint_10.pth', type=str,
-                    metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--resume', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -283,14 +280,14 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         transform=transform_V,
                                         filer_loader=file_loader,
                                         trials_file=args.train_trials)
+extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
+# test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
 
-test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
-
-if len(test_dir) < args.veri_pairs:
-    args.veri_pairs = len(test_dir)
-    print('There are %d verification pairs.' % len(test_dir))
-else:
-    test_dir.partition(args.veri_pairs)
+# if len(test_dir) < args.veri_pairs:
+#     args.veri_pairs = len(test_dir)
+#     print('There are %d verification pairs.' % len(test_dir))
+# else:
+#     test_dir.partition(args.veri_pairs)
 
 valid_dir_a = EgsDataset(dir=args.valid_dir_a, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
 valid_dir_b = EgsDataset(dir=args.valid_dir_b, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
@@ -916,7 +913,6 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
 def test(model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
-    extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
     verification_extract(extract_loader, model, this_xvector_dir, epoch)
 

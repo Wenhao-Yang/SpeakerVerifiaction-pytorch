@@ -271,6 +271,7 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         transform=transform_V,
                                         filer_loader=file_loader,
                                         trials_file=args.train_trials)
+extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
 
 # train_test_dir = ScriptTestDataset(dir=args.train_test_dir, loader=file_loader, transform=transform_T)
 # test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
@@ -683,7 +684,6 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
 def test(model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
-    extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
     verification_extract(extract_loader, model, this_xvector_dir, epoch)
 

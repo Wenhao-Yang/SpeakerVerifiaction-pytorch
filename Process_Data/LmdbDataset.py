@@ -458,10 +458,7 @@ class EgsDataset(Dataset):
                 if cls not in spks:
                     spks.append(cls)
 
-
-
-        print('==> There are {} speakers in Dataset.'.format(len(spks)))
-        print('    There are {} utterances in Dataset'.format(len(dataset)))
+        print('==> There are {} speaker with {} utterances speakers in Dataset.'.format(len(spks), len(dataset)))
 
         self.dataset = dataset
         self.feat_dim = feat_dim
