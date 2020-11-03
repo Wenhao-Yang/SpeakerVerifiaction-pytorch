@@ -553,6 +553,10 @@ class KaldiExtractDataset(data.Dataset):
             for line in all_cls:
                 utt_path = line.split(' ')
                 uid = utt_path[0]
+
+                if len(uid2feat) == len(trials_utts):
+                    break
+
                 if uid in trials_utts:
                     if uid not in uid2feat.keys():
                         utt_path[-1] = utt_path[-1].rstrip('\n')
