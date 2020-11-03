@@ -856,9 +856,9 @@ if [ $stage -le 64 ]; then
   for loss in center coscenter ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     if [ $loss == "center" ] ; then
-      loss_ratio=0.1
-    elif [ $loss == "coscenter" ] ;then
       loss_ratio=0.01
+    elif [ $loss == "coscenter" ] ;then
+      loss_ratio=0.1
     fi
 
 
