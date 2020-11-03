@@ -546,11 +546,12 @@ class KaldiExtractDataset(data.Dataset):
                 if utt_b not in trials_utts:
                     trials_utts.append(utt_b)
 
+        trials_utts.sort()
 
         uid2feat = {}
         with open(feat_scp, 'r') as u:
-            all_cls = u.readlines()
-            for line in all_cls:
+            all_cls = enumerate(u.readlines())
+            for idx, line in all_cls:
                 utt_path = line.split(' ')
                 uid = utt_path[0]
 
