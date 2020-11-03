@@ -552,16 +552,15 @@ class KaldiExtractDataset(data.Dataset):
         with open(feat_scp, 'r') as u:
             all_cls = tqdm(u.readlines())
             for line in all_cls:
-                utt_path = line.split(' ')
+                utt_path = line.split()
                 uid = utt_path[0]
 
-                if len(uid2feat) == len(trials_utts):
-                    break
+                if uid not in uid2feat.keys():
+                    uid2feat[uid] = utt_path[-1]
 
-                if uid in trials_utts:
-                    if uid not in uid2feat.keys():
-                        utt_path[-1] = utt_path[-1].rstrip('\n')
-                        uid2feat[uid] = utt_path[-1]
+        for k in uid2feat:
+            if k not in trials_utts:
+                uid2feat.pop(k)
 
         # pdb.set_trace()
         utts = [uid for uid in uid2feat.keys()]
