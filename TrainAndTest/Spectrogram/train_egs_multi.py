@@ -41,7 +41,6 @@ from Process_Data.LmdbDataset import EgsDataset
 from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
-from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -277,6 +276,11 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 train_dir_a = EgsDataset(dir=args.train_dir_a, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
 train_dir_b = EgsDataset(dir=args.train_dir_b, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
 
+train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
+                                        transform=transform_V,
+                                        filer_loader=file_loader,
+                                        trials_file=args.train_trials)
+
 test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
 
 if len(test_dir) < args.veri_pairs:
@@ -343,7 +347,6 @@ def main():
             model_dict = model.state_dict()
             model_dict.update(filtered)
             model.load_state_dict(model_dict)
-            #
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
@@ -428,6 +431,8 @@ def main():
     train_loader_b = torch.utils.data.DataLoader(train_dir_b, batch_size=batch_size_b, shuffle=False, **kwargs)
     train_loader = [train_loader_a, train_loader_b]
 
+    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **kwargs)
+
     print('Batch_size is {} for A, and {} for B.'.format(batch_size_a, batch_size_b))
 
     batch_size_a = int(args.batch_size / 8)
@@ -439,7 +444,7 @@ def main():
                                                  **kwargs)
     valid_loader = valid_loader_a, valid_loader_b
 
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 16), shuffle=False, **kwargs)
+    # test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 16), shuffle=False, **kwargs)
     # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
     #                                                shuffle=False, **kwargs)
     # sitw_dev_loader = torch.utils.data.DataLoader(sitw_dev_part, batch_size=args.test_batch_size, shuffle=False,
@@ -454,6 +459,9 @@ def main():
             print('Dropout is {}.'.format(model.dropout_p))
         except:
             pass
+
+    xvector_dir = args.check_path
+    xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
 
     for epoch in range(start, end):
         # pdb.set_trace()
@@ -471,28 +479,37 @@ def main():
                         'criterion': ce},
                        check_path)
 
+        # if epoch % 2 == 1 and epoch != (end - 1):
+        #     valid(valid_loader, model, epoch)
+        #     test(test_loader, model, epoch)
+
         if epoch % 2 == 1 and epoch != (end - 1):
-            valid(valid_loader, model, epoch)
-            test(test_loader, model, epoch)
+            valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
+
+        if epoch in milestones:
+            test(model, epoch, writer, xvector_dir)
+
+        if epoch == end:
+            valid_test(train_extract_loader, valid_loader, model, epoch)
+            test(model, epoch, writer, xvector_dir)
+
 
         # sitw_test(sitw_test_loader, model, epoch)
         # sitw_test(sitw_dev_loader, model, epoch)
         scheduler.step()
 
         # exit(1)
-    xvector_dir = args.check_path
-    xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
 
-    if args.extract:
-        extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
-        extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
-        verification_extract(extract_loader, model, xvector_dir)
-
-    verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
-                                     loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
-    verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
-                      log_interval=args.log_interval, save=xvector_dir, embedding_size=args.embedding_size)
+    # if args.extract:
+    #     extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
+    #     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
+    #     verification_extract(extract_loader, model, xvector_dir)
+    #
+    # verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
+    #                                  loader=read_vec_flt)
+    # verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
+    # verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
+    #                   log_interval=args.log_interval, save=xvector_dir, embedding_size=args.embedding_size)
 
     writer.close()
 
@@ -603,7 +620,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         if batch_idx % args.log_interval == 0:
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 pbar.set_description(
-                    'Train Epoch {:2d} ({:3.0f}%): Center Loss: {:.4f} Avg Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
+                    'Train Epoch {} ({:3.0f}%): Center Loss: {:.4f} Avg Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
                         epoch,
                         100. * batch_idx / len(train_loader_a),
                         loss_xent.float(),
@@ -612,30 +629,21 @@ def train(train_loader, model, ce, optimizer, epoch):
                         100. * minibatch_b))
             else:
                 pbar.set_description(
-                    'Train Epoch {:2d} ({:3.0f}%): Avg Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
+                    'Train Epoch {} ({:3.0f}%): Avg Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
                         epoch,
                         100. * batch_idx / len(train_loader_a),
                         total_loss / (batch_idx + 1),
                         100. * minibatch_a,
                         100. * minibatch_b))
+            break
 
-            # pbar.set_description(
-            #     'Train Epoch {} ({:.0f}%): Avg_Loss: {:.4f} Accuracy_A: {:.4f}%  Accuracy_B: {:.4f}%'.format(
-            #         epoch,
-            #         100 * (batch_idx / len(train_loader_a)),
-            #         total_loss / (batch_idx + 1),
-            #         100. * minibatch_a,
-            #         100. * minibatch_b))
-            # break
-
-    print(
-        '\n\33[91mTrain Epoch {}: Train A Accuracy:{:.6f}%, Train B Accuracy:{:.6f}%, Avg loss: {}.\33[0m'.format(epoch,
-                                                                                                                  100 * float(
-                                                                                                                      correct_a) / total_datasize_a,
-                                                                                                                  100 * float(
-                                                                                                                      correct_b) / total_datasize_b,
-                                                                                                                  total_loss / len(
-                                                                                                                      train_loader_a)))
+    print('Train Epoch {}:')
+    print('\33[91mA_Accuracy:{:.6f}%, B_Accuracy:{:.6f}%, Avg_loss: {}.\33[0m'.format(epoch,
+                                                                                      100 * float(
+                                                                                          correct_a) / total_datasize_a,
+                                                                                      100 * float(
+                                                                                          correct_b) / total_datasize_b,
+                                                                                      total_loss / len(train_loader_a)))
     writer.add_scalar('Train/Accuracy_A', correct_a / total_datasize_a, epoch)
     writer.add_scalar('Train/Accuracy_B', correct_b / total_datasize_b, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader_a), epoch)
@@ -643,20 +651,189 @@ def train(train_loader, model, ce, optimizer, epoch):
     torch.cuda.empty_cache()
 
 
-def valid(valid_loader, model, epoch):
+# def valid(valid_loader, model, epoch):
+#     # switch to evaluate mode
+#     model.eval()
+#     correct_a = 0.
+#     correct_b = 0.
+#
+#     total_datasize_a = 0.
+#     total_datasize_b = 0.
+#
+#     valid_loader_a, valid_loader_b = valid_loader
+#
+#     valid_pbar = tqdm(enumerate(zip(valid_loader_a, valid_loader_b)))
+#     output_softmax = nn.Softmax(dim=1)
+#
+#     with torch.no_grad():
+#         for batch_idx, ((data_a, label_a), (data_b, label_b)) in valid_pbar:
+#
+#             label_a = label_a.cuda()
+#             label_b = label_b.cuda()
+#
+#             # compute output
+#             data = torch.cat((data_a, data_b), dim=0)
+#             data = data.cuda()
+#
+#             _, feats = model(data)
+#             classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
+#
+#             # pdb.set_trace()
+#             predicted_labels = output_softmax(classfier_a)
+#             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+#             minibatch_correct = float((predicted_one_labels.cuda() == label_a).sum().item())
+#             minibatch_a = minibatch_correct / len(predicted_one_labels)
+#             correct_a += minibatch_correct
+#             total_datasize_a += len(predicted_one_labels)
+#
+#             predicted_labels = output_softmax(classfier_b)
+#             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+#             minibatch_correct = float((predicted_one_labels.cuda() == label_b).sum().item())
+#             minibatch_b = minibatch_correct / len(predicted_one_labels)
+#             correct_b += minibatch_correct
+#             total_datasize_b += len(predicted_one_labels)
+#
+#             if batch_idx % args.log_interval == 0:
+#                 valid_pbar.set_description(
+#                     'Valid Epoch: {:2d} for {:4d} Batch Accuracy: A set: {:.4f}%, B set: {:.4f}%'.format(
+#                         epoch,
+#                     len(valid_loader_a.dataset),
+#                         100. * minibatch_a,
+#                         100. * minibatch_b
+#                     ))
+#                 # break
+#
+#     valid_accuracy_a = 100. * correct_a / total_datasize_a
+#     valid_accuracy_b = 100. * correct_b / total_datasize_b
+#     writer.add_scalar('Test/Valid_Accuracy_A', valid_accuracy_a, epoch)
+#     writer.add_scalar('Test/Valid_Accuracy_B', valid_accuracy_b, epoch)
+#
+#     print('\n\33[91mValid on A Accuracy is %.4f %%. Valid on B Accuracy is %.4f %%.\33[0m' % (
+#     valid_accuracy_a, valid_accuracy_b))
+#
+#     torch.cuda.empty_cache()
+#
+#
+# def test(test_loader, model, epoch):
+#     # switch to evaluate mode
+#     model.eval()
+#
+#     labels, distances = [], []
+#     pbar = tqdm(enumerate(test_loader))
+#     with torch.no_grad():
+#
+#         for batch_idx, (data_a, data_p, label) in pbar:
+#             vec_shape = data_a.shape
+#             # pdb.set_trace()
+#             if vec_shape[1] != 1:
+#                 data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+#                 data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+#
+#             data = torch.cat((data_a, data_p), dim=0)
+#             if args.cuda:
+#                 data = data.cuda()
+#             # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
+#             # compute output
+#
+#             _, feats = model(data)
+#             out_a = feats[:len(data_a)]
+#             out_p = feats[len(data_a):]
+#
+#             dists = l2_dist.forward(out_a,
+#                                     out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
+#             dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
+#             dists = dists.cpu().detach().numpy()
+#
+#             # pdb.set_trace()
+#             # print(dists.shape)
+#             distances.append(dists)
+#             labels.append(label.data.cpu().numpy())
+#
+#             if batch_idx % args.log_interval == 0:
+#                 pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
+#                     epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+#                 # break
+#
+#     labels = np.array([sublabel for label in labels for sublabel in label])
+#     distances = np.array([subdist for dist in distances for subdist in dist])
+#
+#     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
+#     writer.add_scalar('Test/EER', 100. * eer, epoch)
+#     writer.add_scalar('Test/Threshold', eer_threshold, epoch)
+#
+#     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
+#     writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
+#     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
+#
+#     dist_type = 'cos' if args.cos_sim else 'l2'
+#     print('\nFor %s_distance, ' % dist_type)
+#     print('  \33[91mTest ERR is {:.4f}%, Threshold is {}'.format(100. * eer, eer_threshold))
+#     print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.\33[0m'.format(mindcf_01, mindcf_001))
+#
+#     torch.cuda.empty_cache()
+
+
+# def sitw_test(sitw_test_loader, model, epoch):
+#     # switch to evaluate mode
+#     model.eval()
+#
+#     labels, distances = [], []
+#     pbar = tqdm(enumerate(sitw_test_loader))
+#     for batch_idx, (data_a, data_p, label) in pbar:
+#
+#         vec_shape = data_a.shape
+#         # pdb.set_trace()
+#         if vec_shape[1] != 1:
+#             data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+#             data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+#
+#         if args.cuda:
+#             data_a, data_p = data_a.cuda(), data_p.cuda()
+#         data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
+#
+#         # compute output
+#         _, out_a_ = model(data_a)
+#         _, out_p_ = model(data_p)
+#         out_a = out_a_
+#         out_p = out_p_
+#
+#         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
+#         if vec_shape[1] != 1:
+#             dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(axis=1)
+#         dists = dists.data.cpu().numpy()
+#
+#         distances.append(dists)
+#         labels.append(label.data.cpu().numpy())
+#
+#         if batch_idx % args.log_interval == 0:
+#             pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
+#                 epoch, batch_idx * vec_shape[0], len(sitw_test_loader.dataset),
+#                        100. * batch_idx / len(sitw_test_loader)))
+#
+#     labels = np.array([sublabel for label in labels for sublabel in label])
+#     distances = np.array([subdist for dist in distances for subdist in dist])
+#
+#     eer_t, eer_threshold_t, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
+#     torch.cuda.empty_cache()
+#
+#     writer.add_scalars('Test/EER', {'sitw_test': 100. * eer_t}, epoch)
+#     writer.add_scalars('Test/Threshold', {'sitw_test': eer_threshold_t}, epoch)
+#
+#     print('\33[91mFor Sitw Test ERR: {:.4f}%, Threshold: {}.\n\33[0m'.format(100. * eer_t, eer_threshold_t))
+
+def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
     # switch to evaluate mode
     model.eval()
+
+    valid_loader_a, valid_loader_b = valid_loader
+    valid_pbar = tqdm(enumerate(zip(valid_loader_a, valid_loader_b)))
     correct_a = 0.
     correct_b = 0.
 
     total_datasize_a = 0.
     total_datasize_b = 0.
 
-    valid_loader_a, valid_loader_b = valid_loader
-
-    valid_pbar = tqdm(enumerate(zip(valid_loader_a, valid_loader_b)))
-    output_softmax = nn.Softmax(dim=1)
-
+    softmax = nn.Softmax(dim=1)
     with torch.no_grad():
         for batch_idx, ((data_a, label_a), (data_b, label_b)) in valid_pbar:
 
@@ -671,14 +848,14 @@ def valid(valid_loader, model, epoch):
             classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
 
             # pdb.set_trace()
-            predicted_labels = output_softmax(classfier_a)
+            predicted_labels = softmax(classfier_a)
             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
             minibatch_correct = float((predicted_one_labels.cuda() == label_a).sum().item())
             minibatch_a = minibatch_correct / len(predicted_one_labels)
             correct_a += minibatch_correct
             total_datasize_a += len(predicted_one_labels)
 
-            predicted_labels = output_softmax(classfier_b)
+            predicted_labels = softmax(classfier_b)
             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
             minibatch_correct = float((predicted_one_labels.cuda() == label_b).sum().item())
             minibatch_b = minibatch_correct / len(predicted_one_labels)
@@ -697,122 +874,64 @@ def valid(valid_loader, model, epoch):
 
     valid_accuracy_a = 100. * correct_a / total_datasize_a
     valid_accuracy_b = 100. * correct_b / total_datasize_b
-    writer.add_scalar('Test/Valid_Accuracy_A', valid_accuracy_a, epoch)
-    writer.add_scalar('Test/Valid_Accuracy_B', valid_accuracy_b, epoch)
+    writer.add_scalar('Train/Valid_Accuracy_A', valid_accuracy_a, epoch)
+    writer.add_scalar('Train/Valid_Accuracy_B', valid_accuracy_b, epoch)
 
-    print('\n\33[91mValid on A Accuracy is %.4f %%. Valid on B Accuracy is %.4f %%.\33[0m' % (
-    valid_accuracy_a, valid_accuracy_b))
+    torch.cuda.empty_cache()
+
+    this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
+    verification_extract(train_extract_loader, model, this_xvector_dir, epoch)
+
+    verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
+                                     xvectors_dir=this_xvector_dir,
+                                     loader=read_vec_flt)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
+    eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
+                                                                  dist_type=('cos' if args.cos_sim else 'l2'),
+                                                                  log_interval=args.log_interval,
+                                                                  xvector_dir=this_xvector_dir,
+                                                                  epoch=epoch)
+
+    print('Test  Epoch {}:\n\33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
+          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.'.format(epoch,
+                                                              100. * eer,
+                                                              eer_threshold,
+                                                              mindcf_01,
+                                                              mindcf_001))
+
+    print('Valid on A Accuracy: %.4f %%. Valid on B Accuracy: %.4f %%.\33[0m' % (
+        valid_accuracy_a, valid_accuracy_b))
+
+    writer.add_scalar('Train/EER', 100. * eer, epoch)
+    writer.add_scalar('Train/Threshold', eer_threshold, epoch)
+    writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
+    writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
 
     torch.cuda.empty_cache()
 
 
-def test(test_loader, model, epoch):
-    # switch to evaluate mode
-    model.eval()
+def test(model, epoch, writer, xvector_dir):
+    this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
-    labels, distances = [], []
-    pbar = tqdm(enumerate(test_loader))
-    with torch.no_grad():
+    extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
+    extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
+    verification_extract(extract_loader, model, this_xvector_dir, epoch)
 
-        for batch_idx, (data_a, data_p, label) in pbar:
-            vec_shape = data_a.shape
-            # pdb.set_trace()
-            if vec_shape[1] != 1:
-                data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-                data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+    verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=this_xvector_dir,
+                                     loader=read_vec_flt)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
+    eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
+                                                                  dist_type=('cos' if args.cos_sim else 'l2'),
+                                                                  log_interval=args.log_interval,
+                                                                  xvector_dir=this_xvector_dir,
+                                                                  epoch=epoch)
+    print('\33[91mTest  ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
+        100. * eer, eer_threshold, mindcf_01, mindcf_001))
 
-            data = torch.cat((data_a, data_p), dim=0)
-            if args.cuda:
-                data = data.cuda()
-            # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-            # compute output
-
-            _, feats = model(data)
-            out_a = feats[:len(data_a)]
-            out_p = feats[len(data_a):]
-
-            dists = l2_dist.forward(out_a,
-                                    out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
-            dists = dists.cpu().detach().numpy()
-
-            # pdb.set_trace()
-            # print(dists.shape)
-            distances.append(dists)
-            labels.append(label.data.cpu().numpy())
-
-            if batch_idx % args.log_interval == 0:
-                pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-                    epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-                # break
-
-    labels = np.array([sublabel for label in labels for sublabel in label])
-    distances = np.array([subdist for dist in distances for subdist in dist])
-
-    eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
     writer.add_scalar('Test/EER', 100. * eer, epoch)
     writer.add_scalar('Test/Threshold', eer_threshold, epoch)
-
-    mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
     writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
-
-    dist_type = 'cos' if args.cos_sim else 'l2'
-    print('\nFor %s_distance, ' % dist_type)
-    print('  \33[91mTest ERR is {:.4f}%, Threshold is {}'.format(100. * eer, eer_threshold))
-    print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.\33[0m'.format(mindcf_01, mindcf_001))
-
-    torch.cuda.empty_cache()
-
-
-def sitw_test(sitw_test_loader, model, epoch):
-    # switch to evaluate mode
-    model.eval()
-
-    labels, distances = [], []
-    pbar = tqdm(enumerate(sitw_test_loader))
-    for batch_idx, (data_a, data_p, label) in pbar:
-
-        vec_shape = data_a.shape
-        # pdb.set_trace()
-        if vec_shape[1] != 1:
-            data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-            data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-
-        if args.cuda:
-            data_a, data_p = data_a.cuda(), data_p.cuda()
-        data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-
-        # compute output
-        _, out_a_ = model(data_a)
-        _, out_p_ = model(data_p)
-        out_a = out_a_
-        out_p = out_p_
-
-        dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        if vec_shape[1] != 1:
-            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(axis=1)
-        dists = dists.data.cpu().numpy()
-
-        distances.append(dists)
-        labels.append(label.data.cpu().numpy())
-
-        if batch_idx % args.log_interval == 0:
-            pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-                epoch, batch_idx * vec_shape[0], len(sitw_test_loader.dataset),
-                       100. * batch_idx / len(sitw_test_loader)))
-
-    labels = np.array([sublabel for label in labels for sublabel in label])
-    distances = np.array([subdist for dist in distances for subdist in dist])
-
-    eer_t, eer_threshold_t, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
-    torch.cuda.empty_cache()
-
-    writer.add_scalars('Test/EER', {'sitw_test': 100. * eer_t}, epoch)
-    writer.add_scalars('Test/Threshold', {'sitw_test': eer_threshold_t}, epoch)
-
-    print('\33[91mFor Sitw Test ERR: {:.4f}%, Threshold: {}.\n\33[0m'.format(100. * eer_t, eer_threshold_t))
-
 
 # python TrainAndTest/Spectrogram/train_surescnn10_kaldi.py > Log/SuResCNN10/spect_161/
 
