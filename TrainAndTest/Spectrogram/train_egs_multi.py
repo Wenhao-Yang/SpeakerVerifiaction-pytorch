@@ -635,9 +635,8 @@ def train(train_loader, model, ce, optimizer, epoch):
                         100. * minibatch_b))
             # break
 
-    print('Train Epoch {}:')
-    print('\33[91mA_Accuracy:{:.4f}%, B_Accuracy:{:.4f}%, Avg_loss: {:.6f}.\33[0m'.format(epoch,
-                                                                                          100 * float(
+    print('Train Epoch {}:'.format(epoch))
+    print('\33[91mTrain A_Accuracy:{:.4f}%, B_Accuracy:{:.4f}%, Avg_loss: {:.6f}.\33[0m'.format(100 * float(
                                                                                           correct_a) / total_datasize_a,
                                                                                           100 * float(
                                                                                           correct_b) / total_datasize_b,
