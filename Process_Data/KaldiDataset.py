@@ -554,9 +554,7 @@ class KaldiExtractDataset(data.Dataset):
             for line in all_cls:
                 utt_path = line.split()
                 uid = utt_path[0]
-
-                if uid not in tmp_uid2feat.keys():
-                    tmp_uid2feat[uid] = utt_path[-1]
+                tmp_uid2feat[uid] = utt_path[-1]
 
         uid2feat = {}
         for k in trials_utts:
