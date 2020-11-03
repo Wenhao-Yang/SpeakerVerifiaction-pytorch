@@ -636,12 +636,12 @@ def train(train_loader, model, ce, optimizer, epoch):
             # break
 
     print('Train Epoch {}:')
-    print('\33[91mA_Accuracy:{:.6f}%, B_Accuracy:{:.6f}%, Avg_loss: {}.\33[0m'.format(epoch,
-                                                                                      100 * float(
+    print('\33[91mA_Accuracy:{:.4f}%, B_Accuracy:{:.4f}%, Avg_loss: {:.6f}.\33[0m'.format(epoch,
+                                                                                          100 * float(
                                                                                           correct_a) / total_datasize_a,
-                                                                                      100 * float(
+                                                                                          100 * float(
                                                                                           correct_b) / total_datasize_b,
-                                                                                      total_loss / len(train_loader_a)))
+                                                                                          total_loss / len(train_loader_a)))
     writer.add_scalar('Train/Accuracy_A', correct_a / total_datasize_a, epoch)
     writer.add_scalar('Train/Accuracy_B', correct_b / total_datasize_b, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader_a), epoch)
