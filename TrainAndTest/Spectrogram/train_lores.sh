@@ -859,6 +859,7 @@ if [ $stage -le 64 ]; then
       --model ${model} \
       --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v2 \
       --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox1_dev_8k_v2 \
+      --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k \
       --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k_v2 \
       --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox1_valid_8k_v2 \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \

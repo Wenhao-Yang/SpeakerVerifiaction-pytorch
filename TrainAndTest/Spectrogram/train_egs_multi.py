@@ -64,6 +64,8 @@ parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
 parser.add_argument('--train-dir-a', type=str, help='path to dataset')
 parser.add_argument('--train-dir-b', type=str, help='path to dataset')
+parser.add_argument('--train-test-dir', type=str, help='path to dataset')
+
 parser.add_argument('--valid-dir-a', type=str, help='path to dataset')
 parser.add_argument('--valid-dir-b', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str,
