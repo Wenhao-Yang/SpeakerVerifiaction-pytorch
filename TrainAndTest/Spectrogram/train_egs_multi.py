@@ -364,6 +364,13 @@ def main():
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                   feat_dim=args.embedding_size)
+        if args.resume:
+            try:
+                criterion = checkpoint['criterion']
+                xe_criterion.load_state_dict(criterion[1].state_dict())
+            except:
+                pass
+
     elif args.loss_type == 'gaussian':
         xe_criterion = GaussianLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                     feat_dim=args.embedding_size)
@@ -371,8 +378,11 @@ def main():
         xe_criterion = CenterCosLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                      feat_dim=args.embedding_size)
         if args.resume:
-            criterion = checkpoint['criterion']
-            xe_criterion.load_state_dict(criterion[1].state_dict())
+            try:
+                criterion = checkpoint['criterion']
+                xe_criterion.load_state_dict(criterion[1].state_dict())
+            except:
+                pass
 
     elif args.loss_type == 'mulcenter':
         xe_criterion = MultiCenterLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
@@ -383,6 +393,7 @@ def main():
         model.classifier_a = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir_a.num_spks)
         model.classifier_b = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir_b.num_spks)
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+
     elif args.loss_type == 'arcsoft':
         ce_criterion = None
         model.classifier_a = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir_a.num_spks)
