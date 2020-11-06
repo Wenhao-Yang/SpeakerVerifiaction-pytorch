@@ -343,6 +343,7 @@ def main():
             checkpoint = torch.load(args.resume)
             start_epoch = checkpoint['epoch']
 
+
             filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
             model_dict = model.state_dict()
             model_dict.update(filtered)
@@ -369,6 +370,10 @@ def main():
     elif args.loss_type == 'coscenter':
         xe_criterion = CenterCosLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                      feat_dim=args.embedding_size)
+        if args.resume:
+            criterion = checkpoint['criterion']
+            xe_criterion.load_state_dict(criterion[1].state_dict())
+
     elif args.loss_type == 'mulcenter':
         xe_criterion = MultiCenterLoss(num_classes=int(train_dir_a.num_spks + train_dir_b.num_spks),
                                        feat_dim=args.embedding_size,
