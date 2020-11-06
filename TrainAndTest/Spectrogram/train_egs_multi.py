@@ -122,6 +122,8 @@ parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
+parser.add_argument('--input-len', default=300, type=int, metavar='N', help='acoustic feature dimension')
+
 parser.add_argument('--accu-steps', default=1, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 
 parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
@@ -324,7 +326,7 @@ def main():
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes_a': train_dir_a.num_spks,
-                    'num_classes_b': train_dir_b.num_spks,
+                    'num_classes_b': train_dir_b.num_spks, 'input_len': args.input_len,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
@@ -487,7 +489,7 @@ def main():
         if epoch in milestones:
             test(model, epoch, writer, xvector_dir)
 
-        if epoch == end:
+        if epoch == (end - 1):
             valid_test(train_extract_loader, valid_loader, model, epoch)
             test(model, epoch, writer, xvector_dir)
 
