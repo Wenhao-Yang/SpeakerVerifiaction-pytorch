@@ -19,7 +19,7 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm
+from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2, LinearTransform
 
@@ -32,6 +32,62 @@ def conv3x3(in_planes, out_planes, stride=1):
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, padding=1,
                      stride=stride, bias=False)
+
+
+class SEBasicBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+                 base_width=64, dilation=1, norm_layer=None, reduction_ratio=16):
+        super(SEBasicBlock, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        if groups != 1 or base_width != 64:
+            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+        if dilation > 1:
+            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.bn1 = norm_layer(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = norm_layer(planes)
+        self.downsample = downsample
+        self.stride = stride
+        self.reduction_ratio = reduction_ratio
+
+        # Squeeze-and-Excitation
+        self.glob_avg = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc1 = nn.Linear(planes, max(int(planes / self.reduction_ratio), 1))
+        self.fc2 = nn.Linear(max(int(planes / self.reduction_ratio), 1), planes)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        scale = self.glob_avg(out).squeeze(dim=2).squeeze(dim=2)
+        scale = self.fc1(scale)
+        scale = self.relu(scale)
+        scale = self.fc2(scale)
+        scale = self.activation(scale).unsqueeze(2).unsqueeze(2)
+
+        out = out * scale
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
 
 class SimpleResNet(nn.Module):
 
@@ -646,7 +702,7 @@ class LocalResNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, embedding_size, num_classes, input_dim=161, block=BasicBlock,
+    def __init__(self, embedding_size, num_classes, input_dim=161, block=BasicBlock, input_len=300,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
@@ -670,8 +726,10 @@ class LocalResNet(nn.Module):
         # self.relu = nn.LeakyReLU()
         self.relu = nn.ReLU(inplace=True)
         self.input_norm = input_norm
+        self.input_len = input_len
+
         if input_norm == 'Instance':
-            self.inst_layer = nn.InstanceNorm1d(input_dim)
+            self.inst_layer = Inst_Norm(self.input_len)
         elif input_norm == 'Mean':
             self.inst_layer = Mean_Norm()
         else:

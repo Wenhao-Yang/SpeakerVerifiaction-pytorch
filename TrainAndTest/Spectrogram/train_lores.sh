@@ -862,7 +862,6 @@ if [ $stage -le 64 ]; then
 #      loss_ratio=0.1
 #    fi
 
-
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
       --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v2 \
@@ -876,13 +875,13 @@ if [ $stage -le 64 ]; then
       --input-norm Mean \
       --batch-size 192 \
       --nj 12 \
-      --epochs 24 \
+      --epochs 7 \
       --lr 0.1 \
       --input-dim 81 \
       --stride 1 \
-      --milestones 8,14,20 \
+      --milestones 3 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio}/checkpoint_13.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio}/checkpoint_17.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
