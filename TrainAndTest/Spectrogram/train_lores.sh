@@ -854,7 +854,7 @@ if [ $stage -le 64 ]; then
   encod=None
   transform=None
   loss_ratio=0.01
-  for loss in center coscenter ; do
+  for loss in coscenter ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
 #    if [ $loss == "center" ] ; then
 #      loss_ratio=0.01
