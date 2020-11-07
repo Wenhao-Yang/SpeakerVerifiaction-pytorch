@@ -424,8 +424,10 @@ if [ $stage -le 51 ]; then
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log \
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+      --train-trials trials_2w \
       --nj 10 \
       --epochs 22 \
       --milestones 8,13,18 \
