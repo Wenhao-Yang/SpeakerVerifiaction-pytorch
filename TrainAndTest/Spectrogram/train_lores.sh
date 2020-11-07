@@ -359,7 +359,8 @@ if [ $stage -le 50 ]; then
       --stride 2 \
       --batch-size 128 \
       --embedding-size 128 \
-      --avg-size 1 \
+      --avg-size 4 \
+      --time-dim 1 \
       --num-valid 2 \
       --alpha 12 \
       --margin 0.3 \
