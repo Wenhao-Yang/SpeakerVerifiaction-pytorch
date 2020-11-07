@@ -486,7 +486,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        train(train_loader, model, ce, optimizer, epoch)
+        # train(train_loader, model, ce, optimizer, epoch)
         if epoch % 4 == 1 or epoch == (end - 1):
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
 
@@ -506,7 +506,7 @@ def main():
             test(model, epoch, writer, xvector_dir)
 
         if epoch == (end - 1):
-            valid_test(train_extract_loader, valid_loader, model, epoch)
+            valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
             test(model, epoch, writer, xvector_dir)
 
 
