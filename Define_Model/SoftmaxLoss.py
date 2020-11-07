@@ -315,12 +315,10 @@ class ArcSoftmaxLoss(nn.Module):
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
-
         theta = costh.acos()
 
         # if lb_view.is_cuda:
         #     lb_view = lb_view.cpu()
-
         delt_theta = torch.zeros(costh.size()).cuda().scatter_(1, lb_view.data, self.margin)
         # pdb.set_trace()
         delt_costh = Variable(delt_theta)
@@ -328,8 +326,9 @@ class ArcSoftmaxLoss(nn.Module):
         costh_m = (theta + delt_costh).cos()
         costh_m_s = self.s * costh_m
 
+        costh_m_s = costh + 0.2 * min(1.0, (self.iteraion / self.all_iteraion)) * costh_m_s
+
         if self.iteraion < self.all_iteraion:
-            costh_m_s = 0.5 * costh + 0.5 * costh_m_s
             self.iteraion += 1
 
         loss = self.ce(costh_m_s, label)

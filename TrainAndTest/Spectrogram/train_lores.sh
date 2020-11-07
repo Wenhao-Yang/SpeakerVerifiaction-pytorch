@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=64
+stage=50
 
 waited=0
 while [ `ps 23863 | wc -l` -eq 2 ]; do
@@ -333,7 +333,9 @@ if [ $stage -le 50 ]; then
   model=LoResNet
   resnet_size=8
   encod=None
-  for loss in soft ; do
+  transform=None
+
+  for loss in asoft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -342,14 +344,14 @@ if [ $stage -le 50 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
       --input-norm Mean \
-      --transform GhostVLAD \
+      --transform None \
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 20 \
       --lr 0.1 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_log_${encod}/${loss}_dp25_GhostVLAD \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_log_${encod}/${loss}_dp25_GhostVLAD/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${transform} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${transform}/checkpoint_24.pth \
       --channels 64,128,256 \
       --kernel-size 5,5 \
       --stride 2 \
@@ -407,7 +409,7 @@ if [ $stage -le 50 ]; then
 
 fi
 
-#stage=6300
+stage=6300
 
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
@@ -909,8 +911,8 @@ stage=10000
 if [ $stage -le 80 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
-  model=MultiResNet
-  resnet_size=8
+  model=LoResNet
+  resnet_size=10
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -927,7 +929,7 @@ if [ $stage -le 80 ]; then
       --milestones 5,10,15 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
-      --channels 64,128,256 \
+      --channels 16,64,128,256 \
       --batch-size 256 \
       --embedding-size 128 \
       --avg-size 4 \
@@ -935,6 +937,7 @@ if [ $stage -le 80 ]; then
       --num-valid 2 \
       --alpha 12 \
       --margin 0.3 \
+      --grad-clip 0 \
       --s 15 \
       --m 3 \
       --loss-ratio 0.01 \
