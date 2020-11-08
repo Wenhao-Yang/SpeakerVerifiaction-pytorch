@@ -290,7 +290,7 @@ def main():
 
     options = ""
     for k in keys:
-        opts += "\'%s\': \'%s\', " % (str(k), str(opts[k]))
+        options += "\'%s\': \'%s\', " % (str(k), str(opts[k]))
     print('Parsed options: {}'.format(options))
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
