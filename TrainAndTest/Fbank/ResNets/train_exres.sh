@@ -243,6 +243,7 @@ if [ $stage -le 40 ]; then
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/pyfb/dev_${feat} \
       --valid-dir ${lstm_dir}/data/vox1/egs/pyfb/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/pyfb/test_${feat} \
       --nj 10 \
