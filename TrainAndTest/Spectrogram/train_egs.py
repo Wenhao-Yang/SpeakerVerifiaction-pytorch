@@ -284,6 +284,7 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
+    start_time = time.time()
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()
@@ -467,9 +468,11 @@ def main():
 
         # exit(1)
 
-
-
     writer.close()
+    stop_time = time.time()
+    t = float(start_time - stop_time)
+    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start_time)))
+
 
 
 def train(train_loader, model, ce, optimizer, epoch):
