@@ -236,9 +236,10 @@ if [ $stage -le 40 ]; then
   resnet_size=34
   datasets=vox1
   feat=fb64
-  loss=soft
+#  loss=soft
+  encod=STAP
 
-  for encod in STAP ; do
+  for loss in soft asoft arcsoft amsoft center ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
@@ -267,7 +268,7 @@ if [ $stage -le 40 ]; then
       --veri-pairs 9600 \
       --gpu-id 0 \
       --num-valid 2 \
-      --loss-type soft \
+      --loss-type ${loss} \
       --remove-vad
 
   done

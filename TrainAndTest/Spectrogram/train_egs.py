@@ -323,6 +323,21 @@ def main():
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
         torch.save(model, check_path)
 
+    if args.resume:
+        if os.path.isfile(args.resume):
+            print('=> loading checkpoint {}'.format(args.resume))
+            checkpoint = torch.load(args.resume)
+            start_epoch = checkpoint['epoch']
+
+            filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+            model_dict = model.state_dict()
+            model_dict.update(filtered)
+            model.load_state_dict(model_dict)
+            #
+            # model.dropout.p = args.dropout_p
+        else:
+            print('=> no checkpoint found at {}'.format(args.resume))
+
     ce_criterion = nn.CrossEntropyLoss()
     if args.loss_type == 'soft':
         xe_criterion = None
@@ -349,21 +364,6 @@ def main():
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
-
-    if args.resume:
-        if os.path.isfile(args.resume):
-            print('=> loading checkpoint {}'.format(args.resume))
-            checkpoint = torch.load(args.resume)
-            start_epoch = checkpoint['epoch']
-
-            filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-            model_dict = model.state_dict()
-            model_dict.update(filtered)
-            model.load_state_dict(model_dict)
-            #
-            # model.dropout.p = args.dropout_p
-        else:
-            print('=> no checkpoint found at {}'.format(args.resume))
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
     if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
