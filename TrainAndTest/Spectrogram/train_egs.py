@@ -292,7 +292,7 @@ def main():
     for k in keys:
         options.append("\'%s\': \'%s\'" % (str(k), str(opts[k])))
 
-    print('Parsed options: \n{}'.format(','.join(options)))
+    print('Parsed options: \n{}'.format(', '.join(options)))
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     # instantiate model and initialize weights
