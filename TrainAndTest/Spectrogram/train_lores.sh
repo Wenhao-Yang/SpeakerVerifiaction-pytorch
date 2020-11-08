@@ -349,11 +349,11 @@ if [ $stage -le 50 ]; then
       --transform None \
       --resnet-size ${resnet_size} \
       --nj 10 \
-      --epochs 20 \
+      --epochs 1 \
       --lr 0.1 \
       --milestones 5,10,15 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${transform} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${transform}/checkpoint_24.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${transform}/checkpoint_20.pth \
       --channels 64,128,256 \
       --kernel-size 5,5 \
       --stride 2 \

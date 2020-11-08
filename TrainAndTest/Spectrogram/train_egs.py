@@ -441,7 +441,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        train(train_loader, model, ce, optimizer, epoch)
+        # train(train_loader, model, ce, optimizer, epoch)
         if epoch % 4 == 1 or epoch == (end - 1):
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             torch.save({'epoch': epoch,
@@ -452,11 +452,7 @@ def main():
         if epoch % 2 == 1 and epoch != (end - 1):
             valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
 
-        if epoch in milestones:
-            test(model, epoch, writer, xvector_dir)
-
-        if epoch == end:
-            valid_test(train_extract_loader, valid_loader, model, epoch)
+        if epoch in milestones or epoch == (end - 1):
             test(model, epoch, writer, xvector_dir)
 
         scheduler.step()
@@ -501,7 +497,6 @@ def train(train_loader, model, ce, optimizer, epoch):
         elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
-            loss = args.loss_ratio * loss_xent + loss_cent
 
             loss = args.loss_ratio * loss_xent + loss_cent
         elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
