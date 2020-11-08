@@ -284,7 +284,14 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    print('Parsed options: {}'.format(vars(args)))
+    opts = vars(args)
+    keys = list(opts.keys())
+    keys.sort()
+
+    options = ""
+    for k in keys:
+        opts += "\'%s\': \'%s\', " % (str(k), str(opts[k]))
+    print('Parsed options: {}'.format(options))
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     # instantiate model and initialize weights
