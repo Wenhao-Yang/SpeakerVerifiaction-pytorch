@@ -340,7 +340,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         sid2vec = enroll_spk2xve_dict[sid]
         # vec = torch.tensor(file_loader(sid2vec).mean(axis=0)).unsqueeze(1).float()
         vec = torch.tensor(file_loader(sid2vec)).float()
-        # print(vec.shape)
+        print(len(vec))
         # spk_dur_factor.append(vec[0])
         num_spks_tensor.append(len(vec) + num_spks_tensor[idx])
         # spks_tensor = torch.cat((spks_tensor, vec[1:].unsqueeze(1)), dim=1)
@@ -348,7 +348,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
 
 
     # spk_dur_factor = torch.tensor(spk_dur_factor)# .clamp_max(1.0)
-
+    print("Len idx is %s" % str(num_spks_tensor))
     print("Load the spk vector for utterances...")
     uids_tensor = torch.tensor([])
     pbar = tqdm(uids)
@@ -363,6 +363,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
 
     # dur_factor = torch.tensor(dur_factor)# .clamp(0.85, 1.0)
     print("Normalization and Cosine similarity...")
+    print("There are %d vectors enrolled!" % spks_tensor.shape[1])
     uids_tensor = uids_tensor / (uids_tensor.norm(p=2, dim=1, keepdim=True).add(1.0))
     spks_tensor = spks_tensor / (spks_tensor.norm(p=2, dim=0, keepdim=True).add(1.0))
 
