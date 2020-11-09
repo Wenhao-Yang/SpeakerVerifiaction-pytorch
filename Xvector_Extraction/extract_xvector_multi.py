@@ -264,10 +264,10 @@ def extract(data_loader, model, set_id, extract_path):
                 else:
                     batch_data = batch_data.cuda()
                     _, feats = model(batch_data)
-                    feats = feats.data.cpu().numpy()
-
                     if torch.isnan(feats).int().sum() > 0:
                         print("Nan detected!")
+
+                    feats = feats.data.cpu().numpy()
 
                     for i in range(len(tmp_uids)):
                         this_feat = feats[tmp_len[i]:tmp_len[i + 1]]
