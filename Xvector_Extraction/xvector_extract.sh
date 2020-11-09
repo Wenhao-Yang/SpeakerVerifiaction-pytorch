@@ -111,7 +111,7 @@ if [ $stage -le 40 ]; then
     --input-norm Mean \
     --encoder-type None \
     --transform None \
-    --extract-path Data/xvector/${model}${resnet_size}/${dataset}/${feat}/${loss} \
+    --extract-path Data/xvector/${model}${resnet_size}/${dataset}/${feat}/${loss}_nan \
     --model ${model} \
     --resnet-size ${resnet_size} \
     --dropout-p 0.25 \
