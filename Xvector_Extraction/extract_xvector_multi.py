@@ -281,7 +281,7 @@ def extract(data_loader, model, set_id, extract_path):
                     pbar.set_description(
                         'Extract {}: [{:8d}/{:8d} ({:3.0f}%)] '.format(
                             set_id,
-                            batch_idx * len(data),
+                            batch_idx,
                             len(data_loader.dataset),
                             100. * batch_idx / len(data_loader)))
                 # break
