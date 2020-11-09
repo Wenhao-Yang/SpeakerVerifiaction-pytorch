@@ -252,10 +252,10 @@ def extract(data_loader, model, set_id, extract_path):
             for batch_idx, (data, uid) in pbar:
 
                 vec_shape = data.shape
-                print(data.shape)
+                # print(data.shape)
                 if vec_shape[1] != 1:
                     data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-                print(data.shape)
+                # print(data.shape)
                 if len(batch_data) < args.batch_size:
 
                     batch_data = torch.cat((batch_data, data), dim=0)
