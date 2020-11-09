@@ -50,8 +50,9 @@ warnings.filterwarnings("ignore")
 # Training settings
 parser = argparse.ArgumentParser(description='Extract x-vector for plda')
 # Model options
-parser.add_argument('--train-dir', type=str, help='path to dataset')
-parser.add_argument('--train-spk', type=int, metavar='NJOB', help='num of job')
+parser.add_argument('--enroll-dir', type=str, help='path to dataset')
+parser.add_argument('--train-spk-a', type=int, metavar='NJOB', help='num of job')
+parser.add_argument('--train-spk-b', type=int, metavar='NJOB', help='num of job')
 
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
@@ -225,14 +226,13 @@ else:
     file_loader = read_audio
 
 # pdb.set_trace()
-train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform)
+enroll_dir = KaldiExtractDataset(dir=args.enroll_dir, filer_loader=file_loader, transform=transform)
 test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform)
+
 
 # test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
 
-
 def extract(data_loader, model, set_id, extract_path):
-
     model.eval()
     uids, xvector = [], []
     pbar = tqdm(enumerate(data_loader))
@@ -279,8 +279,6 @@ def extract(data_loader, model, set_id, extract_path):
             scp.write(uids[i] + " " + xvector_path + '\n')
 
 
-
-
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
 
@@ -311,7 +309,8 @@ def main():
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                    'resnet_size': args.resnet_size, 'num_classes': args.train_spk,
+                    'resnet_size': args.resnet_size, 'num_classes_a': args.train_spk_a,
+                    'num_classes_b': args.train_spk_b,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
@@ -319,8 +318,6 @@ def main():
 
     if args.cuda:
         model.cuda()
-    # optionally resume from a checkpoint
-    # resume = args.ckp_dir + '/checkpoint_{}.pth'.format(args.epoch)
 
     if os.path.isfile(args.resume):
         # print('=> loading checkpoint {}'.format(resume))
@@ -333,21 +330,19 @@ def main():
     else:
         raise Exception('=> no checkpoint found at {}'.format(args.resume))
 
+    # Extract enroll set vectors
     # train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
-
-    # Extract Train set vectors
-    # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
+    enroll_loader = torch.utils.data.DataLoader(enroll_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+    extract(enroll_loader, model, set_id='enroll', extract_path=args.extract_path + '/x_vector')
 
     # Extract test set vectors
+    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
 
     print('Extract x-vector completed for train and test in %s!\n' % (args.extract_path + '/x_vector'))
 
 
-
-
+f
 
 if __name__ == '__main__':
     main()
-

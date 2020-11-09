@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=20
+stage=40
 if [ $stage -le 0 ]; then
   model=ASTDNN
   feat=mfcc40
@@ -85,4 +85,35 @@ if [ $stage -le 20 ]; then
     --resnet-size ${resnet_size} \
     --dropout-p 0.0 \
     --epoch 20
+fi
+
+if [ $stage -le 40 ]; then
+  model=MultiResNet
+  dataset=army
+  feat=spect_81
+  loss=soft
+  resnet_size=10
+
+  python Xvector_Extraction/extract_xvector_multi.py \
+    --enroll-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/army/spect/thre_enrolled \
+    --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/army/spect/thre_notenrolled \
+    --resume Data/checkpoint/MultiResNet10/army_x2/spect_egs_None/center_dp25_b192_16_0.01/checkpoint_24.pth \
+    --feat-dim 81 \
+    --train-spk-a 1951 \
+    --train-spk-b 1211 \
+    --embedding-size 128 \
+    --batch-size 1 \
+    --time-dim 1 \
+    --avg-size 4 \
+    --stride 1 \
+    --channels 16,64,128,256 \
+    --alpha 12.0 \
+    --input-norm Mean \
+    --encoder-type None \
+    --transform None \
+    --extract-path Data/xvector/${model}${resnet_size}/${dataset}/${feat}/${loss} \
+    --model ${model} \
+    --resnet-size ${resnet_size} \
+    --dropout-p 0.25 \
+    --epoch 24
 fi
