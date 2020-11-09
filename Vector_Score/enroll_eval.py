@@ -174,7 +174,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
                 test_spk2utt[spk].append(u)
                 num_test += 1
 
-    print("Spliting %d utterances for enrollment and %d for testing  files in %s..." % (num_enroll, num_test))
+    print("Spliting %d utterances for enrollment and %d for testing..." % (num_enroll, num_test))
     print("Writing enroll files in %s..." % os.path.join(xvector_dir, 'enroll'))
     with open(spk2utt_enroll_scp, 'w') as f1, \
             open(enroll_utt2vec_scp, 'w') as f2, \
