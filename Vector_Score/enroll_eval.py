@@ -146,6 +146,9 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
     enroll_spk2utt = {}
     test_spk2utt = {}
     print("Splitting enroll and test set for utterances...")
+    num_enroll = 0
+    num_test = 0
+
     with open(spk2utt_scp, 'r') as s2u:
         for l in s2u.readlines():
             spkutts = l.split()
@@ -166,9 +169,12 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
             if enroll_len < 45. and len(spk2utt[spk]) - idx + 1 > 0:
                 enroll_spk2utt[spk].append(u)
                 enroll_len += utt2len[u]
+                num_enroll += 1
             else:
                 test_spk2utt[spk].append(u)
+                num_test += 1
 
+    print("Spliting %d utterances for enrollment and %d for testing  files in %s..." % (num_enroll, num_test))
     print("Writing enroll files in %s..." % os.path.join(xvector_dir, 'enroll'))
     with open(spk2utt_enroll_scp, 'w') as f1, \
             open(enroll_utt2vec_scp, 'w') as f2, \
@@ -180,8 +186,11 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
 
             for u in enroll_spk2utt[spk]:
                 if u in utt2vec.keys():
+                    num_enroll -= 1
                     f2.write(u + ' ' + utt2vec[u] + '\n')
                     f3.write(u + ' ' + spk + '\n')
+    if num_enroll != 0:
+        print("%d utterances are missing in utt2vec scp files?" % num_enroll)
 
     print("Writing test files in %s..." % os.path.join(xvector_dir, 'test'))
     with open(spk2utt_test_scp, 'w') as f1, \
@@ -196,6 +205,11 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
                 if u in utt2vec.keys():
                     f2.write(u + ' ' + utt2vec[u] + '\n')
                     f3.write(u + ' ' + spk + '\n')
+                    num_test -= 1
+
+    if num_test != 0:
+        print("%d utterances are missing in utt2vec scp files?" % num_test)
+
 
     return enroll_dir, test_dir
 
