@@ -266,6 +266,9 @@ def extract(data_loader, model, set_id, extract_path):
                     _, feats = model(batch_data)
                     feats = feats.data.cpu().numpy()
 
+                    if torch.isnan(feats).int().sum() > 0:
+                        print("Nan detected!")
+
                     for i in range(len(tmp_uids)):
                         this_feat = feats[tmp_len[i]:tmp_len[i + 1]]
                         xvector_path = os.path.join(extract_path, 'npy_vectors', tmp_uids[i] + '.npy')
