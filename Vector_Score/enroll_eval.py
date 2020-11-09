@@ -379,6 +379,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     # spk_pro = torch.mul(spk_pro, spk_dur_factor.unsqueeze(0).expand(spk_pro.shape[0], spk_pro.shape[1]), )
     new_results = torch.tensor([]).reshape(len(uids_tensor), 0)
     for idx in range(len(sids)):
+        print(num_spks_tensor[idx], num_spks_tensor[idx + 1])
         idx_spk_score = torch.mean(spk_pro[:, num_spks_tensor[idx]:num_spks_tensor[idx + 1]], dim=1, keepdim=True)
         new_results = torch.cat((new_results, idx_spk_score), dim=1)
 
