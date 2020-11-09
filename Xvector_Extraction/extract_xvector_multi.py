@@ -256,7 +256,7 @@ def extract(data_loader, model, set_id, extract_path):
                 if vec_shape[1] != 1:
                     data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
                 # print(data.shape)
-                if len(batch_data) < args.batch_size:
+                if len(batch_data) < args.batch_size and batch_idx + 1 < len(data_loader.dataset):
 
                     batch_data = torch.cat((batch_data, data), dim=0)
                     tmp_len.append(sum(tmp_len) + len(data))
