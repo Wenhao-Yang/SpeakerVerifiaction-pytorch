@@ -253,13 +253,19 @@ def Enroll(enroll_dir, file_loader=np.load):
                 print('%s isEmpty??' % xve_path)
                 continue
             xvector.append(this_xve)
+
         all_xvector = np.concatenate(xvector, axis=0)
-        this_vec_len = len(all_xvector)
-        mean_xvector = np.mean(all_xvector, axis=0)
-        new_xvector = np.append([this_vec_len], mean_xvector)
+
+        # this_vec_len = len(all_xvector)
+        # mean_xvector = np.mean(all_xvector, axis=0)
+        # new_xvector = np.append([this_vec_len], mean_xvector)
 
         vec_path = '/'.join((spk_xvector_dir, '%s.npy' % sid))
-        np.save(vec_path, new_xvector)
+        if len(all_xvector.shape) == 1:
+            embedding_size = len(all_xvector)
+            all_xvector = all_xvector.reshape(1, embedding_size)
+
+        np.save(vec_path, all_xvector)
         spk2xve_dict[sid] = vec_path
 
     # assert os.path.exists(spk2xve_scp), print('%s ?'%spk2xve_scp)
@@ -328,14 +334,18 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         real_uid2sid.append(sid_idx)
 
     spks_tensor = torch.tensor([])
+    num_spks_tensor = [0]
     # spk_dur_factor = []
-    for sid in sids:
+    for idx, sid in enumerate(sids):
         sid2vec = enroll_spk2xve_dict[sid]
         # vec = torch.tensor(file_loader(sid2vec).mean(axis=0)).unsqueeze(1).float()
         vec = torch.tensor(file_loader(sid2vec)).float()
         # print(vec.shape)
         # spk_dur_factor.append(vec[0])
-        spks_tensor = torch.cat((spks_tensor, vec[1:].unsqueeze(1)), dim=1)
+        num_spks_tensor.append(len(vec) + num_spks_tensor[idx])
+        # spks_tensor = torch.cat((spks_tensor, vec[1:].unsqueeze(1)), dim=1)
+        spks_tensor = torch.cat((spks_tensor, vec.transpose(0, 1)), dim=1)
+
 
     # spk_dur_factor = torch.tensor(spk_dur_factor)# .clamp_max(1.0)
 
@@ -358,8 +368,12 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     spk_pro = torch.matmul(uids_tensor, spks_tensor)
     # spk_pro = torch.mul(dur_factor.unsqueeze(1).expand(spk_pro.shape[0], spk_pro.shape[1]), spk_pro)
     # spk_pro = torch.mul(spk_pro, spk_dur_factor.unsqueeze(0).expand(spk_pro.shape[0], spk_pro.shape[1]), )
+    new_results = torch.tensor([]).reshape(len(sids), 0)
+    for idx in range(len(sids)):
+        idx_spk_score = torch.mean(spk_pro[:, num_spks_tensor[idx]:num_spks_tensor[idx + 1]], dim=1, keepdim=True)
+        new_results = torch.cat((new_results, idx_spk_score), dim=1)
 
-    np.save('%s/result.npy' % eval_dir, spk_pro.numpy())
+    np.save('%s/result.npy' % eval_dir, new_results.numpy())
     np.save('%s/answer.npy' % eval_dir, real_uid2sid)
 
 
