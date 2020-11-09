@@ -263,6 +263,7 @@ def Enroll(enroll_dir, file_loader=np.load):
             if len(this_xve.shape) == 0:
                 print('%s isEmpty??' % xve_path)
                 continue
+            print(this_xve.shape)
             xvector.append(this_xve)
 
         all_xvector = np.concatenate(xvector, axis=0)
