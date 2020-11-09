@@ -285,7 +285,8 @@ def main():
     # print the experiment configuration
     print('\nCurrent time is\33[91m {}\33[0m.'.format(str(time.asctime())))
     print('Parsed options: {}'.format(vars(args)))
-    print('Number of Speakers: {}\n'.format(args.train_spk))
+    print('Number of Speakers A: {}\n'.format(args.train_spk_a))
+    print('Number of Speakers B: {}\n'.format(args.train_spk_b))
 
     # instantiate model and initialize weights
     kernel_size = args.kernel_size.split(',')
