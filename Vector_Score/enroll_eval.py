@@ -220,6 +220,7 @@ def Enroll(enroll_dir, file_loader=np.load):
 
     spk2utt_dict = {}
     assert os.path.exists(spk2utt_scp), print('%s Existed??' % spk2utt_scp)
+    skip_utt = 0
     with open(spk2utt_scp, 'r') as f:
         for l in f.readlines():
             siduids = l.split()
@@ -232,13 +233,9 @@ def Enroll(enroll_dir, file_loader=np.load):
                     this_vec_path = uid2xve_dict[u]
                     spk2utt_dict[sid].append(this_vec_path)
                 except:
-                    pass
+                    skip_utt += 1
 
-            # if sid in spk2utt_dict.keys():
-            #     spk2utt_dict[sid].append(xve_path)
-            # else:
-            #     spk2utt_dict[sid] = [xve_path]
-
+    print("Skiped %d utterance...!" % skip_utt)
     sids = list(spk2utt_dict.keys())
     sids.sort()
 
