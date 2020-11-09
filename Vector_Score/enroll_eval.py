@@ -373,6 +373,8 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         print("Enroll utterance Nan detected!")
 
     spk_pro = torch.matmul(uids_tensor, spks_tensor)
+    if torch.isnan(spk_pro).int().sum() > 0:
+        print("Matmul utterance Nan detected!")
     # spk_pro = torch.mul(dur_factor.unsqueeze(1).expand(spk_pro.shape[0], spk_pro.shape[1]), spk_pro)
     # spk_pro = torch.mul(spk_pro, spk_dur_factor.unsqueeze(0).expand(spk_pro.shape[0], spk_pro.shape[1]), )
     new_results = torch.tensor([]).reshape(len(uids_tensor), 0)
