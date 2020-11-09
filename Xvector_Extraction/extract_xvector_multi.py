@@ -234,50 +234,55 @@ test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, tran
 
 def extract(data_loader, model, set_id, extract_path):
     model.eval()
-    uids, xvector = [], []
-    pbar = tqdm(enumerate(data_loader))
-
-    with torch.no_grad():
-        for batch_idx, (data, uid) in pbar:
-
-            vec_shape = data.shape
-            if vec_shape[1] != 1:
-                data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-
-            data = data.cuda()
-            _, feats = model(data)
-            feats = feats.data.cpu().numpy()
-
-            xvector.append(feats)
-            uids.append(uid[0])
-            # xvector = torch.cat((xvector, feats), dim=0)
-            # for i in range(len(uid)):
-            #     uids.append(uid[i])
-
-            if batch_idx % args.log_interval == 0:
-                pbar.set_description(
-                    'Extract {}: [{:8d}/{:8d} ({:3.0f}%)] '.format(
-                        set_id,
-                        batch_idx * len(data),
-                        len(data_loader.dataset),
-                        100. * batch_idx / len(data_loader)))
-                # break
-
+    # uids, xvector = [], []
     if not os.path.exists(extract_path):
         os.makedirs(extract_path)
 
     if not os.path.exists(extract_path + '/npy_vectors'):
         os.makedirs(extract_path + '/npy_vectors')
 
+    pbar = tqdm(enumerate(data_loader))
+
     with open(extract_path + '/utt2vec', 'w') as scp:
 
-        assert len(uids) == len(xvector)
-        for i in range(len(uids)):
-            xvector_path = os.path.join(extract_path, 'npy_vectors', uids[i] + '.npy')
+        with torch.no_grad():
+            batch_data = torch.tensor([]).reshape(0, 1, 300, 81)
+            tmp_len = [0]
+            tmp_uids = []
+            for batch_idx, (data, uid) in pbar:
 
-            np.save(xvector_path, xvector[i])
-            scp.write(uids[i] + " " + xvector_path + '\n')
+                vec_shape = data.shape
+                if vec_shape[1] != 1:
+                    data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
+                if len(batch_data) < args.batch_size:
+                    batch_data = torch.cat((batch_data, data), dim=0)
+                    tmp_len.append(sum(tmp_len) + len(data))
+                    tmp_uids.append(uid[0])
+                else:
+                    batch_data = batch_data.cuda()
+                    _, feats = model(batch_data)
+                    feats = feats.data.cpu().numpy()
+
+                    for i in range(len(tmp_uids)):
+                        this_feat = feats[tmp_len[i]:tmp_len[i + 1]]
+                        xvector_path = os.path.join(extract_path, 'npy_vectors', tmp_uids[i] + '.npy')
+
+                        np.save(xvector_path, this_feat)
+                        scp.write(tmp_uids[i] + " " + xvector_path + '\n')
+
+                    batch_data = torch.tensor([]).reshape(0, 1, 300, 82)
+                    tmp_len = [0]
+                    tmp_uids = []
+
+                if batch_idx % args.log_interval == 0:
+                    pbar.set_description(
+                        'Extract {}: [{:8d}/{:8d} ({:3.0f}%)] '.format(
+                            set_id,
+                            batch_idx * len(data),
+                            len(data_loader.dataset),
+                            100. * batch_idx / len(data_loader)))
+                # break
 
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
