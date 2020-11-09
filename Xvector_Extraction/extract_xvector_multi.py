@@ -341,11 +341,11 @@ def main():
     # Extract enroll set vectors
     # train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     enroll_loader = torch.utils.data.DataLoader(enroll_dir, batch_size=1, shuffle=False, **kwargs)
-    extract(enroll_loader, model, set_id='enroll', extract_path=args.extract_path + '/x_vector')
+    extract(enroll_loader, model, set_id='enroll', extract_path=args.extract_path + '/x_vector/enrollled')
 
     # Extract test set vectors
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=1, shuffle=False, **kwargs)
-    extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
+    extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector/notenrollled')
 
     print('Extract x-vector completed for train and test in %s!\n' % (args.extract_path + '/x_vector'))
 
