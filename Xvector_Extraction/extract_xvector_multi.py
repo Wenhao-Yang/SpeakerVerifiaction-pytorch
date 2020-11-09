@@ -262,7 +262,7 @@ def extract(data_loader, model, set_id, extract_path):
                     tmp_len.append(tmp_len[-1] + len(data))
                     tmp_uids.append(uid[0])
                 else:
-                    print(tmp_len)
+                    # print(tmp_len)
                     batch_data = batch_data.cuda()
                     _, feats = model(batch_data)
                     if torch.isnan(feats).int().sum() > 0:
