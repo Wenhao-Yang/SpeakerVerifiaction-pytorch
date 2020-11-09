@@ -135,7 +135,6 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
                 utt, vec = l.split()
                 utt2len[utt] = len(file_loader(vec)) / 100.
 
-
     utt2vec = {}
     with open(utt2vec_scp, 'r') as s2u:
         for l in s2u.readlines():
@@ -145,7 +144,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
     spk2utt = {}
     enroll_spk2utt = {}
     test_spk2utt = {}
-    print("Splitting enroll and test set for utterances...")
+    # print("Splitting enroll and test set for utterances...")
     num_enroll = 0
     num_test = 0
 
@@ -267,6 +266,7 @@ def Enroll(enroll_dir, file_loader=np.load):
 
         all_xvector = np.concatenate(xvector, axis=0)
 
+        print("The shape of vectors for spk %s is %s. " % (sid, str(all_xvector.shape)))
         # this_vec_len = len(all_xvector)
         # mean_xvector = np.mean(all_xvector, axis=0)
         # new_xvector = np.append([this_vec_len], mean_xvector)
