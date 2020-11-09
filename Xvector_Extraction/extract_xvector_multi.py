@@ -271,7 +271,7 @@ def extract(data_loader, model, set_id, extract_path):
                         np.save(xvector_path, this_feat)
                         scp.write(tmp_uids[i] + " " + xvector_path + '\n')
 
-                    batch_data = torch.tensor([]).reshape(0, 1, 300, 82)
+                    batch_data = torch.tensor([]).reshape(0, 1, 300, 81)
                     tmp_len = [0]
                     tmp_uids = []
 
