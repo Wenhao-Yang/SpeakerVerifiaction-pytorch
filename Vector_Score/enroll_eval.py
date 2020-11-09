@@ -191,8 +191,9 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
             f1.write('\n')
 
             for u in test_spk2utt[spk]:
-                f2.write(u + ' ' + utt2vec[u] + '\n')
-                f3.write(u + ' ' + spk + '\n')
+                if u in utt2vec.keys():
+                    f2.write(u + ' ' + utt2vec[u] + '\n')
+                    f3.write(u + ' ' + spk + '\n')
 
     return enroll_dir, test_dir
 
