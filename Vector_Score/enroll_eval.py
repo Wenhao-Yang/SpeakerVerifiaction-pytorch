@@ -247,7 +247,7 @@ def Enroll(enroll_dir, file_loader=np.load):
                     spk2utt_dict[sid].append(this_vec_path)
                 except:
                     skip_utt += 1
-            print("there are %d utterance for spk %s" % (len(spk2utt_dict[sid]), sid))
+            # print("there are %d utterance for spk %s" % (len(spk2utt_dict[sid]), sid))
 
     print("Skiped %d utterance...!" % skip_utt)
     sids = list(spk2utt_dict.keys())
@@ -263,12 +263,12 @@ def Enroll(enroll_dir, file_loader=np.load):
             if len(this_xve.shape) == 0:
                 print('%s isEmpty??' % xve_path)
                 continue
-            print(this_xve.shape)
+            # print(this_xve.shape)
             xvector.append(this_xve)
 
         all_xvector = np.concatenate(xvector, axis=0)
 
-        print("The shape of vectors for spk %s is %s. " % (sid, str(all_xvector.shape)))
+        # print("The shape of vectors for spk %s is %s. " % (sid, str(all_xvector.shape)))
         # this_vec_len = len(all_xvector)
         # mean_xvector = np.mean(all_xvector, axis=0)
         # new_xvector = np.append([this_vec_len], mean_xvector)
@@ -441,7 +441,7 @@ if __name__ == '__main__':
     enroll_dir, test_dir = Split_Set(data_dir=args.data_dir, xvector_dir=args.extract_path, split_set=args.split_set)
 
     Enroll(enroll_dir=enroll_dir)
-    # Eval(enroll_dir=enroll_dir, eval_dir=test_dir)
-    #
-    # if args.out_test_dir:
-    #     Eval(enroll_dir=enroll_dir, eval_dir=args.out_test_dir)
+    Eval(enroll_dir=enroll_dir, eval_dir=test_dir)
+
+    if args.out_test_dir:
+        Eval(enroll_dir=enroll_dir, eval_dir=args.out_test_dir)
