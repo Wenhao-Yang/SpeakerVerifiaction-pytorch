@@ -383,5 +383,6 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
 
 if __name__ == '__main__':
     enroll_dir, test_dir = Split_Set(data_dir=args.data_dir, xvector_dir=args.extract_path, split_set=args.split_set)
+
     Enroll(enroll_dir=enroll_dir)
     Eval(enroll_dir=enroll_dir, eval_dir=test_dir)
