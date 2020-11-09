@@ -382,6 +382,12 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         idx_spk_score = torch.mean(spk_pro[:, num_spks_tensor[idx]:num_spks_tensor[idx + 1]], dim=1, keepdim=True)
         new_results = torch.cat((new_results, idx_spk_score), dim=1)
 
+    if torch.isnan(new_results).int().sum() > 0:
+        print("Matmul mean utterance Nan detected!")
+
+    if np.isnan(new_results.numpy()).sum() > 0:
+        print("result numpy array Nan detected!")
+
     np.save('%s/result.npy' % eval_dir, new_results.numpy())
     np.save('%s/answer.npy' % eval_dir, real_uid2sid)
 
