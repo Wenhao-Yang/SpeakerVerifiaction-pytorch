@@ -531,42 +531,51 @@ class KaldiExtractDataset(data.Dataset):
         feat_scp = dir + '/feats.scp'
         trials = dir + '/%s' % trials_file
 
-        assert os.path.exists(trials), trials
-        assert os.path.exists(feat_scp), feat_scp
+        if os.path.exists(trials):
+            assert os.path.exists(feat_scp), feat_scp
 
-        trials_utts = []
-        with open(trials, 'r') as u:
-            all_cls = u.readlines()
-            for line in all_cls:
-                utt_a, utt_b, target = line.split(' ')
+            trials_utts = []
+            with open(trials, 'r') as u:
+                all_cls = u.readlines()
+                for line in all_cls:
+                    utt_a, utt_b, target = line.split(' ')
 
-                if utt_a not in trials_utts:
-                    trials_utts.append(utt_a)
+                    if utt_a not in trials_utts:
+                        trials_utts.append(utt_a)
 
-                if utt_b not in trials_utts:
-                    trials_utts.append(utt_b)
+                    if utt_b not in trials_utts:
+                        trials_utts.append(utt_b)
 
-        trials_utts.sort()
+            trials_utts.sort()
 
-        tmp_uid2feat = {}
-        with open(feat_scp, 'r') as u:
-            all_cls = tqdm(u.readlines())
-            for line in all_cls:
-                utt_path = line.split(' ')
-                uid = utt_path[0]
+            tmp_uid2feat = {}
+            with open(feat_scp, 'r') as u:
+                all_cls = tqdm(u.readlines())
+                for line in all_cls:
+                    utt_path = line.split(' ')
+                    uid = utt_path[0]
 
-                tmp_uid2feat[uid] = utt_path[-1]
+                    tmp_uid2feat[uid] = utt_path[-1]
 
-        uid2feat = {}
-        for k in trials_utts:
-            uid2feat[k] = tmp_uid2feat[k]
+            uid2feat = {}
+            for k in trials_utts:
+                uid2feat[k] = tmp_uid2feat[k]
 
-        del tmp_uid2feat
+            del tmp_uid2feat
+        else:
+            print("trials not exist!")
+            uid2feat = {}
+            with open(feat_scp, 'r') as u:
+                all_cls = tqdm(u.readlines())
+                for line in all_cls:
+                    utt_path = line.split(' ')
+                    uid = utt_path[0]
+                    uid2feat[uid] = utt_path[-1]
 
         # pdb.set_trace()
         utts = [uid for uid in uid2feat.keys()]
         utts.sort()
-        assert len(utts) == len(trials_utts)
+        # assert len(utts) == len(trials_utts)
         print('==> There are {} utterances in Verifcation set to extract vectors.'.format(len(utts)))
 
         self.uid2feat = uid2feat
