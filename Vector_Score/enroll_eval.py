@@ -321,7 +321,10 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     real_uid2sid = []
     for uid in uids:
         sid = eval_utt2spk_dict[uid]
-        sid_idx = sids.index(sid)
+        if sid in sids:
+            sid_idx = sids.index(sid)
+        else:
+            sid_idx = -1
         real_uid2sid.append(sid_idx)
 
     spks_tensor = torch.tensor([])
