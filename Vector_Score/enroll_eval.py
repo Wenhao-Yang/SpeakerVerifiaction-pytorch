@@ -341,9 +341,10 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     print("\nGetting the ground truth for utterances...")
     real_uid2sid = []
     for uid in uids:
-        sid = eval_utt2spk_dict[uid]
-        if sid in sids:
-            sid_idx = sids.index(sid)
+        if uid in eval_utt2spk_dict.keys():
+            sid = eval_utt2spk_dict[uid]
+            if sid in sids:
+                sid_idx = sids.index(sid)
         else:
             sid_idx = -1
         real_uid2sid.append(sid_idx)
