@@ -102,7 +102,7 @@ if [ $stage -le 40 ]; then
     --train-spk-a 1951 \
     --train-spk-b 1211 \
     --embedding-size 128 \
-    --batch-size 80 \
+    --batch-size 64 \
     --time-dim 1 \
     --avg-size 4 \
     --stride 1 \
