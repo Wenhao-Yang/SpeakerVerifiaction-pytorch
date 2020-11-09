@@ -340,7 +340,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         sid2vec = enroll_spk2xve_dict[sid]
         # vec = torch.tensor(file_loader(sid2vec).mean(axis=0)).unsqueeze(1).float()
         vec = torch.tensor(file_loader(sid2vec)).float()
-        print(len(vec))
+        print(vec.shape)
         # spk_dur_factor.append(vec[0])
         num_spks_tensor.append(len(vec) + num_spks_tensor[idx])
         # spks_tensor = torch.cat((spks_tensor, vec[1:].unsqueeze(1)), dim=1)
