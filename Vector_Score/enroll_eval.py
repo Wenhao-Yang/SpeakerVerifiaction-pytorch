@@ -363,8 +363,8 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
 
     # dur_factor = torch.tensor(dur_factor)# .clamp(0.85, 1.0)
     print("Normalization and Cosine similarity...")
-    uids_tensor = uids_tensor / uids_tensor.norm(p=2, dim=1, keepdim=True)
-    spks_tensor = spks_tensor / spks_tensor.norm(p=2, dim=0, keepdim=True)
+    uids_tensor = uids_tensor / (uids_tensor.norm(p=2, dim=1, keepdim=True).add(1.0))
+    spks_tensor = spks_tensor / (spks_tensor.norm(p=2, dim=0, keepdim=True).add(1.0))
     spk_pro = torch.matmul(uids_tensor, spks_tensor)
     # spk_pro = torch.mul(dur_factor.unsqueeze(1).expand(spk_pro.shape[0], spk_pro.shape[1]), spk_pro)
     # spk_pro = torch.mul(spk_pro, spk_dur_factor.unsqueeze(0).expand(spk_pro.shape[0], spk_pro.shape[1]), )
