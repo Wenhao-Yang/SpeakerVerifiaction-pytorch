@@ -48,6 +48,8 @@ parser = argparse.ArgumentParser(description='Extract x-vector for plda')
 parser.add_argument('--data-dir', type=str, help='path to dataset')
 parser.add_argument('--enroll-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
+parser.add_argument('--out-test-dir', type=str, help='path to voxceleb1 test dataset')
+
 
 parser.add_argument('--split-set', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
@@ -391,5 +393,8 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
 if __name__ == '__main__':
     enroll_dir, test_dir = Split_Set(data_dir=args.data_dir, xvector_dir=args.extract_path, split_set=args.split_set)
 
-    Enroll(enroll_dir=enroll_dir)
-    Eval(enroll_dir=enroll_dir, eval_dir=test_dir)
+    # Enroll(enroll_dir=enroll_dir)
+    # Eval(enroll_dir=enroll_dir, eval_dir=test_dir)
+
+    if args.out_test_dir:
+        Eval(enroll_dir=enroll_dir, eval_dir=args.out_test_dir)
