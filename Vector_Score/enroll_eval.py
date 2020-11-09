@@ -226,7 +226,8 @@ def Enroll(enroll_dir, file_loader=np.load):
             # xve_path = uid2xve_dict[uid]
             spk2utt_dict[sid] = []
             for u in uid:
-                spk2utt_dict[sid].append(uid2xve_dict[u])
+                this_vec_path = uid2xve_dict[u]
+                spk2utt_dict[sid].append(this_vec_path)
 
             # if sid in spk2utt_dict.keys():
             #     spk2utt_dict[sid].append(xve_path)
