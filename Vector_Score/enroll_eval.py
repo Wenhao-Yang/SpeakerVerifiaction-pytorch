@@ -318,11 +318,13 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
             utt2vec_dict[uid] = xve
 
     eval_utt2spk_dict = {}
-    assert os.path.exists(utt2spk_scp), print('%s ?' % utt2spk_scp)
-    with open(utt2spk_scp, 'r') as f:
-        for l in f.readlines():
-            uid, sid = l.split()
-            eval_utt2spk_dict[uid] = sid
+    if os.path.exists(utt2spk_scp):
+        with open(utt2spk_scp, 'r') as f:
+            for l in f.readlines():
+                uid, sid = l.split()
+                eval_utt2spk_dict[uid] = sid
+    else:
+        print("Spk label in test set is unknown!")
 
     enroll_spk2xve_dict = {}
     assert os.path.exists(enroll_spk2xve_scp), print('%s ?' % enroll_spk2xve_scp)
@@ -353,7 +355,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         sid2vec = enroll_spk2xve_dict[sid]
         # vec = torch.tensor(file_loader(sid2vec).mean(axis=0)).unsqueeze(1).float()
         vec = torch.tensor(file_loader(sid2vec)).float()
-        print(vec.shape)
+        # print(vec.shape)
         # spk_dur_factor.append(vec[0])
         num_spks_tensor.append(len(vec) + num_spks_tensor[idx])
         # spks_tensor = torch.cat((spks_tensor, vec[1:].unsqueeze(1)), dim=1)
