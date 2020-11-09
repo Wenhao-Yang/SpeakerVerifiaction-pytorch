@@ -341,8 +341,5 @@ def main():
 
     print('Extract x-vector completed for train and test in %s!\n' % (args.extract_path + '/x_vector'))
 
-
-f
-
 if __name__ == '__main__':
     main()
