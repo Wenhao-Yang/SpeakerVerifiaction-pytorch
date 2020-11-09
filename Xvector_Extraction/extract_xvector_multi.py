@@ -256,6 +256,7 @@ def extract(data_loader, model, set_id, extract_path):
                     data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 if len(batch_data) < args.batch_size:
+                    print(data.shape)
                     batch_data = torch.cat((batch_data, data), dim=0)
                     tmp_len.append(sum(tmp_len) + len(data))
                     tmp_uids.append(uid[0])
