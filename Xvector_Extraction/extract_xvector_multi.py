@@ -259,9 +259,10 @@ def extract(data_loader, model, set_id, extract_path):
                 if len(batch_data) < args.batch_size and batch_idx + 1 < len(data_loader.dataset):
 
                     batch_data = torch.cat((batch_data, data), dim=0)
-                    tmp_len.append(sum(tmp_len) + len(data))
+                    tmp_len.append(tmp_len[-1] + len(data))
                     tmp_uids.append(uid[0])
                 else:
+                    print(tmp_len)
                     batch_data = batch_data.cuda()
                     _, feats = model(batch_data)
                     if torch.isnan(feats).int().sum() > 0:
