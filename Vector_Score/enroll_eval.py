@@ -155,6 +155,7 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
     for spk in spk2utt.keys():
         if spk not in enroll_spk2utt.keys():
             enroll_spk2utt[spk] = []
+
         if spk not in test_spk2utt.keys():
             test_spk2utt[spk] = []
 
@@ -176,8 +177,9 @@ def Split_Set(data_dir, xvector_dir, file_loader=read_mat, split_set=True):
             f1.write('\n')
 
             for u in enroll_spk2utt[spk]:
-                f2.write(u + ' ' + utt2vec[u] + '\n')
-                f3.write(u + ' ' + spk + '\n')
+                if u in utt2vec.keys():
+                    f2.write(u + ' ' + utt2vec[u] + '\n')
+                    f3.write(u + ' ' + spk + '\n')
 
     print("Writing test files in %s..." % os.path.join(xvector_dir, 'test'))
     with open(spk2utt_test_scp, 'w') as f1, \
