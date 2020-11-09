@@ -247,6 +247,7 @@ def Enroll(enroll_dir, file_loader=np.load):
                     spk2utt_dict[sid].append(this_vec_path)
                 except:
                     skip_utt += 1
+            print("there are %d utterance for spk %s" % (len(spk2utt_dict[sid]), sid))
 
     print("Skiped %d utterance...!" % skip_utt)
     sids = list(spk2utt_dict.keys())
