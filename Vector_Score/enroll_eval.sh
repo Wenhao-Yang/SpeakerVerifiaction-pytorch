@@ -17,7 +17,7 @@ if [ $stage -le 10 ]; then
 
   python Vector_Score/enroll_eval.py \
     --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/army/spect/thre_enrolled \
-    --extract-path Data/xvector/MultiResNet10/army/spect_81/soft/x_vector/enrollled \
-    --out-test-dir Data/xvector/MultiResNet10/army/spect_81/soft/x_vector/notenrollled \
+    --extract-path Data/xvector/MultiResNet10/army/spect_81/soft_nan/x_vector/enrollled \
+    --out-test-dir Data/xvector/MultiResNet10/army/spect_81/soft_nan/x_vector/notenrollled \
     --split-set
 fi
