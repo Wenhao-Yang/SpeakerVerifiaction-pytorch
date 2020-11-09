@@ -368,7 +368,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     spk_pro = torch.matmul(uids_tensor, spks_tensor)
     # spk_pro = torch.mul(dur_factor.unsqueeze(1).expand(spk_pro.shape[0], spk_pro.shape[1]), spk_pro)
     # spk_pro = torch.mul(spk_pro, spk_dur_factor.unsqueeze(0).expand(spk_pro.shape[0], spk_pro.shape[1]), )
-    new_results = torch.tensor([]).reshape(len(sids), 0)
+    new_results = torch.tensor([]).reshape(len(uids_tensor), 0)
     for idx in range(len(sids)):
         idx_spk_score = torch.mean(spk_pro[:, num_spks_tensor[idx]:num_spks_tensor[idx + 1]], dim=1, keepdim=True)
         new_results = torch.cat((new_results, idx_spk_score), dim=1)
@@ -410,7 +410,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
 if __name__ == '__main__':
     enroll_dir, test_dir = Split_Set(data_dir=args.data_dir, xvector_dir=args.extract_path, split_set=args.split_set)
 
-    Enroll(enroll_dir=enroll_dir)
+    # Enroll(enroll_dir=enroll_dir)
     Eval(enroll_dir=enroll_dir, eval_dir=test_dir)
 
     if args.out_test_dir:
