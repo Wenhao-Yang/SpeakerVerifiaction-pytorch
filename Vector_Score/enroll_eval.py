@@ -373,8 +373,8 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     for uid in pbar:
         num_eval += 1
         uid2vec = utt2vec_dict[uid]
-        # vec = torch.tensor(file_loader(uid2vec).mean(axis=0)).unsqueeze(0).float()
-        vec = torch.tensor(file_loader(uid2vec)).float()
+        vec = torch.tensor(file_loader(uid2vec).mean(axis=0)).unsqueeze(0).float()
+        # vec = torch.tensor(file_loader(uid2vec)).float()
         # uids_tensor = torch.cat((uids_tensor, vec[1:]), dim=0)
         uids_tensor = torch.cat((uids_tensor, vec), dim=0)
         # dur_factor.append(vec[0])
@@ -408,6 +408,7 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
     if np.isnan(new_results.numpy()).sum() > 0:
         print("result numpy array Nan detected!")
 
+    assert len(new_results) == len(real_uid2sid)
     np.save('%s/result.npy' % eval_dir, new_results.numpy())
     np.save('%s/answer.npy' % eval_dir, real_uid2sid)
 
