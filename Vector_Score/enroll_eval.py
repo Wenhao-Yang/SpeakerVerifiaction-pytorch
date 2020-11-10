@@ -409,7 +409,10 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         print("result numpy array Nan detected!")
 
     assert len(new_results) == len(real_uid2sid)
+    print("Saving predited probability in %s/result.npy with shape: %s " % (eval_dir, str(new_results.shape)))
     np.save('%s/result.npy' % eval_dir, new_results.numpy())
+
+    print("Saving ground truth in %s/answer.npy with shape: %s " % (eval_dir, str(len(real_uid2sid))))
     np.save('%s/answer.npy' % eval_dir, real_uid2sid)
 
 
