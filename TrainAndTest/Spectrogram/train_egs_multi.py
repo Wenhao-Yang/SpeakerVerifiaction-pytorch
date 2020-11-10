@@ -567,6 +567,13 @@ def train(train_loader, model, ce, optimizer, epoch):
         classfier_label_a = classfier_a
         classfier_label_b = classfier_b
 
+        if args.loss_ratio > 0.3:
+            loss_ratio = args.loss_ratio * min(epoch / 5, 1.0)
+        elif args.loss_ratio > 0:
+            loss_ratio = args.loss_ratio
+        else:
+            loss_ratio = 0
+
         if args.loss_type == 'soft':
             loss_a = ce_criterion(classfier_a, label_a)
             loss_b = ce_criterion(classfier_b, label_b)
@@ -589,7 +596,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             loss_cent = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
 
             loss_xent = xe_criterion(feats, label)
-            loss = args.loss_ratio * loss_xent + loss_cent
+            loss = loss_ratio * loss_xent + loss_cent
 
         elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
             loss_a = xe_criterion(classfier_a, label_a)

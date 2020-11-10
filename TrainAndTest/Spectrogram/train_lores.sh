@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=64
 
 waited=0
 while [ `ps 23863 | wc -l` -eq 2 ]; do
@@ -412,7 +412,7 @@ if [ $stage -le 50 ]; then
 
 fi
 
-stage=6300
+#stage=6300
 
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
@@ -861,7 +861,7 @@ if [ $stage -le 64 ]; then
   encod=None
   transform=None
   loss_ratio=0.01
-  for loss in center coscenter ; do
+  for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
 #    if [ $loss == "center" ] ; then
 #      loss_ratio=0.01
@@ -887,8 +887,8 @@ if [ $stage -le 64 ]; then
       --input-dim 81 \
       --stride 1 \
       --milestones 3 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio}/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio}_fast2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio}_fast2/checkpoint_24.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \

@@ -705,7 +705,7 @@ class LocalResNet(nn.Module):
     def __init__(self, embedding_size, num_classes, input_dim=161, block=BasicBlock, input_len=300,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
-                 avg_size=4, kernal_size=5, padding=2, **kwargs):
+                 avg_size=4, kernal_size=5, padding=2, filter=None, **kwargs):
 
         super(LocalResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -727,6 +727,12 @@ class LocalResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.input_norm = input_norm
         self.input_len = input_len
+        self.filter = filter
+
+        if self.filter == 'Avg':
+            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 5), stride=(1, 2))
+        else:
+            self.filter_layer = None
 
         if input_norm == 'Instance':
             self.inst_layer = Inst_Norm(self.input_len)
@@ -850,6 +856,8 @@ class LocalResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
 
         if self.inst_layer != None:
             x = self.inst_layer(x)
@@ -1643,7 +1651,7 @@ class MultiResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes_a, num_classes_b, block=BasicBlock, input_dim=161,
-                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., stride=2,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., stride=2, fast=False,
                  inst_norm=False, alpha=12, input_norm='None', transform=False,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
 
@@ -1674,6 +1682,11 @@ class MultiResNet(nn.Module):
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=stride, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(channels[0])
+
+        if self.fast:
+            self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        else:
+            self.maxpool = None
 
         # self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=1)
         self.layer1 = self._make_layer(block, channels[0], layers[0])
@@ -1749,7 +1762,9 @@ class MultiResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        # x = self.maxpool(x)
+        if self.maxpool != None:
+            x = self.maxpool(x)
+
         x = self.layer1(x)
 
         x = self.conv2(x)
