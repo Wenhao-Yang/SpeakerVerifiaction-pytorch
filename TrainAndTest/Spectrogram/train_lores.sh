@@ -861,7 +861,7 @@ if [ $stage -le 64 ]; then
   encod=None
   transform=None
   loss_ratio=0.01
-  alpha=1
+  alpha=12
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
 
