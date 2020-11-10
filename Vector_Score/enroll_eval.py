@@ -345,9 +345,10 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
             sid = eval_utt2spk_dict[uid]
             if sid in sids:
                 sid_idx = sids.index(sid)
+                real_uid2sid.append(sid_idx)
         else:
             sid_idx = -1
-        real_uid2sid.append(sid_idx)
+            real_uid2sid.append(sid_idx)
 
     spks_tensor = torch.tensor([])
     num_spks_tensor = [0]
@@ -374,14 +375,15 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         uid2vec = utt2vec_dict[uid]
         # vec = torch.tensor(file_loader(uid2vec).mean(axis=0)).unsqueeze(0).float()
         vec = torch.tensor(file_loader(uid2vec)).float()
-        uids_tensor = torch.cat((uids_tensor, vec[1:]), dim=0)
+        # uids_tensor = torch.cat((uids_tensor, vec[1:]), dim=0)
+        uids_tensor = torch.cat((uids_tensor, vec), dim=0)
         # dur_factor.append(vec[0])
 
     # dur_factor = torch.tensor(dur_factor)# .clamp(0.85, 1.0)
     print("Normalization and Cosine similarity...")
     print("There are %d vectors enrolled!" % spks_tensor.shape[1])
-    uids_tensor = uids_tensor / (uids_tensor.norm(p=2, dim=1, keepdim=True).add(1.0))
-    spks_tensor = spks_tensor / (spks_tensor.norm(p=2, dim=0, keepdim=True).add(1.0))
+    uids_tensor = uids_tensor / uids_tensor.norm(p=2, dim=1, keepdim=True)  # .add(1.0))
+    spks_tensor = spks_tensor / spks_tensor.norm(p=2, dim=0, keepdim=True)  # .add(1.0))
 
     if torch.isnan(uids_tensor).int().sum() > 0:
         print("Test utterance Nan detected!")
