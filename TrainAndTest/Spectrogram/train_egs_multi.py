@@ -501,8 +501,6 @@ def main():
         if epoch in milestones or epoch == (end - 1):
             test(model, epoch, writer, xvector_dir)
 
-        # sitw_test(sitw_test_loader, model, epoch)
-        # sitw_test(sitw_dev_loader, model, epoch)
         scheduler.step()
 
         # exit(1)
