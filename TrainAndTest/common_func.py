@@ -110,10 +110,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
         os.makedirs(xvector_dir)
         # print('Creating xvector path: %s' % xvector_dir)
 
-    # pbar = tqdm(enumerate(extract_loader))
+    pbar = tqdm(enumerate(extract_loader))
     uid2vectors = {}
     with torch.no_grad():
-        for batch_idx, (data, uid) in enumerate(extract_loader):
+        for batch_idx, (data, uid) in pbar:
             vec_shape = data.shape
 
             if vec_shape[1] != 1:
@@ -132,7 +132,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
                 out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
 
             uid2vectors[uid[0]] = out.squeeze().cpu().numpy()
-
             # pbar.set_description('Extraction Epoch {}: [{}/{} ({:.0f}%)]'.format(
             #     epoch, batch_idx, len(extract_loader.dataset), 100. * batch_idx / len(extract_loader)))
 

@@ -506,18 +506,6 @@ def main():
         scheduler.step()
 
         # exit(1)
-
-    # if args.extract:
-    #     extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
-    #     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
-    #     verification_extract(extract_loader, model, xvector_dir)
-    #
-    # verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=xvector_dir,
-    #                                  loader=read_vec_flt)
-    # verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
-    # verification_test(test_loader=verify_loader, dist_type=('cos' if args.cos_sim else 'l2'),
-    #                   log_interval=args.log_interval, save=xvector_dir, embedding_size=args.embedding_size)
-
     writer.close()
 
 
@@ -532,8 +520,7 @@ def train(train_loader, model, ce, optimizer, epoch):
     total_datasize_b = 0.
 
     total_loss = 0.
-    # for param_group in optimizer.param_groups:
-    #     print('\33[1;34m Optimizer \'{}\' learning rate is {}.\33[0m'.format(args.optimizer, param_group['lr']))
+
     ce_criterion, xe_criterion = ce
     train_loader_a, train_loader_b = train_loader
     pbar = tqdm(enumerate(zip(train_loader_a, train_loader_b)))

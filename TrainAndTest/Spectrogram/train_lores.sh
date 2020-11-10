@@ -887,6 +887,7 @@ if [ $stage -le 64 ]; then
       --input-dim 81 \
       --stride 1 \
       --milestones 3 \
+      --fast \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio}_fast2 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_16_${loss_ratio}_fast2/checkpoint_24.pth \
       --channels 16,64,128,256 \
