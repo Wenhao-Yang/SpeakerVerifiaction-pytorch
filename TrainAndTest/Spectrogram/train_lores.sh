@@ -883,7 +883,7 @@ if [ $stage -le 64 ]; then
       --batch-size 192 \
       --nj 12 \
       --epochs 1 \
-      --lr 0.001 \
+      --lr 0.1 \
       --input-dim 81 \
       --stride 1 \
       --milestones 3 \

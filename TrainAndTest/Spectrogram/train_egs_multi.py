@@ -486,7 +486,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        # train(train_loader, model, ce, optimizer, epoch)
+        train(train_loader, model, ce, optimizer, epoch)
         if epoch % 4 == 1 or epoch == (end - 1):
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
 
@@ -495,20 +495,11 @@ def main():
                         'criterion': ce},
                        check_path)
 
-        # if epoch % 2 == 1 and epoch != (end - 1):
-        #     valid(valid_loader, model, epoch)
-        #     test(test_loader, model, epoch)
-
         if epoch % 2 == 1 and epoch != (end - 1):
             valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
 
-        if epoch in milestones:
+        if epoch in milestones or epoch == (end - 1):
             test(model, epoch, writer, xvector_dir)
-
-        if epoch == (end - 1):
-            valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
-            test(model, epoch, writer, xvector_dir)
-
 
         # sitw_test(sitw_test_loader, model, epoch)
         # sitw_test(sitw_dev_loader, model, epoch)
