@@ -489,13 +489,12 @@ def main():
         train(train_loader, model, ce, optimizer, epoch)
         if epoch % 4 == 1 or epoch == (end - 1):
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-
             torch.save({'epoch': epoch,
                         'state_dict': model.state_dict(),
                         'criterion': ce},
                        check_path)
 
-        if epoch % 2 == 1 and epoch != (end - 1):
+        if epoch % 2 == 1 or epoch == (end - 1):
             valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
 
         if epoch in milestones or epoch == (end - 1):
