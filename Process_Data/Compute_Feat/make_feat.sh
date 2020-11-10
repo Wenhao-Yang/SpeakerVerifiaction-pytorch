@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=132
+stage=133
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -920,6 +920,58 @@ if [ $stage -le 132 ]; then
       --out-set valid_v2
 
 #    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/valid_v2
+  done
+fi
+
+if [ $stage -le 133 ]; then
+  for s in dev ; do
+    python Process_Data/Compute_Feat/make_feat.py \
+        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s}_8k_05 \
+        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+        --out-set ${s}_8k_v4 \
+        --feat-type spectrogram \
+        --feat-format kaldi_cmp \
+        --nfft 160 \
+        --windowsize 0.02 \
+        --log-scale \
+        --nj 6
+
+    python Process_Data/Compute_Feat/make_feat.py \
+        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k/${s}_8k_03 \
+        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
+        --out-set ${s}_8k_v4 \
+        --feat-type spectrogram \
+        --feat-format kaldi_cmp \
+        --nfft 160 \
+        --windowsize 0.02 \
+        --log-scale \
+        --nj 6
+
+    # python Process_Data/Compute_Feat/make_feat.py \
+    #     --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/${s}_7h \
+    #     --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
+    #     --out-set ${s}_8k_v4 \
+    #     --feat-type spectrogram \
+    #     --feat-format kaldi_cmp \
+    #     --nfft 160 \
+    #     --windowsize 0.02 \
+    #     --log-scale \
+    #     --nj 18
+
+    # python Process_Data/Compute_Feat/make_feat.py \
+    #     --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/${s}_7h \
+    #     --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
+    #     --out-set ${s}_8k_v3 \
+    #     --feat-type spectrogram \
+    #     --feat-format kaldi_cmp \
+    #     --lowfreq 300 \
+    #     --highfreq 3000 \
+    #     --bandpass \
+    #     --nfft 160 \
+    #     --windowsize 0.02 \
+    #     --log-scale \
+    #     --nj 18
+
   done
 fi
 
