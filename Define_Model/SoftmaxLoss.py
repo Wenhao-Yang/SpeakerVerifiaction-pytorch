@@ -25,7 +25,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-__all__ = ["AngleLinear", "AngleSoftmaxLoss", "AngularSoftmax"]
+__all__ = ["AngleLinear", "AngleSoftmaxLoss"]
 
 class AngleLinear(nn.Module):#定义最后一层
     def __init__(self, in_features, out_features, m=3, phiflag=True):#输入特征维度，输出特征维度，margin超参数
@@ -317,6 +317,56 @@ class GaussianLoss(nn.Module):
         loss = dist.sum() / batch_size
 
         return loss
+
+
+class PrototypicalLinear(nn.Module):
+    def __init__(self, feat_dim, n_classes=1000):
+        super(PrototypicalLinear, self).__init__()
+        self.feat_dim = feat_dim
+        self.center = torch.nn.Parameter(torch.randn(feat_dim, n_classes))
+
+        nn.init.xavier_normal(self.center, gain=1)
+
+    def forward(self, x):
+        # assert x.size()[0] == label.size()[0]
+        assert x.size()[1] == self.feat_dim
+
+        # pdb.set_trace()
+        x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
+        x_norm = torch.div(x, x_norm)
+
+        w_norm = torch.norm(self.center, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        w_norm = torch.div(self.center, w_norm)
+
+        costh = torch.mm(x_norm, w_norm)
+
+        return costh
+
+
+class APrototypicalLinear(nn.Module):
+    def __init__(self, feat_dim, n_classes=1000):
+        super(APrototypicalLinear, self).__init__()
+        self.feat_dim = feat_dim
+        self.center = nn.Parameter(torch.randn(feat_dim, n_classes))
+        self.w = nn.Parameter(torch.ones(1))
+        self.b = nn.Parameter(torch.zeros(1))
+
+        nn.init.xavier_normal(self.center, gain=1)
+
+    def forward(self, x):
+        # assert x.size()[0] == label.size()[0]
+        assert x.size()[1] == self.feat_dim
+
+        # pdb.set_trace()
+        x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
+        x_norm = torch.div(x, x_norm)
+
+        w_norm = torch.norm(self.center, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        w_norm = torch.div(self.center, w_norm)
+
+        costh = self.w * torch.mm(x_norm, w_norm) + self.b
+
+        return costh
 
 # Testing those Loss Classes
 # a = Variable(torch.Tensor([[1., 1., 3.],

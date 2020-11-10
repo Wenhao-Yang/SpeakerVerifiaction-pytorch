@@ -117,6 +117,8 @@ class L2_Norm(nn.Module):
     def __init__(self, alpha=1.):
         super(L2_Norm, self).__init__()
         self.alpha = alpha
+        self.iteration = 0
+        self.all_iteration = 10000
 
     def forward(self, input):
         # alpha = log(p * ( class -2) / (1-p))
@@ -128,7 +130,13 @@ class L2_Norm(nn.Module):
         _output = torch.div(input, norm.view(-1, 1).expand_as(input))
         output = _output.view(input_size)
 
-        return output * self.alpha
+        if self.alpha < 10 and self.iteration <= self.all_iteration:
+            alpha = -self.iteration * (10 - self.alpha) / self.all_iteration + 10
+            self.iteration += 1
+        else:
+            alpha = self.alpha
+
+        return output * alpha
 
     def __repr__(self):
         return "L2_Norm(alpha=%f)" % self.alpha
