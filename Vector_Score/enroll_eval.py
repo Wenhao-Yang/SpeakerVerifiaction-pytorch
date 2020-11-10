@@ -285,7 +285,23 @@ def Enroll(enroll_dir, file_loader=np.load):
     if not os.path.exists(os.path.dirname(spk2xve_scp)):
         os.makedirs(os.path.dirname(spk2xve_scp))
 
-    print("Saving enrolled spk vector list...")
+    enroll_npy = os.path.join(enroll_dir, 'spkvecs.npy')
+    print("Saving enroll vectors to %s" % enroll_npy)
+    spks_tensor = torch.tensor([])
+    num_spks_tensor = [0]
+    for idx, sid in enumerate(sids):
+        sid2vec = spk2xve_dict[sid]
+        vec = torch.tensor(file_loader(sid2vec)).float()
+
+        num_spks_tensor.append(len(vec) + num_spks_tensor[idx])
+        spks_tensor = torch.cat((spks_tensor, vec.transpose(0, 1)), dim=1)
+    np.save(enroll_npy, spks_tensor.numpy())
+
+    veclabs_npy = os.path.join(enroll_dir, 'veclabs.npy')
+    print("Saving enroll vectors len to %s" % veclabs_npy)
+    np.save(veclabs_npy, num_spks_tensor)
+
+    print("Saving enrolled spk vector detail list...")
     with open(spk2xve_scp, 'w') as f:
         for sid in sids:
             xve_path = spk2xve_dict[sid]
