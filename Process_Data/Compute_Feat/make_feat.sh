@@ -925,57 +925,57 @@ fi
 
 if [ $stage -le 133 ]; then
   for s in dev ; do
-    python Process_Data/Compute_Feat/make_feat.py \
-        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s}_8k_v4 \
-        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-        --out-set ${s}_8k_v4 \
-        --feat-type spectrogram \
-        --feat-format kaldi_cmp \
-        --nfft 160 \
-        --windowsize 0.02 \
-        --log-scale \
-        --nj 6
+#    python Process_Data/Compute_Feat/make_feat.py \
+#        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s}_8k_v4 \
+#        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+#        --out-set ${s}_8k_v4 \
+#        --feat-type spectrogram \
+#        --feat-format kaldi_cmp \
+#        --nfft 160 \
+#        --windowsize 0.02 \
+#        --log-scale \
+#        --nj 6
+#
+#    python Process_Data/Compute_Feat/make_feat.py \
+#        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k/${s}_8k_v4 \
+#        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
+#        --out-set ${s}_8k_v4 \
+#        --feat-type spectrogram \
+#        --feat-format kaldi_cmp \
+#        --nfft 160 \
+#        --windowsize 0.02 \
+#        --log-scale \
+#        --nj 6
 
-    python Process_Data/Compute_Feat/make_feat.py \
-        --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k/${s}_8k_v4 \
-        --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
-        --out-set ${s}_8k_v4 \
-        --feat-type spectrogram \
-        --feat-format kaldi_cmp \
-        --nfft 160 \
-        --windowsize 0.02 \
-        --log-scale \
-        --nj 6
+     python Process_Data/Compute_Feat/make_feat.py \
+         --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev_8k_7h_v1 \
+         --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
+         --out-set dev_8k_7h_v4 \
+         --feat-type spectrogram \
+         --feat-format kaldi_cmp \
+         --nfft 160 \
+         --windowsize 0.02 \
+         --log-scale \
+         --nj 18
 
-    # python Process_Data/Compute_Feat/make_feat.py \
-    #     --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/${s}_7h \
-    #     --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
-    #     --out-set ${s}_8k_v4 \
-    #     --feat-type spectrogram \
-    #     --feat-format kaldi_cmp \
-    #     --nfft 160 \
-    #     --windowsize 0.02 \
-    #     --log-scale \
-    #     --nj 18
-
-    # python Process_Data/Compute_Feat/make_feat.py \
-    #     --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/${s}_7h \
-    #     --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
-    #     --out-set ${s}_8k_v3 \
-    #     --feat-type spectrogram \
-    #     --feat-format kaldi_cmp \
-    #     --lowfreq 300 \
-    #     --highfreq 3000 \
-    #     --bandpass \
-    #     --nfft 160 \
-    #     --windowsize 0.02 \
-    #     --log-scale \
-    #     --nj 18
+     python Process_Data/Compute_Feat/make_feat.py \
+         --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev_8k_7h_v1 \
+         --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
+         --out-set dev_8k_7h_v3 \
+         --feat-type spectrogram \
+         --feat-format kaldi_cmp \
+         --lowfreq 300 \
+         --highfreq 3000 \
+         --bandpass \
+         --nfft 160 \
+         --windowsize 0.02 \
+         --log-scale \
+         --nj 18
 
   done
 fi
 
-stage=230
+stage=10000
 if [ $stage -le 140 ]; then
   python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/radio/example_8k \
