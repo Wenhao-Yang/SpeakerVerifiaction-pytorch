@@ -17,6 +17,7 @@ import os
 import shutil
 import sys
 import time
+import traceback
 from multiprocessing import Pool, Manager
 
 import kaldi_io
@@ -51,7 +52,7 @@ parser.add_argument('--windowsize', type=float, default=0.02, choices=[0.02, 0.0
 parser.add_argument('--stride', type=float, default=0.01, help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--bandpass', action='store_true', default=False,
-                    help='using butter bandpass filter for input wav signal')
+                    help='using butter bandpass filter for signal')
 parser.add_argument('--lowfreq', type=int, default=300, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--highfreq', type=int, default=3000, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--nfft', type=int, required=True, help='number of jobs to make feats (default: 10)')
@@ -166,7 +167,8 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                     utt2dur_f.write('%s %.6f\n' % (key, duration))
                     utt2num_frames_f.write('%s %d\n' % (key, len(feat)))
                 except Exception as e:
-                    print(e)
+                    traceback.print_exc(e)
+                    # print(e)
                     e_queue.put(key)
 
             # if t_queue.qsize() % 100 == 0:
