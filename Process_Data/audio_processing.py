@@ -241,6 +241,8 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
 
     # samplerate, samples = wavfile.read(wav_path)
     samples, samplerate = sf.read(wav_path, dtype='int16')
+    if not len(samples) > 0:
+        raise ValueError('wav file is empty?')
 
     if bandpass and highfreq > lowfreq:
         samples = butter_bandpass_filter(data=samples, cutoff=[lowfreq, highfreq], fs=samplerate)
@@ -278,6 +280,9 @@ def Make_Fbank(filename,  # sample_rate=c.SAMPLE_RATE,
 
     # audio, sample_rate = sf.read(filename, dtype='float32')
     audio, sample_rate = sf.read(filename, dtype='int16')
+    if not len(audio) > 0:
+        raise ValueError('wav file is empty?')
+
     filter_banks, energies = local_fbank(audio, samplerate=sample_rate, nfilt=nfilt, nfft=nfft, lowfreq=lowfreq,
                                          winlen=windowsize, filtertype=filtertype, winfunc=np.hamming,
                                          multi_weight=multi_weight)
@@ -328,6 +333,8 @@ def Make_MFCC(filename,
     audio, sample_rate = sf.read(filename, dtype='int16')
     # audio, sample_rate = librosa.load(filename, sr=None)
     # audio = audio.flatten()
+    if not len(audio) > 0:
+        raise ValueError('wav file is empty?')
     feats = local_mfcc(audio, samplerate=sample_rate,
                        nfilt=nfilt, winlen=winlen,
                        winstep=winstep, numcep=numcep,

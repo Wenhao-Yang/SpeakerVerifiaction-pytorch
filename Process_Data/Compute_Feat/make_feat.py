@@ -132,6 +132,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                         os.remove(temp_wav)
 
                     else:
+
                         if args.feat_type == 'fbank':
                             feat, duration = Make_Fbank(filename=pair[1], filtertype=args.filter_type, use_energy=True,
                                                         nfft=args.nfft, windowsize=args.windowsize,

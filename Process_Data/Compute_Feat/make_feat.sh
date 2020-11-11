@@ -948,7 +948,7 @@ if [ $stage -le 133 ]; then
 #        --nj 6
 
      python Process_Data/Compute_Feat/make_feat.py \
-         --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev_8k_7h_v1 \
+         --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev_8k_7h_v4 \
          --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
          --out-set dev_8k_7h_v4 \
          --feat-type spectrogram \
@@ -959,7 +959,7 @@ if [ $stage -le 133 ]; then
          --nj 18
 
      python Process_Data/Compute_Feat/make_feat.py \
-         --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev_8k_7h_v1 \
+         --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev_8k_7h_v3 \
          --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
          --out-set dev_8k_7h_v3 \
          --feat-type spectrogram \
