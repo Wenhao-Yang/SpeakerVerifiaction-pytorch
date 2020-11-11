@@ -395,6 +395,10 @@ def Eval(enroll_dir, eval_dir, file_loader=np.load):
         uids_tensor = torch.cat((uids_tensor, vec), dim=0)
         # dur_factor.append(vec[0])
 
+    eval_npy = os.path.join(eval_dir, 'uttvecs.npy')
+    print("Saving enroll vectors to %s" % eval_npy)
+    np.save(eval_npy, uids_tensor.numpy())
+
     # dur_factor = torch.tensor(dur_factor)# .clamp(0.85, 1.0)
     print("Normalization and Cosine similarity...")
     print("There are %d vectors enrolled!" % spks_tensor.shape[1])
