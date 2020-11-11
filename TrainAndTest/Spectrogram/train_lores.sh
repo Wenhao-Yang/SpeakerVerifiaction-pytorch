@@ -856,7 +856,7 @@ if [ $stage -le 64 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
   model=MultiResNet
-  resnet_size=10
+  resnet_size=18
   loss=soft
   encod=None
   transform=None
@@ -877,7 +877,7 @@ if [ $stage -le 64 ]; then
       --resnet-size ${resnet_size} \
       --input-norm Mean \
       --batch-size 192 \
-      --nj 12 \
+      --nj 10 \
       --epochs 24 \
       --lr 0.1 \
       --input-dim 81 \
