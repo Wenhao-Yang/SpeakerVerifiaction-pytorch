@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=133
+stage=231
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -975,7 +975,7 @@ if [ $stage -le 133 ]; then
   done
 fi
 
-stage=10000
+#stage=10000
 if [ $stage -le 140 ]; then
   python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/radio/example_8k \
@@ -1166,6 +1166,33 @@ if [ $stage -le 230 ]; then
       --out-format kaldi_cmp \
       --num-valid 4 \
       --out-set ${s}_valid_8k_v2
+
+  done
+fi
+
+if [ $stage -le 231 ]; then
+  datasets=army
+  for s in aishell2 vox ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${datasets}/spect/${s}_dev_8k_v4 \
+      --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 4 \
+      --out-set ${s}_dev_8k_v4
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${datasets}/spect/${s}_dev_8k_v4 \
+      --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
+      --feat-type spectrogram \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 4 \
+      --out-set ${s}_valid_8k_v4
 
   done
 fi
