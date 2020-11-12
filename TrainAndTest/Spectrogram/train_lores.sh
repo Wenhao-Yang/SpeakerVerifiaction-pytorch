@@ -898,7 +898,7 @@ if [ $stage -le 64 ]; then
       --s 30 \
       --m 3 \
       --loss-ratio ${loss_ratio} \
-      --set-ratio 0.6 \
+      --set-ratio 1.0 \
       --grad-clip 0 \
       --weight-decay 0.001 \
       --dropout-p 0.25 \

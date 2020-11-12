@@ -552,7 +552,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         if args.loss_type == 'soft':
             loss_a = ce_criterion(classfier_a, label_a)
             loss_b = ce_criterion(classfier_b, label_b)
-            loss = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
+            loss = loss_a + args.set_ratio * loss_b
 
         elif args.loss_type == 'asoft':
             classfier_label_a, _ = classfier_a
@@ -560,7 +560,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             classfier_label_b, _ = classfier_a
             loss_b = xe_criterion(classfier_a, label_a)
 
-            loss = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
+            loss = loss_a + args.set_ratio * loss_b
 
         elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
             label_b_plus = label_b + train_dir_a.num_spks
@@ -568,7 +568,7 @@ def train(train_loader, model, ce, optimizer, epoch):
 
             loss_a = ce_criterion(classfier_a, label_a)
             loss_b = ce_criterion(classfier_b, label_b)
-            loss_cent = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
+            loss_cent = loss_a + args.set_ratio * loss_b
 
             loss_xent = xe_criterion(feats, label)
             loss = loss_ratio * loss_xent + loss_cent
@@ -576,7 +576,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
             loss_a = xe_criterion(classfier_a, label_a)
             loss_b = xe_criterion(classfier_b, label_b)
-            loss = (1 - args.set_ratio) * loss_a + args.set_ratio * loss_b
+            loss = loss_a + args.set_ratio * loss_b
             # loss = xe_criterion(classfier, label)
 
         predicted_labels = output_softmax(classfier_label_a)
