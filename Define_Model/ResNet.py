@@ -1678,6 +1678,8 @@ class MultiResNet(nn.Module):
             self.inst_layer = nn.InstanceNorm1d(input_dim)
         elif input_norm == 'Mean':
             self.inst_layer = Mean_Norm()
+        elif input_norm == 'MeanStd':
+            self.inst_layer = MeanStd_Norm()
         else:
             self.inst_layer = None
 
