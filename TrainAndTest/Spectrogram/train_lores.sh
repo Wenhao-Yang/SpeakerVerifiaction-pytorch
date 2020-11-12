@@ -878,7 +878,7 @@ if [ $stage -le 64 ]; then
       --input-norm Mean \
       --batch-size 192 \
       --nj 10 \
-      --epochs 24 \
+      --epochs 1 \
       --lr 0.001 \
       --input-dim 81 \
       --stride 1 \
