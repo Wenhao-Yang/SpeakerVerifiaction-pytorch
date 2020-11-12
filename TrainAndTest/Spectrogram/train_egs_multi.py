@@ -15,12 +15,12 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
-import sys
-import time
 # Version conflict
 import warnings
 
 import numpy as np
+import sys
+import time
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
@@ -486,7 +486,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        train(train_loader, model, ce, optimizer, epoch)
+        # train(train_loader, model, ce, optimizer, epoch)
         if epoch % 4 == 1 or epoch == (end - 1):
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             torch.save({'epoch': epoch,
