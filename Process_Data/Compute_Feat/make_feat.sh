@@ -1172,7 +1172,7 @@ fi
 
 if [ $stage -le 231 ]; then
   datasets=army
-  for s in aishell2 vox ; do
+  for s in vox ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${datasets}/spect/${s}_dev_8k_v4 \
       --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
