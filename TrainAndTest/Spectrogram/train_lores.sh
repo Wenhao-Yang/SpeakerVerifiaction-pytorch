@@ -856,36 +856,35 @@ if [ $stage -le 64 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
   model=MultiResNet
-  resnet_size=18
+  resnet_size=10
   loss=soft
   encod=None
   transform=None
   loss_ratio=0.01
-  alpha=12
+  alpha=13
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in vox1 with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
-      --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v2 \
-      --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox1_dev_8k_v2 \
-      --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v2 \
-      --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k_v2 \
-      --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox1_valid_8k_v2 \
+      --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v4 \
+      --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox1_dev_8k_v4 \
+      --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k \
+      --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k_v4 \
+      --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox1_valid_8k_v4 \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --input-norm Mean \
       --batch-size 192 \
       --nj 10 \
-      --epochs 1 \
-      --lr 0.001 \
+      --epochs 24 \
+      --lr 0.1 \
       --input-dim 81 \
       --stride 1 \
-      --milestones 3 \
-      --fast \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_${alpha}_fast2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_${alpha}_fast2/checkpoint_29.pth \
+      --milestones 8,14,20 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b192_${alpha} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b192_${alpha}/checkpoint_29.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
