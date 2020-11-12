@@ -26,7 +26,7 @@ import torch
 from kaldiio import WriteHelper
 from tqdm import tqdm
 
-from Process_Data.KaldiDataset import ScriptValidDataset, LoadScriptDataset
+from Process_Data.KaldiDataset import ScriptValidDataset, ScriptTrainDataset
 from Process_Data.audio_augment.common import RunCommand
 from Process_Data.audio_processing import ConcateInput
 
@@ -181,10 +181,10 @@ if args.feat_format == 'npy':
 elif args.feat_format == 'kaldi':
     file_loader = kaldi_io.read_mat
 
-# train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
-#                                transform=transform, num_valid=args.num_valid, domain=args.domain)
-train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
+train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid, domain=args.domain)
+# train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
+#                                transform=transform, num_valid=args.num_valid, domain=args.domain)
 
 valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
                                dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
