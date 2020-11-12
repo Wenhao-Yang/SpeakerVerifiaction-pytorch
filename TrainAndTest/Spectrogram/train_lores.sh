@@ -863,7 +863,7 @@ if [ $stage -le 64 ]; then
   loss_ratio=0.01
   alpha=12
   for loss in soft ; do
-    echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
+    echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in vox1 with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
@@ -879,13 +879,13 @@ if [ $stage -le 64 ]; then
       --batch-size 192 \
       --nj 10 \
       --epochs 24 \
-      --lr 0.1 \
+      --lr 0.001 \
       --input-dim 81 \
       --stride 1 \
-      --milestones 8,14,20 \
+      --milestones 3 \
       --fast \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_${alpha}_fast2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_${alpha}_fast2/checkpoint_24.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b192_${alpha}_fast2/checkpoint_17pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
