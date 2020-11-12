@@ -112,6 +112,18 @@ class Mean_Norm(nn.Module):
         return "Mean_Norm(dim=%d)" % self.dim
 
 
+class MeanStd_Norm(nn.Module):
+    def __init__(self, dim=-2):
+        super(MeanStd_Norm, self).__init__()
+        self.dim = dim
+
+    def forward(self, x):
+        return (x - torch.mean(x, dim=self.dim, keepdim=True)) / x.std()
+
+    def __repr__(self):
+        return "MeanStd_Norm(mean_dim=%d, std_dim=all)" % self.dim
+
+
 class L2_Norm(nn.Module):
 
     def __init__(self, alpha=1.):

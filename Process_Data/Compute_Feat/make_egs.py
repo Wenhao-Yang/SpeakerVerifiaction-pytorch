@@ -228,15 +228,17 @@ if __name__ == "__main__":
 
     if args.train:
 
-        num_utt = [i for i in range(len(train_dir))]
+        utts = [i for i in range(len(train_dir))]
 
         random.seed(args.seed)
-        random.shuffle(num_utt)
-        for i in tqdm(num_utt):
+        random.shuffle(utts)
+        for i in tqdm(utts):
             idx_queue.put(i)
 
+        num_utt = len(utts)
+
         print('\n>> Plan to make egs for %d speakers with %d utterances in %s with %d jobs.\n' % (
-            train_dir.num_spks, len(num_utt), str(time.asctime()), nj))
+            train_dir.num_spks, len(utts), str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 2))  # 创建nj个进程
         for i in range(0, nj):

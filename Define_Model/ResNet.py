@@ -19,7 +19,7 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm
+from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2, LinearTransform
 
@@ -738,6 +738,8 @@ class LocalResNet(nn.Module):
             self.inst_layer = Inst_Norm(self.input_len)
         elif input_norm == 'Mean':
             self.inst_layer = Mean_Norm()
+        elif input_norm == 'MeanStd':
+            self.inst_layer = MeanStd_Norm()
         else:
             self.inst_layer = None
 
