@@ -919,13 +919,13 @@ if [ $stage -le 64 ]; then
       --resnet-size ${resnet_size} \
       --input-norm Mean \
       --batch-size 256 \
-      --nj 10 \
+      --nj 24 \
       --epochs 16 \
-      --lr 0.01 \
+      --lr 0.1 \
       --input-dim 81 \
       --fast \
       --stride 1 \
-      --milestones 6,12 \
+      --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast/checkpoint_8.pth \
       --channels 16,64,128,256 \
