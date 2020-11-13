@@ -694,7 +694,7 @@ if [ $stage -le 61 ]; then
   python TrainAndTest/Spectrogram/train_egs.py \
     --model ${model} \
     --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
-    --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log \
+    --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
     --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
     --test-dir ${lstm_dir}/data/vox1/spect/test_log \
     --train-trials trials_2w \
@@ -731,7 +731,7 @@ if [ $stage -le 61 ]; then
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
-      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log \
+      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --train-trials trials_2w \
