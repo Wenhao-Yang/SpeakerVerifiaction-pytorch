@@ -19,7 +19,8 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm
+from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer
+from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2, LinearTransform
 
@@ -82,6 +83,52 @@ class SEBasicBlock(nn.Module):
         scale = self.activation(scale).unsqueeze(2).unsqueeze(2)
 
         out = out * scale
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class CBAMBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+                 base_width=64, dilation=1, norm_layer=None, reduction_ratio=16):
+        super(CBAMBlock, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        if groups != 1 or base_width != 64:
+            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+        if dilation > 1:
+            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.bn1 = norm_layer(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = norm_layer(planes)
+        self.downsample = downsample
+        self.stride = stride
+        self.reduction_ratio = reduction_ratio
+
+        # Squeeze-and-Excitation
+        self.CBAM_layer = CBAM()
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out = self.CBAM_layer(out)
 
         out += identity
         out = self.relu(out)
@@ -702,10 +749,10 @@ class LocalResNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, embedding_size, num_classes, input_dim=161, block=BasicBlock, input_len=300,
+    def __init__(self, embedding_size, num_classes, input_dim=161, block_type='basic', input_len=300,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
-                 avg_size=4, kernal_size=5, padding=2, filter=None, **kwargs):
+                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', **kwargs):
 
         super(LocalResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -716,11 +763,20 @@ class LocalResNet(nn.Module):
                        101: [3, 4, 23, 3]}
 
         layers = resnet_type[resnet_size]
+
+        if block_type == "seblock":
+            block = SEBasicBlock
+        elif block_type == 'cbam':
+            block = CBAMBlock
+        else:
+            block = BasicBlock
+
         self.alpha = alpha
         self.layers = layers
         self.dropout_p = dropout_p
         self.transform = transform
         self.fast = fast
+        self.mask = mask
 
         self.embedding_size = embedding_size
         # self.relu = nn.LeakyReLU()
@@ -742,6 +798,18 @@ class LocalResNet(nn.Module):
             self.inst_layer = MeanStd_Norm()
         else:
             self.inst_layer = None
+
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer()
+        elif self.mask == "freq":
+            self.mask = FreqMaskLayer()
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(),
+                FreqMaskLayer()
+            )
+        else:
+            self.mask_layer = None
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=stride, padding=padding)
@@ -863,6 +931,9 @@ class LocalResNet(nn.Module):
 
         if self.inst_layer != None:
             x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
 
         x = self.conv1(x)
         x = self.bn1(x)

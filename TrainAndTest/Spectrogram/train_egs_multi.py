@@ -111,6 +111,9 @@ parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
+
 parser.add_argument('--transform', type=str, default='None', help='add a transform layer after embedding layer')
 
 parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
@@ -321,6 +324,7 @@ def main():
     channels = [int(x) for x in channels]
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
+                    'mask_layer': args.mask_layer, 'block_type': args.block_type,
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,

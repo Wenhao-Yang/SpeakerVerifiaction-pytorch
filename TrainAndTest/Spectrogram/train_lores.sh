@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-stage=65
+stage=61
 
 waited=0
-while [ `ps 23863 | wc -l` -eq 2 ]; do
+while [ `ps 32449 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -688,25 +688,68 @@ if [ $stage -le 61 ]; then
   datasets=vox1
   model=LoResNet
   resnet_size=8
-  for loss in soft arcsoft ; do
+  mask_layer=time_freq
+  loss=soft
+
+  python TrainAndTest/Spectrogram/train_egs.py \
+    --model ${model} \
+    --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+    --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log \
+    --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
+    --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+    --train-trials trials_2w \
+    --input-norm Mean \
+    --feat-format kaldi \
+    --resnet-size ${resnet_size} \
+    --nj 10 \
+    --epochs 20 \
+    --lr 0.1 \
+    --input-dim 161 \
+    --milestones 5,10,15 \
+    --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25 \
+    --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25/checkpoint_12.pth \
+    --alpha 12 \
+    --mask-layer ${mask_layer} \
+    --channels 64,128,256 \
+    --embedding-size 128 \
+    --time-dim 1 \
+    --avg-size 4 \
+    --num-valid 2 \
+    --margin 0.4 \
+    --s 30 \
+    --m 3 \
+    --loss-ratio 0.05 \
+    --weight-decay 0.001 \
+    --dropout-p 0.25 \
+    --gpu-id 0 \
+    --cos-sim \
+    --extract \
+    --loss-type ${loss}
+
+
+  for block_type in seblock cbam ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_power \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_power \
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_power \
-      --log-scale \
+      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log \
+      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+      --train-trials trials_2w \
+      --input-norm Mean \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --nj 10 \
-      --epochs 12 \
+      --epochs 20 \
       --lr 0.1 \
       --input-dim 161 \
-      --milestones 6,10 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_log/${loss}_dp05 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_log/${loss}_dp05/checkpoint_12.pth \
+      --milestones 5,10,15 \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${block_type}/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${block_type}/${loss}_dp25/checkpoint_12.pth \
       --alpha 12 \
-      --channels 4,16,64 \
+      --block-type ${block_type} \
+      --channels 64,128,256 \
       --embedding-size 128 \
+      --time-dim 1 \
       --avg-size 4 \
       --num-valid 2 \
       --margin 0.4 \
@@ -714,15 +757,16 @@ if [ $stage -le 61 ]; then
       --m 3 \
       --loss-ratio 0.05 \
       --weight-decay 0.001 \
-      --dropout-p 0.5 \
+      --dropout-p 0.25 \
       --gpu-id 0 \
       --cos-sim \
       --extract \
       --loss-type ${loss}
   done
+
 fi
 
-#stage=100
+stage=10000
 if [ $stage -le 62 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
