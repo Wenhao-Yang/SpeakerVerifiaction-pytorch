@@ -878,14 +878,14 @@ if [ $stage -le 64 ]; then
       --input-norm Mean \
       --batch-size 256 \
       --nj 24 \
-      --epochs 16 \
-      --lr 0.1 \
+      --epochs 8 \
+      --lr 0.001 \
       --input-dim 81 \
       --fast \
       --stride 1 \
-      --milestones 8,14,20 \
+      --milestones 4 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast/checkpoint_8.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x2/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast/checkpoint_16.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
