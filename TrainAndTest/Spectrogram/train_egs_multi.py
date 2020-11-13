@@ -302,7 +302,15 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    print('Parsed options: {}'.format(vars(args)))
+    opts = vars(args)
+    keys = list(opts.keys())
+    keys.sort()
+
+    options = []
+    for k in keys:
+        options.append("\'%s\': \'%s\'" % (str(k), str(opts[k])))
+
+    print('Parsed options: \n{ %s }' % (', '.join(options)))
     print('Number of Speakers for set A: {}.'.format(train_dir_a.num_spks))
     print('Number of Speakers for set B: {}.\n'.format(train_dir_b.num_spks))
 
@@ -346,7 +354,6 @@ def main():
             print('=> loading checkpoint {}'.format(args.resume))
             checkpoint = torch.load(args.resume)
             start_epoch = checkpoint['epoch']
-
 
             filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
             model_dict = model.state_dict()
@@ -483,6 +490,7 @@ def main():
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
 
+    start_time = time.time()
     for epoch in range(start, end):
         # pdb.set_trace()
         print('\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer), end='')
@@ -508,6 +516,9 @@ def main():
 
         # exit(1)
     writer.close()
+    stop_time = time.time()
+    t = float(start_time - stop_time)
+    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
 
 
 def train(train_loader, model, ce, optimizer, epoch):

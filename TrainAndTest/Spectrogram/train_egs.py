@@ -14,12 +14,12 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
-import sys
-import time
 # Version conflict
 import warnings
 
 import numpy as np
+import sys
+import time
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
@@ -284,7 +284,6 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    start_time = time.time()
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()
@@ -443,6 +442,7 @@ def main():
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
 
+    start_time = time.time()
     for epoch in range(start, end):
         # pdb.set_trace()
         print('\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer), end='')
@@ -458,7 +458,7 @@ def main():
                         'criterion': ce},
                        check_path)
 
-        if epoch % 2 == 1 and epoch != (end - 1):
+        if epoch % 2 == 1 or epoch == (end - 1):
             valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
 
         if epoch in milestones or epoch == (end - 1):
@@ -471,7 +471,7 @@ def main():
     writer.close()
     stop_time = time.time()
     t = float(start_time - stop_time)
-    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start_time)))
+    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
 
 
 
