@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=64
+stage=65
 
 waited=0
 while [ `ps 23863 | wc -l` -eq 2 ]; do
@@ -927,7 +927,7 @@ if [ $stage -le 65 ]; then
       --model ${model} \
       --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v4 \
       --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_dev_8k_v4 \
-      --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v2 \
+      --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v2/trials_dir \
       --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k_v4 \
       --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_valid_8k_v4 \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
@@ -942,8 +942,8 @@ if [ $stage -le 65 ]; then
       --fast \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b192_${alpha}_fast \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b192_${alpha}_fast/checkpoint_29.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast/checkpoint_29.pth \
       --channels 16,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
