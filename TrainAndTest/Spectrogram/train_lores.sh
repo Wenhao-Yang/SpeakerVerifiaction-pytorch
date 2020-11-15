@@ -3,7 +3,7 @@
 stage=61
 
 waited=0
-while [ `ps 32449 | wc -l` -eq 2 ]; do
+while [ `ps 17809 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -691,43 +691,43 @@ if [ $stage -le 61 ]; then
   mask_layer=time_freq
   loss=soft
 
-  python TrainAndTest/Spectrogram/train_egs.py \
-    --model ${model} \
-    --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
-    --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
-    --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
-    --test-dir ${lstm_dir}/data/vox1/spect/test_log \
-    --train-trials trials_2w \
-    --input-norm Mean \
-    --feat-format kaldi \
-    --resnet-size ${resnet_size} \
-    --nj 10 \
-    --epochs 20 \
-    --lr 0.1 \
-    --input-dim 161 \
-    --milestones 5,10,15 \
-    --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25 \
-    --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25/checkpoint_12.pth \
-    --alpha 12 \
-    --mask-layer ${mask_layer} \
-    --channels 64,128,256 \
-    --embedding-size 128 \
-    --time-dim 1 \
-    --avg-size 4 \
-    --num-valid 2 \
-    --margin 0.4 \
-    --s 30 \
-    --m 3 \
-    --loss-ratio 0.05 \
-    --weight-decay 0.001 \
-    --dropout-p 0.25 \
-    --gpu-id 0 \
-    --cos-sim \
-    --extract \
-    --loss-type ${loss}
+  # python TrainAndTest/Spectrogram/train_egs.py \
+  #   --model ${model} \
+  #   --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+  #   --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
+  #   --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
+  #   --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+  #   --train-trials trials_2w \
+  #   --input-norm Mean \
+  #   --feat-format kaldi \
+  #   --resnet-size ${resnet_size} \
+  #   --nj 10 \
+  #   --epochs 20 \
+  #   --lr 0.1 \
+  #   --input-dim 161 \
+  #   --milestones 5,10,15 \
+  #   --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25 \
+  #   --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25/checkpoint_12.pth \
+  #   --alpha 12 \
+  #   --mask-layer ${mask_layer} \
+  #   --channels 64,128,256 \
+  #   --embedding-size 128 \
+  #   --time-dim 1 \
+  #   --avg-size 4 \
+  #   --num-valid 2 \
+  #   --margin 0.4 \
+  #   --s 30 \
+  #   --m 3 \
+  #   --loss-ratio 0.05 \
+  #   --weight-decay 0.001 \
+  #   --dropout-p 0.25 \
+  #   --gpu-id 0 \
+  #   --cos-sim \
+  #   --extract \
+  #   --loss-type ${loss}
 
 
-  for block_type in seblock cbam ; do
+  for block_type in cbam ; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
@@ -766,7 +766,7 @@ if [ $stage -le 61 ]; then
 
 fi
 
-stage=10000
+stage=65
 if [ $stage -le 62 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
@@ -958,7 +958,7 @@ if [ $stage -le 65 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
   model=MultiResNet
-  resnet_size=10
+  resnet_size=18
   loss=soft
   encod=None
   transform=None
