@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=231
+stage=0
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -12,42 +12,65 @@ while [ `ps 13153 | wc -l` -eq 2 ]; do
 done
 
 if [ $stage -le 0 ]; then
-  for name in dev test ; do
-#    python Process_Data/Compute_Feat/make_feat.py \
-#      --nj 16 \
-#      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_fb64/${name} \
-#      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64 \
-#      --out-set ${name}_noc \
-#      --windowsize 0.025 \
-#      --filters 64 \
-#      --feat-type fbank
-
-     python Process_Data/Compute_Feat/make_feat_kaldi.py \
-      --nj 16 \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_fb64/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb \
-      --out-set ${name}_fb24 \
-      --windowsize 0.02 \
-      --nfft 320 \
-      --feat-type fbank \
+  for filters in 40 80 ; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/vox2/dev \
+      --out-dir ${lstm_dir}/data/vox2/pyfb \
+      --out-set dev_fb${filters} \
       --filter-type mel \
-      --filters 24 \
-      --feat-type fbank
-
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
-      --nj 16 \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_fb64/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb \
-      --out-set ${name}_fb40 \
-      --windowsize 0.02 \
-      --nfft 320 \
       --feat-type fbank \
-      --filter-type mel \
-      --filters 40 \
-      --feat-type fbank
+      --filters ${filters} \
+      --log-scale \
+      --feat-format kaldi_cmp \
+      --nfft 512 \
+      --windowsize 0.025 \
+      --nj 12
   done
+
+  for filters in 40 80 ; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/vox2/dev \
+      --out-dir ${lstm_dir}/data/vox2/pyfb \
+      --out-set dev_fb${filters}_new \
+      --filter-type mel.new \
+      --feat-type fbank \
+      --filters ${filters} \
+      --log-scale \
+      --feat-format kaldi_cmp \
+      --nfft 512 \
+      --windowsize 0.025 \
+      --nj 12
+  done
+
+  for s in fb40 fb80 ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox2/pyfb/dev_${s} \
+      --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 224 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --remove-vad \
+      --out-set dev_${s}
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox2/pyfb/dev_${s} \
+      --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
+      --feat-type spectrogram \
+      --input-per-spks 224 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --remove-vad \
+      --out-set valid_${s}
+
+  done
+
 fi
 
+stage=1000
 if [ $stage -le 1 ]; then
   for name in dev test ; do
 #    python Process_Data/Compute_Feat/make_feat.py \
