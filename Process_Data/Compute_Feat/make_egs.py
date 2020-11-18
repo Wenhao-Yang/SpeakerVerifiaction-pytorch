@@ -16,12 +16,12 @@ import argparse
 import os
 import random
 import shutil
+import sys
+import time
 from multiprocessing import Pool, Manager
 
 import kaldi_io
 import numpy as np
-import sys
-import time
 import torch
 from kaldiio import WriteHelper
 from tqdm import tqdm
@@ -31,7 +31,7 @@ from Process_Data.audio_augment.common import RunCommand
 from Process_Data.audio_processing import ConcateInput
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
-parser.add_argument('--nj', type=int, default=6, metavar='E', help='number of jobs to make feats (default: 10)')
+parser.add_argument('--nj', type=int, default=8, metavar='E', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-dir', type=str,
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
