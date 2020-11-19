@@ -286,11 +286,11 @@ if [ $stage -le 50 ]; then
 #  loss=soft
   encod=STAP
 
-  for loss in soft asoft arcsoft amsoft center ; do
+  for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox2/egs/pyfb/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/vox1/pyfb/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/pyfb/dev_fb40/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox2/egs/pyfb/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/pyfb/test_${feat} \
