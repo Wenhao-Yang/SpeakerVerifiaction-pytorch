@@ -14,12 +14,12 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import sys
+import time
 # Version conflict
 import warnings
 
 import numpy as np
-import sys
-import time
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
@@ -474,7 +474,7 @@ def main():
 
     writer.close()
     stop_time = time.time()
-    t = float(start_time - stop_time)
+    t = float(stop_time - start_time)
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
 
 
