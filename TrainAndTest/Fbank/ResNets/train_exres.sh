@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=40
 waited=0
 while [ `ps 75486 | wc -l` -eq 2 ]; do
   sleep 60
@@ -259,13 +259,14 @@ if [ $stage -le 40 ]; then
       --accu-steps 1 \
       --feat-dim 64 \
       --time-dim 1 \
+      --fast \
       --dropout-p 0.25 \
       --avg-size 1 \
       --kernel-size 5,5 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_dp25 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_dp25/checkpoint_22.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_dp25_fast \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_dp25_fast/checkpoint_22.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
