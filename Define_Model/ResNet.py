@@ -370,7 +370,6 @@ class ThinResNet(nn.Module):
             self.encoder = None
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3] * freq_dim * time_dim, embedding_size),
-                nn.ReLU(inplace=True),
                 nn.BatchNorm1d(embedding_size)
             )
 

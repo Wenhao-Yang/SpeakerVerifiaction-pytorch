@@ -265,8 +265,8 @@ if [ $stage -le 40 ]; then
       --kernel-size 5,5 \
       --lr 0.1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}_ReLU/${loss}_dp25_fast \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}_ReLU/${loss}_dp25_fast/checkpoint_22.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_dp25_fast \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_dp25_fast/checkpoint_22.pth \
       --input-per-spks 384 \
       --cos-sim \
       --veri-pairs 9600 \
@@ -278,7 +278,7 @@ if [ $stage -le 40 ]; then
   done
 fi
 
-stage=1000
+#stage=1000
 if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   model=ThinResNet
