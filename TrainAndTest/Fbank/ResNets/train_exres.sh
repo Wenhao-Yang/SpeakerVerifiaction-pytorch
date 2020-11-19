@@ -302,7 +302,7 @@ if [ $stage -le 50 ]; then
       --stride 1 \
       --feat-format kaldi \
       --embedding-size 128 \
-      --batch-size 128 \
+      --batch-size 256 \
       --accu-steps 1 \
       --feat-dim 40 \
       --time-dim 1 \
