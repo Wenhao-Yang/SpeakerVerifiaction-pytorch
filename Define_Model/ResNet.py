@@ -289,6 +289,7 @@ class ThinResNet(nn.Module):
         self.dilation = 1
         self.fast = fast
         num_filter = [16, 32, 64, 128]
+        # num_filter = [32, 64, 128, 256]
 
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
@@ -318,6 +319,7 @@ class ThinResNet(nn.Module):
         self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
+
         if self.fast:
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
             self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
@@ -368,6 +370,7 @@ class ThinResNet(nn.Module):
             self.encoder = None
             self.fc1 = nn.Sequential(
                 nn.Linear(num_filter[3] * freq_dim * time_dim, embedding_size),
+                nn.ReLU(inplace=True),
                 nn.BatchNorm1d(embedding_size)
             )
 
