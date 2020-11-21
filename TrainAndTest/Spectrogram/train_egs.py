@@ -530,6 +530,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             raise ValueError('Loss value is NaN!')
 
         # compute gradient and update weights
+        loss.backward()
         if ((batch_idx + 1) % args.accu_steps) == 0:
             # optimizer the net
             optimizer.step()  # update parameters of net
@@ -548,7 +549,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                 this_lr = min(param_group['lr'], this_lr)
             torch.nn.utils.clip_grad_norm_(model.parameters(), this_lr * args.grad_clip)
 
-        optimizer.step()
+        # optimizer.step()
 
         if batch_idx % args.log_interval == 0:
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
