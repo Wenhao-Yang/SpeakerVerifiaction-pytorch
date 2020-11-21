@@ -351,7 +351,7 @@ if [ $stage -le 50 ]; then
       --resnet-size ${resnet_size} \
       --relu-type ${relu_type} \
       --nj 10 \
-      --epochs 1 \
+      --epochs 24 \
       --lr 0.1 \
       --milestones 5,10,15 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${relu_type} \
