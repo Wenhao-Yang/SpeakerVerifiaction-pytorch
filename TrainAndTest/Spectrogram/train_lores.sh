@@ -1022,6 +1022,8 @@ if [ $stage -le 80 ]; then
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
+      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
+      --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
