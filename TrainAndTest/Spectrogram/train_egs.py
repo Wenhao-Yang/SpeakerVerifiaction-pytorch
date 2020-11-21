@@ -530,8 +530,12 @@ def train(train_loader, model, ce, optimizer, epoch):
             raise ValueError('Loss value is NaN!')
 
         # compute gradient and update weights
-        optimizer.zero_grad()
-        loss.backward()
+        if ((batch_idx + 1) % args.accu_steps) == 0:
+            # optimizer the net
+            optimizer.step()  # update parameters of net
+            optimizer.zero_grad()  # reset gradient
+        # optimizer.zero_grad()
+        # loss.backward()
 
         if args.loss_ratio != 0:
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:

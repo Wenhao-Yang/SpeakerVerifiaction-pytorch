@@ -1031,6 +1031,7 @@ if [ $stage -le 80 ]; then
       --resnet-size ${resnet_size} \
       --nj 10 \
       --epochs 24 \
+      --accu-steps 2 \
       --lr 0.1 \
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_fast \
