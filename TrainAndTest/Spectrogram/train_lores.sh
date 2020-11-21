@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=50
 
 waited=0
 while [ `ps 17809 | wc -l` -eq 2 ]; do
@@ -334,8 +334,9 @@ if [ $stage -le 50 ]; then
   resnet_size=8
   encod=None
   transform=None
+  relu_type=relu6
 
-  for loss in asoft ; do
+  for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -348,12 +349,13 @@ if [ $stage -le 50 ]; then
       --input-norm Mean \
       --transform None \
       --resnet-size ${resnet_size} \
+      --relu-type ${relu_type} \
       --nj 10 \
       --epochs 1 \
       --lr 0.1 \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${transform} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${transform}/checkpoint_20.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${relu_type} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${relu_type}/checkpoint_20.pth \
       --channels 64,128,256 \
       --kernel-size 5,5 \
       --stride 2 \
@@ -412,7 +414,7 @@ if [ $stage -le 50 ]; then
 
 fi
 
-#stage=6300
+stage=80
 
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
