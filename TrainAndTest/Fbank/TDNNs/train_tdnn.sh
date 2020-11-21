@@ -223,7 +223,7 @@ fi
 
 if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  model=ETDNN
+  model=ETDNN_v4
   datasets=vox2
   feat=fb40
   loss=soft

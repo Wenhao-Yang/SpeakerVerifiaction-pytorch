@@ -21,7 +21,7 @@ from tqdm import tqdm
 from Define_Model.CNN import AlexNet
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.TDNN import ASTDNN, TDNN_v2, ETDNN
+from Define_Model.TDNN import ASTDNN, TDNN_v2, ETDNN_v4
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 
@@ -68,6 +68,7 @@ __factory = {
     'ASTDNN': ASTDNN,
     'TDNN': TDNN_v2,
     'ETDNN': ETDNN,
+    'ETDNN_v4': ETDNN_v4,
     'GradResNet': GradResNet,
     'TimeFreqResNet': TimeFreqResNet
 }
