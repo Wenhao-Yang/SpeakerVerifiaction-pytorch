@@ -476,6 +476,7 @@ class TDNN_v2(nn.Module):
 
         return logits, embedding_b
 
+
 class ASTDNN(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim=24, dropout_p=0.0, **kwargs):
         super(ASTDNN, self).__init__()
@@ -707,8 +708,6 @@ class ETDNN_v4(nn.Module):
             if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
-            elif isinstance(m, TimeDelayLayer_v2):
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='leaky_relu')
 
     # def statistic_pooling(self, x):
     #     mean_x = x.mean(dim=1)
@@ -721,7 +720,7 @@ class ETDNN_v4(nn.Module):
         self.dropout_p = dropout_p
 
         for m in self.modules():
-            if isinstance(m, TimeDelayLayer_v2):
+            if isinstance(m, ETDNN_v4):
                 m.set_dropout(dropout_p)
 
     def forward(self, x):

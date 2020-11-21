@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=61
+stage=80
 
 waited=0
 while [ `ps 17809 | wc -l` -eq 2 ]; do
@@ -766,7 +766,7 @@ if [ $stage -le 61 ]; then
 
 fi
 
-stage=65
+#stage=65
 if [ $stage -le 62 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
@@ -1011,12 +1011,12 @@ if [ $stage -le 65 ]; then
   done
 fi
 
-stage=10000
+#stage=10000
 if [ $stage -le 80 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
   model=LoResNet
-  resnet_size=10
+  resnet_size=18
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -1028,18 +1028,20 @@ if [ $stage -le 80 ]; then
       --input-norm Mean \
       --resnet-size ${resnet_size} \
       --nj 10 \
-      --epochs 20 \
+      --epochs 24 \
       --lr 0.1 \
-      --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
+      --milestones 8,14,20 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_fast \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_fast/checkpoint_24.pth \
       --channels 16,64,128,256 \
+      --fast \
+      --stride 1 \
       --batch-size 256 \
       --embedding-size 128 \
+      --time-dim 1 \
       --avg-size 4 \
-      --num-center 2 \
       --num-valid 2 \
-      --alpha 12 \
+      --alpha 13 \
       --margin 0.3 \
       --grad-clip 0 \
       --s 15 \
