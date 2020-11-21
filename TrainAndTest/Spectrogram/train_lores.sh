@@ -1039,7 +1039,7 @@ if [ $stage -le 80 ]; then
       --channels 16,64,128,256 \
       --fast \
       --stride 1 \
-      --batch-size 256 \
+      --batch-size 128 \
       --embedding-size 128 \
       --time-dim 1 \
       --avg-size 4 \
