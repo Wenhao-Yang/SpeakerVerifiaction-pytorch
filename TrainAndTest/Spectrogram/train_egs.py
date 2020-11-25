@@ -210,8 +210,8 @@ args = parser.parse_args()
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
-os.environ['MASTER_ADDR'] = '127.0.0.1'
-os.environ['MASTER_PORT'] = '29555'
+# os.environ['MASTER_ADDR'] = '127.0.0.1'
+# os.environ['MASTER_PORT'] = '29555'
 
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 np.random.seed(args.seed)
@@ -441,7 +441,8 @@ def main():
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
-            torch.distributed.init_process_group(backend="nccl", rank=0, world_size=1)
+            torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:23456', rank=0,
+                                                 world_size=1)
             model = model.cuda()
             model = DistributedDataParallel(model)
 
