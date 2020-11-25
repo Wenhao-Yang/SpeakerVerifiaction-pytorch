@@ -27,6 +27,7 @@ import torchvision.transforms as transforms
 from kaldi_io import read_mat, read_vec_flt
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
+from torch.nn.parallel import DistributedDataParallel
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
@@ -438,14 +439,14 @@ def main():
     #                                               **kwargs)
 
     if args.cuda:
-        # if len(args.gpu_id) > 1:
-        #     print("Continue with gpu: %s ..." % str(args.gpu_id))
-        #     torch.distributed.init_process_group(backend="nccl", rank=0, world_size=8)
-        #     model = model.cuda()
-        #     model = DistributedDataParallel(model)
-        #
-        # else:
-        model = model.cuda()
+        if len(args.gpu_id) > 1:
+            print("Continue with gpu: %s ..." % str(args.gpu_id))
+            torch.distributed.init_process_group(backend="nccl", rank=0, world_size=1)
+            model = model.cuda()
+            model = DistributedDataParallel(model)
+
+        else:
+            model = model.cuda()
 
         for i in range(len(ce)):
             if ce[i] != None:
@@ -563,7 +564,7 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         # optimizer.step()
 
-        if batch_idx % args.log_interval == 0:
+        if (batch_idx + 1) % args.log_interval == 0:
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 pbar.set_description(
                     'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)] Center Loss: {:.4f} Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(

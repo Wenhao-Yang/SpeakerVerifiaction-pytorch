@@ -256,7 +256,8 @@ if [ $stage -le 50 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type soft \
-      --remove-vad
+      --remove-vad \
+      --log-interval 1
 
   done
 fi
