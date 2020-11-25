@@ -27,7 +27,6 @@ import torchvision.transforms as transforms
 from kaldi_io import read_mat, read_vec_flt
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
-from torch.nn.parallel import DistributedDataParallel
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
@@ -439,14 +438,14 @@ def main():
     #                                               **kwargs)
 
     if args.cuda:
-        if len(args.gpu_id) > 1:
-            print("Continue with gpu: %s ..." % str(args.gpu_id))
-            torch.distributed.init_process_group(backend="nccl", rank=0, world_size=8)
-            model = model.cuda()
-            model = DistributedDataParallel(model)
-
-        else:
-            model = model.cuda()
+        # if len(args.gpu_id) > 1:
+        #     print("Continue with gpu: %s ..." % str(args.gpu_id))
+        #     torch.distributed.init_process_group(backend="nccl", rank=0, world_size=8)
+        #     model = model.cuda()
+        #     model = DistributedDataParallel(model)
+        #
+        # else:
+        model = model.cuda()
 
         for i in range(len(ce)):
             if ce[i] != None:
