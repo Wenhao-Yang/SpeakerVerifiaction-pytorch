@@ -438,6 +438,7 @@ def main():
 
     if args.cuda:
         if len(args.gpu_id) > 1:
+            torch.distributed.init_process_group(backend="nccl", rank=0)
             model = model.cuda()
             model = DistributedDataParallel(model)
 
