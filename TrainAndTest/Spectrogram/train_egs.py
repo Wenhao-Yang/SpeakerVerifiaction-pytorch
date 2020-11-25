@@ -210,6 +210,7 @@ args = parser.parse_args()
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
+os.environ['MASTER_ADDR'] = '127.0.0.1'
 
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 np.random.seed(args.seed)
