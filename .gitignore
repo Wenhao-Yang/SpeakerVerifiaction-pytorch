@@ -19,3 +19,4 @@ Lime/SuResCNN10/data
 *.pickle
 *.egs
 *.eps
+*.local
