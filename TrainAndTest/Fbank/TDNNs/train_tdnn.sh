@@ -236,7 +236,7 @@ if [ $stage -le 50 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox2/egs/pyfb/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/pyfb/test_${feat} \
-      --nj 10 \
+      --nj 8 \
       --epochs 24 \
       --milestones 8,14,10 \
       --model ${model} \
