@@ -86,7 +86,6 @@ def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
     sample_rate, audio = wavfile.read(filename)
     # audio, sr = librosa.load(filename, sr=None, mono=True)
     #audio = audio.flatten()
-
     filter_banks, energies = fbank(audio,
                                    samplerate=sample_rate,
                                    nfilt=nfilt,
@@ -229,7 +228,7 @@ def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT
 
 def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
                bandpass=False, lowfreq=0, highfreq=0, log_scale=True,
-               preemph=0.97, duration=False, nfft=None, normalize=True):
+               preemph=0.97, duration=False, nfft=None, normalize=False):
     """
     read wav as float type. [-1.0 ,1.0]
     :param wav_path:

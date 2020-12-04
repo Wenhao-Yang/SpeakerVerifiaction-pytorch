@@ -46,7 +46,7 @@ ymore = ymore / ymore.sum()
 # pdf = PdfPages('Lime/LoResNet8/timit/soft/grad_filter_noedge.pdf')
 plt.rc('font', family='Times New Roman')
 
-fig = plt.figure(figsize=(8, 2.4), tight_layout=True)
+fig = plt.figure(figsize=(6, 4.5), tight_layout=True)
 
 # style.use('grayscale')
 # ax.set_title('Resolution')
@@ -75,7 +75,7 @@ plt.subplots_adjust(left=0, bottom=0, right=1, top=1)
 plt.savefig('Lime/LoResNet8/timit/soft/grad.eps', format='eps')
 plt.show()
 
-plt.figure(figsize=(8, 1.5), tight_layout=True)
+plt.figure(figsize=(6, 1.5), tight_layout=True)
 for m in mel:
     plt.plot(xnew, m, color='#1f77b4', linewidth=0.8)
 plt.ylabel('Weight', fontsize=12)
@@ -88,7 +88,7 @@ plt.savefig('Lime/LoResNet8/timit/soft/mel.eps', format='eps')
 plt.show()
 # ax.set_xticks([])
 
-plt.figure(figsize=(8, 1.5), tight_layout=True)
+plt.figure(figsize=(6, 1.5), tight_layout=True)
 for m in timit_soft:
     plt.plot(x, m, color='#2ca02c', linewidth=0.8)
 # plt.set_title('c) Gradient filters')

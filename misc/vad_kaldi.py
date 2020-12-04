@@ -16,7 +16,7 @@ fbank = [[11.30155,7.426883,7.845997,7.99485,7.307938,6.258844,6.115716,5.120122
 fbnp = np.array(fbank)
 print(fbnp.shape)
 
-from Process_Data.compute_vad import ComputeVadEnergy
+from Process_Data.Compute_Feat.compute_vad import ComputeVadEnergy
 vad = []
 ComputeVadEnergy(fbnp, vad)
 print(np.sum(vad)/len(vad))
