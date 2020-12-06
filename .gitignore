@@ -1,6 +1,5 @@
 __pycache__
 .idea
-misc
 TrainAndTest/data
 __init__.py
 Log/
@@ -20,3 +19,5 @@ Lime/SuResCNN10/data
 *.egs
 *.eps
 *.local
+misc/.ipynb_checkpoints
+misc/data
