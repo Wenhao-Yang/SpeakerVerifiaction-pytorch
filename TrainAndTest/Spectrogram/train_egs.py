@@ -119,7 +119,7 @@ parser.add_argument('--vad', action='store_true', default=False, help='vad layer
 parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
 parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
-parser.add_argument('--encoder-type', type=str, default='SAP', help='path to voxceleb1 test dataset')
+parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
