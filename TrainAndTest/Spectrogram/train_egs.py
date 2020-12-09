@@ -331,7 +331,7 @@ def main():
 
     print('Model options: {}'.format(model_kwargs))
     dist_type = 'cos' if args.cos_sim else 'l2'
-    print('Testin with %s distance, ' % dist_type)
+    print('Testing with %s distance, ' % dist_type)
 
     model = create_model(args.model, **model_kwargs)
 

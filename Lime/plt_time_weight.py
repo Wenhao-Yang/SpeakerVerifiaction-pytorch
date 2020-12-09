@@ -24,21 +24,25 @@ time_data = np.load('Lime/LoResNet8/timit/soft/time.data.pickle')
 data = time_data[0][0]
 grad = time_data[0][1]
 
-fig = plt.figure(figsize=(6,2))
+fig = plt.figure(figsize=(8,6))
 
 fig.tight_layout()  # 调整整体空白
 plt.subplots_adjust(left=0, bottom=0, right=1, top=1, hspace=0, wspace=0)
 
-# plt.subplot(211)
+
+ax = plt.subplot(312)
 plt.imshow(data.transpose(), aspect='auto')
+ax.set_title('Log Spectrogram')
 
-# plt.subplot(412)
-# plt.plot(np.abs(data).mean(axis=1)/np.abs(data).mean(axis=1).sum())
-# plt.xlim(0, 320)
+ax = plt.subplot(311)
+plt.plot(np.log(np.exp(data).sum(axis=1)))
+plt.xlim(0, 320)
+ax.set_title('Log Power Energy')
 
-# plt.subplot(212)
-# plt.plot(np.abs(grad).mean(axis=1)/np.abs(grad).mean(axis=1).sum())
-# plt.xlim(0, 320)
+ax = plt.subplot(313)
+plt.plot(np.abs(grad).mean(axis=1)/np.abs(grad).mean(axis=1).sum())
+plt.xlim(0, 320)
+ax.set_title('Gradient along time axis')
 
 
 # plt.subplot(414)
