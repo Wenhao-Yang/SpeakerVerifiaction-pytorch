@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=61
 
 waited=0
 while [ `ps 17809 | wc -l` -eq 2 ]; do
@@ -414,7 +414,7 @@ if [ $stage -le 50 ]; then
 
 fi
 
-stage=80
+#stage=80
 
 if [ $stage -le 51 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
@@ -690,43 +690,43 @@ if [ $stage -le 61 ]; then
   datasets=vox1
   model=LoResNet
   resnet_size=8
-  mask_layer=time_freq
+  mask_layer=None
   loss=soft
 
-  # python TrainAndTest/Spectrogram/train_egs.py \
-  #   --model ${model} \
-  #   --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
-  #   --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
-  #   --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
-  #   --test-dir ${lstm_dir}/data/vox1/spect/test_log \
-  #   --train-trials trials_2w \
-  #   --input-norm Mean \
-  #   --feat-format kaldi \
-  #   --resnet-size ${resnet_size} \
-  #   --nj 10 \
-  #   --epochs 20 \
-  #   --lr 0.1 \
-  #   --input-dim 161 \
-  #   --milestones 5,10,15 \
-  #   --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25 \
-  #   --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25/checkpoint_12.pth \
-  #   --alpha 12 \
-  #   --mask-layer ${mask_layer} \
-  #   --channels 64,128,256 \
-  #   --embedding-size 128 \
-  #   --time-dim 1 \
-  #   --avg-size 4 \
-  #   --num-valid 2 \
-  #   --margin 0.4 \
-  #   --s 30 \
-  #   --m 3 \
-  #   --loss-ratio 0.05 \
-  #   --weight-decay 0.001 \
-  #   --dropout-p 0.25 \
-  #   --gpu-id 0 \
-  #   --cos-sim \
-  #   --extract \
-  #   --loss-type ${loss}
+   python TrainAndTest/Spectrogram/train_egs.py \
+     --model ${model} \
+     --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+     --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
+     --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
+     --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+     --train-trials trials_2w \
+     --input-norm Mean \
+     --feat-format kaldi \
+     --resnet-size ${resnet_size} \
+     --nj 10 \
+     --epochs 20 \
+     --lr 0.1 \
+     --input-dim 161 \
+     --milestones 5,10,15 \
+     --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25 \
+     --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25/checkpoint_12.pth \
+     --alpha 12 \
+     --mask-layer ${mask_layer} \
+     --channels 64,128,256 \
+     --embedding-size 128 \
+     --time-dim 1 \
+     --avg-size 4 \
+     --num-valid 2 \
+     --margin 0.4 \
+     --s 30 \
+     --m 3 \
+     --loss-ratio 0.05 \
+     --weight-decay 0.001 \
+     --dropout-p 0.25 \
+     --gpu-id 0 \
+     --cos-sim \
+     --extract \
+     --loss-type ${loss}
 
 
   for block_type in cbam ; do
@@ -768,7 +768,7 @@ if [ $stage -le 61 ]; then
 
 fi
 
-#stage=65
+stage=650
 if [ $stage -le 62 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
