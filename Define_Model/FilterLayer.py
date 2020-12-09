@@ -200,15 +200,15 @@ class FreqMaskLayer(nn.Module):
 
 class CBAM(nn.Module):
     # input should be like [Batch, channel, time, frequency]
-    def __init__(self, time_freq='both'):
+    def __init__(self, inplanes, planes, time_freq='both'):
         super(CBAM, self).__init__()
         self.time_freq = time_freq
         self.activation = nn.Sigmoid()
 
-        self.cov_t = nn.Conv2d(1,1,kernel_size=(7, 1), stride=1)
+        self.cov_t = nn.Conv2d(inplanes, planes, kernel_size=(7, 1), stride=1)
         self.avg_t = nn.AdaptiveAvgPool2d((None, 1))
 
-        self.cov_f = nn.Conv2d(1,1,kernel_size=(1, 7), stride=1)
+        self.cov_f = nn.Conv2d(inplanes, planes, kernel_size=(1, 7), stride=1)
         self.avg_f = nn.AdaptiveAvgPool2d((1, None))
 
     def forward(self, input):

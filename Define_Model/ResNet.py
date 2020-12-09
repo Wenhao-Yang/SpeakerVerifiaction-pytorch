@@ -113,7 +113,7 @@ class CBAMBlock(nn.Module):
         self.reduction_ratio = reduction_ratio
 
         # Squeeze-and-Excitation
-        self.CBAM_layer = CBAM()
+        self.CBAM_layer = CBAM(inplanes, planes)
 
     def forward(self, x):
         identity = x
