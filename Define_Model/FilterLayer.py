@@ -206,10 +206,10 @@ class CBAM(nn.Module):
         self.activation = nn.Sigmoid()
 
         self.cov_t = nn.Conv2d(1,1,kernel_size=(7, 1), stride=1)
-        self.avg_t = nn.AdaptiveAvgPool2d(None, 1)
+        self.avg_t = nn.AdaptiveAvgPool2d((None, 1))
 
         self.cov_f = nn.Conv2d(1,1,kernel_size=(1, 7), stride=1)
-        self.avg_f = nn.AdaptiveAvgPool2d(1, None)
+        self.avg_f = nn.AdaptiveAvgPool2d((1, None))
 
     def forward(self, input):
         t_output = self.avg_t(input)
