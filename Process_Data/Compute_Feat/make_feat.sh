@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=1
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -71,9 +71,8 @@ if [ $stage -le 0 ]; then
 
 fi
 
-stage=1000
+#stage=1000
 if [ $stage -le 1 ]; then
-  for name in dev test ; do
 #    python Process_Data/Compute_Feat/make_feat.py \
 #      --nj 16 \
 #      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_fb64/${name} \
@@ -92,21 +91,33 @@ if [ $stage -le 1 ]; then
 #      --nfft 320 \
 #      --feat-type spectrogram
 
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
-      --nj 16 \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_fb64/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb \
-      --out-set ${name}_dfb24_soft \
-      --windowsize 0.02 \
-      --nfft 320 \
-      --feat-type fbank \
-      --filter-type dnn.vox1.soft \
-      --filters 24 \
-      --feat-type fbank
-  done
-fi
+  for s in kaldi pitch ; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox1/pyfb/dev_fb24_${s} \
+      --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
+      --feat-type spectrogram \
+      --train \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --out-set dev_fb24_${s}
 
-#stage=100
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox1/pyfb/dev_fb24_${s} \
+      --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
+      --feat-type spectrogram \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --out-set valid_fb24_${s}
+
+  done
+
+fi
+exit
+stage=1000
 
 if [ $stage -le 2 ]; then
   for name in dev test ; do
