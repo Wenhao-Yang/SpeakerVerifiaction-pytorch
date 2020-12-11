@@ -464,12 +464,12 @@ def main():
     start_time = time.time()
     for epoch in range(start, end):
         # pdb.set_trace()
-        print('\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer), end='')
+        lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
         for param_group in optimizer.param_groups:
-            print('{:.5f} '.format(param_group['lr']), end='')
-        print(' \33[0m')
+            lr_string += '{:.5f} '.format(param_group['lr'])
+        print('%s \33[0m' % lr_string)
 
-        train(train_loader, model, ce, optimizer, epoch)
+        # train(train_loader, model, ce, optimizer, epoch)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
@@ -496,7 +496,6 @@ def main():
     stop_time = time.time()
     t = float(stop_time - start_time)
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
-
 
 
 def train(train_loader, model, ce, optimizer, epoch):
@@ -613,6 +612,7 @@ def valid_class(valid_loader, model, ce, epoch):
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
             data = data.cuda()
+            label = label.cuda()
 
             # compute output
             out, feats = model(data)
@@ -620,8 +620,6 @@ def valid_class(valid_loader, model, ce, epoch):
                 predicted_labels, _ = out
             else:
                 predicted_labels = out
-
-            true_labels = label.cuda()
 
             classfier = predicted_labels
             if args.loss_type == 'soft':
@@ -642,7 +640,7 @@ def valid_class(valid_loader, model, ce, epoch):
             predicted_one_labels = softmax(predicted_labels)
             predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
 
-            batch_correct = (predicted_one_labels.cuda() == true_labels.cuda()).sum().item()
+            batch_correct = (predicted_one_labels.cuda() == label).sum().item()
             correct += batch_correct
             total_datasize += len(predicted_one_labels)
 
@@ -651,10 +649,10 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
-    print('Valid Epoch {}: \33[91mValid Accuracy is {:.6f}%.\33[0m'.format(epoch, valid_accuracy))
+    print('Valid Epoch {}: \33[91mValid Accuracy is {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(epoch, valid_accuracy,
+                                                                                             valid_loss))
 
     return valid_loss
-
 
 def valid_test(train_extract_loader, model, epoch, xvector_dir):
     # switch to evaluate mode
