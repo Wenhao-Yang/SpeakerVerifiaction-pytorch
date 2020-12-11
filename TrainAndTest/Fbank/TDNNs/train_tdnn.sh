@@ -225,27 +225,27 @@ if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   model=ETDNN_v4
   datasets=vox2
-  feat=fb40
+  feat=fb24_kaldi
   loss=soft
 
   for encod in STAP ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
-      --train-dir ${lstm_dir}/data/vox2/egs/pyfb/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/vox1/pyfb/dev_fb40/trials_dir \
+      --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/pyfb/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/vox2/egs/pyfb/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/vox1/egs/pyfb/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/pyfb/test_${feat} \
       --nj 8 \
       --epochs 24 \
-      --milestones 8,14,10 \
+      --milestones 8,14,20 \
       --model ${model} \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size 128 \
-      --batch-size 256 \
+      --batch-size 128 \
       --accu-steps 1 \
-      --input-dim 40 \
+      --input-dim 24 \
       --lr 0.1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat}_${encod}/${loss} \
@@ -253,7 +253,7 @@ if [ $stage -le 50 ]; then
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
-      --gpu-id 0,1 \
+      --gpu-id 0 \
       --num-valid 2 \
       --loss-type soft \
       --remove-vad \
