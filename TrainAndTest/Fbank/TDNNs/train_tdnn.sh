@@ -2,7 +2,7 @@
 
 stage=50
 waited=0
-while [ `ps 103374 | wc -l` -eq 2 ]; do
+while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -10,14 +10,14 @@ done
 
 if [ $stage -le 0 ]; then
   model=ETDNN
-  for loss in soft ; do
+  for loss in soft; do
     python TrainAndTest/Fbank/TDNNs/train_etdnn_kaldi.py \
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb80/dev_kaldi \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb80/test_kaldi \
       --check-path Data/checkpoint/${model}/fbank80/soft \
       --resume Data/checkpoint/${model}/fbank80/soft/checkpoint_1.pth
-      --epochs 20 \
-      --milestones 10,15  \
+    --epochs 20 \
+      --milestones 10,15 \
       --feat-dim 80 \
       --embedding-size 256 \
       --num-valid 2 \
@@ -31,7 +31,7 @@ fi
 if [ $stage -le 5 ]; then
   model=TDNN
   feat=fb40
-  for loss in soft ; do
+  for loss in soft; do
     python TrainAndTest/Fbank/TDNNs/train_tdnn_var.py \
       --model ${model} \
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40 \
@@ -41,7 +41,7 @@ if [ $stage -le 5 ]; then
       --batch-size 64 \
       --remove-vad \
       --epochs 16 \
-      --milestones 8,12  \
+      --milestones 8,12 \
       --feat-dim 40 \
       --embedding-size 128 \
       --weight-decay 0.0005 \
@@ -58,21 +58,21 @@ fi
 if [ $stage -le 10 ]; then
   model=ASTDNN
   feat=fb40_wcmvn
-  for loss in soft ; do
-#    python TrainAndTest/Fbank/TDNNs/train_astdnn_kaldi.py \
-#      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
-#      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
-#      --check-path Data/checkpoint/${model}/${feat}/${loss} \
-#      --resume Data/checkpoint/${model}/${feat}/${loss}/checkpoint_1.pth \
-#      --epochs 18 \
-#      --batch-size 128 \
-#      --milestones 9,14  \
-#      --feat-dim 40 \
-#      --embedding-size 128 \
-#      --num-valid 2 \
-#      --loss-type ${loss} \
-#      --input-per-spks 240 \
-#      --lr 0.01
+  for loss in soft; do
+    #    python TrainAndTest/Fbank/TDNNs/train_astdnn_kaldi.py \
+    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
+    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
+    #      --check-path Data/checkpoint/${model}/${feat}/${loss} \
+    #      --resume Data/checkpoint/${model}/${feat}/${loss}/checkpoint_1.pth \
+    #      --epochs 18 \
+    #      --batch-size 128 \
+    #      --milestones 9,14  \
+    #      --feat-dim 40 \
+    #      --embedding-size 128 \
+    #      --num-valid 2 \
+    #      --loss-type ${loss} \
+    #      --input-per-spks 240 \
+    #      --lr 0.01
 
     python TrainAndTest/Fbank/TDNNs/train_tdnn_var.py \
       --model ASTDNN \
@@ -82,7 +82,7 @@ if [ $stage -le 10 ]; then
       --resume Data/checkpoint/${model}/${feat}/${loss}_svar/checkpoint_1.pth \
       --epochs 18 \
       --batch-size 128 \
-      --milestones 9,14  \
+      --milestones 9,14 \
       --feat-dim 40 \
       --remove-vad \
       --embedding-size 512 \
@@ -106,19 +106,19 @@ if [ $stage -le 10 ]; then
       --gpu-id 1
 
     python Lime/output_extract.py \
-    --model ASTDNN \
-    --start-epochs 18 \
-    --epochs 18 \
-    --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
-    --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
-    --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
-    --loss-type soft \
-    --remove-vad \
-    --check-path Data/checkpoint/${model}/${feat}/${loss}_svar \
-    --extract-path Data/gradient/${model}/${feat}/${loss}_svar \
-    --gpu-id 1 \
-    --embedding-size 512 \
-    --sample-utt 5000
+      --model ASTDNN \
+      --start-epochs 18 \
+      --epochs 18 \
+      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
+      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
+      --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
+      --loss-type soft \
+      --remove-vad \
+      --check-path Data/checkpoint/${model}/${feat}/${loss}_svar \
+      --extract-path Data/gradient/${model}/${feat}/${loss}_svar \
+      --gpu-id 1 \
+      --embedding-size 512 \
+      --sample-utt 5000
   done
 fi
 
@@ -126,7 +126,7 @@ fi
 if [ $stage -le 15 ]; then
   model=ETDNN
   feat=fb80
-  for loss in soft ; do
+  for loss in soft; do
     python TrainAndTest/Fbank/TDNNs/train_tdnn_kaldi.py \
       --model ${model} \
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb80 \
@@ -136,7 +136,7 @@ if [ $stage -le 15 ]; then
       --batch-size 128 \
       --remove-vad \
       --epochs 20 \
-      --milestones 10,14  \
+      --milestones 10,14 \
       --feat-dim 80 \
       --embedding-size 128 \
       --weight-decay 0.0005 \
@@ -153,7 +153,7 @@ fi
 if [ $stage -le 16 ]; then
   model=ETDNN
   feat=fb80
-  for loss in amsoft center ; do
+  for loss in amsoft center; do
     python TrainAndTest/Fbank/TDNNs/train_tdnn_kaldi.py \
       --model ${model} \
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb80 \
@@ -164,7 +164,7 @@ if [ $stage -le 16 ]; then
       --remove-vad \
       --epochs 30 \
       --finetune \
-      --milestones 6  \
+      --milestones 6 \
       --feat-dim 80 \
       --embedding-size 128 \
       --weight-decay 0.0005 \
@@ -189,7 +189,7 @@ if [ $stage -le 40 ]; then
   feat=fb40
   loss=soft
 
-  for encod in SASP ; do
+  for encod in SASP; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
@@ -225,10 +225,10 @@ if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   model=ETDNN_v4
   datasets=vox1
-  feat=fb24_kaldi
+  feat=fb24_pitch
   loss=soft
 
-  for encod in STAP ; do
+  for encod in STAP; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
@@ -240,12 +240,13 @@ if [ $stage -le 50 ]; then
       --epochs 24 \
       --milestones 8,14,20 \
       --model ${model} \
+      --scheduler rop \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
-      --input-dim 24 \
+      --input-dim 25 \
       --lr 0.1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat}_${encod}/${loss} \

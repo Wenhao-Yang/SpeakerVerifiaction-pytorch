@@ -16,12 +16,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tqdm import tqdm
 
 from Define_Model.CNN import AlexNet
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.TDNN import ASTDNN, TDNN_v2, ETDNN_v4, ETDNN
+from Define_Model.TDNN import ASTDNN, TDNN_v2, ETDNN_v4, ETDNN, TDNN_v4
 from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 
@@ -67,6 +66,7 @@ __factory = {
     'ResNet': ResNet,
     'ASTDNN': ASTDNN,
     'TDNN': TDNN_v2,
+    'TDNN_v4': TDNN_v4,
     'ETDNN': ETDNN,
     'ETDNN_v4': ETDNN_v4,
     'GradResNet': GradResNet,
@@ -112,10 +112,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
         os.makedirs(xvector_dir)
         # print('Creating xvector path: %s' % xvector_dir)
 
-    pbar = tqdm(enumerate(extract_loader))
+    # pbar = tqdm(enumerate(extract_loader))
     uid2vectors = {}
     with torch.no_grad():
-        for batch_idx, (data, uid) in pbar:
+        for batch_idx, (data, uid) in enumerate(extract_loader):
             vec_shape = data.shape
 
             if vec_shape[1] != 1:
