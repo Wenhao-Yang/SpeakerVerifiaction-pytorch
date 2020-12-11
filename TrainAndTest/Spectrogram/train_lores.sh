@@ -785,7 +785,7 @@ if [ $stage -le 61 ]; then
       --stride 1 \
       --fast \
       --block-type ${block_type} \
-      --channels 32,64,128,256 \
+      --channels 1 6,64,128,256 \
       --embedding-size 128 \
       --time-dim 1 \
       --avg-size 4 \
