@@ -649,7 +649,7 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(epoch, valid_accuracy,
+    print('          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(valid_accuracy,
                                                                                      valid_loss))
 
     return valid_loss
@@ -672,8 +672,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                   epoch=epoch)
 
     print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
-          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(epoch,
-                                                                     100. * eer,
+          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
                                                                      eer_threshold,
                                                                      mindcf_01,
                                                                      mindcf_001))
