@@ -416,7 +416,7 @@ def main():
     if args.scheduler == 'exp':
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma, verbose=True)
     elif args.scheduler == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=4, min_lr=1e-6, verbose=True)
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, min_lr=1e-6, verbose=True)
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1, verbose=True)
 
@@ -590,7 +590,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                         total_loss / (batch_idx + 1),
                         100. * minibatch_acc))
 
-    print('\nTrain Epoch {}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
+    print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader)))
     writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
@@ -649,8 +649,8 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
-    print('Valid Epoch {}: \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(epoch, valid_accuracy,
-                                                                                           valid_loss))
+    print('          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(epoch, valid_accuracy,
+                                                                                     valid_loss))
 
     return valid_loss
 
@@ -671,7 +671,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
 
-    print('Train Epoch {}: \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
+    print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
           'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(epoch,
                                                                      100. * eer,
                                                                      eer_threshold,
@@ -700,7 +700,7 @@ def test(model, epoch, writer, xvector_dir):
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
     print(
-        '\33[91m               Test  ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
+        '          \33[91mTest  ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
             100. * eer, eer_threshold, mindcf_01, mindcf_001))
 
     writer.add_scalar('Test/EER', 100. * eer, epoch)
