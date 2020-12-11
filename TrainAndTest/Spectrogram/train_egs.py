@@ -410,14 +410,14 @@ def main():
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
         f.write('Optimizer: ' + str(optimizer) + '\n')
 
+    milestones = args.milestones.split(',')
+    milestones = [int(x) for x in milestones]
+    milestones.sort()
     if args.scheduler == 'exp':
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma, verbose=True)
     elif args.scheduler == 'rop':
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=4, min_lr=1e-6, verbose=True)
     else:
-        milestones = args.milestones.split(',')
-        milestones = [int(x) for x in milestones]
-        milestones.sort()
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1, verbose=True)
 
     ce = [ce_criterion, xe_criterion]
