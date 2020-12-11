@@ -404,7 +404,7 @@ def main():
                                     momentum=args.momentum)
 
     # Save model config txt
-    with open(osp.join(args.check_path, 'model.%s.cfg' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
+    with open(osp.join(args.check_path, 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
         f.write('model: ' + str(model) + '\n')
         f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
@@ -590,7 +590,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                         total_loss / (batch_idx + 1),
                         100. * minibatch_acc))
 
-    print('\nTrain Epoch {}: \33[91mTrain Accuracy:{:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
+    print('\nTrain Epoch {}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader)))
     writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
@@ -649,8 +649,8 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
-    print('Valid Epoch {}: \33[91mValid Accuracy is {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(epoch, valid_accuracy,
-                                                                                             valid_loss))
+    print('Valid Epoch {}: \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(epoch, valid_accuracy,
+                                                                                           valid_loss))
 
     return valid_loss
 
