@@ -3,7 +3,7 @@
 stage=61
 
 waited=0
-while [ `ps 17809 | wc -l` -eq 2 ]; do
+while [ $(ps 17809 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -11,7 +11,7 @@ done
 
 #stage=1
 if [ $stage -le 0 ]; then
-  for loss in soft ; do # 32,128,512; 8,32,128
+  for loss in soft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 5x5\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model LoResNet10 \
@@ -33,9 +33,8 @@ fi
 
 #stage=100
 
-
 if [ $stage -le 1 ]; then
-#  for loss in center amsoft ; do/
+  #  for loss in center amsoft ; do/
   for loss in asoft amsoft center; do
     echo -e "\n\033[1;4;31m Finetuning with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
@@ -64,7 +63,7 @@ fi
 #stage=100
 # kernel size trianing
 if [ $stage -le 4 ]; then
-  for kernel in '3,3' '3,7' '5,7' ; do
+  for kernel in '3,3' '3,7' '5,7'; do
     echo -e "\n\033[1;4;31m Training with kernel size ${kernel} \033[0m\n"
     python TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --nj 12 \
@@ -78,7 +77,7 @@ if [ $stage -le 4 ]; then
 fi
 
 if [ $stage -le 5 ]; then
-  for loss in soft ; do
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 3x3\033[0m\n"
     python TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --nj 12 \
@@ -105,7 +104,7 @@ if [ $stage -le 5 ]; then
 fi
 
 if [ $stage -le 6 ]; then
-  for loss in soft ; do
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Continue Training with ${loss} kernel 3x3\033[0m\n"
     python TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --nj 12 \
@@ -123,7 +122,7 @@ if [ $stage -le 6 ]; then
 fi
 
 if [ $stage -le 7 ]; then
-  for loss in soft ; do
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 3x3\033[0m\n"
     python TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --nj 12 \
@@ -140,9 +139,8 @@ if [ $stage -le 7 ]; then
   done
 fi
 
-
 if [ $stage -le 15 ]; then
-  for loss in soft ; do # 32,128,512; 8,32,128
+  for loss in soft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 3,3\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model LoResNet10 \
@@ -198,7 +196,7 @@ fi
 if [ $stage -le 20 ]; then
   dataset=aishell2
 
-  for loss in soft ; do # 32,128,512; 8,32,128
+  for loss in soft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 3,3\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model LoResNet10 \
@@ -228,7 +226,7 @@ if [ $stage -le 30 ]; then
   dataset=cnceleb
   model=LoResNet
   resnet_size=8
-  for loss in soft ; do # 32,128,512; 8,32,128
+  for loss in soft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Training with ${loss} kernel 5,5\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_lores10_kaldi.py \
       --model LoResNet \
@@ -336,7 +334,7 @@ if [ $stage -le 50 ]; then
   transform=None
   relu_type=relu6
 
-  for loss in soft ; do
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -425,7 +423,7 @@ if [ $stage -le 51 ]; then
   loss=soft
   encod=STAP
 
-  for filter in None ; do
+  for filter in None; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
@@ -470,70 +468,70 @@ if [ $stage -le 51 ]; then
   model=GradResNet
   resnet_size=8
   for loss in soft; do
-#    python TrainAndTest/Spectrogram/train_egs.py \
-#      --model ${model} \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
-#      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
-#      --feat-format kaldi \
-#      --inst-norm \
-#      --resnet-size ${resnet_size} \
-#      --nj 10 \
-#      --epochs 24 \
-#      --lr 0.1 \
-#      --input-dim 161 \
-#      --milestones 10,15,20 \
-#      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25 \
-#      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25/checkpoint_24.pth \
-#      --channels 16,64,128 \
-#      --embedding-size 128 \
-#      --avg-size 4 \
-#      --num-valid 2 \
-#      --alpha 12 \
-#      --margin 0.4 \
-#      --s 30 \
-#      --m 3 \
-#      --loss-ratio 0.05 \
-#      --weight-decay 0.001 \
-#      --dropout-p 0.25 \
-#      --gpu-id 0 \
-#      --cos-sim \
-#      --extract \
-#      --loss-type ${loss}
+    #    python TrainAndTest/Spectrogram/train_egs.py \
+    #      --model ${model} \
+    #      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
+    #      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
+    #      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
+    #      --feat-format kaldi \
+    #      --inst-norm \
+    #      --resnet-size ${resnet_size} \
+    #      --nj 10 \
+    #      --epochs 24 \
+    #      --lr 0.1 \
+    #      --input-dim 161 \
+    #      --milestones 10,15,20 \
+    #      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25 \
+    #      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs/${loss}_dp25/checkpoint_24.pth \
+    #      --channels 16,64,128 \
+    #      --embedding-size 128 \
+    #      --avg-size 4 \
+    #      --num-valid 2 \
+    #      --alpha 12 \
+    #      --margin 0.4 \
+    #      --s 30 \
+    #      --m 3 \
+    #      --loss-ratio 0.05 \
+    #      --weight-decay 0.001 \
+    #      --dropout-p 0.25 \
+    #      --gpu-id 0 \
+    #      --cos-sim \
+    #      --extract \
+    #      --loss-type ${loss}
 
-#    python TrainAndTest/Spectrogram/train_egs.py \
-#      --model ${model} \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
-#      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
-#      --feat-format kaldi \
-#      --inst-norm \
-#      --resnet-size ${resnet_size} \
-#      --nj 10 \
-#      --epochs 24 \
-#      --lr 0.1 \
-#      --milestones 10,15,20 \
-#      --input-dim 161 \
-#      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25 \
-#      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25/checkpoint_24.pth \
-#      --channels 16,64,128 \
-#      --embedding-size 128 \
-#      --avg-size 4 \
-#      --num-valid 2 \
-#      --alpha 12 \
-#      --margin 0.4 \
-#      --s 30 \
-#      --m 3 \
-#      --loss-ratio 0.05 \
-#      --weight-decay 0.001 \
-#      --dropout-p 0.25 \
-#      --gpu-id 0 \
-#      --cos-sim \
-#      --vad \
-#      --extract \
-#      --loss-type ${loss}
-#
-        python TrainAndTest/Spectrogram/train_egs.py \
+    #    python TrainAndTest/Spectrogram/train_egs.py \
+    #      --model ${model} \
+    #      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
+    #      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
+    #      --test-dir ${lstm_dir}/data/${datasets}/spect/test \
+    #      --feat-format kaldi \
+    #      --inst-norm \
+    #      --resnet-size ${resnet_size} \
+    #      --nj 10 \
+    #      --epochs 24 \
+    #      --lr 0.1 \
+    #      --milestones 10,15,20 \
+    #      --input-dim 161 \
+    #      --check-path Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25 \
+    #      --resume Data/checkpoint/${model}8/${datasets}_4w/spect_egs_vad/${loss}_dp25/checkpoint_24.pth \
+    #      --channels 16,64,128 \
+    #      --embedding-size 128 \
+    #      --avg-size 4 \
+    #      --num-valid 2 \
+    #      --alpha 12 \
+    #      --margin 0.4 \
+    #      --s 30 \
+    #      --m 3 \
+    #      --loss-ratio 0.05 \
+    #      --weight-decay 0.001 \
+    #      --dropout-p 0.25 \
+    #      --gpu-id 0 \
+    #      --cos-sim \
+    #      --vad \
+    #      --extract \
+    #      --loss-type ${loss}
+    #
+    python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_4w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_4w \
@@ -613,7 +611,7 @@ if [ $stage -le 60 ]; then
   resnet_size=8
   loss=soft
 
-  for encoder in None ; do
+  for encoder in None; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
@@ -692,44 +690,43 @@ if [ $stage -le 61 ]; then
   resnet_size=10
   mask_layer=None
   loss=soft
-#
-#   python TrainAndTest/Spectrogram/train_egs.py \
-#     --model ${model} \
-#     --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
-#     --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
-#     --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
-#     --test-dir ${lstm_dir}/data/vox1/spect/test_log \
-#     --train-trials trials_2w \
-#     --input-norm Mean \
-#     --feat-format kaldi \
-#     --resnet-size ${resnet_size} \
-#     --nj 10 \
-#     --epochs 20 \
-#     --lr 0.1 \
-#     --input-dim 161 \
-#     --milestones 5,10,15 \
-#     --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25 \
-#     --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25/checkpoint_12.pth \
-#     --alpha 12 \
-#     --mask-layer ${mask_layer} \
-#     --channels 64,128,256 \
-#     --embedding-size 128 \
-#     --time-dim 1 \
-#     --avg-size 4 \
-#     --num-valid 2 \
-#     --margin 0.4 \
-#     --s 30 \
-#     --m 3 \
-#     --loss-ratio 0.05 \
-#     --weight-decay 0.001 \
-#     --dropout-p 0.25 \
-#     --gpu-id 0 \
-#     --cos-sim \
-#     --extract \
-#     --loss-type ${loss}
+  #
+  #   python TrainAndTest/Spectrogram/train_egs.py \
+  #     --model ${model} \
+  #     --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+  #     --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
+  #     --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
+  #     --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+  #     --train-trials trials_2w \
+  #     --input-norm Mean \
+  #     --feat-format kaldi \
+  #     --resnet-size ${resnet_size} \
+  #     --nj 10 \
+  #     --epochs 20 \
+  #     --lr 0.1 \
+  #     --input-dim 161 \
+  #     --milestones 5,10,15 \
+  #     --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25 \
+  #     --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${mask_layer}/${loss}_dp25/checkpoint_12.pth \
+  #     --alpha 12 \
+  #     --mask-layer ${mask_layer} \
+  #     --channels 64,128,256 \
+  #     --embedding-size 128 \
+  #     --time-dim 1 \
+  #     --avg-size 4 \
+  #     --num-valid 2 \
+  #     --margin 0.4 \
+  #     --s 30 \
+  #     --m 3 \
+  #     --loss-ratio 0.05 \
+  #     --weight-decay 0.001 \
+  #     --dropout-p 0.25 \
+  #     --gpu-id 0 \
+  #     --cos-sim \
+  #     --extract \
+  #     --loss-type ${loss}
 
-
-  for block_type in cbam ; do
+  for block_type in cbam; do
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
@@ -778,7 +775,7 @@ if [ $stage -le 62 ]; then
   model=LoResNet
   resnet_size=10
   loss=soft
-  for encod in None ; do
+  for encod in None; do
     echo -e "\n\033[1;4;31m Training LoResNet${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -857,7 +854,7 @@ if [ $stage -le 63 ]; then
   loss=soft
   encod=None
   transform=None
-  for loss in soft ; do
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
@@ -911,7 +908,7 @@ if [ $stage -le 64 ]; then
   transform=None
   loss_ratio=0.01
   alpha=13
-  for loss in soft ; do
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in vox1 with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/Spectrogram/train_egs_multi.py \
@@ -969,7 +966,7 @@ if [ $stage -le 65 ]; then
   transform=None
   loss_ratio=0.01
   alpha=13
-  for loss in soft ; do
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in vox1 with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/Spectrogram/train_egs_multi.py \
@@ -1022,7 +1019,7 @@ if [ $stage -le 80 ]; then
   datasets=vox2
   model=LoResNet
   resnet_size=18
-  for loss in soft ; do
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \

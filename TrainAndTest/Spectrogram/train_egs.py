@@ -350,7 +350,6 @@ def main():
             model_dict = model.state_dict()
             model_dict.update(filtered)
             model.load_state_dict(model_dict)
-            #
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
@@ -507,8 +506,7 @@ def train(train_loader, model, ce, optimizer, epoch):
     correct = 0.
     total_datasize = 0.
     total_loss = 0.
-    # for param_group in optimizer.param_groups:
-    #     print('\33[1;34m Optimizer \'{}\' learning rate is {}.\33[0m'.format(args.optimizer, param_group['lr']))
+
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
