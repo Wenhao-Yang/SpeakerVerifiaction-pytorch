@@ -470,7 +470,7 @@ def main():
         print(' \33[0m')
 
         train(train_loader, model, ce, optimizer, epoch)
-        valid_loss = valid_class(valid_loader, model, epoch)
+        valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
