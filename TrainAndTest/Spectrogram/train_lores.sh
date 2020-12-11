@@ -689,7 +689,7 @@ if [ $stage -le 61 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   model=LoResNet
-  resnet_size=8
+  resnet_size=10
   mask_layer=None
   loss=soft
 #
@@ -741,18 +741,21 @@ if [ $stage -le 61 ]; then
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --nj 10 \
-      --epochs 20 \
+      --epochs 35 \
       --lr 0.1 \
       --input-dim 161 \
+      --scheduler rop \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs_${block_type}/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs_${block_type}/${loss}_dp25/checkpoint_12.pth \
-      --alpha 12 \
+      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/fast_${block_type}/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/fast_${block_type}/${loss}_dp25/checkpoint_12.pth \
+      --stride 1 \
+      --fast \
       --block-type ${block_type} \
-      --channels 64,128,256 \
+      --channels 32,64,128,256 \
       --embedding-size 128 \
       --time-dim 1 \
       --avg-size 4 \
+      --alpha 12 \
       --num-valid 2 \
       --margin 0.4 \
       --s 30 \
