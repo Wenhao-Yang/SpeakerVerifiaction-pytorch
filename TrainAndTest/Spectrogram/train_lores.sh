@@ -780,8 +780,8 @@ if [ $stage -le 61 ]; then
       --input-dim 161 \
       --scheduler rop \
       --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/fast_${block_type}/${loss}_dp25 \
-      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/fast_${block_type}/${loss}_dp25/checkpoint_12.pth \
+      --check-path Data/checkpoint/${model}8/${datasets}/${feat}_egs/fast_${block_type}/${loss}_dp25 \
+      --resume Data/checkpoint/${model}8/${datasets}/${feat}_egs/fast_${block_type}/${loss}_dp25/checkpoint_12.pth \
       --stride 1 \
       --fast \
       --block-type ${block_type} \
