@@ -725,15 +725,52 @@ if [ $stage -le 61 ]; then
   #     --cos-sim \
   #     --extract \
   #     --loss-type ${loss}
-
+  feat=fb24_pitch
   for block_type in cbam; do
+#    python TrainAndTest/Spectrogram/train_egs.py \
+#      --model ${model} \
+#      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
+#      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
+#      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
+#      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+#      --train-trials trials_2w \
+#      --input-norm Mean \
+#      --feat-format kaldi \
+#      --resnet-size ${resnet_size} \
+#      --nj 10 \
+#      --epochs 35 \
+#      --lr 0.1 \
+#      --input-dim 161 \
+#      --scheduler rop \
+#      --milestones 5,10,15 \
+#      --check-path Data/checkpoint/${model}8/${datasets}/spect_egs/fast_${block_type}/${loss}_dp25 \
+#      --resume Data/checkpoint/${model}8/${datasets}/spect_egs/fast_${block_type}/${loss}_dp25/checkpoint_12.pth \
+#      --stride 1 \
+#      --fast \
+#      --block-type ${block_type} \
+#      --channels 32,64,128,256 \
+#      --embedding-size 128 \
+#      --time-dim 1 \
+#      --avg-size 4 \
+#      --alpha 12 \
+#      --num-valid 2 \
+#      --margin 0.4 \
+#      --s 30 \
+#      --m 3 \
+#      --loss-ratio 0.05 \
+#      --weight-decay 0.001 \
+#      --dropout-p 0.25 \
+#      --gpu-id 0 \
+#      --cos-sim \
+#      --extract \
+#      --loss-type ${loss}
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
-      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
-      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
-      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+      --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/pyfb/dev_${feat}/trials_dir \
       --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/egs/pyfb/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/pyfb/test_${feat} \
       --input-norm Mean \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
