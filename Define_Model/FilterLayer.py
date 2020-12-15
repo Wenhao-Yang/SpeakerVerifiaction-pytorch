@@ -249,3 +249,25 @@ class SqueezeExcitation(nn.Module):
         output = input * scale
 
         return output
+
+
+class GAIN(nn.Module):
+    def __init__(self, time, freq, scale=1., theta=1.):
+        super(GAIN, self).__init__()
+        self.scale = scale
+        self.theta = theta
+
+        self.relu = nn.ReLU(inplace=True)
+        self.upsample = nn.UpsamplingBilinear2d(size=(time, freq))
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x, grad):
+        weight = grad.mean(dim=(2, 3), keepdim=True)
+
+        T = (x * weight).sum(dim=1, keepdim=True)
+        T = self.relu(T)
+        T = self.upsample(T)
+        T = self.scale * (T - self.theta)
+        T = self.sigmoid(T)
+
+        return x - T * x
