@@ -29,6 +29,7 @@ from tqdm import tqdm
 from Process_Data.KaldiDataset import ScriptValidDataset, ScriptTrainDataset
 from Process_Data.audio_augment.common import RunCommand
 from Process_Data.audio_processing import ConcateInput
+from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
 parser.add_argument('--nj', type=int, default=8, metavar='E', help='number of jobs to make feats (default: 10)')
@@ -195,10 +196,23 @@ if __name__ == "__main__":
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     random.seed(args.seed)
-
     nj = args.nj
     data_dir = args.data_dir
     out_dir = os.path.join(args.out_dir, args.out_set)
+
+    sys.stdout = NewLogger(
+        os.path.join(out_dir, 'log', 'egs.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())))
+
+    print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
+    opts = vars(args)
+    keys = list(opts.keys())
+    keys.sort()
+
+    options = []
+    for k in keys:
+        options.append("\'%s\': \'%s\'" % (str(k), str(opts[k])))
+
+    print('Preparing egs options: \n{ %s }' % (', '.join(options)))
 
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
