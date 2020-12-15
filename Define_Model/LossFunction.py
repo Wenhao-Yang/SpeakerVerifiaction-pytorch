@@ -299,3 +299,15 @@ class Wasserstein_Loss(nn.Module):
         vectors_t = feats.index_select(dim=0, index=idx)
 
         return self.loss(vectors_s, vectors_t)
+
+
+class AttentionMining(nn.Module):
+    def __init__(self):
+        super(AttentionMining, self).__init__()
+
+    def forward(self, x, label):
+        x_shape = x.shape
+        label = label.reshape(x_shape[0], 1)
+        score_c = x.gather(1, label)
+
+        return score_c.mean()
