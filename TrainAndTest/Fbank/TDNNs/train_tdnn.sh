@@ -223,9 +223,9 @@ fi
 
 if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  model=ETDNN_v4
+  model=TDNN_v4
   datasets=vox1
-  feat=fb24_pitch
+  feat=fb24_kaldi
   loss=soft
 
   for encod in STAP; do
@@ -246,7 +246,7 @@ if [ $stage -le 50 ]; then
       --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
-      --input-dim 25 \
+      --input-dim 24 \
       --lr 0.1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat}_${encod}/${loss} \
@@ -257,7 +257,7 @@ if [ $stage -le 50 ]; then
       --gpu-id 0 \
       --num-valid 2 \
       --loss-type soft \
-      --log-interval 1
+      --log-interval 10
 
   done
 fi
