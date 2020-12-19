@@ -444,7 +444,10 @@ def main():
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
-            torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:23456', rank=0,
+            torch.distributed.init_process_group(backend="nccl",
+                                                 # init_method='tcp://localhost:23456',
+                                                 init_method='file://home/work2020/yangwenhao/project/lstm_speaker_verification/data/sharedfile',
+                                                 rank=0,
                                                  world_size=1)
             model = model.cuda()
             model = DistributedDataParallel(model)
