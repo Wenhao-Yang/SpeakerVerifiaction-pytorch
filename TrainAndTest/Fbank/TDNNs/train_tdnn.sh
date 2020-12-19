@@ -280,11 +280,11 @@ if [ $stage -le 60 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --nj 8 \
-      --epochs 40 \
+      --epochs 30 \
       --milestones 8,14,20 \
       --model ${model} \
       --scheduler rop \
-      --weight-decay 0.0005 \
+      --weight-decay 0.001 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
