@@ -8,7 +8,7 @@ while [ $(ps 103374 | wc -l) -eq 2 ]; do
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
 done
 
-lstm_dir=${lstm_dir}
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
   model=ETDNN
   for loss in soft; do
