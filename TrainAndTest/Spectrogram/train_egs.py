@@ -433,14 +433,6 @@ def main():
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
 
-    # train_test_loader = torch.utils.data.DataLoader(train_test_dir, batch_size=int(args.batch_size / 32), shuffle=False,
-    #                                                 **kwargs)
-    # test_loader = torch.utils.data.DataLoader(test_dir, batch_size=int(args.batch_size / 32), shuffle=False, **kwargs)
-    # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
-    #                                                shuffle=False, **kwargs)
-    # sitw_dev_loader = torch.utils.data.DataLoader(sitw_dev_part, batch_size=args.test_batch_size, shuffle=False,
-    #                                               **kwargs)
-
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
