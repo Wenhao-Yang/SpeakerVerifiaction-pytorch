@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=60
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -8,12 +8,13 @@ while [ $(ps 103374 | wc -l) -eq 2 ]; do
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
 done
 
+lstm_dir=${lstm_dir}
 if [ $stage -le 0 ]; then
   model=ETDNN
   for loss in soft; do
     python TrainAndTest/Fbank/TDNNs/train_etdnn_kaldi.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb80/dev_kaldi \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb80/test_kaldi \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb80/dev_kaldi \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb80/test_kaldi \
       --check-path Data/checkpoint/${model}/fbank80/soft \
       --resume Data/checkpoint/${model}/fbank80/soft/checkpoint_1.pth
     --epochs 20 \
@@ -34,8 +35,8 @@ if [ $stage -le 5 ]; then
   for loss in soft; do
     python TrainAndTest/Fbank/TDNNs/train_tdnn_var.py \
       --model ${model} \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40 \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40 \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb40 \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb40 \
       --check-path Data/checkpoint/${model}/${feat}/${loss}_norm \
       --resume Data/checkpoint/${model}/${feat}/${loss}_norm/checkpoint_1.pth \
       --batch-size 64 \
@@ -60,8 +61,8 @@ if [ $stage -le 10 ]; then
   feat=fb40_wcmvn
   for loss in soft; do
     #    python TrainAndTest/Fbank/TDNNs/train_astdnn_kaldi.py \
-    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
-    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
+    #      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb40_wcmvn \
+    #      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb40_wcmvn \
     #      --check-path Data/checkpoint/${model}/${feat}/${loss} \
     #      --resume Data/checkpoint/${model}/${feat}/${loss}/checkpoint_1.pth \
     #      --epochs 18 \
@@ -76,8 +77,8 @@ if [ $stage -le 10 ]; then
 
     python TrainAndTest/Fbank/TDNNs/train_tdnn_var.py \
       --model ASTDNN \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb40_wcmvn \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb40_wcmvn \
       --check-path Data/checkpoint/${model}/${feat}/${loss}_svar \
       --resume Data/checkpoint/${model}/${feat}/${loss}_svar/checkpoint_1.pth \
       --epochs 18 \
@@ -93,8 +94,8 @@ if [ $stage -le 10 ]; then
       --gpu-id 1
 
     python TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb40_wcmvn \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb40_wcmvn \
       --nj 12 \
       --model ASTDNN \
       --embedding-size 512 \
@@ -109,9 +110,9 @@ if [ $stage -le 10 ]; then
       --model ASTDNN \
       --start-epochs 18 \
       --epochs 18 \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
-      --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb40_wcmvn \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb40_wcmvn \
+      --sitw-dir ${lstm_dir}/data/sitw \
       --loss-type soft \
       --remove-vad \
       --check-path Data/checkpoint/${model}/${feat}/${loss}_svar \
@@ -129,8 +130,8 @@ if [ $stage -le 15 ]; then
   for loss in soft; do
     python TrainAndTest/Fbank/TDNNs/train_tdnn_kaldi.py \
       --model ${model} \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb80 \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb80 \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb80 \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb80 \
       --check-path Data/checkpoint/${model}/${feat}/${loss} \
       --resume Data/checkpoint/${model}/${feat}/${loss}/checkpoint_1.pth \
       --batch-size 128 \
@@ -156,8 +157,8 @@ if [ $stage -le 16 ]; then
   for loss in amsoft center; do
     python TrainAndTest/Fbank/TDNNs/train_tdnn_kaldi.py \
       --model ${model} \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb80 \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb80 \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb80 \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb80 \
       --check-path Data/checkpoint/${model}/${feat}/${loss} \
       --resume Data/checkpoint/ETDNN/fb80/soft/checkpoint_20.pth \
       --batch-size 128 \
@@ -259,5 +260,49 @@ if [ $stage -le 50 ]; then
       --loss-type soft \
       --log-interval 10
 
+  done
+fi
+
+if [ $stage -le 60 ]; then
+  model=TDNN_v4
+  datasets=vox1
+  feat=log
+  feat_type=spect
+  loss=amsoft
+  encod=STAP
+
+  for model in TDNN_v4 ETDNN_v4; do
+    echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/vox1/egs/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/egs/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --nj 8 \
+      --epochs 40 \
+      --milestones 8,14,20 \
+      --model ${model} \
+      --scheduler rop \
+      --weight-decay 0.0005 \
+      --lr 0.1 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --embedding-size 128 \
+      --batch-size 192 \
+      --accu-steps 1 \
+      --input-dim 161 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/checkpoint_22.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0 \
+      --num-valid 2 \
+      --loss-type ${loss} \
+      --margin 0.3 \
+      --s 15 \
+      --log-interval 10
   done
 fi

@@ -229,6 +229,8 @@ writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
+extract_kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
+
 if not os.path.exists(args.check_path):
     os.makedirs(args.check_path)
 
@@ -429,7 +431,7 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
-    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **kwargs)
+    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
 
     # train_test_loader = torch.utils.data.DataLoader(train_test_dir, batch_size=int(args.batch_size / 32), shuffle=False,
     #                                                 **kwargs)
@@ -483,7 +485,7 @@ def main():
         if epoch % 2 == 1 or epoch == (end - 1):
             valid_test(train_extract_loader, model, epoch, xvector_dir)
 
-        if epoch in milestones or epoch == (end - 1):
+        if epoch % 4 == 1 or epoch in milestones or epoch == (end - 1):
             test(model, epoch, writer, xvector_dir)
 
         if args.scheduler == 'rop':
@@ -688,7 +690,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 def test(model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
-    extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **kwargs)
+    extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
     verification_extract(extract_loader, model, this_xvector_dir, epoch)
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=this_xvector_dir,
@@ -708,56 +710,6 @@ def test(model, epoch, writer, xvector_dir):
     writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
 
-# def test(test_loader, model, epoch):
-#     # switch to evaluate mode
-#     model.eval()
-#
-#     labels, distances = [], []
-#     pbar = tqdm(enumerate(test_loader))
-#     for batch_idx, (data_a, data_p, label) in pbar:
-#
-#         vec_shape = data_a.shape
-#         # pdb.set_trace()
-#         if vec_shape[1] != 1:
-#             data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-#             data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-#
-#         data = torch.cat((data_a, data_p), dim=0)
-#         if args.cuda:
-#             data = data.cuda()
-#         # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-#         # compute output
-#         _, feats = model(data)
-#         out_a = feats[:len(data_a)]
-#         out_p = feats[len(data_a):]
-#
-#         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-#         if vec_shape[1] != 1:
-#             dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(axis=1)
-#         dists = dists.data.cpu().numpy()
-#
-#         distances.append(dists)
-#         labels.append(label.data.cpu().numpy())
-#
-#         if batch_idx % args.log_interval == 0:
-#             pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-#                 epoch, batch_idx * vec_shape[0], len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-#
-#     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
-#     writer.add_scalar('Test/EER', 100. * eer, epoch)
-#     writer.add_scalar('Test/Threshold', eer_threshold, epoch)
-#
-#     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
-#     writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
-#     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
-#
-#     print('  \33[91mTest set EER: {:.4f}%, Threshold: {}'.format(100. * eer, eer_threshold))
-#     print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}\33[0m'.format(mindcf_01, mindcf_001))
-#
-#     torch.cuda.empty_cache()
-
-
-# python TrainAndTest/Spectrogram/train_surescnn10_kaldi.py > Log/SuResCNN10/spect_161/
 
 if __name__ == '__main__':
     main()

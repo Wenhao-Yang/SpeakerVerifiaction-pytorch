@@ -539,7 +539,7 @@ class TDNN_v4(nn.Module):
 
     def forward(self, x):
         # pdb.set_trace()
-        x = x.squeeze(1).float()
+        # x = x.squeeze(1).float()
         if self.inst_layer != None:
             x = self.inst_layer(x)
         x = self.frame1(x)

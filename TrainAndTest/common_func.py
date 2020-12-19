@@ -114,28 +114,42 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
 
     # pbar = tqdm(enumerate(extract_loader))
     uid2vectors = {}
+    data = torch.tensor([])
+    num_seg_tensor = [0]
+    uid_lst = []
+
+    batch_size = 128 if torch.cuda.is_available() else 80
     with torch.no_grad():
-        for batch_idx, (data, uid) in enumerate(extract_loader):
-            vec_shape = data.shape
+        for batch_idx, (a_data, a_uid) in enumerate(extract_loader):
+            vec_shape = a_data.shape
 
             if vec_shape[1] != 1:
-                data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+                a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
-            if gpu:
-                data = data.cuda()
-            # compute output
-            model_out = model(data)
-            try:
-                _, out, _, _ = model_out
-            except:
-                _, out = model_out
+            data = torch.cat((data, a_data), dim=0)
+            num_seg_tensor.append(num_seg_tensor[-1] + len(a_data))
+            uid_lst.append(a_uid[0])
 
-            if vec_shape[1] != 1:
-                out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
+            if data.shape[0] >= batch_size or batch_idx + 1 == len(extract_loader):
 
-            uid2vectors[uid[0]] = out.squeeze().cpu().numpy()
-            # pbar.set_description('Extraction Epoch {}: [{}/{} ({:.0f}%)]'.format(
-            #     epoch, batch_idx, len(extract_loader.dataset), 100. * batch_idx / len(extract_loader)))
+                data = data.cuda() if next(model.parameters()).is_cuda else data
+                model_out = model(data)
+                try:
+                    _, out, _, _ = model_out
+                except:
+                    _, out = model_out
+
+                out = out.data.cpu().float().numpy()
+                # print(out.shape)
+                if len(out.shape) == 3:
+                    out = out.squeeze(0)
+
+                for i, uid in enumerate(uid_lst):
+                    uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+
+                data = torch.tensor([])
+                num_seg_tensor = [0]
+                uid_lst = []
 
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
