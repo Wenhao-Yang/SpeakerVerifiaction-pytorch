@@ -342,7 +342,7 @@ def main():
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
         torch.save(model, check_path)
 
-    if args.resume:
+    if args.finetune and args.resume:
         if os.path.isfile(args.resume):
             print('=> loading checkpoint {}'.format(args.resume))
             checkpoint = torch.load(args.resume)
@@ -404,6 +404,20 @@ def main():
                                      {'params': rest_params}],
                                     lr=args.lr, weight_decay=args.weight_decay,
                                     momentum=args.momentum)
+
+    if not args.finetune and args.resume:
+        if os.path.isfile(args.resume):
+            print('=> loading checkpoint {}'.format(args.resume))
+            checkpoint = torch.load(args.resume)
+            start_epoch = checkpoint['epoch']
+
+            filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+            model_dict = model.state_dict()
+            model_dict.update(filtered)
+            model.load_state_dict(model_dict)
+            # model.dropout.p = args.dropout_p
+        else:
+            print('=> no checkpoint found at {}'.format(args.resume))
 
     # Save model config txt
     with open(osp.join(args.check_path, 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:

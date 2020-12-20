@@ -271,7 +271,7 @@ if [ $stage -le 60 ]; then
   loss=amsoft
   encod=STAP
 
-  for model in TDNN_v4 ETDNN_v4; do
+  for model in ETDNN_v4; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/${feat_type}/dev_${feat} \
@@ -280,12 +280,12 @@ if [ $stage -le 60 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --nj 8 \
-      --epochs 40 \
+      --epochs 20 \
       --milestones 8,14,20 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.001 \
-      --lr 0.1 \
+      --lr 0.0001 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size 128 \
@@ -294,7 +294,7 @@ if [ $stage -le 60 ]; then
       --input-dim 161 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/checkpoint_22.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
