@@ -432,7 +432,7 @@ def main():
     if args.scheduler == 'exp':
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma, verbose=True)
     elif args.scheduler == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, min_lr=1e-6, verbose=True)
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=4, min_lr=1e-6, verbose=True)
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1, verbose=True)
 
