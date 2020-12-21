@@ -299,7 +299,7 @@ if [ $stage -le 60 ]; then
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
-      --gpu-id 0 \
+      --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
       --margin 0.3 \
