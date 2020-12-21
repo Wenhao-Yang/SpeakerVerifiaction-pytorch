@@ -100,7 +100,7 @@ if [ $stage -le 1 ]; then
   done
 
 fi
-exit
+#exit
 
 #stage=200.0
 if [ $stage -le 2 ]; then
