@@ -268,8 +268,9 @@ if [ $stage -le 60 ]; then
   datasets=vox1
   feat=log
   feat_type=spect
-  loss=amsoft
+  loss=soft
   encod=STAP
+  embedding_size=512
 
   for model in ETDNN_v4; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
@@ -280,21 +281,21 @@ if [ $stage -le 60 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --nj 8 \
-      --epochs 20 \
+      --epochs 60 \
       --milestones 8,14,20 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.001 \
-      --lr 0.0001 \
+      --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
-      --embedding-size 128 \
+      --embedding-size ${embedding_size} \
       --batch-size 192 \
       --accu-steps 1 \
       --input-dim 161 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size}/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
