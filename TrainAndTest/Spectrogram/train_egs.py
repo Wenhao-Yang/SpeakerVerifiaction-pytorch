@@ -186,6 +186,8 @@ parser.add_argument('--dampening', default=0, type=float,
                     metavar='DAM', help='dampening for sgd (default: 0.0)')
 parser.add_argument('--optimizer', default='sgd', type=str,
                     metavar='OPT', help='The optimizer to use (default: Adagrad)')
+parser.add_argument('--patience', default=4, type=int,
+                    metavar='PAT', help='patience for scheduler (default: 4)')
 parser.add_argument('--grad-clip', default=0., type=float,
                     help='momentum for sgd (default: 0.9)')
 # Device options
@@ -432,7 +434,7 @@ def main():
     if args.scheduler == 'exp':
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma, verbose=True)
     elif args.scheduler == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=4, min_lr=1e-5, verbose=True)
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5, verbose=True)
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1, verbose=True)
 
