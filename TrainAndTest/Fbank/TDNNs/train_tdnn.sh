@@ -338,7 +338,7 @@ if [ $stage -le 80 ]; then
       --embedding-size ${embedding_size} \
       --batch-size 192 \
       --accu-steps 1 \
-      --input-dim 161 \
+      --input-dim 40 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size} \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size}/checkpoint_40.pth \

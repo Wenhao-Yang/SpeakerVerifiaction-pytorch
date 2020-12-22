@@ -542,6 +542,7 @@ class TDNN_v4(nn.Module):
         # x = x.squeeze(1).float()
         if self.inst_layer != None:
             x = self.inst_layer(x)
+
         x = self.frame1(x)
         x = self.frame2(x)
         x = self.frame3(x)
