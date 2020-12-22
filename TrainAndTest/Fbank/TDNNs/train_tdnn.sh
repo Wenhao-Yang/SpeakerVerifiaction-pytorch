@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=80
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -308,7 +308,6 @@ if [ $stage -le 60 ]; then
   done
 fi
 
-
 if [ $stage -le 80 ]; then
   model=TDNN_v4
   datasets=vox2
@@ -322,7 +321,7 @@ if [ $stage -le 80 ]; then
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
