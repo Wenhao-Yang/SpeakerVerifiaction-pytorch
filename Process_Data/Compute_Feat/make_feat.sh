@@ -49,6 +49,7 @@ if [ $stage -le 0 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox2/pyfb/dev_${s} \
       --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
+      --nj 16 \
       --feat-type fbank \
       --train \
       --input-per-spks 512 \
@@ -61,6 +62,7 @@ if [ $stage -le 0 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox2/pyfb/dev_${s} \
       --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
+      --nj 16 \
       --feat-type fbank \
       --input-per-spks 512 \
       --feat-format kaldi \
