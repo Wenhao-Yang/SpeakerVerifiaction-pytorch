@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=153
+stage=0
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -49,9 +49,9 @@ if [ $stage -le 0 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox2/pyfb/dev_${s} \
       --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
-      --feat-type spectrogram \
+      --feat-type fbank \
       --train \
-      --input-per-spks 224 \
+      --input-per-spks 512 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
@@ -61,8 +61,8 @@ if [ $stage -le 0 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox2/pyfb/dev_${s} \
       --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
-      --feat-type spectrogram \
-      --input-per-spks 224 \
+      --feat-type fbank \
+      --input-per-spks 512 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
@@ -72,7 +72,7 @@ if [ $stage -le 0 ]; then
   done
 
 fi
-
+exit
 #stage=1000
 if [ $stage -le 1 ]; then
   for s in kaldi pitch; do

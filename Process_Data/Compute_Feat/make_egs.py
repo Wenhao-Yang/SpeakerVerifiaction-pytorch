@@ -251,7 +251,7 @@ if __name__ == "__main__":
 
         num_utt = len(utts)
 
-        print('\n>> Plan to make egs for %d speakers with %d utterances in %s with %d jobs.\n' % (
+        print('\n>> Plan to make egs for %d speakers with %d egs in %s with %d jobs.\n' % (
             train_dir.num_spks, len(utts), str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 2))  # 创建nj个进程
@@ -277,7 +277,7 @@ if __name__ == "__main__":
         for i in tqdm(range(len(valid_dir))):
             idx_queue.put(i)
 
-        print('\n>> Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
+        print('\n>> Plan to make feats for %d speakers with %d egs in %s with %d jobs.\n' % (
             idx_queue.qsize(), num_utt, str(time.asctime()), nj))
 
         pool = Pool(processes=int(nj * 1.5))  # 创建nj个进程
