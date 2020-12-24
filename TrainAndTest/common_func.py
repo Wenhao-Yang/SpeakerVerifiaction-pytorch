@@ -181,15 +181,15 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
 
     # pbar = tqdm(enumerate(test_loader))
-    for batch_idx, (data_a, data_p, label) in enumerate(test_loader):
+    with torch.no_grad():
+        for batch_idx, (data_a, data_p, label) in enumerate(test_loader):
+            out_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
+            out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
+            dists = dist_fn.forward(out_a, out_p).cpu().numpy()
 
-        out_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
-        out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
-        dists = dist_fn.forward(out_a, out_p).cpu().numpy()
-
-        distances.append(dists)
-        labels.append(label.numpy())
-        del out_a, out_p  #, ae, pe
+            distances.append(dists)
+            labels.append(label.numpy())
+            del out_a, out_p  # , ae, pe
 
         # if batch_idx % log_interval == 0:
         #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(

@@ -54,8 +54,7 @@ parser.add_argument('--windowsize', type=float, default=0.02, choices=[0.02, 0.0
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--stride', type=float, default=0.01, help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--bandpass', action='store_true', default=False,
-                    help='using butter bandpass filter for signal')
+parser.add_argument('--bandpass', action='store_true', default=False, help='using butter bandpass filter for signal')
 parser.add_argument('--lowfreq', type=int, default=0, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--highfreq', type=int, default=0, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--nfft', type=int, required=True, help='number of jobs to make feats (default: 10)')
@@ -352,7 +351,12 @@ if __name__ == "__main__":
     if args.compress:
         shutil.rmtree(Split_dir)
     end_time = time.time()
-    print('Write all files in: \n\t%s. \nAnd %.2fs collapse.\n' % (out_dir, end_time - start_time))
+    all_time = end_time - start_time
+    hours = int(all_time / 3600)
+    mins = int(all_time % 3600 // 60)
+    secs = int(all_time % 60)
+
+    print('Write all files in: \n\t{:s}. \nAnd {:>2d}:{:>2d}:{:>2d} s collapse.\n'.format(out_dir, hours, mins, secs))
     sys.exit()
 
 """

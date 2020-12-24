@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=3
+stage=0
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -14,20 +14,20 @@ while [ $(ps 13153 | wc -l) -eq 2 ]; do
 done
 
 if [ $stage -le 0 ]; then
-  #  for filters in 40 80 ; do
-  #    python Process_Data/Compute_Feat/make_feat.py \
-  #      --data-dir ${lstm_dir}/data/vox2/dev \
-  #      --out-dir ${lstm_dir}/data/vox2/pyfb \
-  #      --out-set dev_fb${filters} \
-  #      --filter-type mel \
-  #      --feat-type fbank \
-  #      --filters ${filters} \
-  #      --log-scale \
-  #      --feat-format kaldi_cmp \
-  #      --nfft 512 \
-  #      --windowsize 0.025 \
-  #      --nj 12
-  #  done
+  for filters in 40; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/vox2/dev \
+      --out-dir ${lstm_dir}/data/vox2/pyfb \
+      --out-set dev_fb${filters} \
+      --filter-type mel \
+      --feat-type fbank \
+      --filters ${filters} \
+      --log-scale \
+      --feat-format kaldi_cmp \
+      --nfft 512 \
+      --windowsize 0.025 \
+      --nj 16
+  done
   #
   #  for filters in 40 80 ; do
   #    python Process_Data/Compute_Feat/make_feat.py \
@@ -52,7 +52,8 @@ if [ $stage -le 0 ]; then
       --nj 16 \
       --feat-type fbank \
       --train \
-      --input-per-spks 512 \
+      --input-per-spks 384 \
+      --num-frames 800 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
@@ -64,17 +65,17 @@ if [ $stage -le 0 ]; then
       --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
       --nj 16 \
       --feat-type fbank \
-      --input-per-spks 512 \
+      --num-frames 800 \
+      --input-per-spks 384 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
       --out-set valid_${s}
-
   done
 
 fi
-#exit
+exit
 #stage=1000
 if [ $stage -le 1 ]; then
   for s in kaldi pitch; do

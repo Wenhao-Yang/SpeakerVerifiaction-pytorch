@@ -325,8 +325,12 @@ if __name__ == "__main__":
     # print('Delete tmp files in: %s' % Split_dir)
 
     end_time = time.time()
-    print('For multi process Completed, write all files in: \n\t%s. \nAnd %.2fs collapse.\n' % (
-    out_dir, end_time - start_time))
+    all_time = end_time - start_time
+    hours = int(all_time / 3600)
+    mins = int(all_time % 3600 // 60)
+    secs = int(all_time % 60)
+
+    print('Write all files in: \n\t{:s}. \nAnd {:>2d}:{:>2d}:{:>2d} s collapse.\n'.format(out_dir, hours, mins, secs))
     sys.exit()
 
 """
