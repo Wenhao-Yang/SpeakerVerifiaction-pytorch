@@ -56,8 +56,8 @@ parser.add_argument('--stride', type=float, default=0.01, help='number of jobs t
 
 parser.add_argument('--bandpass', action='store_true', default=False,
                     help='using butter bandpass filter for signal')
-parser.add_argument('--lowfreq', type=int, default=300, help='number of jobs to make feats (default: 10)')
-parser.add_argument('--highfreq', type=int, default=3000, help='number of jobs to make feats (default: 10)')
+parser.add_argument('--lowfreq', type=int, default=0, help='number of jobs to make feats (default: 10)')
+parser.add_argument('--highfreq', type=int, default=0, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--nfft', type=int, required=True, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--normalize', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
