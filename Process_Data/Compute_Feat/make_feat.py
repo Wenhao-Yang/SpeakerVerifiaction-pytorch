@@ -43,6 +43,8 @@ parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
+parser.add_argument('--energy', action='store_true', default=False, help='log power spectogram')
+
 parser.add_argument('--filter-type', type=str, default='mel', help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--filters', type=int, help='number of jobs to make feats (default: 10)')
@@ -128,7 +130,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                         elif args.feat_type == 'mfcc':
                             feat, duration = Make_MFCC(filename=temp_wav, numcep=args.numcep, nfilt=args.filters,
                                                        lowfreq=args.lowfreq, normalize=args.normalize, duration=True,
-                                                       use_energy=True)
+                                                       use_energy=args.energy)
 
                         os.remove(temp_wav)
 
@@ -150,7 +152,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                         elif args.feat_type == 'mfcc':
                             feat, duration = Make_MFCC(filename=pair[1], numcep=args.numcep, nfilt=args.filters,
                                                        lowfreq=args.lowfreq,
-                                                       normalize=args.normalize, duration=True, use_energy=True)
+                                                       normalize=args.normalize, duration=True, use_energy=args.energy)
                         # feat = np.load(pair[1]).astype(np.float32)
 
                     feat = feat.astype(np.float32)

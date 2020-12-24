@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=3
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -74,7 +74,7 @@ if [ $stage -le 0 ]; then
   done
 
 fi
-exit
+#exit
 #stage=1000
 if [ $stage -le 1 ]; then
   for s in kaldi pitch; do
@@ -116,6 +116,53 @@ if [ $stage -le 2 ]; then
       --filters 40
   done
 fi
+
+if [ $stage -le 3 ]; then
+  for filters in 40; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/vox2/dev \
+      --out-dir ${lstm_dir}/data/vox2/mfcc \
+      --out-set dev_mf${filters} \
+      --filter-type mel \
+      --feat-type mfcc \
+      --filters ${filters} \
+      --numcep ${filters} \
+      --feat-format kaldi_cmp \
+      --nfft 512 \
+      --windowsize 0.025 \
+      --stride 0.01 \
+      --nj 12
+  done
+
+  #  for s in fb40 fb80 ; do
+  for s in mf40; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox2/mfcc/dev_${s} \
+      --out-dir ${lstm_dir}/data/vox2/egs/mfcc \
+      --nj 16 \
+      --feat-type fbank \
+      --train \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --out-set dev_${s}
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/vox2/mfcc/dev_${s} \
+      --out-dir ${lstm_dir}/data/vox2/egs/mfcc \
+      --nj 16 \
+      --feat-type fbank \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --out-set valid_${s}
+
+  done
+
+fi
+exit
 
 #stage=100
 # vox1 spectrogram 257
