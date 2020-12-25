@@ -18,6 +18,7 @@ import random
 import shutil
 import sys
 import time
+import traceback
 from multiprocessing import Pool, Manager
 
 import kaldi_io
@@ -66,25 +67,27 @@ args = parser.parse_args()
 
 
 def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
-
     while True:
-        lock_i.acquire()  # 加上锁
-        if not idx_queue.empty():
-            idx = idx_queue.get()
-            lock_i.release()  # 释放锁
+        try:
+            lock_i.acquire()  # 加上锁
+            if not idx_queue.empty():
+                idx = idx_queue.get()
+                lock_i.release()  # 释放锁
 
-            if args.domain:
-                feature, label, domlab = train_dir.__getitem__(idx)
-                pairs = (label, domlab, feature)
+                if args.domain:
+                    feature, label, domlab = train_dir.__getitem__(idx)
+                    pairs = (label, domlab, feature)
+                else:
+                    feature, label = train_dir.__getitem__(idx)
+                    pairs = (label, feature)
+                # lock_t.acquire()
+                t_queue.put(pairs)
             else:
-                feature, label = train_dir.__getitem__(idx)
-                pairs = (label, feature)
-            # lock_t.acquire()
-            t_queue.put(pairs)
-        else:
-            lock_i.release()  # 释放锁
-            # print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
-            break
+                lock_i.release()  # 释放锁
+                # print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
+                break
+        except Exception as e:
+            traceback.print_exc(e)
 
 
 def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queue):
@@ -105,6 +108,8 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     temp_dir = out_dir + '/temp'
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
+
+    saved_egs = 0
 
     while True:
         lock_t.acquire()  # 加上锁
@@ -134,20 +139,21 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                     np.save(npy_path, feat)
                     feat_scp_f.write(key + ' ' + npy_path + '\n')
 
+                saved_egs += 1
+
             except Exception as e:
                 print(e)
                 e_queue.put(key)
 
             if t_queue.qsize() % 100 == 0:
-                print('\rProcess [%6s] There are [%6s] egs left, with [%6s] errors.' %
+                print('\rProcess [%6s] There are [%s] egs left, with [%6s] errors.' %
                       (str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())), end='')
-            if t_queue.qsize() % 100000 == 0:
+            if saved_egs % 10000 == 0:
                 feat_scp_f.flush()
                 feat_ark_f.flush()
 
         elif i_queue.empty():
             lock_t.release()
-
             # print('\n>> Process {}: all queue empty!'.format(os.getpid()))
             break
         else:
@@ -271,9 +277,6 @@ if __name__ == "__main__":
             # if (i + 1) % 2 == 1:
             pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                   i, task_queue, error_queue, idx_queue))
-
-        pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
-        pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
     else:
 
         # valid set
@@ -298,8 +301,12 @@ if __name__ == "__main__":
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                       i, task_queue, error_queue, idx_queue))
 
-        pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
+    pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
+    try:
         pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
+    except:
+        traceback.print_exc()
+
     try:
         if error_queue.qsize() > 0:
             print('\n>> Saving Completed with errors in: ')
