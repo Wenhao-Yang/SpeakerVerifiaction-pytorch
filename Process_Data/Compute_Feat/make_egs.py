@@ -141,6 +141,10 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             if t_queue.qsize() % 100 == 0:
                 print('\rProcess [%6s] There are [%6s] egs left, with [%6s] errors.' %
                       (str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())), end='')
+            if t_queue.qsize() % 100000 == 0:
+                feat_scp_f.flush()
+                feat_ark_f.flush()
+
         elif i_queue.empty():
             lock_t.release()
 
