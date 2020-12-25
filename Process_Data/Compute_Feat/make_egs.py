@@ -296,14 +296,16 @@ if __name__ == "__main__":
 
         pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
         pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
-
-    if error_queue.qsize() > 0:
-        print('\n>> Saving Completed with errors in: ')
-        while not error_queue.empty():
-            print(error_queue.get() + ' ', end='')
-        print('')
-    else:
-        print('\n>> Saving Completed without errors.!')
+    try:
+        if error_queue.qsize() > 0:
+            print('\n>> Saving Completed with errors in: ')
+            while not error_queue.empty():
+                print(error_queue.get() + ' ', end='')
+            print('')
+        else:
+            print('\n>> Saving Completed without errors.!')
+    except Exception as e:
+        print(e)
 
     Split_dir = os.path.join(out_dir, 'Split%d' % nj)
     print('   Splited Data root is \n     %s. \n   Concat all scripts together.' % str(Split_dir))

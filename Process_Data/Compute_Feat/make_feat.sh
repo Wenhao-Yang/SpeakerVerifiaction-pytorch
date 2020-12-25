@@ -14,20 +14,20 @@ while [ $(ps 13153 | wc -l) -eq 2 ]; do
 done
 
 if [ $stage -le 0 ]; then
-#  for filters in 40; do
-#    python Process_Data/Compute_Feat/make_feat.py \
-#      --data-dir ${lstm_dir}/data/vox2/dev \
-#      --out-dir ${lstm_dir}/data/vox2/pyfb \
-#      --out-set dev_fb${filters} \
-#      --filter-type mel \
-#      --feat-type fbank \
-#      --filters ${filters} \
-#      --log-scale \
-#      --feat-format kaldi_cmp \
-#      --nfft 512 \
-#      --windowsize 0.025 \
-#      --nj 16
-#  done
+  #  for filters in 40; do
+  #    python Process_Data/Compute_Feat/make_feat.py \
+  #      --data-dir ${lstm_dir}/data/vox2/dev \
+  #      --out-dir ${lstm_dir}/data/vox2/pyfb \
+  #      --out-set dev_fb${filters} \
+  #      --filter-type mel \
+  #      --feat-type fbank \
+  #      --filters ${filters} \
+  #      --log-scale \
+  #      --feat-format kaldi_cmp \
+  #      --nfft 512 \
+  #      --windowsize 0.025 \
+  #      --nj 16
+  #  done
   #
   #  for filters in 40 80 ; do
   #    python Process_Data/Compute_Feat/make_feat.py \
@@ -49,7 +49,7 @@ if [ $stage -le 0 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox2/pyfb/dev_${s} \
       --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
-      --nj 16 \
+      --nj 12 \
       --feat-type fbank \
       --train \
       --input-per-spks 384 \
@@ -63,7 +63,7 @@ if [ $stage -le 0 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox2/pyfb/dev_${s} \
       --out-dir ${lstm_dir}/data/vox2/egs/pyfb \
-      --nj 16 \
+      --nj 12 \
       --feat-type fbank \
       --num-frames 800 \
       --input-per-spks 384 \
