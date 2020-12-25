@@ -330,7 +330,7 @@ if __name__ == "__main__":
     mins = int(all_time % 3600 // 60)
     secs = int(all_time % 60)
 
-    print('Write all files in: \n\t{:s}. \nAnd {:>2d}:{:>2d}:{:>2d} s collapse.\n'.format(out_dir, hours, mins, secs))
+    print('Write all files in: \n\t{:s}. \nAnd {:0>2d}:{:0>2d}:{:0>2d}s collapse.\n'.format(out_dir, hours, mins, secs))
     sys.exit()
 
 """
