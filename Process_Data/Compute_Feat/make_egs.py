@@ -65,6 +65,7 @@ parser.add_argument('--conf', type=str, default='condf/spect.conf', metavar='E',
                     help='number of epochs to train (default: 10)')
 args = parser.parse_args()
 
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
     while True:
