@@ -11,7 +11,6 @@
 """
 import os
 import random
-import time
 
 import lmdb
 import numpy as np
@@ -475,8 +474,8 @@ class EgsDataset(Dataset):
                 self.chunk_size.append(random_size)
 
     def __getitem__(self, idx):
-        time_s = time.time()
-        print('Starting loading...')
+        # time_s = time.time()
+        # print('Starting loading...')
         label, dom_label, upath = self.dataset[idx]
 
         y = self.loader(upath)
@@ -488,8 +487,8 @@ class EgsDataset(Dataset):
             y = y[start:(start + this_len)]
 
         feature = self.transform(y)
-        time_e = time.time()
-        print('Using %d for loading egs' % (time_e - time_s))
+        # time_e = time.time()
+        # print('Using %d for loading egs' % (time_e - time_s))
         if self.domain:
             return feature, label, dom_label
         else:
