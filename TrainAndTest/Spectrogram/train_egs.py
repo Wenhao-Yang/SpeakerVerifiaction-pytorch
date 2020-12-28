@@ -38,7 +38,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
+from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog, ConcateInput
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
@@ -244,7 +244,7 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
-        ConcateVarInput(input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False),
+        ConcateInput(input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False),
         totensor()
     ])
     transform_T = transforms.Compose([
