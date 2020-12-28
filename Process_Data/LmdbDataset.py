@@ -485,11 +485,11 @@ class EgsDataset(Dataset):
             label, upath = self.dataset[idx]
 
         y = self.loader(upath)
-        if len(self.chunk_size) > 0:
-            bat_idx = idx // self.batch_size
-            this_len = self.chunk_size[bat_idx]
-            start = np.random.randint(0, len(y) - this_len)
-            y = y[start:(start + this_len)]
+        # if len(self.chunk_size) > 0:
+        #     bat_idx = idx // self.batch_size
+        #     this_len = self.chunk_size[bat_idx]
+        #     start = np.random.randint(0, len(y) - this_len)
+        #     y = y[start:(start + this_len)]
 
         feature = self.transform(y)
 
