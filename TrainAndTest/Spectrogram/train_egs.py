@@ -14,7 +14,6 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
-import pdb
 import sys
 import time
 # Version conflict
@@ -532,7 +531,12 @@ def train(train_loader, model, ce, optimizer, epoch):
     output_softmax = nn.Softmax(dim=1)
     # start_time = time.time()
     for batch_idx, (data, label) in pbar:
-        pdb.set_trace()
+
+        batch_len = np.random.randint(args.min_chunk_size, args.max_chunk_size)
+        start = np.random.randint(0, data.shape[2] - batch_len + 1)
+        end = start + batch_len
+        data = data[:, :, start:end, :]
+
         if args.cuda:
             label = label.cuda(non_blocking=True)
             data = data.cuda(non_blocking=True)
