@@ -531,10 +531,10 @@ def train(train_loader, model, ce, optimizer, epoch):
     output_softmax = nn.Softmax(dim=1)
     # start_time = time.time()
     for batch_idx, (data, label) in pbar:
-        batch_len = np.random.randint(args.random_chunk[0], args.random_chunk[1])
-        start = np.random.randint(0, data.shape[2] - batch_len + 1)
-        end = start + batch_len
-        data = data[:, :, start:end, :].contiguous()
+        # batch_len = np.random.randint(args.random_chunk[0], args.random_chunk[1])
+        # start = np.random.randint(0, data.shape[2] - batch_len + 1)
+        # end = start + batch_len
+        # data = data[:, :, start:end, :].contiguous()
 
         if args.cuda:
             label = label.cuda(non_blocking=True)

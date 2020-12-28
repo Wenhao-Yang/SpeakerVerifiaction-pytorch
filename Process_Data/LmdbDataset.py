@@ -471,7 +471,7 @@ class EgsDataset(Dataset):
         self.batch_size = batch_size
 
         if len(random_chunk) == 2 and batch_size > 0:
-            print('Generating random length...')
+            print('==> Generating random length...')
             num_batch = int(np.ceil(len(dataset) / batch_size))
             for i in range(num_batch):
                 random_size = np.random.randint(low=random_chunk[0], high=random_chunk[1])
@@ -485,18 +485,18 @@ class EgsDataset(Dataset):
             label, upath = self.dataset[idx]
 
         y = self.loader(upath)
-        # if len(self.chunk_size) > 0:
-        #     bat_idx = idx // self.batch_size
-        #     this_len = self.chunk_size[bat_idx]
-        #     start = np.random.randint(0, len(y) - this_len)
-        #     y = y[start:(start + this_len)]
+        if len(self.chunk_size) > 0:
+            bat_idx = idx // self.batch_size
+            this_len = self.chunk_size[bat_idx]
+            start = np.random.randint(0, len(y) - this_len)
+            y = y[start:(start + this_len)]
 
         feature = self.transform(y)
 
         if self.domain:
             return feature, label, dom_label
-
-        return feature, label
+        else:
+            return feature, label
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数
