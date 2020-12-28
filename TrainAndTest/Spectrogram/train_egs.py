@@ -14,7 +14,6 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
-import pdb
 import sys
 import time
 # Version conflict
@@ -534,7 +533,7 @@ def train(train_loader, model, ce, optimizer, epoch):
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
     # start_time = time.time()
-    pdb.set_trace()
+    # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
         # batch_len = np.random.randint(args.random_chunk[0], args.random_chunk[1])
         # start = np.random.randint(0, data.shape[2] - batch_len + 1)
@@ -580,6 +579,7 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         # compute gradient and update weights
         loss.backward()
+
         if ((batch_idx + 1) % args.accu_steps) == 0:
             # optimizer the net
             optimizer.step()  # update parameters of net

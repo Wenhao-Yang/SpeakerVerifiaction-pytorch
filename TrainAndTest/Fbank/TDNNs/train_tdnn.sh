@@ -326,7 +326,7 @@ if [ $stage -le 80 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
-      --random-chunk 250 400 \
+      --random-chunk 300 301 \
       --nj 6 \
       --epochs 30 \
       --patience 2 \
