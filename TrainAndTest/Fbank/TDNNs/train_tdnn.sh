@@ -338,7 +338,7 @@ if [ $stage -le 80 ]; then
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
-      --batch-size 192 \
+      --batch-size 64 \
       --accu-steps 1 \
       --input-dim 40 \
       --encoder-type ${encod} \
