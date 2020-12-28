@@ -149,7 +149,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             if t_queue.qsize() % 100 == 0:
                 print('\rProcess [%6s] There are [%s] egs left, with [%6s] errors.' %
                       (str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())), end='')
-            if saved_egs % 10000 == 0:
+            if saved_egs % 2000 == 0:
                 feat_scp_f.flush()
                 feat_ark_f.flush()
 
