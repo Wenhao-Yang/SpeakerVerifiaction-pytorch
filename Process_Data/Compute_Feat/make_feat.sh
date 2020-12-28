@@ -163,7 +163,7 @@ if [ $stage -le 3 ]; then
   done
 
 fi
-exit
+#exit
 
 #stage=100
 # vox1 spectrogram 257
