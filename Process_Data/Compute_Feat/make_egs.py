@@ -119,7 +119,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     while True:
         lock_t.acquire()  # 加上锁
         if not t_queue.empty():
-            comm = task_queue.get()
+            comm = t_queue.get()
             lock_t.release()  # 释放锁
 
             try:
