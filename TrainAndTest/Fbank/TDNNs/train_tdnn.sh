@@ -319,8 +319,8 @@ if [ $stage -le 80 ]; then
 
   for model in TDNN_v4; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    # python -W ignore -l -v TrainAndTest/Spectrogram/train_egs.py \
-    kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
@@ -338,7 +338,7 @@ if [ $stage -le 80 ]; then
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
-      --batch-size 64 \
+      --batch-size 192 \
       --accu-steps 1 \
       --input-dim 40 \
       --encoder-type ${encod} \
@@ -347,7 +347,7 @@ if [ $stage -le 80 ]; then
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
-      --gpu-id 0 \
+      --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
       --margin 0.3 \
