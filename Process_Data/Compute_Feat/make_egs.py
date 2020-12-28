@@ -151,7 +151,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 print(e)
                 e_queue.put(key)
 
-            if t_queue.qsize() % 100 == 0:
+            if saved_egs.qsize() % 100 == 0:
                 print('\rProcess [%6s] There are [%d] idx in idx_queue and [%d] egs in egs_queue, with [%6s] errors.' %
                       (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), str(e_queue.qsize())), end='')
 
