@@ -324,7 +324,7 @@ class TimeDelayLayer_v4(nn.Module):
         input: size (batch, seq_len, input_features)
         outpu: size (batch, new_seq_len, output_features)
         '''
-
+        assert len(x.shape) == 4, print(x.shape)
         b, c, l, d = x.shape
         assert (d == self.input_dim), 'Input dimension ({})'.format(str(x.shape))
 
