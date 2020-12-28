@@ -567,7 +567,7 @@ if [ $stage -le 74 ]; then
       --feat-format kaldi_cmp \
       --nfft 512 \
       --windowsize 0.025 \
-      --nj 12
+      --nj 16
     #    python Process_Data/Compute_Feat/make_feat.py \
     #      --data-dir ${lstm_dir}/data/vox1/${s} \
     #      --out-dir ${lstm_dir}/data/vox1/pyfb \
