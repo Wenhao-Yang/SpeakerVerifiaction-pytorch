@@ -598,7 +598,7 @@ class PadCollate:
         # pad according to max_len
         # print()
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
-        start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len + 1)
+        start = np.random.randint(low=0, high=batch[0][1].shape[-2] - frame_len + 1)
         end = start + frame_len
         xs = xs[:, :, start:end, :]
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
