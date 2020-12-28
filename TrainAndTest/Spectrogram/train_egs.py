@@ -449,8 +449,8 @@ def main():
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False,
                                                collate_fn=PadCollate(dim=2, fix_len=False,
                                                                      min_chunk_size=args.min_chunk_size,
-                                                                     max_chunk_size=args.max_chunk_size)
-                                                          ** kwargs)
+                                                                     max_chunk_size=args.max_chunk_size),
+                                               **kwargs)
 
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
