@@ -426,7 +426,7 @@ class LmdbTestDataset(Dataset):
 
 
 class EgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False, random_chunk=None, batch_size=0):
+    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False, random_chunk=[], batch_size=0):
 
         feat_scp = dir + '/feats.scp'
 
