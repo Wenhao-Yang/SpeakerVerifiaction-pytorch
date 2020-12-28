@@ -438,7 +438,6 @@ class EgsDataset(Dataset):
         spks = set([])
         doms = set([])
 
-
         with open(feat_scp, 'r') as u:
             all_cls_upath = tqdm(u.readlines())
             for line in all_cls_upath:
@@ -480,9 +479,11 @@ class EgsDataset(Dataset):
 
         y = self.loader(upath)
         if len(self.chunk_size) > 0:
+
             bat_idx = idx // self.batch_size
             this_len = self.chunk_size[bat_idx]
             start = np.random.randint(0, len(y) - this_len)
+            print('This batch len is %d' % this_len)
             y = y[start:(start + this_len)]
 
         feature = self.transform(y)
