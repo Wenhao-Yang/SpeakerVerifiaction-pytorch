@@ -16,6 +16,7 @@ import lmdb
 import numpy as np
 from kaldi_io import read_mat
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 import Process_Data.constants as c
 
@@ -437,8 +438,9 @@ class EgsDataset(Dataset):
         spks = set([])
         doms = set([])
 
+
         with open(feat_scp, 'r') as u:
-            all_cls_upath = u.readlines()
+            all_cls_upath = tqdm(u.readlines())
             for line in all_cls_upath:
                 try:
                     cls, upath = line.split()
