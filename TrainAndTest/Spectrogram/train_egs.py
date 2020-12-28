@@ -38,7 +38,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
+from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
@@ -72,6 +72,9 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
+parser.add_argument('--fix-length', action='store_true', default=False, help='need to make mfb file')
+parser.add_argument('--min-chunk-size', default=300, type=int, metavar='MINCHUNK')
+parser.add_argument('--max-chunk-size', default=301, type=int, metavar='MAXCHUNK')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
@@ -111,8 +114,6 @@ parser.add_argument('--filter', type=str, default='None', help='replace batchnor
 parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
-
-
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
 
 parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
@@ -445,7 +446,12 @@ def main():
     # start = 0
     end = start + args.epochs
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False,
+                                               collate_fn=PadCollate(dim=2, fix_len=False,
+                                                                     min_chunk_size=args.min_chunk_size,
+                                                                     max_chunk_size=args.max_chunk_size)
+                                                          ** kwargs)
+
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
 
@@ -584,25 +590,16 @@ def train(train_loader, model, ce, optimizer, epoch):
         # optimizer.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
+            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
+                                                                          len(train_loader.dataset),
+                                                                          100. * batch_idx / len(train_loader))
+            if not args.fix_length:
+                epoch_str += ' Batch Length: {:>3d}'.format(data.shape[-2])
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
-                pbar.set_description(
-                    'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)] Center Loss: {:.4f} Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
-                        epoch,
-                        batch_idx * len(data),
-                        len(train_loader.dataset),
-                        100. * batch_idx / len(train_loader),
-                        loss_xent.float(),
-                        total_loss / (batch_idx + 1),
-                        100. * minibatch_acc))
-            else:
-                pbar.set_description(
-                    'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)] Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(
-                        epoch,
-                        batch_idx * len(data),
-                        len(train_loader.dataset),
-                        100. * batch_idx / len(train_loader),
-                        total_loss / (batch_idx + 1),
-                        100. * minibatch_acc))
+                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
+                                                                            100. * minibatch_acc)
+            pbar.set_description(epoch_str)
 
     print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader)))

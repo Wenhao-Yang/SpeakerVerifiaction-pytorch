@@ -325,13 +325,15 @@ if [ $stage -le 80 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --min-chunk-size 250 \
+      --max-chunk-size 400 \
       --nj 8 \
       --epochs 30 \
       --patience 2 \
       --milestones 8,14,20 \
       --model ${model} \
       --scheduler rop \
-      --weight-decay 0.0001 \
+      --weight-decay 0.001 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
@@ -340,8 +342,8 @@ if [ $stage -le 80 ]; then
       --accu-steps 1 \
       --input-dim 40 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size}_wd1e4 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size}_wd1e4/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size}/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
