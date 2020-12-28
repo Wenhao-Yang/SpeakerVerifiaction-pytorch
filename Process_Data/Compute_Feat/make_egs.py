@@ -87,8 +87,8 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                     time.sleep(2)
 
                 t_queue.put(pairs)
-                if t_queue.qsize() % 10 == 0:
-                    print('\r >> Process {}: egs t_queue has {} egs!'.format(os.getpid(), t_queue.qsize()), end='')
+                # if idx_queue.qsize() % 10000 == 0:
+                #     print('>> Process {}: egs t_queue has {} egs!'.format(os.getpid(), t_queue.qsize()))
             else:
                 lock_i.release()  # 释放锁
                 # print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
@@ -155,8 +155,9 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
             # if saved_egs.qsize() % 1 == 0:
             if saved_egs % 10 == 0:
-                print('\rProcess [%6s] There are [%d] idx in idx_queue and [%d] egs in egs_queue, with [%6s] errors.' %
-                      (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), str(e_queue.qsize())), end='')
+                print(
+                    '\rProcess {:8>s} There are {:>8d} idx in idx_queue and {:>8d} egs in egs_queue, with {:>8d} errors.'.format
+                    (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), e_queue.qsize()), end='')
 
             # if saved_egs % 2000 == 0:
             #     feat_scp_f.flush()
@@ -261,7 +262,7 @@ if __name__ == "__main__":
     feat_dim = train_dir.__getitem__(1)[0].shape[-1]
     mem_data = psutil.virtual_memory()
     free_mem = mem_data.available
-    maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.6)
+    maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.25)
     print('Maxsize for Queue is %d' % maxsize)
 
     task_queue = manager.Queue(maxsize=maxsize)
