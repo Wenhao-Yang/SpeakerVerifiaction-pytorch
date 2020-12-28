@@ -158,13 +158,14 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 print('\rProcess [%6s] There are [%d] idx in idx_queue and [%d] egs in egs_queue, with [%6s] errors.' %
                       (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), str(e_queue.qsize())), end='')
 
-            if saved_egs % 2000 == 0:
-                feat_scp_f.flush()
-                feat_ark_f.flush()
+            # if saved_egs % 2000 == 0:
+            #     feat_scp_f.flush()
+            #     feat_ark_f.flush()
 
         elif not i_queue.empty():
             lock_t.release()
             time.sleep(1)
+
         else:
             lock_t.release()
             # print('\n>> Process {}: all queue empty!'.format(os.getpid()))
