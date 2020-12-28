@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=4
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -108,7 +108,7 @@ fi
 #stage=200.0
 if [ $stage -le 2 ]; then
   for name in dev test; do
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
+    python Process_Data/Compute_Feat/make_feat.py \
       --nj 16 \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_fb64/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pymfcc40 \
@@ -168,17 +168,22 @@ exit
 #stage=100
 # vox1 spectrogram 257
 if [ $stage -le 4 ]; then
-  for name in dev test; do
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
-      --nj 16 \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_fb64/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect \
-      --out-set ${name}_257 \
-      --windowsize 0.025 \
-      --nfft 512 \
-      --feat-type spectrogram
-  done
+    for filters in 40; do
+      python Process_Data/Compute_Feat/make_feat.py \
+        --data-dir ${lstm_dir}/data/vox1/dev \
+        --out-dir ${lstm_dir}/data/vox1/pyfb \
+        --out-set dev_fb${filters} \
+        --filter-type mel \
+        --feat-type fbank \
+        --filters ${filters} \
+        --log-scale \
+        --feat-format kaldi_cmp \
+        --nfft 512 \
+        --windowsize 0.025 \
+        --nj 16
+    done
 fi
+exit
 
 #stage=100
 #vox1 spectrogram 161
