@@ -353,6 +353,6 @@ if [ $stage -le 80 ]; then
       --margin 0.3 \
       --s 15 \
       --remove-vad \
-      --log-interval 10
+      --log-interval 1
   done
 fi
