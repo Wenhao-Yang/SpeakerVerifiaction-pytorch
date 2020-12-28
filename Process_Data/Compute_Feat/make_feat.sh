@@ -132,7 +132,7 @@ if [ $stage -le 3 ]; then
       --nfft 512 \
       --windowsize 0.025 \
       --stride 0.01 \
-      --nj 12
+      --nj 16
   done
 
   #  for s in fb40 fb80 ; do
