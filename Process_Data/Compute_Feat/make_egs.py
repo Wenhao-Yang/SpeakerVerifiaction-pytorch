@@ -152,8 +152,8 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 e_queue.put(key)
 
             if t_queue.qsize() % 100 == 0:
-                print('\rProcess [%6s] There are [%s] egs left, with [%6s] errors.' %
-                      (str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())), end='')
+                print('\rProcess [%6s] There are [%d] idx in idx_queue and [%d] egs in egs_queue, with [%6s] errors.' %
+                      (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), str(e_queue.qsize())), end='')
 
             if saved_egs % 2000 == 0:
                 feat_scp_f.flush()
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     feat_dim = train_dir.__getitem__(1)[0].shape[-1]
     mem_data = psutil.virtual_memory()
     free_mem = mem_data.available
-    maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.75)
+    maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.6)
     print('Maxsize for Queue is %d' % maxsize)
 
     task_queue = manager.Queue(maxsize=maxsize)
