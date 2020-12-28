@@ -317,7 +317,7 @@ if [ $stage -le 80 ]; then
   encod=STAP
   embedding_size=512
 
-  for model in TDNN_v4 ; do
+  for model in TDNN_v4; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -327,7 +327,7 @@ if [ $stage -le 80 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
-      --nj 12 \
+      --nj 8 \
       --epochs 30 \
       --patience 2 \
       --milestones 8,14,20 \
@@ -366,7 +366,7 @@ if [ $stage -le 81 ]; then
   encod=STAP
   embedding_size=512
 
-  for model in ETDNN_v4 ; do
+  for model in ETDNN_v4; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -376,7 +376,7 @@ if [ $stage -le 81 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
-      --nj 12 \
+      --nj 8 \
       --epochs 30 \
       --patience 2 \
       --milestones 8,14,20 \
