@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=81
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -356,7 +356,7 @@ if [ $stage -le 80 ]; then
       --log-interval 10
   done
 fi
-exit
+#exit
 if [ $stage -le 81 ]; then
   model=TDNN_v4
   datasets=vox2
