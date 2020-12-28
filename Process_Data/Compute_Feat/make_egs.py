@@ -257,7 +257,7 @@ if __name__ == "__main__":
     feat_dim = train_dir.__getitem__(1)[0].shape[-1]
     mem_data = psutil.virtual_memory()
     free_mem = mem_data.available
-    maxsize = int(4 * free_mem / (args.num_frames * feat_dim) * 0.75)
+    maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.75)
     print('Maxsize for Queue is %d' % maxsize)
 
     task_queue = manager.Queue(maxsize=maxsize)
