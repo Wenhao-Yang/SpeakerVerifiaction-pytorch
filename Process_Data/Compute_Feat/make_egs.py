@@ -87,6 +87,8 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                     time.sleep(2)
 
                 t_queue.put(pairs)
+                if t_queue.qsize() % 10 == 0:
+                    print('\r >> Process {}: egs t_queue has {} egs!'.format(os.getpid(), t_queue.qsize()), end='')
             else:
                 lock_i.release()  # 释放锁
                 # print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
