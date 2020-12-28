@@ -471,6 +471,7 @@ class EgsDataset(Dataset):
         self.batch_size = batch_size
 
         if len(random_chunk) == 2 and batch_size > 0:
+            print('Generating random length...')
             num_batch = int(np.ceil(len(dataset) / batch_size))
             for i in range(num_batch):
                 random_size = np.random.randint(low=random_chunk[0], high=random_chunk[1])
