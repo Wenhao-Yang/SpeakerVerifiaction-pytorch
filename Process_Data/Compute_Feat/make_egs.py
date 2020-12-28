@@ -150,17 +150,18 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             if t_queue.qsize() % 100 == 0:
                 print('\rProcess [%6s] There are [%s] egs left, with [%6s] errors.' %
                       (str(os.getpid()), str(t_queue.qsize() + i_queue.qsize()), str(e_queue.qsize())), end='')
+
             if saved_egs % 2000 == 0:
                 feat_scp_f.flush()
                 feat_ark_f.flush()
 
-        elif i_queue.empty():
+        elif not i_queue.empty():
+            lock_t.release()
+            time.sleep(1)
+        else:
             lock_t.release()
             # print('\n>> Process {}: all queue empty!'.format(os.getpid()))
             break
-        else:
-            lock_t.release()
-            time.sleep(5)
 
     feat_scp_f.close()
 
@@ -276,8 +277,8 @@ if __name__ == "__main__":
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
             pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
-            if (i + 1) % 2 == 1:
-                pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
+            # if (i + 1) % 2 == 1:
+            pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                   i, task_queue, error_queue, idx_queue))
     else:
 
