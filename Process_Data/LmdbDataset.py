@@ -434,29 +434,24 @@ class EgsDataset(Dataset):
             raise FileExistsError(feat_scp)
 
         dataset = []
-        spks = []
-        doms = []
+        spks = set([])
+        doms = set([])
+
         with open(feat_scp, 'r') as u:
             all_cls_upath = u.readlines()
             for line in all_cls_upath:
-                if domain:
+                try:
+                    cls, upath = line.split()
+                    dom_cls = -1
+                except ValueError as v:
                     cls, dom_cls, upath = line.split()
                     dom_cls = int(dom_cls)
-                    cls = int(cls)
-                    if dom_cls not in doms:
-                        doms.append(dom_cls)
-                    dataset.append((cls, dom_cls, upath))
-                else:
-                    try:
-                        cls, upath = line.split()
-                    except:
-                        cls, dom_cls, upath = line.split()
 
-                    cls = int(cls)
-                    dataset.append((cls, upath))
+                cls = int(cls)
 
-                if cls not in spks:
-                    spks.append(cls)
+                dataset.append((cls, dom_cls, upath))
+                doms.add(dom_cls)
+                spks.add(cls)
 
         print('==> There are {} speaker with {} utterances speakers in Dataset.'.format(len(spks), len(dataset)))
 
@@ -479,10 +474,7 @@ class EgsDataset(Dataset):
 
     def __getitem__(self, idx):
 
-        if self.domain:
-            label, dom_label, upath = self.dataset[idx]
-        else:
-            label, upath = self.dataset[idx]
+        label, dom_label, upath = self.dataset[idx]
 
         y = self.loader(upath)
         if len(self.chunk_size) > 0:
