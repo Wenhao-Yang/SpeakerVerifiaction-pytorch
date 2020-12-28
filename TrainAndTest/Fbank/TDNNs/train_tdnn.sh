@@ -319,7 +319,8 @@ if [ $stage -le 80 ]; then
 
   for model in TDNN_v4; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    python -W ignore -l -v TrainAndTest/Spectrogram/train_egs.py \
+    # python -W ignore -l -v TrainAndTest/Spectrogram/train_egs.py \
+    kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
