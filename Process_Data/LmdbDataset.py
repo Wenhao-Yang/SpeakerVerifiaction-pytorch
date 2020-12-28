@@ -483,7 +483,7 @@ class EgsDataset(Dataset):
             bat_idx = idx // self.batch_size
             this_len = self.chunk_size[bat_idx]
             start = np.random.randint(0, len(y) - this_len)
-            print('This batch len is %d' % this_len)
+            # print('This batch len is %d' % this_len)
             y = y[start:(start + this_len)]
 
         feature = self.transform(y)
