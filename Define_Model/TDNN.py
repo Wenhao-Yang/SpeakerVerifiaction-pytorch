@@ -310,7 +310,7 @@ class TimeDelayLayer_v4(nn.Module):
             self.nonlinearity = nn.LeakyReLU()
 
         if self.batch_norm:
-            self.bn = nn.BatchNorm2d(output_dim)
+            self.bn = nn.BatchNorm2d(1)
 
         if self.dropout_p:
             self.drop = nn.Dropout(p=self.dropout_p)
