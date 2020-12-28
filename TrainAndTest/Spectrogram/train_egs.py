@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import pdb
 import sys
 import time
 # Version conflict
@@ -481,6 +482,7 @@ def main():
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
 
     start_time = time.time()
+    pdb.set_trace()
     for epoch in range(start, end):
         # pdb.set_trace()
         lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
