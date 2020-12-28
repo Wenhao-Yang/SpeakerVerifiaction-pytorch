@@ -140,6 +140,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                     np.save(npy_path, feat)
                     feat_scp_f.write(key + ' ' + npy_path + '\n')
 
+                del feat
                 saved_egs += 1
 
             except Exception as e:
