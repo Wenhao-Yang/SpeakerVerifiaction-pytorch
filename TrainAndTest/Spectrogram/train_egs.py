@@ -537,8 +537,10 @@ def train(train_loader, model, ce, optimizer, epoch):
         # data = data[:, :, start:end, :].contiguous()
 
         if args.cuda:
-            label = label.cuda(non_blocking=True)
-            data = data.cuda(non_blocking=True)
+            # label = label.cuda(non_blocking=True)
+            # data = data.cuda(non_blocking=True)
+            label = label.cuda()
+            data = data.cuda()
 
         data, label = Variable(data), Variable(label)
 
