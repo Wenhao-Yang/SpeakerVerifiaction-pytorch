@@ -38,7 +38,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog, PadCollate
+from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
@@ -244,6 +244,7 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
+        ConcateVarInput(input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False),
         totensor()
     ])
     transform_T = transforms.Compose([
@@ -447,9 +448,9 @@ def main():
     end = start + args.epochs
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False,
-                                               collate_fn=PadCollate(dim=2, fix_len=args.fix_length,
-                                                                     min_chunk_size=args.min_chunk_size,
-                                                                     max_chunk_size=args.max_chunk_size),
+                                               # collate_fn=PadCollate(dim=2, fix_len=args.fix_length,
+                                               #                       min_chunk_size=args.min_chunk_size,
+                                               #                       max_chunk_size=args.max_chunk_size),
                                                **kwargs)
 
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
