@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=4
+stage=74
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -183,7 +183,7 @@ if [ $stage -le 4 ]; then
       --nj 16
   done
 fi
-exit
+#exit
 
 #stage=100
 #vox1 spectrogram 161
@@ -610,6 +610,7 @@ if [ $stage -le 74 ]; then
   done
 fi
 
+exit
 #stage=1000
 
 if [ $stage -le 75 ]; then
