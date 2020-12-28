@@ -327,7 +327,7 @@ if [ $stage -le 80 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --min-chunk-size 250 \
       --max-chunk-size 400 \
-      --nj 0 \
+      --nj 12 \
       --epochs 30 \
       --patience 2 \
       --milestones 8,14,20 \
