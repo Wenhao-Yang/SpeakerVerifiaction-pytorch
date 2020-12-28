@@ -555,35 +555,33 @@ fi
 #stage=1000
 
 if [ $stage -le 74 ]; then
-  for s in dev test; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir ${lstm_dir}/data/vox1/${s} \
-      --out-dir ${lstm_dir}/data/vox1/pyfb \
-      --out-set ${s}_fb40 \
-      --filter-type mel \
-      --feat-type fbank \
-      --filters 40 \
-      --log-scale \
-      --feat-format kaldi_cmp \
-      --nfft 512 \
-      --windowsize 0.025 \
-      --nj 16
-    #    python Process_Data/Compute_Feat/make_feat.py \
-    #      --data-dir ${lstm_dir}/data/vox1/${s} \
-    #      --out-dir ${lstm_dir}/data/vox1/pyfb \
-    #      --out-set ${s}_fb24_soft_new \
-    #      --filter-type dnn.vox1.soft \
-    #      --feat-type fbank \
-    #      --filters 23 \
-    #      --log-scale \
-    #      --feat-format kaldi_cmp \
-    #      --nfft 320 \
-    #      --windowsize 0.02 \
-    #      --nj 12
-  done
-fi
+#  for s in dev test; do
+#    python Process_Data/Compute_Feat/make_feat.py \
+#      --data-dir ${lstm_dir}/data/vox1/${s} \
+#      --out-dir ${lstm_dir}/data/vox1/pyfb \
+#      --out-set ${s}_fb40 \
+#      --filter-type mel \
+#      --feat-type fbank \
+#      --filters 40 \
+#      --log-scale \
+#      --feat-format kaldi_cmp \
+#      --nfft 512 \
+#      --windowsize 0.025 \
+#      --nj 16
+#    #    python Process_Data/Compute_Feat/make_feat.py \
+#    #      --data-dir ${lstm_dir}/data/vox1/${s} \
+#    #      --out-dir ${lstm_dir}/data/vox1/pyfb \
+#    #      --out-set ${s}_fb24_soft_new \
+#    #      --filter-type dnn.vox1.soft \
+#    #      --feat-type fbank \
+#    #      --filters 23 \
+#    #      --log-scale \
+#    #      --feat-format kaldi_cmp \
+#    #      --nfft 320 \
+#    #      --windowsize 0.02 \
+#    #      --nj 12
+#  done
 
-if [ $stage -le 74 ]; then
   for s in dev; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_fb40 \
