@@ -325,8 +325,7 @@ if [ $stage -le 80 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
-      --min-chunk-size 250 \
-      --max-chunk-size 400 \
+      --random-chunk 250 400 \
       --nj 12 \
       --epochs 30 \
       --patience 2 \
@@ -353,6 +352,6 @@ if [ $stage -le 80 ]; then
       --margin 0.3 \
       --s 15 \
       --remove-vad \
-      --log-interval 1
+      --log-interval 10
   done
 fi

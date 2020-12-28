@@ -38,7 +38,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog, ConcateInput
+from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
@@ -73,8 +73,7 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--fix-length', action='store_true', default=False, help='need to make mfb file')
-parser.add_argument('--min-chunk-size', default=300, type=int, metavar='MINCHUNK')
-parser.add_argument('--max-chunk-size', default=301, type=int, metavar='MAXCHUNK')
+parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
@@ -244,7 +243,6 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
-        ConcateInput(input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False),
         totensor()
     ])
     transform_T = transforms.Compose([
@@ -279,7 +277,8 @@ elif args.feat_format == 'npy':
     file_loader = np.load
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
+train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform,
+                       batch_size=args.batch_size, random_chunk=args.random_chunk)
 
 train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         transform=transform_V,
