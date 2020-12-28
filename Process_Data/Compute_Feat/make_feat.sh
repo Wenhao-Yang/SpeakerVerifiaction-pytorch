@@ -75,7 +75,7 @@ if [ $stage -le 0 ]; then
   done
 
 fi
-exit
+#exit
 #stage=1000
 if [ $stage -le 1 ]; then
   for s in kaldi pitch; do
@@ -168,20 +168,20 @@ exit
 #stage=100
 # vox1 spectrogram 257
 if [ $stage -le 4 ]; then
-    for filters in 40; do
-      python Process_Data/Compute_Feat/make_feat.py \
-        --data-dir ${lstm_dir}/data/vox1/dev \
-        --out-dir ${lstm_dir}/data/vox1/pyfb \
-        --out-set dev_fb${filters} \
-        --filter-type mel \
-        --feat-type fbank \
-        --filters ${filters} \
-        --log-scale \
-        --feat-format kaldi_cmp \
-        --nfft 512 \
-        --windowsize 0.025 \
-        --nj 16
-    done
+  for filters in 40; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/vox1/dev \
+      --out-dir ${lstm_dir}/data/vox1/pyfb \
+      --out-set dev_fb${filters} \
+      --filter-type mel \
+      --feat-type fbank \
+      --filters ${filters} \
+      --log-scale \
+      --feat-format kaldi_cmp \
+      --nfft 512 \
+      --windowsize 0.025 \
+      --nj 16
+  done
 fi
 exit
 
