@@ -594,20 +594,19 @@ class PadCollate:
             frame_len = self.frame_len
         else:
             frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
-
         # pad according to max_len
         # print()
-        xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
-        start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len + 1)
-        end = start + frame_len
-        xs = xs[:, :, start:end, :]
-        ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
-
-        # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
-        # pad_batch = list(map_batch)
-        #
-        # xs = torch.stack(list(map(lambda x: x[0], pad_batch)), dim=0)
+        # xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
+        # start = np.random.randint(low=0, high=batch[0].shape[-2]-frame_len+1)
+        # end = start+frame_len
+        # xs = xs[:, :, start:end, :]
         # ys = torch.LongTensor(list(map(lambda x: x[1], pad_batch)))
+
+        map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
+        pad_batch = list(map_batch)
+
+        xs = torch.stack(list(map(lambda x: x[0], pad_batch)), dim=0)
+        ys = torch.LongTensor(list(map(lambda x: x[1], pad_batch)))
 
         return xs, ys
 
