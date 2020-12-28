@@ -2,6 +2,7 @@
 # encoding: utf-8
 import os
 import pathlib
+import pdb
 import traceback
 
 import librosa
@@ -589,13 +590,14 @@ class PadCollate:
             xs - a tensor of all examples in 'batch' after padding
             ys - a LongTensor of all labels in batch
         """
-        # pdb.set_trace()
+        pdb.set_trace()
         if self.fix_len:
             frame_len = self.frame_len
         else:
             frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
 
         # pad according to max_len
+        # print()
         map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
         pad_batch = list(map_batch)
 
