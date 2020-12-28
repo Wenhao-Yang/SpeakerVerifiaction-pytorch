@@ -23,6 +23,7 @@ from multiprocessing import Pool, Manager
 
 import kaldi_io
 import numpy as np
+import psutil
 import torch
 from kaldiio import WriteHelper
 from tqdm import tqdm
@@ -82,6 +83,9 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                     feature, label = train_dir.__getitem__(idx)
                     pairs = (label, feature)
                 # lock_t.acquire()
+                while t_queue.full():
+                    time.sleep(2)
+
                 t_queue.put(pairs)
             else:
                 lock_i.release()  # 释放锁
@@ -249,7 +253,13 @@ if __name__ == "__main__":
     manager = Manager()
     lock_i = manager.Lock()
     lock_t = manager.Lock()
-    task_queue = manager.Queue()
+
+    feat_dim = train_dir.__getitem__(1).shape[-1]
+    mem_data = psutil.virtual_memory()
+    free_mem = mem_data.available
+    maxsize = int(4 * free_mem / (args.num_frames * args.feat_dim) * 0.75)
+
+    task_queue = manager.Queue(maxsize=maxsize)
     idx_queue = manager.Queue()
     error_queue = manager.Queue()
 
