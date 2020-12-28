@@ -310,7 +310,7 @@ class TimeDelayLayer_v4(nn.Module):
             self.nonlinearity = nn.LeakyReLU()
 
         if self.batch_norm:
-            self.bn = nn.BatchNorm2d(1)
+            self.bn = nn.BatchNorm2d(output_dim)
 
         if self.dropout_p:
             self.drop = nn.Dropout(p=self.dropout_p)
@@ -329,8 +329,6 @@ class TimeDelayLayer_v4(nn.Module):
         assert (d == self.input_dim), 'Input dimension ({})'.format(str(x.shape))
 
         x = self.tdnn_layer(x)
-        x = x.transpose(1, 3)
-
         x = self.nonlinearity(x)
         if self.batch_norm:
             x = self.bn(x)
@@ -338,7 +336,7 @@ class TimeDelayLayer_v4(nn.Module):
         if self.dropout_p:
             x = self.drop(x)
 
-        return x
+        return x.transpose(1, 3)
 
 
 class TDNN_v1(nn.Module):

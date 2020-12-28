@@ -38,7 +38,7 @@ from Process_Data import constants as c
 from Process_Data.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
+from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog, ConcateInput
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
@@ -74,6 +74,8 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--fix-length', action='store_true', default=False, help='need to make mfb file')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
+parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
+
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
@@ -243,6 +245,7 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
+        ConcateInput(num_frames=args.chunk_size, remove_vad=args.remove_vad),
         totensor()
     ])
     transform_T = transforms.Compose([
@@ -447,9 +450,6 @@ def main():
     end = start + args.epochs
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False,
-                                               # collate_fn=PadCollate(dim=2, fix_len=args.fix_length,
-                                               #                       min_chunk_size=args.random_chunk[0],
-                                               #                       max_chunk_size=args.random_chunk[1]),
                                                **kwargs)
 
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
@@ -490,7 +490,6 @@ def main():
         print('%s \33[0m' % lr_string)
 
         train(train_loader, model, ce, optimizer, epoch)
-        break
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
@@ -520,7 +519,6 @@ def main():
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
 
 
-@profile
 def train(train_loader, model, ce, optimizer, epoch):
     # switch to evaluate mode
     model.train()
@@ -535,11 +533,6 @@ def train(train_loader, model, ce, optimizer, epoch):
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
-        # batch_len = np.random.randint(args.random_chunk[0], args.random_chunk[1])
-        # start = np.random.randint(0, data.shape[2] - batch_len + 1)
-        # end = start + batch_len
-        # data = data[:, :, start:end, :].contiguous()
-
         if args.cuda:
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
@@ -601,7 +594,6 @@ def train(train_loader, model, ce, optimizer, epoch):
         # optimizer.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
-            break
             epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
                                                                           len(train_loader.dataset),
                                                                           100. * batch_idx / len(train_loader))
