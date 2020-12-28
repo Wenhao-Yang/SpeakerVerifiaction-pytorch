@@ -326,7 +326,7 @@ if [ $stage -le 80 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --random-chunk 250 400 \
-      --nj 4 \
+      --nj 12 \
       --epochs 30 \
       --patience 2 \
       --milestones 8,14,20 \
