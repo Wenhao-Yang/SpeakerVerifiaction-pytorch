@@ -426,7 +426,7 @@ class LmdbTestDataset(Dataset):
 
 
 class EgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False):
+    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False, random_chunk=None, batch_size=0):
 
         feat_scp = dir + '/feats.scp'
 
@@ -467,6 +467,14 @@ class EgsDataset(Dataset):
         self.num_spks = len(spks)
         self.num_doms = len(doms)
         self.domain = domain
+        self.chunk_size = []
+        self.batch_size = batch_size
+
+        if len(random_chunk) == 2 and batch_size > 0:
+            num_batch = int(np.ceil(len(dataset) / batch_size))
+            for i in range(num_batch):
+                random_size = np.random.randint(low=random_chunk[0], high=random_chunk[1])
+                self.chunk_size.append(random_size)
 
     def __getitem__(self, idx):
 
@@ -476,6 +484,12 @@ class EgsDataset(Dataset):
             label, upath = self.dataset[idx]
 
         y = self.loader(upath)
+        if len(self.chunk_size) > 0:
+            bat_idx = idx // self.batch_size
+            this_len = self.chunk_size[bat_idx]
+            start = np.random.randint(0, len(y) - this_len)
+            y = y[start:(start + this_len)]
+
         feature = self.transform(y)
 
         if self.domain:
