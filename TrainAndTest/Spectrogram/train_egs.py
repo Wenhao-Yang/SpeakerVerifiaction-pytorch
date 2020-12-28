@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import profile
 import sys
 import time
 # Version conflict
@@ -489,6 +490,7 @@ def main():
         print('%s \33[0m' % lr_string)
 
         train(train_loader, model, ce, optimizer, epoch)
+        break
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
@@ -518,6 +520,7 @@ def main():
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
 
 
+@profile
 def train(train_loader, model, ce, optimizer, epoch):
     # switch to evaluate mode
     model.train()
@@ -596,6 +599,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         # optimizer.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
+            break
             epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
                                                                           len(train_loader.dataset),
                                                                           100. * batch_idx / len(train_loader))
