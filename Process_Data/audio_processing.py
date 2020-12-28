@@ -2,7 +2,6 @@
 # encoding: utf-8
 import os
 import pathlib
-import pdb
 import traceback
 
 import librosa
@@ -590,7 +589,7 @@ class PadCollate:
             xs - a tensor of all examples in 'batch' after padding
             ys - a LongTensor of all labels in batch
         """
-        pdb.set_trace()
+        # pdb.set_trace()
         if self.fix_len:
             frame_len = self.frame_len
         else:
