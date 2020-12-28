@@ -14,7 +14,6 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
-import profile
 import sys
 import time
 # Version conflict
