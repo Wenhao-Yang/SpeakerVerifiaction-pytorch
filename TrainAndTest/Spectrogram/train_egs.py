@@ -534,7 +534,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         batch_len = np.random.randint(args.random_chunk[0], args.random_chunk[1])
         start = np.random.randint(0, data.shape[2] - batch_len + 1)
         end = start + batch_len
-        data = data[:, :, start:end, :]
+        data = data[:, :, start:end, :].contiguous()
 
         if args.cuda:
             label = label.cuda(non_blocking=True)
