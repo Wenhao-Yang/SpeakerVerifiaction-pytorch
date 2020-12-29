@@ -366,6 +366,7 @@ class TimeDelayLayer_v5(nn.Module):
         self.batch_norm = batch_norm
         if batch_norm:
             self.bn = nn.BatchNorm1d(output_dim)
+
         self.drop = nn.Dropout(p=self.dropout_p)
 
     def forward(self, x):
