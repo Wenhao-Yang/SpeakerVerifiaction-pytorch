@@ -319,7 +319,7 @@ class FTDNN(nn.Module):
 
         logits = self.classifier(embeddings_b)
 
-        return embeddings_b, logits
+        return logits, embeddings_b
 
     def xvector(self, x):
         '''
