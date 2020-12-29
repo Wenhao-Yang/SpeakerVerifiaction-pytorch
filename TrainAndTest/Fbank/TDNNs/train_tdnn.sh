@@ -333,12 +333,12 @@ if [ $stage -le 80 ]; then
       --milestones 8,14,20 \
       --model ${model} \
       --scheduler rop \
-      --weight-decay 0.001 \
+      --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
-      --batch-size 192 \
+      --batch-size 128 \
       --accu-steps 1 \
       --input-dim 40 \
       --encoder-type ${encod} \
@@ -357,4 +357,3 @@ if [ $stage -le 80 ]; then
   done
 fi
 #exit
-
