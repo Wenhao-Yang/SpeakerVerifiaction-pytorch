@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from Process_Data.compute_vad import ComputeVadEnergy
+from Process_Data.Compute_Feat.compute_vad import ComputeVadEnergy
 from python_speech_features import fbank
 
 import matplotlib.pyplot as plt
