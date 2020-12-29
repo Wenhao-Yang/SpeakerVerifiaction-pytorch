@@ -11,8 +11,8 @@
 """
 import torch.nn as nn
 
-from Define_Model.FilterLayer import L2_Norm, Mean_Norm
-from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
+from Define_Model.FilterLayer import Mean_Norm
+from Define_Model.Pooling import StatisticPooling
 from Define_Model.TDNN.TDNN import TimeDelayLayer_v2, TimeDelayLayer_v4
 
 
@@ -145,8 +145,10 @@ class ETDNN_v4(nn.Module):
                                         activation=activation, batch_norm=batch_norm, dropout_p=dropout_p)
         self.frame8 = TimeDelayLayer_v4(input_dim=512, output_dim=512, context_size=1, dilation=1,
                                         activation=activation, batch_norm=batch_norm, dropout_p=dropout_p)
-        self.frame9 = TimeDelayLayer_v4(input_dim=512, output_dim=1500, context_size=1, dilation=1,
+        self.frame9 = TimeDelayLayer_v4(input_dim=512, output_dim=512, context_size=1, dilation=1,
                                         activation=activation, batch_norm=batch_norm, dropout_p=dropout_p)
+        self.frame10 = TimeDelayLayer_v4(input_dim=512, output_dim=1500, context_size=1, dilation=1,
+                                         activation=activation, batch_norm=batch_norm, dropout_p=dropout_p)
 
         # self.segment11 = nn.Linear(3000, embedding_size)
         # self.leakyrelu = nn.LeakyReLU()
@@ -157,9 +159,22 @@ class ETDNN_v4(nn.Module):
         else:
             self.encoder = nn.AdaptiveAvgPool2d((1, None))
 
-        self.segment11 = nn.Sequential(nn.Linear(3000, embedding_size),
-                                       nn.LeakyReLU(),
-                                       nn.BatchNorm1d(embedding_size))
+        seg12 = [nn.Linear(3000, embedding_size)]
+        seg13 = [nn.Linear(embedding_size, embedding_size)]
+        if activation == 'relu':
+            seg12.append(nn.ReLU())
+            seg13.append(nn.ReLU())
+        elif activation == 'leakyrelu':
+            seg12.append(nn.LeakyReLU())
+            seg13.append(nn.LeakyReLU())
+        elif activation == 'prelu':
+            seg12.append(nn.PReLU())
+            seg13.append(nn.PReLU())
+        seg12.append(nn.BatchNorm1d(embedding_size))
+        seg13.append(nn.BatchNorm1d(embedding_size))
+
+        self.segment12 = nn.Sequential(seg12)
+        self.segment13 = nn.Sequential(seg13)
 
         self.classifier = nn.Linear(embedding_size, num_classes)
 
@@ -167,13 +182,6 @@ class ETDNN_v4(nn.Module):
             if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
-
-    # def statistic_pooling(self, x):
-    #     mean_x = x.mean(dim=1)
-    #     # std_x = x.std(dim=1)
-    #     std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
-    #     mean_std = torch.cat((mean_x, std_x), 1)
-    #     return mean_std
 
     def set_global_dropout(self, dropout_p):
         self.dropout_p = dropout_p
@@ -184,6 +192,29 @@ class ETDNN_v4(nn.Module):
 
     def forward(self, x):
         # pdb.set_trace()
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        x = self.frame1(x)
+        x = self.affine2(x)
+        x = self.frame3(x)
+        x = self.affine4(x)
+        x = self.frame5(x)
+        x = self.affine6(x)
+        x = self.frame7(x)
+        x = self.frame8(x)
+        x = self.frame9(x)
+        x = self.frame10(x)
+
+        x = self.encoder(x)
+        embeddings_a = self.segment12(x)
+        embeddings_b = self.segment13(embeddings_a)
+
+        logits = self.classifier(embeddings_b)
+
+        return logits, embeddings_b
+
+    def xvector(self, x):
 
         if self.inst_layer != None:
             x = self.inst_layer(x)
@@ -197,10 +228,9 @@ class ETDNN_v4(nn.Module):
         x = self.frame7(x)
         x = self.frame8(x)
         x = self.frame9(x)
+        x = self.frame10(x)
 
         x = self.encoder(x)
-        embeddings = self.segment11(x)
+        embeddings_a = self.segment12(x)
 
-        logits = self.classifier(embeddings)
-
-        return logits, embeddings
+        return embeddings_a

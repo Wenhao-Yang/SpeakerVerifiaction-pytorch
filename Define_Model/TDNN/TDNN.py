@@ -14,6 +14,7 @@ https://github.com/jonasvdd/TDNN/blob/master/tdnn.py
 """
 
 import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -339,6 +340,55 @@ class TimeDelayLayer_v4(nn.Module):
         return x.transpose(1, 3)
 
 
+class TimeDelayLayer_v5(nn.Module):
+
+    def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
+                 batch_norm=True, dropout_p=0.0, padding=0, activation='relu'):
+        super(TimeDelayLayer_v5, self).__init__()
+        self.context_size = context_size
+        self.stride = stride
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.dilation = dilation
+        self.dropout_p = dropout_p
+        self.padding = padding
+
+        self.kernel = nn.Conv1d(self.input_dim, self.output_dim, self.context_size, stride=self.stride,
+                                padding=self.padding, dilation=self.dilation)
+
+        if activation == 'relu':
+            self.nonlinearity = nn.ReLU()
+        elif activation == 'leakyrelu':
+            self.nonlinearity = nn.LeakyReLU()
+        elif activation == 'prelu':
+            self.nonlinearity = nn.PReLU()
+
+        self.batch_norm = batch_norm
+        if batch_norm:
+            self.bn = nn.BatchNorm1d(output_dim)
+        self.drop = nn.Dropout(p=self.dropout_p)
+
+    def forward(self, x):
+        '''
+        input: size (batch, seq_len, input_features)
+        outpu: size (batch, new_seq_len, output_features)
+        '''
+        _, _, d = x.shape
+        assert (d == self.input_dim), 'Input dimension was wrong. Expected ({}), got ({})'.format(
+            self.input_dim, d)
+
+        x = self.kernel(x.transpose(1, 2))
+        x = self.nonlinearity(x)
+
+        if self.dropout_p:
+            x = self.drop(x)
+
+        if self.batch_norm:
+            x = self.bn(x)
+
+        return x.transpose(1, 2)
+
+
 class TDNN_v1(nn.Module):
     def __init__(self, context, input_dim, output_dim, node_num, full_context):
         super(TDNN_v1, self).__init__()
@@ -554,8 +604,98 @@ class TDNN_v4(nn.Module):
 
         # print(x.shape)
         x = self.encoder(x)
-        x = self.segment6(x)
-        embedding_b = self.segment7(x)
+        embedding_a = self.segment6(x)
+        embedding_b = self.segment7(embedding_a)
+
+        if self.alpha:
+            embedding_b = self.l2_norm(embedding_b)
+
+        logits = self.classifier(embedding_b)
+
+        return logits, embedding_b
+
+
+class TDNN_v5(nn.Module):
+    def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
+                 dropout_p=0.0, encoder_type='STAP', **kwargs):
+        super(TDNN_v5, self).__init__()
+        self.num_classes = num_classes
+        self.dropout_p = dropout_p
+        self.input_dim = input_dim
+        self.alpha = alpha
+
+        if input_norm == 'Instance':
+            self.inst_layer = nn.InstanceNorm1d(input_dim)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        else:
+            self.inst_layer = None
+
+        self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
+        self.frame2 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=3, dilation=2)
+        self.frame3 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=3, dilation=3)
+        self.frame4 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=1, dilation=1)
+        self.frame5 = TimeDelayLayer_v5(input_dim=512, output_dim=1500, context_size=1, dilation=1)
+        self.drop = nn.Dropout(p=self.dropout_p)
+
+        if encoder_type == 'STAP':
+            self.encoder = StatisticPooling(input_dim=1500)
+        elif encoder_type == 'SASP':
+            self.encoder = AttentionStatisticPooling(input_dim=1500, hidden_dim=512)
+        else:
+            raise ValueError(encoder_type)
+
+        self.segment6 = nn.Sequential(
+            nn.Linear(3000, 512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512)
+        )
+
+        self.segment7 = nn.Sequential(
+            nn.Linear(512, embedding_size),
+            nn.ReLU(),
+            nn.BatchNorm1d(embedding_size)
+        )
+
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
+        self.classifier = nn.Linear(embedding_size, num_classes)
+        # self.bn = nn.BatchNorm1d(num_classes)
+
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+            elif isinstance(m, TimeDelayLayer_v2):
+                # nn.init.normal(m.kernel.weight, mean=0., std=1.)
+                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
+
+    def set_global_dropout(self, dropout_p):
+        self.dropout_p = dropout_p
+        self.drop.p = dropout_p
+
+    def forward(self, x):
+        # pdb.set_trace()
+        if len(x.shape) == 4:
+            x = x.squeeze(1).float()
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        x = self.frame1(x)
+        x = self.frame2(x)
+        x = self.frame3(x)
+        x = self.frame4(x)
+        x = self.frame5(x)
+
+        if self.dropout_p:
+            x = self.drop(x)
+
+        # print(x.shape)
+        x = self.encoder(x)
+        embedding_a = self.segment6(x)
+        embedding_b = self.segment7(embedding_a)
 
         if self.alpha:
             embedding_b = self.l2_norm(embedding_b)

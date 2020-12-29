@@ -20,8 +20,8 @@ import torch.optim as optim
 from Define_Model.CNN import AlexNet
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.TDNN.TDNN import ASTDNN, TDNN_v2, TDNN_v4
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN
+from Define_Model.TDNN.TDNN import ASTDNN, TDNN_v2, TDNN_v4, TDNN_v5
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 
@@ -68,6 +68,7 @@ __factory = {
     'ASTDNN': ASTDNN,
     'TDNN': TDNN_v2,
     'TDNN_v4': TDNN_v4,
+    'TDNN_v5': TDNN_v5,
     'ETDNN': ETDNN,
     'ETDNN_v4': ETDNN_v4,
     'GradResNet': GradResNet,
