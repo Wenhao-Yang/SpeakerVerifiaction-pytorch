@@ -35,9 +35,9 @@ from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterL
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
     GaussianLoss
 from Process_Data import constants as c
-from Process_Data.KaldiDataset import KaldiExtractDataset, \
+from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.LmdbDataset import EgsDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset
 from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog, ConcateInput
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
