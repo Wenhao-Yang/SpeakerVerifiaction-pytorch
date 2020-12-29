@@ -526,6 +526,7 @@ def train(train_loader, model, ce, optimizer, epoch):
     correct = 0.
     total_datasize = 0.
     total_loss = 0.
+    orth_err = 0
 
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
@@ -581,12 +582,11 @@ def train(train_loader, model, ce, optimizer, epoch):
             if args.model == 'FTDNN':
                 if isinstance(model, DistributedDataParallel):
                     model.module.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
-                    orth_err = model.module.get_orth_errors()
+                    orth_err += model.module.get_orth_errors()
                 else:
                     model.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
-                    orth_err = model.get_orth_errors()
-                if orth_err:
-                    print('orth_err is %d' % orth_err)
+                    orth_err += model.get_orth_errors()
+
         # optimizer.zero_grad()
         # loss.backward()
 
@@ -609,6 +609,10 @@ def train(train_loader, model, ce, optimizer, epoch):
                                                                           100. * batch_idx / len(train_loader))
             if not args.fix_length:
                 epoch_str += ' Batch Length: {:>3d}'.format(data.shape[-2])
+
+            if orth_err > 0:
+                print(' Orth_err: {:>5d}'.format(orth_err))
+
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
