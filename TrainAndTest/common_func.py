@@ -20,8 +20,9 @@ import torch.optim as optim
 from Define_Model.CNN import AlexNet
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.TDNN import ASTDNN, TDNN_v2, ETDNN_v4, ETDNN, TDNN_v4
-from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
+from Define_Model.TDNN.TDNN import ASTDNN, TDNN_v2, TDNN_v4
+from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN
+from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 
 def create_optimizer(parameters, optimizer, **kwargs):

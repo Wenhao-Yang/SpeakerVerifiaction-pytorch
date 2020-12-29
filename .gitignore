@@ -19,7 +19,7 @@ Lime/SuResCNN10/data
 *.egs
 *.eps
 *.local
-misc/.ipynb_checkpoints
-misc/data
+Misc/.ipynb_checkpoints
+Misc/data
 Score/data/exp
 Score/plda_vz.py
