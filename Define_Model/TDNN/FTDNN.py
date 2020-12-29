@@ -262,7 +262,7 @@ class StatsPool(nn.Module):
 
 class FTDNN(nn.Module):
 
-    def __init__(self, num_classes, input_dim=80, embedding_size=512):
+    def __init__(self, num_classes, input_dim=80, embedding_size=512, **kwargs):
         '''
         The FTDNN architecture from
         "State-of-the-art speaker recognition with neural network embeddings in

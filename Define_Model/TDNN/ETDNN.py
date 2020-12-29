@@ -282,22 +282,20 @@ class ETDNN_v5(nn.Module):
         else:
             self.encoder = nn.AdaptiveAvgPool2d((1, None))
 
-        seg12 = [nn.Linear(3000, embedding_size)]
-        seg13 = [nn.Linear(embedding_size, embedding_size)]
-        if activation == 'relu':
-            seg12.append(nn.ReLU())
-            seg13.append(nn.ReLU())
-        elif activation == 'leakyrelu':
-            seg12.append(nn.LeakyReLU())
-            seg13.append(nn.LeakyReLU())
-        elif activation == 'prelu':
-            seg12.append(nn.PReLU())
-            seg13.append(nn.PReLU())
-        seg12.append(nn.BatchNorm1d(embedding_size))
-        seg13.append(nn.BatchNorm1d(embedding_size))
+        self.segment12 = nn.Sequential(nn.Linear(3000, embedding_size))
+        self.segment13 = nn.Sequential(nn.Linear(embedding_size, embedding_size))
 
-        self.segment12 = nn.Sequential(seg12)
-        self.segment13 = nn.Sequential(seg13)
+        if activation == 'relu':
+            act_fn = nn.ReLU
+        elif activation == 'leakyrelu':
+            act_fn = nn.LeakyReLU
+        elif activation == 'prelu':
+            act_fn = nn.PReLU
+
+        self.segment12.add_module('seg12_act', act_fn())
+        self.segment13.add_module('seg13_act', act_fn())
+        self.segment12.add_module('seg13_bn', nn.BatchNorm1d(embedding_size))
+        self.segment13.add_module('seg13_bn', nn.BatchNorm1d(embedding_size))
 
         self.classifier = nn.Linear(embedding_size, num_classes)
 
