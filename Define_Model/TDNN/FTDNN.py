@@ -294,6 +294,7 @@ class FTDNN(nn.Module):
         '''
         Input must be (batch_size, seq_len, in_dim)
         '''
+
         if len(x.shape) == 4:
             x = x.squeeze(1).float()
         x = self.layer01(x)

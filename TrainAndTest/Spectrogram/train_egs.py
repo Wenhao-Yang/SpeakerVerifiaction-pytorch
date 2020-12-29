@@ -577,6 +577,12 @@ def train(train_loader, model, ce, optimizer, epoch):
             # optimizer the net
             optimizer.step()  # update parameters of net
             optimizer.zero_grad()  # reset gradient
+
+            if args.model == 'FTDNN':
+                model.step_semi_orth()  # The key method to constrain the first two convolutions, perform after every SGD step
+                orth_err = model.orth_error()
+                if orth_err:
+                    print('orth_err is %d' % orth_err)
         # optimizer.zero_grad()
         # loss.backward()
 
