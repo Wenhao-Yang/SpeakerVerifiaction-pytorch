@@ -20,7 +20,8 @@ import torch.optim as optim
 from Define_Model.CNN import AlexNet
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN
+from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
+from Define_Model.TDNN.FTDNN import FTDNN
 from Define_Model.TDNN.TDNN import ASTDNN, TDNN_v2, TDNN_v4, TDNN_v5
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
@@ -30,7 +31,7 @@ def create_optimizer(parameters, optimizer, **kwargs):
     parameters = filter(lambda p: p.requires_grad, parameters)
     if optimizer == 'sgd':
         opt = optim.SGD(parameters,
-                              lr=kwargs['lr'],
+                        lr=kwargs['lr'],
                               momentum=kwargs['momentum'],
                               dampening=kwargs['dampening'],
                               weight_decay=kwargs['weight_decay'])
@@ -71,6 +72,8 @@ __factory = {
     'TDNN_v5': TDNN_v5,
     'ETDNN': ETDNN,
     'ETDNN_v4': ETDNN_v4,
+    'ETDNN_v5': ETDNN_v5,
+    'FTDNN': FTDNN,
     'GradResNet': GradResNet,
     'TimeFreqResNet': TimeFreqResNet
 }
