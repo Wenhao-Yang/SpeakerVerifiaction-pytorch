@@ -15,7 +15,7 @@ import os
 import kaldi_io
 import numpy as np
 
-from Vector_Score.plda import PLDA, PldaConfig
+from Score.Plda.plda import PLDA, PldaConfig
 
 # Training settings
 parser = argparse.ArgumentParser(description='Kalid PLDA scoring')

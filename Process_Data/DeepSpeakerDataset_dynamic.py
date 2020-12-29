@@ -14,7 +14,7 @@ import pdb
 
 import torch.utils.data as data
 from torch.utils.data import Dataset
-from Xvector_Extraction.prepare_config import id2name
+from Extraction.prepare_config import id2name
 
 
 def find_classes(voxceleb):

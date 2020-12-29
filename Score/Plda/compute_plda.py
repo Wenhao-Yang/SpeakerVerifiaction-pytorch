@@ -15,7 +15,7 @@ import argparse
 import kaldi_io
 import numpy as np
 
-from Vector_Score.plda import PldaEstimationConfig, PldaStats, PldaEstimator, PLDA
+from Score.Plda.plda import PldaEstimationConfig, PldaStats, PldaEstimator, PLDA
 
 # Training settings
 parser = argparse.ArgumentParser(description='Kalid PLDA compute')
@@ -58,7 +58,7 @@ if __name__ == '__main__':
             utt2vec[uid] = vec_path
             # spks[spk_utts[0]] = spk_utts[1:]
             if vec_dim == -1:
-                # vec_dim = vec_loader(os.path.join('Vector_Score/data', vec_path)).shape[-1] #Todo: change the dir
+                # vec_dim = vec_loader(os.path.join('Score/data', vec_path)).shape[-1] #Todo: change the dir
                 vec_dim = vec_loader(vec_path).shape[-1]  # Todo: change the dir
 
     plda_stats = PldaStats(dim=vec_dim)  # 记录说话人数目及其egs数目、维度类中心等\
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             this_vecs = []
             for uid in spk_utts[1:]:
                 try:
-                    # vec_path = os.path.join('Vector_Score/data', utt2vec[uid]) #Todo: change the dir
+                    # vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
                     vec_path = utt2vec[uid]  # Todo: change the dir
                     this_vec = vec_loader(vec_path)
                     this_vecs.append(this_vec)
