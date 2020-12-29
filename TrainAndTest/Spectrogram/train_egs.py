@@ -611,7 +611,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                 epoch_str += ' Batch Length: {:>3d}'.format(data.shape[-2])
 
             if orth_err > 0:
-                print(' Orth_err: {:>5d}'.format(int(orth_err)))
+                epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
