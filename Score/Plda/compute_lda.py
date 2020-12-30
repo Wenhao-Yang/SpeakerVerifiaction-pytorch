@@ -21,15 +21,14 @@ from Score.Plda.plda import write_mat_binary
 # Training settings
 parser = argparse.ArgumentParser(description='Kalid PLDA compute')
 # Data options
-parser.add_argument('--utt2spk', type=str, required=True, help='path to spk2utt')
+parser.add_argument('--spk2utt', type=str, required=True, help='path to spk2utt')
 parser.add_argument('--ivector-scp', type=str, required=True, help='path to ivector.scp')
-parser.add_argument('--num-em-iters', type=int, default=10, help='path to ivector.scp')
 parser.add_argument('--lda-mat', type=str, required=True, help='path to plda directory')
 parser.add_argument('--vector-format', type=str, default='kaldi', help='path to plda directory')
 
-parser.add_argument('--lda-dim', type=int, default=100, required=True, help='path to spk2utt')
-parser.add_argument('--total-covariance-factor', type=float, default=0.0, required=True, help='path to spk2utt')
-parser.add_argument('--covariance-floor', type=float, default=1e-6, required=True, help='path to spk2utt')
+parser.add_argument('--lda-dim', type=int, default=100, help='path to spk2utt')
+parser.add_argument('--total-covariance-factor', type=float, default=0.0, help='path to spk2utt')
+parser.add_argument('--covariance-floor', type=float, default=1e-6, help='path to spk2utt')
 
 args = parser.parse_args()
 
@@ -61,7 +60,8 @@ if __name__ == '__main__':
         for l in f.readlines():
             try:
                 uid, vec_path = l.split()
-                this_vec = vec_loader(vec_path)
+                # this_vec = vec_loader(vec_path)
+                this_vec = vec_loader(os.path.join('Score/data', vec_path))
                 utt2vec[uid] = this_vec
 
                 if dim == 0:
@@ -81,10 +81,10 @@ if __name__ == '__main__':
             spk = spk_utts[0]
             spk2utt[spk] = spk_utts[1:]
 
-    print("Read %d utterances, with errors." % (num_done, num_err))
+    print("Read %d utterances, %d with errors." % (num_done, num_err))
 
     if num_done == 0:
-        print("Did not read any utterances.")
+        raise Exception("Did not read any utterances.")
     else:
         print("Computing within-class covariance.")
 
@@ -94,16 +94,14 @@ if __name__ == '__main__':
 
     # LDA matrix without the offset term.
     lda_mat = np.zeros((lda_dim, dim + 1))
-
     # 初始化linear_part = lda_mat[0:lda_dim][0:dim]
     linear_part = lda_mat[0:lda_dim, 0:dim].copy()
-
     # 计算变换的矩阵linear_part
     ComputeLdaTransform(utt2vec, spk2utt, total_covariance_factor, covariance_floor, linear_part)
 
     # y = -1 * linear_part + 0 * mean.
-    offset = -1.0 * linear_part * mean
-    lda_mat[:, dim] = offset  # add mean-offset to transform
+    offset = -1.0 * np.matmul(linear_part, mean.reshape(-1, 1))
+    lda_mat[:, dim] = offset.squeeze()  # add mean-offset to transform
     # 把offset加到lda_mat
     print("2-norm of transformed iVector mean is ", np.power(offset, 2.0).sum())
 

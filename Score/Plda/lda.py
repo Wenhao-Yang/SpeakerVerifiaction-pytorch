@@ -11,7 +11,6 @@
 """
 import numpy as np
 
-from Score.Plda.lda import CovarianceStats
 from Score.Plda.plda import ApplyFloor
 
 
