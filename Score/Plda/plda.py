@@ -126,7 +126,7 @@ class PLDA(object):
     def TransformIvector(self, config, ivector, num_examples):
 
         assert (len(ivector) == self.Dim())
-        transformed_ivector = self.offset_
+        transformed_ivector = self.offset_.copy()
         transformed_ivector += np.matmul(self.transform_, ivector.reshape(-1, 1))  # matmul
 
         if (config.simple_length_norm):
@@ -159,7 +159,7 @@ class PLDA(object):
         sqdiff = transformed_test_ivector  # there is no offset.
         sqdiff = np.power(sqdiff, 1)
 
-        variance = self.psi_
+        variance = self.psi_.copy()
         variance = 1 + variance  # I + \Psi.
         logdet = np.log(np.sum(variance))
         variance = 1 / variance
@@ -187,9 +187,7 @@ class PLDA(object):
         print("New value of Psi is " + str(self.psi_))
 
         within_class_covar = 1 / np.sqrt(within_class_covar)
-
         self.transform_ = self.transform_ * within_class_covar
-
         self.ComputeDerivedVars()
 
     def ApplyTransform(self, in_transform):
@@ -199,7 +197,7 @@ class PLDA(object):
         mean_new = in_transform * self.mean_
         self.mean_ = mean_new
 
-        transform_invert = self.transform_
+        transform_invert = self.transform_.copy()
 
         # Next, compute the between_var and within_var that existed
         # prior to diagonalization.
