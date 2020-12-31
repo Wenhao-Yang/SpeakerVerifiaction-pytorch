@@ -1090,7 +1090,7 @@ if [ $stage -le 80 ]; then
       --s 15 \
       --m 3 \
       --loss-ratio 0.01 \
-      --weight-decay 0.001 \
+      --weight-decay 0.0005 \
       --dropout-p 0.25 \
       --gpu-id 0,1 \
       --extract \
