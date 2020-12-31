@@ -1055,7 +1055,7 @@ if [ $stage -le 80 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
   model=LoResNet
-  resnet_size=14
+  resnet_size=18
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -1066,6 +1066,7 @@ if [ $stage -le 80 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
+      --fix-length \
       --input-norm Mean \
       --resnet-size ${resnet_size} \
       --nj 12 \
@@ -1077,7 +1078,7 @@ if [ $stage -le 80 ]; then
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_em512 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_em512/checkpoint_24.pth \
-      --channels 64,128,256 \
+      --channels 32,64,128,256 \
       --batch-size 128 \
       --embedding-size 512 \
       --time-dim 1 \
