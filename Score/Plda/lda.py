@@ -31,8 +31,7 @@ class CovarianceStats(object):
     # 返回类内方差
     def GetWithinCovar(self):
         assert (self.num_utt_ - self.num_spk_ > 0);
-        within_covar = self.tot_covar_.copy()
-        within_covar -= self.between_covar_
+        within_covar = self.tot_covar_ - self.between_covar_
         within_covar *= 1.0 / self.num_utt_
 
         return within_covar
@@ -44,7 +43,7 @@ class CovarianceStats(object):
         self.tot_covar_ += np.matmul(utts_of_this_spk.transpose(), utts_of_this_spk)
         spk_average = utts_of_this_spk.mean(axis=0)
 
-        self.between_covar_ += num_utts * np.power(spk_average, 2).sum()
+        self.between_covar_ += num_utts * np.matmul(spk_average.reshape(-1, 1), spk_average.reshape(1, -1))
         self.num_utt_ += num_utts
         self.num_spk_ += 1
 
@@ -127,8 +126,7 @@ def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
     T = ComputeNormalizingTransform(mat_to_normalize, covariance_floor)
 
     # between_cov = total_cov - within_cov
-    between_covar = total_covar.copy()
-    between_covar -= within_covar
+    between_covar = total_covar - within_covar
 
     #  between_cov_pro = between_covar
     between_covar_proj = np.matmul(T, between_covar).__matmul__(T.transpose())
@@ -147,12 +145,12 @@ def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
             break
 
     s = s[s_idx]
-    U = U[s_idx]
+    U = U.transpose()[s_idx].transpose()
 
     print("Singular values of between-class covariance after projecting " \
           "with interpolated [total/within] covariance with a weight of ",
           total_covariance_factor,
-          " on the total covariance, are: ", s)
+          " on the total covariance, are: \n", s)
 
     # U^T is the transform that will diagonalize the between-class covariance.
     #  U_part is just the part of U that corresponds to the kept dimensions.
@@ -160,24 +158,23 @@ def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
     U_part = U[0:dim, 0:lda_dim]
     # We first transform by T and then by U_part^T.  This means T goes on the right.
     #  lda_out = U_part^T * temp * T (?)
-    lda_out = np.matmul(U_part.T, T)
+    return np.matmul(U_part.T, T)
 
 
 def ComputeNormalizingTransform(covar, floor):
-    dim = len(covar)
-
     # 计算方差的特征值
-    s, U = np.linalg.eig(covar);
+    s, U = np.linalg.eig(covar)
+    # print("Without sorted U is ", U)
     # 特征值排序
     # Sort eigvenvalues from largest to smallest.
     s_idx = np.flipud(np.argsort(s))
     s = s[s_idx]
-    U = U[s_idx]
+    U = U.transpose()[s_idx].transpose()  # U[:,i] is the eigenvector corresponding to the eigenvalue s[i]
 
     # 取值大于某一floor的特征值
     # Floor eigenvalues to a small positive value.
-    num_floored = 0
     floor *= s[0]  # Floor relative to the largest eigenvalue
+    floor = np.double(floor)
     num_floored = ApplyFloor(s, floor)
 
     if (num_floored > 0):
@@ -187,6 +184,6 @@ def ComputeNormalizingTransform(covar, floor):
     # proj * covar * proj^T = I.
     # 计算投影矩阵
     s = np.power(s, -0.5)
-    proj = np.matmul(np.identity(len(s)) * s, U.T)
+    proj = np.matmul(np.identity(len(s)) * s, U.transpose())
 
     return proj

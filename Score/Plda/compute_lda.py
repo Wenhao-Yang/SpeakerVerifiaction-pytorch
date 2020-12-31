@@ -55,24 +55,16 @@ if __name__ == '__main__':
     num_err = 0
     dim = 0
 
-    utt2vec = {}
+    utt2vec_path = {}
     with open(args.ivector_scp, 'r') as f:
         for l in f.readlines():
             try:
                 uid, vec_path = l.split()
-                # this_vec = vec_loader(vec_path)
-                this_vec = vec_loader(os.path.join('Score/data', vec_path))
-                utt2vec[uid] = this_vec
+                utt2vec_path[uid] = vec_path
+            except:
+                continue
 
-                if dim == 0:
-                    # vec_dim = vec_loader(os.path.join('Score/data', vec_path)).shape[-1] #Todo: change the dir
-                    dim = this_vec.shape[-1]  # Todo: change the dir
-                else:
-                    assert (dim == this_vec.shape[-1])
-                num_done += 1
-            except Exception as e:
-                num_err += 1
-
+    utt2vec = {}
     spk2utt = {}
     with open(args.spk2utt, 'r') as f:
         spk_err = []
@@ -80,6 +72,23 @@ if __name__ == '__main__':
             spk_utts = l.split()
             spk = spk_utts[0]
             spk2utt[spk] = spk_utts[1:]
+
+            for utt in spk_utts[1:]:
+                try:
+                    vec_path = utt2vec_path[utt]
+                    this_vec = vec_loader(os.path.join('Score/data', vec_path))
+                    utt2vec[utt] = this_vec
+                    if dim == 0:
+                        # vec_dim = vec_loader(os.path.join('Score/data', vec_path)).shape[-1] #Todo: change the dir
+                        # print('Dtype of ivectors is ', this_vec.dtype)
+
+                        dim = this_vec.shape[-1]  # Todo: change the dir
+                    else:
+                        assert (dim == this_vec.shape[-1])
+
+                    num_done += 1
+                except Exception as e:
+                    num_err += 1
 
     print("Read %d utterances, %d with errors." % (num_done, num_err))
 
@@ -90,21 +99,22 @@ if __name__ == '__main__':
 
     # 计算ivector的均值
     mean = ComputeAndSubtractMean(utt2vec)
-    print("2-norm of iVector mean is %f " % np.sqrt(np.power(mean, 2).sum()))
+    # print("mean vector is ", str(mean))
+    print("2-norm of iVector mean is %f " % np.linalg.norm(mean))
 
     # LDA matrix without the offset term.
-    lda_mat = np.zeros((lda_dim, dim + 1))
-    # 初始化linear_part = lda_mat[0:lda_dim][0:dim]
-    linear_part = lda_mat[0:lda_dim, 0:dim].copy()
+    # 初始化linear_part
+    linear_part = np.zeros((lda_dim, dim))
     # 计算变换的矩阵linear_part
-    ComputeLdaTransform(utt2vec, spk2utt, total_covariance_factor, covariance_floor, linear_part)
+    linear_part = ComputeLdaTransform(utt2vec, spk2utt, total_covariance_factor, covariance_floor, linear_part)
 
     # y = -1 * linear_part + 0 * mean.
     offset = -1.0 * np.matmul(linear_part, mean.reshape(-1, 1))
-    lda_mat[:, dim] = offset.squeeze()  # add mean-offset to transform
-    # 把offset加到lda_mat
-    print("2-norm of transformed iVector mean is ", np.power(offset, 2.0).sum())
 
+    # 把offset加到lda_mat
+    lda_mat = np.concatenate((linear_part, offset), axis=1)  # add mean-offset to transform
+
+    print("2-norm of transformed iVector mean is ", np.sqrt(np.power(offset, 2.0).sum()))
     lda_file = args.lda_mat
     if not os.path.exists(os.path.dirname(lda_file)):
         print('Making parent dir for lda files.')
@@ -113,4 +123,4 @@ if __name__ == '__main__':
     with open(lda_file, 'wb') as f:
         write_mat_binary(f, lda_mat)
 
-    print("Wrote LDA transform mat to ", lda_mat)
+    print("Wrote LDA transform mat to ", lda_file)
