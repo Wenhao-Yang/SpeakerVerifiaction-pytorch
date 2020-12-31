@@ -1070,7 +1070,7 @@ if [ $stage -le 80 ]; then
       --input-norm Mean \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 24 \
+      --epochs 30 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
