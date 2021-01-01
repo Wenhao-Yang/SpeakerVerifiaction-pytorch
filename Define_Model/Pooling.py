@@ -133,7 +133,7 @@ class StatisticPooling(nn.Module):
         """
         x_shape = x.shape
         if len(x.shape) != 3:
-            x = x.reshape(x_shape[0], x_shape[1], -1)
+            x = x.reshape(x_shape[0], x_shape[-2], -1)
 
         assert x.shape[-1] == self.input_dim
 
