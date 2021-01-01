@@ -132,13 +132,10 @@ class StatisticPooling(nn.Module):
         :return:   [feat_dim] vector
         """
         x_shape = x.shape
-        x = x.squeeze()
-        if x_shape[0] == 1:
-            x = x.unsqueeze(0)
+        if len(x.shape) != 3:
+            x = x.reshape(x_shape[0], x_shape[1], -1)
 
-        assert len(x.shape) == 3, print(x.shape)
-        if x.shape[-2] == self.input_dim:
-            x = x.transpose(-1, -2)
+        assert x.shape[-1] == self.input_dim
 
         mean_x = x.mean(dim=1)
         std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()

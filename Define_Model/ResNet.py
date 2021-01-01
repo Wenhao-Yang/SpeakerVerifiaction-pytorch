@@ -861,6 +861,7 @@ class LocalResNet(nn.Module):
             self.encoder = SelfAttentionPooling(input_dim=channels[-1], hidden_dim=channels[-1])
             self.fc1 = nn.Sequential(
                 nn.Linear(channels[-1], embedding_size),
+                nn.ReLU(),
                 nn.BatchNorm1d(embedding_size)
             )
         elif encoder_type == 'SASP':
@@ -868,13 +869,15 @@ class LocalResNet(nn.Module):
             self.encoder = AttentionStatisticPooling(input_dim=channels[-1], hidden_dim=channels[-1])
             self.fc1 = nn.Sequential(
                 nn.Linear(channels[-1] * 2, embedding_size),
+                nn.ReLU(),
                 nn.BatchNorm1d(embedding_size)
             )
         elif encoder_type == 'STAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, avg_size))
-            self.encoder = StatisticPooling(input_dim=channels[-1])
+            self.encoder = StatisticPooling(input_dim=avg_size*channels[-1])
             self.fc1 = nn.Sequential(
-                nn.Linear(channels[-1] * 2, embedding_size),
+                nn.Linear(avg_size * channels[-1] * 2, embedding_size),
+                nn.ReLU(),
                 nn.BatchNorm1d(embedding_size)
             )
         elif encoder_type == 'ASTP':
@@ -882,6 +885,7 @@ class LocalResNet(nn.Module):
             self.encoder = None
             self.fc1 = nn.Sequential(
                 nn.Linear(channels[-1] * avg_size * time_dim, embedding_size),
+                nn.ReLU(),
                 nn.BatchNorm1d(embedding_size)
             )
         else:
@@ -889,14 +893,15 @@ class LocalResNet(nn.Module):
             self.encoder = None
             self.fc1 = nn.Sequential(
                 nn.Linear(channels[-1] * avg_size * time_dim, embedding_size),
+                nn.ReLU(),
                 nn.BatchNorm1d(embedding_size)
             )
 
         if self.transform == 'Linear':
             self.trans_layer = nn.Sequential(
-                nn.Linear(embedding_size, embedding_size, bias=False),
-                nn.BatchNorm1d(embedding_size),
-                nn.ReLU()
+                nn.Linear(embedding_size, embedding_size),
+                nn.ReLU(),
+                nn.BatchNorm1d(embedding_size)
             )
         elif self.transform == 'GhostVLAD':
             self.trans_layer = GhostVLAD_v2(num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
