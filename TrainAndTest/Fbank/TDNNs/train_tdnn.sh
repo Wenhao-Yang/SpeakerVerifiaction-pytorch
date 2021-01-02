@@ -402,7 +402,6 @@ if [ $stage -le 81 ]; then
       --loss-type ${loss} \
       --margin 0.3 \
       --s 15 \
-      --remove-vad \
       --log-interval 10
   done
 fi
