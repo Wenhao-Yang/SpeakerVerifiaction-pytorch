@@ -329,7 +329,7 @@ if [ $stage -le 80 ]; then
       --fix-length \
       --nj 16 \
       --epochs 40 \
-      --patience 3 \
+      --patience 2 \
       --milestones 8,14,20 \
       --model ${model} \
       --scheduler rop \
