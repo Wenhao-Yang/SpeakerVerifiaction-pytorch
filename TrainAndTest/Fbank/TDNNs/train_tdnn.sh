@@ -357,7 +357,6 @@ if [ $stage -le 80 ]; then
   done
 fi
 
-
 if [ $stage -le 81 ]; then
   model=TDNN_v5
   datasets=vox2
