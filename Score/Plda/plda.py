@@ -312,8 +312,7 @@ class PldaStats(object):
         assert (self.dim_ == group.shape[-1])
 
         n = len(group)
-        mean = np.zeros(self.dim_)
-        mean += group.sum(axis=0) / n
+        mean = group.mean(axis=0)
         mean = mean.reshape((-1, 1))
 
         # mean->AddRowSumMat(1.0 / n, group);
@@ -452,6 +451,8 @@ class PldaEstimator(object):
         self.GetStatsFromClassMeans()  # 更新between_var_stats_, within_var_stats_
         # 更新within_var_, between_var_
         self.EstimateFromStats()
+
+        print()
         # print("Objective function is ", self.ComputeObjf())
 
     def ResetPerIterStats(self):
@@ -459,6 +460,10 @@ class PldaEstimator(object):
         self.within_var_count_ = 0.0
         self.between_var_stats_ = Resize((self.Dim(), self.Dim()))
         self.between_var_count_ = 0.0
+
+        # KALDI_LOG << "Trace of within-class variance is " << within_var_.Trace();
+        # KALDI_LOG << "Trace of between-class variance is " << between_var_.Trace();
+        print("\nTrace of within-class variance: %.4f between-class variance: %.4f" % (self.within_var_.trace(), self.between_var_.trace()))
 
     # gets stats from intra-class variation (stats_.offset_scatter_).
     def GetStatsFromIntraClass(self):
@@ -492,12 +497,10 @@ class PldaEstimator(object):
             weight = info.weight
             if info.num_examples:
                 n = info.num_examples
-                mixed_var = between_var_inv
-                mixed_var += n * within_var_inv
+                mixed_var = between_var_inv + n * within_var_inv
                 mixed_var = np.linalg.inv(mixed_var)  # todo
 
-            m = info.mean  # the mean for this class.
-            m += -1.0 / self.stats_.class_weight_ * self.stats_.sum_  # remove global mean
+            m = info.mean + (-1.0 / self.stats_.class_weight_ * self.stats_.sum_)  # remove global mean
             m = m.reshape(-1, 1)
             temp = np.matmul(n * within_var_inv, m)
             w = np.matmul(mixed_var, temp)
@@ -523,7 +526,7 @@ class PldaEstimator(object):
     def Estimate(self, config, plda):
         pbar = tqdm(range(config.num_em_iters))
         for i in pbar:
-            pbar.set_description("Plda estimation iteration {:>2d} of {} ;".format(i, config.num_em_iters))
+            pbar.set_description("Plda estimation iteration {:>2d} of {} ".format(i, config.num_em_iters))
             self.EstimateOneIter()
         self.GetOutput(plda)
 
@@ -558,7 +561,7 @@ class PldaEstimator(object):
 
         s_idx = np.flipud(np.argsort(s))
         s = s[s_idx]
-        U = U[s_idx]
+        U = U.transpose()[s_idx].transpose()
 
         # The transform U^T will make between_var_proj diagonal with value s
         # (i.e. U^T U diag(s) U U^T = diag(s)).  The final transform that
@@ -568,6 +571,9 @@ class PldaEstimator(object):
         plda.transform_ = U.transpose() * transform1
         plda.psi_ = s  # 更新psi
 
-        # print("Diagonal of between-class variance in normalized space is:\n", s)
+        print("Diagonal of between-class variance in normalized space is:\n", s)
         plda.ComputeDerivedVars()
+
+        print("within var is: ", self.within_var_)
+        print("between var is: ", self.between_var_)
     #

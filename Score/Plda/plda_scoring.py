@@ -14,6 +14,8 @@ import os
 
 import kaldi_io
 import numpy as np
+from kaldi_io import UnknownVectorHeader
+from kaldi_io.kaldi_io import _read_vec_flt_binary, _read_mat_binary, read_vec_flt
 
 from Score.Plda.plda import PLDA, PldaConfig
 
@@ -29,6 +31,9 @@ parser.add_argument('--score', type=str, required=True, help='path to scores fil
 parser.add_argument('--vector-format', type=str, default='kaldi', help='path to plda directory')
 parser.add_argument('--num-utts', type=str, default="", help='path to plda directory')
 
+parser.add_argument('--subtract-global-mean', action='store_false', default=True, help='path to plda directory')
+parser.add_argument('--mean-vec', type=str, default='', help='path to plda directory')
+parser.add_argument('--transform-vec', type=str, default='', help='path to plda directory')
 parser.add_argument('--normalize-length', action='store_true', default=True, help='log power spectogram')
 parser.add_argument('--simple-length-norm', action='store_true', default=False, help='path to plda directory')
 
@@ -47,6 +52,13 @@ if __name__ == '__main__':
 
     num_trials_done = 0
     num_trials_err = 0
+
+    if args.vector_format == 'kaldi':
+        vec_loader = kaldi_io.read_vec_flt
+    elif args.vector_format == 'npy':
+        vec_loader = np.load
+    else:
+        raise ValueError(args.vector_format)
 
     plda_config = PldaConfig()
     plda_config.register(normalize_length=args.normalize_length,
@@ -71,27 +83,68 @@ if __name__ == '__main__':
                     else:
                         break
 
+    sub_mean = False
+    if args.subtract_global_mean:
+        if args.mean_vec != "" and os.path.exists(args.mean_vec):
+            with open(args.mean_vec, 'rb') as f:
+                try:
+                    global_mean = _read_vec_flt_binary(f)
+                    sub_mean = True
+                except UnknownVectorHeader as u:
+                    mean_vec = []
+                    vec_str = f.readline()
+                    for v in vec_str.split():
+                        try:
+                            mean_vec.append(float(v))
+                        except:
+                            pass
+                    global_mean = np.array(mean_vec)
+                    sub_mean = True
+
+    transform_vec = None
+    transform = False
+    if os.path.exists(args.transform_vec):
+        try:
+            with open(args.transform_vec, 'rb') as f:
+                transform_vec = _read_mat_binary(f)
+                transform = True
+        except Exception as e:
+            print("Skippinng transform ... Transform vector loading error: \n%s" % str(e))
+
     print('Reading train iVectors:')
     train_ivectors = {}
-    for spk, ivector in kaldi_io.read_vec_flt_scp(args.train_vec_scp):
-        # train_vec[spk] = ivector
+    with open(args.train_vec_scp, 'r') as f:
+        for l in f.readlines():
+            spk, ivector_path = l.split()
+            ivector_path = os.path.join('Score/data', ivector_path)
+            ivector = vec_loader(ivector_path)
 
-        if len(spk2num_utts) > 0:
-            if spk in spk2num_utts:
-                num_examples = spk2num_utts[spk]
+    # for spk, ivector in kaldi_io.read_vec_flt_scp(args.train_vec_scp):
+            # train_vec[spk] = ivector
+            if sub_mean:
+                ivector -= global_mean
+
+            if transform:
+                if transform_vec.shape[1] != len(ivector):
+                    transform_vec = transform_vec[:, :len(ivector)]
+                ivector = np.matmul(transform_vec, ivector)
+
+            if len(spk2num_utts) > 0:
+                if spk in spk2num_utts:
+                    num_examples = spk2num_utts[spk]
+                else:
+                    num_train_errs += 1
+                    continue
             else:
-                num_train_errs += 1
-                continue
-        else:
-            num_examples = 1
+                num_examples = 1
 
-        transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
-        # print(transformed_ivector.shape)
+            transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
+            # print(transformed_ivector.shape)
 
-        tot_train_renorm_scale += normalization_factor
-        train_ivectors[spk] = transformed_ivector
+            tot_train_renorm_scale += normalization_factor
+            train_ivectors[spk] = transformed_ivector
 
-        num_train_ivectors += 1
+            num_train_ivectors += 1
 
     if (num_train_ivectors == 0):
         print("No training iVectors present.")
@@ -100,18 +153,31 @@ if __name__ == '__main__':
 
     print('Reading test iVectors:')
     test_ivectors = {}
-    for uid, ivector in kaldi_io.read_vec_flt_scp(args.test_vec_scp):
+    with open(args.train_vec_scp, 'r') as f:
+        for l in f.readlines():
+            uid, ivector_path = l.split()
+            ivector_path = os.path.join('Score/data', ivector_path)
+            ivector = vec_loader(ivector_path)
+
+    # for uid, ivector in kaldi_io.read_vec_flt_scp(args.test_vec_scp):
         # train_vec[spk] = ivector
-        if uid in test_ivectors:
-            print("Duplicate test iVector found for utterance %s" % uid)
-        num_examples = 1
+            if uid in test_ivectors:
+                print("Duplicate test iVector found for utterance %s" % uid)
+            num_examples = 1
+            if sub_mean:
+                ivector -= global_mean
 
-        transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
+            if transform:
+                if transform_vec.shape[1] != len(ivector):
+                    transform_vec = transform_vec[:, :transform_vec]
+                ivector = np.matmul(transform_vec, ivector)
 
-        tot_test_renorm_scale += normalization_factor
-        test_ivectors[uid] = transformed_ivector
+            transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
 
-        num_test_ivectors += 1
+            tot_test_renorm_scale += normalization_factor
+            test_ivectors[uid] = transformed_ivector
+
+            num_test_ivectors += 1
 
     if (num_test_ivectors == 0):
         print("No testing iVectors present.")
