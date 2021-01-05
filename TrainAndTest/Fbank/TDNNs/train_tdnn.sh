@@ -367,7 +367,7 @@ if [ $stage -le 81 ]; then
   encod=STAP
   embedding_size=512
 
-  for model in TDNN_v5 ETDNN_v5; do
+  for model in ETDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -378,13 +378,13 @@ if [ $stage -le 81 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
       --nj 16 \
-      --epochs 50 \
+      --epochs 13 \
       --patience 2 \
       --milestones 8,14,20 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0005 \
-      --lr 0.1 \
+      --lr 0.0001 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -393,7 +393,7 @@ if [ $stage -le 81 ]; then
       --input-dim 161 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size}/checkpoint_40.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size}/checkpoint_37.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
