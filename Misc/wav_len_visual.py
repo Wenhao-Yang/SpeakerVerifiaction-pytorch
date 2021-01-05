@@ -9,8 +9,8 @@
 @Time: 2019/12/17 1:16 PM
 @Overview:
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 spk_dur = '../Data/voxceleb1/spk_utt_duration.npy'
 
@@ -25,5 +25,6 @@ uni_dur, counts = np.unique(all_dur, return_counts=True)
 plt.bar(uni_dur*0.01, counts, width=1)
 plt.figure(figsize=(41.6, 8.74))
 # plt.xscale("log")
+
 plt.show()
 
