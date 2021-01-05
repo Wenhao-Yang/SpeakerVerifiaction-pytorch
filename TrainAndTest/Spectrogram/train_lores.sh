@@ -1056,7 +1056,7 @@ if [ $stage -le 80 ]; then
   datasets=vox2
   model=LoResNet
   resnet_size=18
-  encoder_type=STAP
+  encoder_type=None
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -1071,29 +1071,31 @@ if [ $stage -le 80 ]; then
       --input-norm Mean \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 30 \
+      --epochs 40 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_${encoder_type} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_${encoder_type}/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_fast_v2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_fast_v2/checkpoint_24.pth \
       --channels 32,64,128,256 \
+      --stride 1 \
+      --fast \
       --batch-size 128 \
       --embedding-size 512 \
       --time-dim 1 \
-      --avg-size 4 \
+      --avg-size 8 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
-      --alpha 13 \
+      --alpha 0 \
       --margin 0.3 \
       --grad-clip 0 \
       --s 15 \
       --m 3 \
       --loss-ratio 0.01 \
       --weight-decay 0.0005 \
-      --dropout-p 0.25 \
+      --dropout-p 0 \
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
