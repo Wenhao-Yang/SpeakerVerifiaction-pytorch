@@ -18,6 +18,7 @@ import sys
 import time
 # Version conflict
 import warnings
+from collections import OrderedDict
 
 import numpy as np
 import torch
@@ -355,9 +356,17 @@ def main():
             start_epoch = checkpoint['epoch']
 
             filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-            model_dict = model.state_dict()
-            model_dict.update(filtered)
-            model.load_state_dict(model_dict)
+            if list(filtered.keys())[0].startswith('module'):
+                new_state_dict = OrderedDict()
+                for k, v in filtered.items():
+                    name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                    new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+
+                model.load_state_dict(new_state_dict)
+            else:
+                model_dict = model.state_dict()
+                model_dict.update(filtered)
+                model.load_state_dict(model_dict)
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
