@@ -28,6 +28,7 @@ import torchvision.transforms as transforms
 from kaldi_io import read_mat, read_vec_flt
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
+from torch.optim import lr_scheduler
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
@@ -96,6 +97,8 @@ parser.add_argument('--epochs', type=int, default=20, metavar='E',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--scheduler', default='multi', type=str,
                     metavar='SCH', help='The optimizer to use (default: Adagrad)')
+parser.add_argument('--patience', default=4, type=int,
+                    metavar='PAT', help='patience for scheduler (default: 4)')
 parser.add_argument('--gamma', default=0.75, type=float,
                     metavar='GAMMA', help='The optimizer to use (default: Adagrad)')
 parser.add_argument('--milestones', default='10,15', type=str,
@@ -435,13 +438,15 @@ def main():
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
         f.write('Optimizer: ' + str(optimizer) + '\n')
 
+    milestones = args.milestones.split(',')
+    milestones = [int(x) for x in milestones]
+    milestones.sort()
     if args.scheduler == 'exp':
-        scheduler = ExponentialLR(optimizer, gamma=args.gamma)
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma, verbose=True)
+    elif args.scheduler == 'rop':
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5, verbose=True)
     else:
-        milestones = args.milestones.split(',')
-        milestones = [int(x) for x in milestones]
-        milestones.sort()
-        scheduler = MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1, verbose=True)
 
     ce = [ce_criterion, xe_criterion]
 
@@ -478,7 +483,19 @@ def main():
     #                                               **kwargs)
     # print('Batcch_size is {} for A, and {} for B.'.format(batch_size_a, batch_size_b))
     if args.cuda:
-        model = model.cuda()
+        if len(args.gpu_id) > 1:
+            print("Continue with gpu: %s ..." % str(args.gpu_id))
+            torch.distributed.init_process_group(backend="nccl",
+                                                 # init_method='tcp://localhost:23456',
+                                                 init_method='file:///home/work2020/yangwenhao/project/lstm_speaker_verification/data/sharedfile',
+                                                 rank=0,
+                                                 world_size=1)
+            model = model.cuda()
+            model = DistributedDataParallel(model)
+
+        else:
+            model = model.cuda()
+
         for i in range(len(ce)):
             if ce[i] != None:
                 ce[i] = ce[i].cuda()
@@ -499,7 +516,9 @@ def main():
         print(' \33[0m')
 
         train(train_loader, model, ce, optimizer, epoch)
-        if epoch % 4 == 1 or epoch == (end - 1):
+        valid_loss = valid_class(valid_loader, model, ce, epoch)
+
+        if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             torch.save({'epoch': epoch,
                         'state_dict': model.state_dict(),
@@ -509,10 +528,13 @@ def main():
         if epoch % 2 == 1 or epoch == (end - 1):
             valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
 
-        if epoch in milestones or epoch == (end - 1):
+        if epoch != (end - 2) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
             test(model, epoch, writer, xvector_dir)
 
-        scheduler.step()
+        if args.scheduler == 'rop':
+            scheduler.step(valid_loss)
+        else:
+            scheduler.step()
 
         # exit(1)
     writer.close()
@@ -650,8 +672,7 @@ def train(train_loader, model, ce, optimizer, epoch):
                         100. * minibatch_b))
             # break
 
-    print('Train Epoch {}:'.format(epoch))
-    print('\33[91mTrain A_Accuracy:{:.4f}%, B_Accuracy:{:.4f}%, Avg_loss: {:.6f}.\33[0m'.format(100 * float(
+    print('\nEpoch {:>2d}: \33[91mTrain A_Accuracy:{:.4f}%, B_Accuracy:{:.4f}%, Avg_loss: {:.6f}.\33[0m'.format(epoch, 100 * float(
                                                                                           correct_a) / total_datasize_a,
                                                                                           100 * float(
                                                                                           correct_b) / total_datasize_b,
@@ -832,22 +853,25 @@ def train(train_loader, model, ce, optimizer, epoch):
 #     writer.add_scalars('Test/Threshold', {'sitw_test': eer_threshold_t}, epoch)
 #
 #     print('\33[91mFor Sitw Test ERR: {:.4f}%, Threshold: {}.\n\33[0m'.format(100. * eer_t, eer_threshold_t))
-
-def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
+def valid_class(valid_loader, model, ce, epoch):
     # switch to evaluate mode
     model.eval()
 
     valid_loader_a, valid_loader_b = valid_loader
-    valid_pbar = tqdm(enumerate(zip(valid_loader_a, valid_loader_b)))
+    # valid_pbar = tqdm(enumerate(zip(valid_loader_a, valid_loader_b)))
     correct_a = 0.
     correct_b = 0.
+
+    total_loss_a = 0.
+    total_loss_b = 0.
 
     total_datasize_a = 0.
     total_datasize_b = 0.
 
+    ce_criterion, xe_criterion = ce
     softmax = nn.Softmax(dim=1)
     with torch.no_grad():
-        for batch_idx, ((data_a, label_a), (data_b, label_b)) in valid_pbar:
+        for batch_idx, ((data_a, label_a), (data_b, label_b)) in enumerate(zip(valid_loader_a, valid_loader_b)):
 
             label_a = label_a.cuda()
             label_b = label_b.cuda()
@@ -859,37 +883,49 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
             _, feats = model(data)
             classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
 
+            if args.loss_type == 'soft':
+                loss_a = ce_criterion(classfier_a, label_a)
+                loss_b = ce_criterion(classfier_b, label_b)
+
+            total_loss_a += float(loss_a.item())
+            total_loss_b += float(loss_b.item())
+
             # pdb.set_trace()
             predicted_labels = softmax(classfier_a)
             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
             minibatch_correct = float((predicted_one_labels.cuda() == label_a).sum().item())
-            minibatch_a = minibatch_correct / len(predicted_one_labels)
             correct_a += minibatch_correct
             total_datasize_a += len(predicted_one_labels)
 
             predicted_labels = softmax(classfier_b)
             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
             minibatch_correct = float((predicted_one_labels.cuda() == label_b).sum().item())
-            minibatch_b = minibatch_correct / len(predicted_one_labels)
             correct_b += minibatch_correct
             total_datasize_b += len(predicted_one_labels)
 
-            if batch_idx % args.log_interval == 0:
-                valid_pbar.set_description(
-                    'Valid Epoch: {:2d} for {:4d} Batch Accuracy: A set: {:.4f}%, B set: {:.4f}%'.format(
-                        epoch,
-                    len(valid_loader_a.dataset),
-                        100. * minibatch_a,
-                        100. * minibatch_b
-                    ))
-                # break
-
     valid_accuracy_a = 100. * correct_a / total_datasize_a
     valid_accuracy_b = 100. * correct_b / total_datasize_b
+    valid_loss_a = total_loss_a / len(valid_loader_a)
+    valid_loss_b = total_loss_b / len(valid_loader_b)
+
+    valid_loss = valid_loss_a + args.set_ratio * valid_loss_b
+
     writer.add_scalar('Train/Valid_Accuracy_A', valid_accuracy_a, epoch)
     writer.add_scalar('Train/Valid_Accuracy_B', valid_accuracy_b, epoch)
+    writer.add_scalar('Train/Valid_Loss_A', valid_loss_a, epoch)
+    writer.add_scalar('Train/Valid_Loss_B', valid_loss_b, epoch)
+    writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
 
     torch.cuda.empty_cache()
+    print('          \33[91mValid Accuracy, A: %.4f %%; B: %.4f %%. Avg Loss, A: %.5f; B: %.5f\33[0m' %
+          (valid_accuracy_a, valid_accuracy_b, valid_loss_a, valid_loss_b))
+
+    return valid_loss
+
+
+def valid_test(train_extract_loader, model, epoch, xvector_dir):
+    # switch to evaluate mode
+    model.eval()
 
     this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
     verification_extract(train_extract_loader, model, this_xvector_dir, epoch)
@@ -910,9 +946,6 @@ def valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir):
                                                               eer_threshold,
                                                               mindcf_01,
                                                               mindcf_001))
-
-    print('Valid on A Accuracy: %.4f %%. Valid on B Accuracy: %.4f %%.\33[0m' % (
-        valid_accuracy_a, valid_accuracy_b))
 
     writer.add_scalar('Train/EER', 100. * eer, epoch)
     writer.add_scalar('Train/Threshold', eer_threshold, epoch)

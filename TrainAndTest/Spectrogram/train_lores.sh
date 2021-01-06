@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=65
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -1002,7 +1002,7 @@ if [ $stage -le 65 ]; then
   encod=None
   transform=None
   loss_ratio=0.01
-  alpha=13
+  alpha=0
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in vox1 with ${loss} kernel 5,5 \033[0m\n"
 
@@ -1020,14 +1020,16 @@ if [ $stage -le 65 ]; then
       --batch-size 256 \
       --nj 10 \
       --epochs 24 \
+      --scheduler rop \
+      --patience 2 \
       --lr 0.1 \
       --input-dim 81 \
       --fast \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast/checkpoint_29.pth \
-      --channels 16,64,128,256 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast_v2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast_v2/checkpoint_29.pth \
+      --channels 32,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
       --encoder-type ${encod} \
@@ -1041,14 +1043,15 @@ if [ $stage -le 65 ]; then
       --loss-ratio ${loss_ratio} \
       --set-ratio 1.0 \
       --grad-clip 0 \
-      --weight-decay 0.001 \
-      --dropout-p 0.25 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.1 \
       --gpu-id 0 \
       --cos-sim \
       --extract \
       --loss-type ${loss}
   done
 fi
+exit
 
 #stage=10000
 if [ $stage -le 80 ]; then

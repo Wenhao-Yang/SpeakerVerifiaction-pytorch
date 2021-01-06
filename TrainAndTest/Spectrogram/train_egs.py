@@ -98,6 +98,8 @@ parser.add_argument('--epochs', type=int, default=20, metavar='E',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--scheduler', default='multi', type=str,
                     metavar='SCH', help='The optimizer to use (default: Adagrad)')
+parser.add_argument('--patience', default=4, type=int,
+                    metavar='PAT', help='patience for scheduler (default: 4)')
 parser.add_argument('--gamma', default=0.75, type=float,
                     metavar='GAMMA', help='The optimizer to use (default: Adagrad)')
 parser.add_argument('--milestones', default='10,15', type=str,
@@ -189,8 +191,6 @@ parser.add_argument('--dampening', default=0, type=float,
                     metavar='DAM', help='dampening for sgd (default: 0.0)')
 parser.add_argument('--optimizer', default='sgd', type=str,
                     metavar='OPT', help='The optimizer to use (default: Adagrad)')
-parser.add_argument('--patience', default=4, type=int,
-                    metavar='PAT', help='patience for scheduler (default: 4)')
 parser.add_argument('--grad-clip', default=0., type=float,
                     help='momentum for sgd (default: 0.9)')
 # Device options
