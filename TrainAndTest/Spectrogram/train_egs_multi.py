@@ -572,7 +572,13 @@ def train(train_loader, model, ce, optimizer, epoch):
         data = Variable(data)
         label_a, label_b = Variable(label_a), Variable(label_b)
 
-        (classfier_a, classfier_b), (feat_a, feat_b) = model(data, len(label_a))
+        # (classfier_a, classfier_b), (feat_a, feat_b) = model(data, len(label_a))
+
+        _, feats = model(data)
+        if isinstance(model, DistributedDataParallel):
+            classfier_a, classfier_b = model.module.cls_forward(feats[:len(data_a)], feats[len(data_a):])
+        else:
+            classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
 
         # feats_b = model.pre_forward(data_b)
         # cos_theta, phi_theta = classfier
@@ -607,7 +613,8 @@ def train(train_loader, model, ce, optimizer, epoch):
             loss_b = ce_criterion(classfier_b, label_b)
             loss_cent = loss_a + args.set_ratio * loss_b
 
-            loss_xent = xe_criterion(torch.cat((feat_a, feat_b), dim=0), label)
+            # loss_xent = xe_criterion(torch.cat((feat_a, feat_b), dim=0), label)
+            loss_xent = xe_criterion(feats, label)
             loss = loss_ratio * loss_xent + loss_cent
 
         elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
