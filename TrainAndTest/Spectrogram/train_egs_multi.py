@@ -15,6 +15,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import pdb
 import sys
 import time
 # Version conflict
@@ -577,7 +578,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         # cos_theta, phi_theta = classfier
         classfier_label_a = classfier_a
         classfier_label_b = classfier_b
-
+        pdb.set_trace()
         if args.loss_ratio > 0.3:
             loss_ratio = args.loss_ratio * min(epoch / 5, 1.0)
         elif args.loss_ratio > 0:
