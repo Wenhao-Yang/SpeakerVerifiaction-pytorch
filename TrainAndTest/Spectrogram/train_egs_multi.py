@@ -576,8 +576,9 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         label_a, label_b = Variable(label_a), Variable(label_b)
 
-        classifier, feat = model(data)
+        classifier, feats = model(data)
         classfier_a, classfier_b = classifier
+        feats = torch.cat(feats, dim=0)
         # feat_a, feat_b = feat
         # _, feats = model(data)
         # if isinstance(model, DistributedDataParallel):
