@@ -1889,6 +1889,7 @@ class MultiResNet(nn.Module):
         if size_a > 0:
             embeddings_a = embeddings[:size_a]
             logits_a = self.classifier_a(embeddings_a)
+            print(size_a, "< ", len(x))
             if size_a < len(x):
                 embeddings_b = embeddings[size_a:]
                 logits_b = self.classifier_b(embeddings_b)
