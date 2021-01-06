@@ -574,7 +574,10 @@ def train(train_loader, model, ce, optimizer, epoch):
         _, feats = model(data)
 
         # feats_b = model.pre_forward(data_b)
-        classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
+        if isinstance(model, DistributedDataParallel):
+            classfier_a, classfier_b = model.module.cls_forward(feats[:len(data_a)], feats[len(data_a):])
+        else:
+            classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
         # cos_theta, phi_theta = classfier
         classfier_label_a = classfier_a
         classfier_label_b = classfier_b
