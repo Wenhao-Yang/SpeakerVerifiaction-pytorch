@@ -15,12 +15,12 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import sys
+import time
 # Version conflict
 import warnings
 
 import numpy as np
-import sys
-import time
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
@@ -28,17 +28,17 @@ import torchvision.transforms as transforms
 from kaldi_io import read_mat, read_vec_flt
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
+from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
-from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
 from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
     GaussianLoss
 from Process_Data import constants as c
-from Process_Data.KaldiDataset import KaldiExtractDataset, \
+from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.LmdbDataset import EgsDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset
 from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
