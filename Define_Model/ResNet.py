@@ -1844,7 +1844,7 @@ class MultiResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x, size_a=0):
+    def forward(self, x, size_a):
         if self.inst_layer != None:
             x = self.inst_layer(x)
 
