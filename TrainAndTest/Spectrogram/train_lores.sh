@@ -1027,8 +1027,8 @@ if [ $stage -le 65 ]; then
       --fast \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast_v2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast_v2/checkpoint_29.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp01_b256_${alpha}_fast_v2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp01_b256_${alpha}_fast_v2/checkpoint_29.pth \
       --channels 32,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
