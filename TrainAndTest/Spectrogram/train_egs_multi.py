@@ -577,8 +577,9 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         label_a, label_b = Variable(label_a), Variable(label_b)
 
-        (classfier_a, classfier_b), (feat_a, feat_b) = model(data)
-
+        classifier, feat = model(data)
+        classfier_a, classfier_b = classifier
+        feat_a, feat_b = feat
         # _, feats = model(data)
         # if isinstance(model, DistributedDataParallel):
         #     classfier_a, classfier_b = model.module.cls_forward(feats[:len(data_a)], feats[len(data_a):])
