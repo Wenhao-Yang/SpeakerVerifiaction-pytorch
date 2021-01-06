@@ -521,9 +521,10 @@ def main():
 
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-            torch.save({'epoch': epoch,
-                        'state_dict': model.state_dict(),
-                        'criterion': ce},
+            model_state_dict = model.module.state_dict() \
+                                   if isinstance(model, DistributedDataParallel) else model.state_dict(),
+
+            torch.save({'epoch': epoch, 'state_dict': model_state_dict, 'criterion': ce},
                        check_path)
 
         if epoch % 2 == 1 or epoch == (end - 1):
@@ -563,22 +564,26 @@ def train(train_loader, model, ce, optimizer, epoch):
     # start_time = time.time()
     for batch_idx, ((data_a, label_a), (data_b, label_b)) in pbar:
 
-        data = torch.cat((data_a, data_b), dim=0)
+        # data = torch.cat((data_a, data_b), dim=0)
         if args.cuda:
-            data = data.cuda(non_blocking=True)
+            # data = data.cuda(non_blocking=True)
+            data_a = data_a.cuda(non_blocking=True)
+            data_b = data_b.cuda(non_blocking=True)
             label_a = label_a.cuda(non_blocking=True)
             label_b = label_b.cuda(non_blocking=True)
 
-        data = Variable(data)
+        data_a, data_b = Variable(data_a), Variable(data_b)
+        data = (data_a, data_b)
+
         label_a, label_b = Variable(label_a), Variable(label_b)
 
-        # (classfier_a, classfier_b), (feat_a, feat_b) = model(data, len(label_a))
+        (classfier_a, classfier_b), (feat_a, feat_b) = model(data)
 
-        _, feats = model(data)
-        if isinstance(model, DistributedDataParallel):
-            classfier_a, classfier_b = model.module.cls_forward(feats[:len(data_a)], feats[len(data_a):])
-        else:
-            classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
+        # _, feats = model(data)
+        # if isinstance(model, DistributedDataParallel):
+        #     classfier_a, classfier_b = model.module.cls_forward(feats[:len(data_a)], feats[len(data_a):])
+        # else:
+        #     classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
 
         # feats_b = model.pre_forward(data_b)
         # cos_theta, phi_theta = classfier

@@ -512,8 +512,10 @@ def main():
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
             model.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
+            model_state_dict = model.module.state_dict() \
+                                   if isinstance(model, DistributedDataParallel) else model.state_dict(),
             torch.save({'epoch': epoch,
-                        'state_dict': model.state_dict(),
+                        'state_dict': model_state_dict,
                         'criterion': ce},
                        check_path)
 
