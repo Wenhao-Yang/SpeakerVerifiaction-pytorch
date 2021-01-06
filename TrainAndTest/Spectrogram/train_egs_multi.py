@@ -527,7 +527,7 @@ def main():
                        check_path)
 
         if epoch % 2 == 1 or epoch == (end - 1):
-            valid_test(train_extract_loader, valid_loader, model, epoch)
+            valid_test(train_extract_loader, model, epoch, xvector_dir)
 
         if epoch != (end - 2) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
             test(model, epoch, writer, xvector_dir)
