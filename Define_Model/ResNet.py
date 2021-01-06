@@ -1844,7 +1844,7 @@ class MultiResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x, size_a):
+    def forward(self, x):
         if self.inst_layer != None:
             x = self.inst_layer(x)
 
@@ -1886,17 +1886,12 @@ class MultiResNet(nn.Module):
         if self.alpha:
             embeddings = self.l2_norm(embeddings)
             # embeddings = self.l2_norm(embeddings, alpha=self.alpha)
-        if size_a > 0:
-            embeddings_a = embeddings[:size_a]
-            logits_a = self.classifier_a(embeddings_a)
-            print(size_a, "< ", len(x))
-            if size_a < len(x):
-                embeddings_b = embeddings[size_a:]
-                logits_b = self.classifier_b(embeddings_b)
-            else:
-                logits_b = ""
-                embeddings_b = ""
-            return (logits_a, logits_b), (embeddings_a, embeddings_b)
 
-        else:
-            return "", embeddings
+        return '', embeddings
+
+    def cls_forward(self, a, b):
+
+        logits_a = self.classifier_a(a)
+        logits_b = self.classifier_b(b)
+
+        return logits_a, logits_b
