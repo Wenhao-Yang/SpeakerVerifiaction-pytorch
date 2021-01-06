@@ -1845,7 +1845,9 @@ class MultiResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        tuple_input = False
         if isinstance(x, tuple):
+            tuple_input = True
             size_a = len(x[0])
             x = torch.cat(x, dim=0)
 
@@ -1891,7 +1893,7 @@ class MultiResNet(nn.Module):
             embeddings = self.l2_norm(embeddings)
             # embeddings = self.l2_norm(embeddings, alpha=self.alpha)
 
-        if isinstance(x, tuple):
+        if tuple_input:
             embeddings_a = embeddings[:size_a]
             embeddings_b = embeddings[size_a:]
 
