@@ -1004,7 +1004,7 @@ if [ $stage -le 65 ]; then
   loss_ratio=0.01
   alpha=0
   for loss in soft; do
-    echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in vox1 with ${loss} kernel 5,5 \033[0m\n"
+    echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/Spectrogram/train_egs_multi.py \
       --model ${model} \
@@ -1045,7 +1045,7 @@ if [ $stage -le 65 ]; then
       --grad-clip 0 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0 \
+      --gpu-id 0,1 \
       --cos-sim \
       --extract \
       --loss-type ${loss}
