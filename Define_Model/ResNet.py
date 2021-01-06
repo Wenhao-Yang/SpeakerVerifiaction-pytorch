@@ -1845,6 +1845,10 @@ class MultiResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        if isinstance(x, tuple):
+            size_a = len(x[0])
+            x = torch.cat(x, dim=0)
+
         if self.inst_layer != None:
             x = self.inst_layer(x)
 
@@ -1887,11 +1891,20 @@ class MultiResNet(nn.Module):
             embeddings = self.l2_norm(embeddings)
             # embeddings = self.l2_norm(embeddings, alpha=self.alpha)
 
-        return '', embeddings
+        if isinstance(x, tuple):
+            embeddings_a = embeddings[:size_a]
+            embeddings_b = embeddings[size_a:]
 
-    def cls_forward(self, a, b):
+            logits_a = self.classifier_a(embeddings_a)
+            logits_b = self.classifier_b(embeddings_b)
 
-        logits_a = self.classifier_a(a)
-        logits_b = self.classifier_b(b)
+            return (logits_a, logits_b), (embeddings_a, embeddings_b)
+        else:
+            return '', embeddings
 
-        return logits_a, logits_b
+    # def cls_forward(self, a, b):
+    #
+    #     logits_a = self.classifier_a(a)
+    #     logits_b = self.classifier_b(b)
+    #
+    #     return logits_a, logits_b
