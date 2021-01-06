@@ -492,7 +492,7 @@ def main():
                                                  rank=0,
                                                  world_size=1)
             model = model.cuda()
-            model = DistributedDataParallel(model)
+            model = DistributedDataParallel(model, find_unused_parameters=True)
 
         else:
             model = model.cuda()
