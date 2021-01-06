@@ -571,13 +571,9 @@ def train(train_loader, model, ce, optimizer, epoch):
         data = Variable(data)
         label_a, label_b = Variable(label_a), Variable(label_b)
 
-        _, feats = model(data)
+        (classfier_a, classfier_b), (feat_a, feat_b) = model(data, len(label_a))
 
         # feats_b = model.pre_forward(data_b)
-        if isinstance(model, DistributedDataParallel):
-            classfier_a, classfier_b = model.module.cls_forward(feats[:len(data_a)], feats[len(data_a):])
-        else:
-            classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
         # cos_theta, phi_theta = classfier
         classfier_label_a = classfier_a
         classfier_label_b = classfier_b
@@ -610,7 +606,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             loss_b = ce_criterion(classfier_b, label_b)
             loss_cent = loss_a + args.set_ratio * loss_b
 
-            loss_xent = xe_criterion(feats, label)
+            loss_xent = xe_criterion(torch.cat((feat_a, feat_b), dim=0), label)
             loss = loss_ratio * loss_xent + loss_cent
 
         elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
@@ -883,8 +879,7 @@ def valid_class(valid_loader, model, ce, epoch):
             data = torch.cat((data_a, data_b), dim=0)
             data = data.cuda()
 
-            _, feats = model(data)
-            classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
+            (classfier_a, classfier_b), (feat_a, feat_b) = model(data, len(label_a))
 
             if args.loss_type == 'soft':
                 loss_a = ce_criterion(classfier_a, label_a)
