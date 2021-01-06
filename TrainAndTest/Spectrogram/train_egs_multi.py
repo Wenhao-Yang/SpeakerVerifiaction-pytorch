@@ -15,7 +15,6 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
-import pdb
 import sys
 import time
 # Version conflict
@@ -578,9 +577,8 @@ def train(train_loader, model, ce, optimizer, epoch):
         label_a, label_b = Variable(label_a), Variable(label_b)
 
         classifier, feat = model(data)
-        pdb.set_trace()
         classfier_a, classfier_b = classifier
-        feat_a, feat_b = feat
+        # feat_a, feat_b = feat
         # _, feats = model(data)
         # if isinstance(model, DistributedDataParallel):
         #     classfier_a, classfier_b = model.module.cls_forward(feats[:len(data_a)], feats[len(data_a):])
