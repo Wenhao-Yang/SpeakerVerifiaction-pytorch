@@ -578,6 +578,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         label_a, label_b = Variable(label_a), Variable(label_b)
 
         classifier, feat = model(data)
+        pdb.set_trace()
         classfier_a, classfier_b = classifier
         feat_a, feat_b = feat
         # _, feats = model(data)
@@ -590,7 +591,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         # cos_theta, phi_theta = classfier
         classfier_label_a = classfier_a
         classfier_label_b = classfier_b
-        pdb.set_trace()
+
         if args.loss_ratio > 0.3:
             loss_ratio = args.loss_ratio * min(epoch / 5, 1.0)
         elif args.loss_ratio > 0:
