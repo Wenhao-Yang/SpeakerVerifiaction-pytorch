@@ -515,7 +515,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        train(train_loader, model, ce, optimizer, epoch)
+        # train(train_loader, model, ce, optimizer, epoch)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
@@ -527,7 +527,7 @@ def main():
                        check_path)
 
         if epoch % 2 == 1 or epoch == (end - 1):
-            valid_test(train_extract_loader, valid_loader, model, epoch, xvector_dir)
+            valid_test(train_extract_loader, valid_loader, model, epoch)
 
         if epoch != (end - 2) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
             test(model, epoch, writer, xvector_dir)
