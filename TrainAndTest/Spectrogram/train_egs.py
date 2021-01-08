@@ -32,7 +32,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss
+from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
     GaussianLoss
 from Process_Data import constants as c
@@ -132,6 +132,8 @@ parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='aco
 parser.add_argument('--accu-steps', default=1, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 
 parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
+parser.add_argument('--ring', default=12, type=float, metavar='RING', help='acoustic feature dimension')
+
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
 parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
 parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
@@ -397,9 +399,12 @@ def main():
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
+    elif args.loss_type == 'ring':
+        xe_criterion = RingLoss(ring=args.ring)
+        args.alpha = 0.0
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
-    if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+    if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
                                      {'params': model.parameters()}],
                                     lr=args.lr, weight_decay=args.weight_decay,
@@ -567,14 +572,22 @@ def train(train_loader, model, ce, optimizer, epoch):
 
         if args.loss_type == 'soft':
             loss = ce_criterion(classfier, label)
+
         elif args.loss_type == 'asoft':
             classfier_label, _ = classfier
             loss = xe_criterion(classfier, label)
+
         elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
 
             loss = args.loss_ratio * loss_xent + loss_cent
+
+        elif args.loss_type == 'ring':
+            loss_cent = ce_criterion(classfier, label)
+            loss_xent = xe_criterion(feats)
+            loss = args.loss_ratio * loss_xent + loss_cent
+
         elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
             loss = xe_criterion(classfier, label)
 

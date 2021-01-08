@@ -217,9 +217,36 @@ class TupleLoss(nn.Module):
             score = cos_similarity
 
             loss += torch.sigmoid(score) * labels[indice_bash] + \
-                    (1 - torch.sigmoid(score)*(1 - labels[indice_bash]))
+                    (1 - torch.sigmoid(score) * (1 - labels[indice_bash]))
 
         return -torch.log(loss / self.batch_size)
+
+
+class RingLoss(nn.Module):
+    """Center loss.
+
+    Reference:
+    Wen et al. A Discriminative Feature Learning Approach for Deep Face Recognition. ECCV 2016.
+
+    Args:
+        num_classes (int): number of classes.
+        feat_dim (int): feature dimension.
+    """
+
+    def __init__(self, ring=10):
+        super(RingLoss, self).__init__()
+        self.ring = nn.Parameter(torch.tensor([float(ring)]))
+
+    def forward(self, x):
+        """
+        Args:
+            x: feature matrix with shape (batch_size, feat_dim).
+            labels: ground truth labels with shape (batch_size).
+        """
+        norms = torch.norm(x, p=2, dim=1)
+        ring_loss = (norms - self.ring).pow(2).mean()
+
+        return ring_loss
 
 
 def guassian_kernel(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None):

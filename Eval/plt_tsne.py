@@ -17,16 +17,16 @@ from kaldiio import ReadHelper
 from sklearn.manifold import TSNE
 
 # Training settings
-from Lime import cValue_1
+from Process_Data.constants import cValue_1
 
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
 parser.add_argument('--scp-file', type=str,
-                    default='Data/xvector/LoResNet8/timit/spect_egs_None/soft_dp05/xvectors.scp',
+                    default='Data/xvector/LoResNet8/vox1/spect_egs/arcsoft_dp25/xvectors.scp',
                     help='path to scp file for xvectors')
-parser.add_argument('--spk-len', default=5, type=int,
+parser.add_argument('--spk-len', default=7, type=int,
                     help='num of speakers to plot (default: 10)')
-parser.add_argument('--num-spk', default=15, type=int,
+parser.add_argument('--num-spk', default=30, type=int,
                     help='num of speakers to plot (default: 10)')
 
 args = parser.parse_args()
@@ -73,7 +73,7 @@ if __name__ == '__main__':
         assert len(this_points)>0, 'start:stop is %s:%s' %(start, stop)
         emb_group.append(this_points)
 
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(12, 9))
     leng = []
     for idx, group in enumerate(emb_group) :
         if len(group)>0:
