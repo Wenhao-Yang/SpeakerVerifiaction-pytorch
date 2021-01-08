@@ -373,6 +373,7 @@ class EVMClassifier(nn.Module):
     def __init__(self, feat_dim, n_classes=1000, use_gpu=False):
         super(EVMClassifier, self).__init__()
         self.feat_dim = feat_dim
+        self.n_classes = n_classes
         self.centers = torch.nn.Parameter(torch.randn(feat_dim, n_classes) / math.sqrt(feat_dim), requires_grad=True)
         self.lamda = torch.nn.Parameter(torch.randn(n_classes) + 1, requires_grad=True)
         self.k = torch.nn.Parameter(torch.randn(n_classes) + 2, requires_grad=True)
