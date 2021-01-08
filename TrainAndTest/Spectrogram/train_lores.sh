@@ -1038,7 +1038,7 @@ if [ $stage -le 65 ]; then
       --num-valid 4 \
       --alpha ${alpha} \
       --margin 0.25 \
-      --s 30 \
+      --s 20 \
       --m 3 \
       --loss-ratio ${loss_ratio} \
       --set-ratio 1.0 \
