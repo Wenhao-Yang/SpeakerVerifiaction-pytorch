@@ -141,11 +141,12 @@ class AdditiveMarginLinear(nn.Module):
         assert x.size()[1] == self.feat_dim
 
         # pdb.set_trace()
-        x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
-        x_norm = torch.div(x, x_norm)
+        # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
+        # x_norm = torch.div(x, x_norm)
 
-        w_norm = torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
-        w_norm = torch.div(self.W, w_norm)
+        x_norm = F.normalize(x, dim=1)
+        w_norm = F.normalize(self.W, dim=0) #torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        # w_norm = torch.div(self.W, w_norm)
 
         costh = torch.mm(x_norm, w_norm)
 

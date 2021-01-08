@@ -1002,7 +1002,7 @@ if [ $stage -le 65 ]; then
   encod=None
   transform=None
   loss_ratio=0.01
-  alpha=13
+  alpha=0
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
