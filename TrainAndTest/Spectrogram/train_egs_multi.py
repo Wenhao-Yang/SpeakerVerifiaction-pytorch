@@ -646,6 +646,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         total_loss += float(loss.item())
 
         if np.isnan(loss.item()):
+            print(classfier_a, classfier_b)
             raise ValueError('Loss value is NaN!')
 
         # compute gradient and update weights
