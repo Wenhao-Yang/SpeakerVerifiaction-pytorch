@@ -368,6 +368,33 @@ class APrototypicalLinear(nn.Module):
 
         return costh
 
+
+class EVMClassifier(nn.Module):
+    def __init__(self, feat_dim, n_classes=1000, use_gpu=False):
+        super(EVMClassifier, self).__init__()
+        self.feat_dim = feat_dim
+        self.centers = torch.nn.Parameter(torch.randn(feat_dim, n_classes) / math.sqrt(feat_dim), requires_grad=True)
+        self.lamda = torch.nn.Parameter(torch.randn(n_classes) + 1, requires_grad=True)
+        self.k = torch.nn.Parameter(torch.randn(n_classes) + 2, requires_grad=True)
+
+        # if use_gpu:
+        #     self.center.cuda()
+        #     self.lamda.cuda()
+        #     self.k.cuda()
+
+        # nn.init.xavier_normal(self.W, gain=1)
+
+    def forward(self, x):
+        # assert x.size()[0] == label.size()[0]
+        batch_size = x.size(0)
+        distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.n_classes) + \
+                  torch.pow(self.centers, 2).sum(dim=0, keepdim=True).expand(batch_size, self.n_classes)
+        distmat.addmm_(1, -2, x, self.centers.t())
+
+        l1_distmat = torch.sqrt(distmat) / self.k
+        probabilities = torch.exp(-torch.pow(l1_distmat, self.k))
+
+        return probabilities
 # Testing those Loss Classes
 # a = Variable(torch.Tensor([[1., 1., 3.],
 #                   [1., 2., 0.],
