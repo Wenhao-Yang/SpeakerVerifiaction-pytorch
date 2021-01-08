@@ -515,7 +515,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        # train(train_loader, model, ce, optimizer, epoch)
+        train(train_loader, model, ce, optimizer, epoch)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
