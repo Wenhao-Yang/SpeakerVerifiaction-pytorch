@@ -1000,9 +1000,9 @@ if [ $stage -le 65 ]; then
   resnet_size=18
   loss=soft
   encod=None
-  transform=None
+  transform=Linear
   loss_ratio=0.01
-  alpha=0
+  alpha=13
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
@@ -1027,8 +1027,8 @@ if [ $stage -le 65 ]; then
       --fast \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp01_b256_${alpha}_fast_v2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp01_b256_${alpha}_fast_v2/checkpoint_29.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp01_b256_${alpha}_fast_Linear \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp01_b256_${alpha}_fast_Linear/checkpoint_29.pth \
       --channels 32,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
@@ -1043,8 +1043,8 @@ if [ $stage -le 65 ]; then
       --loss-ratio ${loss_ratio} \
       --set-ratio 1.0 \
       --grad-clip 0 \
-      --weight-decay 0.0005 \
-      --dropout-p 0.1 \
+      --weight-decay 0.001 \
+      --dropout-p 0.25 \
       --gpu-id 0,1 \
       --cos-sim \
       --extract \

@@ -22,7 +22,7 @@ from torchvision.models.resnet import Bottleneck
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
-    SelfVadPooling, GhostVLAD_v2, LinearTransform
+    SelfVadPooling, GhostVLAD_v2
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -1808,7 +1808,10 @@ class MultiResNet(nn.Module):
             nn.BatchNorm1d(self.embedding_size)
         )
         if self.transform == 'Linear':
-            self.trans_layer = LinearTransform(dim=embedding_size)
+            self.trans_layer = nn.Sequential(
+                nn.Linear(embedding_size, embedding_size),
+                nn.ReLU(),
+                nn.BatchNorm1d(embedding_size))
         elif self.transform == 'GhostVLAD':
             self.trans_layer = GhostVLAD_v2(num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
         else:
