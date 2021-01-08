@@ -390,7 +390,7 @@ class EVMClassifier(nn.Module):
         batch_size = x.size(0)
         distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.n_classes) + \
                   torch.pow(self.centers, 2).sum(dim=0, keepdim=True).expand(batch_size, self.n_classes)
-        distmat.addmm_(1, -2, x, self.centers.t())
+        distmat.addmm_(1, -2, x, self.centers)
 
         l1_distmat = torch.sqrt(distmat) / self.k
         probabilities = torch.exp(-torch.pow(l1_distmat, self.k))
