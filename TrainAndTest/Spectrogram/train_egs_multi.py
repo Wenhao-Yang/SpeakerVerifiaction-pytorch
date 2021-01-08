@@ -515,7 +515,7 @@ def main():
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
 
-        train(train_loader, model, ce, optimizer, epoch)
+        # train(train_loader, model, ce, optimizer, epoch)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if epoch % 4 == 1 or epoch == (end - 1) or epoch in milestones:
@@ -698,175 +698,6 @@ def train(train_loader, model, ce, optimizer, epoch):
     torch.cuda.empty_cache()
 
 
-# def valid(valid_loader, model, epoch):
-#     # switch to evaluate mode
-#     model.eval()
-#     correct_a = 0.
-#     correct_b = 0.
-#
-#     total_datasize_a = 0.
-#     total_datasize_b = 0.
-#
-#     valid_loader_a, valid_loader_b = valid_loader
-#
-#     valid_pbar = tqdm(enumerate(zip(valid_loader_a, valid_loader_b)))
-#     output_softmax = nn.Softmax(dim=1)
-#
-#     with torch.no_grad():
-#         for batch_idx, ((data_a, label_a), (data_b, label_b)) in valid_pbar:
-#
-#             label_a = label_a.cuda()
-#             label_b = label_b.cuda()
-#
-#             # compute output
-#             data = torch.cat((data_a, data_b), dim=0)
-#             data = data.cuda()
-#
-#             _, feats = model(data)
-#             classfier_a, classfier_b = model.cls_forward(feats[:len(data_a)], feats[len(data_a):])
-#
-#             # pdb.set_trace()
-#             predicted_labels = output_softmax(classfier_a)
-#             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-#             minibatch_correct = float((predicted_one_labels.cuda() == label_a).sum().item())
-#             minibatch_a = minibatch_correct / len(predicted_one_labels)
-#             correct_a += minibatch_correct
-#             total_datasize_a += len(predicted_one_labels)
-#
-#             predicted_labels = output_softmax(classfier_b)
-#             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-#             minibatch_correct = float((predicted_one_labels.cuda() == label_b).sum().item())
-#             minibatch_b = minibatch_correct / len(predicted_one_labels)
-#             correct_b += minibatch_correct
-#             total_datasize_b += len(predicted_one_labels)
-#
-#             if batch_idx % args.log_interval == 0:
-#                 valid_pbar.set_description(
-#                     'Valid Epoch: {:2d} for {:4d} Batch Accuracy: A set: {:.4f}%, B set: {:.4f}%'.format(
-#                         epoch,
-#                     len(valid_loader_a.dataset),
-#                         100. * minibatch_a,
-#                         100. * minibatch_b
-#                     ))
-#                 # break
-#
-#     valid_accuracy_a = 100. * correct_a / total_datasize_a
-#     valid_accuracy_b = 100. * correct_b / total_datasize_b
-#     writer.add_scalar('Test/Valid_Accuracy_A', valid_accuracy_a, epoch)
-#     writer.add_scalar('Test/Valid_Accuracy_B', valid_accuracy_b, epoch)
-#
-#     print('\n\33[91mValid on A Accuracy is %.4f %%. Valid on B Accuracy is %.4f %%.\33[0m' % (
-#     valid_accuracy_a, valid_accuracy_b))
-#
-#     torch.cuda.empty_cache()
-#
-#
-# def test(test_loader, model, epoch):
-#     # switch to evaluate mode
-#     model.eval()
-#
-#     labels, distances = [], []
-#     pbar = tqdm(enumerate(test_loader))
-#     with torch.no_grad():
-#
-#         for batch_idx, (data_a, data_p, label) in pbar:
-#             vec_shape = data_a.shape
-#             # pdb.set_trace()
-#             if vec_shape[1] != 1:
-#                 data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-#                 data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-#
-#             data = torch.cat((data_a, data_p), dim=0)
-#             if args.cuda:
-#                 data = data.cuda()
-#             # data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-#             # compute output
-#
-#             _, feats = model(data)
-#             out_a = feats[:len(data_a)]
-#             out_p = feats[len(data_a):]
-#
-#             dists = l2_dist.forward(out_a,
-#                                     out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-#             dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
-#             dists = dists.cpu().detach().numpy()
-#
-#             # pdb.set_trace()
-#             # print(dists.shape)
-#             distances.append(dists)
-#             labels.append(label.data.cpu().numpy())
-#
-#             if batch_idx % args.log_interval == 0:
-#                 pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-#                     epoch, batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-#                 # break
-#
-#     labels = np.array([sublabel for label in labels for sublabel in label])
-#     distances = np.array([subdist for dist in distances for subdist in dist])
-#
-#     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
-#     writer.add_scalar('Test/EER', 100. * eer, epoch)
-#     writer.add_scalar('Test/Threshold', eer_threshold, epoch)
-#
-#     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
-#     writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
-#     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
-#
-#     dist_type = 'cos' if args.cos_sim else 'l2'
-#     print('\nFor %s_distance, ' % dist_type)
-#     print('  \33[91mTest ERR is {:.4f}%, Threshold is {}'.format(100. * eer, eer_threshold))
-#     print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.\33[0m'.format(mindcf_01, mindcf_001))
-#
-#     torch.cuda.empty_cache()
-
-
-# def sitw_test(sitw_test_loader, model, epoch):
-#     # switch to evaluate mode
-#     model.eval()
-#
-#     labels, distances = [], []
-#     pbar = tqdm(enumerate(sitw_test_loader))
-#     for batch_idx, (data_a, data_p, label) in pbar:
-#
-#         vec_shape = data_a.shape
-#         # pdb.set_trace()
-#         if vec_shape[1] != 1:
-#             data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-#             data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-#
-#         if args.cuda:
-#             data_a, data_p = data_a.cuda(), data_p.cuda()
-#         data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
-#
-#         # compute output
-#         _, out_a_ = model(data_a)
-#         _, out_p_ = model(data_p)
-#         out_a = out_a_
-#         out_p = out_p_
-#
-#         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-#         if vec_shape[1] != 1:
-#             dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(axis=1)
-#         dists = dists.data.cpu().numpy()
-#
-#         distances.append(dists)
-#         labels.append(label.data.cpu().numpy())
-#
-#         if batch_idx % args.log_interval == 0:
-#             pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-#                 epoch, batch_idx * vec_shape[0], len(sitw_test_loader.dataset),
-#                        100. * batch_idx / len(sitw_test_loader)))
-#
-#     labels = np.array([sublabel for label in labels for sublabel in label])
-#     distances = np.array([subdist for dist in distances for subdist in dist])
-#
-#     eer_t, eer_threshold_t, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
-#     torch.cuda.empty_cache()
-#
-#     writer.add_scalars('Test/EER', {'sitw_test': 100. * eer_t}, epoch)
-#     writer.add_scalars('Test/Threshold', {'sitw_test': eer_threshold_t}, epoch)
-#
-#     print('\33[91mFor Sitw Test ERR: {:.4f}%, Threshold: {}.\n\33[0m'.format(100. * eer_t, eer_threshold_t))
 def valid_class(valid_loader, model, ce, epoch):
     # switch to evaluate mode
     model.eval()
@@ -902,6 +733,9 @@ def valid_class(valid_loader, model, ce, epoch):
             if args.loss_type == 'soft':
                 loss_a = ce_criterion(classfier_a, label_a)
                 loss_b = ce_criterion(classfier_b, label_b)
+            elif args.loss_type == 'arcsoft':
+                loss_a = xe_criterion(classfier_a, label_a)
+                loss_b = xe_criterion(classfier_b, label_b)
 
             total_loss_a += float(loss_a.item())
             total_loss_b += float(loss_b.item())
