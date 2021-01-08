@@ -623,7 +623,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             loss_xent = xe_criterion(feats, label)
             loss = loss_ratio * loss_xent + loss_cent
 
-        elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
+        elif args.loss_type in ['amsoft', 'arcsoft']:
             loss_a = xe_criterion(classfier_a, label_a)
             loss_b = xe_criterion(classfier_b, label_b)
             loss = loss_a + args.set_ratio * loss_b

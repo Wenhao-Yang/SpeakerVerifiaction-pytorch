@@ -194,7 +194,7 @@ class ArcSoftmaxLoss(nn.Module):
         self.s = s
         self.margin = margin
         self.ce = nn.CrossEntropyLoss()
-        # self.iteraion = 0
+        self.iteraion = 0
         # self.all_iteraion = all_iteraion
 
     def forward(self, costh, label):
@@ -210,10 +210,10 @@ class ArcSoftmaxLoss(nn.Module):
         costh_m = (theta + delt_costh).cos()
         costh_m_s = self.s * costh_m
 
-        # if self.s>20 and self.iteraion < 1000:
-        #     # costh_m_s = 0.5 * costh + 0.5 * min(1.0, (self.iteraion / self.all_iteraion)) * costh_m_s
-        #     costh_m_s *= 0.5 
-        #     self.iteraion += 1
+        if self.iteraion < 1000:
+            costh_m_s = 0.5 * costh + 0.5 * costh_m_s
+            # costh_m_s *= 0.5 
+            self.iteraion += 1
 
         loss = self.ce(costh_m_s, label)
 
