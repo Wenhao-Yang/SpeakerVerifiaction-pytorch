@@ -393,7 +393,8 @@ class EVMClassifier(nn.Module):
         distmat.addmm_(1, -2, x, self.centers)
 
         l1_distmat = torch.sqrt(distmat) / self.k
-        probabilities = torch.exp(-torch.pow(l1_distmat, self.k))
+        # probabilities = torch.exp(-torch.pow(l1_distmat, self.k))
+        probabilities = -torch.pow(l1_distmat, self.k)
 
         return probabilities
 # Testing those Loss Classes
