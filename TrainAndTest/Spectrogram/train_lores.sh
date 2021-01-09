@@ -1000,9 +1000,9 @@ if [ $stage -le 65 ]; then
   resnet_size=18
   loss=soft
   encod=None
-  transform=None
+  transform=Linear
   loss_ratio=0.01
-  alpha=0
+  alpha=13
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
@@ -1027,8 +1027,8 @@ if [ $stage -le 65 ]; then
       --fast \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast/checkpoint_29.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast_Linear \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}_dp25_b256_${alpha}_fast_Linear/checkpoint_29.pth \
       --channels 32,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
@@ -1037,6 +1037,7 @@ if [ $stage -le 65 ]; then
       --avg-size 4 \
       --num-valid 4 \
       --alpha ${alpha} \
+      --ring 13 \
       --margin 0.25 \
       --s 20 \
       --m 3 \
