@@ -1759,6 +1759,8 @@ class MultiResNet(nn.Module):
         self.transform = transform
         self.fast = fast
         self.input_norm = input_norm
+        self.mask = mask
+
         if input_norm == 'Instance':
             self.inst_layer = nn.InstanceNorm1d(input_dim)
         elif input_norm == 'Mean':
