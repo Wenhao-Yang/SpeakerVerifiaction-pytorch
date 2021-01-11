@@ -1003,7 +1003,7 @@ if [ $stage -le 65 ]; then
   transform=None
   loss_ratio=0.01
   alpha=13
-  for loss in soft; do
+  for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/Spectrogram/train_egs_multi.py \
@@ -1017,8 +1017,6 @@ if [ $stage -le 65 ]; then
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --input-norm Mean \
-      --mask-layer freq \
-      --mask-len 20 \
       --batch-size 256 \
       --nj 10 \
       --epochs 40 \
@@ -1029,8 +1027,8 @@ if [ $stage -le 65 ]; then
       --fast \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}_mask \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}_mask/checkpoint_29.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}_wd15 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}_wd15/checkpoint_29.pth \
       --channels 32,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
@@ -1046,7 +1044,7 @@ if [ $stage -le 65 ]; then
       --loss-ratio ${loss_ratio} \
       --set-ratio 1.0 \
       --grad-clip 0 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --cos-sim \
