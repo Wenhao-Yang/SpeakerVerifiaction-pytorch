@@ -1773,7 +1773,7 @@ class MultiResNet(nn.Module):
         if self.mask == "time":
             self.maks_layer = TimeMaskLayer(mask_len=mask_len)
         elif self.mask == "freq":
-            self.mask = FreqMaskLayer(mask_len=mask_len)
+            self.mask_layer = FreqMaskLayer(mask_len=mask_len)
         elif self.mask == "time_freq":
             self.mask_layer = nn.Sequential(
                 TimeMaskLayer(mask_len=mask_len),
