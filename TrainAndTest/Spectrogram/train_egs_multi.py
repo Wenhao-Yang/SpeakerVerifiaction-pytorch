@@ -15,6 +15,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import pdb
 import sys
 import time
 # Version conflict
@@ -516,7 +517,7 @@ def main():
         for param_group in optimizer.param_groups:
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
-
+        pdb.set_trace()
         train(train_loader, model, ce, optimizer, epoch)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
