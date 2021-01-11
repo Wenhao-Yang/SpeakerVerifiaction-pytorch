@@ -332,7 +332,7 @@ def main():
     channels = [int(x) for x in channels]
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'mask_layer': args.mask_layer, 'block_type': args.block_type,
+                    'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,

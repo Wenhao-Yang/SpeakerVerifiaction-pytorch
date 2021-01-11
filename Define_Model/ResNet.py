@@ -754,7 +754,7 @@ class LocalResNet(nn.Module):
     def __init__(self, embedding_size, num_classes, input_dim=161, block_type='basic', input_len=300,
                  relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
-                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', **kwargs):
+                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=25, **kwargs):
 
         super(LocalResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -809,9 +809,9 @@ class LocalResNet(nn.Module):
             self.inst_layer = None
 
         if self.mask == "time":
-            self.maks_layer = TimeMaskLayer()
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
         elif self.mask == "freq":
-            self.mask = FreqMaskLayer()
+            self.mask = FreqMaskLayer(mask_len=mask_len)
         elif self.mask == "time_freq":
             self.mask_layer = nn.Sequential(
                 TimeMaskLayer(),
@@ -1740,7 +1740,7 @@ class MultiResNet(nn.Module):
     def __init__(self, embedding_size, num_classes_a, num_classes_b, block=BasicBlock, input_dim=161,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0., stride=2, fast=False,
                  inst_norm=False, alpha=12, input_norm='None', transform=False,
-                 avg_size=4, kernal_size=5, padding=2, **kwargs):
+                 avg_size=4, kernal_size=5, padding=2, mask='None', mask_len=25, **kwargs):
 
         super(MultiResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -1767,6 +1767,18 @@ class MultiResNet(nn.Module):
             self.inst_layer = MeanStd_Norm()
         else:
             self.inst_layer = None
+
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+        elif self.mask == "freq":
+            self.mask = FreqMaskLayer(mask_len=mask_len)
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(mask_len=mask_len),
+                FreqMaskLayer(mask_len=mask_len)
+            )
+        else:
+            self.mask_layer = None
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=stride, padding=2, bias=False)
@@ -1856,6 +1868,9 @@ class MultiResNet(nn.Module):
 
         if self.inst_layer != None:
             x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
