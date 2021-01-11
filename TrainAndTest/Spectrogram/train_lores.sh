@@ -1003,6 +1003,67 @@ if [ $stage -le 65 ]; then
   transform=None
   loss_ratio=0.01
   alpha=13
+  for loss in soft; do
+    echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
+
+    python TrainAndTest/Spectrogram/train_egs_multi.py \
+      --model ${model} \
+      --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v4 \
+      --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_dev_8k_v4 \
+      --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v2/trials_dir \
+      --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k_v4 \
+      --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_valid_8k_v4 \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
+      --feat-format kaldi \
+      --resnet-size ${resnet_size} \
+      --input-norm Mean \
+      --batch-size 256 \
+      --nj 10 \
+      --epochs 15 \
+      --scheduler rop \
+      --patience 2 \
+      --lr 0.0001 \
+      --input-dim 81 \
+      --fast \
+      --stride 1 \
+      --milestones 8,14,20 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}/checkpoint_21.pth \
+      --channels 32,64,128,256 \
+      --embedding-size 128 \
+      --transform ${transform} \
+      --encoder-type ${encod} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --num-valid 4 \
+      --alpha ${alpha} \
+      --ring 13 \
+      --margin 0.25 \
+      --s 20 \
+      --m 3 \
+      --loss-ratio ${loss_ratio} \
+      --set-ratio 1.0 \
+      --grad-clip 0 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.1 \
+      --gpu-id 0,1 \
+      --cos-sim \
+      --extract \
+      --loss-type ${loss}
+  done
+fi
+
+
+if [ $stage -le 66 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=army
+  model=MultiResNet
+  resnet_size=18
+  loss=soft
+  encod=None
+  transform=None
+  loss_ratio=0.01
+  alpha=13
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
