@@ -193,7 +193,8 @@ class FreqMaskLayer(nn.Module):
             x = x * one_mask
         else:
             this_mean = x.mean(dim=-2, keepdim=True)
-            x[:, :, :, start:(start + this_len)] = this_mean
+            x[:, :, :, start:(start + this_len)] = this_mean[:, :, :, start:(start + this_len)].expand(
+                (x.shape[0], x.shape[1], x.shape[2], this_len))
 
         return x
 
