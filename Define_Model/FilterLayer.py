@@ -166,8 +166,11 @@ class TimeMaskLayer(nn.Module):
             one_mask[:, :, start:(start + this_len), :] = 0
             x = x * one_mask
         else:
-            this_mean = x.mean(dim=-2, keepdim=True)
-            x[:, :, start:(start + this_len), :] = this_mean
+            this_mean = x.mean(dim=-1, keepdim=True)
+            x[:, :, :, start:(start + this_len)] = this_mean[:, :, start:(start + this_len), :].expand(
+                (x.shape[0], x.shape[1], this_len, x.shape[3]))
+
+            # x[:, :, start:(start + this_len), :] = this_mean
 
         return x
 
