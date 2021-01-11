@@ -359,7 +359,8 @@ def main():
             checkpoint = torch.load(args.resume)
             start_epoch = checkpoint['epoch']
 
-            filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+            # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+            filtered = {k: v for k, v in checkpoint['state_dict'] if 'num_batches_tracked' not in k}
             model_dict = model.state_dict()
             model_dict.update(filtered)
             model.load_state_dict(model_dict)
