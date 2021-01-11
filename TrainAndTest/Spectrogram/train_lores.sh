@@ -1027,8 +1027,8 @@ if [ $stage -le 65 ]; then
       --fast \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}/checkpoint_21.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}_mask \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}_mask/checkpoint_21.pth \
       --channels 32,64,128,256 \
       --embedding-size 128 \
       --transform ${transform} \
@@ -1052,7 +1052,6 @@ if [ $stage -le 65 ]; then
       --loss-type ${loss}
   done
 fi
-
 
 if [ $stage -le 66 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
