@@ -1017,6 +1017,8 @@ if [ $stage -le 65 ]; then
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --input-norm Mean \
+      --mask-layer freq \
+      --mask-len 20 \
       --batch-size 256 \
       --nj 10 \
       --epochs 15 \
