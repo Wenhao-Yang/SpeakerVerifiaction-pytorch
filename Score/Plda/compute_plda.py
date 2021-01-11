@@ -11,12 +11,12 @@
 """
 
 import argparse
+import os
 
-from kaldi_io.kaldi_io import _read_mat_binary, _read_vec_flt_binary, UnknownVectorHeader
-from tqdm import tqdm
 import kaldi_io
 import numpy as np
-import os
+from kaldi_io.kaldi_io import _read_vec_flt_binary, UnknownVectorHeader
+from tqdm import tqdm
 
 from Score.Plda.plda import PldaEstimationConfig, PldaStats, PldaEstimator, PLDA, write_vec_binary
 
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     if os.path.exists(args.transform_vec):
         try:
             with open(args.transform_vec, 'rb') as f:
-                transform_vec = _read_mat_binary(f)
+                transform_vec = kaldi_io.read_mat(f)
                 if transform_vec.shape[-1] != vec_dim:
                     transform_vec = transform_vec[:, :vec_dim]
                     vec_dim = transform_vec.shape[0]

@@ -452,7 +452,7 @@ class PldaEstimator(object):
         # 更新within_var_, between_var_
         self.EstimateFromStats()
 
-        print()
+        # print()
         # print("Objective function is ", self.ComputeObjf())
 
     def ResetPerIterStats(self):
@@ -463,7 +463,8 @@ class PldaEstimator(object):
 
         # KALDI_LOG << "Trace of within-class variance is " << within_var_.Trace();
         # KALDI_LOG << "Trace of between-class variance is " << between_var_.Trace();
-        print("\nTrace of within-class variance: %.4f between-class variance: %.4f" % (self.within_var_.trace(), self.between_var_.trace()))
+        print("Trace of within-class variance: %.4f between-class variance: %.4f" % (
+        self.within_var_.trace(), self.between_var_.trace()))
 
     # gets stats from intra-class variation (stats_.offset_scatter_).
     def GetStatsFromIntraClass(self):
@@ -574,6 +575,6 @@ class PldaEstimator(object):
         print("Diagonal of between-class variance in normalized space is:\n", s)
         plda.ComputeDerivedVars()
 
-        print("within var is: ", self.within_var_)
-        print("between var is: ", self.between_var_)
+        # print("within var is: ", self.within_var_)
+        # print("between var is: ", self.between_var_)
     #

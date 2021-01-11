@@ -15,7 +15,7 @@ import os
 import kaldi_io
 import numpy as np
 from kaldi_io import UnknownVectorHeader
-from kaldi_io.kaldi_io import _read_vec_flt_binary, _read_mat_binary, read_vec_flt
+from kaldi_io.kaldi_io import _read_vec_flt_binary
 
 from Score.Plda.plda import PLDA, PldaConfig
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     if os.path.exists(args.transform_vec):
         try:
             with open(args.transform_vec, 'rb') as f:
-                transform_vec = _read_mat_binary(f)
+                transform_vec = kaldi_io.read_mat(f)
                 transform = True
         except Exception as e:
             print("Skippinng transform ... Transform vector loading error: \n%s" % str(e))
