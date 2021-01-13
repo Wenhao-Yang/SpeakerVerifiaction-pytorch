@@ -110,33 +110,38 @@ class PLDA(object):
         assert (num_examples > 0)
         #  Work out the normalization factor. The covariance for an average over "num_examples"
         #  training iVectors equals \Psi + I / num_examples.
-        transformed_ivector_sq = np.square(transformed_ivector)
-
+        transformed_ivector_sq = np.power(transformed_ivector, 2)
+        # print(transformed_ivector)
         #  inv_covar will equal 1.0 / (\Psi + I / num_examples).
-        inv_covar = self.psi_.copy() + 1.0 / num_examples
+        inv_covar = self.psi_ + 1.0 / num_examples
+        # print(self.psi_.shape)
         inv_covar = 1.0 / inv_covar
+        # print(np.linalg.norm(transformed_ivector_sq))
         # "transformed_ivector" should have covariance(\Psi + I / num_examples), i.e.
         # within-class /num_examples plus between- class covariance.So
         # transformed_ivector_sq.(I / num_examples + \Psi) ^ {-1} should be equal to
         # the dimension.
-        dot_prod = np.sum(inv_covar * transformed_ivector_sq)
-
+        dot_prod = np.matmul(inv_covar.reshape(1, -1), transformed_ivector_sq)
+        # print(self.Dim(), dot_prod)
         return np.sqrt(self.Dim() / dot_prod)
 
     def TransformIvector(self, config, ivector, num_examples):
 
         assert (len(ivector) == self.Dim())
         transformed_ivector = self.offset_.copy()
+        # print(self.mean_)
+        # print(self.transform_)
+        # print(self.offset_)
         transformed_ivector += np.matmul(self.transform_, ivector.reshape(-1, 1))  # matmul
-
+        transformed_ivector
         if (config.simple_length_norm):
-            normalization_factor = np.sqrt(len(transformed_ivector)) / np.sqrt(np.square(transformed_ivector))
+            normalization_factor = np.sqrt(transformed_ivector.shape[0]) / np.sqrt(np.square(transformed_ivector).sum())
         else:
             normalization_factor = self.GetNormalizationFactor(transformed_ivector, num_examples);
 
         if (config.normalize_length):
-            transformed_ivector = transformed_ivector * normalization_factor
-
+            transformed_ivector *= normalization_factor
+        # print(normalization_factor)
         return transformed_ivector, normalization_factor
 
     def LogLikelihoodRatio(self, transformed_train_ivector, n,  # number of training utterances.
@@ -146,22 +151,18 @@ class PLDA(object):
         mean = n * self.psi_ / (n * self.psi_ + 1.0) * transformed_train_ivector.squeeze()
         mean = mean.reshape(-1, 1)
         variance = 1.0 + self.psi_ / (n * self.psi_ + 1.0)
-
-        logdet = np.log(np.sum(variance))
+        logdet = np.sum(np.log(variance))
         sqdiff = transformed_test_ivector - mean
-
         sqdiff = np.power(sqdiff, 2)
         variance = 1 / variance
-
         loglike_given_class = -0.5 * (logdet + M_LOG_2PI * dim + np.matmul(sqdiff.T, variance.reshape(-1, 1)))
         # }
         # {// work out loglike_without_class.Here the mean is zero and the variance is I + \Psi.
         sqdiff = transformed_test_ivector  # there is no offset.
-        sqdiff = np.power(sqdiff, 1)
+        sqdiff = np.power(sqdiff, 2)
 
-        variance = self.psi_.copy()
-        variance = 1 + variance  # I + \Psi.
-        logdet = np.log(np.sum(variance))
+        variance = self.psi_ + 1  # I + \Psi.
+        logdet = np.sum(np.log(variance))
         variance = 1 / variance
         loglike_without_class = -0.5 * (logdet + M_LOG_2PI * dim + np.matmul(sqdiff.T, variance.reshape(-1, 1)))
         # }
@@ -535,6 +536,7 @@ class PldaEstimator(object):
     def GetOutput(self, plda):
         plda.mean_ = 1. / self.stats_.class_weight_ * self.stats_.sum_
 
+        print("Norm of mean of iVector distribution is ", np.linalg.norm(plda.mean_))
         # print("Norm of mean of iVector distribution is ", plda.mean_.Norm(2.0))
         # 计算使得within_var_对角化的变换矩阵transform1
         # within_var_ = C * C^T
@@ -544,7 +546,7 @@ class PldaEstimator(object):
         # now transform is a matrix that if we project with it, within_var_ becomes unit.
 
         # between_var_proj是between_var做了transform1投影的矩阵
-        between_var_proj = transform1 * self.between_var_ * transform1.transpose()
+        between_var_proj = np.matmul(transform1, self.between_var_).__matmul__(transform1.transpose())
 
         # Do symmetric eigenvalue decomposition between_var_proj = U diag(s) U^T,
         # where U is orthogonal.
@@ -568,10 +570,14 @@ class PldaEstimator(object):
         # (i.e. U^T U diag(s) U U^T = diag(s)).  The final transform that
         # makes within_var_ unit and between_var_ diagonal is U^T transform1,
         # i.e. first transform1 and then U^T.
-
-        plda.transform_ = U.transpose() * transform1
+        # print("s is: \n", s)
+        # print("U is: \n", U)
+        # print("transform1 is: \n", transform1)
+        plda.transform_ = np.matmul(U.transpose(), transform1)
         plda.psi_ = s  # 更新psi
 
+        # print(plda.transform_)
+        # print(plda.psi_ )
         print("Diagonal of between-class variance in normalized space is:\n", s)
         plda.ComputeDerivedVars()
 

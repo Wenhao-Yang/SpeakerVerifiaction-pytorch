@@ -34,6 +34,8 @@ parser.add_argument('--num-utts', type=str, default="", help='path to plda direc
 parser.add_argument('--subtract-global-mean', action='store_false', default=True, help='path to plda directory')
 parser.add_argument('--mean-vec', type=str, default='', help='path to plda directory')
 parser.add_argument('--transform-vec', type=str, default='', help='path to plda directory')
+parser.add_argument('--vec-normalize-length', action='store_true', default=True, help='log power spectogram')
+parser.add_argument('--scaleup', action='store_false', default=True, help='path to plda directory')
 parser.add_argument('--normalize-length', action='store_true', default=True, help='log power spectogram')
 parser.add_argument('--simple-length-norm', action='store_true', default=False, help='path to plda directory')
 
@@ -112,6 +114,9 @@ if __name__ == '__main__':
             print("Skippinng transform ... Transform vector loading error: \n%s" % str(e))
 
     print('Reading train iVectors:')
+    tot_ratio = 0.0
+    tot_ratio2 = 0.0
+
     train_ivectors = {}
     with open(args.train_vec_scp, 'r') as f:
         for l in f.readlines():
@@ -119,7 +124,7 @@ if __name__ == '__main__':
             ivector_path = os.path.join('Score/data', ivector_path)
             ivector = vec_loader(ivector_path)
 
-    # for spk, ivector in kaldi_io.read_vec_flt_scp(args.train_vec_scp):
+            # for spk, ivector in kaldi_io.read_vec_flt_scp(args.train_vec_scp):
             # train_vec[spk] = ivector
             if sub_mean:
                 ivector -= global_mean
@@ -128,6 +133,16 @@ if __name__ == '__main__':
                 if transform_vec.shape[1] != len(ivector):
                     transform_vec = transform_vec[:, :len(ivector)]
                 ivector = np.matmul(transform_vec, ivector)
+
+            if args.vec_normalize_length:
+                norm = np.linalg.norm(ivector)
+                ratio = norm / np.sqrt(len(ivector.shape)) if args.scaleup else norm
+
+                assert ratio.all() > 0.0
+
+                ivector /= ratio
+                tot_ratio += ratio.sum()
+                tot_ratio2 += (ratio * ratio).sum()
 
             if len(spk2num_utts) > 0:
                 if spk in spk2num_utts:
@@ -148,19 +163,29 @@ if __name__ == '__main__':
 
     if (num_train_ivectors == 0):
         print("No training iVectors present.")
+    if args.vec_normalize_length:
+        avg_ratio = tot_ratio / num_train_ivectors
+        ratio_stddev = np.sqrt(tot_ratio2 / num_train_ivectors - avg_ratio * avg_ratio)
+        print("Average ratio of train iVector to expected length was ", avg_ratio, ", standard deviation was ",
+              ratio_stddev)
+
     print("Average renormalization scale on %d training iVectors was %.4f" % (
-    num_train_ivectors, tot_train_renorm_scale / num_train_ivectors))
+        num_train_ivectors, tot_train_renorm_scale / num_train_ivectors))
 
     print('Reading test iVectors:')
+    tot_ratio = 0.0
+    tot_ratio2 = 0.0
+
     test_ivectors = {}
-    with open(args.train_vec_scp, 'r') as f:
+    with open(args.test_vec_scp, 'r') as f:
         for l in f.readlines():
             uid, ivector_path = l.split()
             ivector_path = os.path.join('Score/data', ivector_path)
             ivector = vec_loader(ivector_path)
-
-    # for uid, ivector in kaldi_io.read_vec_flt_scp(args.test_vec_scp):
-        # train_vec[spk] = ivector
+            if uid == 'id10280-v0Q-VyO4TjI-00001':
+                print(ivector)
+            # for uid, ivector in kaldi_io.read_vec_flt_scp(args.test_vec_scp):
+            # train_vec[spk] = ivector
             if uid in test_ivectors:
                 print("Duplicate test iVector found for utterance %s" % uid)
             num_examples = 1
@@ -172,6 +197,17 @@ if __name__ == '__main__':
                     transform_vec = transform_vec[:, :transform_vec]
                 ivector = np.matmul(transform_vec, ivector)
 
+            if args.vec_normalize_length:
+                norm = np.linalg.norm(ivector)
+                ratio = norm / np.sqrt(len(ivector)) if args.scaleup else norm
+
+                assert ratio.all() > 0.0
+
+                ivector /= ratio
+                tot_ratio += ratio.sum()
+                tot_ratio2 += (ratio * ratio).sum()
+            if uid == 'id10280-v0Q-VyO4TjI-00001':
+                print(ivector)
             transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
 
             tot_test_renorm_scale += normalization_factor
@@ -181,9 +217,14 @@ if __name__ == '__main__':
 
     if (num_test_ivectors == 0):
         print("No testing iVectors present.")
+    if args.vec_normalize_length:
+        avg_ratio = tot_ratio / num_test_ivectors
+        ratio_stddev = np.sqrt(tot_ratio2 / num_test_ivectors - avg_ratio * avg_ratio)
+        print("Average ratio of test iVector to expected length was ", avg_ratio, ", standard deviation was ",
+              ratio_stddev)
 
     print("Average renormalization scale on %d testing iVectors was %.4f" % (
-    num_test_ivectors, tot_test_renorm_scale / num_test_ivectors))
+        num_test_ivectors, tot_test_renorm_scale / num_test_ivectors))
 
     if not os.path.exists(os.path.dirname(args.score)):
         print("Making score dir...")
