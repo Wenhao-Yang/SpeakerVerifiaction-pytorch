@@ -200,6 +200,9 @@ class ArcSoftmaxLoss(nn.Module):
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
         theta = costh.acos()
+        
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
 
         # if lb_view.is_cuda:
         #     lb_view = lb_view.cpu()
