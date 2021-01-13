@@ -206,9 +206,9 @@ class ArcSoftmaxLoss(nn.Module):
         delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
         # pdb.set_trace()
         if costh.is_cuda:
-            delt_costh = Variable(delt_theta.cuda())
+            delt_theta = Variable(delt_theta.cuda())
 
-        costh_m = (theta + delt_costh).cos()
+        costh_m = (theta + delt_theta).cos()
         costh_m_s = self.s * costh_m
 
         if self.iteraion < 1000:
