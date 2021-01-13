@@ -115,7 +115,8 @@ parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
-parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
+parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
 parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
@@ -124,6 +125,7 @@ parser.add_argument('--vad', action='store_true', default=False, help='vad layer
 parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
 parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
+
 parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
