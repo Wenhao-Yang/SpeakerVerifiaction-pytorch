@@ -377,13 +377,13 @@ if [ $stage -le 81 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
       --nj 12 \
-      --epochs 50 \
+      --epochs 10 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0001 \
-      --lr 0.1 \
+      --lr 0.00001 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -392,7 +392,7 @@ if [ $stage -le 81 ]; then
       --input-dim 161 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/emsize${embedding_size} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/emsize${embedding_size}/checkpoint_37.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/emsize${embedding_size}/checkpoint_50.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
