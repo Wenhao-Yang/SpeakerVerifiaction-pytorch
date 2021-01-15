@@ -433,7 +433,12 @@ def main():
             checkpoint = torch.load(args.resume)
             start_epoch = checkpoint['epoch']
 
-            filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+            checkpoint_state_dict = checkpoint['state_dict']
+            if isinstance(checkpoint_state_dict, tuple):
+                checkpoint_state_dict = checkpoint_state_dict[0]
+            filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+
+            # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
             if list(filtered.keys())[0].startswith('module'):
                 new_state_dict = OrderedDict()
                 for k, v in filtered.items():
