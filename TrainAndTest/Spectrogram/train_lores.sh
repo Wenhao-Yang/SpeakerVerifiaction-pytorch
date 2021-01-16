@@ -1114,7 +1114,7 @@ if [ $stage -le 66 ]; then
       --loss-type ${loss}
   done
 fi
-exit
+#exit
 
 #stage=10000
 if [ $stage -le 80 ]; then
