@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=81
+stage=66
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -1064,8 +1064,8 @@ if [ $stage -le 66 ]; then
   encod=None
   transform=None
   loss_ratio=0.01
-  alpha=13
-  for loss in arcsoft; do
+  alpha=0
+  for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/Spectrogram/train_egs_multi.py \
@@ -1087,19 +1087,20 @@ if [ $stage -le 66 ]; then
       --lr 0.1 \
       --input-dim 81 \
       --fast \
+      --mask-layer freq \
+      --mask-len 25 \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}_wd15 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp25_b256_${alpha}_fast_${transform}_wd15/checkpoint_29.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp01_eb256_${alpha}_fast_${transform}_mask25 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp01_eb256_${alpha}_fast_${transform}_mask25/checkpoint_29.pth \
       --channels 32,64,128,256 \
-      --embedding-size 128 \
+      --embedding-size 256 \
       --transform ${transform} \
       --encoder-type ${encod} \
       --time-dim 1 \
       --avg-size 4 \
       --num-valid 4 \
       --alpha ${alpha} \
-      --ring 13 \
       --margin 0.25 \
       --s 20 \
       --m 3 \
@@ -1114,7 +1115,7 @@ if [ $stage -le 66 ]; then
       --loss-type ${loss}
   done
 fi
-#exit
+exit
 
 #stage=10000
 if [ $stage -le 80 ]; then
