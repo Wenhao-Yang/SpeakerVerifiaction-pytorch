@@ -152,13 +152,14 @@ class AdditiveMarginLinear(nn.Module):
 
         return costh
 
+
 class AMSoftmaxLoss(nn.Module):
     def __init__(self, margin=0.3, s=15, all_iteraion=6000):
         super(AMSoftmaxLoss, self).__init__()
         self.s = s
         self.margin = margin
         self.ce = nn.CrossEntropyLoss()
-        # self.iteraion = 0
+        self.iteraion = 0
         # self.all_iteraion = all_iteraion
 
     def forward(self, costh, label):
@@ -175,9 +176,9 @@ class AMSoftmaxLoss(nn.Module):
         costh_m = costh - delt_costh
         costh_m_s = self.s * costh_m
 
-        # if self.iteraion < self.all_iteraion:
-        #     costh_m_s = 0.5 + costh + 0.5 * min(1.0, (self.iteraion / self.all_iteraion)) * costh_m_s
-        #     self.iteraion += 1
+        if self.iteraion < 1000:
+            costh_m_s = 0.5 + costh + 0.5 * costh_m_s
+            self.iteraion += 1
 
         loss = self.ce(costh_m_s, label)
 
@@ -204,8 +205,6 @@ class ArcSoftmaxLoss(nn.Module):
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
 
-        # if lb_view.is_cuda:
-        #     lb_view = lb_view.cpu()
         delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
         # pdb.set_trace()
         if costh.is_cuda:
@@ -216,7 +215,6 @@ class ArcSoftmaxLoss(nn.Module):
 
         if self.iteraion < 1000:
             costh_m_s = 0.5 * costh + 0.5 * costh_m_s
-            # costh_m_s *= 0.5 
             self.iteraion += 1
 
         loss = self.ce(costh_m_s, label)
@@ -225,6 +223,7 @@ class ArcSoftmaxLoss(nn.Module):
 
     def __repr__(self):
         return "ArcSoftmaxLoss(margin=%f, s=%d)" % (self.margin, self.s)
+
 
 class CenterLoss(nn.Module):
     """Center loss.
@@ -271,6 +270,7 @@ class CenterLoss(nn.Module):
 
     def __repr__(self):
         return "CenterLoss(num_classes=%d, feat_dim=%d)" % (self.num_classes, self.feat_dim)
+
 
 class GaussianLoss(nn.Module):
     """Center loss.

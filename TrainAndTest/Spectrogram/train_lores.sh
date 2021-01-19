@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=66
+stage=81
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -1115,7 +1115,7 @@ if [ $stage -le 66 ]; then
       --loss-type ${loss}
   done
 fi
-exit
+#exit
 
 #stage=10000
 if [ $stage -le 80 ]; then
@@ -1176,6 +1176,7 @@ if [ $stage -le 81 ]; then
   model=ThinResNet
   resnet_size=34
   encoder_type=STAP
+  alpha=13
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -1196,8 +1197,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_${alpha} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_${alpha}/checkpoint_24.pth \
       --channels 16,32,64,128 \
       --batch-size 128 \
       --embedding-size 512 \
@@ -1205,7 +1206,7 @@ if [ $stage -le 81 ]; then
       --avg-size 8 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
-      --alpha 0 \
+      --alpha ${alpha} \
       --margin 0.3 \
       --grad-clip 0 \
       --s 15 \
