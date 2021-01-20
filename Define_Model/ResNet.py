@@ -264,7 +264,7 @@ class SimpleResNet(nn.Module):
 
 class ThinResNet(nn.Module):
 
-    def __init__(self, resnet_size=34, block=BasicBlock, inst_norm=True, kernel_size=5, stride=1, padding=2,
+    def __init__(self, resnet_size=34, block_type='None', inst_norm=True, kernel_size=5, stride=1, padding=2,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4,
                  alpha=12, encoder_type='SAP', zero_init_residual=False, groups=1, width_per_group=64,
                  input_dim=257, sr=16000, filter=None, replace_stride_with_dilation=None, norm_layer=None,
@@ -289,6 +289,13 @@ class ThinResNet(nn.Module):
         self.dilation = 1
         self.fast = fast
         num_filter = [16, 32, 64, 128]
+
+        if block_type == "seblock":
+            block = SEBasicBlock
+        elif block_type == 'cbam':
+            block = CBAMBlock
+        else:
+            block = BasicBlock
         # num_filter = [32, 64, 128, 256]
 
         if replace_stride_with_dilation is None:
