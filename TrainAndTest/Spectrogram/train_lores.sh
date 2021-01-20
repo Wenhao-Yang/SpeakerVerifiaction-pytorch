@@ -1177,6 +1177,7 @@ if [ $stage -le 81 ]; then
   resnet_size=34
   encoder_type=STAP
   alpha=13
+  block_type=cbam
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -1197,14 +1198,15 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_chn32 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_chn32/checkpoint_24.pth \
-      --channels 32,64,128,256 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_cbam \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_cbam/checkpoint_24.pth \
+      --channels 16,32,64,128 \
+      --block-type ${block_type} \
       --stride 2 \
       --batch-size 128 \
       --embedding-size 512 \
       --time-dim 1 \
-      --avg-size 4 \
+      --avg-size 8 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
