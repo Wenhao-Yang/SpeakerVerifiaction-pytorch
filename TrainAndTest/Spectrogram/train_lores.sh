@@ -1197,14 +1197,14 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_stride1 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_stride1/checkpoint_24.pth \
-      --channels 16,32,64,128 \
-      --stride 1 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_chn32 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_chn32/checkpoint_24.pth \
+      --channels 32,64,128,256 \
+      --stride 2 \
       --batch-size 128 \
       --embedding-size 512 \
       --time-dim 1 \
-      --avg-size 8 \
+      --avg-size 4 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
