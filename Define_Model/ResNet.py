@@ -284,12 +284,12 @@ class ThinResNet(nn.Module):
         self.inst_norm = inst_norm
         self.filter = filter
         self._norm_layer = nn.BatchNorm2d
-
         self.embedding_size = embedding_size
-        self.inplanes = 16
+
         self.dilation = 1
         self.fast = fast
         self.num_filter = channels  # [16, 32, 64, 128]
+        self.inplanes = self.num_filter[0]
 
         if block_type == "seblock":
             block = SEBasicBlock
