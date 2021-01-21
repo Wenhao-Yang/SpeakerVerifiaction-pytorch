@@ -1192,11 +1192,11 @@ if [ $stage -le 81 ]; then
       --input-norm Mean \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 40 \
+      --epochs 31 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.1 \
+      --lr 0.01 \
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_cbam \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_cbam/checkpoint_9.pth \
