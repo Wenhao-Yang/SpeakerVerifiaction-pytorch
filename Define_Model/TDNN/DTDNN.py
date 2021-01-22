@@ -9,14 +9,15 @@
 @Time: 2020/12/29 11:57
 @Overview: https://github.com/yuyq96/D-TDNN/blob/master/model/layers.py
 """
+import math
 from collections import OrderedDict
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.modules.utils import _single, _pair
-import math
 import torch.utils.checkpoint as cp
+from torch.nn.modules.utils import _single, _pair
+
 
 def get_nonlinear(config_str, channels):
     nonlinear = nn.Sequential()
@@ -184,13 +185,13 @@ class DenseTDNNBlock(nn.ModuleList):
 
 class DTDNN(nn.Module):
 
-    def __init__(self, feat_dim=30, embedding_size=512, num_classes=None,
-                 growth_rate=64, bn_size=2, init_channels=128,
-                 config_str='batchnorm-relu', memory_efficient=True):
+    def __init__(self, input_dim=30, embedding_size=512, num_classes=None, growth_rate=64,
+                 bn_size=2, init_channels=128, config_str='batchnorm-relu', memory_efficient=True):
         super(DTDNN, self).__init__()
 
+        self.input_dim = input_dim
         self.xvector = nn.Sequential(OrderedDict([
-            ('tdnn', TDNNLayer(feat_dim, init_channels, 5, dilation=1, padding=-1,
+            ('tdnn', TDNNLayer(input_dim, init_channels, 5, dilation=1, padding=-1,
                                config_str=config_str)),
         ]))
         channels = init_channels
@@ -213,6 +214,7 @@ class DTDNN(nn.Module):
             channels //= 2
         self.xvector.add_module('stats', StatsPool())
         self.xvector.add_module('dense', DenseLayer(channels * 2, embedding_size, config_str='batchnorm_'))
+
         if num_classes is not None:
             self.classifier = nn.Linear(embedding_size, num_classes)
 
@@ -225,8 +227,13 @@ class DTDNN(nn.Module):
                     nn.init.zeros_(m.bias)
 
     def forward(self, x):
-        x = self.xvector(x)
-        if self.training:
-            x = self.classifier(x)
-        return x
+        if len(x.shape) == 4:
+            x = x.squeeze(1).float()
+        if x.shape[-1] == self.input_dim:
+            x = x.transpose(1, 2)
 
+        x = self.xvector(x)
+
+        logits = self.classifier(x)
+
+        return logits, x
