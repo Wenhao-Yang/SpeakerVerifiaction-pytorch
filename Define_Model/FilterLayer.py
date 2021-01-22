@@ -234,7 +234,7 @@ class CBAM(nn.Module):
 
 class SqueezeExcitation(nn.Module):
     # input should be like [Batch, channel, time, frequency]
-    def __init__(self, inplanes, reduction_ratio=16):
+    def __init__(self, inplanes, reduction_ratio=4):
         super(SqueezeExcitation, self).__init__()
         self.reduction_ratio = reduction_ratio
 

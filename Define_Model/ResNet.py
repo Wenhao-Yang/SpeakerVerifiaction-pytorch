@@ -19,7 +19,7 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer
+from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2
@@ -39,7 +39,7 @@ class SEBasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None, reduction_ratio=16):
+                 base_width=64, dilation=1, norm_layer=None, reduction_ratio=4):
         super(SEBasicBlock, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -58,10 +58,7 @@ class SEBasicBlock(nn.Module):
         self.reduction_ratio = reduction_ratio
 
         # Squeeze-and-Excitation
-        self.glob_avg = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(planes, max(int(planes / self.reduction_ratio), 1))
-        self.fc2 = nn.Linear(max(int(planes / self.reduction_ratio), 1), planes)
-        self.activation = nn.Sigmoid()
+        self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
 
     def forward(self, x):
         identity = x
@@ -76,13 +73,7 @@ class SEBasicBlock(nn.Module):
         if self.downsample is not None:
             identity = self.downsample(x)
 
-        scale = self.glob_avg(out).squeeze(dim=2).squeeze(dim=2)
-        scale = self.fc1(scale)
-        scale = self.relu(scale)
-        scale = self.fc2(scale)
-        scale = self.activation(scale).unsqueeze(2).unsqueeze(2)
-
-        out = out * scale
+        out = self.se_layer(out)
 
         out += identity
         out = self.relu(out)
