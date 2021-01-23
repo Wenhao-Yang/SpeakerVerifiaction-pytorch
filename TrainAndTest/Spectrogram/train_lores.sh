@@ -1214,7 +1214,7 @@ if [ $stage -le 81 ]; then
       --grad-clip 0 \
       --s 30 \
       --loss-ratio 0.01 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0 \
       --gpu-id 0,1 \
       --extract \
