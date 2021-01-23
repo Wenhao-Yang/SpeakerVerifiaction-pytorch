@@ -358,7 +358,7 @@ if [ $stage -le 80 ]; then
 fi
 
 if [ $stage -le 81 ]; then
-  model=TDNN_v5
+  model=DTDNN
   datasets=vox2
   feat=log
   feat_type=spect
@@ -366,7 +366,7 @@ if [ $stage -le 81 ]; then
   encod=STAP
   embedding_size=512
 
-  for model in TDNN_v5; do
+  for model in DTDNN; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -383,7 +383,7 @@ if [ $stage -le 81 ]; then
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0001 \
-      --lr 0.00001 \
+      --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
