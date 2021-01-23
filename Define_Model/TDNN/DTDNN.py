@@ -186,7 +186,7 @@ class DenseTDNNBlock(nn.ModuleList):
 class DTDNN(nn.Module):
 
     def __init__(self, input_dim=30, embedding_size=512, num_classes=None, growth_rate=64,
-                 bn_size=2, init_channels=128, config_str='batchnorm-relu', memory_efficient=True):
+                 bn_size=2, init_channels=128, config_str='batchnorm-relu', memory_efficient=True, **kwargs):
         super(DTDNN, self).__init__()
 
         self.input_dim = input_dim
