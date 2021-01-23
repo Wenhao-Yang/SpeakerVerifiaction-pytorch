@@ -1176,9 +1176,9 @@ if [ $stage -le 81 ]; then
   model=ThinResNet
   resnet_size=34
   encoder_type=STAP
-  alpha=13
-  block_type=cbam
-  for loss in soft; do
+  alpha=0
+  block_type=None
+  for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -1192,11 +1192,11 @@ if [ $stage -le 81 ]; then
       --input-norm Mean \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 31 \
+      --epochs 40 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.01 \
+      --lr 0.1 \
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_cbam \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_cbam/checkpoint_9.pth \
@@ -1210,10 +1210,9 @@ if [ $stage -le 81 ]; then
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.3 \
+      --margin 0.25 \
       --grad-clip 0 \
-      --s 15 \
-      --m 3 \
+      --s 30 \
       --loss-ratio 0.01 \
       --weight-decay 0.0005 \
       --dropout-p 0 \
