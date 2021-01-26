@@ -1189,7 +1189,7 @@ if [ $stage -le 81 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
       --fix-length \
-      --input-norm Mean \
+      --input-norm None \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 40 \
