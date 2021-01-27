@@ -1179,7 +1179,7 @@ if [ $stage -le 81 ]; then
   alpha=0
   block_type=None
   for loss in arcsoft; do
-    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
+    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
@@ -1196,10 +1196,10 @@ if [ $stage -le 81 ]; then
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.1 \
+      --lr 0.01 \
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}/checkpoint_9.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --block-type ${block_type} \
       --stride 2 \
