@@ -213,7 +213,7 @@ class ArcSoftmaxLoss(nn.Module):
         costh_m = (theta + delt_theta).cos()
         costh_m_s = self.s * costh_m
 
-        if self.iteraion < 1000:
+        if self.iteraion < 100:
             costh_m_s = 0.5 * costh + 0.5 * costh_m_s
             self.iteraion += 1
 

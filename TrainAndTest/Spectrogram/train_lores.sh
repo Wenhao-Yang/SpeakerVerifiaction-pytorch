@@ -1206,7 +1206,7 @@ if [ $stage -le 81 ]; then
       --batch-size 128 \
       --embedding-size 512 \
       --time-dim 1 \
-      --avg-size 8 \
+      --avg-size 6 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
