@@ -317,7 +317,7 @@ if [ $stage -le 80 ]; then
   encod=STAP
   embedding_size=512
 
-  for model in TDNN_v5 ETDNN_v5 FTDNN; do
+  for model in ETDNN_v5 FTDNN; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -366,7 +366,7 @@ if [ $stage -le 81 ]; then
   encod=STAP
   embedding_size=512
 
-  for model in DTDNN; do
+  for model in ETDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -377,7 +377,7 @@ if [ $stage -le 81 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
       --nj 12 \
-      --epochs 10 \
+      --epochs 50 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
@@ -399,8 +399,8 @@ if [ $stage -le 81 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.3 \
-      --s 20 \
+      --margin 0.25 \
+      --s 30 \
       --log-interval 10
   done
 fi
