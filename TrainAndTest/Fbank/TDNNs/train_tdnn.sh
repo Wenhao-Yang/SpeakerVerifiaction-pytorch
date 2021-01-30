@@ -377,7 +377,7 @@ if [ $stage -le 81 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
       --nj 12 \
-      --epochs 50 \
+      --epochs 41 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
