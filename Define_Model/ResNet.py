@@ -258,7 +258,7 @@ class ThinResNet(nn.Module):
     def __init__(self, resnet_size=34, block_type='None', channels=[16, 32, 64, 128],
                  inst_norm=True, kernel_size=5, stride=1, padding=2,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4,
-                 alpha=12, encoder_type='SAP', zero_init_residual=False, groups=1, width_per_group=64,
+                 alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  input_dim=257, sr=16000, filter=None, replace_stride_with_dilation=None, norm_layer=None,
                  input_norm='', **kwargs):
         super(ThinResNet, self).__init__()
@@ -339,38 +339,28 @@ class ThinResNet(nn.Module):
         if encoder_type == 'SAP':
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = SelfAttentionPooling(input_dim=self.num_filter[3], hidden_dim=self.num_filter[3])
-            self.fc1 = nn.Sequential(
-                nn.Linear(self.num_filter[3], embedding_size),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.encoder_output = self.num_filter[3]
         elif encoder_type == 'SASP':
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = AttentionStatisticPooling(input_dim=self.num_filter[3], hidden_dim=self.num_filter[3])
-            self.fc1 = nn.Sequential(
-                nn.Linear(self.num_filter[3] * 2, embedding_size),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.encoder_output = self.num_filter[3] * 2
         elif encoder_type == 'STAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
             self.encoder = StatisticPooling(input_dim=self.num_filter[3] * freq_dim)
-            self.fc1 = nn.Sequential(
-                nn.Linear(self.num_filter[3] * freq_dim * 2, embedding_size),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.encoder_output = self.num_filter[3] * freq_dim * 2
         elif encoder_type == 'ASTP':
             self.avgpool = AdaptiveStdPool2d((time_dim, freq_dim))
             self.encoder = None
-            self.fc1 = nn.Sequential(
-                nn.Linear(self.num_filter[3] * freq_dim * time_dim, embedding_size),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.encoder_output = self.num_filter[3] * freq_dim * time_dim
         else:
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = None
-            self.fc1 = nn.Sequential(
-                nn.Linear(self.num_filter[3] * freq_dim * time_dim, embedding_size),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.encoder_output = self.num_filter[3] * freq_dim * time_dim
+
+        self.fc1 = nn.Sequential(
+            nn.Linear(self.encoder_output, embedding_size),
+            nn.BatchNorm1d(embedding_size)
+        )
 
         self.alpha = alpha
         if self.alpha:
