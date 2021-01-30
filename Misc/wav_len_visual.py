@@ -7,7 +7,7 @@
 @Software: PyCharm
 @File: wav_len_visual.py
 @Time: 2019/12/17 1:16 PM
-@Overview:
+@Overview: Statistic on utterance length
 """
 import matplotlib.pyplot as plt
 import numpy as np
