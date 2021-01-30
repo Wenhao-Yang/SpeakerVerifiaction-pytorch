@@ -353,6 +353,7 @@ def main():
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
         torch.save(model, check_path)
 
+    iteration = 100 if args.resume else 0
     if args.finetune and args.resume:
         if os.path.isfile(args.resume):
             print('=> loading checkpoint {}'.format(args.resume))
@@ -401,7 +402,7 @@ def main():
     elif args.loss_type == 'arcsoft':
         ce_criterion = None
         model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
-        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
+        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
     elif args.loss_type == 'ring':

@@ -392,7 +392,7 @@ if [ $stage -le 81 ]; then
       --input-dim 161 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/emsize${embedding_size} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/emsize${embedding_size}/checkpoint_50.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}/emsize${embedding_size}/checkpoint_19.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
