@@ -1176,7 +1176,7 @@ if [ $stage -le 81 ]; then
   model=ThinResNet
   resnet_size=34
   encoder_type=STAP
-  alpha=0
+  alpha=13
   block_type=None
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
@@ -1192,21 +1192,21 @@ if [ $stage -le 81 ]; then
       --input-norm None \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 40 \
+      --epochs 50 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.01 \
+      --lr 0.1 \
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha} \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}/checkpoint_10.pth \
-      --channels 16,32,64,128 \
+      --channels 32,64,128,256 \
       --block-type ${block_type} \
       --stride 2 \
       --batch-size 128 \
       --embedding-size 512 \
       --time-dim 1 \
-      --avg-size 6 \
+      --avg-size 4 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
