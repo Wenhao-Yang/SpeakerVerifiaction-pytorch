@@ -27,6 +27,7 @@ NORMALIZE = True
 # Paramters for Spectrogram
 NUM_FFT = 512
 NUM_FRAMES_SPECT = 300
+NUM_SHIFT_SPECT = 200
 
 # Parameters for VAD
 VAD_ENERGY_THRESHOLD = 5.5

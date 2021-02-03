@@ -413,11 +413,12 @@ class ConcateVarInput(object):
     interpolation: Default: PIL.Image.BILINEAR
     """
 
-    def __init__(self, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
+    def __init__(self, num_frames=c.NUM_FRAMES_SPECT, frame_shift=c.NUM_SHIFT_SPECT, remove_vad=False):
 
         super(ConcateVarInput, self).__init__()
         self.num_frames = num_frames
         self.remove_vad = remove_vad
+        self.frame_shift = frame_shift
 
     def __call__(self, frames_features):
 
@@ -426,13 +427,18 @@ class ConcateVarInput(object):
         while len(output) < self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
 
-        input_this_file = int(np.ceil(len(output) / self.num_frames))
+        input_this_file = int(np.ceil(len(output) / self.frame_shift))
 
         for i in range(input_this_file):
-            if i == input_this_file - 1:
-                network_inputs.append(output[len(output) - self.num_frames:])
+            start = i * self.frame_shift
+
+            if start < len(output) - self.num_frames:
+                end = start + self.num_frames
             else:
-                network_inputs.append(output[i * self.num_frames:(i + 1) * self.num_frames])
+                start = len(output) - self.num_frames
+                end = len(output)
+
+            network_inputs.append(output[start:end])
 
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
         if self.remove_vad:
