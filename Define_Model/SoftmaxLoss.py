@@ -201,7 +201,7 @@ class ArcSoftmaxLoss(nn.Module):
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
         theta = costh.acos()
-        
+
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
 
@@ -211,18 +211,17 @@ class ArcSoftmaxLoss(nn.Module):
             delt_theta = Variable(delt_theta.cuda())
 
         costh_m = (theta + delt_theta).cos()
-        costh_m_s = self.s * costh_m
-
         if self.iteraion < 100:
-            costh_m_s = 0.5 * costh + 0.5 * costh_m_s
+            costh_m = 0.5 * costh + 0.5 * costh_m
             self.iteraion += 1
 
+        costh_m_s = self.s * costh_m
         loss = self.ce(costh_m_s, label)
 
         return loss
 
     def __repr__(self):
-        return "ArcSoftmaxLoss(margin=%f, s=%d)" % (self.margin, self.s)
+        return "ArcSoftmaxLoss(margin=%f, s=%d, iteration=%d)" % (self.margin, self.s, self.iteraion)
 
 
 class CenterLoss(nn.Module):
