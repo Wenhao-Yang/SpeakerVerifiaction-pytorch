@@ -365,6 +365,7 @@ if [ $stage -le 81 ]; then
   loss=arcsoft
   encod=STAP
   embedding_size=512
+  input_norm=None
 
   for model in TDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
@@ -376,6 +377,7 @@ if [ $stage -le 81 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
+      --input-norm None \
       --nj 12 \
       --epochs 50 \
       --patience 2 \
@@ -391,8 +393,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --input-dim 161 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_100ce/emsize${embedding_size} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_100ce/emsize${embedding_size}/checkpoint_19.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_100ce/emsize${embedding_size}_input${input_norm} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_100ce/emsize${embedding_size}_input${input_norm}/checkpoint_19.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
