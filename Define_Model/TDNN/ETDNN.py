@@ -18,7 +18,7 @@ from Define_Model.TDNN.TDNN import TimeDelayLayer_v2, TimeDelayLayer_v4, TimeDel
 
 class ETDNN(nn.Module):
     def __init__(self, num_classes, embedding_size=256, batch_norm=True, input_norm='Mean',
-                 input_dim=80, dropout_p=0.0, encoder_type='STAP', **kwargs):
+                 input_dim=80, dropout_p=0.0, dropout_layer=False, encoder_type='STAP', **kwargs):
         super(ETDNN, self).__init__()
         self.num_classes = num_classes
         self.input_dim = input_dim
@@ -30,6 +30,7 @@ class ETDNN(nn.Module):
         else:
             self.inst_layer = None
 
+        self.dropout_layer = dropout_layer
         self.dropout_p = dropout_p
 
         self.frame1 = TimeDelayLayer_v2(input_dim=input_dim, output_dim=512, context_size=5, dilation=1,
@@ -54,6 +55,7 @@ class ETDNN(nn.Module):
         # self.segment11 = nn.Linear(3000, embedding_size)
         # self.leakyrelu = nn.LeakyReLU()
         # self.batchnorm = nn.BatchNorm1d(embedding_size)
+        self.drop = nn.Dropout(p=self.dropout_p)
 
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=1500)
@@ -104,6 +106,9 @@ class ETDNN(nn.Module):
         x = self.frame7(x)
         x = self.frame8(x)
         x = self.frame9(x)
+
+        if self.dropout_layer:
+            x = self.drop(x)
 
         x = self.encoder(x)
         embeddings = self.segment11(x)

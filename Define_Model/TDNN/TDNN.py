@@ -618,10 +618,11 @@ class TDNN_v4(nn.Module):
 
 class TDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
-                 dropout_p=0.0, encoder_type='STAP', **kwargs):
+                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP', **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
         self.dropout_p = dropout_p
+        self.dropout_layer = dropout_layer
         self.input_dim = input_dim
         self.alpha = alpha
 
@@ -632,11 +633,17 @@ class TDNN_v5(nn.Module):
         else:
             self.inst_layer = None
 
-        self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
-        self.frame2 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=3, dilation=2)
-        self.frame3 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=3, dilation=3)
-        self.frame4 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=1, dilation=1)
-        self.frame5 = TimeDelayLayer_v5(input_dim=512, output_dim=1500, context_size=1, dilation=1)
+        self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=512, context_size=5,
+                                        dilation=1, dropout_p=self.dropout_p)
+        self.frame2 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=3,
+                                        dilation=2, dropout_p=self.dropout_p)
+        self.frame3 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=3,
+                                        dilation=3, dropout_p=self.dropout_p)
+        self.frame4 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=1,
+                                        dilation=1, dropout_p=self.dropout_p)
+        self.frame5 = TimeDelayLayer_v5(input_dim=512, output_dim=1500, context_size=1,
+                                        dilation=1, dropout_p=self.dropout_p)
+
         self.drop = nn.Dropout(p=self.dropout_p)
 
         if encoder_type == 'STAP':
@@ -690,7 +697,7 @@ class TDNN_v5(nn.Module):
         x = self.frame4(x)
         x = self.frame5(x)
 
-        if self.dropout_p:
+        if self.dropout_layer:
             x = self.drop(x)
 
         # print(x.shape)
