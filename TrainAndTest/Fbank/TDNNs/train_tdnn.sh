@@ -367,7 +367,7 @@ if [ $stage -le 81 ]; then
   embedding_size=512
   input_norm=None
 
-  for model in TDNN_v5; do
+  for model in ETDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
