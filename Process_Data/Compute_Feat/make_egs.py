@@ -28,7 +28,7 @@ import torch
 from kaldiio import WriteHelper
 from tqdm import tqdm
 
-from Process_Data.KaldiDataset import ScriptValidDataset, ScriptTrainDataset
+from Process_Data.Datasets.KaldiDataset import ScriptValidDataset, ScriptTrainDataset
 from Process_Data.audio_augment.common import RunCommand
 from Process_Data.audio_processing import ConcateInput
 from logger import NewLogger
