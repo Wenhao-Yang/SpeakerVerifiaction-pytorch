@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=74
+stage=153
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -608,7 +608,7 @@ if [ $stage -le 74 ]; then
   done
 fi
 
-exit
+#exit
 #stage=1000
 
 if [ $stage -le 75 ]; then
@@ -1093,22 +1093,22 @@ if [ $stage -le 153 ]; then
       --feat-type spectrogram \
       --nj 16 \
       --train \
-      --input-per-spks 512 \
+      --input-per-spks 768 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --out-set dev_log
+      --out-set dev_log_v2
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox2/spect/dev_log \
       --out-dir ${lstm_dir}/data/vox2/egs/spect \
       --feat-type spectrogram \
       --nj 16 \
-      --input-per-spks 512 \
+      --input-per-spks 768 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --out-set valid_log
+      --out-set valid_log_v2
   done
 fi
 exit

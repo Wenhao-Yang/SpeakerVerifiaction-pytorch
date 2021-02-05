@@ -368,7 +368,6 @@ class TimeDelayLayer_v5(nn.Module):
             self.bn = nn.BatchNorm1d(output_dim)
 
         self.drop = nn.Dropout(p=self.dropout_p)
-
     def forward(self, x):
         '''
         input: size (batch, seq_len, input_features)
@@ -377,7 +376,6 @@ class TimeDelayLayer_v5(nn.Module):
         _, _, d = x.shape
         assert (d == self.input_dim), 'Input dimension was wrong. Expected ({}), got ({})'.format(
             self.input_dim, d)
-
         x = self.kernel(x.transpose(1, 2))
         x = self.nonlinearity(x)
 
@@ -712,82 +710,3 @@ class TDNN_v5(nn.Module):
 
         return logits, embedding_b
 
-
-class ASTDNN(nn.Module):
-    def __init__(self, num_classes, embedding_size, input_dim=24, dropout_p=0.0, **kwargs):
-        super(ASTDNN, self).__init__()
-        self.num_classes = num_classes
-        self.dropout_p = dropout_p
-        self.input_dim = input_dim
-
-        self.frame1 = TimeDelayLayer_v2(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1,
-                                        dropout_p=dropout_p)
-        self.frame2 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=2,
-                                        dropout_p=dropout_p)
-        self.frame3 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=3,
-                                        dropout_p=dropout_p)
-        self.frame4 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1,
-                                        dropout_p=dropout_p)
-        self.frame5 = TimeDelayLayer_v2(input_dim=512, output_dim=1500, context_size=1, dilation=1,
-                                        dropout_p=dropout_p)
-
-        self.attention_statistic = AttentionStatisticPooling(input_dim=1500, hidden_dim=64)
-
-        self.segment6 = nn.Sequential(
-            nn.Linear(3000, 512),
-            nn.ReLU(),
-            nn.BatchNorm1d(512)
-        )
-
-        self.segment7 = nn.Sequential(
-            nn.Linear(512, embedding_size),
-            nn.ReLU(),
-            nn.BatchNorm1d(embedding_size)
-        )
-
-        self.classifier = nn.Linear(embedding_size, num_classes)
-        self.drop = nn.Dropout(p=self.dropout_p)
-
-        # self.out_act = nn.Sigmoid()
-        # self.relu = nn.LeakyReLU()
-        for m in self.modules():  # 对于各层参数的初始化
-            if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-            elif isinstance(m, TimeDelayLayer_v2):
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
-
-    def set_global_dropout(self, dropout_p):
-        self.dropout_p = dropout_p
-        self.drop.p = self.dropout_p
-
-        self.frame1.set_dropout(dropout_p)
-        self.frame2.set_dropout(dropout_p)
-        self.frame3.set_dropout(dropout_p)
-        self.frame4.set_dropout(dropout_p)
-        self.frame5.set_dropout(dropout_p)
-
-    def forward(self, x):
-        # pdb.set_trace()
-        x = x.squeeze(1).float()
-        x = self.frame1(x)
-        x = self.frame2(x)
-        x = self.frame3(x)
-        x = self.frame4(x)
-        x = self.frame5(x)
-
-        # print(x.shape)
-        x = self.attention_statistic(x)
-        embedding_a = self.segment6(x)
-
-        if self.dropout_p:
-            embedding_a = self.drop(embedding_a)
-
-        embedding_b = self.segment7(embedding_a)
-
-        if self.dropout_p:
-            embedding_b = self.drop(embedding_b)
-
-        logits = self.classifier(embedding_b)
-
-        return logits, embedding_b
