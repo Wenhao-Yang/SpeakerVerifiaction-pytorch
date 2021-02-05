@@ -283,7 +283,7 @@ if __name__ == "__main__":
         print('\n>> Plan to make egs for %d speakers with %d egs in %s with %d jobs.\n' % (
             train_dir.num_spks, len(utts), str(time.asctime()), nj))
 
-        pool = Pool(processes=int(nj * 2))  # 创建nj个进程
+        pool = Pool(processes=int(nj))  # 创建nj个进程
         for i in range(0, nj):
             write_dir = os.path.join(out_dir, 'Split%d/%d' % (nj, i))
             if not os.path.exists(write_dir):
