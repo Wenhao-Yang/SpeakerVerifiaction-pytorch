@@ -20,7 +20,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from Define_Model.FilterLayer import L2_Norm, Mean_Norm
+from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
 
 """Time Delay Neural Network as mentioned in the 1989 paper by Waibel et al. (Hinton) and the 2015 paper by Peddinti et al. (Povey)"""
@@ -616,13 +616,15 @@ class TDNN_v4(nn.Module):
 
 class TDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
-                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP', **kwargs):
+                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
+                 mask='None', mask_len=20, **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
         self.dropout_p = dropout_p
         self.dropout_layer = dropout_layer
         self.input_dim = input_dim
         self.alpha = alpha
+        self.mask = mask
 
         if input_norm == 'Instance':
             self.inst_layer = nn.InstanceNorm1d(input_dim)
@@ -630,6 +632,18 @@ class TDNN_v5(nn.Module):
             self.inst_layer = Mean_Norm()
         else:
             self.inst_layer = None
+
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+        elif self.mask == "freq":
+            self.mask = FreqMaskLayer(mask_len=mask_len)
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(mask_len=mask_len),
+                FreqMaskLayer(mask_len=mask_len)
+            )
+        else:
+            self.mask_layer = None
 
         self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=512, context_size=5,
                                         dilation=1, dropout_p=self.dropout_p)
@@ -688,6 +702,9 @@ class TDNN_v5(nn.Module):
 
         if self.inst_layer != None:
             x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
 
         x = self.frame1(x)
         x = self.frame2(x)
