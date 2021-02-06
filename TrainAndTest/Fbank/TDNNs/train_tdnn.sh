@@ -379,7 +379,7 @@ if [ $stage -le 81 ]; then
       --fix-length \
       --input-norm None \
       --nj 12 \
-      --epochs 50 \
+      --epochs 46 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
@@ -394,7 +394,7 @@ if [ $stage -le 81 ]; then
       --input-dim 161 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}/checkpoint_19.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}/checkpoint_4.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
