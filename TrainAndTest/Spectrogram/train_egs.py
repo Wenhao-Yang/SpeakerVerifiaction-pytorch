@@ -525,7 +525,7 @@ def main():
         train(train_loader, model, ce, optimizer, epoch)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
-        if epoch % 3 == 1 or epoch == (end - 1) or epoch in milestones:
+        if epoch != (end - 2) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
             model.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             model_state_dict = model.module.state_dict() \
@@ -535,10 +535,7 @@ def main():
                         'criterion': ce},
                        check_path)
 
-        if epoch % 2 == 1 or epoch == (end - 1):
             valid_test(train_extract_loader, model, epoch, xvector_dir)
-
-        if epoch != (end - 2) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
             test(model, epoch, writer, xvector_dir)
 
         if args.scheduler == 'rop':
