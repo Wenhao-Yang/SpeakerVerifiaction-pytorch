@@ -23,7 +23,7 @@ from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, Simpl
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
-from Define_Model.TDNN.TDNN import ASTDNN, TDNN_v2, TDNN_v4, TDNN_v5
+from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 
@@ -67,7 +67,6 @@ __factory = {
     'ThinResNet': ThinResNet,
     'MultiResNet': MultiResNet,
     'ResNet': ResNet,
-    'ASTDNN': ASTDNN,
     'DTDNN': DTDNN,
     'TDNN': TDNN_v2,
     'TDNN_v4': TDNN_v4,

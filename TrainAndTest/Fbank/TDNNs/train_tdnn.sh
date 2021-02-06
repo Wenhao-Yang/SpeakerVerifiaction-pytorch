@@ -367,14 +367,14 @@ if [ $stage -le 81 ]; then
   embedding_size=512
   input_norm=None
 
-  for model in ETDNN_v5; do
+  for model in TDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} _v2\
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_v2 \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
       --input-norm None \
@@ -393,8 +393,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --input-dim 161 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_100ce/emsize${embedding_size}_input${input_norm} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_100ce/emsize${embedding_size}_input${input_norm}/checkpoint_19.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}/checkpoint_19.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
