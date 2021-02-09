@@ -519,7 +519,7 @@ if [ $stage -le 80 ]; then
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model ETDNN_v5 \
+      --model TDNN_v5 \
       --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
@@ -534,8 +534,8 @@ if [ $stage -le 80 ]; then
       --encoder-type STAP \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/checkpoint/ETDNN_v5/vox2/spect_STAP/arcsoft_1000ce/emsize512/epoch_60_var \
-      --resume Data/checkpoint/ETDNN_v5/vox2/spect_STAP/arcsoft_1000ce/emsize512/checkpoint_60.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox2/spect_STAP/arcsoft_1000ce/emsize512/epoch_60_var \
+      --resume Data/checkpoint/TDNN_v5/vox2/spect_STAP/arcsoft_1000ce/emsize512/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
   done
