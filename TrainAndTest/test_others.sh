@@ -520,7 +520,7 @@ if [ $stage -le 80 ]; then
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model TDNN_v5 \
-      --train-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat} \
+      --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
