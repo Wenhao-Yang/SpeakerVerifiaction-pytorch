@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=80
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -39,7 +39,7 @@ if [ $stage -le 5 ]; then
 
 #  for loss in center ; do
 #    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test \
 #      --nj 12 \
@@ -57,7 +57,7 @@ if [ $stage -le 6 ]; then
 #  for loss in soft ; do
   for loss in soft ; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_wcmvn \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_wcmvn \
 #      --nj 12 \
@@ -94,7 +94,7 @@ if [ $stage -le 6 ]; then
 #  model=LoResNet10
 #  for loss in soft ; do
 #    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_wcmvn \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_wcmvn \
 #      --nj 12 \
@@ -114,7 +114,7 @@ if [ $stage -le 6 ]; then
 
 #  for loss in center ; do
 #    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test \
 #      --nj 12 \
@@ -164,7 +164,7 @@ if [ $stage -le 15 ]; then
 #  feat=fb40
 #  for loss in soft ; do
 #    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_no_sil \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_no_sil \
 #      --nj 12 \
@@ -206,7 +206,7 @@ if [ $stage -le 20 ]; then
   datasets=libri
   for loss in soft ; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
 #      --nj 12 \
@@ -219,7 +219,7 @@ if [ $stage -le 20 ]; then
 #      --num-valid 1 \
 #      --gpu-id 1
 #
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
 #      --nj 12 \
@@ -231,7 +231,7 @@ if [ $stage -le 20 ]; then
 #      --dropout-p 0.25 \
 #      --num-valid 1 \
 #      --gpu-id 1
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
 #      --nj 12 \
@@ -263,7 +263,7 @@ if [ $stage -le 20 ]; then
       --gpu-id 1
 
 
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
 #      --nj 12 \
@@ -285,7 +285,7 @@ if [ $stage -le 25 ]; then
   datasets=timit
   for loss in soft ; do
 #    echo -e "\033[31m==> Loss type: ${loss} variance_fix length \033[0m"
-#    python TrainAndTest/test_vox1.py \
+#    python TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_noc \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/test_noc \
 #      --nj 12 \
@@ -365,7 +365,7 @@ if [ $stage -le 40 ]; then
       --loss-type ${loss}
 
 #    echo -e "\n\033[1;4;31m Test ${model} with ${loss} vox_noc \033[0m\n"
-#    python -W ignore TrainAndTest/test_vox1.py \
+#    python -W ignore TrainAndTest/test_egs.py \
 #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/dev_noc \
 #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/test_noc \
 #      --nj 12 \
@@ -509,4 +509,35 @@ if [ $stage -le 60 ]; then
       --gpu-id 0
   done
 
+fi
+
+if [ $stage -le 80 ]; then
+  feat_type=spect
+  feat=log
+  loss=arcsoft
+  encod=None
+  dataset=vox1
+  for loss in arcsoft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model TDNN_v5 \
+      --train-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm None \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size 512 \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --input-length var \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/TDNN_v5/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputNone/epoch_50_var \
+      --resume Data/checkpoint/TDNN_v5/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputNone/checkpoint_50.pth \
+      --gpu-id 2 \
+      --cos-sim
+  done
 fi

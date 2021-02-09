@@ -527,17 +527,14 @@ class concateinputfromMFB(object):
 
         return network_inputs
 
-class varLengthFeat(object):
+class ConcateOrgInput(object):
     """
     prepare feats with true length.
     """
 
-    def __init__(self, min_chunk_size=300, max_chunk_size=500, remove_vad=False):
-
-        super(varLengthFeat, self).__init__()
+    def __init__(self, remove_vad=False):
+        super(ConcateOrgInput, self).__init__()
         self.remove_vad = remove_vad
-        self.min_chunk_size = min_chunk_size
-        self.max_chunk_size = max_chunk_size
 
     def __call__(self, frames_features):
         # pdb.set_trace()
