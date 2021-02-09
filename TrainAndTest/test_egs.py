@@ -17,6 +17,7 @@ import sys
 import time
 # Version conflict
 import warnings
+from collections import OrderedDict
 
 import kaldi_io
 import numpy as np
@@ -523,17 +524,24 @@ if __name__ == '__main__':
         checkpoint = torch.load(args.resume)
         # start_epoch = checkpoint['epoch']
 
-        filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-        from collections import OrderedDict
+        checkpoint_state_dict = checkpoint['state_dict']
+        if isinstance(checkpoint_state_dict, tuple):
+            checkpoint_state_dict = checkpoint_state_dict[0]
+        filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
 
-        new_state_dict = OrderedDict()
-        for k, v in filtered.items():
-            name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，正好去掉了module.
-            new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+        # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+        if list(filtered.keys())[0].startswith('module'):
+            new_state_dict = OrderedDict()
+            for k, v in filtered.items():
+                name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
 
-        # model_dict = model.state_dict()
-        # model_dict.update(filtered)
-        model.load_state_dict(new_state_dict)
+            model.load_state_dict(new_state_dict)
+        else:
+            model_dict = model.state_dict()
+            model_dict.update(filtered)
+            model.load_state_dict(model_dict)
+        # model.dropout.p = args.dropout_p
         #
         try:
             model.dropout.p = args.dropout_p
