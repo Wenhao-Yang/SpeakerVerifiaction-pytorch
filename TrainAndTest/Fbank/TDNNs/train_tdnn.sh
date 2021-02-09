@@ -377,9 +377,9 @@ if [ $stage -le 81 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_v2 \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
-      --input-norm None \
+      --input-norm Mean \
       --nj 12 \
-      --epochs 46 \
+      --epochs 60 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
