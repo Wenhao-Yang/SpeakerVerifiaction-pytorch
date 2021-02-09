@@ -519,14 +519,14 @@ if [ $stage -le 80 ]; then
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model TDNN_v5 \
+      --model ETDNN_v5 \
       --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --feat-format kaldi \
-      --input-norm None \
+      --input-norm Mean \
       --input-dim 161 \
       --nj 12 \
       --embedding-size 512 \
@@ -534,8 +534,8 @@ if [ $stage -le 80 ]; then
       --encoder-type STAP \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputNone/epoch_50_var \
-      --resume Data/checkpoint/TDNN_v5/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputNone/checkpoint_50.pth \
+      --xvector-dir Data/checkpoint/ETDNN_v5/vox2/spect_STAP/arcsoft/emsize512/epoch_60_var \
+      --resume Data/checkpoint/ETDNN_v5/vox2/spect_STAP/arcsoft/emsize512/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
   done
