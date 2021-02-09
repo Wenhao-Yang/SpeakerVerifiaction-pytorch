@@ -365,7 +365,7 @@ if [ $stage -le 81 ]; then
   loss=arcsoft
   encod=STAP
   embedding_size=512
-  input_norm=None
+  input_norm=Mean
 
   for model in TDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
@@ -377,7 +377,7 @@ if [ $stage -le 81 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_v2 \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --fix-length \
-      --input-norm Mean \
+      --input-norm ${input_norm} \
       --nj 12 \
       --epochs 60 \
       --patience 2 \
