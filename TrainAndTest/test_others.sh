@@ -534,8 +534,8 @@ if [ $stage -le 80 ]; then
       --encoder-type STAP \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox2/spect_STAP/arcsoft_1000ce/emsize512/epoch_60_var \
-      --resume Data/checkpoint/TDNN_v5/vox2/spect_STAP/arcsoft_1000ce/emsize512/checkpoint_60.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean/checkpoint_53.pth/epoch_53_var \
+      --resume Data/checkpoint/TDNN_v5/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean/checkpoint_53.pth \
       --gpu-id 0 \
       --cos-sim
   done
