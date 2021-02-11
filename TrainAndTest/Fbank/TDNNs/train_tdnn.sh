@@ -367,6 +367,56 @@ if [ $stage -le 81 ]; then
   embedding_size=512
   input_norm=Mean
 
+  for model in TDNN_v5; do
+    echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_v2 \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_v2 \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --fix-length \
+      --input-norm ${input_norm} \
+      --nj 12 \
+      --epochs 3 \
+      --patience 2 \
+      --milestones 10,20,30 \
+      --model ${model} \
+      --scheduler rop \
+      --weight-decay 0.0001 \
+      --lr 0.00001 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --embedding-size ${embedding_size} \
+      --batch-size 128 \
+      --accu-steps 1 \
+      --input-dim 161 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}/checkpoint_53.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0,1 \
+      --num-valid 2 \
+      --loss-type ${loss} \
+      --margin 0.25 \
+      --s 30 \
+      --log-interval 10
+  done
+fi
+
+if [ $stage -le 82 ]; then
+  model=DTDNN
+  datasets=vox2
+  feat=log
+  feat_type=spect
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_norm=Mean
+
   for model in ETDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
