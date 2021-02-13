@@ -84,7 +84,7 @@ class TDNNBottleBlock(nn.Module):
 
 class RET(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
-                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP', block='TDNN',
+                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP', block_type='TDNN',
                  mask='None', mask_len=20, **kwargs):
         super(RET, self).__init__()
         self.num_classes = num_classes
@@ -113,9 +113,9 @@ class RET(nn.Module):
         else:
             self.mask_layer = None
 
-        if block == 'Basic':
+        if block_type == 'Basic':
             Blocks = TDNNBlock
-        elif block == 'Agg':
+        elif block_type == 'Agg':
             Blocks = TDNNBottleBlock
 
         self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
