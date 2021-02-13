@@ -17,7 +17,7 @@ if [ $stage -le 0 ]; then
       --test-dir ${lstm_dir}/data/Vox1_pyfb80/test_kaldi \
       --check-path Data/checkpoint/${model}/fbank80/soft \
       --resume Data/checkpoint/${model}/fbank80/soft/checkpoint_1.pth
-      --epochs 20 \
+    --epochs 20 \
       --milestones 10,15 \
       --feat-dim 80 \
       --embedding-size 256 \
@@ -467,7 +467,7 @@ if [ $stage -le 90 ]; then
   embedding_size=512
   input_norm=Mean
 
-  for block_type in Basic Agg ; do
+  for block_type in Basic Agg; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
