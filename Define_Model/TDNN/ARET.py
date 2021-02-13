@@ -115,7 +115,7 @@ class RET(nn.Module):
 
         if block == 'Basic':
             Blocks = TDNNBlock
-        elif block == 'Bottle':
+        elif block == 'Agg':
             Blocks = TDNNBottleBlock
 
         self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
