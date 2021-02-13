@@ -343,7 +343,7 @@ class TimeDelayLayer_v4(nn.Module):
 class TimeDelayLayer_v5(nn.Module):
 
     def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
-                 batch_norm=True, dropout_p=0.0, padding=0, activation='relu'):
+                 batch_norm=True, dropout_p=0.0, padding=0, groups=1, activation='relu'):
         super(TimeDelayLayer_v5, self).__init__()
         self.context_size = context_size
         self.stride = stride
@@ -352,9 +352,10 @@ class TimeDelayLayer_v5(nn.Module):
         self.dilation = dilation
         self.dropout_p = dropout_p
         self.padding = padding
+        self.groups = groups
 
         self.kernel = nn.Conv1d(self.input_dim, self.output_dim, self.context_size, stride=self.stride,
-                                padding=self.padding, dilation=self.dilation)
+                                padding=self.padding, dilation=self.dilation, groups=self.groups)
 
         if activation == 'relu':
             self.nonlinearity = nn.ReLU()
