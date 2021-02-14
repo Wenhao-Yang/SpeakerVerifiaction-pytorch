@@ -493,6 +493,7 @@ if [ $stage -le 90 ]; then
       --batch-size 128 \
       --accu-steps 1 \
       --input-dim 161 \
+      --channels 512,512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type} \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}/checkpoint_4.pth \
