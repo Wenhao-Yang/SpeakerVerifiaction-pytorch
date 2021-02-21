@@ -1124,7 +1124,7 @@ if [ $stage -le 80 ]; then
   model=LoResNet
   resnet_size=18
   encoder_type=None
-  for loss in soft; do
+  for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -1144,31 +1144,33 @@ if [ $stage -le 80 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_fast_v2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25_fast_v2/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_dp25_fast_v3 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_dp25_fast_v3/checkpoint_24.pth \
       --channels 32,64,128,256 \
       --stride 1 \
       --fast \
       --batch-size 128 \
       --embedding-size 512 \
       --time-dim 1 \
-      --avg-size 8 \
+      --avg-size 6 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha 0 \
       --margin 0.3 \
       --grad-clip 0 \
-      --s 15 \
+      --s 30 \
       --m 3 \
       --loss-ratio 0.01 \
-      --weight-decay 0.0005 \
-      --dropout-p 0 \
+      --weight-decay 0.0001 \
+      --dropout-p 0.25 \
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
       --loss-type ${loss}
   done
 fi
+
+exit
 
 if [ $stage -le 81 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
