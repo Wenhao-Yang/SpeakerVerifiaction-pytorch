@@ -810,7 +810,7 @@ class LocalResNet(nn.Module):
             self.mask_layer = None
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=stride, padding=padding)
+        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=kernal_size, stride=stride, padding=padding)
         self.bn1 = nn.BatchNorm2d(channels[0])
         if self.fast:
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
@@ -820,13 +820,13 @@ class LocalResNet(nn.Module):
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
-        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size, stride=2,
+        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=(5, 5), stride=2,
                                padding=padding, bias=False)
         self.bn2 = nn.BatchNorm2d(channels[1])
         self.layer2 = self._make_layer(block, channels[1], layers[1])
 
         self.inplanes = channels[2]
-        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size, stride=2,
+        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=(5, 5), stride=2,
                                padding=padding, bias=False)
         self.bn3 = nn.BatchNorm2d(channels[2])
         self.layer3 = self._make_layer(block, channels[2], layers[2])
@@ -835,10 +835,10 @@ class LocalResNet(nn.Module):
             assert len(channels) == 4
             self.inplanes = channels[3]
             if self.fast:
-                self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernal_size, stride=1,
+                self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=1,
                                        padding=padding, bias=False)
             else:
-                self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernal_size, stride=2,
+                self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=2,
                                        padding=padding, bias=False)
             self.bn4 = nn.BatchNorm2d(channels[3])
             self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])

@@ -1122,7 +1122,7 @@ if [ $stage -le 80 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
   model=LoResNet
-  resnet_size=18
+  resnet_size=14
   encoder_type=None
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
@@ -1144,15 +1144,14 @@ if [ $stage -le 80 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_dp25_fast_v3 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_dp25_fast_v3/checkpoint_24.pth \
-      --channels 32,64,128,256 \
-      --stride 1 \
-      --fast \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_dp05_em${embedding_size}_k57 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_dp05_em${embedding_size}_k57/checkpoint_24.pth \
+      --channels 64,128,256 \
+      --stride 2,3 \
       --batch-size 128 \
-      --embedding-size 512 \
+      --embedding-size 256 \
       --time-dim 1 \
-      --avg-size 6 \
+      --avg-size 4 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha 0 \
@@ -1161,8 +1160,8 @@ if [ $stage -le 80 ]; then
       --s 30 \
       --m 3 \
       --loss-ratio 0.01 \
-      --weight-decay 0.0001 \
-      --dropout-p 0.25 \
+      --weight-decay 0.001 \
+      --dropout-p 0.5 \
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
