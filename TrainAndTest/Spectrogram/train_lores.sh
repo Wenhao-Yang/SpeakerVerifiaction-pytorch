@@ -1124,6 +1124,7 @@ if [ $stage -le 80 ]; then
   model=LoResNet
   resnet_size=14
   encoder_type=None
+  embedding_size=256
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -1149,7 +1150,7 @@ if [ $stage -le 80 ]; then
       --channels 64,128,256 \
       --stride 2,3 \
       --batch-size 128 \
-      --embedding-size 256 \
+      --embedding-size ${embedding_size} \
       --time-dim 1 \
       --avg-size 4 \
       --encoder-type ${encoder_type} \
