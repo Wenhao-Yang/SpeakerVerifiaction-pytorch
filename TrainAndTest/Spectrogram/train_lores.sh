@@ -1125,6 +1125,7 @@ if [ $stage -le 80 ]; then
   resnet_size=14
   encoder_type=None
   embedding_size=256
+  kernel=5,7
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -1147,6 +1148,7 @@ if [ $stage -le 80 ]; then
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_dp05_em${embedding_size}_k57 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_dp05_em${embedding_size}_k57/checkpoint_24.pth \
+      --kernel-size ${kernel} \
       --channels 64,128,256 \
       --stride 2,3 \
       --batch-size 128 \
