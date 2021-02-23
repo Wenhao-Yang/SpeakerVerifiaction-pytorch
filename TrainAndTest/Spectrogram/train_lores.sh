@@ -1060,12 +1060,12 @@ if [ $stage -le 66 ]; then
   datasets=army
   model=MultiResNet
   resnet_size=18
-  loss=soft
+  #  loss=soft
   encod=None
   transform=None
   loss_ratio=0.01
   alpha=0
-  for loss in soft; do
+  for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/Spectrogram/train_egs_multi.py \
@@ -1081,18 +1081,18 @@ if [ $stage -le 66 ]; then
       --input-norm Mean \
       --batch-size 256 \
       --nj 10 \
-      --epochs 40 \
+      --epochs 50 \
       --scheduler rop \
       --patience 2 \
       --lr 0.1 \
       --input-dim 81 \
       --fast \
       --mask-layer freq \
-      --mask-len 25 \
+      --mask-len 20 \
       --stride 1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp01_eb256_${alpha}_fast_${transform}_mask25 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs_${encod}/${loss}/dp01_eb256_${alpha}_fast_${transform}_mask25/checkpoint_29.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs/${loss}/${encod}_dp25_eb256_${alpha}_fast_${transform}_mask20 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs/${loss}/${encod}_dp25_eb256_${alpha}_fast_${transform}_mask20/checkpoint_29.pth \
       --channels 32,64,128,256 \
       --embedding-size 256 \
       --transform ${transform} \
@@ -1101,14 +1101,13 @@ if [ $stage -le 66 ]; then
       --avg-size 4 \
       --num-valid 4 \
       --alpha ${alpha} \
-      --margin 0.25 \
-      --s 20 \
+      --margin 0.3 \
+      --s 30 \
       --m 3 \
       --loss-ratio ${loss_ratio} \
       --set-ratio 1.0 \
-      --grad-clip 0 \
-      --weight-decay 0.0001 \
-      --dropout-p 0.1 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.25 \
       --gpu-id 0,1 \
       --cos-sim \
       --extract \
