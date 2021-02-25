@@ -814,7 +814,13 @@ class LocalResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(channels[0])
         if self.fast:
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
-            self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            # self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            self.maxpool = nn.Sequential(
+                nn.Conv2d(channels[0], channels[0], kernel_size=1, stride=1),
+                nn.ReLU(),
+                nn.BatchNorm2d(channels[0]),
+                nn.AvgPool2d(kernel_size=3, stride=2)
+            )
 
         # self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
         self.layer1 = self._make_layer(block, channels[0], layers[0])
@@ -845,46 +851,33 @@ class LocalResNet(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_p)
 
+        last_conv_chn = channels[-1]
         if encoder_type == 'SAP':
-            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, avg_size))
-            self.encoder = SelfAttentionPooling(input_dim=channels[-1], hidden_dim=channels[-1])
-            self.fc1 = nn.Sequential(
-                nn.Linear(channels[-1], embedding_size),
-                nn.ReLU(),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.encoder = SelfAttentionPooling(input_dim=last_conv_chn, hidden_dim=last_conv_chn)
+            self.encoder_output = last_conv_chn
         elif encoder_type == 'SASP':
-            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, avg_size))
-            self.encoder = AttentionStatisticPooling(input_dim=channels[-1], hidden_dim=channels[-1])
-            self.fc1 = nn.Sequential(
-                nn.Linear(channels[-1] * 2, embedding_size),
-                nn.ReLU(),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.encoder = AttentionStatisticPooling(input_dim=last_conv_chn, hidden_dim=last_conv_chn)
+            self.encoder_output = last_conv_chn * 2
+
         elif encoder_type == 'STAP':
-            self.avgpool = nn.AdaptiveAvgPool2d((None, avg_size))
-            self.encoder = StatisticPooling(input_dim=avg_size*channels[-1])
-            self.fc1 = nn.Sequential(
-                nn.Linear(avg_size * channels[-1] * 2, embedding_size),
-                nn.ReLU(),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = StatisticPooling(input_dim=last_conv_chn * freq_dim)
+            self.encoder_output = last_conv_chn * freq_dim * 2
         elif encoder_type == 'ASTP':
-            self.avgpool = AdaptiveStdPool2d((time_dim, avg_size))
+            self.avgpool = AdaptiveStdPool2d((time_dim, freq_dim))
             self.encoder = None
-            self.fc1 = nn.Sequential(
-                nn.Linear(channels[-1] * avg_size * time_dim, embedding_size),
-                nn.ReLU(),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.encoder_output = last_conv_chn * freq_dim * time_dim
         else:
-            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, avg_size))
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = None
-            self.fc1 = nn.Sequential(
-                nn.Linear(channels[-1] * avg_size * time_dim, embedding_size),
-                nn.ReLU(),
-                nn.BatchNorm1d(embedding_size)
-            )
+            self.encoder_output = last_conv_chn * freq_dim * time_dim
+
+        self.fc1 = nn.Sequential(
+            nn.Linear(self.encoder_output, embedding_size),
+            nn.BatchNorm1d(embedding_size)
+        )
 
         if self.transform == 'Linear':
             self.trans_layer = nn.Sequential(
