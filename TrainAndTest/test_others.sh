@@ -565,6 +565,7 @@ if [ $stage -le 81 ]; then
       --alpha 0 \
       --margin 0.25 \
       --s 30 \
+      --block-type ${block_type} \
       --embedding-size 512 \
       --loss-type ${loss} \
       --encoder-type STAP \
