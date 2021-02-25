@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=90
+stage=81
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -541,6 +541,43 @@ if [ $stage -le 80 ]; then
   done
 fi
 
+if [ $stage -le 81 ]; then
+  feat_type=spect
+  feat=log
+  loss=arcsoft
+  encod=None
+  dataset=vox1
+  block_type=Basic
+  for loss in arcsoft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model RET \
+      --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --channels 512,512,512,512,512,1500 \
+      --nj 12 \
+      --alpha 0 \
+      --margin 0.25 \
+      --s 30 \
+      --embedding-size 512 \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --input-length var \
+      --frame-shift 300 \
+      --xvector-dir Data/checkpoint/RET/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean_Basic/epoch_50_var \
+      --resume Data/checkpoint/RET/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean_Basic/checkpoint_50.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+fi
+
+exit
 if [ $stage -le 90 ]; then
   feat_type=spect
   feat=log
