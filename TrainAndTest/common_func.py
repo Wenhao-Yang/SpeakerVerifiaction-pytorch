@@ -24,7 +24,7 @@ from Define_Model.TDNN.ARET import RET
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
-from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5
+from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 
@@ -72,6 +72,7 @@ __factory = {
     'TDNN': TDNN_v2,
     'TDNN_v4': TDNN_v4,
     'TDNN_v5': TDNN_v5,
+    'TDNN_v6': TDNN_v6,
     'ETDNN': ETDNN,
     'ETDNN_v4': ETDNN_v4,
     'ETDNN_v5': ETDNN_v5,
