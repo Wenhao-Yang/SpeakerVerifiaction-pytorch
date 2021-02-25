@@ -562,7 +562,7 @@ if [ $stage -le 90 ]; then
       --input-norm Mean \
       --input-dim 161 \
       --nj 12 \
-      --embedding-size 512 \
+      --embedding-size 256 \
       --loss-type ${loss} \
       --encoder-type None \
       --block-type ${block_type} \
