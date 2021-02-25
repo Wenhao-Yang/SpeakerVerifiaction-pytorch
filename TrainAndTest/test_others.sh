@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=81
+stage=90
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -578,7 +578,7 @@ if [ $stage -le 81 ]; then
   done
 fi
 
-exit
+#exit
 if [ $stage -le 90 ]; then
   feat_type=spect
   feat=log
@@ -614,8 +614,8 @@ if [ $stage -le 90 ]; then
       --input-length var \
       --frame-shift 300 \
       --dropout-p 0.5 \
-      --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40_var \
-      --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_40.pth \
+      --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_17_var \
+      --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_17.pth \
       --gpu-id 0 \
       --cos-sim
   done
