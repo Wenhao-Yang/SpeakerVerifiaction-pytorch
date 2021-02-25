@@ -136,7 +136,7 @@ parser.add_argument('--fast', action='store_true', default=False, help='max pool
 
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
-parser.add_argument('--time-dim', default=2, type=int, metavar='FEAT', help='acoustic feature dimension')
+parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
 parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                     help='Dimensionality of the embedding')
 parser.add_argument('--batch-size', type=int, default=1, metavar='BS',
