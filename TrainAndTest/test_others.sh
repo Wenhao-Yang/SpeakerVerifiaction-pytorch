@@ -540,3 +540,45 @@ if [ $stage -le 80 ]; then
       --cos-sim
   done
 fi
+
+if [ $stage -le 80 ]; then
+  feat_type=spect
+  feat=log
+  loss=arcsoft
+  encod=None
+  dataset=vox1
+  block_type=cbam
+  for loss in arcsoft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model LoResNet \
+      --resnet-size 8 \
+      --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size 512 \
+      --loss-type ${loss} \
+      --encoder-type None \
+      --block-type ${block_type} \
+      --kernel-size 5,7 \
+      --stride 2,3 \
+      --channels 64,128,256 \
+      --alpha 0 \
+      --margin 0.3 \
+      --s 30 \
+      --m 3 \
+      --input-length var \
+      --frame-shift 300 \
+      --dropout-p 0.5 \
+      --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40_var \
+      --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_40.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+fi
