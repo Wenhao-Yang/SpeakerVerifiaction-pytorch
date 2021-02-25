@@ -852,6 +852,7 @@ class LocalResNet(nn.Module):
         self.dropout = nn.Dropout(self.dropout_p)
 
         last_conv_chn = channels[-1]
+        freq_dim = avg_size
         if encoder_type == 'SAP':
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = SelfAttentionPooling(input_dim=last_conv_chn, hidden_dim=last_conv_chn)
