@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=90
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -541,7 +541,7 @@ if [ $stage -le 80 ]; then
   done
 fi
 
-if [ $stage -le 80 ]; then
+if [ $stage -le 90 ]; then
   feat_type=spect
   feat=log
   loss=arcsoft
