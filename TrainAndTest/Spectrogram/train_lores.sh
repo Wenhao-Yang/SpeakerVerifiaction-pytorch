@@ -1124,7 +1124,7 @@ if [ $stage -le 80 ]; then
   resnet_size=8
   encoder_type=None
   embedding_size=256
-  block_type=basic
+  block_type=cbam
   kernel=7,7
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
