@@ -485,18 +485,18 @@ if [ $stage -le 90 ]; then
       --model ${model} \
       --block-type ${block_type} \
       --scheduler rop \
-      --weight-decay 0.0001 \
+      --weight-decay 0.00001 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
-      --batch-size 128 \
+      --batch-size 64 \
       --accu-steps 1 \
       --input-dim 161 \
       --channels 512,512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}/checkpoint_4.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}_bs64 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}_bs64/checkpoint_4.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
