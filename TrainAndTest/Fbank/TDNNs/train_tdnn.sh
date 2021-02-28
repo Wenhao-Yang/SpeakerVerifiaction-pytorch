@@ -467,7 +467,7 @@ if [ $stage -le 90 ]; then
   embedding_size=512
   input_norm=Mean
 
-  for block_type in Basic Agg; do
+  for block_type in Basic ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
