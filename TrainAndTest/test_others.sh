@@ -693,8 +693,7 @@ if [ $stage -le 101 ]; then
     python -W ignore TrainAndTest/test_egs.py \
       --model LoResNet \
       --resnet-size 10 \
-      --train-dir ${lstm_dir}/data/army/egs/spect/dev_v1 \
-      --valid-dir ${lstm_dir}/data/army/egs/spect/valid_v1 \
+      --train-dir ${lstm_dir}/data/army/spect/dev_v1 \
       --test-dir ${lstm_dir}/data/army/spect/test_8k \
       --feat-format kaldi \
       --input-norm Mean \
