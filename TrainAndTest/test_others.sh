@@ -636,8 +636,8 @@ if [ $stage -le 100 ]; then
 
     python TrainAndTest/test_egs_multi.py \
       --model ${model} \
-      --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v4 \
-      --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_dev_8k_v4 \
+      --train-dir-a ${lstm_dir}/data/${datasets}/spect/aishell2_dev_8k_v4 \
+      --train-dir-b ${lstm_dir}/data/${datasets}/spect/vox_dev_8k_v4 \
       --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v2/trials_dir \
       --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k_v4 \
       --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_valid_8k_v4 \
