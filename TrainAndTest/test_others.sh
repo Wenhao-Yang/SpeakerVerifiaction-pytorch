@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=101
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -676,7 +676,7 @@ if [ $stage -le 100 ]; then
       --loss-type ${loss}
   done
 fi
-exit
+#exit
 
 if [ $stage -le 101 ]; then
   feat_type=spect
