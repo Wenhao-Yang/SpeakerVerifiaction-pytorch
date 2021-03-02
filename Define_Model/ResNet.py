@@ -877,7 +877,7 @@ class LocalResNet(nn.Module):
 
         self.fc1 = nn.Sequential(
             nn.Linear(self.encoder_output, embedding_size),
-            nn.ReLU(),
+            # nn.ReLU(),
             nn.BatchNorm1d(embedding_size)
         )
 
