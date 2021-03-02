@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=90
+stage=101
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -616,6 +616,106 @@ if [ $stage -le 90 ]; then
       --dropout-p 0.5 \
       --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_17_var \
       --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_17.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+fi
+
+if [ $stage -le 100 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=army
+  model=MultiResNet
+  resnet_size=18
+  #  loss=soft
+  encod=None
+  transform=None
+  loss_ratio=0.01
+  alpha=0
+  for loss in soft; do
+    echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
+
+    python TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v4 \
+      --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_dev_8k_v4 \
+      --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v2/trials_dir \
+      --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k_v4 \
+      --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_valid_8k_v4 \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
+      --feat-format kaldi \
+      --resnet-size ${resnet_size} \
+      --input-norm Mean \
+      --batch-size 256 \
+      --nj 10 \
+      --epochs 50 \
+      --scheduler rop \
+      --patience 2 \
+      --lr 0.1 \
+      --input-dim 81 \
+      --fast \
+      --mask-layer freq \
+      --mask-len 20 \
+      --stride 1 \
+      --milestones 8,14,20 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs/${loss}/${encod}_dp25_eb256_${alpha}_fast_${transform}_mask20 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs/${loss}/${encod}_dp25_eb256_${alpha}_fast_${transform}_mask20/checkpoint_29.pth \
+      --channels 32,64,128,256 \
+      --embedding-size 256 \
+      --transform ${transform} \
+      --encoder-type ${encod} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --num-valid 4 \
+      --alpha ${alpha} \
+      --margin 0.3 \
+      --s 30 \
+      --m 3 \
+      --loss-ratio ${loss_ratio} \
+      --set-ratio 1.0 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.25 \
+      --gpu-id 0,1 \
+      --cos-sim \
+      --extract \
+      --loss-type ${loss}
+  done
+fi
+
+if [ $stage -le 101 ]; then
+  feat_type=spect
+  feat=log
+  loss=arcsoft
+  encod=None
+  dataset=army_v1
+  block_type=None
+  for loss in soft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model LoResNet \
+      --resnet-size 10 \
+      --train-dir ${lstm_dir}/data/army/egs/spect/dev_v1 \
+      --valid-dir ${lstm_dir}/data/army/egs/spect/valid_v1 \
+      --test-dir ${lstm_dir}/data/army/spect/test_8k \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size 128 \
+      --loss-type ${loss} \
+      --encoder-type None \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2 \
+      --channels 64,128,256,256 \
+      --alpha 0 \
+      --margin 0.3 \
+      --s 30 \
+      --m 3 \
+      --input-length var \
+      --frame-shift 300 \
+      --dropout-p 0.25 \
+      --xvector-dir Data/xvector/LoResNet10/army_v1/spect_egs/soft_dp25/epoch_20_var \
+      --resume Data/checkpoint/LoResNet10/army_v1/spect_egs/soft_dp25/checkpoint_20.pth \
       --gpu-id 0 \
       --cos-sim
   done
