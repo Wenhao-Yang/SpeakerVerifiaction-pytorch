@@ -719,11 +719,12 @@ class ScriptTrainDataset(data.Dataset):
             raise FileExistsError(spk2utt)
 
         invalid_uid = []
-        with open(utt2num_frames, 'r') as f:
-            for l in f.readlines():
-                uid, num_frames = l.split()
-                if int(num_frames) < 50:
-                    invalid_uid.append(uid)
+        if os.path.exists(utt2num_frames):
+            with open(utt2num_frames, 'r') as f:
+                for l in f.readlines():
+                    uid, num_frames = l.split()
+                    if int(num_frames) < 50:
+                        invalid_uid.append(uid)
 
         dataset = {}
         with open(spk2utt, 'r') as u:
