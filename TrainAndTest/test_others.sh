@@ -703,7 +703,7 @@ if [ $stage -le 101 ]; then
       --kernel-size 5,5 \
       --stride 2 \
       --channels 64,128,256,256 \
-      --alpha 0 \
+      --alpha 12 \
       --margin 0.3 \
       --s 30 \
       --m 3 \
