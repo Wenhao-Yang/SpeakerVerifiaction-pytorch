@@ -653,7 +653,7 @@ if [ $stage -le 100 ]; then
       --mask-layer freq \
       --mask-len 20 \
       --stride 1 \
-      --xvector-dir Data/xvector/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/checkpoint_36.pth \
+      --xvector-dir Data/xvector/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/epoch_36_var \
       --resume Data/checkpoint/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/checkpoint_36.pth \
       --channels 32,64,128,256 \
       --embedding-size 128 \
@@ -664,6 +664,7 @@ if [ $stage -le 100 ]; then
       --num-valid 4 \
       --alpha ${alpha} \
       --margin 0.3 \
+      --input-length var \
       --s 30 \
       --m 3 \
       --loss-ratio ${loss_ratio} \
