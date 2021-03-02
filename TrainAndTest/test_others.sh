@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=100
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -630,11 +630,11 @@ if [ $stage -le 100 ]; then
   encod=None
   transform=None
   loss_ratio=0.01
-  alpha=0
+  alpha=13
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
-    python TrainAndTest/test_egs.py \
+    python TrainAndTest/test_egs_multi.py \
       --model ${model} \
       --train-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_dev_8k_v4 \
       --train-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_dev_8k_v4 \
@@ -645,22 +645,18 @@ if [ $stage -le 100 ]; then
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --input-norm Mean \
-      --batch-size 256 \
+      --batch-size 128 \
       --nj 10 \
-      --epochs 50 \
-      --scheduler rop \
-      --patience 2 \
       --lr 0.1 \
       --input-dim 81 \
       --fast \
       --mask-layer freq \
       --mask-len 20 \
       --stride 1 \
-      --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs/${loss}/${encod}_dp25_eb256_${alpha}_fast_${transform}_mask20 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_x4/spect_egs/${loss}/${encod}_dp25_eb256_${alpha}_fast_${transform}_mask20/checkpoint_29.pth \
+      --xvector-dir Data/xvector/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/checkpoint_36.pth \
+      --resume Data/checkpoint/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/checkpoint_36.pth \
       --channels 32,64,128,256 \
-      --embedding-size 256 \
+      --embedding-size 128 \
       --transform ${transform} \
       --encoder-type ${encod} \
       --time-dim 1 \
@@ -673,13 +669,14 @@ if [ $stage -le 100 ]; then
       --loss-ratio ${loss_ratio} \
       --set-ratio 1.0 \
       --weight-decay 0.0005 \
-      --dropout-p 0.25 \
+      --dropout-p 0.1 \
       --gpu-id 0,1 \
       --cos-sim \
       --extract \
       --loss-type ${loss}
   done
 fi
+exit
 
 if [ $stage -le 101 ]; then
   feat_type=spect
