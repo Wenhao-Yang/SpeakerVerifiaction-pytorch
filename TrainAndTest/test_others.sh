@@ -709,9 +709,9 @@ if [ $stage -le 101 ]; then
       --m 3 \
       --input-length var \
       --frame-shift 300 \
-      --dropout-p 0.25 \
-      --xvector-dir Data/xvector/LoResNet10/army_v1/spect_egs/soft_dp25/epoch_20_var \
-      --resume Data/checkpoint/LoResNet10/army_v1/spect_egs/soft_dp25/checkpoint_20.pth \
+      --dropout-p 0.1 \
+      --xvector-dir Data/xvector/LoResNet10/army_v1/spect_egs_mean/soft_dp01/epoch_20_var \
+      --resume Data/checkpoint/LoResNet10/army_v1/spect_egs_mean/soft_dp01/checkpoint_20.pth \
       --gpu-id 0 \
       --cos-sim
   done
