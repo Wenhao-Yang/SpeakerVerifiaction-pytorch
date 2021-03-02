@@ -964,7 +964,7 @@ class LocalResNet(nn.Module):
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
-        x = self.fc1(x)
+        x = self.fc(x)
 
         if self.trans_layer != None:
             x = self.trans_layer(x)
