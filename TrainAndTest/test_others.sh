@@ -693,7 +693,7 @@ if [ $stage -le 101 ]; then
       --train-dir ${lstm_dir}/data/army/spect/dev_8k \
       --test-dir ${lstm_dir}/data/army/spect/test_8k \
       --feat-format kaldi \
-      --input-norm None \
+      --input-norm Mean \
       --input-dim 161 \
       --nj 12 \
       --embedding-size 128 \
