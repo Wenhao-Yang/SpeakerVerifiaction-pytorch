@@ -667,10 +667,9 @@ if [ $stage -le 100 ]; then
       --s 30 \
       --m 3 \
       --loss-ratio ${loss_ratio} \
-      --set-ratio 1.0 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0,1 \
+      --gpu-id 0 \
       --cos-sim \
       --extract \
       --loss-type ${loss}
