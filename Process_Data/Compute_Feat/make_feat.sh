@@ -1228,7 +1228,7 @@ if [ $stage -le 231 ]; then
 fi
 
 if [ $stage -le 250 ]; then
-  dataset=aidata
+  dataset=magic
   for name in test_8k; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${dataset}/${name} \
