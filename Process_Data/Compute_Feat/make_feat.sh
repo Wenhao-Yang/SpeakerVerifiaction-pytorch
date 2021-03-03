@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=153
+stage=250
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -1110,8 +1110,9 @@ if [ $stage -le 153 ]; then
       --num-valid 2 \
       --out-set valid_log_v2
   done
+  exit
 fi
-exit
+
 
 #stage=10000
 if [ $stage -le 200 ]; then
@@ -1224,5 +1225,20 @@ if [ $stage -le 231 ]; then
       --num-valid 4 \
       --out-set ${s}_valid_8k_v4
 
+  done
+fi
+
+if [ $stage -le 250 ]; then
+  dataset=aidata
+  for s in test_8k ; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/${dataset}/${name} \
+      --out-dir ${lstm_dir}/data/${dataset}/spect \
+      --out-set ${name} \
+      --feat-type spectrogram \
+      --feat-format kaldi_cmp \
+      --log-scale \
+      --nfft 160 \
+      --windowsize 0.02
   done
 fi
