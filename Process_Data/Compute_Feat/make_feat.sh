@@ -1113,7 +1113,6 @@ if [ $stage -le 153 ]; then
   exit
 fi
 
-
 #stage=10000
 if [ $stage -le 200 ]; then
   for name in train test; do
@@ -1230,7 +1229,7 @@ fi
 
 if [ $stage -le 250 ]; then
   dataset=aidata
-  for s in test_8k ; do
+  for name in test_8k; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${dataset}/${name} \
       --out-dir ${lstm_dir}/data/${dataset}/spect \
