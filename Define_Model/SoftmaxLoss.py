@@ -190,13 +190,13 @@ class AMSoftmaxLoss(nn.Module):
 
 class ArcSoftmaxLoss(nn.Module):
 
-    def __init__(self, margin=0.5, s=64, iteraion=0):
+    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=100):
         super(ArcSoftmaxLoss, self).__init__()
         self.s = s
         self.margin = margin
         self.ce = nn.CrossEntropyLoss()
         self.iteraion = iteraion
-        # self.all_iteraion = all_iteraion
+        self.all_iteraion = all_iteraion
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
@@ -211,7 +211,7 @@ class ArcSoftmaxLoss(nn.Module):
             delt_theta = Variable(delt_theta.cuda())
 
         costh_m = (theta + delt_theta).cos()
-        if self.iteraion < 100:
+        if self.iteraion < self.all_iteraion:
             costh_m = 0.5 * costh + 0.5 * costh_m
             self.iteraion += 1
 

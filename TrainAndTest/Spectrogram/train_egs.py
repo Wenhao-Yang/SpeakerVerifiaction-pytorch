@@ -177,6 +177,8 @@ parser.add_argument('--s', type=float, default=15, metavar='S',
                     help='the margin value for the angualr softmax loss function (default: 3.0')
 
 # args for a-softmax
+parser.add_argument('--all-iteraion', type=int, default=100, metavar='M',
+                    help='the margin value for the angualr softmax loss function (default: 3.0')
 parser.add_argument('--m', type=int, default=3, metavar='M',
                     help='the margin value for the angualr softmax loss function (default: 3.0')
 parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
@@ -402,7 +404,7 @@ def main():
     elif args.loss_type == 'arcsoft':
         ce_criterion = None
         model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
-        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration)
+        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
     elif args.loss_type == 'ring':
