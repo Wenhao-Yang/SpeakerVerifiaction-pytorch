@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=100
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -641,7 +641,7 @@ if [ $stage -le 100 ]; then
       --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v2/trials_dir \
       --valid-dir-a ${lstm_dir}/data/${datasets}/egs/spect/aishell2_valid_8k_v4 \
       --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_valid_8k_v4 \
-      --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k \
+      --test-dir ${lstm_dir}/data/magic/spect/test_8k \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --input-norm Mean \
@@ -653,7 +653,7 @@ if [ $stage -le 100 ]; then
       --mask-layer freq \
       --mask-len 20 \
       --stride 1 \
-      --xvector-dir Data/xvector/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/epoch_36_var \
+      --xvector-dir Data/xvector/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/epoch_36_var_magic \
       --resume Data/checkpoint/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/checkpoint_36.pth \
       --channels 32,64,128,256 \
       --embedding-size 128 \
@@ -675,6 +675,7 @@ if [ $stage -le 100 ]; then
       --extract \
       --loss-type ${loss}
   done
+  exit
 fi
 #exit
 
