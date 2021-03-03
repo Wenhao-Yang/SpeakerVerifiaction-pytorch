@@ -632,7 +632,7 @@ if [ $stage -le 100 ]; then
   loss_ratio=0.01
   alpha=13
   for loss in soft; do
-    echo -e "\n\033[1;4;31m Training ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
+    echo -e "\n\033[1;4;31m Testing ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/test_egs_multi.py \
       --model ${model} \
