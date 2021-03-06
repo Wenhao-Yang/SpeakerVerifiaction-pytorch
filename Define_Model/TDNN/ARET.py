@@ -13,7 +13,7 @@ import torch.nn as nn
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
-from Define_Model.TDNN.TDNN import TimeDelayLayer_v5
+from Define_Model.TDNN.TDNN import TimeDelayLayer_v5, TimeDelayLayer_v6
 
 
 class TDNNBlock(nn.Module):
@@ -30,8 +30,37 @@ class TDNNBlock(nn.Module):
         self.tdnn1 = TimeDelayLayer_v5(input_dim=inplanes, output_dim=inter_connect, context_size=3,
                                        stride=1, dilation=dilation, padding=1)
         self.relu = nn.ReLU(inplace=True)
-
         self.tdnn2 = TimeDelayLayer_v5(input_dim=inter_connect, output_dim=planes, context_size=3,
+                                       stride=1, dilation=dilation, padding=1)
+        # self.downsample = downsample
+
+    def forward(self, x):
+        identity = x
+
+        out = self.tdnn1(x)
+        out = self.tdnn2(out)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class TDNNBlock_v6(nn.Module):
+
+    def __init__(self, inplanes, planes, downsample=None, dilation=1, **kwargs):
+        super(TDNNBlock_v6, self).__init__()
+
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        if isinstance(downsample, int):
+            inter_connect = int(planes / downsample)
+        else:
+            inter_connect = planes
+
+        self.tdnn1 = TimeDelayLayer_v6(input_dim=inplanes, output_dim=inter_connect, context_size=3,
+                                       stride=1, dilation=dilation, padding=1)
+        self.relu = nn.ReLU(inplace=True)
+        self.tdnn2 = TimeDelayLayer_v6(input_dim=inter_connect, output_dim=planes, context_size=3,
                                        stride=1, dilation=dilation, padding=1)
         # self.downsample = downsample
 
@@ -119,34 +148,39 @@ class RET(nn.Module):
 
         if block_type == 'Basic':
             Blocks = TDNNBlock
+            TDNN_layer = TimeDelayLayer_v5
+        elif block_type == 'Basic_v6':
+            Blocks = TDNNBlock_v6
+            TDNN_layer = TimeDelayLayer_v6
         elif block_type == 'Agg':
             Blocks = TDNNBottleBlock
+            TDNN_layer = TimeDelayLayer_v5
         else:
             raise ValueError(block_type)
 
-        self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=self.channels[0],
+        self.frame1 = TDNN_layer(input_dim=self.input_dim, output_dim=self.channels[0],
                                         context_size=5, dilation=1)
         self.frame2 = Blocks(inplanes=self.channels[0], planes=self.channels[0],
                              downsample=downsample, dilation=1)
 
-        self.frame4 = TimeDelayLayer_v5(input_dim=self.channels[0], output_dim=self.channels[1],
+        self.frame4 = TDNN_layer(input_dim=self.channels[0], output_dim=self.channels[1],
                                         context_size=3, dilation=1)
         self.frame5 = Blocks(inplanes=self.channels[1], planes=self.channels[1],
                              downsample=downsample, dilation=1)
 
-        self.frame7 = TimeDelayLayer_v5(input_dim=self.channels[1], output_dim=self.channels[2],
+        self.frame7 = TDNN_layer(input_dim=self.channels[1], output_dim=self.channels[2],
                                         context_size=3, dilation=1)
         self.frame8 = Blocks(inplanes=self.channels[2], planes=self.channels[2],
                              downsample=downsample, dilation=1)
 
-        self.frame10 = TimeDelayLayer_v5(input_dim=self.channels[2], output_dim=self.channels[3],
+        self.frame10 = TDNN_layer(input_dim=self.channels[2], output_dim=self.channels[3],
                                          context_size=5, dilation=1)
         self.frame11 = Blocks(inplanes=self.channels[3], planes=self.channels[3],
                               downsample=downsample, dilation=1)
 
-        self.frame13 = TimeDelayLayer_v5(input_dim=self.channels[3], output_dim=self.channels[4],
+        self.frame13 = TDNN_layer(input_dim=self.channels[3], output_dim=self.channels[4],
                                          context_size=1, dilation=1)
-        self.frame14 = TimeDelayLayer_v5(input_dim=self.channels[4], output_dim=self.channels[5],
+        self.frame14 = TDNN_layer(input_dim=self.channels[4], output_dim=self.channels[5],
                                          context_size=1, dilation=1)
 
         self.drop = nn.Dropout(p=self.dropout_p)
