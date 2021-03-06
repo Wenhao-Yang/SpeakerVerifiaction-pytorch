@@ -480,7 +480,7 @@ if [ $stage -le 90 ]; then
       --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
-      --epochs 29 \
+      --epochs 1 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
@@ -496,8 +496,8 @@ if [ $stage -le 90 ]; then
       --input-dim 161 \
       --channels 512,512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}_bs${batch_size} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_21.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_21.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -506,7 +506,7 @@ if [ $stage -le 90 ]; then
       --loss-type ${loss} \
       --margin 0.25 \
       --s 30 \
-      --all-iteraion 0 \
+      --all-iteraion 500 \
       --log-interval 10
   done
 fi
