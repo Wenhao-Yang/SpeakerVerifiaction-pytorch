@@ -466,8 +466,9 @@ if [ $stage -le 90 ]; then
   encod=STAP
   embedding_size=512
   input_norm=None
+  batch_size=128
 
-  for block_type in Basic_v6 ; do
+  for block_type in Basic Basic_v6 ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -490,13 +491,13 @@ if [ $stage -le 90 ]; then
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
-      --batch-size 64 \
+      --batch-size ${batch_size} \
       --accu-steps 1 \
       --input-dim 161 \
       --channels 512,512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}_bs64 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}_bs64/checkpoint_21.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}_bs${batch_size} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_21.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
