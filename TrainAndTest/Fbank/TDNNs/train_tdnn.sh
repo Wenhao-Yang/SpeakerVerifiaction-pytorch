@@ -466,7 +466,7 @@ if [ $stage -le 90 ]; then
   encod=STAP
   embedding_size=512
   input_norm=None
-  batch_size=128
+  batch_size=256
 
   for block_type in Basic Basic_v6 ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
