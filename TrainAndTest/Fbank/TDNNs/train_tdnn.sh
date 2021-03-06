@@ -465,7 +465,7 @@ if [ $stage -le 90 ]; then
   loss=arcsoft
   encod=STAP
   embedding_size=512
-  input_norm=Mean
+  input_norm=None
 
   for block_type in Basic; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
