@@ -466,9 +466,9 @@ if [ $stage -le 90 ]; then
   encod=STAP
   embedding_size=512
   input_norm=None
-  batch_size=256
+  batch_size=64
 
-  for block_type in Basic Basic_v6 ; do
+  for block_type in Basic ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -480,7 +480,7 @@ if [ $stage -le 90 ]; then
       --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
-      --epochs 1 \
+      --epochs 60 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
