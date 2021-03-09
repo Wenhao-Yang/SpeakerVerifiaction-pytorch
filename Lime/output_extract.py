@@ -70,8 +70,9 @@ parser.add_argument('--start-epochs', type=int, default=36, metavar='E', help='n
 parser.add_argument('--epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
 
 # Data options
-parser.add_argument('--feat-dim', default=64, type=int, metavar='N',
-                    help='acoustic feature dimension')
+parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
+parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
+
 parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
                     help='choose the acoustic features type.')

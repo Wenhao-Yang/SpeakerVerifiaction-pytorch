@@ -1132,7 +1132,6 @@ class ScriptTestDataset(data.Dataset):
 
         if not os.path.exists(feat_scp):
             raise FileExistsError(feat_scp)
-
         if not os.path.exists(trials):
             raise FileExistsError(trials)
 
@@ -1249,7 +1248,7 @@ class ScriptTestDataset(data.Dataset):
 
         assert len(self.trials_pair) == num, '%d != %d' % (len(self.trials_pair), num)
         assert self.numofpositive == num_positive, '%d != %d' % (self.numofpositive, num_positive)
-        print('%d positive pairs remain.' % num_positive)
+        print('    %d positive pairs remain.' % num_positive)
 
 
     def __len__(self):
