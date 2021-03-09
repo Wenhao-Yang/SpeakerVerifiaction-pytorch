@@ -25,7 +25,7 @@ from tqdm import tqdm
 
 from Process_Data.Subband.f_ratio import fratio
 from Process_Data.Subband.fratio_dataset import SpeakerDataset
-from Process_Data.audio_processing import varLengthFeat, mvnormal
+from Process_Data.audio_processing import ConcateVarInput, mvnormal
 
 # Version conflict
 
@@ -97,7 +97,7 @@ if args.cuda:
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 
 transform = transforms.Compose([
-    varLengthFeat(remove_vad=args.remove_vad),
+    ConcateVarInput(remove_vad=args.remove_vad),
 ])
 
 if args.mvnorm:
