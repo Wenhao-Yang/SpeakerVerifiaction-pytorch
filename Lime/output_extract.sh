@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=12
+stage=4
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ `ps 15414 | wc -l` -eq 2 ]; do
@@ -146,6 +146,45 @@ if [ $stage -le 3 ]; then
       --gpu-id 1 \
       --embedding-size 128 \
       --sample-utt 5000
+fi
+
+if [ $stage -le 4 ]; then
+  model=LoResNet
+  train_set=vox2
+  test_set=vox1
+  feat=log
+  loss=arcsoft
+  resnet_size=8
+  encoder_type=None
+  embedding_size=256
+  block_type=cbam
+  kernel=5,7
+  python Lime/output_extract.py \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --start-epochs 40 \
+      --epochs 41 \
+      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox2/spect/dev_log \
+      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_log \
+      --input-norm Mean \
+      --kernel-size ${kernel} \
+      --stride 2,3 \
+      --channels 64,128,256 \
+      --encoder-type ${encoder_type} \
+      --block-type ${block_type} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --embedding-size ${embedding_size} \
+      --alpha 0 \
+      --loss-type ${loss} \
+      --check-path Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57 \
+      --extract-path Data/gradient/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57 \
+      --dropout-p 0.5 \
+      --gpu-id 1 \
+      --embedding-size 128 \
+      --sample-utt 5000
+
+  exit
 fi
 
 if [ $stage -le 12 ]; then

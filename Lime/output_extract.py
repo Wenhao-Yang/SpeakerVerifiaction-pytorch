@@ -17,6 +17,7 @@ import os
 import pickle
 import random
 import time
+from collections import OrderedDict
 
 import numpy as np
 import torch
@@ -31,9 +32,9 @@ from tqdm import tqdm
 
 from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 from Define_Model.model import PairwiseDistance
-from Process_Data.KaldiDataset import ScriptTrainDataset, \
+from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
-from Process_Data.audio_processing import varLengthFeat, to2tensor, mvnormal, concateinputfromMFB
+from Process_Data.audio_processing import ConcateOrgInput, to2tensor, mvnormal, ConcateVarInput
 from TrainAndTest.common_func import create_model
 
 # Version conflict
@@ -57,18 +58,17 @@ parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
 parser.add_argument('--train-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
+parser.add_argument('--train-set-name', type=str, help='path to voxceleb1 test dataset')
+parser.add_argument('--test-set-name', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 
 parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
-
-
 parser.add_argument('--check-path', help='folder to output model checkpoints')
 parser.add_argument('--extract-path', help='folder to output model grads, etc')
 
-# Model options
-# ALSTM  ASiResNet34  ExResNet34  LoResNet10  ResNet20  SiResNet34  SuResCNN10  TDNN
-parser.add_argument('--model', type=str,
-                    help='path to voxceleb1 test dataset')
+parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
+
+# Data options
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N',
                     help='acoustic feature dimension')
 
@@ -78,27 +78,31 @@ parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--mvnorm', action='store_true', default=False,
                     help='using Cosine similarity')
+# Model options
+parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
+parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
 
-parser.add_argument('--resnet-size', default=8, type=int,
-                    metavar='RES', help='The channels of convs layers)')
+parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
+parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
+parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--encoder-type', type=str, help='path to voxceleb1 test dataset')
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
                     help='kernel size of conv filters')
 parser.add_argument('--stride', default=2, type=int, metavar='ST',
                     help='kernel size of conv filters')
-parser.add_argument('--time-dim', default=2, type=int, metavar='FEAT',
+parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT',
                     help='acoustic feature dimension')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES',
                     help='Dimensionality of the embedding')
-parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
-                    help='number of epochs to train (default: 10)')
-parser.add_argument('--epochs', type=int, default=36, metavar='E',
-                    help='number of epochs to train (default: 10)')
-parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft', 'arcsoft'],
-                    help='path to voxceleb1 test dataset')
+parser.add_argument('--start-epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
+parser.add_argument('--epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
+parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
 parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
 
@@ -115,12 +119,10 @@ parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
 parser.add_argument('--lambda-max', type=float, default=0.05, metavar='S',
                     help='random seed (default: 0)')
 
-parser.add_argument('--alpha', default=12, type=float, metavar='FEAT',
-                    help='acoustic feature dimension')
+parser.add_argument('--alpha', default=12, type=float,
+                    metavar='l2 length', help='acoustic feature dimension')
 parser.add_argument('--cos-sim', action='store_true', default=True, help='using Cosine similarity')
 parser.add_argument('--embedding-size', type=int, metavar='ES', help='Dimensionality of the embedding')
-parser.add_argument('--sample-utt', type=int, default=120, metavar='ES',
-                    help='Dimensionality of the embedding')
 
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--batch-size', type=int, default=1, metavar='BS',
@@ -170,23 +172,17 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDist
 
 if args.input_length == 'var':
     transform = transforms.Compose([
-        # concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, remove_vad=False),
-        varLengthFeat(remove_vad=args.remove_vad),
-        to2tensor()
+        ConcateOrgInput(remove_vad=args.remove_vad),
     ])
     transform_T = transforms.Compose([
-        # concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, input_per_file=args.test_input_per_file, remove_vad=False),
-        varLengthFeat(remove_vad=args.remove_vad),
-        to2tensor()
+        ConcateOrgInput(remove_vad=args.remove_vad),
     ])
 elif args.input_length == 'fix':
     transform = transforms.Compose([
-        concateinputfromMFB(remove_vad=args.remove_vad),
-        to2tensor()
+        ConcateVarInput(remove_vad=args.remove_vad),
     ])
     transform_T = transforms.Compose([
-        concateinputfromMFB(input_per_file=args.test_input_per_file, remove_vad=args.remove_vad),
-        to2tensor()
+        ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
 if args.mvnorm:
@@ -362,31 +358,30 @@ def main():
     print('Parsed options: {}'.format(vars(args)))
 
     # instantiate model and initialize weights
+    kernel_size = args.kernel_size.split(',')
+    kernel_size = [int(x) for x in kernel_size]
+    if args.padding == '':
+        padding = [int((x - 1) / 2) for x in kernel_size]
+    else:
+        padding = args.padding.split(',')
+        padding = [int(x) for x in padding]
+
+    kernel_size = tuple(kernel_size)
+    padding = tuple(padding)
+    stride = args.stride.split(',')
+    stride = [int(x) for x in stride]
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
 
-    kernel_size = args.kernel_size.split(',')
-    kernel_size = [int(x) for x in kernel_size]
-    padding = [int((x - 1) / 2) for x in kernel_size]
-
-    kernel_size = tuple(kernel_size)
-    padding = tuple(padding)
-
-    model_kwargs = {'input_dim': args.feat_dim,
-                    'kernel_size': kernel_size,
-                    'stride': args.stride,
-                    'padding': padding,
-                    'channels': channels,
-                    'alpha': args.alpha,
-                    'avg_size': args.avg_size,
-                    'time_dim': args.time_dim,
-                    'encoder_type': args.encoder_type,
-                    'resnet_size': args.resnet_size,
-                    'embedding_size': args.embedding_size,
-                    'time_dim': args.time_dim,
-                    'num_classes': len(train_dir.speakers),
-                    'dropout_p': args.dropout_p}
+    model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
+                    'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
+                    'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
+                    'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
+                    'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
+                    'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
+                    'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
 
@@ -412,21 +407,27 @@ def main():
         if os.path.isfile(resume_path.format(e)):
             print('=> loading checkpoint {}'.format(resume_path.format(e)))
             checkpoint = torch.load(resume_path.format(e))
+            checkpoint_state_dict = checkpoint['state_dict']
+            if isinstance(checkpoint_state_dict, tuple):
+                checkpoint_state_dict = checkpoint_state_dict[0]
+
             # epoch = checkpoint['epoch']
-            if e == 0:
-                filtered = checkpoint.state_dict()
+            # if e == 0:
+            #     filtered = checkpoint.state_dict()
+            # else:
+            filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+            if list(filtered.keys())[0].startswith('module'):
+                new_state_dict = OrderedDict()
+                for k, v in filtered.items():
+                    name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                    new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+
+                model.load_state_dict(new_state_dict)
             else:
-                filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+                model_dict = model.state_dict()
+                model_dict.update(filtered)
+                model.load_state_dict(model_dict)
 
-            # model.load_state_dict(filtered)
-            model_dict = model.state_dict()
-            model_dict.update(filtered)
-            model.load_state_dict(model_dict)
-
-            try:
-                args.dropout_p = model.dropout_p
-            except:
-                pass
         else:
             print('=> no checkpoint found at %s' % resume_path.format(e))
             continue
@@ -441,11 +442,11 @@ def main():
             #     model_conv1 = model.conv1.weight.cpu().detach().numpy()
             #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
-            train_extract(train_loader, model, file_dir, 'vox1_train')
-            train_extract(valid_loader, model, file_dir, 'vox1_valid')
-            test_extract(veri_loader, model, file_dir, 'vox1_veri')
+            train_extract(train_loader, model, file_dir, '%s_train'%args.train_set_name)
+            train_extract(valid_loader, model, file_dir, '%s_valid'%args.train_set_name)
+            test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
 
-        test_extract(test_loader, model, file_dir, 'vox1_test')
+        test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
 
 
 if __name__ == '__main__':
