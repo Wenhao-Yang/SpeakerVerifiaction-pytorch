@@ -34,7 +34,7 @@ from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
-from Process_Data.audio_processing import ConcateOrgInput, to2tensor, mvnormal, ConcateVarInput
+from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput
 from TrainAndTest.common_func import create_model
 
 # Version conflict
@@ -61,17 +61,17 @@ parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset
 parser.add_argument('--train-set-name', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--test-set-name', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
-
+parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
 parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--check-path', help='folder to output model checkpoints')
 parser.add_argument('--extract-path', help='folder to output model grads, etc')
 
-parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
+parser.add_argument('--start-epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
+parser.add_argument('--epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
 
 # Data options
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N',
                     help='acoustic feature dimension')
-
 parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
                     help='choose the acoustic features type.')
@@ -94,14 +94,11 @@ parser.add_argument('--fast', action='store_true', default=False, help='max pool
 
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
                     help='kernel size of conv filters')
-parser.add_argument('--stride', default=2, type=int, metavar='ST',
-                    help='kernel size of conv filters')
-parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT',
-                    help='acoustic feature dimension')
-parser.add_argument('--avg-size', type=int, default=4, metavar='ES',
-                    help='Dimensionality of the embedding')
-parser.add_argument('--start-epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
-parser.add_argument('--epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
+parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
+parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
+parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
+parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
+
 parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
 parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
