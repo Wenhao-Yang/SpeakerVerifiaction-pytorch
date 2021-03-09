@@ -1776,8 +1776,14 @@ class MultiResNet(nn.Module):
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=stride, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(channels[0])
 
+        # fast v3
         if self.fast:
-            self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            self.maxpool = nn.Sequential(
+                nn.Conv2d(channels[0], channels[0], kernel_size=1, stride=1),
+                nn.ReLU(),
+                nn.BatchNorm2d(channels[0]),
+                nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            )
         else:
             self.maxpool = None
 
