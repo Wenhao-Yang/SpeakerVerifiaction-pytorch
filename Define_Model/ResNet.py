@@ -875,16 +875,16 @@ class LocalResNet(nn.Module):
             self.encoder = None
             self.encoder_output = last_conv_chn * freq_dim * time_dim
 
-        # self.fc1 = nn.Sequential(
-        #     nn.Linear(self.encoder_output, embedding_size),
-        #     nn.ReLU(),
-        #     nn.BatchNorm1d(embedding_size)
-        # )
-
-        self.fc = nn.Sequential(
+        self.fc1 = nn.Sequential(
             nn.Linear(self.encoder_output, embedding_size),
+            nn.ReLU(),
             nn.BatchNorm1d(embedding_size)
         )
+
+        # self.fc = nn.Sequential(
+        #     nn.Linear(self.encoder_output, embedding_size),
+        #     nn.BatchNorm1d(embedding_size)
+        # )
 
         if self.transform == 'Linear':
             self.trans_layer = nn.Sequential(
@@ -969,8 +969,8 @@ class LocalResNet(nn.Module):
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
-        # x = self.fc1(x)
-        x = self.fc(x)
+        x = self.fc1(x)
+        # x = self.fc(x)
 
         if self.trans_layer != None:
             x = self.trans_layer(x)
