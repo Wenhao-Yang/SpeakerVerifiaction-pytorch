@@ -85,6 +85,8 @@ parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='T
 
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
+parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
+parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
 parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
 
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
