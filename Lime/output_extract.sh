@@ -181,7 +181,6 @@ if [ $stage -le 4 ]; then
       --extract-path Data/gradient/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57 \
       --dropout-p 0.5 \
       --gpu-id 1 \
-      --embedding-size 128 \
       --sample-utt 5000
 
   exit
