@@ -1132,24 +1132,22 @@ class ScriptTestDataset(data.Dataset):
 
         if not os.path.exists(feat_scp):
             raise FileExistsError(feat_scp)
-        if not os.path.exists(spk2utt):
-            raise FileExistsError(spk2utt)
+
         if not os.path.exists(trials):
             raise FileExistsError(trials)
 
-        dataset = {}
-        with open(spk2utt, 'r') as u:
-            all_cls = u.readlines()
-            for line in all_cls:
-                spk_utt = line.split(' ')
-                spk_name = spk_utt[0]
-                if spk_name not in dataset.keys():
-                    spk_utt[-1] = spk_utt[-1].rstrip('\n')
-                    dataset[spk_name] = spk_utt[1:]
-
-        speakers = [spk for spk in dataset.keys()]
-        speakers.sort()
-        print('    There are {} speakers in Test Dataset.'.format(len(speakers)))
+        if os.path.exists(spk2utt):
+            speakers = []
+            with open(spk2utt, 'r') as u:
+                all_cls = u.readlines()
+                for line in all_cls:
+                    spk_utt = line.split(' ')
+                    spk_name = spk_utt[0]
+                    speakers.append(spk_name)
+            speakers.sort()
+            self.speakers = speakers
+            self.num_spks = len(speakers)
+            print('    There are {} speakers in Test Dataset.'.format(len(speakers)))
 
         uid2feat = {}
         with open(feat_scp, 'r') as f:
@@ -1178,11 +1176,9 @@ class ScriptTestDataset(data.Dataset):
 
         print('==>There are {} pairs in test Dataset with {} positive pairs'.format(len(trials_pair), positive_pairs))
 
-        self.feat_dim = loader(uid2feat[dataset[speakers[0]][0]]).shape[1]
-        self.speakers = speakers
+        self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[1]
         self.uid2feat = uid2feat
         self.trials_pair = trials_pair
-        self.num_spks = len(speakers)
         self.numofpositive = positive_pairs
 
         self.loader = loader
