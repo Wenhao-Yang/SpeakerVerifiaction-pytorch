@@ -430,7 +430,7 @@ if [ $stage -le 20 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/aishell2/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/aishell2/spect \
-      --nj 20 \
+      --nj 16 \
       --out-set ${name}_log \
       --feat-type spectrogram \
       --log-scale \

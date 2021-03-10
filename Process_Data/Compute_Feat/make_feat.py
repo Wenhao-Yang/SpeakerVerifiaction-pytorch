@@ -30,9 +30,7 @@ from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
 parser.add_argument('--nj', type=int, default=16, metavar='E', help='number of jobs to make feats (default: 10)')
-parser.add_argument('--data-dir', type=str,
-                    default='/home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_reverb_fb64/dev',
-                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--data-dir', type=str, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
