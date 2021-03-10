@@ -160,7 +160,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                         feat_scp_f.write(key + ' ' + offsets + '\n')
                     elif args.feat_format == 'kaldi_cmp':
                         writer(str(key), feat)
-                        print(str(key))
+                        # print(str(key))
                     elif args.feat_format == 'npy':
                         npy_path = os.path.join(feat_dir, '%s.npy' % key)
                         np.save(npy_path, feat)
