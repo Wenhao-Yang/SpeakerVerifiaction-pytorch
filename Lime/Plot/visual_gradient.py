@@ -58,7 +58,7 @@ def main():
         valid_lst = list(dir_path.glob('*valid*bin'))
         test_lst = list(dir_path.glob('*test*bin'))
 
-        print('Train set extracting:')
+        print(' Train set extracting:')
         time_data = []
 
         num_utt = 0
@@ -99,7 +99,7 @@ def main():
         freq_data['train.time.var'] = train_time_var
         freq_data['train.data.mean'] = train_data_mean
 
-        print('Valid set extracting:')
+        print(' Valid set extracting:')
         valid_data_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
         valid_time_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
         valid_time_var = np.zeros((args.feat_dim))
@@ -125,7 +125,7 @@ def main():
         freq_data['valid.time.var'] = valid_time_var
         freq_data['valid.data.mean'] = valid_data_mean
 
-        print('Train verification set extracting:')
+        print(' Train verification set extracting:')
         veri_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
 
         train_veri_data = np.zeros((args.feat_dim))
@@ -158,7 +158,7 @@ def main():
         freq_data['train.veri.data.mean'] = train_veri_data
         freq_data['train.veri.time.relu'] = train_veri_relu
 
-        print('Test set extracting:')
+        print(' Test set extracting:')
         # test_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
         test_veri_data = np.zeros((args.feat_dim))
         test_veri_mean = np.zeros((args.feat_dim))
