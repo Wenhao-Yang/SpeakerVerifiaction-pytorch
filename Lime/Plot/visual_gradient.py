@@ -26,9 +26,7 @@ parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 parser.add_argument('--extract-path', help='folder to output model checkpoints')
 # Training options
 parser.add_argument('--feat-dim', type=int, default=161, metavar='ES', help='Dimensionality of the features')
-
 parser.add_argument('--samples', type=int, default=5, metavar='ES', help='Dimensionality of the features')
-
 parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='spectrogram',
                     help='choose the acoustic features type.')
 
@@ -51,7 +49,6 @@ def main():
     try:
         with open(args.extract_path + '/freq.data.pickle', 'rb') as f:
             freq_data = pickle.load(f)  # avg on time axis
-
         with open(args.extract_path + '/time.data.pickle', 'rb') as f:
             time_data = pickle.load(f)  # avg on freq axis
 
@@ -114,7 +111,7 @@ def main():
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
                 for (data, grad) in sets:
-                    valid_data_mean += np.mean(data, axis=0)
+                    valid_data_mean += np.mean(np.abs(data), axis=0)
                     valid_time_mean += np.mean(np.abs(grad), axis=0)
                     valid_time_var += np.var(grad, axis=0)
 
@@ -134,6 +131,7 @@ def main():
         train_veri_data = np.zeros((args.feat_dim))
         train_veri_mean = np.zeros((args.feat_dim))
         train_veri_var = np.zeros((args.feat_dim))
+        train_veri_relu = np.zeros((args.feat_dim))
 
         num_utt = 0
         for t in veri_lst:
@@ -143,6 +141,9 @@ def main():
                 for (label, grad_a, grad_b, data_a, data_b) in sets:
                     train_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
                     train_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
+                    train_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) +
+                                        np.mean(np.where(grad_b > 0, grad_b, 0), axis=0)) / 2
+
                     train_veri_var += (np.var(grad_a, axis=0) + np.var(grad_b, axis=0)) / 2
 
                     num_utt += 1
@@ -150,16 +151,19 @@ def main():
         train_veri_data /= num_utt
         train_veri_mean /= num_utt
         train_veri_var /= num_utt
+        train_veri_relu /= num_utt
 
         freq_data['train.veri.time.mean'] = train_veri_mean
         freq_data['train.veri.time.var'] = train_veri_var
         freq_data['train.veri.data.mean'] = train_veri_data
+        freq_data['train.veri.data.relu'] = train_veri_relu
 
         print('Test set extracting:')
         # test_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
         test_veri_data = np.zeros((args.feat_dim))
         test_veri_mean = np.zeros((args.feat_dim))
         test_veri_var = np.zeros((args.feat_dim))
+        test_veri_relu = np.zeros((args.feat_dim))
 
         num_utt = 0
         for t in test_lst:
@@ -169,6 +173,9 @@ def main():
                 for (label, grad_a, grad_b, data_a, data_b) in sets:
                     test_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
                     test_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
+                    test_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) + np.mean(
+                        np.where(grad_b > 0, grad_b, 0), axis=0)) / 2
+
                     test_veri_var += (np.var(grad_a, axis=0) + np.var(grad_b, axis=0)) / 2
 
                     num_utt += 1
@@ -176,10 +183,12 @@ def main():
         test_veri_data /= num_utt
         test_veri_mean /= num_utt
         test_veri_var /= num_utt
+        test_veri_relu /= num_utt
 
         freq_data['test.veri.time.mean'] = test_veri_mean
         freq_data['test.veri.time.var'] = test_veri_var
         freq_data['test.veri.data.mean'] = test_veri_data
+        freq_data['test.veri.data.relu'] = test_veri_relu
 
         print('Saving inputs in %s' % args.extract_path)
 
@@ -198,7 +207,10 @@ def main():
     train_grad = freq_data['train.time.mean']
     valid_grad = freq_data['valid.time.mean']
     veri_grad = freq_data['train.veri.time.mean']
+    veri_grad_relu = freq_data['train.veri.time.relu']
+
     test_grad = freq_data['test.veri.time.mean']
+    test_grad_relu = freq_data['test.veri.data.relu']
 
     x = np.arange(args.feat_dim) * 8000 / (args.feat_dim - 1)  # [0-8000]
     if args.acoustic_feature == 'fbank':
@@ -228,7 +240,7 @@ def main():
     plt.plot(xnew, ynew)
     # print(np.sum(ynew))
 
-    for s in train_grad, valid_grad, veri_grad, test_grad:
+    for s in train_grad, valid_grad, veri_grad, veri_grad_relu, test_grad:
         # for s in test_a_set_grad, test_b_set_grad:
         f = interpolate.interp1d(x, s)
         xnew = np.linspace(np.min(x), np.max(x), 161)
@@ -243,7 +255,7 @@ def main():
     np.save(args.extract_path + '/train.grad.veri.npy', veri_grad)
 
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Test_a', 'Test_b'], loc='upper right', fontsize=18)
-    plt.legend(['Train', 'Valid', 'Train Verify', 'Test'], loc='upper right', fontsize=24)
+    plt.legend(['Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'], loc='upper right', fontsize=24)
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Train Verify', 'Test'], loc='upper right', fontsize=24)
     pdf.savefig()
     pdf.close()
