@@ -97,7 +97,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
     while True:
         lock.acquire()  # 加上锁
         if not t_queue.empty():
-            comms = task_queue.get()
+            comms = t_queue.get()
             lock.release()  # 释放锁
 
             for comm in comms:
@@ -276,8 +276,8 @@ if __name__ == "__main__":
             pairs.append(uid2path[uid])
 
         task_queue.put(pairs)
-    print('>>>Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
-        task_queue.qsize(), num_utt, str(time.asctime()), nj))
+    print('>>> Plan to make feats for %d speakers with %d utterances with %d jobs.\n' % (
+        task_queue.qsize(), num_utt, nj))
 
     pool = Pool(processes=nj)  # 创建nj个进程
     for i in range(0, nj):
