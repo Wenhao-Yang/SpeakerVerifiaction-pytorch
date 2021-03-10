@@ -426,10 +426,12 @@ fi
 
 if [ $stage -le 20 ]; then
   # dev
-  for name in test; do
+  #  dataset=aishell2
+  dataset=aidata
+  for name in dev; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/aishell2/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/aishell2/spect \
+      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/${name} \
+      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/spect \
       --nj 16 \
       --out-set ${name}_log \
       --feat-type spectrogram \
