@@ -595,7 +595,7 @@ if [ $stage -le 90 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/aishell2/${feat_type}/test_${feat} \
+      --test-dir ${lstm_dir}/data/aidata/${feat_type}/test_${feat} \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 161 \
@@ -613,7 +613,7 @@ if [ $stage -le 90 ]; then
       --m 3 \
       --input-length var \
       --dropout-p 0.5 \
-      --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40_var_aishell2 \
+      --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40_var_aidata \
       --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_40.pth \
       --gpu-id 0 \
       --cos-sim
