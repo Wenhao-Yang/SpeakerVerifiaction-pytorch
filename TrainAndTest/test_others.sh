@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=90
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -595,7 +595,7 @@ if [ $stage -le 90 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --test-dir ${lstm_dir}/data/aishell2/${feat_type}/test_${feat} \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 161 \
@@ -612,13 +612,13 @@ if [ $stage -le 90 ]; then
       --s 30 \
       --m 3 \
       --input-length var \
-      --frame-shift 300 \
       --dropout-p 0.5 \
-      --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_17_var \
-      --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_17.pth \
+      --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40_var_aishell2 \
+      --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_40.pth \
       --gpu-id 0 \
       --cos-sim
   done
+  exit
 fi
 
 if [ $stage -le 100 ]; then
