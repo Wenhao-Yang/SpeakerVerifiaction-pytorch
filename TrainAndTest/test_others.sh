@@ -595,7 +595,7 @@ if [ $stage -le 90 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/aidata/${feat_type}/test_${feat} \
+      --test-dir ${lstm_dir}/data/aidata/${feat_type}/dev_${feat} \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 161 \
