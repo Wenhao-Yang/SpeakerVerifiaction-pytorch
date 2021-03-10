@@ -156,7 +156,7 @@ def main():
         freq_data['train.veri.time.mean'] = train_veri_mean
         freq_data['train.veri.time.var'] = train_veri_var
         freq_data['train.veri.data.mean'] = train_veri_data
-        freq_data['train.veri.data.relu'] = train_veri_relu
+        freq_data['train.veri.time.relu'] = train_veri_relu
 
         print('Test set extracting:')
         # test_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
@@ -188,7 +188,7 @@ def main():
         freq_data['test.veri.time.mean'] = test_veri_mean
         freq_data['test.veri.time.var'] = test_veri_var
         freq_data['test.veri.data.mean'] = test_veri_data
-        freq_data['test.veri.data.relu'] = test_veri_relu
+        freq_data['test.veri.time.relu'] = test_veri_relu
 
         print('Saving inputs in %s' % args.extract_path)
 
@@ -207,10 +207,10 @@ def main():
     train_grad = freq_data['train.time.mean']
     valid_grad = freq_data['valid.time.mean']
     veri_grad = freq_data['train.veri.time.mean']
-    veri_grad_relu = freq_data['train.veri.data.relu']
+    veri_grad_relu = freq_data['train.veri.time.relu']
 
     test_grad = freq_data['test.veri.time.mean']
-    test_grad_relu = freq_data['test.veri.data.relu']
+    test_grad_relu = freq_data['test.veri.time.relu']
 
     x = np.arange(args.feat_dim) * 8000 / (args.feat_dim - 1)  # [0-8000]
     if args.acoustic_feature == 'fbank':
