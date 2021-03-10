@@ -426,8 +426,8 @@ fi
 
 if [ $stage -le 20 ]; then
   # dev
-  for name in test ; do
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
+  for name in test; do
+    python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/aishell2/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/aishell2/spect \
       --nj 20 \
