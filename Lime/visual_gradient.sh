@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=100
 if [ $stage -le 0 ]; then
   for model in LoResNet10 ; do
     python Lime/visual_gradient.py \
@@ -157,5 +157,14 @@ if [ $stage -le 80 ]; then
       --extract-path Data/gradient/ThinResNet34/vox1/fb64_None/soft/epoch_22 \
       --feat-dim 64 \
       --acoustic-feature fbank
+
+fi
+
+if [ $stage -le 100 ]; then
+
+    python Lime/visual_gradient.py \
+      --extract-path Data/gradient/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40 \
+      --feat-dim 161 \
+      --acoustic-feature spectrogram
 
 fi

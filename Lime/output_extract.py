@@ -48,6 +48,7 @@ except AttributeError:
         tensor._backward_hooks = backward_hooks
         return tensor
 
+
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 import warnings
 
@@ -58,8 +59,8 @@ parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
 parser.add_argument('--train-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--train-set-name', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--test-set-name', type=str, help='path to voxceleb1 test dataset')
+parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
 parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
