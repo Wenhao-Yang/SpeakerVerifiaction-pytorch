@@ -207,7 +207,7 @@ def main():
     train_grad = freq_data['train.time.mean']
     valid_grad = freq_data['valid.time.mean']
     veri_grad = freq_data['train.veri.time.mean']
-    veri_grad_relu = freq_data['train.veri.time.relu']
+    veri_grad_relu = freq_data['train.veri.data.relu']
 
     test_grad = freq_data['test.veri.time.mean']
     test_grad_relu = freq_data['test.veri.data.relu']
