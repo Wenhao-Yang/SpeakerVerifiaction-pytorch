@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=50
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -332,10 +332,13 @@ if [ $stage -le 50 ]; then
   resnet_size=8
   encod=None
   transform=None
-  relu_type=relu6
+  block_type=basic
+  loss=soft
+  embedding_size=128
+  input_norm=Mean
 
-  for loss in soft; do
-    echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
+  for embedding_size in 128 256; do
+    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets} with ${loss} \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
@@ -344,71 +347,35 @@ if [ $stage -le 50 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --train-trials trials_2w \
       --feat-format kaldi \
-      --input-norm Mean \
+      --input-norm ${input_norm} \
       --transform None \
       --resnet-size ${resnet_size} \
-      --relu-type ${relu_type} \
       --nj 10 \
-      --epochs 24 \
+      --epochs 36 \
+      --scheduler rop \
       --lr 0.1 \
-      --milestones 5,10,15 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${relu_type} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encod}/${loss}_dp25_${relu_type}/checkpoint_20.pth \
+      --batch-size 128 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encod}_${block_type}_dp25_em${embedding_size} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encod}_${block_type}_dp25_em${embedding_size}/checkpoint_20.pth \
       --channels 64,128,256 \
       --kernel-size 5,5 \
       --stride 2 \
-      --batch-size 128 \
-      --embedding-size 128 \
+      --block-type ${block_type} \
+      --dropout-p 0.25 \
+      --encoder-type ${encod} \
       --avg-size 4 \
       --time-dim 1 \
-      --num-valid 2 \
+      --embedding-size ${embedding_size} \
       --alpha 12 \
       --margin 0.3 \
       --s 15 \
       --m 3 \
-      --loss-ratio 0.01 \
       --weight-decay 0.001 \
-      --dropout-p 0.25 \
-      --gpu-id 0 \
-      --encoder-type ${encod} \
+      --gpu-id 0,1 \
       --cos-sim \
       --loss-type ${loss}
   done
-
-#  resnet_size=10
-#  for loss in soft ; do
-#    echo -e "\n\033[1;4;31m Training ${model} in vox1_egs with ${loss} with mean normalization \033[0m\n"
-#    python TrainAndTest/Spectrogram/train_egs.py \
-#      --model ${model} \
-#      --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_log \
-#      --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_log \
-#      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
-#      --feat-format kaldi \
-#      --input-norm Mean \
-#      --resnet-size ${resnet_size} \
-#      --nj 10 \
-#      --epochs 20 \
-#      --lr 0.1 \
-#      --milestones 5,10,15 \
-#      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25 \
-#      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_dp25/checkpoint_24.pth \
-#      --channels 64,128,256,512 \
-#      --batch-size 128 \
-#      --embedding-size 128 \
-#      --avg-size 1 \
-#      --num-valid 2 \
-#      --alpha 12 \
-#      --margin 0.3 \
-#      --s 15 \
-#      --m 3 \
-#      --loss-ratio 0.01 \
-#      --weight-decay 0.001 \
-#      --dropout-p 0.25 \
-#      --gpu-id 0 \
-#      --extract \
-#      --cos-sim \
-#      --loss-type ${loss}
-#  done
+  exit
 
 fi
 
