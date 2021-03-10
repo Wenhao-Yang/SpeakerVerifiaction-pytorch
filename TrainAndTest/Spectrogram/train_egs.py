@@ -74,7 +74,7 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--fix-length', action='store_true', default=False, help='need to make mfb file')
+parser.add_argument('--fix-length', action='store_true', default=True, help='need to make mfb file')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 
