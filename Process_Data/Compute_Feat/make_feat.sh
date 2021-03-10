@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=250
+stage=20
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -426,16 +426,20 @@ fi
 
 if [ $stage -le 20 ]; then
   # dev
-  for name in test; do
+  for name in test ; do
     python Process_Data/Compute_Feat/make_feat_kaldi.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/aishell2/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/aishell2/spect \
       --nj 20 \
-      --out-set ${name}_noc \
+      --out-set ${name}_log \
       --feat-type spectrogram \
+      --log-scale \
+      --feat-format kaldi_cmp \
       --nfft 320 \
       --windowsize 0.02
   done
+
+  exit
 fi
 
 #stage=1000
