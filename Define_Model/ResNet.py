@@ -788,11 +788,11 @@ class LocalResNet(nn.Module):
         else:
             self.filter_layer = None
 
-        if input_norm == 'Instance':
+        if input_norm == 'Inst':
             self.inst_layer = Inst_Norm(self.input_len)
         elif input_norm == 'Mean':
             self.inst_layer = Mean_Norm()
-        elif input_norm == 'MeanStd':
+        elif input_norm == 'Mstd':
             self.inst_layer = MeanStd_Norm()
         else:
             self.inst_layer = None

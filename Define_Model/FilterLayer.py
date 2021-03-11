@@ -92,7 +92,7 @@ class Inst_Norm(nn.Module):
         # alpha = log(p * ( class -2) / (1-p))
         output = input.squeeze().transpose(-1, -2)
         output = self.norm_layer(output)
-        output = output.unsqueeze().transpose(-1, -2)
+        output = output.unsqueeze(1).transpose(-1, -2)
 
         return output
 
