@@ -561,7 +561,7 @@ fi
 #stage=1000
 
 if [ $stage -le 74 ]; then
-  for s in test; do
+  for s in dev test ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/vox1/${s} \
       --out-dir ${lstm_dir}/data/vox1/pyfb \

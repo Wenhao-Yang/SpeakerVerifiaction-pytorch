@@ -116,6 +116,8 @@ def get_filterbanks(nfilt=20, nfft=512, samplerate=16000, lowfreq=0,
             y = np.array(c.LIBRI_FILTER_VAR)
         elif filtertype.endswith('vox1.soft'):
             y = np.array(c.VOX_FILTER_SOFT)
+        elif filtertype.endswith('vox2.arcsoft'):
+            y = np.array(c.VOX2_ARCSOFT)
         elif filtertype == 'dnn.vox1':
             y = np.array(c.VOX_FILTER)
 

@@ -534,34 +534,24 @@ class KaldiExtractDataset(data.Dataset):
         if os.path.exists(trials):
             assert os.path.exists(feat_scp), feat_scp
 
-            trials_utts = []
+            trials_utts = set()
             with open(trials, 'r') as u:
                 all_cls = u.readlines()
                 for line in all_cls:
                     utt_a, utt_b, target = line.split(' ')
 
-                    if utt_a not in trials_utts:
-                        trials_utts.append(utt_a)
+                    trials_utts.add(utt_a)
+                    trials_utts.add(utt_b)
 
-                    if utt_b not in trials_utts:
-                        trials_utts.append(utt_b)
-
-            trials_utts.sort()
-
-            tmp_uid2feat = {}
+            uid2feat = {}
             with open(feat_scp, 'r') as u:
                 all_cls = tqdm(u.readlines())
                 for line in all_cls:
                     utt_path = line.split(' ')
                     uid = utt_path[0]
+                    if uid in trials_utts:
+                        uid2feat[uid] = utt_path[-1]
 
-                    tmp_uid2feat[uid] = utt_path[-1]
-
-            uid2feat = {}
-            for k in trials_utts:
-                uid2feat[k] = tmp_uid2feat[k]
-
-            del tmp_uid2feat
         else:
             print("trials not exist!")
             uid2feat = {}
@@ -573,7 +563,7 @@ class KaldiExtractDataset(data.Dataset):
                     uid2feat[uid] = utt_path[-1]
 
         # pdb.set_trace()
-        utts = [uid for uid in uid2feat.keys()]
+        utts = list(uid2feat.keys())
         utts.sort()
         # assert len(utts) == len(trials_utts)
         print('==> There are {} utterances in Verifcation set to extract vectors.'.format(len(utts)))
@@ -732,7 +722,7 @@ class ScriptTrainDataset(data.Dataset):
             for line in all_cls:
                 spk_utt = line.split()
                 spk_name = spk_utt[0]
-                if spk_name not in dataset.keys():
+                if spk_name not in dataset:
                     dataset[spk_name] = [x for x in spk_utt[1:] if x not in invalid_uid]
 
         utt2spk_dict = {}
@@ -743,7 +733,7 @@ class ScriptTrainDataset(data.Dataset):
                 uid = utt_spk[0]
                 if uid in invalid_uid:
                     continue
-                if uid not in utt2spk_dict.keys():
+                if uid not in utt2spk_dict:
                     utt2spk_dict[uid] = utt_spk[-1]
 
         self.dom_to_idx = None
@@ -761,7 +751,7 @@ class ScriptTrainDataset(data.Dataset):
                     uid = utt_dom[0]
                     if uid in invalid_uid:
                         continue
-                    if uid not in utt2dom_dict.keys():
+                    if uid not in utt2dom_dict:
                         utt2dom_dict[uid] = utt_dom[-1]
 
             all_domains = [utt2dom_dict[u] for u in utt2dom_dict.keys()]
