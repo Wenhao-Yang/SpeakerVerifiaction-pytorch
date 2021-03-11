@@ -16,6 +16,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tqdm import tqdm
 
 from Define_Model.CNN import AlexNet
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
@@ -114,35 +115,59 @@ class AverageMeter(object):
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 
-def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=50000, gpu=True):
+def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True):
     model.eval()
 
     if not os.path.exists(xvector_dir):
         os.makedirs(xvector_dir)
-        # print('Creating xvector path: %s' % xvector_dir)
 
-    # pbar = tqdm(enumerate(extract_loader))
+    pbar = tqdm(extract_loader)
     uid2vectors = {}
-    data = torch.tensor([])
-    num_seg_tensor = [0]
-    uid_lst = []
-
-    batch_size = 128 if torch.cuda.is_available() else 80
     with torch.no_grad():
-        for batch_idx, (a_data, a_uid) in enumerate(extract_loader):
-            vec_shape = a_data.shape
+        if test_input == 'fix':
+            data = torch.tensor([])
+            num_seg_tensor = [0]
+            uid_lst = []
 
-            if vec_shape[1] != 1:
-                a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+            batch_size = 128 if torch.cuda.is_available() else 80
+            for batch_idx, (a_data, a_uid) in enumerate(pbar):
+                vec_shape = a_data.shape
+                if vec_shape[1] != 1:
+                    a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
-            data = torch.cat((data, a_data), dim=0)
-            num_seg_tensor.append(num_seg_tensor[-1] + len(a_data))
-            uid_lst.append(a_uid[0])
+                data = torch.cat((data, a_data), dim=0)
+                num_seg_tensor.append(num_seg_tensor[-1] + len(a_data))
+                uid_lst.append(a_uid[0])
 
-            if data.shape[0] >= batch_size or batch_idx + 1 == len(extract_loader):
+                if data.shape[0] >= batch_size or batch_idx + 1 == len(extract_loader):
+                    data = data.cuda() if next(model.parameters()).is_cuda else data
+                    model_out = model(data)
+                    try:
+                        _, out, _, _ = model_out
+                    except:
+                        _, out = model_out
 
-                data = data.cuda() if next(model.parameters()).is_cuda else data
-                model_out = model(data)
+                    out = out.data.cpu().float().numpy()
+                    # print(out.shape)
+                    if len(out.shape) == 3:
+                        out = out.squeeze(0)
+
+                    for i, uid in enumerate(uid_lst):
+                        uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+
+                    data = torch.tensor([])
+                    num_seg_tensor = [0]
+                    uid_lst = []
+
+        elif test_input == 'var':
+            for batch_idx, (a_data, a_uid) in enumerate(pbar):
+                vec_shape = a_data.shape
+
+                if vec_shape[1] != 1:
+                    a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+
+                a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
+                model_out = model(a_data)
                 try:
                     _, out, _, _ = model_out
                 except:
@@ -153,12 +178,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, ark_num=5000
                 if len(out.shape) == 3:
                     out = out.squeeze(0)
 
-                for i, uid in enumerate(uid_lst):
-                    uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
-
-                data = torch.tensor([])
-                num_seg_tensor = [0]
-                uid_lst = []
+                uid2vectors[a_uid[0]] = out[0]
 
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))

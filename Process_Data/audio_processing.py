@@ -484,7 +484,7 @@ class ConcateInput(object):
         if self.remove_vad:
             network_inputs = network_inputs[:, :, 1:]
 
-        return network_inputs.squeeze()
+        return torch.tensor(network_inputs.squeeze())
 
 
 class concateinputfromMFB(object):

@@ -35,11 +35,10 @@ from tqdm import tqdm
 from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
     GaussianLoss
-from Process_Data import constants as c
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, ConcateVarInput, tolog, ConcateInput
+from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
@@ -75,6 +74,8 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--fix-length', action='store_true', default=True, help='need to make mfb file')
+parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fix'],
+                    help='batchnorm with instance norm')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 
@@ -99,7 +100,7 @@ parser.add_argument('--epochs', type=int, default=20, metavar='E',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--scheduler', default='multi', type=str,
                     metavar='SCH', help='The optimizer to use (default: Adagrad)')
-parser.add_argument('--patience', default=4, type=int,
+parser.add_argument('--patience', default=2, type=int,
                     metavar='PAT', help='patience for scheduler (default: 4)')
 parser.add_argument('--gamma', default=0.75, type=float,
                     metavar='GAMMA', help='The optimizer to use (default: Adagrad)')
@@ -120,7 +121,7 @@ parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm wi
 
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
 parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
-parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
 
@@ -144,7 +145,7 @@ parser.add_argument('--fast', action='store_true', default=False, help='max pool
 
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
-parser.add_argument('--time-dim', default=2, type=int, metavar='FEAT', help='acoustic feature dimension')
+parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
 parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                     help='Dimensionality of the embedding')
 parser.add_argument('--batch-size', type=int, default=128, metavar='BS',
@@ -253,20 +254,8 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
-        ConcateInput(num_frames=args.chunk_size),
-        totensor()
+        ConcateOrgInput(num_frames=args.chunk_size),
     ])
-    transform_T = transforms.Compose([
-        concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, input_per_file=args.test_input_per_file,
-                            remove_vad=args.remove_vad),
-    ])
-    transform_V = transforms.Compose([
-        ConcateVarInput(remove_vad=args.remove_vad),
-        # varLengthFeat(remove_vad=args.remove_vad),
-        # concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, input_per_file=args.test_input_per_file,
-        #                     remove_vad=args.remove_vad),
-    ])
-
 else:
     transform = transforms.Compose([
         truncatedinput(),
@@ -276,9 +265,17 @@ else:
     ])
     file_loader = read_audio
 
+if args.test_input == 'var':
+    transform_V = transforms.Compose([
+        ConcateOrgInput(remove_vad=args.remove_vad),
+    ])
+elif args.test_input == 'fix':
+    transform_V = transforms.Compose([
+        ConcateVarInput(remove_vad=args.remove_vad),
+    ])
+
 if args.log_scale:
     transform.transforms.append(tolog())
-    transform_T.transforms.append(tolog())
     transform_V.transforms.append(tolog())
 
 # pdb.set_trace()
@@ -528,7 +525,7 @@ def main():
         train(train_loader, model, ce, optimizer, epoch)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
-        if epoch != (end - 2) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
+        if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
             model.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             model_state_dict = model.module.state_dict() \
@@ -731,7 +728,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     model.eval()
 
     this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
-    verification_extract(train_extract_loader, model, this_xvector_dir, epoch)
+    verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
 
     verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
                                      xvectors_dir=this_xvector_dir,
@@ -760,7 +757,7 @@ def test(model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
-    verification_extract(extract_loader, model, this_xvector_dir, epoch)
+    verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
