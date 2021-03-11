@@ -254,7 +254,7 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
-        ConcateOrgInput(num_frames=args.chunk_size),
+        ConcateOrgInput(remove_vad=args.remove_vad),
     ])
 else:
     transform = transforms.Compose([
