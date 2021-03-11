@@ -1094,8 +1094,9 @@ if [ $stage -le 80 ]; then
   block_type=basic
   kernel=5,5
   alpha=14
+  input_norm=Mean
   for loss in soft; do
-    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with mean normalization \033[0m\n"
+    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
@@ -1105,7 +1106,7 @@ if [ $stage -le 80 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
       --fix-length \
-      --input-norm Mean \
+      --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 40 \
@@ -1114,8 +1115,8 @@ if [ $stage -le 80 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_${block_type}_dp01_alpha${alpha}_em${embedding_size} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_${block_type}_dp01_alpha${alpha}_em${embedding_size}/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}/checkpoint_24.pth \
       --kernel-size ${kernel} \
       --channels 64,128,256 \
       --stride 2 \
@@ -1131,7 +1132,7 @@ if [ $stage -le 80 ]; then
       --s 30 \
       --m 3 \
       --loss-ratio 0.01 \
-      --weight-decay 0.001 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --extract \
