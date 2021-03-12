@@ -1115,8 +1115,8 @@ if [ $stage -le 80 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd1e3 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd1e3/checkpoint_24.pth \
       --kernel-size ${kernel} \
       --channels 64,128,256 \
       --stride 2 \
@@ -1132,7 +1132,7 @@ if [ $stage -le 80 ]; then
       --s 30 \
       --m 3 \
       --loss-ratio 0.01 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.001 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --extract \
