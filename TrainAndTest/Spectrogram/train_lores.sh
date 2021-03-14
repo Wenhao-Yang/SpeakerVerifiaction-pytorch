@@ -1088,14 +1088,14 @@ if [ $stage -le 80 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
   model=LoResNet
-  resnet_size=8
+  resnet_size=18
   encoder_type=None
-  embedding_size=256
-  block_type=basic
+  embedding_size=512
+  block_type=cbam
   kernel=5,5
-  alpha=14
+  alpha=0
   input_norm=Mean
-  for loss in soft; do
+  for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -1115,15 +1115,16 @@ if [ $stage -le 80 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd1e3 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd1e3/checkpoint_24.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3/checkpoint_24.pth \
       --kernel-size ${kernel} \
-      --channels 64,128,256 \
-      --stride 2 \
+      --fast \
+      --channels 32,64,128,256 \
+      --stride 1 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 4 \
+      --avg-size 6 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
       --num-valid 2 \
@@ -1132,7 +1133,7 @@ if [ $stage -le 80 ]; then
       --s 30 \
       --m 3 \
       --loss-ratio 0.01 \
-      --weight-decay 0.001 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --extract \
