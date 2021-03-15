@@ -268,7 +268,7 @@ if __name__ == "__main__":
     task_queue = manager.Queue(maxsize=maxsize)
     idx_queue = manager.Queue()
     error_queue = manager.Queue()
-
+    prep_jb = 4
     if args.train:
 
         utts = [i for i in range(len(train_dir))]
@@ -292,7 +292,7 @@ if __name__ == "__main__":
             ark_dir = os.path.join(args.out_dir, args.feat_type)
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
-            if (i + 1) % 3 != 1:
+            if (i + 1) % prep_jb != 1:
                 pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
             else:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
@@ -318,7 +318,7 @@ if __name__ == "__main__":
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
 
-            if (i + 1) % 3 != 1:
+            if (i + 1) % prep_jb != 1:
                 pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
             else:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
