@@ -428,7 +428,7 @@ if [ $stage -le 20 ]; then
   # dev
   #  dataset=aishell2
   dataset=aidata
-  for name in dev; do
+  for name in train_8k ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/spect \
@@ -1234,12 +1234,12 @@ if [ $stage -le 231 ]; then
 fi
 
 if [ $stage -le 250 ]; then
-  dataset=magic
-  for name in test_8k; do
+  dataset=aidata
+  for name in train_8k; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${dataset}/${name} \
       --out-dir ${lstm_dir}/data/${dataset}/spect \
-      --out-set ${name} \
+      --out-set ${name}_log \
       --feat-type spectrogram \
       --feat-format kaldi_cmp \
       --log-scale \
