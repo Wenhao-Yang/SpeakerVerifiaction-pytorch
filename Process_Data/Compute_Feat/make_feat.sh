@@ -751,48 +751,48 @@ fi
 
 #stage=1000
 if [ $stage -le 130 ]; then
+  #  for s in dev test; do
+  #    python Process_Data/Compute_Feat/make_feat.py \
+  #      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s}_8k_wav \
+  #      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+  #      --out-set ${s}_8k_log \
+  #      --feat-type spectrogram \
+  #      --feat-format kaldi \
+  #      --nfft 160 \
+  #      --windowsize 0.02 \
+  #      --log-scale \
+  #      --nj 18
+  #
+  #    python Process_Data/Compute_Feat/make_feat.py \
+  #      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k_radio_v3/${s} \
+  #      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
+  #      --out-set ${s}_8k_radio_v3_log \
+  #      --feat-type spectrogram \
+  #      --lowfreq 300 \
+  #      --highfreq 3000 \
+  #      --bandpass \
+  #      --feat-format kaldi \
+  #      --nfft 160 \
+  #      --windowsize 0.02 \
+  #      --log-scale \
+  #      --nj 18
+  #
+  #  done
+
   for s in dev test; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/${s}_8k_wav \
-      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-      --out-set ${s}_8k_log \
-      --feat-type spectrogram \
-      --feat-format kaldi \
-      --nfft 160 \
-      --windowsize 0.02 \
-      --log-scale \
-      --nj 18
+    #    python Process_Data/Compute_Feat/make_feat.py \
+    #      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k/${s}_8k \
+    #      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
+    #      --out-set ${s}_8k_log \
+    #      --feat-type spectrogram \
+    #      --feat-format kaldi \
+    #      --nfft 160 \
+    #      --windowsize 0.02 \
+    #      --log-scale \
+    #      --nj 18
 
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/8k_radio_v3/${s} \
-      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect \
-      --out-set ${s}_8k_radio_v3_log \
-      --feat-type spectrogram \
-      --lowfreq 300 \
-      --highfreq 3000 \
-      --bandpass \
-      --feat-format kaldi \
-      --nfft 160 \
-      --windowsize 0.02 \
-      --log-scale \
-      --nj 18
-
-  done
-
-  for s in dev test; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k/${s}_8k \
-      --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
-      --out-set ${s}_8k_log \
-      --feat-type spectrogram \
-      --feat-format kaldi \
-      --nfft 160 \
-      --windowsize 0.02 \
-      --log-scale \
-      --nj 18
-
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k_radio_v3/${s} \
+      --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/8k_radio_v3/${s}_8k-radio-v3 \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
       --out-set ${s}_8k_radio_v3_log \
       --feat-type spectrogram \
