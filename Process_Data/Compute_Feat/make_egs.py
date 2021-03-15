@@ -165,7 +165,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
         elif not i_queue.empty():
             lock_t.release()
-            time.sleep(1)
+            time.sleep(2)
 
         else:
             lock_t.release()
@@ -292,11 +292,12 @@ if __name__ == "__main__":
             ark_dir = os.path.join(args.out_dir, args.feat_type)
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
-            if (i + 1) % 3 == 1:
+            if (i + 1) % 3 != 1:
+                pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
+            else:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                       i, task_queue, error_queue, idx_queue))
-            else:
-                pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
+
     else:
 
         # valid set
@@ -316,8 +317,10 @@ if __name__ == "__main__":
             ark_dir = os.path.join(args.out_dir, args.feat_type)
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
-            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
-            if (i + 1) % 2 == 1:
+
+            if (i + 1) % 3 != 1:
+                pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
+            else:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                       i, task_queue, error_queue, idx_queue))
 
