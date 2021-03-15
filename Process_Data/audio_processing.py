@@ -68,8 +68,17 @@ def butter_bandpass(cutoff, fs, order=15):
 
 
 def butter_bandpass_filter(data, cutoff, fs, order=15):
+    int2float = False
+    if data.dtype == np.int16:
+        data = data / 32768.
+        data = data.astype(np.float32)
+        int2float = True
+
     sos = butter_bandpass(cutoff, fs, order=order)
     y = sosfilt(sos, data)
+
+    if int2float:
+        y = (y * 32768).astype(np.int16)
     return y  # Filter requirements.
 
 def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
