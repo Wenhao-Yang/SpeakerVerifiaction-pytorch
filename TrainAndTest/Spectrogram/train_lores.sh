@@ -1116,7 +1116,7 @@ if [ $stage -le 80 ]; then
       --lr 0.1 \
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3/checkpoint_24.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3/checkpoint_8.pth \
       --kernel-size ${kernel} \
       --fast \
       --channels 32,64,128,256 \
@@ -1138,6 +1138,7 @@ if [ $stage -le 80 ]; then
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
+      --all-iteraion 0 \
       --loss-type ${loss}
   done
   exit
