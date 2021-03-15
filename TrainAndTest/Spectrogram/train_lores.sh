@@ -1109,11 +1109,11 @@ if [ $stage -le 80 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 40 \
+      --epochs 32 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.1 \
+      --lr 0.01 \
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3/checkpoint_8.pth \
