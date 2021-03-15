@@ -268,7 +268,7 @@ if __name__ == "__main__":
     task_queue = manager.Queue(maxsize=maxsize)
     idx_queue = manager.Queue()
     error_queue = manager.Queue()
-    prep_jb = 4
+    prep_jb = 3
     if args.train:
 
         utts = [i for i in range(len(train_dir))]
