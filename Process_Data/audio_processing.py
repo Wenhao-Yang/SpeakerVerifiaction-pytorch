@@ -496,6 +496,47 @@ class ConcateInput(object):
         return torch.tensor(network_inputs.squeeze())
 
 
+class ConcateNumInput(object):
+    """Rescales the input PIL.Image to the given 'size'.
+    If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
+    If 'size' is a number, it will indicate the size of the smaller edge.
+    For example, if height > width, then image will be
+    rescaled to (size * height / width, size)
+    size: size of the exactly size or the smaller edge
+    interpolation: Default: PIL.Image.BILINEAR
+    """
+
+    def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
+
+        super(ConcateNumInput, self).__init__()
+        self.input_per_file = input_per_file
+        self.num_frames = num_frames
+        self.remove_vad = remove_vad
+
+    def __call__(self, frames_features):
+        network_inputs = []
+
+        output = frames_features
+        while len(output) < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=0)
+
+        for i in range(self.input_per_file):
+            try:
+                start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
+                frames_slice = output[start:start + self.num_frames]
+                network_inputs.append(frames_slice)
+            except Exception as e:
+                print(len(output))
+                raise e
+
+        # pdb.set_trace()
+        network_inputs = np.array(network_inputs, dtype=np.float32)
+        if self.remove_vad:
+            network_inputs = network_inputs[:, :, 1:]
+
+        return network_inputs.squeeze()
+
+
 class concateinputfromMFB(object):
     """Rescales the input PIL.Image to the given 'size'.
     If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.

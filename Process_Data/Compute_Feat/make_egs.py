@@ -30,7 +30,7 @@ from tqdm import tqdm
 
 from Process_Data.Datasets.KaldiDataset import ScriptValidDataset, ScriptTrainDataset
 from Process_Data.audio_augment.common import RunCommand
-from Process_Data.audio_processing import ConcateInput
+from Process_Data.audio_processing import ConcateNumInput
 from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
@@ -197,7 +197,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     assert os.path.exists(new_feat_scp)
 
 
-transform = ConcateInput(num_frames=args.num_frames, remove_vad=args.remove_vad)
+transform = ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_vad)
 
 if args.feat_format == 'npy':
     file_loader = np.load
