@@ -160,19 +160,14 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 print(e)
                 e_queue.put(key)
 
-            # if saved_egs.qsize() % 1 == 0:
-            # if saved_egs % 10 == 0:
+
             print('\rProcess [{:8>s}]:  [{:>8d}] idx Left and [{:>6d}] egs Left, with [{:>6d}] errors.'.format
                   (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), e_queue.qsize()), end='')
-
-            # if saved_egs % 2000 == 0:
-            #     feat_scp_f.flush()
-            #     feat_ark_f.flush()
 
         elif not i_queue.empty():
             lock_t.release()
             # print(os.getpid(), " real lock t")
-            time.sleep(20)
+            time.sleep(1)
 
         else:
             lock_t.release()
