@@ -91,9 +91,9 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                 while t_queue.full():
                     time.sleep(2)
 
-                # lock_t.acquire()  # 加上锁
+                lock_t.acquire()  # 加上锁
                 t_queue.put(pairs)
-                # lock_t.release()  # 加上锁
+                lock_t.release()  # 加上锁
                 # if idx_queue.qsize() % 10000 == 0:
                 #     print('>> Process {}: egs t_queue has {} egs!'.format(os.getpid(), t_queue.qsize()))
             else:
@@ -177,7 +177,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         elif not i_queue.empty():
             lock_t.release()
             # print(os.getpid(), " real lock t")
-            time.sleep(10)
+            time.sleep(2)
 
         else:
             lock_t.release()
@@ -332,9 +332,9 @@ if __name__ == "__main__":
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
 
-            if (i + 1) % prep_jb != 1:
-                pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
-            else:
+            # if (i + 1) % prep_jb != 1:
+            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
+            if (i + 1) % 2 == 1:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                       i, task_queue, error_queue, idx_queue))
 
