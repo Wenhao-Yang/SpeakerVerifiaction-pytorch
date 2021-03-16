@@ -80,19 +80,20 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
             break
 
         try:
-            if args.domain:
-                feature, label, domlab = train_dir.__getitem__(idx)
-                pairs = (label, domlab, feature)
-            else:
-                feature, label = train_dir.__getitem__(idx)
-                pairs = (label, feature)
-
-            # lock_t.acquire()
-            while t_queue.full():
-                print("task queue is full!")
-                time.sleep(2)
-            # lock_t.acquire()  # 加上锁
-            t_queue.put(pairs)
+            # if args.domain:
+            #     feature, label, domlab = train_dir.__getitem__(idx)
+            #     pairs = (label, domlab, feature)
+            # else:
+            #     feature, label = train_dir.__getitem__(idx)
+            #     pairs = (label, feature)
+            #
+            # # lock_t.acquire()
+            # while t_queue.full():
+            #     print("task queue is full!")
+            #     time.sleep(2)
+            # # lock_t.acquire()  # 加上锁
+            # t_queue.put(pairs)
+            t_queue.put('a')
 
         except Exception as e:
             traceback.print_exc(e)
