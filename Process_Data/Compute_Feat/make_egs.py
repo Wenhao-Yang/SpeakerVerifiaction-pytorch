@@ -73,10 +73,11 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
         try:
             # print(os.getpid(), " acq lock i")
             lock_i.acquire()  # 加上锁
-            # print(os.getpid(), "acq lock i")
+            print(os.getpid(), "acq lock i", end='')
             if not idx_queue.empty():
                 idx = idx_queue.get()
                 lock_i.release()  # 释放锁
+                print(os.getpid(), " real lock i")
 
                 if args.domain:
                     feature, label, domlab = train_dir.__getitem__(idx)
@@ -97,6 +98,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                 #     print('>> Process {}: egs t_queue has {} egs!'.format(os.getpid(), t_queue.qsize()))
             else:
                 lock_i.release()  # 释放锁
+                # print(os.getpid(), " real lock i")
                 # print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
                 break
         except Exception as e:
@@ -127,10 +129,11 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     while True:
         # print(os.getpid(), "acq lock t")
         lock_t.acquire()  # 加上锁
-        # print(os.getpid(), "acqed lock t")
+        print(os.getpid(), "acqed lock t", end='')
         if not t_queue.empty():
             comm = t_queue.get()
             lock_t.release()  # 释放锁
+            print(os.getpid(), " real lock t")
 
             try:
                 if args.domain:
@@ -173,6 +176,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
         elif not i_queue.empty():
             lock_t.release()
+            print(os.getpid(), " real lock t")
             time.sleep(10)
 
         else:
