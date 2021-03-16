@@ -761,7 +761,7 @@ if [ $stage -le 130 ]; then
       --nfft 160 \
       --windowsize 0.02 \
       --log-scale \
-      --nj 18
+      --nj 16
   done
   exit
   #
