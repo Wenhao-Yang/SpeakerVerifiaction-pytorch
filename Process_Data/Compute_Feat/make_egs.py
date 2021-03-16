@@ -297,7 +297,7 @@ if __name__ == "__main__":
             if (i + 1) % prep_jb != 0:
                 pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
                 # (lock_i, lock_t, train_dir, idx_queue, t_queue)
-            else:
+            # else:
         # pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
         #                                       i, task_queue, error_queue, idx_queue))
         # lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queu
