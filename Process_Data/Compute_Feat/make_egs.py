@@ -122,7 +122,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         os.makedirs(temp_dir)
 
     saved_egs = 0
-    time.sleep(1)
+    # time.sleep(1)
     while True:
         # print(os.getpid(), "acq lock t")
         lock_t.acquire()  # 加上锁
@@ -298,9 +298,9 @@ if __name__ == "__main__":
                 pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
                 # (lock_i, lock_t, train_dir, idx_queue, t_queue)
             else:
-                pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
-                                                      i, task_queue, error_queue, idx_queue))
-                # lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queu
+        # pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
+        #                                       i, task_queue, error_queue, idx_queue))
+        # lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queu
 
     else:
 
