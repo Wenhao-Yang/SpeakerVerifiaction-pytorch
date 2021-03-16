@@ -93,10 +93,12 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                 time.sleep(2)
             # lock_t.acquire()  # 加上锁
             t_queue.put(pairs)
-            print('\rProcess [{:8>s}]:  [{:>8d}] idx Left and [{:>6d}] egs Left'.format
-                  (str(os.getpid()), idx_queue.qsize(), t_queue.qsize()), end='')
+
         except Exception as e:
             traceback.print_exc(e)
+
+        print('\rProcess [{:8>s}]: [{:>8d}] idx Left and [{:>8d}] egs Left'.format
+              (str(os.getpid()), idx_queue.qsize(), t_queue.qsize()), end='')
 
 
 def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queue):
@@ -119,7 +121,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         os.makedirs(temp_dir)
 
     saved_egs = 0
-
+    time.sleep(1)
     while True:
         # print(os.getpid(), "acq lock t")
         lock_t.acquire()  # 加上锁
@@ -157,9 +159,6 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             #     print(e)
             #     e_queue.put(key)
 
-            print('\rProcess [{:8>s}]:  [{:>8d}] idx Left and [{:>6d}] egs Left, with [{:>6d}] errors.'.format
-                  (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), e_queue.qsize()), end='')
-
         elif not i_queue.empty():
             lock_t.release()
             # print(os.getpid(), " real lock t")
@@ -169,6 +168,9 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             lock_t.release()
             # print('\n>> Process {}: all queue empty!'.format(os.getpid()))
             break
+
+        print('\rProcess [{:8>s}]: [{:>8d}] idx Left and [{:>8d}] egs Left, with [{:>6d}] errors.'.format
+              (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), e_queue.qsize()), end='')
 
     feat_scp_f.close()
 
