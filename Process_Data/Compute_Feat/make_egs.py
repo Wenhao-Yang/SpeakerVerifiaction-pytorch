@@ -97,6 +97,8 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                 time.sleep(2)
             # lock_t.acquire()  # 加上锁
             t_queue.put(pairs)
+            print('\rProcess [{:8>s}]:  [{:>8d}] idx Left and [{:>6d}] egs Left'.format
+                  (str(os.getpid()), idx_queue.qsize(), t_queue.qsize()), end='')
         except Exception as e:
             traceback.print_exc(e)
 
