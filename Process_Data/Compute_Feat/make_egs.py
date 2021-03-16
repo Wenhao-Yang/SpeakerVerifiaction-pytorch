@@ -68,6 +68,22 @@ args = parser.parse_args()
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
+
+def PrepareIdxProcess(lock_i, i_queue, idx_arr):
+    for idx in idx_arr:
+
+        lock_i.acquire()  # 加上锁
+
+        if i_queue.qsize() > 500000:
+            time.sleep(2)
+
+        lock_i.release()
+        i_queue.put(idx)
+
+        # print('\rProcess [{:8>s}]: [{:>8d}] idx Left and [{:>8d}] egs Left'.format
+        #       (str(os.getpid()), idx_queue.qsize(), t_queue.qsize()), end='')
+
+
 def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
     while True:
         # print(os.getpid(), " acqing lock i")
@@ -92,6 +108,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
             while t_queue.full():
                 print("task queue is full!")
                 time.sleep(2)
+
             # lock_t.acquire()  # 加上锁
             t_queue.put(pairs)
             # t_queue.put('a')
@@ -298,9 +315,9 @@ if __name__ == "__main__":
             if (i + 1) % prep_jb != 0:
                 pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
                 # (lock_i, lock_t, train_dir, idx_queue, t_queue)
-            # else:
-        # pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
-        #                                       i, task_queue, error_queue, idx_queue))
+            else:
+                pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
+                                                      i, task_queue, error_queue, idx_queue))
         # lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queu
 
     else:
