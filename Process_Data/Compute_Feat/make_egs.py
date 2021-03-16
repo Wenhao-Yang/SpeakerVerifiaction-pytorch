@@ -92,9 +92,9 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                     print("task queue is full!")
                     time.sleep(2)
 
-                lock_t.acquire()  # 加上锁
+                # lock_t.acquire()  # 加上锁
                 t_queue.put(pairs)
-                lock_t.release()  # 加上锁
+                # lock_t.release()  # 加上锁
                 # if idx_queue.qsize() % 10000 == 0:
                 #     print('>> Process {}: egs t_queue has {} egs!'.format(os.getpid(), t_queue.qsize()))
             else:
