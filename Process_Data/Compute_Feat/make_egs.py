@@ -73,7 +73,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
         try:
             # print(os.getpid(), " acq lock i")
             lock_i.acquire()  # 加上锁
-            print(" %d Acq lock i " % os.getpid(), end='')
+            # print(" %d Acq lock i " % os.getpid(), end='')
             if not idx_queue.empty():
                 idx = idx_queue.get()
                 lock_i.release()  # 释放锁
@@ -89,6 +89,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                 # print(label)
                 # lock_t.acquire()
                 while t_queue.full():
+                    print('idx sleep!')
                     time.sleep(2)
 
                 # lock_t.acquire()  # 加上锁
@@ -274,13 +275,13 @@ if __name__ == "__main__":
     feat_dim = train_dir.__getitem__(1)[0].shape[-1]
     mem_data = psutil.virtual_memory()
     free_mem = mem_data.available
-    maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.25)
+    maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.5)
     print('Maxsize for Queue is %d' % maxsize)
 
     task_queue = manager.Queue(maxsize=maxsize)
     idx_queue = manager.Queue()
     error_queue = manager.Queue()
-    prep_jb = 4
+    prep_jb = 3
     if args.train:
 
         utts = [i for i in range(len(train_dir))]
