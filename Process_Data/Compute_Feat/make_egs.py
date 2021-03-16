@@ -89,6 +89,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                 # print(label)
                 # lock_t.acquire()
                 while t_queue.full():
+                    print("task queue is full!")
                     time.sleep(2)
 
                 lock_t.acquire()  # 加上锁
