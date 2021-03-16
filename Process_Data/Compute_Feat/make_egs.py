@@ -168,7 +168,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
         else:
             lock_t.release()
-            # print('\n>> Process {}: all queue empty!'.format(os.getpid()))
+            print('\n>> Process {}: All queue empty!'.format(os.getpid()))
             break
 
         print('\rProcess [{:8>s}]: [{:>8d}] idx Left and [{:>8d}] egs Left, with [{:>6d}] errors.'.format
