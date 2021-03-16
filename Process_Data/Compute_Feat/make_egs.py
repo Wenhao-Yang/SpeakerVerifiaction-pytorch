@@ -76,32 +76,27 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
             # print(" %d Acqed lock i " % os.getpid(), end='')
             if not idx_queue.empty():
                 idx = idx_queue.get()
-                lock_i.release()  # 释放锁
-                # print(os.getpid(), " real lock i")
-
-                if args.domain:
-                    feature, label, domlab = train_dir.__getitem__(idx)
-                    pairs = (label, domlab, feature)
-                else:
-                    feature, label = train_dir.__getitem__(idx)
-                    pairs = (label, feature)
-
-                # print(label)
-                # lock_t.acquire()
-                while t_queue.full():
-                    print("task queue is full!")
-                    time.sleep(2)
-
-                # lock_t.acquire()  # 加上锁
-                t_queue.put(pairs)
-                # lock_t.release()  # 加上锁
-                # if idx_queue.qsize() % 10000 == 0:
-                #     print('>> Process {}: egs t_queue has {} egs!'.format(os.getpid(), t_queue.qsize()))
             else:
-                lock_i.release()  # 释放锁
-                # print(os.getpid(), " real lock i")
-                # print('\n>> Process {}: idx queue empty!'.format(os.getpid()))
                 break
+        except Exception as e:
+            traceback.print_exc(e)
+        finally:
+            lock_i.release()  # 释放锁
+
+        try:
+            if args.domain:
+                feature, label, domlab = train_dir.__getitem__(idx)
+                pairs = (label, domlab, feature)
+            else:
+                feature, label = train_dir.__getitem__(idx)
+                pairs = (label, feature)
+
+            # lock_t.acquire()
+            while t_queue.full():
+                print("task queue is full!")
+                time.sleep(2)
+            # lock_t.acquire()  # 加上锁
+            t_queue.put(pairs)
         except Exception as e:
             traceback.print_exc(e)
 
