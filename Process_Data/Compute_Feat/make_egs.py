@@ -128,36 +128,34 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
             comm = t_queue.get()
             lock_t.release()  # 释放锁
             # print(os.getpid(), " real lock t")
-
-            try:
-                if args.domain:
-                    key = ' '.join((str(comm[0]), str(comm[1])))
-                else:
-                    key = str(comm[0])
-                feat = comm[-1].astype(np.float32).squeeze()
-                # print(feat.shape)
-
-                if args.out_format == 'kaldi':
-                    kaldi_io.write_mat(feat_ark_f, feat, key='')
-                    offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
-                    # print(offsets)
-                    feat_scp_f.write(key + ' ' + offsets + '\n')
-
-                elif args.out_format == 'kaldi_cmp':
-                    writer(str(key), feat)
-
-                elif args.feat_format == 'npy':
-                    npy_path = os.path.join(feat_dir, '%s.npy' % key)
-                    np.save(npy_path, feat)
-                    feat_scp_f.write(key + ' ' + npy_path + '\n')
-
-                del comm, feat
-                saved_egs += 1
-
-            except Exception as e:
-                print(e)
-                e_queue.put(key)
-
+            # try:
+            #     if args.domain:
+            #         key = ' '.join((str(comm[0]), str(comm[1])))
+            #     else:
+            #         key = str(comm[0])
+            #     feat = comm[-1].astype(np.float32).squeeze()
+            #     # print(feat.shape)
+            #
+            #     if args.out_format == 'kaldi':
+            #         kaldi_io.write_mat(feat_ark_f, feat, key='')
+            #         offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
+            #         # print(offsets)
+            #         feat_scp_f.write(key + ' ' + offsets + '\n')
+            #
+            #     elif args.out_format == 'kaldi_cmp':
+            #         writer(str(key), feat)
+            #
+            #     elif args.feat_format == 'npy':
+            #         npy_path = os.path.join(feat_dir, '%s.npy' % key)
+            #         np.save(npy_path, feat)
+            #         feat_scp_f.write(key + ' ' + npy_path + '\n')
+            #
+            #     del comm, feat
+            #     saved_egs += 1
+            #
+            # except Exception as e:
+            #     print(e)
+            #     e_queue.put(key)
 
             print('\rProcess [{:8>s}]:  [{:>8d}] idx Left and [{:>6d}] egs Left, with [{:>6d}] errors.'.format
                   (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), e_queue.qsize()), end='')
