@@ -164,8 +164,8 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 print(e)
                 e_queue.put(key)
 
-            # if saved_egs.qsize() % 1 == 0:
-            if saved_egs % 10 == 0:
+            if saved_egs.qsize() % 1 == 0:
+                # if saved_egs % 10 == 0:
                 print(
                     '\rProcess [{:8>s}] There are [{:>8d}] idx in idx_queue and [{:>6d}] egs in egs_queue, with [{:>6d}] errors.'.format
                     (str(os.getpid()), i_queue.qsize(), t_queue.qsize(), e_queue.qsize()), end='')
@@ -177,7 +177,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         elif not i_queue.empty():
             lock_t.release()
             # print(os.getpid(), " real lock t")
-            time.sleep(2)
+            time.sleep(20)
 
         else:
             lock_t.release()
