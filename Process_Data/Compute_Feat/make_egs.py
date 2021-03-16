@@ -71,13 +71,13 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
     while True:
         try:
-            # print(os.getpid(), " acq lock i")
+            print(os.getpid(), " acqing lock i")
             lock_i.acquire()  # 加上锁
-            # print(" %d Acq lock i " % os.getpid(), end='')
+            print(" %d Acqed lock i " % os.getpid(), end='')
             if not idx_queue.empty():
                 idx = idx_queue.get()
                 lock_i.release()  # 释放锁
-                print(os.getpid(), " real lock i")
+                # print(os.getpid(), " real lock i")
 
                 if args.domain:
                     feature, label, domlab = train_dir.__getitem__(idx)
@@ -89,7 +89,6 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
                 # print(label)
                 # lock_t.acquire()
                 while t_queue.full():
-                    print('idx sleep!')
                     time.sleep(2)
 
                 # lock_t.acquire()  # 加上锁
