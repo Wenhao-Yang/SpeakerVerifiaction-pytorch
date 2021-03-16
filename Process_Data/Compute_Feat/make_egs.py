@@ -111,9 +111,10 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
 
             # lock_t.acquire()  # 加上锁
             t_queue.put(pairs)
-            # t_queue.put('a')
+            print('idx: %d' % idx)
 
         except Exception as e:
+            print(e)
             traceback.print_exc(e)
 
         print('\rProcess [{:8>s}]: [{:>8d}] idx Left and [{:>8d}] egs Left'.format
@@ -144,7 +145,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     while True:
         # print(os.getpid(), "acq lock t")
         lock_t.acquire()  # 加上锁
-        # print(os.getpid(), "acqed lock t", end='')
+
         if not t_queue.empty():
             comm = t_queue.get()
             lock_t.release()  # 释放锁
@@ -155,12 +156,10 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 else:
                     key = str(comm[0])
                 feat = comm[-1].astype(np.float32).squeeze()
-                # print(feat.shape)
 
                 if args.out_format == 'kaldi':
                     kaldi_io.write_mat(feat_ark_f, feat, key='')
                     offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
-                    # print(offsets)
                     feat_scp_f.write(key + ' ' + offsets + '\n')
 
                 elif args.out_format == 'kaldi_cmp':
@@ -180,7 +179,6 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
         elif not i_queue.empty():
             lock_t.release()
-            # print(os.getpid(), " real lock t")
             time.sleep(1)
 
         else:
