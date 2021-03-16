@@ -1234,7 +1234,7 @@ if [ $stage -le 232 ]; then
   datasets=army
 
   python Process_Data/Compute_Feat/make_egs.py \
-    --nj 3 \
+    --nj 8 \
     --data-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v5_log \
     --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
     --feat-type spectrogram \
@@ -1246,7 +1246,7 @@ if [ $stage -le 232 ]; then
     --out-set dev_8k_v5_log
 
   python Process_Data/Compute_Feat/make_egs.py \
-    --nj 3 \
+    --nj 8 \
     --data-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v5_log \
     --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
     --feat-type spectrogram \
