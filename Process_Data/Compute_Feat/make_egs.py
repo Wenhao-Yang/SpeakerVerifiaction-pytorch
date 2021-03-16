@@ -111,7 +111,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
 
             # lock_t.acquire()  # 加上锁
             t_queue.put(pairs)
-            print('idx: %d' % idx)
+            # print('idx: %d' % idx)
 
         except Exception as e:
             print(e)
