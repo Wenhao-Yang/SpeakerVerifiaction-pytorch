@@ -302,7 +302,7 @@ if __name__ == "__main__":
         print('\n>> Plan to make egs for %d speakers with %d egs in %s with %d jobs.\n' % (
             train_dir.num_spks, len(utts), str(time.asctime()), nj))
 
-        pool = Pool(processes=int(nj))  # 创建nj个进程
+        pool = Pool(processes=int(nj * 1.5))  # 创建nj个进程
         for i in range(0, nj):
             write_dir = os.path.join(out_dir, 'Split%d/%d' % (nj, i))
             if not os.path.exists(write_dir):
@@ -312,10 +312,9 @@ if __name__ == "__main__":
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
 
-            if (i + 1) % prep_jb != 0:
-                pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
+            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
                 # (lock_i, lock_t, train_dir, idx_queue, t_queue)
-            else:
+            if (i + 1) % 2 == 1:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                       i, task_queue, error_queue, idx_queue))
         # lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queu
