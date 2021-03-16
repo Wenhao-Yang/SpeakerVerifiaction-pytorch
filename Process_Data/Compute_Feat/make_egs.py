@@ -149,7 +149,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
         if not t_queue.empty():
             comm = t_queue.get()
             lock_t.release()  # 释放锁
-            # print(os.getpid(), " real lock t")
+
             try:
                 if args.domain:
                     key = ' '.join((str(comm[0]), str(comm[1])))
