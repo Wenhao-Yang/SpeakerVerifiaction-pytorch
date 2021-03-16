@@ -516,8 +516,12 @@ class ConcateNumInput(object):
     def __call__(self, frames_features):
         network_inputs = []
 
-        start = np.random.randint(low=0, high=len(frames_features) - self.num_frames + 1)
-        frames_slice = frames_features[start:start + self.num_frames]
+        output = frames_features
+        while len(output) < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=0)
+
+        start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
+        frames_slice = output[start:start + self.num_frames]
         network_inputs.append(frames_slice)
 
         network_inputs = np.array(network_inputs, dtype=np.float32)

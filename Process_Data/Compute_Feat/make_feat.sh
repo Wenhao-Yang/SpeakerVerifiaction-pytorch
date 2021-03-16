@@ -1233,17 +1233,17 @@ fi
 if [ $stage -le 232 ]; then
   datasets=army
 
-  python Process_Data/Compute_Feat/make_egs.py \
-    --nj 10 \
-    --data-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v5_log \
-    --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
-    --feat-type spectrogram \
-    --train \
-    --input-per-spks 768 \
-    --feat-format kaldi \
-    --out-format kaldi_cmp \
-    --num-valid 2 \
-    --out-set dev_8k_v5_log
+  #  python Process_Data/Compute_Feat/make_egs.py \
+  #    --nj 10 \
+  #    --data-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v5_log \
+  #    --out-dir ${lstm_dir}/data/${datasets}/egs/spect \
+  #    --feat-type spectrogram \
+  #    --train \
+  #    --input-per-spks 768 \
+  #    --feat-format kaldi \
+  #    --out-format kaldi_cmp \
+  #    --num-valid 2 \
+  #    --out-set dev_8k_v5_log
 
   python Process_Data/Compute_Feat/make_egs.py \
     --nj 10 \
