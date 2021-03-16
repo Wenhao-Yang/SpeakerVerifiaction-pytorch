@@ -71,9 +71,9 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
     while True:
         try:
-            print(os.getpid(), " acqing lock i")
+            # print(os.getpid(), " acqing lock i")
             lock_i.acquire()  # 加上锁
-            print(" %d Acqed lock i " % os.getpid(), end='')
+            # print(" %d Acqed lock i " % os.getpid(), end='')
             if not idx_queue.empty():
                 idx = idx_queue.get()
                 lock_i.release()  # 释放锁
