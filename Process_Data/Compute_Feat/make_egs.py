@@ -68,13 +68,14 @@ args = parser.parse_args()
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-def PrepareEgProcess(lock_i, lock_t, train_dir, idx_queue, t_queue):
+def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
     while True:
         # print(os.getpid(), " acqing lock i")
         lock_i.acquire()  # 加上锁
         # print(" %d Acqed lock i " % os.getpid(), end='')
-        if not idx_queue.empty():
-            idx = idx_queue.get()
+        if not i_queue.empty():
+            idx = i_queue.get()
+            lock_i.release()
         else:
             lock_i.release()
             break
