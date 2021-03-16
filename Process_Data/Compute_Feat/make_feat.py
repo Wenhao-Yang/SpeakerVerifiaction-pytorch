@@ -17,7 +17,6 @@ import os
 import shutil
 import sys
 import time
-import traceback
 from multiprocessing import Pool, Manager
 
 import kaldi_io
@@ -170,7 +169,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                     utt2num_frames_f.write('%s %d\n' % (key, len(feat)))
                 except Exception as e:
                     print(e)
-                    traceback.print_exc(e)
+                    # traceback.print_exc(e)
                     # print(e)
                     e_queue.put(key)
 
