@@ -117,7 +117,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
             traceback.print_exc(e)
 
         print('\rProcess [{:8>s}]: [{:>8d}] idx Left and [{:>8d}] egs Left'.format
-              (str(os.getpid()), idx_queue.qsize(), t_queue.qsize()), end='')
+              (str(os.getpid()), i_queue.qsize(), t_queue.qsize()), end='')
 
 
 def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue, i_queue):
