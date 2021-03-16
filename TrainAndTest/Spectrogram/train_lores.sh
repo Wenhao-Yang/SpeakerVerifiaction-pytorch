@@ -1203,7 +1203,7 @@ if [ $stage -le 100 ]; then
   model=LoResNet
   resnet_size=18
   encoder_type=None
-  embedding_size=512
+  embedding_size=256
   block_type=cbam
   kernel=5,5
   alpha=0
