@@ -293,6 +293,7 @@ if __name__ == "__main__":
             ark_dir = os.path.join(args.out_dir, args.feat_type)
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
+
             if (i + 1) % prep_jb != 0:
                 pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
                 # (lock_i, lock_t, train_dir, idx_queue, t_queue)
