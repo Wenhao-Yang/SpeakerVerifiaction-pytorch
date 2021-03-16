@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=100
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -1195,4 +1195,64 @@ if [ $stage -le 81 ]; then
       --cos-sim \
       --loss-type ${loss}
   done
+fi
+
+if [ $stage -le 100 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=army
+  model=LoResNet
+  resnet_size=18
+  encoder_type=None
+  embedding_size=512
+  block_type=cbam
+  kernel=5,5
+  alpha=0
+  input_norm=Mean
+  for loss in arcsoft; do
+    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_8k_v5_log \
+      --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v5_log/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_8k_v5_log \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k_v5_log \
+      --feat-format kaldi \
+      --fix-length \
+      --input-norm ${input_norm} \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 40 \
+      --scheduler rop \
+      --patience 2 \
+      --accu-steps 1 \
+      --lr 0.1 \
+      --milestones 8,14,20 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3/checkpoint_8.pth \
+      --kernel-size ${kernel} \
+      --fast \
+      --channels 32,64,128,256 \
+      --stride 1 \
+      --batch-size 128 \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --encoder-type ${encoder_type} \
+      --block-type ${block_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.25 \
+      --s 30 \
+      --m 3 \
+      --loss-ratio 0.01 \
+      --weight-decay 0.0001 \
+      --dropout-p 0.1 \
+      --gpu-id 0,1 \
+      --extract \
+      --cos-sim \
+      --all-iteraion 500 \
+      --loss-type ${loss}
+  done
+  exit
 fi
