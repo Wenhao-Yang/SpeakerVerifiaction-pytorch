@@ -1251,7 +1251,7 @@ if [ $stage -le 100 ]; then
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
-      --all-iteraion 500 \
+      --all-iteraion 0 \
       --loss-type ${loss}
   done
   exit
