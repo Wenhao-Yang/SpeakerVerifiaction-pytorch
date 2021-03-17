@@ -1214,7 +1214,7 @@ if [ $stage -le 100 ]; then
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_8k_v5_log \
       --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v5_log/trials_dir \
-      --train-trials trials_2w \
+      --train-trials trials_4w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_8k_v5_log \
       --test-dir ${lstm_dir}/data/${datasets}/spect/test_8k_v5_log \
       --feat-format kaldi \
