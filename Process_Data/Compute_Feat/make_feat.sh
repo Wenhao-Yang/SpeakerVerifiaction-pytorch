@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=232
+stage=250
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -1263,7 +1263,7 @@ fi
 
 if [ $stage -le 250 ]; then
   dataset=aidata
-  for name in train_8k; do
+  for name in dev_8k; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${dataset}/${name} \
       --out-dir ${lstm_dir}/data/${dataset}/spect \
@@ -1274,4 +1274,5 @@ if [ $stage -le 250 ]; then
       --nfft 160 \
       --windowsize 0.02
   done
+  exit
 fi
