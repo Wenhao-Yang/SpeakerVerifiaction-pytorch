@@ -139,6 +139,8 @@ parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='aco
 parser.add_argument('--ring', default=12, type=float, metavar='RING', help='acoustic feature dimension')
 
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
+parser.add_argument('--context', default='5,3,3,5', type=str, metavar='KE', help='kernel size of conv filters')
+
 parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
 parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
 parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
@@ -319,6 +321,9 @@ def main():
     # instantiate model and initialize weights
     kernel_size = args.kernel_size.split(',')
     kernel_size = [int(x) for x in kernel_size]
+
+    context = args.context.split(',')
+    context = [int(x) for x in context]
     if args.padding == '':
         padding = [int((x - 1) / 2) for x in kernel_size]
     else:
@@ -334,6 +339,7 @@ def main():
     channels = [int(x) for x in channels]
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
+                    'context': context,
                     'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,

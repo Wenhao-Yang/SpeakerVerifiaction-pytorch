@@ -46,6 +46,85 @@ class TDNNBlock(nn.Module):
         return out
 
 
+class TDCBAM(nn.Module):
+    # input should be like [Batch, time, frequency]
+    def __init__(self, inplanes, planes, time_freq='time', pooling='avg'):
+        super(TDCBAM, self).__init__()
+        self.time_freq = time_freq
+        self.activation = nn.Sigmoid()
+        self.pooling = pooling
+
+        self.cov_t = nn.Conv2d(1, 1, kernel_size=(7, 1), stride=1, padding=(3, 0))
+        self.avg_t = nn.AdaptiveAvgPool2d((None, 1))
+        self.max_t = nn.AdaptiveMaxPool2d(None, 1)
+
+        self.cov_f = nn.Conv2d(1, 1, kernel_size=(1, 7), stride=1, padding=(0, 3))
+        self.avg_f = nn.AdaptiveAvgPool2d((1, None))
+        self.max_f = nn.AdaptiveMaxPool2d((1, None))
+
+    def forward(self, input):
+        if len(input.shape) == 3:
+            input = input.unsqueeze(1)
+
+        t_output = self.avg_t(input)
+        if self.pooling == 'both':
+            t_output += self.max_t(input)
+
+        t_output = self.cov_t(t_output)
+        t_output = self.activation(t_output)
+        t_output = input * t_output
+
+        f_output = self.avg_f(input)
+        if self.pooling == 'both':
+            f_output += self.max_f(input)
+
+        f_output = self.cov_f(f_output)
+        f_output = self.activation(f_output)
+        f_output = input * f_output
+
+        output = (t_output + f_output) / 2
+
+        if len(input.shape) == 4:
+            output = output.squeeze(1)
+
+        return output
+
+
+class TDNNCBAMBlock(nn.Module):
+
+    def __init__(self, inplanes, planes, downsample=None, dilation=1, **kwargs):
+        super(TDNNCBAMBlock, self).__init__()
+
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        if isinstance(downsample, int) and downsample > 0:
+            inter_connect = int(planes / downsample)
+        else:
+            inter_connect = planes
+
+        self.tdnn1 = TimeDelayLayer_v5(input_dim=inplanes, output_dim=inter_connect, context_size=3,
+                                       stride=1, dilation=dilation, padding=1)
+        self.relu = nn.ReLU(inplace=True)
+
+        self.tdnn2 = TimeDelayLayer_v5(input_dim=inter_connect, output_dim=planes, context_size=3,
+                                       stride=1, dilation=dilation, padding=1)
+
+        self.CBAM_layer = TDCBAM(planes, planes)
+        # self.downsample = downsample
+
+    def forward(self, x):
+        identity = x
+
+        out = self.tdnn1(x)
+        out = self.tdnn2(out)
+
+        out = self.CBAM_layer(out)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
 class TDNNBlock_v6(nn.Module):
 
     def __init__(self, inplanes, planes, downsample=None, dilation=1, **kwargs):
@@ -115,7 +194,8 @@ class TDNNBottleBlock(nn.Module):
 
 class RET(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
-                 channels=[512, 512, 512, 512, 512, 1500], downsample=None,
+                 channels=[512, 512, 512, 512, 512, 1536], context=[5, 3, 3, 5],
+                 downsample=None, resnet_size=17,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', block_type='Basic',
                  mask='None', mask_len=20, **kwargs):
         super(RET, self).__init__()
@@ -126,6 +206,10 @@ class RET(nn.Module):
         self.alpha = alpha
         self.mask = mask
         self.channels = channels
+        self.context = context
+        tdnn_type = {14: [1, 1, 1, 0],
+                     17: [1, 1, 1, 1]}
+        self.layers = tdnn_type[resnet_size] if resnet_size in tdnn_type else tdnn_type[17]
 
         if input_norm == 'Instance':
             self.inst_layer = nn.InstanceNorm1d(input_dim)
@@ -146,15 +230,16 @@ class RET(nn.Module):
         else:
             self.mask_layer = None
 
+        TDNN_layer = TimeDelayLayer_v5
         if block_type == 'Basic':
             Blocks = TDNNBlock
-            TDNN_layer = TimeDelayLayer_v5
         elif block_type == 'Basic_v6':
             Blocks = TDNNBlock_v6
             TDNN_layer = TimeDelayLayer_v6
         elif block_type == 'Agg':
             Blocks = TDNNBottleBlock
-            TDNN_layer = TimeDelayLayer_v5
+        elif block_type == 'cbam':
+            Blocks = TDNNCBAMBlock
         else:
             raise ValueError(block_type)
 
@@ -164,36 +249,37 @@ class RET(nn.Module):
                              downsample=downsample, dilation=1)
 
         self.frame4 = TDNN_layer(input_dim=self.channels[0], output_dim=self.channels[1],
-                                        context_size=3, dilation=1)
+                                 context_size=3, dilation=1)
         self.frame5 = Blocks(inplanes=self.channels[1], planes=self.channels[1],
                              downsample=downsample, dilation=1)
 
         self.frame7 = TDNN_layer(input_dim=self.channels[1], output_dim=self.channels[2],
-                                        context_size=3, dilation=1)
+                                 context_size=3, dilation=1)
         self.frame8 = Blocks(inplanes=self.channels[2], planes=self.channels[2],
                              downsample=downsample, dilation=1)
 
-        self.frame10 = TDNN_layer(input_dim=self.channels[2], output_dim=self.channels[3],
-                                         context_size=5, dilation=1)
-        self.frame11 = Blocks(inplanes=self.channels[3], planes=self.channels[3],
-                              downsample=downsample, dilation=1)
+        if self.layers[3] != 0:
+            self.frame10 = TDNN_layer(input_dim=self.channels[2], output_dim=self.channels[3],
+                                      context_size=5, dilation=1)
+            self.frame11 = Blocks(inplanes=self.channels[3], planes=self.channels[3],
+                                  downsample=downsample, dilation=1)
 
         self.frame13 = TDNN_layer(input_dim=self.channels[3], output_dim=self.channels[4],
-                                         context_size=1, dilation=1)
+                                  context_size=1, dilation=1)
         self.frame14 = TDNN_layer(input_dim=self.channels[4], output_dim=self.channels[5],
-                                         context_size=1, dilation=1)
+                                  context_size=1, dilation=1)
 
         self.drop = nn.Dropout(p=self.dropout_p)
 
         if encoder_type == 'STAP':
-            self.encoder = StatisticPooling(input_dim=1500)
+            self.encoder = StatisticPooling(input_dim=self.channels[5])
         elif encoder_type == 'SASP':
-            self.encoder = AttentionStatisticPooling(input_dim=1500, hidden_dim=512)
+            self.encoder = AttentionStatisticPooling(input_dim=self.channels[5], hidden_dim=512)
         else:
             raise ValueError(encoder_type)
 
         self.segment1 = nn.Sequential(
-            nn.Linear(3000, 512),
+            nn.Linear(self.channels[5] * 2, 512),
             nn.ReLU(),
             nn.BatchNorm1d(512)
         )
@@ -238,8 +324,9 @@ class RET(nn.Module):
         x = self.frame7(x)
         x = self.frame8(x)
 
-        x = self.frame10(x)
-        x = self.frame11(x)
+        if self.layers[3] != 0:
+            x = self.frame10(x)
+            x = self.frame11(x)
 
         x = self.frame13(x)
         x = self.frame14(x)

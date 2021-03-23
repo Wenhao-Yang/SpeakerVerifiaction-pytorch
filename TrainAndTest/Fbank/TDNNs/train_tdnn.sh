@@ -465,10 +465,11 @@ if [ $stage -le 90 ]; then
   loss=arcsoft
   encod=STAP
   embedding_size=512
-  input_norm=None
-  batch_size=64
+  input_norm=Mean
+  batch_size=128
+  resnet_size=14
 
-  for block_type in Basic ; do
+  for block_type in cbam ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -480,10 +481,11 @@ if [ $stage -le 90 ]; then
       --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
-      --epochs 60 \
+      --epochs 1 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
+      --resnet-size ${resnet_size} \
       --block-type ${block_type} \
       --scheduler rop \
       --weight-decay 0.00001 \
@@ -494,10 +496,11 @@ if [ $stage -le 90 ]; then
       --batch-size ${batch_size} \
       --accu-steps 1 \
       --input-dim 161 \
-      --channels 512,512,512,512,512,1500 \
+      --channels 512,512,512,512,512,1536 \
+      --context 5,5,5 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_21.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_21.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -506,7 +509,7 @@ if [ $stage -le 90 ]; then
       --loss-type ${loss} \
       --margin 0.25 \
       --s 30 \
-      --all-iteraion 500 \
+      --all-iteraion 100 \
       --log-interval 10
   done
 fi
