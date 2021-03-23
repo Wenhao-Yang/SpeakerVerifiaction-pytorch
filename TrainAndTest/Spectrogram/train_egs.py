@@ -469,11 +469,11 @@ def main():
     milestones = [int(x) for x in milestones]
     milestones.sort()
     if args.scheduler == 'exp':
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma, verbose=True)
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
     elif args.scheduler == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5, verbose=True)
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
     else:
-        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1, verbose=True)
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
     ce = [ce_criterion, xe_criterion]
 
