@@ -509,7 +509,7 @@ if [ $stage -le 90 ]; then
       --loss-type ${loss} \
       --margin 0.25 \
       --s 30 \
-      --all-iteraion 100 \
+      --all-iteraion 0 \
       --log-interval 10
   done
 
