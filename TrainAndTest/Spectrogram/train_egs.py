@@ -543,7 +543,7 @@ def main():
 
             valid_test(train_extract_loader, model, epoch, xvector_dir)
             test(model, epoch, writer, xvector_dir)
-
+        break
         if args.scheduler == 'rop':
             scheduler.step(valid_loss)
         else:
