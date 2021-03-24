@@ -108,7 +108,7 @@ class TDNNCBAMBlock(nn.Module):
         self.tdnn2 = TimeDelayLayer_v5(input_dim=inter_connect, output_dim=planes, context_size=3,
                                        stride=1, dilation=dilation, padding=1)
 
-        self.CBAM_layer = TDCBAM(planes, planes)
+        self.CBAM_layer = TDCBAM(planes, planes, pooling='both')
         # self.downsample = downsample
 
     def forward(self, x):
