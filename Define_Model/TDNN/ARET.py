@@ -56,7 +56,7 @@ class TDCBAM(nn.Module):
 
         self.cov_t = nn.Conv2d(1, 1, kernel_size=(7, 1), stride=1, padding=(3, 0))
         self.avg_t = nn.AdaptiveAvgPool2d((None, 1))
-        self.max_t = nn.AdaptiveMaxPool2d(None, 1)
+        self.max_t = nn.AdaptiveMaxPool2d((None, 1))
 
         self.cov_f = nn.Conv2d(1, 1, kernel_size=(1, 7), stride=1, padding=(0, 3))
         self.avg_f = nn.AdaptiveAvgPool2d((1, None))

@@ -469,7 +469,7 @@ if [ $stage -le 90 ]; then
   batch_size=128
   resnet_size=14
 
-  for block_type in cbam ; do
+  for block_type in cbam; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
