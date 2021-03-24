@@ -481,7 +481,7 @@ if [ $stage -le 90 ]; then
       --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 49 \
       --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
@@ -500,7 +500,7 @@ if [ $stage -le 90 ]; then
       --context 5,5,5 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_21.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_1.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
