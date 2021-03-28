@@ -1176,12 +1176,12 @@ if [ $stage -le 81 ]; then
       --milestones 8,14,20 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim} \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}/checkpoint_10.pth \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --filter ${filter} \
       --input-dim 161 \
       --exp \
       --block-type ${block_type} \
-      --stride 2 \
+      --stride 1 \
       --feat-dim ${feat_dim} \
       --batch-size 128 \
       --embedding-size 512 \
