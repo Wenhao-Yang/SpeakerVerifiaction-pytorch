@@ -256,7 +256,7 @@ class SimpleResNet(nn.Module):
 class ThinResNet(nn.Module):
 
     def __init__(self, resnet_size=34, block_type='None', channels=[16, 32, 64, 128],
-                 inst_norm=True, kernel_size=5, stride=1, padding=2,
+                 inst_norm=True, kernel_size=5, stride=1, padding=2, exp=False,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  input_dim=257, sr=16000, filter=None, replace_stride_with_dilation=None, norm_layer=None,
@@ -301,7 +301,7 @@ class ThinResNet(nn.Module):
         self.base_width = width_per_group
 
         if self.filter == 'fDLR':
-            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
+            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp)
         elif self.filter == 'Avg':
             self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
         else:

@@ -68,6 +68,7 @@ parser.add_argument('--train-test-dir', type=str, required=True, help='path to d
 parser.add_argument('--valid-dir', type=str, required=True, help='path to dataset')
 parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
 parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
+parser.add_argument('--exp', action='store_true', default=False, help='exp power spectogram')
 
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
@@ -160,7 +161,7 @@ parser.add_argument('--test-input-per-file', type=int, default=4, metavar='IPFT'
                     help='input sample per file for testing (default: 8)')
 parser.add_argument('--test-batch-size', type=int, default=4, metavar='BST',
                     help='input batch size for testing (default: 64)')
-parser.add_argument('--dropout-p', type=float, default=0.25, metavar='BST',
+parser.add_argument('--dropout-p', type=float, default=0.0, metavar='BST',
                     help='input batch size for testing (default: 64)')
 
 # loss configure
@@ -256,7 +257,7 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
-        ConcateOrgInput(remove_vad=args.remove_vad),
+        totensor()
     ])
 else:
     transform = transforms.Compose([
@@ -341,7 +342,7 @@ def main():
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context,
                     'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
-                    'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
+                    'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
@@ -432,7 +433,7 @@ def main():
     if args.filter == 'fDLR':
         filter_params = list(map(id, model.filter_layer.parameters()))
         rest_params = filter(lambda p: id(p) not in filter_params, model.parameters())
-        optimizer = torch.optim.SGD([{'params': model.filter_layer.parameters(), 'lr': args.lr * 0.05},
+        optimizer = torch.optim.SGD([{'params': model.filter_layer.parameters(), 'lr': args.lr * 0.001},
                                      {'params': rest_params}],
                                     lr=args.lr, weight_decay=args.weight_decay,
                                     momentum=args.momentum)

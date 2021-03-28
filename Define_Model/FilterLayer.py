@@ -17,11 +17,12 @@ from torch import nn
 
 
 class fDLR(nn.Module):
-    def __init__(self, input_dim, sr, num_filter):
+    def __init__(self, input_dim, sr, num_filter, exp=False):
         super(fDLR, self).__init__()
         self.input_dim = input_dim
         self.num_filter = num_filter
         self.sr = sr
+        self.exp = exp
 
         input_freq = np.linspace(0, self.sr / 2, input_dim)
         self.input_freq = nn.Parameter(torch.from_numpy(input_freq).expand(num_filter, input_dim).float(),
@@ -38,17 +39,24 @@ class fDLR(nn.Module):
         self.gain = nn.Parameter(torch.ones(num_filter, dtype=torch.float32).reshape(num_filter, 1))
 
     def forward(self, input):
+        if self.exp:
+            input = torch.exp(input)
+
         # frequency_center = self.frequency_center.sort(dim=0).values
         new_centers = self.frequency_center.expand(self.num_filter, self.input_dim)
         # if input.is_cuda:
         #     new_centers = new_centers.cuda()
         # pdb.set_trace()
-        power = -1. * torch.pow(self.input_freq - new_centers, 2)
-        power = torch.div(power, 0.5 * self.bandwidth.pow(2))
+        # power = -1. * torch.pow(self.input_freq - new_centers, 2)
+        # power = torch.div(power, 0.5 * self.bandwidth.pow(2))
+        dist_center = torch.abs(self.input_freq - new_centers) / self.bandwidth
+        dist_center = dist_center.clamp_max(1)
+        weights = 1.0 - dist_center
 
-        weights = torch.exp(power)
-        weights = weights / weights.max(dim=1, keepdim=True).values
-        weights = weights.mul(self.gain).transpose(0, 1)
+        # weights = torch.exp(power)
+        # weights = weights / weights.max(dim=1, keepdim=True).values
+        # weights = weights.mul(self.gain).transpose(0, 1)
+        weights = weights.transpose(0, 1)
 
         return torch.log(torch.matmul(input, weights))
 

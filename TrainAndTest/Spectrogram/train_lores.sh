@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=81
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -1152,6 +1152,8 @@ if [ $stage -le 81 ]; then
   encoder_type=STAP
   alpha=13
   block_type=None
+  filter=fDLR
+  feat_dim=24
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
@@ -1172,11 +1174,14 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}/checkpoint_10.pth \
       --channels 32,64,128,256 \
+      --filter ${filter} \
+      --exp \
       --block-type ${block_type} \
       --stride 2 \
+      --feat-dim ${feat_dim} \
       --batch-size 128 \
       --embedding-size 512 \
       --time-dim 1 \
