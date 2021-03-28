@@ -1178,6 +1178,7 @@ if [ $stage -le 81 ]; then
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}/checkpoint_10.pth \
       --channels 32,64,128,256 \
       --filter ${filter} \
+      --input-dim 161 \
       --exp \
       --block-type ${block_type} \
       --stride 2 \
