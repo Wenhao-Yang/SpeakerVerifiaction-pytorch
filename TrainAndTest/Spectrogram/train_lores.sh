@@ -1201,6 +1201,7 @@ if [ $stage -le 81 ]; then
       --cos-sim \
       --loss-type ${loss}
   done
+  exit
 fi
 
 if [ $stage -le 100 ]; then
