@@ -1150,7 +1150,7 @@ if [ $stage -le 81 ]; then
   model=ThinResNet
   resnet_size=34
   encoder_type=STAP
-  alpha=13
+  alpha=0
   block_type=None
   filter=fDLR
   feat_dim=24
