@@ -1174,10 +1174,11 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}_32 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}_32/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}fix_32 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}fix_32/checkpoint_10.pth \
       --channels 32,64,128,256 \
       --filter ${filter} \
+      --filter-fix \
       --input-dim 161 \
       --exp \
       --block-type ${block_type} \

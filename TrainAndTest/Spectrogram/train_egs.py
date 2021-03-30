@@ -118,6 +118,8 @@ parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--filter-fix', action='store_false', default=True, help='replace batchnorm with instance norm')
+
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
 
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
@@ -340,7 +342,7 @@ def main():
     channels = [int(x) for x in channels]
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'context': context,
+                    'context': context, 'filter_fix': args.filter_fix,
                     'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
                     'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
@@ -416,27 +418,21 @@ def main():
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0
 
-    optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
+    model_para = model.parameters()
     if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
-        optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
-                                     {'params': model.parameters()}],
-                                    lr=args.lr, weight_decay=args.weight_decay,
-                                    momentum=args.momentum)
+        model_para = [{'params': xe_criterion.parameters(), 'lr': args.lr * 5}, {'params': model.parameters()}]
     if args.finetune:
         if args.loss_type == 'asoft' or args.loss_type == 'amsoft':
             classifier_params = list(map(id, model.classifier.parameters()))
             rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
-            optimizer = torch.optim.SGD([{'params': model.classifier.parameters(), 'lr': args.lr * 10},
-                                         {'params': rest_params}],
-                                        lr=args.lr, weight_decay=args.weight_decay,
-                                        momentum=args.momentum)
+            model_para = [{'params': model.classifier.parameters(), 'lr': args.lr * 10}, {'params': rest_params}]
+
     if args.filter == 'fDLR':
         filter_params = list(map(id, model.filter_layer.parameters()))
         rest_params = filter(lambda p: id(p) not in filter_params, model.parameters())
-        optimizer = torch.optim.SGD([{'params': model.filter_layer.parameters(), 'lr': args.lr * 0.001},
-                                     {'params': rest_params}],
-                                    lr=args.lr, weight_decay=args.weight_decay,
-                                    momentum=args.momentum)
+        model_para = [{'params': model.filter_layer.parameters(), 'lr': args.lr * 0.001}, {'params': rest_params}]
+
+    optimizer = create_optimizer(model_para, args.optimizer, **opt_kwargs)
 
     if not args.finetune and args.resume:
         if os.path.isfile(args.resume):

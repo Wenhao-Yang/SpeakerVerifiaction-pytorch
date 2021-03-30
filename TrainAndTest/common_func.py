@@ -19,6 +19,7 @@ import torch.optim as optim
 from tqdm import tqdm
 
 from Define_Model.CNN import AlexNet
+from Define_Model.Optimizer import SAMSGD
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
 from Define_Model.TDNN.ARET import RET
@@ -46,14 +47,20 @@ def create_optimizer(parameters, optimizer, **kwargs):
 
     elif optimizer == 'adagrad':
         opt = optim.Adagrad(parameters,
-                                  lr=kwargs['lr'],
-                                  lr_decay=kwargs['lr_decay'],
-                                  weight_decay=kwargs['weight_decay'])
+                            lr=kwargs['lr'],
+                            lr_decay=kwargs['lr_decay'],
+                            weight_decay=kwargs['weight_decay'])
     elif optimizer == 'RMSprop':
         opt = optim.RMSprop(parameters,
                             lr=kwargs['lr'],
                             momentum=kwargs['momentum'],
                             weight_decay=kwargs['weight_decay'])
+    elif optimizer == 'samsgd':
+        opt = SAMSGD(parameters,
+                     lr=kwargs['lr'],
+                     momentum=kwargs['momentum'],
+                     dampening=kwargs['dampening'],
+                     weight_decay=kwargs['weight_decay'])
 
     return opt
 
