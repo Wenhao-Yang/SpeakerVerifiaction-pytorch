@@ -32,7 +32,7 @@ from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 def create_optimizer(parameters, optimizer, **kwargs):
     # setup optimizer
-    parameters = filter(lambda p: p.requires_grad, parameters)
+    # parameters = filter(lambda p: p.requires_grad, parameters)
     if optimizer == 'sgd':
         opt = optim.SGD(parameters,
                         lr=kwargs['lr'],
