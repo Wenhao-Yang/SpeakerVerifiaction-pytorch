@@ -118,7 +118,7 @@ parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
-parser.add_argument('--filter-fix', action='store_false', default=True, help='replace batchnorm with instance norm')
+parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
 
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
 
