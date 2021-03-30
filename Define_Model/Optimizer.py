@@ -41,7 +41,7 @@ class SAMSGD(SGD):
                  rho: float = 0.05,
                  ):
         if rho <= 0:
-            raise ValueError(f"Invalid neighborhood size: ${rho}")
+            raise ValueError("Invalid neighborhood size: %f" % rho)
         super().__init__(params, lr, momentum, dampening, weight_decay, nesterov)
         # todo: generalize this
         if len(self.param_groups) > 1:
