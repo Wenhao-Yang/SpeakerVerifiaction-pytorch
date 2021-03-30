@@ -12,7 +12,7 @@
 from typing import Iterable
 
 import torch
-from torch.optim._multi_tensor import SGD
+from torch.optim import SGD
 
 __all__ = ["SAMSGD"]
 
