@@ -301,7 +301,7 @@ class ThinResNet(nn.Module):
         self.base_width = width_per_group
 
         if self.filter == 'fDLR':
-            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, Train=filter_train)
+            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
         elif self.filter == 'Avg':
             self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
         else:
