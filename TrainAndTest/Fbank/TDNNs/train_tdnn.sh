@@ -500,7 +500,7 @@ if [ $stage -le 90 ]; then
       --context 5,5,5 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_1.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}/checkpoint_37.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
