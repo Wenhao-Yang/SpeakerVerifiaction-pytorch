@@ -546,12 +546,11 @@ def main():
         else:
             scheduler.step()
 
-        # exit(1)
-
     writer.close()
     stop_time = time.time()
     t = float(stop_time - start_time)
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
+    exit(0)
 
 
 def train(train_loader, model, ce, optimizer, epoch):

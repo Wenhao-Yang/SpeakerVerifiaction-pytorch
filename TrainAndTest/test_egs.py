@@ -535,12 +535,17 @@ if __name__ == '__main__':
             for k, v in filtered.items():
                 name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
                 new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+            filtered = new_state_dict
 
-            model.load_state_dict(new_state_dict)
-        else:
-            model_dict = model.state_dict()
-            model_dict.update(filtered)
-            model.load_state_dict(model_dict)
+        if 'fc1.1.weight' in filtered:
+            model.fc1 = nn.Sequential(
+                nn.Linear(model.encoder_output, model.embedding_size),
+                nn.BatchNorm1d(model.embedding_size)
+            )
+
+        model_dict = model.state_dict()
+        model_dict.update(filtered)
+        model.load_state_dict(model_dict)
         # model.dropout.p = args.dropout_p
         #
         try:
