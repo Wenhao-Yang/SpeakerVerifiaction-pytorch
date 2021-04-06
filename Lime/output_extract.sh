@@ -254,6 +254,7 @@ fi
 
 if [ $stage -le 21 ]; then
   model=LoResNet
+  dataset=timit
   train_set=timit
   test_set=timit
   feat_type=spect
