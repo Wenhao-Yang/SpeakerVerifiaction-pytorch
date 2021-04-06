@@ -256,6 +256,7 @@ if [ $stage -le 21 ]; then
   model=LoResNet
   train_set=timit
   test_set=timit
+  feat_type=spect
   feat=log
   loss=soft
   resnet_size=8
@@ -271,7 +272,6 @@ if [ $stage -le 21 ]; then
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/train_${feat} \
     --train-set-name timit \
     --test-set-name timit \
-    --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/valid_${feat} \
     --test-dir ${lstm_dir}/data/${dataset}/${feat_type}/test_${feat} \
     --input-norm None \
     --kernel-size ${kernel} \
