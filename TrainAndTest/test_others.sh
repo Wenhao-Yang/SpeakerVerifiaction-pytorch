@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=91
+stage=26
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -312,6 +312,50 @@ if [ $stage -le 25 ]; then
       --num-valid 2 \
       --gpu-id 1
   done
+fi
+
+if [ $stage -le 26 ]; then
+  feat_type=spect
+  feat=log
+  loss=soft
+  encod=None
+  dataset=timit
+  block_type=None
+
+  for loss in soft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model LoResNet \
+      --resnet-size 8 \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/train_${feat} \
+      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/train_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${dataset}/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm None \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size 128 \
+      --loss-type ${loss} \
+      --encoder-type None \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2 \
+      --channels 4,16,64 \
+      --alpha 10.8 \
+      --margin 0.3 \
+      --s 30 \
+      --m 3 \
+      --input-length var \
+      --frame-shift 300 \
+      --dropout-p 0.5 \
+      --xvector-dir Data/xvector/LoResNet8/timit/spect_egs_log/soft_dp05/epoch_12_var \
+      --resume Data/checkpoint/LoResNet8/timit/spect_egs_log/soft_dp05/checkpoint_12.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
 fi
 
 #stage=100
