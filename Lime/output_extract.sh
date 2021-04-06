@@ -287,9 +287,9 @@ if [ $stage -le 21 ]; then
     --loss-type ${loss} \
     --dropout-p 0.5 \
     --check-path Data/checkpoint/LoResNet8/timit/spect_egs_log/soft_dp05 \
-    --extract-path Data/gradient/LoResNet8/timit/spect_egs_log/soft_dp05/epoch_12_var \
+    --extract-path Data/gradient/LoResNet8/timit/spect_egs_log/soft_dp05/epoch_12_var_50 \
     --gpu-id 1 \
-    --sample-utt 5000
+    --sample-utt 50
   exit
 fi
 
