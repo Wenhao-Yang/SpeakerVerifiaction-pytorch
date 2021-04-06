@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=90
+stage=91
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
@@ -615,6 +615,51 @@ if [ $stage -le 90 ]; then
       --dropout-p 0.5 \
       --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40_var_aidata \
       --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_40.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
+fi
+
+if [ $stage -le 91 ]; then
+  feat_type=spect
+  model=LoResNet
+  feat=log
+  loss=soft
+  encod=None
+  dataset=vox1
+  block_type=basic
+  embedding_size=128
+
+  for loss in soft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size 8 \
+      --train-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/timit/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encod} \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2,2 \
+      --channels 64,128,256 \
+      --alpha 0 \
+      --margin 0.3 \
+      --s 30 \
+      --m 3 \
+      --input-length var \
+      --dropout-p 0.25 \
+      --xvector-dir Data/xvector/LoResNet8/vox1/spect_egs_None/soft_dp25/epoch_20_var_timit \
+      --resume Data/checkpoint/LoResNet8/vox1/spect_egs_None/soft_dp25/checkpoint_20.pth \
       --gpu-id 0 \
       --cos-sim
   done
