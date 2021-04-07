@@ -47,7 +47,7 @@ class fDLR(nn.Module):
             input = torch.exp(input)
 
         # frequency_center = self.frequency_center.sort(dim=0).values
-        new_centers = self.frequency_center.expand(self.num_filter, self.input_dim)
+        new_centers = self.frequency_center.expand(self.num_filter, self.input_dim).clamp_min(0).clamp_max(self.sr / 2)
         # if input.is_cuda:
         #     new_centers = new_centers.cuda()
         # pdb.set_trace()
