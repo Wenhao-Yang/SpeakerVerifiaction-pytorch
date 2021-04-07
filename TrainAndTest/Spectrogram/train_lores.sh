@@ -1179,6 +1179,55 @@ if [ $stage -le 81 ]; then
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --filter ${filter} \
+      --input-dim 161 \
+      --exp \
+      --block-type ${block_type} \
+      --stride 1 \
+      --feat-dim ${feat_dim} \
+      --batch-size 128 \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --grad-clip 0 \
+      --s 30 \
+      --loss-ratio 0.01 \
+      --weight-decay 0.0001 \
+      --dropout-p 0 \
+      --gpu-id 0,1 \
+      --all-iteraion 0 \
+      --extract \
+      --cos-sim \
+      --loss-type ${loss}
+  done
+
+  for loss in arcsoft; do
+    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
+    python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
+      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+      --feat-format kaldi \
+      --fix-length \
+      --input-norm None \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 40 \
+      --scheduler rop \
+      --patience 2 \
+      --accu-steps 1 \
+      --lr 0.1 \
+      --milestones 8,14,20 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}_fix \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}_fix/checkpoint_10.pth \
+      --channels 16,32,64,128 \
+      --filter ${filter} \
       --filter-fix \
       --input-dim 161 \
       --exp \
