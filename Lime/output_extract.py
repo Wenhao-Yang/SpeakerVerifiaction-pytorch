@@ -304,7 +304,7 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
         cos_sim[0].backward()
 
         grad_a = data_a.grad.cpu().numpy().squeeze().astype(np.float32)
-        grad_b = data_a.grad.cpu().numpy().squeeze().astype(np.float32)
+        grad_b = data_b.grad.cpu().numpy().squeeze().astype(np.float32)
         data_a = data_a.data.cpu().numpy().squeeze().astype(np.float32)
         data_b = data_b.data.cpu().numpy().squeeze().astype(np.float32)
 
