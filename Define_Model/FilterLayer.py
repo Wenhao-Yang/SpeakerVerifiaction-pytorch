@@ -62,7 +62,7 @@ class fDLR(nn.Module):
         # weights = weights.mul(self.gain).transpose(0, 1)
         weights = weights.transpose(0, 1)
 
-        return torch.log(torch.matmul(input, weights))
+        return torch.log(torch.matmul(input, weights).clamp_min(1e-12))
 
     def __repr__(self):
         return "fDLR(input_dim=%d, filter_fix=%f, num_filter=%d)" % (self.input_dim, self.filter_fix, self.num_filter)
