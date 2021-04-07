@@ -190,7 +190,7 @@ class AMSoftmaxLoss(nn.Module):
 
 class ArcSoftmaxLoss(nn.Module):
 
-    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=100):
+    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0):
         super(ArcSoftmaxLoss, self).__init__()
         self.s = s
         self.margin = margin
@@ -206,6 +206,7 @@ class ArcSoftmaxLoss(nn.Module):
             lb_view = lb_view.cpu()
 
         delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+
         # pdb.set_trace()
         if costh.is_cuda:
             delt_theta = Variable(delt_theta.cuda())

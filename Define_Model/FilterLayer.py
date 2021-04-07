@@ -64,6 +64,9 @@ class fDLR(nn.Module):
 
         return torch.log(torch.matmul(input, weights))
 
+    def __repr__(self):
+        return "fDLR(input_dim=%d, filter_fix=%f, num_filter=%d)" % (self.input_dim, self.filter_fix, self.num_filter)
+
 
 class grl_func(torch.autograd.Function):
     def __init__(self):
