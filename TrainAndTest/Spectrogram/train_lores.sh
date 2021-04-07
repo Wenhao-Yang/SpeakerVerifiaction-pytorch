@@ -1159,7 +1159,7 @@ if [ $stage -le 81 ]; then
   loss=arcsoft
   lr-ratio=
 
-  for lr_ratio in 5.0 1.0 0.5 0.1 0.05 0.01 0.005 0.001 ; do
+  for lr_ratio in 5.0 1.0 0.5 0.1 0.05 0.01 0.005 0.001; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
