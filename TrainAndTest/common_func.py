@@ -16,7 +16,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tqdm import tqdm
 
 from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
@@ -128,7 +127,9 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     if not os.path.exists(xvector_dir):
         os.makedirs(xvector_dir)
 
-    pbar = tqdm(extract_loader, ncols=300)
+    # pbar = tqdm(extract_loader, ncols=200)
+    pbar = extract_loader
+
     uid2vectors = {}
     with torch.no_grad():
         if test_input == 'fix':
