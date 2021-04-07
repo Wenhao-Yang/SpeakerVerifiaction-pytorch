@@ -47,13 +47,14 @@ class fDLR(nn.Module):
             input = torch.exp(input)
 
         # frequency_center = self.frequency_center.sort(dim=0).values
-        new_centers = self.frequency_center.expand(self.num_filter, self.input_dim).clamp_min(0).clamp_max(self.sr / 2)
+        new_centers = self.frequency_center.expand(self.num_filter, self.input_dim).clamp(min=0, max=self.sr / 2)
+        new_bandwidth = self.bandwidth.clamp(min=1e-12, max=self.sr / 2)
         # if input.is_cuda:
         #     new_centers = new_centers.cuda()
         # pdb.set_trace()
         # power = -1. * torch.pow(self.input_freq - new_centers, 2)
         # power = torch.div(power, 0.5 * self.bandwidth.pow(2))
-        dist_center = torch.abs(self.input_freq - new_centers) / self.bandwidth
+        dist_center = torch.abs(self.input_freq - new_centers) / new_bandwidth
         dist_center = dist_center.clamp_max(1)
         weights = 1.0 - dist_center
 
