@@ -1173,7 +1173,7 @@ if [ $stage -le 81 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 4 \
+      --epochs 5 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
