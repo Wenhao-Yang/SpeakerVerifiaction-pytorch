@@ -1146,12 +1146,13 @@ fi
 
 if [ $stage -le 81 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=vox2
+  datasets=vox1
   model=ThinResNet
   resnet_size=34
   encoder_type=STAP
   alpha=0
   block_type=None
+  embedding_size=128
   filter=fDLR
   feat_dim=24
   for loss in arcsoft; do
@@ -1168,15 +1169,15 @@ if [ $stage -le 81 ]; then
       --input-norm None \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 40 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}fix_32 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${encoder_type}_alpha${alpha}_${filter}${feat_dim}fix_32/checkpoint_10.pth \
-      --channels 32,64,128,256 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}/checkpoint_10.pth \
+      --channels 16,32,64,128 \
       --filter ${filter} \
       --filter-fix \
       --input-dim 161 \
@@ -1185,19 +1186,20 @@ if [ $stage -le 81 ]; then
       --stride 1 \
       --feat-dim ${feat_dim} \
       --batch-size 128 \
-      --embedding-size 512 \
+      --embedding-size ${embedding_size} \
       --time-dim 1 \
       --avg-size 4 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.25 \
+      --margin 0.2 \
       --grad-clip 0 \
       --s 30 \
       --loss-ratio 0.01 \
       --weight-decay 0.0001 \
       --dropout-p 0 \
       --gpu-id 0,1 \
+      --all-iteraion 0 \
       --extract \
       --cos-sim \
       --loss-type ${loss}
