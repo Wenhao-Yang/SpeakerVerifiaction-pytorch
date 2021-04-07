@@ -1155,7 +1155,11 @@ if [ $stage -le 81 ]; then
   embedding_size=128
   filter=fDLR
   feat_dim=24
-  for loss in arcsoft; do
+  input_norm=mean
+  loss=arcsoft
+  lr-ratio=
+
+  for lr_ratio in 5.0 1.0 0.5 0.1 0.05 0.01 0.005 0.001 ; do
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
@@ -1166,17 +1170,17 @@ if [ $stage -le 81 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
       --fix-length \
-      --input-norm None \
+      --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 40 \
+      --epochs 4 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}/${filter}${feat_dim}_lr${lr_ratio} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}/${filter}${feat_dim}_lr${lr_ratio}/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --filter ${filter} \
       --input-dim 161 \
@@ -1191,10 +1195,10 @@ if [ $stage -le 81 ]; then
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 \
+      --margin 0.25 \
       --grad-clip 0 \
       --s 30 \
-      --loss-ratio 0.01 \
+      --lr-ratio ${lr_ratio} \
       --weight-decay 0.0001 \
       --dropout-p 0 \
       --gpu-id 0,1 \
@@ -1215,7 +1219,7 @@ if [ $stage -le 81 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
       --fix-length \
-      --input-norm None \
+      --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 40 \
@@ -1224,8 +1228,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}_fix \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}_fix/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}_fix \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_${filter}${feat_dim}_fix/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --filter ${filter} \
       --filter-fix \
@@ -1244,7 +1248,7 @@ if [ $stage -le 81 ]; then
       --margin 0.2 \
       --grad-clip 0 \
       --s 30 \
-      --loss-ratio 0.01 \
+      --lr-ratio 0.001 \
       --weight-decay 0.0001 \
       --dropout-p 0 \
       --gpu-id 0,1 \

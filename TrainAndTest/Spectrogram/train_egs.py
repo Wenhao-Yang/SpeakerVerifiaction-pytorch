@@ -174,6 +174,8 @@ parser.add_argument('--source-cls', type=int, default=1951,
                     help='the num of source classes')
 parser.add_argument('--finetune', action='store_true', default=False,
                     help='using Cosine similarity')
+parser.add_argument('--lr-ratio', type=float, default=0.0, metavar='LOSSRATIO',
+                    help='the ratio softmax loss - triplet loss (default: 2.0')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
 
@@ -420,17 +422,23 @@ def main():
 
     model_para = model.parameters()
     if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
-        model_para = [{'params': xe_criterion.parameters(), 'lr': args.lr * 5}, {'params': model.parameters()}]
+        assert args.lr_ratio > 0
+        model_para = [{'params': xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio},
+                      {'params': model.parameters()}]
     if args.finetune:
         if args.loss_type == 'asoft' or args.loss_type == 'amsoft':
             classifier_params = list(map(id, model.classifier.parameters()))
             rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
-            model_para = [{'params': model.classifier.parameters(), 'lr': args.lr * 10}, {'params': rest_params}]
+            assert args.lr_ratio > 0
+            model_para = [{'params': model.classifier.parameters(), 'lr': args.lr * args.lr_ratio},
+                          {'params': rest_params}]
 
     if args.filter == 'fDLR':
         filter_params = list(map(id, model.filter_layer.parameters()))
         rest_params = filter(lambda p: id(p) not in filter_params, model.parameters())
-        model_para = [{'params': model.filter_layer.parameters(), 'lr': args.lr * 0.001}, {'params': rest_params}]
+        assert args.lr_ratio > 0
+        model_para = [{'params': model.filter_layer.parameters(), 'lr': args.lr * args.lr_ratio},
+                      {'params': rest_params}]
 
     optimizer = create_optimizer(model_para, args.optimizer, **opt_kwargs)
 
