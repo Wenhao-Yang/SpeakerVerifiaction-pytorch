@@ -82,7 +82,7 @@ parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--shuffle', action='store_fasle', default=True, help='need to make mfb file')
+parser.add_argument('--shuffle', action='store_false', default=True, help='need to make mfb file')
 
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
