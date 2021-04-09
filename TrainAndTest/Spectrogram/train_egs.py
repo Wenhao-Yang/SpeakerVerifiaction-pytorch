@@ -82,6 +82,7 @@ parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
+parser.add_argument('--shuffle', action='store_fasle', default=True, help='need to make mfb file')
 
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
@@ -493,7 +494,7 @@ def main():
     # start = 0
     end = start + args.epochs
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=args.shuffle, **kwargs)
 
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
