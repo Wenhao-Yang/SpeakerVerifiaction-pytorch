@@ -369,7 +369,7 @@ def train(train_loader, model, back_guide, ce, optimizer, epoch):
         else:
             new_data = model.gain(data, feature, gradient)
 
-        _, classfier, feats = model(new_data)
+        classfier, feats = model(new_data)
         classfier_label = classfier
 
         assert args.loss_ratio > 0
