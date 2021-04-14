@@ -63,7 +63,7 @@ if [ $stage -le 62 ]; then
       --loss-ratio 0.1 \
       --weight-decay 0.0001 \
       --dropout-p ${dropout_p} \
-      --gpu-id 2 \
+      --gpu-id 0,1 \
       --cos-sim \
       --extract \
       --all-iteraion 0 \
