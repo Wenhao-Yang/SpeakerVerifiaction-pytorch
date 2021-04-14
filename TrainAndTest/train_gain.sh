@@ -22,7 +22,8 @@ if [ $stage -le 62 ]; then
   avgsize=4
   alpha=0
   embedding_size=128
-  feat_dim=24
+  #  feat_dim=24
+  #  --feat-dim ${feat_dim} \
 
   for block_type in None; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
@@ -43,7 +44,6 @@ if [ $stage -le 62 ]; then
       --epochs 50 \
       --lr 0.1 \
       --input-dim 161 \
-      --feat-dim ${feat_dim} \
       --scheduler rop \
       --milestones 10,20,25 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_mean/${loss}/gain_sig_f/0.1_clamp_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wde4 \
