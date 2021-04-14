@@ -617,7 +617,7 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
 
-    back_guide = Back_GradCAM(model, 'layer4')
+
 
     # Define Loss
     ce_criterion = nn.CrossEntropyLoss()
@@ -759,6 +759,7 @@ def main():
         except:
             pass
 
+    back_guide = Back_GradCAM(model, 'layer4')
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
 
