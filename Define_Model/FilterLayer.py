@@ -335,7 +335,7 @@ class Back_GradCAM(object):
         :param output_grad:tuple,长度为1
         :return:
         """
-        print(type(self.net))
+        # print(type(self.net))
 
         if isinstance(self.net, DistributedDataParallel):
             if input_grad[0].device not in self.gradient:
