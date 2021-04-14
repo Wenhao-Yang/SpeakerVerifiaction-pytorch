@@ -328,13 +328,15 @@ class Back_GradCAM(object):
         :param output_grad:tuple,长度为1
         :return:
         """
+        print(type(self.net))
+
         if isinstance(self.net, DistributedDataParallel):
             if input_grad[0].device not in self.gradient:
                 self.gradient[input_grad[0].device] = output_grad[0]
             else:
                 self.gradient[input_grad[0].device] += output_grad[0]
         else:
-            self.gradient += output_grad[0]
+            self.gradient = output_grad[0]
 
     #         print(output_grad[0])
     #         print("Device {}, backward out gradient shape:{}".format(input_grad[0].device, output_grad[0].size()))
