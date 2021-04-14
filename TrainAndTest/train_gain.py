@@ -361,7 +361,7 @@ def train(train_loader, model, back_guide, ce, optimizer, epoch):
         # compute gradient and update weights
         loss.backward(retain_graph=True)
         feature, gradient = back_guide()
-        # pdb.set_trace()
+        pdb.set_trace()
 
         if len(args.gpu_id) > 1:
             new_data = model.module.gain(data, feature, gradient)
