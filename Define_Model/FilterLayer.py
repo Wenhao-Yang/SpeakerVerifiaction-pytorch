@@ -365,8 +365,8 @@ class Back_GradCAM(object):
                 feature.append(self.feature[d])
                 gradient.append(self.gradient[d])
 
-            feature = torch.cat(feature, dim=0)
-            gradient = torch.cat(gradient, dim=0)
+            feature = torch.cat(feature, dim=0).cuda()
+            gradient = torch.cat(gradient, dim=0).cuda()
         else:
             feature = self.feature
             gradient = self.gradient
