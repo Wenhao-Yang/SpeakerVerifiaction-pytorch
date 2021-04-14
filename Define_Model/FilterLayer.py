@@ -9,7 +9,6 @@
 @Time: 2020/8/19 20:30
 @Overview:
 """
-import pdb
 
 import numpy as np
 import torch
@@ -296,7 +295,7 @@ class GAIN(nn.Module):
         scale = self.scale.cuda()
         theta = self.theta.cuda()
 
-        pdb.set_trace()
+        # pdb.set_trace()
         T = scale * (T - theta)
         T = T.clamp(0, 1.0)
         # T = self.sigmoid(T)

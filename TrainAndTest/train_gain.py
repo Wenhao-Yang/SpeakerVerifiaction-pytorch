@@ -745,8 +745,8 @@ def main():
             torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32546', rank=0,
                                                  world_size=1)
             model = model.cuda()
-            # model = DistributedDataParallel(model, find_unused_parameters=True)
-            model = DistributedDataParallel(model)
+            model = DistributedDataParallel(model, find_unused_parameters=True)
+            # model = DistributedDataParallel(model)
 
         else:
             model = model.cuda()
