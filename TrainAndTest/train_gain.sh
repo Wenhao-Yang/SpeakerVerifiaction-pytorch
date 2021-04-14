@@ -40,7 +40,7 @@ if [ $stage -le 62 ]; then
       --test-input fix \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
-      --nj 10 \
+      --nj 6 \
       --epochs 50 \
       --lr 0.1 \
       --input-dim 161 \
