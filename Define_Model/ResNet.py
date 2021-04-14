@@ -256,11 +256,12 @@ class SimpleResNet(nn.Module):
 class ThinResNet(nn.Module):
 
     def __init__(self, resnet_size=34, block_type='None', channels=[16, 32, 64, 128],
-                 inst_norm=True, kernel_size=5, stride=1, padding=2, exp=False, filter_fix=False,
-                 feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=2, avg_size=4,
+                 input_len=300, inst_norm=True, input_dim=257, sr=16000,
+                 kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
+                 feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
-                 input_dim=257, sr=16000, filter=None, replace_stride_with_dilation=None, norm_layer=None,
-                 input_norm='', **kwargs):
+                 filter=None, replace_stride_with_dilation=None, norm_layer=None,
+                 input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
@@ -272,10 +273,14 @@ class ThinResNet(nn.Module):
         layers = resnet_type[resnet_size]
         freq_dim = avg_size  # default 1
         time_dim = time_dim  # default 4
+        self.input_len = input_len
+        self.input_dim = input_dim
         self.inst_norm = inst_norm
         self.filter = filter
         self._norm_layer = nn.BatchNorm2d
         self.embedding_size = embedding_size
+        self.dropout_p = dropout_p
+        self.gain_layer = gain_layer
 
         self.dilation = 1
         self.fast = fast
@@ -332,6 +337,9 @@ class ThinResNet(nn.Module):
         else:
             self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=2)
 
+        self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
+        self.dropout = nn.Dropout(self.dropout_p)
+
         # [64, 128, 37, 8]
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
         # 300 is the length of features
@@ -371,10 +379,10 @@ class ThinResNet(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                nn.init.normal(m.weight, mean=0., std=1.)
+                nn.init.normal_(m.weight, mean=0., std=1.)
             elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant(m.weight, 1)
-                nn.init.constant(m.bias, 0)
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
         # Zero-initialize the last BN in each residual branch, so that the residual branch
         # starts with zeros, and each residual block behaves like an identity.
@@ -382,9 +390,9 @@ class ThinResNet(nn.Module):
         if zero_init_residual:
             for m in self.modules():
                 if isinstance(m, Bottleneck):
-                    nn.init.constant(m.bn3.weight, 0)
+                    nn.init.constant_(m.bn3.weight, 0)
                 elif isinstance(m, BasicBlock):
-                    nn.init.constant(m.bn2.weight, 0)
+                    nn.init.constant_(m.bn2.weight, 0)
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None

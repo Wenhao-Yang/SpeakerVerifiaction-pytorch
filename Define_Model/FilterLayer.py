@@ -14,6 +14,7 @@ import numpy as np
 import torch
 from python_speech_features import hz2mel, mel2hz
 from torch import nn
+from torch.nn.parallel import DistributedDataParallel
 
 
 class fDLR(nn.Module):
@@ -273,22 +274,131 @@ class SqueezeExcitation(nn.Module):
 
 
 class GAIN(nn.Module):
-    def __init__(self, time, freq, scale=1., theta=1.):
+    def __init__(self, time, freq, scale=2., theta=1.):
         super(GAIN, self).__init__()
-        self.scale = scale
-        self.theta = theta
+        self.scale = nn.Parameter(torch.tensor(scale))
+        self.theta = nn.Parameter(torch.tensor(theta))
 
         self.relu = nn.ReLU(inplace=True)
         self.upsample = nn.UpsamplingBilinear2d(size=(time, freq))
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x, grad):
-        weight = grad.mean(dim=(2, 3), keepdim=True)
+    def forward(self, x, f, f_grad):
+        weight = f_grad.mean(dim=(2, 3), keepdim=True)
 
-        T = (x * weight).sum(dim=1, keepdim=True)
+        T = (f * weight).sum(dim=1, keepdim=True)
         T = self.relu(T)
         T = self.upsample(T)
         T = self.scale * (T - self.theta)
-        T = self.sigmoid(T)
+        T = T.clamp(0, 1.0)
+        # T = self.sigmoid(T)
 
         return x - T * x
+
+
+class Back_GradCAM(object):
+    """
+    1: 网络不更新梯度,输入需要梯度更新
+    2: 使用目标类别的得分做反向传播
+    """
+
+    def __init__(self, net, layer_name):
+        super(Back_GradCAM, self).__init__()
+        self.net = net
+        self.layer_name = layer_name
+        self.feature = {}
+        self.gradient = {}
+        self.net.eval()
+        self.handlers = []
+        self._register_hook()
+
+    def _get_features_hook(self, module, input, output):
+        if isinstance(self.net, DistributedDataParallel):
+            self.feature[input[0].device] = output[0]
+        else:
+            self.feature = output[0]
+
+    #         print("Device {}, forward out feature shape:{}".format(input[0].device, output[0].size()))
+
+    def _get_grads_hook(self, module, input_grad, output_grad):
+        """
+        :param input_grad: tuple, input_grad[0]: None
+                                   input_grad[1]: weight
+                                   input_grad[2]: bias
+        :param output_grad:tuple,长度为1
+        :return:
+        """
+        if isinstance(self.net, DistributedDataParallel):
+            if input_grad[0].device not in self.gradient:
+                self.gradient[input_grad[0].device] = output_grad[0]
+            else:
+                self.gradient[input_grad[0].device] += output_grad[0]
+        else:
+            self.gradient += output_grad[0]
+
+    #         print(output_grad[0])
+    #         print("Device {}, backward out gradient shape:{}".format(input_grad[0].device, output_grad[0].size()))
+
+    def _register_hook(self):
+
+        if isinstance(self.net, DistributedDataParallel):
+            modules = self.net.module.named_modules()
+        else:
+            modules = self.net.named_modules()
+
+        for (name, module) in modules:
+            if name == self.layer_name:
+                self.handlers.append(module.register_backward_hook(self._get_features_hook))
+                self.handlers.append(module.register_backward_hook(self._get_grads_hook))
+
+    def remove_handlers(self):
+        for handle in self.handlers:
+            handle.remove()
+
+    def __call__(self):
+        if isinstance(self.net, DistributedDataParallel):
+            feature = []
+            gradient = []
+            for d in self.gradient:
+                feature.append(self.feature[d])
+                gradient.append(self.gradient[d])
+
+            feature = torch.cat(feature, dim=0)
+            gradient = torch.cat(gradient, dim=0)
+        else:
+            feature = self.feature
+            gradient = self.gradient
+
+        return feature, gradient
+
+    # def __call__(self, inputs, index):
+    #     """
+    #     :param inputs: [1,3,H,W]
+    #     :param index: class id
+    #     :return:
+    #     """
+    #     #         self.net.zero_grad()
+    #
+    #     output, _ = self.net(inputs)  # [1,num_classes]
+    #
+    #     if index is None:
+    #         index = torch.argmax(output)
+    #     target = output.gather(1, index)  # .mean()
+    #     # target = output[0][index]
+    #     for i in target:
+    #         i.backward(retain_graph=True)
+    #
+    #     if isinstance(self.net, DistributedDataParallel):
+    #         feature = []
+    #         gradient = []
+    #         for d in self.gradient:
+    #             feature.append(self.feature[d])
+    #             gradient.append(self.gradient[d])
+    #
+    #         feature = torch.cat(feature, dim=0)
+    #         gradient = torch.cat(gradient, dim=0)
+    #     else:
+    #         feature = self.feature
+    #         gradient = self.gradient
+    #
+    #     return feature, gradient

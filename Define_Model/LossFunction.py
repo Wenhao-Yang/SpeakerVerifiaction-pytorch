@@ -334,7 +334,9 @@ class AttentionMining(nn.Module):
 
     def forward(self, x, label):
         x_shape = x.shape
+        x = torch.nn.functional.log_softmax(x, dim=1)
         label = label.reshape(x_shape[0], 1)
         score_c = x.gather(1, label)
+        score_c = torch.nn.functional.sigmoid(score_c)
 
         return score_c.mean()

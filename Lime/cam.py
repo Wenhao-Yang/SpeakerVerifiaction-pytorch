@@ -211,8 +211,3 @@ if __name__ == "__main__":
     ResImg = np.hstack((GBResImg, GradCamResImg, GradCamPPResImg))
     cv2.imshow('Res', ResImg)
     cv2.waitKey()
-————————————————
-版权声明：本文为CSDN博主「cdknight_happy」的原创文章，遵循CC
-4.0
-BY - SA版权协议，转载请附上原文出处链接及本声明。
-原文链接：https: // blog.csdn.net / cdknight_happy / article / details / 108792065
