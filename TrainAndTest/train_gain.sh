@@ -41,13 +41,13 @@ if [ $stage -le 62 ]; then
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
       --nj 6 \
-      --epochs 50 \
-      --lr 0.1 \
+      --epochs 29 \
+      --lr 0.01 \
       --input-dim 161 \
       --scheduler rop \
       --milestones 10,20,25 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_mean/${loss}/gain_sig_f/0.1_clamp_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wde4 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_mean/${loss}/gain_sig_f/0.1_clamp_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wde4/checkpoint_9.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_mean/${loss}/gain_sig_f/0.1_clamp_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wde4/checkpoint_21.pth \
       --stride 2 \
       --block-type ${block_type} \
       --channels 16,32,64,128 \
