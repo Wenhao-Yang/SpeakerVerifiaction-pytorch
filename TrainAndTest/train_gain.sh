@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=62
+stage=72
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 waited=0
 while [ $(ps 113458 | wc -l) -eq 2 ]; do
@@ -87,8 +87,9 @@ if [ $stage -le 72 ]; then
   embedding_size=128
   #  feat_dim=24
   #--feat-dim ${feat_dim} \
+  #        --exp \
 
-  for block_type in None; do
+  for block_type in cbam; do
     echo -e "\n\033[1;4;31m Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/train_gain.py \
       --model ${model} \
@@ -99,7 +100,6 @@ if [ $stage -le 72 ]; then
       --test-dir ${lstm_dir}/data/vox1/spect/test_${feat} \
       --batch-size 128 \
       --input-norm Mean \
-      --exp \
       --test-input fix \
       --feat-format kaldi \
       --resnet-size ${resnet_size} \
