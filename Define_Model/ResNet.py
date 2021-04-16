@@ -772,6 +772,9 @@ class LocalResNet(nn.Module):
         else:
             block = BasicBlock
 
+        self.input_len = input_len
+        self.input_dim = input_dim
+
         self.alpha = alpha
         self.layers = layers
         self.dropout_p = dropout_p
