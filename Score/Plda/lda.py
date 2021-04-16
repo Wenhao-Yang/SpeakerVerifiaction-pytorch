@@ -85,6 +85,23 @@ def ComputeAndSubtractMean(utt2ivector):
     return mean
 
 
+def SubtractGlobalMean(utt2ivector):
+    keys = list(utt2ivector.keys())
+    dim = utt2ivector[keys[0]].shape
+
+    num_ivectors = len(utt2ivector)
+    mean = np.zeros(dim)
+
+    for utt in utt2ivector:
+        mean += 1.0 / num_ivectors * utt2ivector[utt]  # .astype(np.float32)
+
+    print("Norm of iVector mean was ", np.sqrt(np.square(mean).sum()))
+    for utt in utt2ivector:
+        utt2ivector[utt] -= mean
+
+    return mean
+
+
 # LDA变换
 def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
                         covariance_floor, lda_out):
@@ -124,15 +141,19 @@ def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
 
     # 分解mat_to_norm矩阵得到T
     T = ComputeNormalizingTransform(mat_to_normalize, covariance_floor)
+    # print("T: ", str(T))
 
     # between_cov = total_cov - within_cov
     between_covar = total_covar - within_covar
+    # print("between_covar: ", str(between_covar)) --
 
     #  between_cov_pro = between_covar
     between_covar_proj = np.matmul(T, between_covar).__matmul__(T.transpose())
+    # print("between_covar_proj: ", str(between_covar_proj))
 
     # 分解between_cov_pro为特征向量s, 和矩阵U
     s, U = np.linalg.eig(between_covar_proj)
+    # print("U before sort: ", str(U))
 
     sort_on_absolute_value = False  # any negative ones will go last (they
     # shouldn't exist anyway so doesn't
@@ -164,7 +185,7 @@ def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
 def ComputeNormalizingTransform(covar, floor):
     # 计算方差的特征值
     s, U = np.linalg.eig(covar)
-    # print("Without sorted U is ", U)
+    # print("Before sorted U is ", U)
     # 特征值排序
     # Sort eigvenvalues from largest to smallest.
     s_idx = np.flipud(np.argsort(s))

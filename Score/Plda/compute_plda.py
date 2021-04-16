@@ -187,3 +187,10 @@ if __name__ == '__main__':
 
     # WriteKaldiObject(plda, args.plda_dir, binary)
     # return num_spk_done!=0 &, 1
+
+"""
+ivector-compute-plda ark:/home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pyfb_de/dev_fb24_mel/spk2utt \
+      "ark:ivector-subtract-global-mean scp:exp/ivectors_train_fb24_mel/ivector.scp ark:- | transform-vec exp/ivectors_train_fb24_mel/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
+      exp/ivectors_train_fb24_mel/plda
+      
+"""

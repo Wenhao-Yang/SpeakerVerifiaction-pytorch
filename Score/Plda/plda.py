@@ -49,6 +49,22 @@ def write_vec_binary(fd, v):
 
 def write_mat_binary(fd, m):
     if m.dtype == 'float32':
+        fd.write('\0BFM '.encode())
+    elif m.dtype == 'float64':
+        fd.write('\0BDM '.encode())
+    else:
+        raise Exception("'%s', please use 'float32' or 'float64'" % m.dtype)
+    # Dims,
+    fd.write('\04'.encode())
+    fd.write(struct.pack(np.dtype('uint32').char, m.shape[0]))  # rows
+    fd.write('\04'.encode())
+    fd.write(struct.pack(np.dtype('uint32').char, m.shape[1]))  # cols
+    # Data,
+    fd.write(m.tobytes())
+
+
+def write_mat_binary_(fd, m):
+    if m.dtype == 'float32':
         fd.write('FM '.encode())
     elif m.dtype == 'float64':
         fd.write('DM '.encode())
@@ -61,7 +77,6 @@ def write_mat_binary(fd, m):
     fd.write(struct.pack(np.dtype('uint32').char, m.shape[1]))  # cols
     # Data,
     fd.write(m.tobytes())
-
 
 class PldaConfig(object):
     """
@@ -133,7 +148,7 @@ class PLDA(object):
         # print(self.transform_)
         # print(self.offset_)
         transformed_ivector += np.matmul(self.transform_, ivector.reshape(-1, 1))  # matmul
-        transformed_ivector
+        # transformed_ivector
         if (config.simple_length_norm):
             normalization_factor = np.sqrt(transformed_ivector.shape[0]) / np.sqrt(np.square(transformed_ivector).sum())
         else:
@@ -268,7 +283,7 @@ class PLDA(object):
             f.write(b'\x00B<Plda> ')
 
             write_vec_binary(f, self.mean_)
-            write_mat_binary(f, self.transform_)
+            write_mat_binary_(f, self.transform_)
             write_vec_binary(f, self.psi_)
 
             f.write(b'</Plda> ')
@@ -570,8 +585,8 @@ class PldaEstimator(object):
         # (i.e. U^T U diag(s) U U^T = diag(s)).  The final transform that
         # makes within_var_ unit and between_var_ diagonal is U^T transform1,
         # i.e. first transform1 and then U^T.
-        # print("s is: \n", s)
-        # print("U is: \n", U)
+        # print("s: \n", s)
+        # print("U: \n", U)
         # print("transform1 is: \n", transform1)
         plda.transform_ = np.matmul(U.transpose(), transform1)
         plda.psi_ = s  # 更新psi

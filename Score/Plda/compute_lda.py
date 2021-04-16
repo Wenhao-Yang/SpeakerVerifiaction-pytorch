@@ -15,7 +15,7 @@ import os
 import kaldi_io
 import numpy as np
 
-from Score.Plda.lda import ComputeAndSubtractMean, ComputeLdaTransform
+from Score.Plda.lda import ComputeAndSubtractMean, ComputeLdaTransform, SubtractGlobalMean
 from Score.Plda.plda import write_mat_binary
 
 # Training settings
@@ -23,6 +23,9 @@ parser = argparse.ArgumentParser(description='Kalid PLDA compute')
 # Data options
 parser.add_argument('--spk2utt', type=str, required=True, help='path to spk2utt')
 parser.add_argument('--ivector-scp', type=str, required=True, help='path to ivector.scp')
+parser.add_argument('--subtract-global-mean', action='store_true', default=True,
+                    help='ivector subtract global mean while reading')
+
 parser.add_argument('--lda-mat', type=str, required=True, help='path to plda directory')
 parser.add_argument('--vector-format', type=str, default='kaldi', help='path to plda directory')
 
@@ -98,6 +101,9 @@ if __name__ == '__main__':
         print("Computing within-class covariance.")
 
     # 计算ivector的均值
+    if args.subtract_global_mean:
+        SubtractGlobalMean(utt2vec)
+
     mean = ComputeAndSubtractMean(utt2vec)
     # print("mean vector is ", str(mean))
     print("2-norm of iVector mean is %f " % np.linalg.norm(mean))
@@ -107,8 +113,9 @@ if __name__ == '__main__':
     linear_part = np.zeros((lda_dim, dim))
     # 计算变换的矩阵linear_part
     linear_part = ComputeLdaTransform(utt2vec, spk2utt, total_covariance_factor, covariance_floor, linear_part)
+    # print("linear_part matrix: ", linear_part)
 
-    # y = -1 * linear_part + 0 * mean.
+    # y = -1 * linear_part * mean.
     offset = -1.0 * np.matmul(linear_part, mean.reshape(-1, 1))
 
     # 把offset加到lda_mat
@@ -120,7 +127,14 @@ if __name__ == '__main__':
         print('Making parent dir for lda files.')
         os.makedirs(os.path.dirname(lda_file))
 
+    # print("LDA matrix: ", lda_mat)
     with open(lda_file, 'wb') as f:
         write_mat_binary(f, lda_mat)
 
     print("Wrote LDA transform mat to ", lda_file)
+
+"""
+ivector-compute-lda --total-covariance-factor=0.0 --dim=100 \
+      "ark:ivector-subtract-global-mean scp:exp/ivectors_train_fb24_mel/ivector.scp ark:- |" \
+      ark:/home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/pyfb_de/dev_fb24_mel/utt2spk exp/ivectors_train_fb24_mel/transform.mat
+"""

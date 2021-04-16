@@ -133,10 +133,11 @@ if __name__ == '__main__':
                 if transform_vec.shape[1] != len(ivector):
                     transform_vec = transform_vec[:, :len(ivector)]
                 ivector = np.matmul(transform_vec, ivector)
+                print(np.linalg.norm(ivector))
 
             if args.vec_normalize_length:
                 norm = np.linalg.norm(ivector)
-                ratio = norm / np.sqrt(len(ivector.shape)) if args.scaleup else norm
+                ratio = norm / np.sqrt(len(ivector)) if args.scaleup else norm
 
                 assert ratio.all() > 0.0
 
@@ -153,6 +154,8 @@ if __name__ == '__main__':
             else:
                 num_examples = 1
 
+            # print(num_examples)
+            print(np.linalg.norm(ivector))
             transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
             # print(transformed_ivector.shape)
 
@@ -196,6 +199,7 @@ if __name__ == '__main__':
                 if transform_vec.shape[1] != len(ivector):
                     transform_vec = transform_vec[:, :transform_vec]
                 ivector = np.matmul(transform_vec, ivector)
+                print(np.linalg.norm(ivector))
 
             if args.vec_normalize_length:
                 norm = np.linalg.norm(ivector)
@@ -206,8 +210,11 @@ if __name__ == '__main__':
                 ivector /= ratio
                 tot_ratio += ratio.sum()
                 tot_ratio2 += (ratio * ratio).sum()
+
             if uid == 'id10280-v0Q-VyO4TjI-00001':
                 print(ivector)
+
+            print(np.linalg.norm(ivector))
             transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
 
             tot_test_renorm_scale += normalization_factor
@@ -274,3 +281,20 @@ if __name__ == '__main__':
         print("Mean score was %.4f, standard deviation was %.4f" % (mean, stddev))
 
     print("Processed %d trials, %d had errors." % (num_trials_done, num_trials_err))
+
+"""
+ivector-plda-scoring --normalize-length=true \
+      "ivector-copy-plda --smoothing=0.0 exp/ivectors_train_${datafrom}/plda - |" \
+      "ark:ivector-subtract-global-mean exp/ivectors_train_${datafrom}/mean.vec scp:exp/ivectors_vox1_test_${datafrom}/ivector.scp ark:- | transform-vec exp/ivectors_train_${datafrom}/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      "ark:ivector-subtract-global-mean exp/ivectors_train_${datafrom}/mean.vec scp:exp/ivectors_vox1_test_${datafrom}/ivector.scp ark:- | transform-vec exp/ivectors_train_${datafrom}/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      "cat '$vox1_trials' | cut -d\  --fields=1,2 |" exp/scores_vox1_test_${datafrom}
+     
+     
+fb24_mel 
+      
+ivector-plda-scoring --normalize-length=true \
+      "ivector-copy-plda --smoothing=0.0 exp/ivectors_train_${datafrom}/plda - |" \
+      "ark:ivector-subtract-global-mean exp/ivectors_train_${datafrom}/mean.vec scp:exp/ivectors_vox1_test_${datafrom}/ivector.scp ark:- | transform-vec exp/ivectors_train_${datafrom}/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      "ark:ivector-subtract-global-mean exp/ivectors_train_${datafrom}/mean.vec scp:exp/ivectors_vox1_test_${datafrom}/ivector.scp ark:- | transform-vec exp/ivectors_train_${datafrom}/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      "cat '$vox1_trials' | cut -d\  --fields=1,2 |" exp/scores_vox1_test_${datafrom}
+"""
