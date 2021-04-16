@@ -121,6 +121,7 @@ parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 
 parser.add_argument('--gain-layer', action='store_false', default=True, help='replace batchnorm with instance norm')
+parser.add_argument('--gain-layer-name', type=str, default='layer4', help='replace batchnorm with instance norm')
 
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
@@ -758,7 +759,7 @@ def main():
         except:
             pass
 
-    back_guide = Back_GradCAM(model, 'layer4')
+    back_guide = Back_GradCAM(model, args.gain_layer_name)
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
 

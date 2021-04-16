@@ -85,6 +85,7 @@ if [ $stage -le 72 ]; then
   avgsize=4
   alpha=12
   embedding_size=128
+  layer_name=layer3
   #  feat_dim=24
   #--feat-dim ${feat_dim} \
   #        --exp \
@@ -109,8 +110,9 @@ if [ $stage -le 72 ]; then
       --input-dim 161 \
       --scheduler rop \
       --milestones 10,20,30 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_mean/${loss}/gain_sig_f/0.1_clamp_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wde4 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_mean/${loss}/gain_sig_f/0.1_clamp_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wde4/checkpoint_9.pth \
+      --gain-layer-name ${layer_name} \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_mean/${loss}/gain_sig_f/0.1_clamp_${layer_name}_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wde4 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_mean/${loss}/gain_sig_f/0.1_clamp_${layer_name}_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wde4/checkpoint_9.pth \
       --stride 2 \
       --block-type ${block_type} \
       --channels 64,128,256 \
@@ -126,7 +128,7 @@ if [ $stage -le 72 ]; then
       --loss-ratio 0.1 \
       --weight-decay 0.001 \
       --dropout-p ${dropout_p} \
-      --gpu-id 2 \
+      --gpu-id 0,1 \
       --cos-sim \
       --extract \
       --all-iteraion 0 \

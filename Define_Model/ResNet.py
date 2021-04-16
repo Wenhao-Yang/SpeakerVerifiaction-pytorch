@@ -748,7 +748,8 @@ class LocalResNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, embedding_size, num_classes, input_dim=161, block_type='basic', input_len=300,
+    def __init__(self, embedding_size, num_classes, block_type='basic',
+                 input_dim=161, input_len=300, gain_layer=False,
                  relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
                  avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=25, **kwargs):
@@ -779,6 +780,7 @@ class LocalResNet(nn.Module):
         self.mask = mask
         self.relu_type = relu_type
         self.embedding_size = embedding_size
+        self.gain_layer = gain_layer
         #
         if self.relu_type == 'relu6':
             self.relu = nn.ReLU6(inplace=True)
@@ -857,6 +859,7 @@ class LocalResNet(nn.Module):
             self.bn4 = nn.BatchNorm2d(channels[3])
             self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
 
+        self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
         self.dropout = nn.Dropout(self.dropout_p)
 
         last_conv_chn = channels[-1]
