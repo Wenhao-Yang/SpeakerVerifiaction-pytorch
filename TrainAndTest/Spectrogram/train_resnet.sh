@@ -60,7 +60,9 @@ if [ $stage -le 20 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 60 \
+      --scheduler rop \
+      --patience 3 \
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 21,41,48 \
