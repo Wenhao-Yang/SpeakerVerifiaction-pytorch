@@ -7,7 +7,12 @@
 @Software: PyCharm
 @File: plda.py
 @Time: 2019/12/6 上午10:42
-@Overview: Modified from kaldi. The original script is 'kaldi/src/ivector/plda.h kaldi/src/ivector/plda.cc'
+@Overview:
+
+Reference:
+kaldi: The original script is 'kaldi/src/ivector/plda.h kaldi/src/ivector/plda.cc'
+the code avaliable at https://github.com/vzxxbacq/PLDA/blob/master/plda.py
+
 """
 import os
 import struct
@@ -21,7 +26,6 @@ M_LOG_2PI = 1.8378770664093454835606594728112
 
 def ApplyFloor(array_a, floor_val):
     n = 0
-
     for i in range(len(array_a)):
         if array_a[i] < floor_val:
             array_a[i] = floor_val

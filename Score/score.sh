@@ -11,3 +11,10 @@ if [ $stage -le 0 ]; then
   echo "minDCF(p-target=0.01): $mindcf1"
   echo "minDCF(p-target=0.001): $mindcf2"
 fi
+
+if [ $stage -le 10 ]; then
+  python compute_mean.py
+  python compute_lda.py
+  python compute_plda.py
+  python plda_scoring.py
+fi
