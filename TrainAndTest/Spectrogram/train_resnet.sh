@@ -43,7 +43,7 @@ if [ $stage -le 20 ]; then
   alpha=0
   block_type=None
   embedding_size=128
-  input_norm=mean
+  input_norm=Mean
   loss=soft
 
   for loss in soft; do
@@ -67,7 +67,6 @@ if [ $stage -le 20 ]; then
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_mean/${loss}/${encoder_type}_em${embedding_size}_alpha${alpha}_wde4 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_mean/${loss}/${encoder_type}_em${embedding_size}_alpha${alpha}_wde4/checkpoint_10.pth \
       --channels 16,32,64,128 \
-      --filter ${filter} \
       --input-dim 161 \
       --block-type ${block_type} \
       --stride 2 \
