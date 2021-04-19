@@ -42,7 +42,7 @@ if [ $stage -le 20 ]; then
   encoder_type=STAP
   alpha=0
   block_type=None
-  embedding_size=128
+  embedding_size=256
   input_norm=Mean
   loss=soft
 
@@ -64,8 +64,8 @@ if [ $stage -le 20 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 21,41,48 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_mean/${loss}/${encoder_type}_em${embedding_size}_alpha${alpha}_wde4 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_mean/${loss}/${encoder_type}_em${embedding_size}_alpha${alpha}_wde4/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_mean/${loss}/${encoder_type}_em${embedding_size}_alpha${alpha}_wde3 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_mean/${loss}/${encoder_type}_em${embedding_size}_alpha${alpha}_wde3/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
@@ -81,7 +81,7 @@ if [ $stage -le 20 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.001 \
       --dropout-p 0 \
       --gpu-id 0,1 \
       --all-iteraion 0 \
