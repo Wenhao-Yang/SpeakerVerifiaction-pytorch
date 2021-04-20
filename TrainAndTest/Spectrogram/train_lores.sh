@@ -1358,7 +1358,6 @@ if [ $stage -le 120 ]; then
       --input-dim 161 \
       --block-type ${block_type} \
       --stride 2 \
-      --feat-dim ${feat_dim} \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
