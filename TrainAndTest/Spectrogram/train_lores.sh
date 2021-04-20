@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=81
+stage=82
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -1315,6 +1315,68 @@ if [ $stage -le 100 ]; then
       --extract \
       --cos-sim \
       --all-iteraion 0 \
+      --loss-type ${loss}
+  done
+  exit
+fi
+
+
+if [ $stage -le 82 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=vox2
+  model=ThinResNet
+  resnet_size=34
+  encoder_type=STAP
+  alpha=0
+  block_type=None
+  embedding_size=512
+  input_norm=Mean
+  loss=arcsoft
+
+  for loss in arcsoft; do
+    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
+    python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
+      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+      --feat-format kaldi \
+      --fix-length \
+      --input-norm ${input_norm} \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 50 \
+      --scheduler rop \
+      --patience 3 \
+      --accu-steps 1 \
+      --lr 0.1 \
+      --milestones 10,20,30,40 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde4 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde4/checkpoint_10.pth \
+      --channels 16,32,64,128 \
+      --input-dim 161 \
+      --block-type ${block_type} \
+      --stride 2 \
+      --feat-dim ${feat_dim} \
+      --batch-size 128 \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 8 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.25 \
+      --s 30 \
+      --grad-clip 0 \
+      --lr-ratio 0.01 \
+      --weight-decay 0.0001 \
+      --dropout-p 0 \
+      --gpu-id 0,1 \
+      --all-iteraion 0 \
+      --extract \
+      --cos-sim \
       --loss-type ${loss}
   done
   exit
