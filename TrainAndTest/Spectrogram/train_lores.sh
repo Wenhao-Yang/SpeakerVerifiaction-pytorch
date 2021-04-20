@@ -1320,8 +1320,7 @@ if [ $stage -le 100 ]; then
   exit
 fi
 
-
-if [ $stage -le 82 ]; then
+if [ $stage -le 120 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
   model=ThinResNet
