@@ -1336,10 +1336,10 @@ if [ $stage -le 120 ]; then
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log_v2 \
       --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log_v2 \
       --test-dir ${lstm_dir}/data/vox1/spect/test_log \
       --feat-format kaldi \
       --fix-length \
@@ -1352,8 +1352,8 @@ if [ $stage -le 120 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde4 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde4/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}_v2/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde4 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}_v2/spect_egs/${loss}_0ce/Input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde4/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
