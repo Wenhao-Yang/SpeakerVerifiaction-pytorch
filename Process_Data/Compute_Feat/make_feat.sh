@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=250
+stage=6
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -201,18 +201,25 @@ if [ $stage -le 5 ]; then
   done
 fi
 
-#stage=50
-# sitw
+#stage=40
+# =====================================================sitw=====================================================
 if [ $stage -le 6 ]; then
   for name in dev eval; do
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/sitw/${name} \
+      --out-dir ${lstm_dir}/data/sitw/spect \
       --out-set ${name} \
-      --feat-type spectrogram
+      --nj 12 \
+      --feat-format kaldi_cmp \
+      --out-set ${name}_log \
+      --feat-type spectrogram \
+      --nfft 320 \
+      --log-scale \
+      --windowsize 0.02
   done
-fi
+  exit
 
+fi
 # timit
 if [ $stage -eq 7 ]; then
   #  for name in train test ; do
