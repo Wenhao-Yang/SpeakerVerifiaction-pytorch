@@ -651,6 +651,9 @@ if [ $stage -le 82 ]; then
   # mindcf-0.01 0.1592, mindcf-0.001 0.2065.
 
   test_set=sitw
+  # dev
+  # Test ERR is 2.3489%, Threshold is 0.2773396372795105
+  # mindcf-0.01 0.2098, mindcf-0.001 0.3596.
 
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
@@ -661,7 +664,7 @@ if [ $stage -le 82 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/eval_${feat} \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --input-dim 161 \
@@ -676,7 +679,7 @@ if [ $stage -le 82 ]; then
       --loss-type ${loss} \
       --encoder-type STAP \
       --input-length var \
-      --xvector-dir Data/xvector/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/${test_set}_dev_epoch20_var \
+      --xvector-dir Data/xvector/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/${test_set}_eval_epoch20_var \
       --resume Data/checkpoint/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/checkpoint_20.pth \
       --gpu-id 0 \
       --cos-sim
