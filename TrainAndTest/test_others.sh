@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-stage=26
+stage=82
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
+# ===============================    LoResNet10    ===============================
 if [ $stage -le 0 ]; then
   for loss in asoft soft; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
@@ -24,8 +25,8 @@ if [ $stage -le 5 ]; then
   for loss in soft; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     python TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_wcmvn \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/all_wcmvn \
+      --train-dir ${lstm_dir}/data/Vox1_spect/dev_wcmvn \
+      --test-dir ${lstm_dir}/data/Vox1_spect/all_wcmvn \
       --nj 12 \
       --model ${model} \
       --embedding-size 128 \
@@ -40,8 +41,8 @@ if [ $stage -le 5 ]; then
 #  for loss in center ; do
 #    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
 #    python TrainAndTest/test_egs.py \
-#      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev \
-#      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test \
+#      --train-dir ${lstm_dir}/data/Vox1_spect/dev \
+#      --test-dir ${lstm_dir}/data/Vox1_spect/test \
 #      --nj 12 \
 #      --model ${model} \
 #      --resume Data/checkpoint/LoResNet10/spect_cmvn/${loss}_dp25/checkpoint_36.pth \
@@ -58,8 +59,8 @@ if [ $stage -le 6 ]; then
   for loss in soft; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     #    python TrainAndTest/test_egs.py \
-    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_wcmvn \
-    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_wcmvn \
+    #      --train-dir ${lstm_dir}/data/Vox1_spect/dev_wcmvn \
+    #      --test-dir ${lstm_dir}/data/Vox1_spect/test_wcmvn \
     #      --nj 12 \
     #      --model ${model} \
     #      --channels 64,128,256,512 \
@@ -74,8 +75,8 @@ if [ $stage -le 6 ]; then
     #      --num-valid 0 \
     #      --gpu-id 0
     python TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_wcmvn \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_wcmvn \
+      --train-dir ${lstm_dir}/data/Vox1_spect/dev_wcmvn \
+      --test-dir ${lstm_dir}/data/Vox1_spect/test_wcmvn \
       --nj 12 \
       --model ${model} \
       --channels 64,128,256,256 \
@@ -95,8 +96,8 @@ if [ $stage -le 6 ]; then
 #  for loss in soft ; do
 #    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
 #    python TrainAndTest/test_egs.py \
-#      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_wcmvn \
-#      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_wcmvn \
+#      --train-dir ${lstm_dir}/data/Vox1_spect/dev_wcmvn \
+#      --test-dir ${lstm_dir}/data/Vox1_spect/test_wcmvn \
 #      --nj 12 \
 #      --model ${model} \
 #      --channels 64,128,256 \
@@ -115,8 +116,8 @@ if [ $stage -le 6 ]; then
 #  for loss in center ; do
 #    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
 #    python TrainAndTest/test_egs.py \
-#      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev \
-#      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test \
+#      --train-dir ${lstm_dir}/data/Vox1_spect/dev \
+#      --test-dir ${lstm_dir}/data/Vox1_spect/test \
 #      --nj 12 \
 #      --model ${model} \
 #      --resume Data/checkpoint/LoResNet10/spect_cmvn/${loss}_dp25/checkpoint_36.pth \
@@ -132,6 +133,9 @@ fi
 #    --loss-type amsoft \
 #    --lr 0.01 \
 #    --epochs 10
+
+
+# ===============================    ExResNet    ===============================
 
 if [ $stage -le 7 ]; then
   model=ExResNet
@@ -158,6 +162,9 @@ if [ $stage -le 7 ]; then
   done
 fi
 
+
+# ===============================    TDNN    ===============================
+
 #stage=200
 if [ $stage -le 15 ]; then
   model=TDNN
@@ -165,8 +172,8 @@ if [ $stage -le 15 ]; then
   #  for loss in soft ; do
   #    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
   #    python TrainAndTest/test_egs.py \
-  #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_no_sil \
-  #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_no_sil \
+  #      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb40_no_sil \
+  #      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb40_no_sil \
   #      --nj 12 \
   #      --model ${model} \
   #      --embedding-size 128 \
@@ -181,8 +188,8 @@ if [ $stage -le 15 ]; then
   for loss in soft; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     python TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb40_wcmvn \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb40_wcmvn \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb40_wcmvn \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb40_wcmvn \
       --nj 14 \
       --model ${model} \
       --embedding-size 128 \
@@ -207,8 +214,8 @@ if [ $stage -le 20 ]; then
   for loss in soft; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
     #    python TrainAndTest/test_egs.py \
-    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
-    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
+    #      --train-dir ${lstm_dir}/data/libri/spect/dev_noc \
+    #      --test-dir ${lstm_dir}/data/libri/spect/test_noc \
     #      --nj 12 \
     #      --model ${model} \
     #      --channels 4,32,128 \
@@ -220,8 +227,8 @@ if [ $stage -le 20 ]; then
     #      --gpu-id 1
     #
     #    python TrainAndTest/test_egs.py \
-    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
-    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
+    #      --train-dir ${lstm_dir}/data/libri/spect/dev_noc \
+    #      --test-dir ${lstm_dir}/data/libri/spect/test_noc \
     #      --nj 12 \
     #      --model ${model} \
     #      --channels 4,32,128 \
@@ -232,8 +239,8 @@ if [ $stage -le 20 ]; then
     #      --num-valid 1 \
     #      --gpu-id 1
     #    python TrainAndTest/test_egs.py \
-    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
-    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
+    #      --train-dir ${lstm_dir}/data/libri/spect/dev_noc \
+    #      --test-dir ${lstm_dir}/data/libri/spect/test_noc \
     #      --nj 12 \
     #      --model ${model} \
     #      --channels 4,32,128 \
@@ -247,8 +254,8 @@ if [ $stage -le 20 ]; then
     #      --num-valid 2 \
     #      --gpu-id 1
     python TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
+      --train-dir ${lstm_dir}/data/libri/spect/dev_noc \
+      --test-dir ${lstm_dir}/data/libri/spect/test_noc \
       --nj 12 \
       --model ${model} \
       --channels 4,32,128 \
@@ -263,8 +270,8 @@ if [ $stage -le 20 ]; then
       --gpu-id 1
 
     #    python TrainAndTest/test_egs.py \
-    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
-    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
+    #      --train-dir ${lstm_dir}/data/libri/spect/dev_noc \
+    #      --test-dir ${lstm_dir}/data/libri/spect/test_noc \
     #      --nj 12 \
     #      --model ${model} \
     #      --channels 4,16,64 \
@@ -285,8 +292,8 @@ if [ $stage -le 25 ]; then
   for loss in soft; do
     #    echo -e "\033[31m==> Loss type: ${loss} variance_fix length \033[0m"
     #    python TrainAndTest/test_egs.py \
-    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_noc \
-    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/test_noc \
+    #      --train-dir ${lstm_dir}/data/timit/spect/train_noc \
+    #      --test-dir ${lstm_dir}/data/timit/spect/test_noc \
     #      --nj 12 \
     #      --model ${model} \
     #      --channels 4,16,64 \
@@ -299,8 +306,8 @@ if [ $stage -le 25 ]; then
 
     echo -e "\033[31m==> Loss type: ${loss} variance_fix length \033[0m"
     python TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_noc \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_noc \
+      --train-dir ${lstm_dir}/data/timit/spect/train_noc \
+      --test-dir ${lstm_dir}/data/timit/spect/train_noc \
       --nj 12 \
       --model ${model} \
       --xvector-dir Data/xvectors/LoResNet10/timit_spect/soft_var \
@@ -358,6 +365,8 @@ if [ $stage -le 26 ]; then
   exit
 fi
 
+# ===============================    ResNet20    ===============================
+
 #stage=100
 if [ $stage -le 30 ]; then
   model=ResNet20
@@ -366,8 +375,8 @@ if [ $stage -le 30 ]; then
   for loss in soft; do
     echo -e "\033[31m==> Loss type: ${loss} fix length \033[0m"
     python TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_257_wcmvn \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_257_wcmvn \
+      --train-dir ${lstm_dir}/data/Vox1_spect/dev_257_wcmvn \
+      --test-dir ${lstm_dir}/data/Vox1_spect/test_257_wcmvn \
       --nj 12 \
       --model ${model} \
       --embedding-size 128 \
@@ -386,8 +395,8 @@ if [ $stage -le 40 ]; then
   for loss in soft; do
     echo -e "\n\033[1;4;31m Test ${model} with ${loss} vox_wcmvn\033[0m\n"
     python -W ignore TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb64_wcmvn \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb64_wcmvn \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb64_wcmvn \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb64_wcmvn \
       --nj 12 \
       --epochs 30 \
       --model ExResNet34 \
@@ -409,8 +418,8 @@ if [ $stage -le 40 ]; then
 
     #    echo -e "\n\033[1;4;31m Test ${model} with ${loss} vox_noc \033[0m\n"
     #    python -W ignore TrainAndTest/test_egs.py \
-    #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/dev_noc \
-    #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/test_noc \
+    #      --train-dir ${lstm_dir}/data/Vox1_pyfb64/dev_noc \
+    #      --test-dir ${lstm_dir}/data/Vox1_pyfb64/test_noc \
     #      --nj 12 \
     #      --epochs 30 \
     #      --model ExResNet34 \
@@ -430,6 +439,8 @@ if [ $stage -le 40 ]; then
   done
 fi
 
+# ===============================    TDNN    ===============================
+
 if [ $stage -le 50 ]; then
   #  for loss in soft asoft ; do
   model=SiResNet34
@@ -438,8 +449,8 @@ if [ $stage -le 50 ]; then
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb64 \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb64 \
+      --train-dir ${lstm_dir}/data/Vox1_pyfb/dev_fb64 \
+      --test-dir ${lstm_dir}/data/Vox1_pyfb/test_fb64 \
       --nj 14 \
       --epochs 40 \
       --model ${model} \
@@ -463,6 +474,8 @@ if [ $stage -le 50 ]; then
   done
 fi
 
+# ===============================    TDNN    ===============================
+
 if [ $stage -le 55 ]; then
   #  for loss in soft asoft ; do
   model=GradResNet
@@ -471,8 +484,8 @@ if [ $stage -le 55 ]; then
   for loss in soft; do
     echo -e "\n\033[1;4;31m Training ${model} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/test_vox1.py \
-      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/dev_power \
-      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_power \
+      --train-dir ${lstm_dir}/data/vox1/spect/dev_power \
+      --test-dir ${lstm_dir}/data/vox1/spect/test_power \
       --nj 12 \
       --epochs 18 \
       --model ${model} \
@@ -585,6 +598,8 @@ if [ $stage -le 80 ]; then
   done
 fi
 
+
+# ===============================    RET    ===============================
 if [ $stage -le 81 ]; then
   feat_type=spect
   feat=log
@@ -592,6 +607,7 @@ if [ $stage -le 81 ]; then
   encod=None
   dataset=vox1
   block_type=Basic
+  model=RET
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
@@ -617,6 +633,49 @@ if [ $stage -le 81 ]; then
       --frame-shift 300 \
       --xvector-dir Data/checkpoint/RET/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean_Basic/epoch_25_var \
       --resume Data/checkpoint/RET/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean_Basic/checkpoint_25.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+fi
+
+if [ $stage -le 82 ]; then
+  feat_type=spect
+  feat=log
+  input_norm=Mean
+  loss=arcsoft
+  encod=STAP
+  dataset=vox1
+  block_type=cbam
+  model=RET
+  embedding_size=512
+
+
+  for loss in arcsoft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size 14 \
+      --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim 161 \
+      --channels 512,512,512,512,512,1536 \
+      --context 5,5,5 \
+      --nj 12 \
+      --alpha 0 \
+      --margin 0.25 \
+      --s 30 \
+      --block-type ${block_type} \
+      --embedding-size 512 \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --input-length var \
+      --xvector-dir Data/xvector/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/epoch_20_var \
+      --resume Data/checkpoint/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/checkpoint_20.pth \
       --gpu-id 0 \
       --cos-sim
   done
@@ -709,6 +768,9 @@ if [ $stage -le 91 ]; then
   done
   exit
 fi
+
+
+# ===============================    MultiResNet    ===============================
 
 if [ $stage -le 100 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification

@@ -122,6 +122,8 @@ parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm wi
 parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--context', default='5,3,3,5', type=str, metavar='KE', help='kernel size of conv filters')
+
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--input-length', type=str, help='batchnorm with instance norm')
@@ -498,6 +500,8 @@ if __name__ == '__main__':
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
+    context = args.context.split(',')
+    context = [int(x) for x in context]
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'mask_layer': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
@@ -506,7 +510,8 @@ if __name__ == '__main__':
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
+                    'channels': channels, 'context': context,
+                    'alpha': args.alpha, 'dropout_p': args.dropout_p}
 
     print('Model options: {}'.format(model_kwargs))
     dist_type = 'cos' if args.cos_sim else 'l2'
