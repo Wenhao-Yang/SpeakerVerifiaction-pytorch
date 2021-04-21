@@ -652,8 +652,11 @@ if [ $stage -le 82 ]; then
 
   test_set=sitw
   # dev
-  # Test ERR is 2.3489%, Threshold is 0.2773396372795105
+  # Test ERR is 2.3489%, Threshold is 0.2773
   # mindcf-0.01 0.2098, mindcf-0.001 0.3596.
+  # eval
+  # Test ERR is 2.6791%, Threshold is 0.2732
+  # mindcf-0.01 0.2346, mindcf-0.001 0.4054.
 
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
