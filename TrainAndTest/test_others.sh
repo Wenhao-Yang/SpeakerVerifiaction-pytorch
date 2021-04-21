@@ -134,7 +134,6 @@ fi
 #    --lr 0.01 \
 #    --epochs 10
 
-
 # ===============================    ExResNet    ===============================
 
 if [ $stage -le 7 ]; then
@@ -161,7 +160,6 @@ if [ $stage -le 7 ]; then
       --gpu-id 0
   done
 fi
-
 
 # ===============================    TDNN    ===============================
 
@@ -598,7 +596,6 @@ if [ $stage -le 80 ]; then
   done
 fi
 
-
 # ===============================    RET    ===============================
 if [ $stage -le 81 ]; then
   feat_type=spect
@@ -648,18 +645,23 @@ if [ $stage -le 82 ]; then
   block_type=cbam
   model=RET
   embedding_size=512
+  train_set=vox2
+  #  test_set=vox1
+  # 1.6172%, Threshold is 0.29920902848243713
+  # mindcf-0.01 0.1592, mindcf-0.001 0.2065.
 
+  test_set=sitw
 
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 14 \
-      --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
+      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/eval_${feat} \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --input-dim 161 \
@@ -679,6 +681,7 @@ if [ $stage -le 82 ]; then
       --gpu-id 0 \
       --cos-sim
   done
+  exit
 fi
 
 #exit
@@ -768,7 +771,6 @@ if [ $stage -le 91 ]; then
   done
   exit
 fi
-
 
 # ===============================    MultiResNet    ===============================
 
