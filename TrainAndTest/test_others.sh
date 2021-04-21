@@ -661,7 +661,7 @@ if [ $stage -le 82 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/eval_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --input-dim 161 \
@@ -676,7 +676,7 @@ if [ $stage -le 82 ]; then
       --loss-type ${loss} \
       --encoder-type STAP \
       --input-length var \
-      --xvector-dir Data/xvector/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/epoch_20_var \
+      --xvector-dir Data/xvector/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/${test_set}_dev_epoch20_var \
       --resume Data/checkpoint/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/checkpoint_20.pth \
       --gpu-id 0 \
       --cos-sim

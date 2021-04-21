@@ -601,10 +601,13 @@ class ScriptVerifyDataset(data.Dataset):
                 uid, feat_offset = line.split()
                 uid2feat[uid] = feat_offset
 
+        utts = set(uid2feat.keys())
+
         # print('\n==> There are {} utterances in Verification trials.'.format(len(uid2feat)))
 
         trials_pair = []
         positive_pairs = 0
+        skip_pairs = 0
         with open(trials, 'r') as t:
             all_pairs = t.readlines()
             for line in all_pairs:
@@ -614,8 +617,10 @@ class ScriptVerifyDataset(data.Dataset):
                 else:
                     pair_true = True
                     positive_pairs += 1
-
-                trials_pair.append((pair[0], pair[1], pair_true))
+                if pair[0] in utts and pair[1] in utts:
+                    trials_pair.append((pair[0], pair[1], pair_true))
+                else:
+                    skip_pairs += 1
 
         trials_pair = np.array(trials_pair)
         trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]

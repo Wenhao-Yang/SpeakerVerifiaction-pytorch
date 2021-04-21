@@ -318,7 +318,7 @@ if __name__ == "__main__":
                 feat_scp_f.write(txt)
                 numofutt += 1
     if numofutt != num_utt:
-        print('Errors in %s ?' % feat_scp)
+        print('Errors num of utterances: %s !=  ?' % feat_scp)
 
     numofutt = 0
     all_scp_path = [os.path.join(Split_dir, '%d/utt2dur.%d' % (i, i)) for i in range(nj)]
@@ -349,6 +349,7 @@ if __name__ == "__main__":
     print('Delete tmp files in: \n\t%s' % Split_dir)
     if args.compress:
         shutil.rmtree(Split_dir)
+
     end_time = time.time()
     all_time = end_time - start_time
     hours = int(all_time / 3600)
