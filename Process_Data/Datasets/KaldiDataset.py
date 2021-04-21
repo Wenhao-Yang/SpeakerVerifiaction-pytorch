@@ -538,7 +538,11 @@ class KaldiExtractDataset(data.Dataset):
             with open(trials, 'r') as u:
                 all_cls = u.readlines()
                 for line in all_cls:
-                    utt_a, utt_b, target = line.split(' ')
+                    try:
+                        utt_a, utt_b, target = line.split(' ')
+                    except Exception as e:
+                        print("error in ", line)
+                        raise e
 
                     trials_utts.add(utt_a)
                     trials_utts.add(utt_b)
