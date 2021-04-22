@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=90
+stage=81
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -358,7 +358,7 @@ if [ $stage -le 80 ]; then
 fi
 
 if [ $stage -le 81 ]; then
-  model=DTDNN
+  #  model=TDNN
   datasets=vox2
   feat=log
   feat_type=spect
@@ -379,22 +379,23 @@ if [ $stage -le 81 ]; then
       --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
-      --epochs 3 \
-      --patience 2 \
-      --milestones 10,20,30 \
+      --epochs 60 \
+      --patience 3 \
+      --milestones 10,20,30,40,50 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0001 \
-      --lr 0.00001 \
+      --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
+      --channels 512,512,512,512,1500 \
       --embedding-size ${embedding_size} \
       --batch-size 128 \
       --accu-steps 1 \
       --input-dim 161 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}_v2/${loss}_100ce/emsize${embedding_size}_input${input_norm}/checkpoint_53.pth \
+      --check-path Data/checkpoint/${model}/${datasets}_v2/${feat_type}_egs/${loss}_0ce/input${input_norm}_${encod}_em${embedding_size}_wde4 \
+      --resume Data/checkpoint/${model}/${datasets}_v2/${feat_type}_egs/${loss}_0ce/input${input_norm}_${encod}_em${embedding_size}_wde4/checkpoint_53.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -403,8 +404,10 @@ if [ $stage -le 81 ]; then
       --loss-type ${loss} \
       --margin 0.25 \
       --s 30 \
+      --all-iteraion 0 \
       --log-interval 10
   done
+  exit
 fi
 
 if [ $stage -le 82 ]; then

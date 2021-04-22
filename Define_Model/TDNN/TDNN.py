@@ -659,12 +659,13 @@ class TDNN_v4(nn.Module):
 class TDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
-                 mask='None', mask_len=20, **kwargs):
+                 mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
         self.dropout_p = dropout_p
         self.dropout_layer = dropout_layer
         self.input_dim = input_dim
+        self.channels = channels
         self.alpha = alpha
         self.mask = mask
 
@@ -687,28 +688,28 @@ class TDNN_v5(nn.Module):
         else:
             self.mask_layer = None
 
-        self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=512, context_size=5,
-                                        dilation=1, dropout_p=self.dropout_p)
-        self.frame2 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=3,
-                                        dilation=2, dropout_p=self.dropout_p)
-        self.frame3 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=3,
-                                        dilation=3, dropout_p=self.dropout_p)
-        self.frame4 = TimeDelayLayer_v5(input_dim=512, output_dim=512, context_size=1,
-                                        dilation=1, dropout_p=self.dropout_p)
-        self.frame5 = TimeDelayLayer_v5(input_dim=512, output_dim=1500, context_size=1,
-                                        dilation=1, dropout_p=self.dropout_p)
+        self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=self.channels[0],
+                                        context_size=5, dilation=1)
+        self.frame2 = TimeDelayLayer_v5(input_dim=self.channels[0], output_dim=self.channels[1],
+                                        context_size=3, dilation=2)
+        self.frame3 = TimeDelayLayer_v5(input_dim=self.channels[1], output_dim=self.channels[2],
+                                        context_size=3, dilation=3)
+        self.frame4 = TimeDelayLayer_v5(input_dim=self.channels[2], output_dim=self.channels[3],
+                                        context_size=1, dilation=1)
+        self.frame5 = TimeDelayLayer_v5(input_dim=self.channels[3], output_dim=self.channels[4],
+                                        context_size=1, dilation=1)
 
         self.drop = nn.Dropout(p=self.dropout_p)
 
         if encoder_type == 'STAP':
-            self.encoder = StatisticPooling(input_dim=1500)
+            self.encoder = StatisticPooling(input_dim=self.channels[4])
         elif encoder_type == 'SASP':
-            self.encoder = AttentionStatisticPooling(input_dim=1500, hidden_dim=512)
+            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=512)
         else:
             raise ValueError(encoder_type)
 
         self.segment6 = nn.Sequential(
-            nn.Linear(3000, 512),
+            nn.Linear(self.channels[4] * 2, 512),
             nn.ReLU(),
             nn.BatchNorm1d(512)
         )
