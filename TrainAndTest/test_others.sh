@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=82
+stage=80
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -587,13 +587,18 @@ if [ $stage -le 80 ]; then
       --embedding-size 512 \
       --loss-type ${loss} \
       --encoder-type STAP \
+      --channels 512,512,512,512,1500 \
+      --margin 0.25 \
+      --s 30 \
+      --all-iteraion 0 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean/checkpoint_53.pth/epoch_53_var \
-      --resume Data/checkpoint/TDNN_v5/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean/checkpoint_53.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/epoch_60_var \
+      --resume Data/checkpoint/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
   done
+  exit
 fi
 
 # ===============================    RET    ===============================
