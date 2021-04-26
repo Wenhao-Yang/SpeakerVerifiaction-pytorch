@@ -572,7 +572,7 @@ if [ $stage -le 80 ]; then
   encod=None
   dataset=vox1
   for loss in arcsoft; do # 32,128,512; 8,32,128
-    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model TDNN_v5 \
       --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
@@ -590,7 +590,6 @@ if [ $stage -le 80 ]; then
       --channels 512,512,512,512,1500 \
       --margin 0.25 \
       --s 30 \
-      --all-iteraion 0 \
       --input-length var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/epoch_60_var \
