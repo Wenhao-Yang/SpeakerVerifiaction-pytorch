@@ -345,3 +345,169 @@ class RET(nn.Module):
         logits = self.classifier(embedding_b)
 
         return logits, embedding_b
+
+
+class RET_v2(nn.Module):
+    def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
+                 channels=[512, 512, 512, 512, 512, 1536], context=[5, 3, 3, 5],
+                 downsample=None, resnet_size=17, stride=[1],
+                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP', block_type='Basic',
+                 mask='None', mask_len=20, **kwargs):
+        super(RET_v2, self).__init__()
+        self.num_classes = num_classes
+        self.dropout_p = dropout_p
+        self.dropout_layer = dropout_layer
+        self.input_dim = input_dim
+        self.alpha = alpha
+        self.mask = mask
+        self.channels = channels
+        self.context = context
+        self.stride = stride
+        tdnn_type = {14: [1, 1, 1, 0],
+                     17: [1, 1, 1, 1]}
+        self.layers = tdnn_type[resnet_size] if resnet_size in tdnn_type else tdnn_type[17]
+
+        if input_norm == 'Instance':
+            self.inst_layer = nn.InstanceNorm1d(input_dim)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        else:
+            self.inst_layer = None
+
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+        elif self.mask == "freq":
+            self.mask = FreqMaskLayer(mask_len=mask_len)
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(mask_len=mask_len),
+                FreqMaskLayer(mask_len=mask_len)
+            )
+        else:
+            self.mask_layer = None
+
+        TDNN_layer = TimeDelayLayer_v5
+        if block_type == 'Basic':
+            Blocks = TDNNBlock
+        elif block_type == 'Basic_v6':
+            Blocks = TDNNBlock_v6
+            TDNN_layer = TimeDelayLayer_v6
+        elif block_type == 'Agg':
+            Blocks = TDNNBottleBlock
+        elif block_type == 'cbam':
+            Blocks = TDNNCBAMBlock
+        else:
+            raise ValueError(block_type)
+
+        self.frame1 = TDNN_layer(input_dim=self.input_dim, output_dim=self.channels[0],
+                                 context_size=5, dilation=1, stride=self.stride[0])
+        self.frame2 = self._make_block(block=Blocks, inplanes=self.channels[0], planes=self.channels[0],
+                             downsample=downsample, dilation=1, blocks=self.layers[0])
+
+        self.frame4 = TDNN_layer(input_dim=self.channels[0], output_dim=self.channels[1],
+                                 context_size=3, dilation=1, stride=self.stride[1])
+        self.frame5 = self._make_block(block=Blocks, inplanes=self.channels[1], planes=self.channels[1],
+                             downsample=downsample, dilation=1, blocks=self.layers[1])
+
+        self.frame7 = TDNN_layer(input_dim=self.channels[1], output_dim=self.channels[2],
+                                 context_size=3, dilation=1, stride=self.stride[2])
+        self.frame8 = self._make_block(block=Blocks, inplanes=self.channels[2], planes=self.channels[2],
+                             downsample=downsample, dilation=1, blocks=self.layers[2])
+
+        if self.layers[3] != 0:
+            self.frame10 = TDNN_layer(input_dim=self.channels[2], output_dim=self.channels[3],
+                                      context_size=5, dilation=1, stride=self.stride[3])
+            self.frame11 = self._make_block(block=Blocks, inplanes=self.channels[3], planes=self.channels[3],
+                                  downsample=downsample, dilation=1, blocks=self.layers[3])
+
+        self.frame13 = TDNN_layer(input_dim=self.channels[3], output_dim=self.channels[4],
+                                  context_size=1, dilation=1)
+        self.frame14 = TDNN_layer(input_dim=self.channels[4], output_dim=self.channels[5],
+                                  context_size=1, dilation=1)
+
+        self.drop = nn.Dropout(p=self.dropout_p)
+
+        if encoder_type == 'STAP':
+            self.encoder = StatisticPooling(input_dim=self.channels[5])
+        elif encoder_type == 'SASP':
+            self.encoder = AttentionStatisticPooling(input_dim=self.channels[5], hidden_dim=512)
+        else:
+            raise ValueError(encoder_type)
+
+        self.segment1 = nn.Sequential(
+            nn.Linear(self.channels[5] * 2, 512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512)
+        )
+
+        self.segment2 = nn.Sequential(
+            nn.Linear(512, embedding_size),
+            nn.ReLU(),
+            nn.BatchNorm1d(embedding_size)
+        )
+
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
+        self.classifier = nn.Linear(embedding_size, num_classes)
+        # self.bn = nn.BatchNorm1d(num_classes)
+
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.BatchNorm1d):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+            elif isinstance(m, TimeDelayLayer_v5):
+                # nn.init.normal(m.kernel.weight, mean=0., std=1.)
+                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
+
+    def _make_block(self, block, inplanes, planes, downsample, dilation, blocks=1):
+        if blocks == 0:
+            return None
+        layers = []
+        layers.append(block(inplanes=inplanes, planes=planes, downsample=downsample, dilation=dilation))
+        for _ in range(1, blocks):
+            layers.append(block(inplanes=inplanes, planes=planes, downsample=downsample, dilation=dilation))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        # pdb.set_trace()
+        if len(x.shape) == 4:
+            x = x.squeeze(1).float()
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+
+        x = self.frame1(x)
+        x = self.frame2(x)
+
+        x = self.frame4(x)
+        x = self.frame5(x)
+
+        x = self.frame7(x)
+        x = self.frame8(x)
+
+        if self.layers[3] != 0:
+            x = self.frame10(x)
+            x = self.frame11(x)
+
+        x = self.frame13(x)
+        x = self.frame14(x)
+
+        if self.dropout_layer:
+            x = self.drop(x)
+
+        # print(x.shape)
+        x = self.encoder(x)
+        embedding_a = self.segment1(x)
+        embedding_b = self.segment2(embedding_a)
+
+        if self.alpha:
+            embedding_b = self.l2_norm(embedding_b)
+
+        logits = self.classifier(embedding_b)
+
+        return logits, embedding_b
