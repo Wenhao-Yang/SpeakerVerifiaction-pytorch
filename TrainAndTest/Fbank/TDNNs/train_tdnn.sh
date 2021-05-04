@@ -517,7 +517,7 @@ if [ $stage -le 90 ]; then
   # done
 
   resnet_size=17
-  for block_type in Basic ; do
+  for block_type in Basic; do
     echo -e "\n\033[1;4;31m stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -559,8 +559,8 @@ if [ $stage -le 90 ]; then
       --s 30 \
       --all-iteraion 0 \
       --log-interval 10
- done
- exit
+  done
+  exit
 fi
 
 if [ $stage -le 92 ]; then
@@ -576,50 +576,50 @@ if [ $stage -le 92 ]; then
   resnet_size=14
   stride=2
 
-   for block_type in Basic; do
-     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
-     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
-       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_v2 \
-       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
-       --train-trials trials_2w \
-       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_v2 \
-       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
-       --fix-length \
-       --input-norm ${input_norm} \
-       --nj 12 \
-       --epochs 60 \
-       --patience 2 \
-       --milestones 10,20,30 \
-       --model ${model} \
-       --resnet-size ${resnet_size} \
-       --block-type ${block_type} \
-       --scheduler rop \
-       --weight-decay 0.0001 \
-       --lr 0.1 \
-       --alpha 0 \
-       --feat-format kaldi \
-       --embedding-size ${embedding_size} \
-       --batch-size ${batch_size} \
-       --accu-steps 1 \
-       --input-dim 161 \
-       --channels 512,512,512,512,512,1536 \
-       --context 5,5,5 \
-       --stride 1,${stride},${stride} \
-       --encoder-type ${encod} \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride${stride}_wde4_shuf \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride${stride}_wde4_shuf/checkpoint_45.pth \
-       --cos-sim \
-       --dropout-p 0.0 \
-       --veri-pairs 9600 \
-       --gpu-id 0,1 \
-       --num-valid 2 \
-       --loss-type ${loss} \
-       --margin 0.25 \
-       --s 30 \
-       --all-iteraion 0 \
-       --log-interval 10
-   done
+  for block_type in Basic; do
+    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_v2 \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_v2 \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --fix-length \
+      --input-norm ${input_norm} \
+      --nj 12 \
+      --epochs 60 \
+      --patience 2 \
+      --milestones 10,20,30 \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --block-type ${block_type} \
+      --scheduler rop \
+      --weight-decay 0.0001 \
+      --lr 0.1 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --embedding-size ${embedding_size} \
+      --batch-size ${batch_size} \
+      --accu-steps 1 \
+      --input-dim 161 \
+      --channels 512,512,512,512,512,1536 \
+      --context 5,5,5 \
+      --stride 1,${stride},${stride} \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride${stride}_wde4_shuf \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride${stride}_wde4_shuf/checkpoint_45.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0,1 \
+      --num-valid 2 \
+      --loss-type ${loss} \
+      --margin 0.25 \
+      --s 30 \
+      --all-iteraion 0 \
+      --log-interval 10
+  done
 
 #  resnet_size=17
 #  for block_type in Basic ; do
@@ -664,5 +664,5 @@ if [ $stage -le 92 ]; then
 #      --s 30 \
 #      --all-iteraion 0 \
 #      --log-interval 10
- done
+#  done
 fi
