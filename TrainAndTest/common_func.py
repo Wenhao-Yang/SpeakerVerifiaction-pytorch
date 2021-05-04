@@ -21,7 +21,7 @@ from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.TDNN.ARET import RET
+from Define_Model.TDNN.ARET import RET, RET_v2
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
@@ -85,6 +85,7 @@ __factory = {
     'ETDNN_v5': ETDNN_v5,
     'FTDNN': FTDNN,
     'RET': RET,
+    'RET_v2': RET_v2,
     'GradResNet': GradResNet,
     'TimeFreqResNet': TimeFreqResNet
 }
