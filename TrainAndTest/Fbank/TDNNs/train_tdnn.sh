@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=90
+stage=92
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -560,6 +560,7 @@ if [ $stage -le 90 ]; then
       --all-iteraion 0 \
       --log-interval 10
  done
+ exit
 fi
 
 if [ $stage -le 92 ]; then
@@ -576,7 +577,7 @@ if [ $stage -le 92 ]; then
   stride=2
 
    for block_type in Basic; do
-     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
      # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
      python -W ignore TrainAndTest/Spectrogram/train_egs.py \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_v2 \
