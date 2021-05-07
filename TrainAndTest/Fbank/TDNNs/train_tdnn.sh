@@ -573,7 +573,7 @@ if [ $stage -le 92 ]; then
   embedding_size=512
   input_norm=Mean
   batch_size=128
-  resnet_size=14
+  resnet_size=17
   stride=2
 
   for block_type in Basic; do
@@ -604,8 +604,8 @@ if [ $stage -le 92 ]; then
       --accu-steps 1 \
       --input-dim 161 \
       --channels 512,512,512,512,512,1536 \
-      --context 5,5,5 \
-      --stride 1,${stride},${stride} \
+      --context 5,3,3,5 \
+      --stride 1,${stride},${stride},${stride} \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride${stride}_wde4_shuf \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride${stride}_wde4_shuf/checkpoint_45.pth \

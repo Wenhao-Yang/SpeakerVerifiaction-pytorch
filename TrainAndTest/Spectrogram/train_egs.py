@@ -365,7 +365,7 @@ def main():
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
         torch.save(model, check_path)
 
-    iteration = 100 if args.resume else 0
+    iteration = 0  # if args.resume else 0
     if args.finetune and args.resume:
         if os.path.isfile(args.resume):
             print('=> loading checkpoint {}'.format(args.resume))
