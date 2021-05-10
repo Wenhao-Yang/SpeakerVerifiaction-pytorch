@@ -316,6 +316,7 @@ def train(train_loader, model, back_guide, ce, optimizer, epoch):
     correct = 0.
     total_datasize = 0.
     total_loss = 0.
+    total_am_loss = 0.
     orth_err = 0
 
     ce_criterion, xe_criterion, ae_criterion = ce
@@ -374,6 +375,8 @@ def train(train_loader, model, back_guide, ce, optimizer, epoch):
 
         assert args.loss_ratio > 0
         loss_am = ae_criterion(classfier_label, label) * args.loss_ratio
+
+        total_am_loss += float(loss_am.item())
 
         total_loss += float(loss.item()) + float(loss_am.item())
 
