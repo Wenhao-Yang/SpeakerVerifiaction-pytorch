@@ -588,14 +588,14 @@ if [ $stage -le 92 ]; then
       --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
-      --epochs 60 \
-      --patience 2 \
+      --epochs 50 \
+      --patience 3 \
       --milestones 10,20,30 \
       --model ${model} \
       --resnet-size ${resnet_size} \
       --block-type ${block_type} \
       --scheduler rop \
-      --weight-decay 0.0001 \
+      --weight-decay 0.00001 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
@@ -607,8 +607,8 @@ if [ $stage -le 92 ]; then
       --context 5,3,3,5 \
       --stride 1,${stride},1,${stride} \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride1${stride}_wde4_shuf \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride1${stride}_wde4_shuf/checkpoint_45.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride1${stride}_wde5_shuf \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_stride1${stride}_wde5_shuf/checkpoint_45.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
