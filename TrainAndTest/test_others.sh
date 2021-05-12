@@ -571,6 +571,10 @@ if [ $stage -le 80 ]; then
   loss=arcsoft
   encod=None
   dataset=vox1
+
+  # 20210426
+  # Test ERR is 2.3542%, Threshold is 0.2698025107383728
+  # mindcf-0.01 0.2192, mindcf-0.001 0.2854.
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \

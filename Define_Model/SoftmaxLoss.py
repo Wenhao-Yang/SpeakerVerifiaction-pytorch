@@ -222,7 +222,10 @@ class ArcSoftmaxLoss(nn.Module):
         return loss
 
     def __repr__(self):
-        return "ArcSoftmaxLoss(margin=%f, s=%d, iteration=%d)" % (self.margin, self.s, self.iteraion)
+        return "ArcSoftmaxLoss(margin=%f, s=%d, iteration=%d, all_iteraion=%s)" % (self.margin,
+                                                                                   self.s,
+                                                                                   self.iteraion,
+                                                                                   self.all_iteraion)
 
 
 class CenterLoss(nn.Module):

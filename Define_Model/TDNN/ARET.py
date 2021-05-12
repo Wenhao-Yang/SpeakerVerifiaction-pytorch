@@ -363,6 +363,11 @@ class RET_v2(nn.Module):
         self.channels = channels
         self.context = context
         self.stride = stride
+        if len(self.stride) == 1:
+            while len(self.stride) < 4:
+                self.stride.append(self.stride[0])
+
+        self.tdnn_size = resnet_size
         tdnn_type = {14: [1, 1, 1, 0],
                      17: [1, 1, 1, 1]}
         self.layers = tdnn_type[resnet_size] if resnet_size in tdnn_type else tdnn_type[17]
@@ -402,23 +407,23 @@ class RET_v2(nn.Module):
         self.frame1 = TDNN_layer(input_dim=self.input_dim, output_dim=self.channels[0],
                                  context_size=5, dilation=1, stride=self.stride[0])
         self.frame2 = self._make_block(block=Blocks, inplanes=self.channels[0], planes=self.channels[0],
-                             downsample=downsample, dilation=1, blocks=self.layers[0])
+                                       downsample=downsample, dilation=1, blocks=self.layers[0])
 
         self.frame4 = TDNN_layer(input_dim=self.channels[0], output_dim=self.channels[1],
                                  context_size=3, dilation=1, stride=self.stride[1])
         self.frame5 = self._make_block(block=Blocks, inplanes=self.channels[1], planes=self.channels[1],
-                             downsample=downsample, dilation=1, blocks=self.layers[1])
+                                       downsample=downsample, dilation=1, blocks=self.layers[1])
 
         self.frame7 = TDNN_layer(input_dim=self.channels[1], output_dim=self.channels[2],
                                  context_size=3, dilation=1, stride=self.stride[2])
         self.frame8 = self._make_block(block=Blocks, inplanes=self.channels[2], planes=self.channels[2],
-                             downsample=downsample, dilation=1, blocks=self.layers[2])
+                                       downsample=downsample, dilation=1, blocks=self.layers[2])
 
         if self.layers[3] != 0:
             self.frame10 = TDNN_layer(input_dim=self.channels[2], output_dim=self.channels[3],
                                       context_size=5, dilation=1, stride=self.stride[3])
             self.frame11 = self._make_block(block=Blocks, inplanes=self.channels[3], planes=self.channels[3],
-                                  downsample=downsample, dilation=1, blocks=self.layers[3])
+                                            downsample=downsample, dilation=1, blocks=self.layers[3])
 
         self.frame13 = TDNN_layer(input_dim=self.channels[3], output_dim=self.channels[4],
                                   context_size=1, dilation=1)

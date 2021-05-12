@@ -274,7 +274,7 @@ class SqueezeExcitation(nn.Module):
 
 
 class GAIN(nn.Module):
-    def __init__(self, time, freq, scale=2., theta=1.):
+    def __init__(self, time, freq, scale=1.1, theta=0.5):
         super(GAIN, self).__init__()
         self.scale = nn.Parameter(torch.tensor(scale))
         self.theta = nn.Parameter(torch.tensor(theta))
@@ -291,9 +291,10 @@ class GAIN(nn.Module):
         T = self.upsample(T)
 
         # Put on the same device
-        T = T.cuda()
-        scale = self.scale.cuda()
-        theta = self.theta.cuda()
+        if x.is_cuda:
+            T = T.cuda()
+            scale = self.scale.cuda()  # .clamp_min(1e-6)
+            theta = self.theta.cuda()
 
         # pdb.set_trace()
         T = scale * (T - theta)
