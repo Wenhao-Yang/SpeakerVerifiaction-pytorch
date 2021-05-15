@@ -569,25 +569,30 @@ if [ $stage -le 80 ]; then
   feat_type=spect
   feat=log
   loss=arcsoft
+  model=TDNN_v5
   encod=None
   dataset=vox1
-  test_set=cnceleb
+  test_set=sitw
 
   # 20210426 vox1 test
   # Test ERR is 2.3542%, Threshold is 0.2698025107383728
   # mindcf-0.01 0.2192, mindcf-0.001 0.2854.
 
-  # test_set=cnceleb
+  # test_set=sitw
 
-  for loss in arcsoft; do # 32,128,512; 8,32,128
-    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${test_set} with ${loss} \033[0m\n"
+  # test_set=cnceleb
+  # Test ERR is 16.8276%, Threshold is 0.21655701100826263
+  #  mindcf-0.01 0.6923, mindcf-0.001 0.8009.
+
+  for subset in eval dev; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model TDNN_v5 \
+      --model ${model} \
       --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 161 \
@@ -600,7 +605,7 @@ if [ $stage -le 80 ]; then
       --s 30 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_epoch_60_var \
+      --xvector-dir Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_${subset}_epoch_60_var \
       --resume Data/checkpoint/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
@@ -658,7 +663,7 @@ if [ $stage -le 82 ]; then
   model=RET
   embedding_size=512
   train_set=vox2
-  #  test_set=vox1
+  # test_set=vox1
   # 1.6172%, Threshold is 0.29920902848243713
   # mindcf-0.01 0.1592, mindcf-0.001 0.2065.
 
@@ -671,8 +676,9 @@ if [ $stage -le 82 ]; then
   # mindcf-0.01 0.2346, mindcf-0.001 0.4054.
 
   test_set=cnceleb
-#  Test ERR is 19.5295%, Threshold is 0.28571683168411255
-#  mindcf-0.01 0.7313, mindcf-0.001 0.8193.
+  # 20210515
+  #  Test ERR is 19.5295%, Threshold is 0.28571683168411255
+  #  mindcf-0.01 0.7313, mindcf-0.001 0.8193.
 
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
