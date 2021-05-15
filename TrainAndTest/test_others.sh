@@ -574,9 +574,12 @@ if [ $stage -le 80 ]; then
   dataset=vox1
   test_set=aidata
 
-  # 20210426 vox1 test
-  # Test ERR is 2.3542%, Threshold is 0.2698025107383728
-  # mindcf-0.01 0.2192, mindcf-0.001 0.2854.
+  # Training set: voxceleb 2 Loss: arcosft
+
+  # |   Test Set      |    EER ( % )  |   Threshold   |  MinDCF-0.01   |   MinDCF-0.01  |     Date     |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |   vox1 test     |    2.3542%    |   0.2698025   |    0.2192      |     0.2854     |   20210426   |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
 
   # 20210515
   # test_set=sitw
@@ -597,6 +600,12 @@ if [ $stage -le 80 ]; then
   # test 30w trials
   # Test ERR is 10.8300%, Threshold is 0.2786811888217926
   #  mindcf-0.01 0.8212, mindcf-0.001 0.9527.
+
+  # 20210515
+  # aidata
+  # test 50w trials
+  # Test ERR is 10.0972%, Threshold is 0.29525309801101685
+  #  mindcf-0.01 0.7859, mindcf-0.001 0.9520.
 
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
