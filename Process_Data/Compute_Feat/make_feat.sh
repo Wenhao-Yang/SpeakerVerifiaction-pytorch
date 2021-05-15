@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-stage=20
+stage=21
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # echo $(awk '{n += $2} END{print n}' <utt2num_frames)
 
 waited=0
-while [ $(ps 13153 | wc -l) -eq 2 ]; do
+while [ $(ps 2841 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -433,8 +433,8 @@ fi
 
 if [ $stage -le 20 ]; then
   # dev
-    dataset=aishell2
-#  dataset=aidata
+  dataset=aishell2
+  #  dataset=aidata
   for name in dev; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/${name} \
@@ -447,7 +447,33 @@ if [ $stage -le 20 ]; then
       --nfft 320 \
       --windowsize 0.02
   done
+  exit
+fi
 
+if [ $stage -le 21 ]; then
+  # dev
+  dataset=aishell2
+  #  dataset=aidata
+  python Process_Data/Compute_Feat/make_egs.py \
+    --data-dir ${lstm_dir}/data/${dataset}/spect/dev_log \
+    --out-dir ${lstm_dir}/data/${dataset}/egs/spect \
+    --feat-type spectrogram \
+    --train \
+    --input-per-spks 768 \
+    --feat-format kaldi \
+    --out-format kaldi_cmp \
+    --num-valid 2 \
+    --out-set dev_log
+
+  python Process_Data/Compute_Feat/make_egs.py \
+    --data-dir ${lstm_dir}/data/${dataset}/spect/dev_log \
+    --out-dir ${lstm_dir}/data/${dataset}/egs/spect \
+    --feat-type spectrogram \
+    --input-per-spks 768 \
+    --feat-format kaldi \
+    --out-format kaldi_cmp \
+    --num-valid 2 \
+    --out-set valid_log
   exit
 fi
 
