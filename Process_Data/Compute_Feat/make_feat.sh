@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=6
+stage=111
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -711,17 +711,21 @@ fi
 #stage=1000
 if [ $stage -le 111 ]; then
   #enroll
+  datasets=cnceleb
+  echo -e "\n\033[1;4;31m Stage ${stage}: Making log spectrogram for ${datasets}\033[0m\n"
   for name in dev test; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir ${lstm_dir}/data/cnceleb/${name} \
-      --out-dir ${lstm_dir}/data/cnceleb/spect \
-      --out-set ${name} \
+      --data-dir ${lstm_dir}/data/${datasets}/${name} \
+      --out-dir ${lstm_dir}/data/${datasets}/spect \
+      --out-set ${name}_log \
       --feat-type spectrogram \
       --nfft 320 \
       --windowsize 0.02 \
-      --feat-format kaldi \
-      --nj 18
+      --feat-format kaldi_cmp \
+      --log-scale \
+      --nj 10
   done
+  exit
 fi
 
 if [ $stage -le 120 ]; then
