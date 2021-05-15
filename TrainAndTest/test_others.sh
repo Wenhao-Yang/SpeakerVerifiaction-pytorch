@@ -572,19 +572,29 @@ if [ $stage -le 80 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox1
-  test_set=sitw
+  test_set=aishell2
 
   # 20210426 vox1 test
   # Test ERR is 2.3542%, Threshold is 0.2698025107383728
   # mindcf-0.01 0.2192, mindcf-0.001 0.2854.
 
+  # 20210515
   # test_set=sitw
+  # dev
+  # Test ERR is 2.8109%, Threshold is 0.2630014419555664
+  #  mindcf-0.01 0.2466, mindcf-0.001 0.4026.
+  # eval
+  # Test ERR is 3.2531%, Threshold is 0.26424601674079895
+  #  mindcf-0.01 0.2984, mindcf-0.001 0.4581.
 
+  # 20210515
   # test_set=cnceleb
   # Test ERR is 16.8276%, Threshold is 0.21655701100826263
   #  mindcf-0.01 0.6923, mindcf-0.001 0.8009.
 
-  for subset in eval dev; do # 32,128,512; 8,32,128
+  # aishell2
+
+  for subset in test ; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
