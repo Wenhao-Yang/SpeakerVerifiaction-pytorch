@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=111
+stage=20
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -435,7 +435,7 @@ if [ $stage -le 20 ]; then
   # dev
   #  dataset=aishell2
   dataset=aidata
-  for name in train_8k; do
+  for name in test; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/${name} \
       --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/spect \

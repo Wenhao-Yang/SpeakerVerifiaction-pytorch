@@ -572,7 +572,7 @@ if [ $stage -le 80 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox1
-  test_set=aishell2
+  test_set=aidata
 
   # 20210426 vox1 test
   # Test ERR is 2.3542%, Threshold is 0.2698025107383728
@@ -592,7 +592,11 @@ if [ $stage -le 80 ]; then
   # Test ERR is 16.8276%, Threshold is 0.21655701100826263
   #  mindcf-0.01 0.6923, mindcf-0.001 0.8009.
 
+  # 20210515
   # aishell2
+  # test 30w trials
+  # Test ERR is 10.8300%, Threshold is 0.2786811888217926
+  #  mindcf-0.01 0.8212, mindcf-0.001 0.9527.
 
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
