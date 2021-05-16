@@ -373,7 +373,7 @@ if [ $stage -le 81 ]; then
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/aishell2/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials\ \
+      --train-trials trials_4w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/aishell2/${feat_type}/test_${feat} \
       --fix-length \
