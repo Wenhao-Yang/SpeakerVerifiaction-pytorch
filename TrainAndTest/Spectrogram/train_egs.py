@@ -533,7 +533,7 @@ def main():
             lr_string += '{:.5f} '.format(param_group['lr'])
         print('%s \33[0m' % lr_string)
 
-        train(train_loader, model, ce, optimizer, epoch)
+        # train(train_loader, model, ce, optimizer, epoch)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
