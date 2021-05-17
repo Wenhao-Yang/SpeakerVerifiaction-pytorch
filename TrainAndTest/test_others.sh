@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=79
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -563,6 +563,63 @@ if [ $stage -le 60 ]; then
       --gpu-id 0
   done
 
+fi
+
+if [ $stage -le 79 ]; then
+  feat_type=spect
+  feat=log
+  loss=arcsoft
+  model=TDNN_v5
+  encod=None
+  dataset=aishell2
+  test_set=aishell2
+
+  # Training set: aishell 2 Loss: arcosft
+
+  # |   Test Set      |    EER ( % )  |   Threshold   |  MinDCF-0.01   |   MinDCF-0.01  |     Date     |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |   vox1 test     |    2.3542%    |   0.2698025   |    0.2192      |     0.2854     |   20210426   |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+
+  # 20210517
+  # aishell2
+  # test 30w trials
+  # Test ERR is 10.8300%, Threshold is 0.2786811888217926
+  #  mindcf-0.01 0.8212, mindcf-0.001 0.9527.
+
+  # 20210515
+  # aidata
+  # test 50w trials
+  # Test ERR is 10.0972%, Threshold is 0.29525309801101685
+  #  mindcf-0.01 0.7859, mindcf-0.001 0.9520.
+
+  for subset in test; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/aishell2/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/aishell2/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/aishell2/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size 512 \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --channels 512,512,512,512,1500 \
+      --margin 0.25 \
+      --s 30 \
+      --input-length var \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_${subset}_epoch_60_var \
+      --resume Data/checkpoint/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/checkpoint_60.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
 fi
 
 if [ $stage -le 80 ]; then
