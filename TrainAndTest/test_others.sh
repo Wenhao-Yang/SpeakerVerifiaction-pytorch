@@ -572,26 +572,31 @@ if [ $stage -le 79 ]; then
   model=TDNN_v5
   encod=None
   dataset=aishell2
-  test_set=aishell2
+  test_set=vox1
 
   # Training set: aishell 2 Loss: arcosft
 
   # |   Test Set      |    EER ( % )  |   Threshold   |  MinDCF-0.01   |   MinDCF-0.01  |     Date     |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |  aishell2 test  |    1.4740%    |   0.2053137   |    0.2740      |     0.4685     |   20210517   |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
   # |   vox1 test     |    2.3542%    |   0.2698025   |    0.2192      |     0.2854     |   20210426   |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
 
   # 20210517
   # aishell2
-  # test 30w trials
-  # Test ERR is 10.8300%, Threshold is 0.2786811888217926
-  #  mindcf-0.01 0.8212, mindcf-0.001 0.9527.
+  # test 20w trials
+  # Test ERR is 1.4740%, Threshold is 0.20531372725963593
+  #  mindcf-0.01 0.2740, mindcf-0.001 0.4685.
 
   # 20210515
   # aidata
   # test 50w trials
   # Test ERR is 10.0972%, Threshold is 0.29525309801101685
   #  mindcf-0.01 0.7859, mindcf-0.001 0.9520.
+
+  # 20210517
+  # vox1
 
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
@@ -602,6 +607,7 @@ if [ $stage -le 79 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/aishell2/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --trials trials \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 161 \
