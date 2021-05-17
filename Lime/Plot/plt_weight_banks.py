@@ -45,7 +45,7 @@ xmore = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) 
 ymore = f(xmore)
 ymore = ymore / ymore.sum()
 
-pdf = PdfPages('Lime/LoResNet8/timit/soft/grad_filter_noedge.pdf')
+pdf = PdfPages('Lime/Data/LoResNet8/timit/soft/grad_filter_noedge.pdf')
 plt.rc('font', family='Times New Roman')
 
 fig = plt.figure(figsize=(8.5, 6), tight_layout=True)
