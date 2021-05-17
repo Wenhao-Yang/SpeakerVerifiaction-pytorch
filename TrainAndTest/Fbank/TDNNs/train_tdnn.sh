@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=92
+stage=81
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -359,7 +359,7 @@ fi
 
 if [ $stage -le 81 ]; then
   #  model=TDNN
-  datasets=vox2
+  datasets=aishell2
   feat=log
   feat_type=spect
   loss=arcsoft
@@ -371,11 +371,11 @@ if [ $stage -le 81 ]; then
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_v2 \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_v2 \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/aishell2/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_4w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/aishell2/${feat_type}/test_${feat} \
       --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
@@ -394,8 +394,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --input-dim 161 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}_v2/${feat_type}_egs/${loss}_0ce/input${input_norm}_${encod}_em${embedding_size}_wde4 \
-      --resume Data/checkpoint/${model}/${datasets}_v2/${feat_type}_egs/${loss}_0ce/input${input_norm}_${encod}_em${embedding_size}_wde4/checkpoint_53.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_0ce/input${input_norm}_${encod}_em${embedding_size}_wde4 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_0ce/input${input_norm}_${encod}_em${embedding_size}_wde4/checkpoint_53.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
