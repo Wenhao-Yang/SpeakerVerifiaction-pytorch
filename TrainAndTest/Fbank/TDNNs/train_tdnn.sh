@@ -359,7 +359,7 @@ fi
 
 if [ $stage -le 81 ]; then
   #  model=TDNN
-  datasets=aishell2
+  datasets=aidata
   feat=log
   feat_type=spect
   loss=arcsoft
