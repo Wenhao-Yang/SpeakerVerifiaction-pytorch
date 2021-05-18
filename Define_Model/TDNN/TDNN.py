@@ -21,6 +21,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
+from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
 
 """Time Delay Neural Network as mentioned in the 1989 paper by Waibel et al. (Hinton) and the 2015 paper by Peddinti et al. (Povey)"""
@@ -658,6 +659,7 @@ class TDNN_v4(nn.Module):
 
 class TDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
+                 filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
                  mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
@@ -668,6 +670,22 @@ class TDNN_v5(nn.Module):
         self.channels = channels
         self.alpha = alpha
         self.mask = mask
+        self.filter = filter
+        self.feat_dim = feat_dim
+
+        if self.filter == 'fDLR':
+            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        elif self.filter == 'fBLayer':
+            self.filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        elif self.filter == 'fBPLayer':
+            self.filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
+                                         filter_fix=filter_fix)
+        elif self.filter == 'fLLayer':
+            self.filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
+        elif self.filter == 'Avg':
+            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
+        else:
+            self.filter_layer = None
 
         if input_norm == 'Instance':
             self.inst_layer = nn.InstanceNorm1d(input_dim)
@@ -687,6 +705,9 @@ class TDNN_v5(nn.Module):
             )
         else:
             self.mask_layer = None
+
+        if self.filter_layer != None:
+            self.input_dim = feat_dim
 
         self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=self.channels[0],
                                         context_size=5, dilation=1)
@@ -740,6 +761,9 @@ class TDNN_v5(nn.Module):
 
     def forward(self, x):
         # pdb.set_trace()
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
         if len(x.shape) == 4:
             x = x.squeeze(1).float()
 

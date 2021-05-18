@@ -19,7 +19,7 @@ from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 
-from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN
+from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2
@@ -80,7 +80,6 @@ class SEBasicBlock(nn.Module):
 
         return out
 
-
 class CBAMBlock(nn.Module):
     expansion = 1
 
@@ -125,6 +124,122 @@ class CBAMBlock(nn.Module):
         out = self.relu(out)
 
         return out
+
+
+class Block3x3(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(Block3x3, self).__init__()
+        self.conv1 = conv3x3(inplanes, planes)
+        self.bn1 = nn.BatchNorm2d(planes)
+
+        self.conv2 = conv3x3(planes, planes, stride)
+        self.bn2 = nn.BatchNorm2d(planes)
+
+        self.conv3 = conv3x3(planes, planes)
+        self.bn3 = nn.BatchNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class InstBlock3x3(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(InstBlock3x3, self).__init__()
+        self.conv1 = conv3x3(inplanes, planes)
+        self.bn1 = nn.InstanceNorm2d(planes)
+
+        self.conv2 = conv3x3(planes, planes, stride)
+        self.bn2 = nn.InstanceNorm2d(planes)
+
+        self.conv3 = conv3x3(planes, planes)
+        self.bn3 = nn.InstanceNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class VarSizeConv(nn.Module):
+
+    def __init__(self, inplanes, planes, stride=1, kernel_size=[3, 5, 9]):
+        super(VarSizeConv, self).__init__()
+        self.stide = stride
+
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
+        self.bn1 = nn.InstanceNorm2d(planes)
+
+        self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
+        self.bn2 = nn.InstanceNorm2d(planes)
+
+        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=4)
+        self.bn3 = nn.InstanceNorm2d(planes)
+
+        self.avg = nn.AvgPool2d(kernel_size=int(stride * 2 + 1), stride=stride, padding=stride)
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x1 = self.bn1(x1)
+
+        x2 = self.conv2(x)
+        x2 = self.bn2(x2)
+
+        x3 = self.conv3(x)
+        x3 = self.bn3(x3)
+
+        if self.stide != 1:
+            x = self.avg(x)
+
+        return torch.cat([x, x1, x2, x3], dim=1)
+        # return torch.cat([x, x1, x2, x3], dim=1)
 
 
 class SimpleResNet(nn.Module):
@@ -307,6 +422,13 @@ class ThinResNet(nn.Module):
 
         if self.filter == 'fDLR':
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        elif self.filter == 'fBLayer':
+            self.filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        elif self.filter == 'fBPLayer':
+            self.filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
+                                         filter_fix=filter_fix)
+        elif self.filter == 'fLLayer':
+            self.filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
         elif self.filter == 'Avg':
             self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
         else:
@@ -556,121 +678,6 @@ class ResNet(nn.Module):
 
 # M. Hajibabaei and D. Dai, “Unified hypersphere embedding for speaker recognition,”
 # arXiv preprint arXiv:1807.08312, 2018.
-class Block3x3(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(Block3x3, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes)
-        self.bn1 = nn.BatchNorm2d(planes)
-
-        self.conv2 = conv3x3(planes, planes, stride)
-        self.bn2 = nn.BatchNorm2d(planes)
-
-        self.conv3 = conv3x3(planes, planes)
-        self.bn3 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        identity = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.downsample is not None:
-            identity = self.downsample(x)
-
-        out += identity
-        out = self.relu(out)
-
-        return out
-
-
-class InstBlock3x3(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(InstBlock3x3, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes)
-        self.bn1 = nn.InstanceNorm2d(planes)
-
-        self.conv2 = conv3x3(planes, planes, stride)
-        self.bn2 = nn.InstanceNorm2d(planes)
-
-        self.conv3 = conv3x3(planes, planes)
-        self.bn3 = nn.InstanceNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        identity = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.downsample is not None:
-            identity = self.downsample(x)
-
-        out += identity
-        out = self.relu(out)
-
-        return out
-
-
-class VarSizeConv(nn.Module):
-
-    def __init__(self, inplanes, planes, stride=1, kernel_size=[3, 5, 9]):
-        super(VarSizeConv, self).__init__()
-        self.stide = stride
-
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
-        self.bn1 = nn.InstanceNorm2d(planes)
-
-        self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
-        self.bn2 = nn.InstanceNorm2d(planes)
-
-        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=4)
-        self.bn3 = nn.InstanceNorm2d(planes)
-
-        self.avg = nn.AvgPool2d(kernel_size=int(stride * 2 + 1), stride=stride, padding=stride)
-
-    def forward(self, x):
-        x1 = self.conv1(x)
-        x1 = self.bn1(x1)
-
-        x2 = self.conv2(x)
-        x2 = self.bn2(x2)
-
-        x3 = self.conv3(x)
-        x3 = self.bn3(x3)
-
-        if self.stide != 1:
-            x = self.avg(x)
-
-        return torch.cat([x, x1, x2, x3], dim=1)
-        # return torch.cat([x, x1, x2, x3], dim=1)
-
 
 class ResNet20(nn.Module):
     def __init__(self, num_classes=1000, embedding_size=128, dropout_p=0.0,
