@@ -9,7 +9,6 @@ while [ $(ps 103374 | wc -l) -eq 2 ]; do
 done
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
-
 if [ $stage -le 0 ]; then
   datasets=vox1
   model=TDNN_v5
@@ -39,6 +38,7 @@ if [ $stage -le 0 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/spect/test_${feat} \
       --batch-size 128 \
+      --resnet-size 10 \
       --input-norm ${input_norm} \
       --test-input fix \
       --feat-format kaldi \
