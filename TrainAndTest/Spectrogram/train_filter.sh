@@ -68,7 +68,7 @@ if [ $stage -le 0 ]; then
       --lr-ratio ${lr_ratio} \
       --weight-decay 0.0005 \
       --dropout-p ${dropout_p} \
-      --gpu-id 2,3 \
+      --gpu-id 0,1 \
       --cos-sim \
       --extract \
       --all-iteraion 0 \

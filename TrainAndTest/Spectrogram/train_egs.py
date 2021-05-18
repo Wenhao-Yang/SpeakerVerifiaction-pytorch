@@ -199,6 +199,8 @@ parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
 parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.125)')
 parser.add_argument('--lr-decay', default=0, type=float, metavar='LRD',
                     help='learning rate decay ratio (default: 1e-4')
+parser.add_argument('--lr-ratio', type=float, default=0.0, metavar='LEARNRATIO',
+                    help='the learning ratio for filter layers (default: 0.0')
 parser.add_argument('--weight-decay', default=5e-4, type=float,
                     metavar='WEI', help='weight decay (default: 0.0)')
 parser.add_argument('--momentum', default=0.9, type=float,
