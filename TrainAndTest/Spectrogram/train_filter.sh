@@ -56,7 +56,7 @@ if [ $stage -le 0 ]; then
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_0ce/Input${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_avg${avgsize}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_adalr${lr_ratio}_full/checkpoint_9.pth \
       --stride 1 \
       --block-type ${block_type} \
-      --channels 32,64,128,256 \
+      --channels 512,512,512,512,1500 \
       --encoder-type ${encoder_type} \
       --embedding-size ${embedding_size} \
       --avg-size ${avgsize} \
