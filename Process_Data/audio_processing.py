@@ -531,6 +531,34 @@ class ConcateNumInput(object):
         return network_inputs.squeeze()
 
 
+class ConcateNumInput_Test(object):
+    """Rescales the input PIL.Image to the given 'size'.
+    If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
+    If 'size' is a number, it will indicate the size of the smaller edge.
+    For example, if height > width, then image will be
+    rescaled to (size * height / width, size)
+    size: size of the exactly size or the smaller edge
+    interpolation: Default: PIL.Image.BILINEAR
+    """
+
+    def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
+        super(ConcateNumInput_Test, self).__init__()
+        self.input_per_file = input_per_file
+        self.num_frames = num_frames
+        self.remove_vad = remove_vad
+
+    def __call__(self, frames_features):
+        network_inputs = []
+
+        output = frames_features
+        while len(output) < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=0)
+
+        start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
+
+        return start, len(output)
+
+
 class concateinputfromMFB(object):
     """Rescales the input PIL.Image to the given 'size'.
     If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.

@@ -701,10 +701,11 @@ class ScriptVerifyDataset(data.Dataset):
         return len(self.trials_pair)
 
 class ScriptTrainDataset(data.Dataset):
-    def __init__(self, dir, samples_per_speaker, transform, num_valid=5, loader=np.load, return_uid=False,
-                 domain=False):
+    def __init__(self, dir, samples_per_speaker, transform, num_valid=5,
+                 loader=np.load, return_uid=False, domain=False, rand_test=False):
         self.return_uid = return_uid
         self.domain = domain
+        self.rand_test = rand_test
 
         feat_scp = dir + '/feats.scp'
         spk2utt = dir + '/spk2utt'
@@ -858,23 +859,40 @@ class ScriptTrainDataset(data.Dataset):
             else:
                 return feature, label, uid
 
+        rand_idxs = [sid]
         sid %= self.num_spks
         spk = self.idx_to_spk[sid]
         utts = self.dataset[spk]
         num_utt = len(utts)
 
         y = np.array([[]]).reshape(0, self.feat_dim)
-        uid = utts[np.random.randint(0, num_utt)]
+        rand_utt_idx = np.random.randint(0, num_utt)
+        rand_idxs.append(rand_utt_idx)
+        uid = utts[rand_utt_idx]
 
         feature = self.loader(self.uid2feat[uid])
         y = np.concatenate((y, feature), axis=0)
 
         while len(y) < c.N_SAMPLES:
-            uid = utts[np.random.randint(0, num_utt)]
+            rand_utt_idx = np.random.randint(0, num_utt)
+            rand_idxs.append(rand_utt_idx)
+
+            uid = utts[rand_utt_idx]
+
             feature = self.loader(self.uid2feat[uid])
             y = np.concatenate((y, feature), axis=0)
 
             # transform features if required
+        if self.rand_test:
+            while len(rand_idxs) < 4:
+                rand_idxs.append(-1)
+
+            start, length = self.transform(y)
+            rand_idxs.append(start)
+            rand_idxs.append(length)
+
+            # [uttid uttid -1 -1 start lenght]
+            return torch.tensor(rand_idxs).reshape(1, -1), sid
 
         feature = self.transform(y)
         label = sid
