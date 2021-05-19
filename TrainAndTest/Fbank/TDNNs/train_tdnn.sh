@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=81
+stage=70
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -272,7 +272,7 @@ if [ $stage -le 60 ]; then
   embedding_size=256
 
   for model in TDNN_v4; do
-    echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    echo -e "\n\033[1;4;31m Stage ${stage}:Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
       --train-dir ${lstm_dir}/data/vox1/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
@@ -316,8 +316,9 @@ if [ $stage -le 70 ]; then
   encod=STAP
   embedding_size=256
   input_dim=24
+  input_norm=Mean
 
-  for model in ETDNN_v5 FTDNN; do
+  for model in TDNN_v5; do
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
@@ -329,8 +330,8 @@ if [ $stage -le 70 ]; then
       --fix-length \
       --nj 16 \
       --epochs 40 \
-      --patience 2 \
-      --milestones 8,14,20 \
+      --patience 3 \
+      --milestones 10,20,30 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0005 \
@@ -342,8 +343,8 @@ if [ $stage -le 70 ]; then
       --accu-steps 1 \
       --input-dim ${input_dim} \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_${encod}/${loss}_emsize${embedding_size}/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encod}_em${embedding_size}_wd5e4 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encod}_em${embedding_size}_wd5e4/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -355,6 +356,7 @@ if [ $stage -le 70 ]; then
       --remove-vad \
       --log-interval 10
   done
+  exit
 fi
 
 if [ $stage -le 80 ]; then
