@@ -267,7 +267,7 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 #                        batch_size=args.batch_size, random_chunk=args.random_chunk)
 transform = ConcateNumInput_Test(num_frames=args.num_frames, remove_vad=args.remove_vad)
 
-train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks,
+train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
                                loader=file_loader, transform=transform, num_valid=args.num_valid,
                                domain=args.domain, rand_test=True)
 
