@@ -342,6 +342,7 @@ if [ $stage -le 70 ]; then
       --batch-size 128 \
       --accu-steps 1 \
       --input-dim ${input_dim} \
+      --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encod}_em${embedding_size}_wd5e4 \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encod}_em${embedding_size}_wd5e4/checkpoint_40.pth \
