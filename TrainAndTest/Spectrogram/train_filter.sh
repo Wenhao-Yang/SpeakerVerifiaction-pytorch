@@ -24,11 +24,11 @@ if [ $stage -le 0 ]; then
   alpha=0
   embedding_size=256
   block_type=None
-  filter=fBLayer
+  filter=fBPLayer
   feat_dim=24
   lr_ratio=0.001
 
-  for lr_ratio in 0.001; do
+  for filter in fBPLayer fLlayer; do
     echo -e "\n\033[1;4;31m Stage${stage} :Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
