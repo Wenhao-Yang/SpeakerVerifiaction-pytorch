@@ -289,7 +289,7 @@ def train(train_loader, output_file):
     # pdb.set_trace()
     with open(output_file, 'w') as f:
         for batch_idx, (data, label) in pbar:
-            for i in len(data):
+            for i in range(len(data)):
                 if i == 0:
                     print(str(data[i].tolist()), str(label[i]))
                 f.write("input: " + str(data[i].tolist()) + " class: " + str(label[i]) + "\n")
