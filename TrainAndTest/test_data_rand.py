@@ -269,7 +269,7 @@ transform = ConcateNumInput_Test(num_frames=args.num_frames, remove_vad=args.rem
 
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
                                loader=file_loader, transform=transform, num_valid=args.num_valid,
-                               domain=args.domain, rand_test=True)
+                               domain=False, rand_test=True)
 
 
 # train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
