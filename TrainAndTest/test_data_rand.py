@@ -70,6 +70,7 @@ parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fi
                     help='batchnorm with instance norm')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
+parser.add_argument('--num-frames', type=int, default=300, metavar='CHUNK')
 
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
