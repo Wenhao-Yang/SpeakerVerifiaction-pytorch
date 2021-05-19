@@ -52,7 +52,9 @@ except AttributeError:
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 
 # Data options
-parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
+parser.add_argument('--train-dir', type=str,
+                    default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_log',
+                    help='path to dataset')
 # parser.add_argument('--train-test-dir', type=str, required=True, help='path to dataset')
 # parser.add_argument('--valid-dir', type=str, required=True, help='path to dataset')
 # parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
