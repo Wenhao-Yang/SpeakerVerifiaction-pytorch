@@ -291,8 +291,8 @@ def train(train_loader, output_file):
         for batch_idx, (data, label) in pbar:
             for i in range(len(data)):
                 if i == 0:
-                    print(str(data[i].tolist()), str(label[i]))
-                f.write("input: " + str(data[i].tolist()) + " class: " + str(label[i]) + "\n")
+                    print(str(data[i].tolist()), str(label[i].tolist()))
+                f.write("input: " + str(data[i].squeeze().tolist()) + " class: " + str(label[i].tolist()) + "\n")
 
 
 def main():
