@@ -28,7 +28,7 @@ if [ $stage -le 0 ]; then
   feat_dim=24
   lr_ratio=1
 
-  for filter in fLlayer; do
+  for filter in fLLayer; do
     echo -e "\n\033[1;4;31m Stage${stage} :Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
