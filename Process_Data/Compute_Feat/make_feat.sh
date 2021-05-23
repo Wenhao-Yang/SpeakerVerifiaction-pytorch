@@ -600,32 +600,32 @@ if [ $stage -le 74 ]; then
   feat=fb${num_filters}
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} for ${dataset}\033[0m\n"
 
-  for s in dev test; do
-    #    python Process_Data/Compute_Feat/make_feat.py \
-    #      --data-dir ${lstm_dir}/data/vox1/${s} \
-    #      --out-dir ${lstm_dir}/data/vox1/pyfb \
-    #      --out-set ${s}_fb40 \
-    #      --filter-type mel \
-    #      --feat-type fbank \
-    #      --filters 40 \
-    #      --log-scale \
-    #      --feat-format kaldi_cmp \
-    #      --nfft 512 \
-    #      --windowsize 0.025 \
-    #      --nj 16
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir ${lstm_dir}/data/vox1/${s} \
-      --out-dir ${lstm_dir}/data/vox1/pyfb \
-      --out-set ${s}_${feat} \
-      --filter-type mel \
-      --feat-type fbank \
-      --filters ${num_filters} \
-      --log-scale \
-      --feat-format kaldi_cmp \
-      --nfft 320 \
-      --windowsize 0.02 \
-      --nj 12
-  done
+  #  for s in dev test; do
+  #    #    python Process_Data/Compute_Feat/make_feat.py \
+  #    #      --data-dir ${lstm_dir}/data/vox1/${s} \
+  #    #      --out-dir ${lstm_dir}/data/vox1/pyfb \
+  #    #      --out-set ${s}_fb40 \
+  #    #      --filter-type mel \
+  #    #      --feat-type fbank \
+  #    #      --filters 40 \
+  #    #      --log-scale \
+  #    #      --feat-format kaldi_cmp \
+  #    #      --nfft 512 \
+  #    #      --windowsize 0.025 \
+  #    #      --nj 16
+  #    python Process_Data/Compute_Feat/make_feat.py \
+  #      --data-dir ${lstm_dir}/data/vox1/${s} \
+  #      --out-dir ${lstm_dir}/data/vox1/pyfb \
+  #      --out-set ${s}_${feat} \
+  #      --filter-type mel \
+  #      --feat-type fbank \
+  #      --filters ${num_filters} \
+  #      --log-scale \
+  #      --feat-format kaldi_cmp \
+  #      --nfft 320 \
+  #      --windowsize 0.02 \
+  #      --nj 12
+  #  done
 
   for s in dev; do
     python Process_Data/Compute_Feat/make_egs.py \
@@ -633,7 +633,7 @@ if [ $stage -le 74 ]; then
       --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
       --feat-type fbank \
       --train \
-      --input-per-spks 384 \
+      --input-per-spks 512 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --remove-vad \
@@ -643,7 +643,7 @@ if [ $stage -le 74 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_${feat} \
       --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
-      --input-per-spks 384 \
+      --input-per-spks 512 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --remove-vad \
