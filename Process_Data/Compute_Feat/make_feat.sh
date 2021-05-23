@@ -596,7 +596,7 @@ fi
 if [ $stage -le 74 ]; then
 
   dataset=vox1
-  num_filters=24
+  num_filters=40
   feat=fb${num_filters}
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} for ${dataset}\033[0m\n"
 
