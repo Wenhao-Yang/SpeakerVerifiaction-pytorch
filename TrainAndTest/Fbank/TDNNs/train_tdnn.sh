@@ -318,7 +318,7 @@ if [ $stage -le 70 ]; then
   input_dim=24
   input_norm=Mean
 
-  for input_dim in 24 40; do
+  for input_dim in 40; do
     feat=fb${input_dim}
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
