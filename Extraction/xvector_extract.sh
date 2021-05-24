@@ -182,7 +182,7 @@ if [ $stage -le 80 ]; then
       --input-norm Mean \
       --input-dim 40 \
       --nj 12 \
-      --embedding-size 156 \
+      --embedding-size 256 \
       --loss-type ${loss} \
       --encoder-type STAP \
       --channels 512,512,512,512,1500 \
