@@ -319,14 +319,14 @@ if [ $stage -le 70 ]; then
   input_norm=Mean
 
   for input_dim in 40; do
-    feat=fb${input_dim}_ws25_f400
+    feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_f400 \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_f400 \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --nj 16 \
       --epochs 40 \
