@@ -131,7 +131,7 @@ if [ $stage -le 60 ]; then
   model=TDNN_v5
   encod=STAP
   dataset=vox1
-  test_set=sitw
+  test_set=vox1
 
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
