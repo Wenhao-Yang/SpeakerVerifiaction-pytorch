@@ -4,7 +4,6 @@ stage=60
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
-
 if [ $stage -le 0 ]; then
   model=ASTDNN
   feat=mfcc40
@@ -18,7 +17,7 @@ if [ $stage -le 0 ]; then
     --feat-dim 40 \
     --extract-path Data/xvector/${model}/${feat}/${loss} \
     --model ${model} \
-    --dropout-p 0.0\
+    --dropout-p 0.0 \
     --epoch 20 \
     --embedding-size 512
 fi
@@ -122,7 +121,6 @@ if [ $stage -le 40 ]; then
     --epoch 24
 fi
 
-
 if [ $stage -le 60 ]; then
   model=TDNN_v5
   dataset=vox1
@@ -135,7 +133,7 @@ if [ $stage -le 60 ]; then
   dataset=vox1
   test_set=sitw
 
-  for subset in test ; do # 32,128,512; 8,32,128
+  for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore Xvector_Extraction/extract_xvector_egs.py \
       --model ${model} \
