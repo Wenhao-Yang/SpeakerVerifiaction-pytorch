@@ -130,7 +130,7 @@ if [ $stage -le 60 ]; then
   loss=arcsoft
   model=TDNN_v5
   encod=STAP
-  dataset=vox1
+  dataset=vox2
   test_set=vox1
 
   for subset in test; do # 32,128,512; 8,32,128
