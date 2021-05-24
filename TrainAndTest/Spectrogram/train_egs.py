@@ -583,7 +583,7 @@ def main():
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
-                    'iteraion': args.iteration, 'all_iteraion': args.all_iteraion}
+                    'iteraion': 0, 'all_iteraion': args.all_iteraion}
 
     print('Model options: {}'.format(model_kwargs))
     dist_type = 'cos' if args.cos_sim else 'l2'
