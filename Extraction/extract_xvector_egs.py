@@ -215,14 +215,12 @@ if args.cuda:
 
 # create logger
 # Define visulaize SummaryWriter instance
+if not os.path.exists(args.xvector_dir):
+    os.makedirs(args.xvector_dir)
 sys.stdout = NewLogger(os.path.join(args.xvector_dir, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 extract_kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-
-if not os.path.exists(args.check_path):
-    os.makedirs(args.check_path)
-
 opt_kwargs = {'lr': args.lr, 'lr_decay': args.lr_decay, 'weight_decay': args.weight_decay, 'dampening': args.dampening,
               'momentum': args.momentum}
 
