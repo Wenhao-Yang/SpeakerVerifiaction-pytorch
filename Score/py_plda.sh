@@ -2,14 +2,16 @@ stage=9
 
 nnet_dir=data
 
+feat_type=spect
+feat=log
+loss=arcsoft
+model=TDNN_v5
+encod=None
+dataset=aishell2
+test_set=sitw
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+
 if [ $stage -le 79 ]; then
-  feat_type=spect
-  feat=log
-  loss=arcsoft
-  model=TDNN_v5
-  encod=None
-  dataset=aishell2
-  test_set=sitw
 
   for subset in dev eval; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
@@ -40,36 +42,39 @@ fi
 
 if [ $stage -le 10 ]; then
   # Compute the mean vector for centering the evaluation xvectors.
-  ivector-mean scp:$nnet_dir/xvectors_train/xvector.scp $nnet_dir/xvectors_train/mean.vec || exit 1
+  xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40/train
+  train_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/egs/pyfb/dev_fb40
+  data_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
+
+  ivector-mean scp:$xvector_dir/xvectors.scp $xvector_dir/mean.vec || exit 1
 
   # This script uses LDA to decrease the dimensionality prior to PLDA.
   lda_dim=200
-  $train_cmd $nnet_dir/xvectors_train/log/lda.log \
-    ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
-    "ark:ivector-subtract-global-mean scp:$nnet_dir/xvectors_train/xvector.scp ark:- |" \
-    ark:data/train/utt2spk $nnet_dir/xvectors_train/transform.mat || exit 1
+  ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
+    "ark:ivector-subtract-global-mean scp:$xvector_dir/xvectors.scp ark:- |" \
+    ark:$train_dir/utt2spk $xvector_dir/transform.mat || exit 1
 
   # Train the PLDA model.
   # subtract global mean and do lda transform before PLDA classification
-  $train_cmd $nnet_dir/xvectors_train/log/plda.log \
-    ivector-compute-plda ark:data/train/spk2utt \
-    "ark:ivector-subtract-global-mean scp:$nnet_dir/xvectors_train/xvector.scp ark:- | transform-vec $nnet_dir/xvectors_train/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
-    $nnet_dir/xvectors_train/plda || exit 1
+  ivector-compute-plda ark:$train_dir/spk2utt \
+    "ark:ivector-subtract-global-mean scp:$xvector_dir/xvectors.scp ark:- | transform-vec $xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
+    $xvector_dir/plda || exit 1
 fi
 
 if [ $stage -le 11 ]; then
-  $train_cmd exp/scores/log/voxceleb1_test_scoring.log \
-    ivector-plda-scoring --normalize-length=true \
-    "ivector-copy-plda --smoothing=0.0 $nnet_dir/xvectors_train/plda - |" \
-    "ark:ivector-subtract-global-mean $nnet_dir/xvectors_train/mean.vec scp:$nnet_dir/xvectors_voxceleb1_test/xvector.scp ark:- | transform-vec $nnet_dir/xvectors_train/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-    "ark:ivector-subtract-global-mean $nnet_dir/xvectors_train/mean.vec scp:$nnet_dir/xvectors_voxceleb1_test/xvector.scp ark:- | transform-vec $nnet_dir/xvectors_train/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-    "cat '$voxceleb1_trials' | cut -d\  --fields=1,2 |" exp/scores_voxceleb1_test || exit 1
+  test_xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40/test
+  test_trials=/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pyfb/test_fb40/trials
+  ivector-plda-scoring --normalize-length=true \
+    "ivector-copy-plda --smoothing=0.0 $xvector_dir/plda - |" \
+    "ark:ivector-subtract-global-mean $xvector_dir/mean.vec scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+    "ark:ivector-subtract-global-mean $xvector_dir/mean.vec scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+    "cat '$test_trials' | cut -d\  --fields=1,2 |" $test_xvector_dir/scores_voxceleb1_test || exit 1
 fi
 
 if [ $stage -le 12 ]; then
-  eer=$(compute-eer <(local/prepare_for_eer.py $voxceleb1_trials exp/scores_voxceleb1_test) 2>/dev/null)
-  mindcf1=$(sid/compute_min_dcf.py --p-target 0.01 exp/scores_voxceleb1_test $voxceleb1_trials 2>/dev/null)
-  mindcf2=$(sid/compute_min_dcf.py --p-target 0.001 exp/scores_voxceleb1_test $voxceleb1_trials 2>/dev/null)
+  eer=$(compute-eer <(Score/prepare_for_eer.py $test_trials $test_xvector_dir/scores_voxceleb1_test) 2>/dev/null)
+  mindcf1=$(Score/compute_min_dcf.py --p-target 0.01 $test_xvector_dir/scores_voxceleb1_test $test_trials 2>/dev/null)
+  mindcf2=$(Score/compute_min_dcf.py --p-target 0.001 $test_xvector_dir/scores_voxceleb1_test $test_trials 2>/dev/null)
   echo "EER: $eer%"
   echo "minDCF(p-target=0.01): $mindcf1"
   echo "minDCF(p-target=0.001): $mindcf2"
