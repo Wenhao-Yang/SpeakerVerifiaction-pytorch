@@ -766,45 +766,49 @@ def main():
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
 
     start_time = time.time()
+    try:
 
-    for epoch in range(start, end):
-        # pdb.set_trace()
-        lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
-        for param_group in optimizer.param_groups:
-            lr_string += '{:.6f} '.format(param_group['lr'])
-        print('%s \33[0m' % lr_string)
+        for epoch in range(start, end):
+            # pdb.set_trace()
+            lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
+            for param_group in optimizer.param_groups:
+                lr_string += '{:.6f} '.format(param_group['lr'])
+            print('%s \33[0m' % lr_string)
 
-        train(train_loader, model, ce, optimizer, epoch)
-        valid_loss = valid_class(valid_loader, model, ce, epoch)
+            train(train_loader, model, ce, optimizer, epoch)
+            valid_loss = valid_class(valid_loader, model, ce, epoch)
 
-        if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
-            model.eval()
-            check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-            model_state_dict = model.module.state_dict() \
-                                   if isinstance(model, DistributedDataParallel) else model.state_dict(),
-            torch.save({'epoch': epoch,
-                        'state_dict': model_state_dict,
-                        'criterion': ce},
-                       check_path)
+            if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
+                model.eval()
+                check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
+                model_state_dict = model.module.state_dict() \
+                                       if isinstance(model, DistributedDataParallel) else model.state_dict(),
+                torch.save({'epoch': epoch,
+                            'state_dict': model_state_dict,
+                            'criterion': ce},
+                           check_path)
 
-            valid_test(train_extract_loader, model, epoch, xvector_dir)
-            test(model, epoch, writer, xvector_dir)
-            if epoch != (end - 1):
-                try:
-                    shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
-                    shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                except Exception as e:
-                    print('rm dir xvectors error:', e)
+                valid_test(train_extract_loader, model, epoch, xvector_dir)
+                test(model, epoch, writer, xvector_dir)
+                if epoch != (end - 1):
+                    try:
+                        shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
+                        shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
+                    except Exception as e:
+                        print('rm dir xvectors error:', e)
 
-        if args.scheduler == 'rop':
-            scheduler.step(valid_loss)
-        else:
-            scheduler.step()
+            if args.scheduler == 'rop':
+                scheduler.step(valid_loss)
+            else:
+                scheduler.step()
+
+    except KeyboardInterrupt:
+        end = epoch
 
     writer.close()
     stop_time = time.time()
     t = float(stop_time - start_time)
-    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
+    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     exit(0)
 
 

@@ -661,8 +661,10 @@ class PadCollate:
         else:
             self.batch_len = []
             self.iteration = 0
+            print('==> Generating %d different random length...' % (num_batch))
             for i in range(num_batch):
                 self.batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
+            print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
 
     def pad_collate(self, batch):
         """

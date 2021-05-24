@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=74
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -638,22 +638,24 @@ if [ $stage -le 74 ]; then
       --feat-type fbank \
       --train \
       --input-per-spks 512 \
+      --num-frames 400 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --remove-vad \
       --num-valid 2 \
-      --out-set dev_${feat}_ws25
+      --out-set dev_${feat}_ws25_f400
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/vox1/pyfb/${s}_${feat}_ws25 \
       --out-dir ${lstm_dir}/data/vox1/egs/pyfb \
       --input-per-spks 512 \
+      --num-frames 400 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --remove-vad \
       --num-valid 2 \
       --feat-type fbank \
-      --out-set valid_${feat}_ws25
+      --out-set valid_${feat}_ws25_f400
   done
   exit
 fi
