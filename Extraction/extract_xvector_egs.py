@@ -215,7 +215,7 @@ if args.cuda:
 
 # create logger
 # Define visulaize SummaryWriter instance
-sys.stdout = NewLogger(os.path.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
+sys.stdout = NewLogger(os.path.join(args.xvector_dir, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 extract_kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
