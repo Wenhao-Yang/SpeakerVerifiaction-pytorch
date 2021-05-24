@@ -526,12 +526,12 @@ class KaldiTupleDataset(data.Dataset):
 
 
 class KaldiExtractDataset(data.Dataset):
-    def __init__(self, dir, transform, filer_loader, trials_file='trials'):
+    def __init__(self, dir, transform, filer_loader, trials_file='trials', extract_trials=True):
 
         feat_scp = dir + '/feats.scp'
         trials = dir + '/%s' % trials_file
 
-        if os.path.exists(trials):
+        if os.path.exists(trials) and extract_trials:
             assert os.path.exists(feat_scp), feat_scp
 
             trials_utts = set()

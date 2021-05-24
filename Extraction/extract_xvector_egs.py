@@ -250,8 +250,9 @@ train_config_dir = EgsDataset(dir=args.train_config_dir, feat_dim=args.feat_dim,
                               transform=transform_V,
                               batch_size=args.batch_size, random_chunk=args.random_chunk)
 
-train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform_V)
-test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform_V)
+train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform_V,
+                                extract_trials=False)
+test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform_V, extract_trials=False)
 
 
 # test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
