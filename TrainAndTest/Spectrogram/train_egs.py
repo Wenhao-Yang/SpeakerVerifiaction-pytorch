@@ -39,7 +39,7 @@ from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarg
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput
+from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
@@ -75,7 +75,7 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--fix-length', action='store_true', default=True, help='need to make mfb file')
+parser.add_argument('--var-input', action='store_true', default=True, help='need to make mfb file')
 parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fix'],
                     help='batchnorm with instance norm')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
@@ -404,8 +404,9 @@ def train(train_loader, model, ce, optimizer, epoch):
             epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
                                                                           len(train_loader.dataset),
                                                                           100. * batch_idx / len(train_loader))
-            if not args.fix_length or len(args.random_chunk) > 1:
-                epoch_str += ' Batch Length: {:>3d}'.format(data.shape[-2])
+
+            if len(args.random_chunk) == 2 and args.random_chunk[0] < args.random_chunk[1]:
+                epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
 
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
@@ -721,8 +722,25 @@ def main():
     # start = 0
     end = start + args.epochs
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=args.shuffe, **kwargs)
-    valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
+    if len(args.random_chunk) == 2 and args.random_chunk[0] < args.random_chunk[1]:
+        min_chunk_size = int(args.random_chunk[0])
+        max_chunk_size = int(args.random_chunk[1])
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size,
+                                                   collate_fn=PadCollate(dim=2,
+                                                                         num_batch=int(
+                                                                             np.ceil(len(train_dir) / args.batch_size)),
+                                                                         min_chunk_size=min_chunk_size,
+                                                                         max_chunk_size=max_chunk_size),
+                                                   shuffle=args.shuffle, **kwargs)
+        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
+                                                   collate_fn=PadCollate(dim=2, fix_len=True,
+                                                                         min_chunk_size=args.chunk_size,
+                                                                         max_chunk_size=args.chunk_size + 1),
+                                                   shuffle=False, **kwargs)
+    else:
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=args.shuffe, **kwargs)
+        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False,
+                                                   **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
 
     if args.cuda:

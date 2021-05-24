@@ -466,27 +466,12 @@ class EgsDataset(Dataset):
         self.chunk_size = []
         self.batch_size = batch_size
 
-        if len(random_chunk) == 2 and batch_size > 0:
-
-            num_batch = int(np.ceil(len(dataset) / batch_size))
-            print('==> Generating %d different random length...' % (num_batch))
-            for i in range(num_batch):
-                random_size = np.random.randint(low=random_chunk[0], high=random_chunk[1])
-                self.chunk_size.append(random_size)
-
     def __getitem__(self, idx):
         # time_s = time.time()
         # print('Starting loading...')
-        idx = self.idxs[idx]
         label, dom_label, upath = self.dataset[idx]
 
         y = self.loader(upath)
-        if len(self.chunk_size) > 0:
-            bat_idx = idx // self.batch_size
-            this_len = self.chunk_size[bat_idx]
-            start = np.random.randint(0, len(y) - this_len)
-            # print('This batch len is %d' % this_len)
-            y = y[start:(start + this_len)]
 
         feature = self.transform(y)
         # time_e = time.time()
@@ -495,9 +480,6 @@ class EgsDataset(Dataset):
             return feature, label, dom_label
         else:
             return feature, label
-
-    def __shuffle__(self):
-        random.shuffle(self.idxs)
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数

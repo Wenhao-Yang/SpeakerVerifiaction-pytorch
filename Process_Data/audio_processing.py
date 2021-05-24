@@ -659,6 +659,7 @@ class PadCollate:
         if self.fix_len:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
         else:
+            assert num_batch > 0
             self.batch_len = []
             self.iteration = 0
             print('==> Generating %d different random length...' % (num_batch))
