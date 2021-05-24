@@ -21,6 +21,7 @@ from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
+from Define_Model.SoftmaxLoss import AdditiveMarginLinear
 from Define_Model.TDNN.ARET import RET, RET_v2
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
@@ -95,7 +96,13 @@ def create_model(name, **kwargs):
     if name not in __factory.keys():
         raise KeyError("Unknown model: {}".format(name))
 
-    return __factory[name](**kwargs)
+    model = __factory[name](**kwargs)
+
+    if kwargs['loss_type'] in ['asoft', 'amsoft', 'arcsoft']:
+        model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
+                                                num_classes=kwargs['num_classes'])
+
+    return model
 
 
 class AverageMeter(object):

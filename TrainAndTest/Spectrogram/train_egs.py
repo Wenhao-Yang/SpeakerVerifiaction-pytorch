@@ -581,7 +581,9 @@ def main():
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
+                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
+                    'iteraion': args.iteration, 'all_iteraion': args.all_iteraion}
 
     print('Model options: {}'.format(model_kwargs))
     dist_type = 'cos' if args.cos_sim else 'l2'
@@ -638,11 +640,11 @@ def main():
                                        num_center=args.num_center)
     elif args.loss_type == 'amsoft':
         ce_criterion = None
-        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
+        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'arcsoft':
         ce_criterion = None
-        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
+        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)

@@ -5,7 +5,7 @@
 @Author: yangwenhao
 @Contact: 874681044@qq.com
 @Software: PyCharm
-@File: extract_xvector_kaldi.py
+@File: extract_xvector_egs.py
 @Time: 2019/12/10 下午10:32
 @Overview: Exctract speakers vectors for kaldi PLDA.
 """
@@ -21,12 +21,12 @@ import torch._utils
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torchvision.transforms as transforms
+# from Process_Data.voxceleb2_wav_reader import voxceleb2_list_reader
+from Process_Data.KaldiDataset import KaldiExtractDataset
 from kaldi_io import read_mat
 from tqdm import tqdm
 
 from Define_Model.model import PairwiseDistance
-# from Process_Data.voxceleb2_wav_reader import voxceleb2_list_reader
-from Process_Data.KaldiDataset import KaldiExtractDataset
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio, ConcateVarInput
 from TrainAndTest.common_func import create_model
 

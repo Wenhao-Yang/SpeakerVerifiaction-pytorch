@@ -36,20 +36,6 @@ class AngleLinear(nn.Module):#定义最后一层
         self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)#初始化权重，在第一维度上做normalize
         self.m = m
         self.phiflag = phiflag
-        self.mlambda = [
-            lambda x: x**0,
-            lambda x: x**1,
-            lambda x: 2*x**2-1,
-            lambda x: 4*x**3-3*x,
-            lambda x: 8*x**4-8*x**2+1,
-            lambda x: 16*x**5-20*x**3+5*x
-        ]#匿名函数,用于得到cos_m_theta
-
-    @staticmethod
-    def myphi(x, m):
-        x = x * m
-        return 1 - x ** 2 / math.factorial(2) + x ** 4 / math.factorial(4) - x ** 6 / math.factorial(6) +\
-               x ** 8 / math.factorial(8) - x ** 9 / math.factorial(9)
 
     def forward(self, x):#前向过程，输入x
         # ww = w.renorm(2, 1, 1e-5).mul(1e5)#方向0上做normalize
@@ -84,14 +70,31 @@ class AngleLinear(nn.Module):#定义最后一层
 
 
 class AngleSoftmaxLoss(nn.Module):
-    def __init__(self, lambda_min=5.0, lambda_max=1500.0, gamma=0, it=0):
+    def __init__(self, m=3, lambda_min=5.0, lambda_max=1500.0, gamma=0, it=0, phiflag=True):
         super(AngleSoftmaxLoss, self).__init__()
         self.gamma = gamma
+        self.m = m
         self.it = it
         self.lambda_min = lambda_min
         self.lambda_max = lambda_max
+        self.phiflag = phiflag
 
-    def forward(self, x, y):
+        self.mlambda = [
+            lambda x: x ** 0,
+            lambda x: x ** 1,
+            lambda x: 2 * x ** 2 - 1,
+            lambda x: 4 * x ** 3 - 3 * x,
+            lambda x: 8 * x ** 4 - 8 * x ** 2 + 1,
+            lambda x: 16 * x ** 5 - 20 * x ** 3 + 5 * x
+        ]  # 匿名函数,用于得到cos_m_theta
+
+    @staticmethod
+    def myphi(x, m):
+        x = x * m
+        return 1 - x ** 2 / math.factorial(2) + x ** 4 / math.factorial(4) - x ** 6 / math.factorial(6) + \
+               x ** 8 / math.factorial(8) - x ** 9 / math.factorial(9)
+
+    def forward(self, costh, label):
         '''
         x:
             cos_x: [batch, classes_num]
@@ -102,18 +105,29 @@ class AngleSoftmaxLoss(nn.Module):
             loss:scalar
         '''
         self.it += 1
-        cos_theta, phi_theta = x #output包括上面的[cos_theta, phi_theta]
-        y = y.view(-1, 1)
+        # cos_theta, phi_theta = x #output包括上面的[cos_theta, phi_theta]
+        if self.phiflag:
+            cos_m_theta = self.mlambda[self.m](costh)  # 由m和/cos(/theta)得到cos_m_theta
+            theta = Variable(costh.data.acos())
+            k = (self.m * theta / 3.14159265).floor()
+            n_one = k * 0.0 - 1
+            phi_theta = (n_one ** k) * cos_m_theta - 2 * k  # 得到/phi(/theta)
+        else:
+            theta = costh.acos()  # acos得到/theta
+            phi_theta = self.myphi(theta, self.m)  # 得到/phi(/theta)
+            phi_theta = phi_theta.clamp(-1 * self.m, 1)  # 控制在-m和1之间
 
-        index = cos_theta.data * 0.0
-        index.scatter_(1, y.data.view(-1, 1), 1)#将label存成稀疏矩阵
+        y = label.view(-1, 1)
+
+        index = costh.data * 0.0
+        index.scatter_(1, y.data.view(-1, 1), 1)  # 将label存成稀疏矩阵
         index = index.to(dtype=torch.bool)
         index = Variable(index)
 
         # set lamb, change the rate of softmax and A-softmax
         lamb = max(self.lambda_min, self.lambda_max / (1 + 0.1 * self.it))  # 动态调整lambda，来调整cos(\theta)和\phi(\theta)的比例
-        output = cos_theta * 1.0
-        output[index] -= cos_theta[index] * (1.0 + 0) / (1 + lamb)  # 减去目标\cos(\theta)的部分
+        output = costh * 1.0
+        output[index] -= costh[index] * (1.0 + 0) / (1 + lamb)  # 减去目标\cos(\theta)的部分
         output[index] += phi_theta[index] * (1.0 + 0) / (1 + lamb)  # 加上目标\phi(\theta)的部分
 
         logpt = F.log_softmax(output)
@@ -128,10 +142,10 @@ class AngleSoftmaxLoss(nn.Module):
 
 
 class AdditiveMarginLinear(nn.Module):
-    def __init__(self, feat_dim, n_classes=1000, use_gpu=False):
+    def __init__(self, feat_dim, num_classes, use_gpu=False):
         super(AdditiveMarginLinear, self).__init__()
         self.feat_dim = feat_dim
-        self.W = torch.nn.Parameter(torch.randn(feat_dim, n_classes), requires_grad=True)
+        self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes), requires_grad=True)
         if use_gpu:
             self.W.cuda()
         nn.init.xavier_normal(self.W, gain=1)

@@ -660,12 +660,19 @@ class PadCollate:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
         else:
             assert num_batch > 0
-            self.batch_len = []
+            batch_len = []
             self.iteration = 0
+            # print('==> Generating %d different random length...' % (int(np.ceil(num_batch/100))))
+            # for i in range(int(np.ceil(num_batch/100))):
+            #     batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
+            # self.batch_len = np.repeat(batch_len, 100)
+
             print('==> Generating %d different random length...' % (num_batch))
             for i in range(num_batch):
-                self.batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
-            print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
+                batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
+            self.batch_len = batch_len
+
+            print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len[:num_batch])))
 
     def pad_collate(self, batch):
         """
