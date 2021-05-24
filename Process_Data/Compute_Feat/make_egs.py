@@ -106,8 +106,8 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
 
             # lock_t.acquire()
             while t_queue.full():
-                print("task queue is full!")
-                time.sleep(2)
+                print("\rProcess [{:8>s}]: task queue is full...".format(str(os.getpid())), end="")
+                time.sleep(10)
 
             # lock_t.acquire()  # 加上锁
             t_queue.put(pairs)

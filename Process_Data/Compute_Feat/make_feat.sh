@@ -14,6 +14,9 @@ while [ $(ps 2841 | wc -l) -eq 2 ]; do
 done
 
 if [ $stage -le 0 ]; then
+  dataset=vox2
+  feat=fb40
+  echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} for ${dataset}\033[0m\n"
   #  for filters in 40; do
   #    python Process_Data/Compute_Feat/make_feat.py \
   #      --data-dir ${lstm_dir}/data/vox2/dev \

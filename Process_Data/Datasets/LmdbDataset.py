@@ -455,7 +455,7 @@ class EgsDataset(Dataset):
                 spks.add(cls)
 
         print('==> There are {} speaker with {} utterances speakers in Dataset.'.format(len(spks), len(dataset)))
-
+        self.idxs = np.arange(0, len(dataset))
         self.dataset = dataset
         self.feat_dim = feat_dim
         self.loader = loader
@@ -476,6 +476,7 @@ class EgsDataset(Dataset):
     def __getitem__(self, idx):
         # time_s = time.time()
         # print('Starting loading...')
+        idx = self.idxs[idx]
         label, dom_label, upath = self.dataset[idx]
 
         y = self.loader(upath)
@@ -493,6 +494,9 @@ class EgsDataset(Dataset):
             return feature, label, dom_label
         else:
             return feature, label
+
+    def __shuffle__(self):
+        random.shuffle(self.idxs)
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数

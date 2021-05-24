@@ -642,7 +642,7 @@ class PadCollate:
     a batch of sequences
     """
 
-    def __init__(self, dim=0, min_chunk_size=300, max_chunk_size=400, normlize=True, fix_len=False):
+    def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True, fix_len=False):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
@@ -672,9 +672,14 @@ class PadCollate:
         # pad according to max_len
         # print()
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
-        start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len)
-        end = start + frame_len
-        xs = xs[:, :, start:end, :].contiguous()
+
+        if frame_len < batch[0][0].shape[-2]:
+            start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len)
+            end = start + frame_len
+            xs = xs[:, :, start:end, :].contiguous()
+        else:
+            xs = xs.contiguous()
+
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
 
         # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
