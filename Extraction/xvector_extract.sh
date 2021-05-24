@@ -163,8 +163,8 @@ if [ $stage -le 80 ]; then
   model=TDNN_v5
   dataset=vox1
   loss=soft
-  feat_type=spect
-  feat=log
+  feat_type=pyfb
+  feat=fb40
   loss=soft
   model=TDNN_v5
   encod=STAP
