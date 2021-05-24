@@ -642,7 +642,9 @@ class PadCollate:
     a batch of sequences
     """
 
-    def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True, fix_len=False):
+    def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
+                 num_batch=0,
+                 fix_len=False):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
@@ -650,11 +652,17 @@ class PadCollate:
         self.dim = dim
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
+        self.num_batch = num_batch
         self.fix_len = fix_len
         self.normlize = normlize
 
         if self.fix_len:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+        else:
+            self.batch_len = []
+            self.iteration = 0
+            for i in range(num_batch):
+                self.batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
 
     def pad_collate(self, batch):
         """
@@ -668,7 +676,10 @@ class PadCollate:
         if self.fix_len:
             frame_len = self.frame_len
         else:
-            frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+            # frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+            frame_len = self.batch_len[self.iteration % self.num_batch]
+            self.iteration += 1
+            self.iteration %= self.num_batch
         # pad according to max_len
         # print()
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)

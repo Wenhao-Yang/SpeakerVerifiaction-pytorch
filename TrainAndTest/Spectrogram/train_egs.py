@@ -721,7 +721,7 @@ def main():
     # start = 0
     end = start + args.epochs
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=args.shuffe, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
 
@@ -785,8 +785,8 @@ def main():
             else:
                 scheduler.step()
 
-            if args.shuffle:
-                train_dir.__shuffle__()
+            # if args.shuffle:
+            #     train_dir.__shuffle__()
 
     except KeyboardInterrupt:
         end = epoch
@@ -794,7 +794,7 @@ def main():
     writer.close()
     stop_time = time.time()
     t = float(stop_time - start_time)
-    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (end - start)))
+    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     exit(0)
 
 

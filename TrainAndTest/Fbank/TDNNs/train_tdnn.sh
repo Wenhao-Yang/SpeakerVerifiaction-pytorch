@@ -322,7 +322,7 @@ if [ $stage -le 70 ]; then
     feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
-    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/Spectrogram/train_egs_var.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
@@ -339,6 +339,7 @@ if [ $stage -le 70 ]; then
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
+      --var-input \
       --batch-size 128 \
       --accu-steps 1 \
       --input-dim ${input_dim} \
