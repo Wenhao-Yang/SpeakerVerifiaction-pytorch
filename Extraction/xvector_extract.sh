@@ -150,7 +150,7 @@ if [ $stage -le 60 ]; then
       --channels 512,512,512,512,1500 \
       --margin 0.25 \
       --s 30 \
-      --input-length var \
+      --var-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/aishell2/spect_egs_baseline/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_${subset}_var \
       --resume Data/checkpoint/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/checkpoint_60.pth \

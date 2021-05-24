@@ -51,6 +51,8 @@ warnings.filterwarnings("ignore")
 # Training settings
 parser = argparse.ArgumentParser(description='Extract x-vector for plda')
 # Model options
+parser.add_argument('--train-config-dir', type=str, required=True, help='path to dataset')
+
 parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
 parser.add_argument('--test-dir', type=str, required=True, help='path to test dataset')
 
@@ -64,9 +66,8 @@ parser.add_argument('--test-input', type=str, default='var', choices=['var', 'fi
                     help='batchnorm with instance norm')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
-
+parser.add_argument('--frame-shift', default=300, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
