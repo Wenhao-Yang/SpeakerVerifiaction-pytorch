@@ -16,6 +16,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tqdm import tqdm
 
 from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
@@ -129,14 +130,14 @@ class AverageMeter(object):
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 
-def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True):
+def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True,
+                         verbose=False):
     model.eval()
 
     if not os.path.exists(xvector_dir):
         os.makedirs(xvector_dir)
-
-    # pbar = tqdm(extract_loader, ncols=200)
-    pbar = extract_loader
+    # pbar =
+    pbar = tqdm(extract_loader, ncols=200) if verbose else extract_loader
 
     uid2vectors = {}
     with torch.no_grad():
