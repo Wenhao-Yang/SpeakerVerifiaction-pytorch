@@ -339,13 +339,13 @@ def main():
     # Extract Train set vectors
     # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
     train_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/train' % epoch
-    verification_extract(train_loader, model, train_xvector_dir, epoch=epoch, test_input=args.test_input)
+    verification_extract(train_loader, model, train_xvector_dir, epoch=epoch, test_input=args.test_input, verbose=True)
     # copy wav.scp and utt2spk ...
 
     # Extract test set vectors
     test_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/test' % epoch
     # extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
-    verification_extract(test_loader, model, test_xvector_dir, epoch=epoch, test_input=args.test_input)
+    verification_extract(test_loader, model, test_xvector_dir, epoch=epoch, test_input=args.test_input, verbose=True)
     # copy wav.scp and utt2spk ...
 
     print('Extract x-vector completed for train and test in %s!\n' % (args.extract_path + '/xvectors/'))
