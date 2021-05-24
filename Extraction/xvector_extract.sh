@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=60
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -123,7 +123,7 @@ fi
 
 if [ $stage -le 60 ]; then
   model=TDNN_v5
-  dataset=vox1
+  dataset=vox2
   loss=soft
   feat_type=spect
   feat=log
@@ -151,7 +151,7 @@ if [ $stage -le 60 ]; then
       --margin 0.25 \
       --s 30 \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/aishell2/spect_egs_baseline/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_${subset}_var \
+      --xvector-dir Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_${subset}_var \
       --resume Data/checkpoint/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim

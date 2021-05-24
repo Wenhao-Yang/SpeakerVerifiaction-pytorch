@@ -11,17 +11,20 @@
 # https://www.nist.gov/sites/default/files/documents/2016/10/07/sre16_eval_plan_v1.3.pdf
 # for more details about the metric.
 from __future__ import print_function
+
+import argparse
+import sys
 from operator import itemgetter
-import sys, argparse, os
+
 
 def GetArgs():
     parser = argparse.ArgumentParser(description="Compute the minimum "
-        "detection cost function along with the threshold at which it occurs. "
-        "Usage: sid/compute_min_dcf.py [options...] <scores-file> "
-        "<trials-file> "
-        "E.g., sid/compute_min_dcf.py --p-target 0.01 --c-miss 1 --c-fa 1 "
-        "exp/scores/trials data/test/trials",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+                                                 "detection cost function along with the threshold at which it occurs. "
+                                                 "Usage: sid/compute_min_dcf.py [options...] <scores-file> "
+                                                 "<trials-file> "
+                                                 "E.g., sid/compute_min_dcf.py --p-target 0.01 --c-miss 1 --c-fa 1 "
+                                                 "exp/scores/trials data/test/trials",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--p-target', type=float, dest="p_target", default=0.01,
                         help='The prior probability of the target speaker in a trial.')
     parser.add_argument('--c-miss', type=float, dest="c_miss", default=1,
