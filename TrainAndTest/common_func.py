@@ -137,7 +137,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     if not os.path.exists(xvector_dir):
         os.makedirs(xvector_dir)
     # pbar =
-    pbar = tqdm(extract_loader, ncols=200) if verbose else extract_loader
+    pbar = tqdm(extract_loader, ncols=100) if verbose else extract_loader
 
     uid2vectors = {}
     with torch.no_grad():
