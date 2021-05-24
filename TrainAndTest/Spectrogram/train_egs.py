@@ -40,7 +40,7 @@ from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
+from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
 
@@ -272,7 +272,6 @@ else:
         totensor(),
         # tonormal()
     ])
-    file_loader = read_audio
 
 if args.test_input == 'var':
     transform_V = transforms.Compose([
@@ -405,7 +404,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
                                                                           len(train_loader.dataset),
                                                                           100. * batch_idx / len(train_loader))
-            if not args.fix_length:
+            if not args.fix_length or len(args.random_chunk) > 1:
                 epoch_str += ' Batch Length: {:>3d}'.format(data.shape[-2])
 
             if orth_err > 0:
@@ -722,7 +721,7 @@ def main():
     # start = 0
     end = start + args.epochs
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=args.shuffle, **kwargs)
+    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
 
@@ -749,42 +748,48 @@ def main():
 
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
-
     start_time = time.time()
 
-    for epoch in range(start, end):
-        # pdb.set_trace()
-        lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
-        for param_group in optimizer.param_groups:
-            lr_string += '{:.6f} '.format(param_group['lr'])
-        print('%s \33[0m' % lr_string)
+    try:
+        for epoch in range(start, end):
+            # pdb.set_trace()
+            lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
+            for param_group in optimizer.param_groups:
+                lr_string += '{:.6f} '.format(param_group['lr'])
+            print('%s \33[0m' % lr_string)
 
-        train(train_loader, model, ce, optimizer, epoch)
-        valid_loss = valid_class(valid_loader, model, ce, epoch)
+            train(train_loader, model, ce, optimizer, epoch)
+            valid_loss = valid_class(valid_loader, model, ce, epoch)
 
-        if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
-            model.eval()
-            check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-            model_state_dict = model.module.state_dict() \
-                                   if isinstance(model, DistributedDataParallel) else model.state_dict(),
-            torch.save({'epoch': epoch,
-                        'state_dict': model_state_dict,
-                        'criterion': ce},
-                       check_path)
+            if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
+                model.eval()
+                check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
+                model_state_dict = model.module.state_dict() \
+                                       if isinstance(model, DistributedDataParallel) else model.state_dict(),
+                torch.save({'epoch': epoch,
+                            'state_dict': model_state_dict,
+                            'criterion': ce},
+                           check_path)
 
-            valid_test(train_extract_loader, model, epoch, xvector_dir)
-            test(model, epoch, writer, xvector_dir)
-            if epoch != (end - 1):
-                try:
-                    shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
-                    shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                except Exception as e:
-                    print('rm dir xvectors error:', e)
+                valid_test(train_extract_loader, model, epoch, xvector_dir)
+                test(model, epoch, writer, xvector_dir)
+                if epoch != (end - 1):
+                    try:
+                        shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
+                        shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
+                    except Exception as e:
+                        print('rm dir xvectors error:', e)
 
-        if args.scheduler == 'rop':
-            scheduler.step(valid_loss)
-        else:
-            scheduler.step()
+            if args.scheduler == 'rop':
+                scheduler.step(valid_loss)
+            else:
+                scheduler.step()
+
+            if args.shuffle:
+                train_dir.__shuffle__()
+
+    except KeyboardInterrupt:
+        end = epoch
 
     writer.close()
     stop_time = time.time()
