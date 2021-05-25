@@ -22,7 +22,7 @@ from torch.autograd import Variable
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
-from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
+from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3
 
 """Time Delay Neural Network as mentioned in the 1989 paper by Waibel et al. (Hinton) and the 2015 paper by Peddinti et al. (Povey)"""
 class TimeDelayLayer_v1(nn.Module):
@@ -661,9 +661,11 @@ class TDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
+                 num_classes_b=0,
                  mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
+        self.num_classes_b = num_classes_b
         self.dropout_p = dropout_p
         self.dropout_layer = dropout_layer
         self.input_dim = input_dim
@@ -726,6 +728,8 @@ class TDNN_v5(nn.Module):
             self.encoder = StatisticPooling(input_dim=self.channels[4])
         elif encoder_type == 'SASP':
             self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=512)
+        elif encoder_type == 'Ghos_v3':
+            self.encoder = GhostVLAD_v3(num_clusters=self.num_classes_b, gost=1, dim=self.channels[4])
         else:
             raise ValueError(encoder_type)
 

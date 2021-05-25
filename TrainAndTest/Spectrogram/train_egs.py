@@ -572,7 +572,6 @@ def main():
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
-
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix,
                     'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
@@ -581,6 +580,7 @@ def main():
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                    'num_classes_b': train_dir.num_doms,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}
