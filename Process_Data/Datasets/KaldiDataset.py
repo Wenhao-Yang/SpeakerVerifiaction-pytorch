@@ -768,7 +768,7 @@ class ScriptTrainDataset(data.Dataset):
             domains.sort()
             dom_to_idx = {domains[i]: i for i in range(len(domains))}
             self.dom_to_idx = dom_to_idx
-            print("Domain idx: ", str(self.dom_to_dix))
+            print("Domain idx: ", str(self.dom_to_idx))
             self.utt2dom_dict = utt2dom_dict
 
         # pdb.set_trace()
