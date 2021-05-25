@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=112
+stage=113
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -756,6 +756,32 @@ if [ $stage -le 112 ]; then
       --nfft 512 \
       --windowsize 0.025 \
       --nj 12
+  done
+  exit
+fi
+
+if [ $stage -le 113 ]; then
+  datasets=cnceleb
+  echo -e "\n\033[1;4;31m Stage ${stage}: Making log fbank egs for ${datasets}\033[0m\n"
+  for s in dev; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/cnceleb/pyfb/dev_fb40_ws25 \
+      --out-dir ${lstm_dir}/data/cnceleb/egs/pyfb \
+      --feat-type fbank \
+      --train \
+      --domain \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --out-set dev_fb40_ws25
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/cnceleb/pyfb/dev_fb40_ws25 \
+      --out-dir ${lstm_dir}/data/cnceleb/egs/pyfb \
+      --feat-type fbank \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --domain \
+      --out-set valid_fb40_ws25
   done
   exit
 fi
