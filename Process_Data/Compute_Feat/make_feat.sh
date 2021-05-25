@@ -771,7 +771,7 @@ if [ $stage -le 113 ]; then
       --train \
       --domain \
       --input-per-spks 512 \
-      --feat-format kaldi \
+      --feat-format kaldi_cmp \
       --out-set dev_fb40_ws25
 
     python Process_Data/Compute_Feat/make_egs.py \
@@ -779,7 +779,7 @@ if [ $stage -le 113 ]; then
       --out-dir ${lstm_dir}/data/cnceleb/egs/pyfb \
       --feat-type fbank \
       --input-per-spks 512 \
-      --feat-format kaldi \
+      --feat-format kaldi_cmp \
       --domain \
       --out-set valid_fb40_ws25
   done
