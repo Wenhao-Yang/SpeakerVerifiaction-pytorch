@@ -747,7 +747,7 @@ if [ $stage -le 112 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${datasets}/${name} \
       --out-dir ${lstm_dir}/data/${datasets}/pyfb \
-      --out-set dev_fb${num_filters}_ws25 \
+      --out-set ${name}_fb${num_filters}_ws25 \
       --filter-type mel \
       --feat-type fbank \
       --filters ${num_filters} \
