@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=74
+stage=112
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -692,7 +692,6 @@ if [ $stage -le 102 ]; then
       --out-set valid_power_257
   done
 fi
-
 
 # ========================================= cnceleb =========================================
 if [ $stage -le 110 ]; then
