@@ -250,7 +250,7 @@ class GhostVLAD_v1(nn.Module):
 
 # https://github.com/taylorlu/Speaker-Diarization/blob/master/ghostvlad/model.py
 class GhostVLAD_v2(nn.Module):
-    def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=True):
+    def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=False):
         super(GhostVLAD_v2, self).__init__()
         self.num_clusters = num_clusters
         self.dim = dim
@@ -279,8 +279,10 @@ class GhostVLAD_v2(nn.Module):
         # A : bz  x clusters
         max_cluster_score = torch.max(cluster_score, dim=-1, keepdim=True).values
 
+        # minus max_score so there will be a cluster which probability is equal to 1
         exp_cluster_score = torch.exp(cluster_score - max_cluster_score)
         A = exp_cluster_score / torch.sum(exp_cluster_score, dim=-1, keepdim=True)
+
         # Now, need to compute the residual, self.cluster: clusters x D
         A = A.unsqueeze(-1)  # A : bz x clusters x 1
 
@@ -291,12 +293,15 @@ class GhostVLAD_v2(nn.Module):
         # cluster_res = torch.sum(weighted_res, [1, 2])
         cluster_res = weighted_res
         cluster_res = cluster_res[:, :self.num_clusters, :]
+
+        cluster_res = cluster_res.sum(dim=-2)
+        cluster_l2 = torch.nn.functional.normalize(cluster_res, p=2, dim=-1)
+
         # cluster_l2 = torch.nn.functional.l2_normalize(cluster_res, -1)
         # outputs = cluster_res.reshape([-1, int(self.num_clusters) * int(num_features)])
+        # outputs = cluster_res.sum(dim=-2)
 
-        outputs = cluster_res.sum(dim=-2)
-
-        return outputs
+        return cluster_l2
 
 
 class LinearTransform(nn.Module):
