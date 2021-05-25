@@ -481,31 +481,6 @@ if [ $stage -le 21 ]; then
 fi
 
 #stage=1000
-if [ $stage -le 30 ]; then
-  #enroll
-  for name in dev test; do
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/cnceleb/spect \
-      --out-set ${name}_noc \
-      --feat-type spectrogram \
-      --nfft 320 \
-      --windowsize 0.02
-  done
-fi
-
-if [ $stage -le 40 ]; then
-  #enroll
-  for name in dev test; do
-    python Process_Data/Compute_Feat/make_feat_kaldi.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/army/aiox1_${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/army/aiox1_spect \
-      --out-set ${name} \
-      --feat-type spectrogram \
-      --nfft 320 \
-      --windowsize 0.02
-  done
-fi
 
 if [ $stage -le 50 ]; then
   #enroll
@@ -718,6 +693,8 @@ if [ $stage -le 102 ]; then
   done
 fi
 
+
+# ========================================= cnceleb =========================================
 if [ $stage -le 110 ]; then
   for s in dev; do
     python Process_Data/Compute_Feat/make_egs.py \
@@ -730,9 +707,6 @@ if [ $stage -le 110 ]; then
       --feat-format kaldi \
       --out-set dev_4w
 
-    mv ${lstm_dir}/data/cnceleb/egs/spect/dev_4w/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/dev_4w/feats.scp.back
-    sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/dev_4w/feats.scp.back >${lstm_dir}/data/cnceleb/egs/spect/dev_4w/feats.scp
-
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/cnceleb/spect/dev_4w \
       --out-dir ${lstm_dir}/data/cnceleb/egs/spect \
@@ -742,8 +716,6 @@ if [ $stage -le 110 ]; then
       --domain \
       --out-set valid_4w
 
-    mv ${lstm_dir}/data/cnceleb/egs/spect/valid_4w/feats.scp ${lstm_dir}/data/cnceleb/egs/spect/valid_4w/feats.scp.back
-    sort -k 3 ${lstm_dir}/data/cnceleb/egs/spect/valid_4w/feats.scp.back >${lstm_dir}/data/cnceleb/egs/spect/valid_4w/feats.scp
   done
 fi
 
@@ -767,6 +739,28 @@ if [ $stage -le 111 ]; then
   exit
 fi
 
+if [ $stage -le 112 ]; then
+  #enroll
+  datasets=cnceleb
+  echo -e "\n\033[1;4;31m Stage ${stage}: Making log fbank for ${datasets}\033[0m\n"
+  num_filters=40
+  for name in dev test; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir ${lstm_dir}/data/${datasets}/${name} \
+      --out-dir ${lstm_dir}/data/${datasets}/pyfb \
+      --out-set dev_fb${filters}_ws25 \
+      --filter-type mel \
+      --feat-type fbank \
+      --filters ${filters} \
+      --log-scale \
+      --feat-format kaldi_cmp \
+      --nfft 512 \
+      --windowsize 0.025 \
+      --nj 12
+  done
+  exit
+fi
+
 if [ $stage -le 120 ]; then
   for s in dev; do
     python Process_Data/Compute_Feat/make_egs.py \
@@ -778,11 +772,6 @@ if [ $stage -le 120 ]; then
       --feat-format kaldi \
       --num-valid 1 \
       --out-set train_power_v2
-
-    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/timit/egs/spect/train_power_v2
-
-    #    mv ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back
-    #    sort -k 2 ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp.back > ${lstm_dir}/data/timit/egs/spect/train_power/feats.scp
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/timit/spect/train_power \

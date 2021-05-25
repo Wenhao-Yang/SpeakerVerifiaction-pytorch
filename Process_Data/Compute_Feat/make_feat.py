@@ -237,7 +237,7 @@ if __name__ == "__main__":
 
     if data_dir != out_dir:
         print('Copy wav.scp, spk2utt, utt2spk, trials to %s' % out_dir)
-        for f in ['wav.scp', 'spk2utt', 'utt2spk', 'trials']:
+        for f in ['wav.scp', 'spk2utt', 'utt2spk', 'trials', 'utt2dom']:
             orig_f = os.path.join(data_dir, f)
             targ_f = os.path.join(out_dir, f)
             if os.path.exists(orig_f):
