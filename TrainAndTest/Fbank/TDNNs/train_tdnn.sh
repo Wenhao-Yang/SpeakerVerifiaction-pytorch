@@ -437,7 +437,7 @@ if [ $stage -le 77 ]; then
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/datasets/${feat_type}/test_${feat} \
+      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --nj 16 \
       --epochs 40 \
       --patience 3 \
