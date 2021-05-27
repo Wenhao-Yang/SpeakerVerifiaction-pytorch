@@ -15,8 +15,6 @@ encod=None
 dataset=vox2
 test_set=vox1
 
-adaptation=true
-
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
 xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
@@ -24,6 +22,8 @@ train_xvector_dir=${xvector_dir}/train
 test_xvector_dir=${xvector_dir}/test
 
 # test options
+adaptation=true
+
 #test_trials=${lstm_dir}/data/vox1/pyfb/test_fb40/trials
 #train_dir=${lstm_dir}/data/vox1/egs/pyfb/dev_fb40
 
@@ -64,7 +64,7 @@ if [ $stage -le 10 ]; then
   # Compute the mean vector for centering the evaluation xvectors.
   ivector-mean scp:$train_xvector_dir/xvectors.scp $train_xvector_dir/mean.vec || exit 1
   # This script uses LDA to decrease the dimensionality prior to PLDA.
-  lda_dim=200
+  lda_dim=400
   ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
     "ark:ivector-subtract-global-mean scp:$train_xvector_dir/xvectors.scp ark:- |" \
     ark:$train_dir/utt2spk $train_xvector_dir/transform.mat || exit 1
@@ -76,19 +76,29 @@ if [ $stage -le 10 ]; then
     $train_xvector_dir/plda || exit 1
 
   # Adaptation plda using out-of-domain dataset
-  ivector-adapt-plda --within-covar-scale=0.75 --between-covar-scale=0.25 \
-    $train_xvector_dir/plda \
-    "ark:ivector-subtract-global-mean scp:$test_xvector_dir/xvector.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-    $train_xvector_dir/plda_adapt || exit 1
+  if $adaptation; then
+    ivector-adapt-plda --within-covar-scale=0.75 --between-covar-scale=0.25 \
+      $train_xvector_dir/plda \
+      "ark:ivector-subtract-global-mean scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      $train_xvector_dir/plda_adapt || exit 1
 
+    mv $train_xvector_dir/plda $train_xvector_dir/plda_nada
+    mv $train_xvector_dir/plda_adapt $train_xvector_dir/plda
+  fi
 fi
 
 if [ $stage -le 11 ]; then
+
+  if $adaptation; then
+    scores_file=adapt_scores_test
+  else
+    scores_file=scores_test
+  fi
   ivector-plda-scoring --normalize-length=true \
-    "ivector-copy-plda --smoothing=0.0 $train_xvector_dir/plda_adapt - |" \
+    "ivector-copy-plda --smoothing=0.0 $train_xvector_dir/plda - |" \
     "ark:ivector-subtract-global-mean $train_xvector_dir/mean.vec scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
     "ark:ivector-subtract-global-mean $train_xvector_dir/mean.vec scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-    "cat '$test_trials' | cut -d\  --fields=1,2 |" $test_xvector_dir/adapt_scores_test || exit 1
+    "cat '$test_trials' | cut -d\  --fields=1,2 |" $test_xvector_dir/$scores_file || exit 1
 fi
 
 if [ $stage -le 12 ]; then
