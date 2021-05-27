@@ -103,8 +103,8 @@ class fBLayer(nn.Module):
             input = torch.exp(input)
 
         frequency_center = self.frequency_center.clamp(min=0, max=self.sr / 2)
-        bandwidth_left = self.bandwidth_left.abs().clamp(min=1e-12, max=self.sr / 2)
-        bandwidth_right = self.bandwidth_right.abs().clamp(min=1e-12, max=self.sr / 2)
+        bandwidth_left = self.bandwidth_left.clamp(min=1e-12, max=self.sr / 2)
+        bandwidth_right = self.bandwidth_right.clamp(min=1e-12, max=self.sr / 2)
         new_centers = frequency_center.expand(self.num_filter, self.input_dim)
 
         dist_center_a = (new_centers - self.input_freq) / bandwidth_left
@@ -113,7 +113,7 @@ class fBLayer(nn.Module):
         dist_center_b = (self.input_freq - new_centers) / bandwidth_right
         dist_center_b = 1.0 - dist_center_b.clamp(min=0., max=1.)
         weights = dist_center_a + dist_center_b
-        weights = weights.transpose(0, 1)
+        weights = weights.transpose(0, 1).clamp(min=0., max=1.)
 
         return torch.log(torch.matmul(input, weights).clamp_min(1e-12))
 
@@ -150,8 +150,8 @@ class fBPLayer(nn.Module):
         if self.exp:
             input = torch.exp(input)
 
-        bandwidth_low = self.bandwidth.abs().clamp(min=1e-12, max=self.sr / 2)
-        bandwidth_high = (bandwidth_low + self.bandwidth.abs().clamp(min=1e-12)).clamp_max(self.sr / 2)
+        bandwidth_low = self.bandwidth_low.clamp(min=1e-12, max=self.sr / 2)
+        bandwidth_high = (bandwidth_low + self.bandwidth.clamp(min=1e-12, max=self.sr / 2)).clamp_max(self.sr / 2)
 
         bandwidth_low = bandwidth_low.expand(self.num_filter, self.input_dim)
         bandwidth_high = bandwidth_high.expand(self.num_filter, self.input_dim)
