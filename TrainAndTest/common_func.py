@@ -170,7 +170,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                                 _, out_part = model_out
                             out.append(out_part)
                             i += batch_size
-                        out = torch.cat(out, dom=0)
+                        out = torch.cat(out, dim=0)
                     else:
 
                         data = data.cuda() if next(model.parameters()).is_cuda else data
