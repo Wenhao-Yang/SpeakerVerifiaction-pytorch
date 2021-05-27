@@ -342,11 +342,10 @@ class GhostVLAD_v3(nn.Module):
         feat_res = x.unsqueeze(-2) - self.centroids  # feat_broadcast : bz x N x 1 x D
         # feat_res : bz x clusters x D
 
-        weighted_res = torch.mul(exp_cluster_score, feat_res)  # weighted_res : bz x clusters x D
+        feat_res = torch.mul(exp_cluster_score, feat_res)  # weighted_res : bz x clusters x D
         # cluster_res = torch.sum(weighted_res, [1, 2])
-        cluster_res = weighted_res[:, :, :self.num_clusters, :]
+        cluster_res = feat_res[:, :, :self.num_clusters, :].sum(dim=-2)
 
-        cluster_res = cluster_res.sum(dim=-2)
         cluster_l2 = torch.nn.functional.normalize(cluster_res, p=2, dim=-1)
 
         mean_x = cluster_l2.mean(dim=1)
