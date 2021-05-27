@@ -160,7 +160,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     if data.shape[0] > (3 * batch_size):
                         i = 0
                         out = []
-                        while i <= data.shape[0]:
+                        while i < data.shape[0]:
                             data_part = data[i:(i + batch_size)]
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
                             model_out = model(data_part)
