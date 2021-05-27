@@ -146,7 +146,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             num_seg_tensor = [0]
             uid_lst = []
 
-            batch_size = 80 if torch.cuda.is_available() else 64
+            batch_size = 128 if torch.cuda.is_available() else 80
             for batch_idx, (a_data, a_uid) in enumerate(pbar):
                 vec_shape = a_data.shape
                 if vec_shape[1] != 1:
@@ -157,13 +157,28 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 uid_lst.append(a_uid[0])
 
                 if data.shape[0] >= batch_size or batch_idx + 1 == len(extract_loader):
-                    print(data.shape[0])
-                    data = data.cuda() if next(model.parameters()).is_cuda else data
-                    model_out = model(data)
-                    try:
-                        _, out, _, _ = model_out
-                    except:
-                        _, out = model_out
+                    if data.shape[0] > (3 * batch_size):
+                        i = 0
+                        out = []
+                        while i <= data.shape[0]:
+                            data_part = data[i:(i + batch_size)]
+                            data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
+                            model_out = model(data_part)
+                            try:
+                                _, out_part, _, _ = model_out
+                            except:
+                                _, out_part = model_out
+                            out.append(out_part)
+                            i += batch_size
+                        out = torch.cat(out, dom=0)
+                    else:
+
+                        data = data.cuda() if next(model.parameters()).is_cuda else data
+                        model_out = model(data)
+                        try:
+                            _, out, _, _ = model_out
+                        except:
+                            _, out = model_out
 
                     out = out.data.cpu().float().numpy()
                     # print(out.shape)
