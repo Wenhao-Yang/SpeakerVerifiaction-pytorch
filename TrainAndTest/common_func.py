@@ -146,7 +146,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             num_seg_tensor = [0]
             uid_lst = []
 
-            batch_size = 128 if torch.cuda.is_available() else 80
+            batch_size = 80 if torch.cuda.is_available() else 64
             for batch_idx, (a_data, a_uid) in enumerate(pbar):
                 vec_shape = a_data.shape
                 if vec_shape[1] != 1:
