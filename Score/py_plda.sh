@@ -124,3 +124,8 @@ fi
 # EER: 4.38%
 # minDCF(p-target=0.01): 0.4245
 # minDCF(p-target=0.001): 0.5548
+
+# no adaptation dim=500
+# EER: 3.876%
+# minDCF(p-target=0.01): 0.3538
+# minDCF(p-target=0.001): 0.4406

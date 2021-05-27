@@ -53,8 +53,8 @@ parser = argparse.ArgumentParser(description='Extract x-vector for plda')
 # Model options
 parser.add_argument('--train-config-dir', type=str, required=True, help='path to dataset')
 
-parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
-parser.add_argument('--test-dir', type=str, required=True, help='path to test dataset')
+parser.add_argument('--train-dir', type=str, default='', help='path to dataset')
+parser.add_argument('--test-dir', type=str, default='', help='path to test dataset')
 
 parser.add_argument('--xvector-dir', type=str, help='The dir for extracting xvectors')
 
@@ -250,10 +250,6 @@ train_config_dir = EgsDataset(dir=args.train_config_dir, feat_dim=args.feat_dim,
                               transform=transform_V,
                               batch_size=args.batch_size, random_chunk=args.random_chunk)
 
-train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform_V,
-                                extract_trials=False)
-test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform_V, extract_trials=False)
-
 
 # test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
 
@@ -334,22 +330,33 @@ def main():
     if args.cuda:
         model.cuda()
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+    extracted_set = []
+    if args.train_dir != '':
+        train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform_V,
+                                        extract_trials=False)
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+        # Extract Train set vectors
+        # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
+        train_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/train' % epoch
+        verification_extract(train_loader, model, train_xvector_dir, epoch=epoch, test_input=args.test_input,
+                             verbose=True)
+        # copy wav.scp and utt2spk ...
+        extracted_set.append('train')
 
-    # Extract Train set vectors
-    # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
-    train_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/train' % epoch
-    verification_extract(train_loader, model, train_xvector_dir, epoch=epoch, test_input=args.test_input, verbose=True)
-    # copy wav.scp and utt2spk ...
+    assert args.test_dir != ''
+    test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform_V,
+                                   extract_trials=False)
+    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     # Extract test set vectors
     test_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/test' % epoch
     # extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
     verification_extract(test_loader, model, test_xvector_dir, epoch=epoch, test_input=args.test_input, verbose=True)
     # copy wav.scp and utt2spk ...
+    extracted_set.append('test')
 
-    print('Extract x-vector completed for train and test in %s!\n' % (args.extract_path + '/xvectors/'))
+    if len(extracted_set) > 0:
+        print('Extract x-vector completed for %s in %s!\n' % (','.join(extracted_set), args.xvector_dir + '/xvectors/'))
 
 
 if __name__ == '__main__':

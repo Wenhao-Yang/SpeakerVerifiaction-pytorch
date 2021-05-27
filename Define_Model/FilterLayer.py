@@ -70,7 +70,7 @@ class fDLR(nn.Module):
         return torch.log(torch.matmul(input, weights).clamp_min(1e-12))
 
     def __repr__(self):
-        return "fDLR(input_dim=%d, filter_fix=%f, num_filter=%d)" % (self.input_dim, self.filter_fix, self.num_filter)
+        return "fDLR(input_dim=%d, filter_fix=%s, num_filter=%d)" % (self.input_dim, self.filter_fix, self.num_filter)
 
 
 class fBLayer(nn.Module):

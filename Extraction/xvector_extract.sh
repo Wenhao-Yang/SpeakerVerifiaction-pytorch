@@ -131,14 +131,14 @@ if [ $stage -le 60 ]; then
   model=TDNN_v5
   encod=STAP
   dataset=vox2
-  test_set=vox1
+  test_set=cnceleb
+  #       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
 
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
       --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi \
       --input-norm Mean \
