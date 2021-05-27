@@ -15,6 +15,8 @@ encod=None
 dataset=vox2
 test_set=vox1
 
+adaptation=true
+
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
 xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
@@ -72,14 +74,21 @@ if [ $stage -le 10 ]; then
   ivector-compute-plda ark:$train_dir/spk2utt \
     "ark:ivector-subtract-global-mean scp:$train_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
     $train_xvector_dir/plda || exit 1
+
+  # Adaptation plda using out-of-domain dataset
+  ivector-adapt-plda --within-covar-scale=0.75 --between-covar-scale=0.25 \
+    $train_xvector_dir/plda \
+    "ark:ivector-subtract-global-mean scp:$test_xvector_dir/xvector.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+    $train_xvector_dir/plda_adapt || exit 1
+
 fi
 
 if [ $stage -le 11 ]; then
   ivector-plda-scoring --normalize-length=true \
-    "ivector-copy-plda --smoothing=0.0 $train_xvector_dir/plda - |" \
+    "ivector-copy-plda --smoothing=0.0 $train_xvector_dir/plda_adapt - |" \
     "ark:ivector-subtract-global-mean $train_xvector_dir/mean.vec scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
     "ark:ivector-subtract-global-mean $train_xvector_dir/mean.vec scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-    "cat '$test_trials' | cut -d\  --fields=1,2 |" $test_xvector_dir/scores_test || exit 1
+    "cat '$test_trials' | cut -d\  --fields=1,2 |" $test_xvector_dir/adapt_scores_test || exit 1
 fi
 
 if [ $stage -le 12 ]; then
@@ -90,3 +99,12 @@ if [ $stage -le 12 ]; then
   echo "minDCF(p-target=0.01): $mindcf1"
   echo "minDCF(p-target=0.001): $mindcf2"
 fi
+
+# 20210527
+# kaldi plda
+# Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
+
+# vox1 test
+# EER: 4.38%
+#minDCF(p-target=0.01): 0.4245
+#minDCF(p-target=0.001): 0.5548
