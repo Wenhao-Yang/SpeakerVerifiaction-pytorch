@@ -22,7 +22,7 @@ train_xvector_dir=${xvector_dir}/train
 test_xvector_dir=${xvector_dir}/test
 
 # test options
-adaptation=true
+adaptation=false
 
 #test_trials=${lstm_dir}/data/vox1/pyfb/test_fb40/trials
 #train_dir=${lstm_dir}/data/vox1/egs/pyfb/dev_fb40
@@ -64,7 +64,7 @@ if [ $stage -le 10 ]; then
   # Compute the mean vector for centering the evaluation xvectors.
   ivector-mean scp:$train_xvector_dir/xvectors.scp $train_xvector_dir/mean.vec || exit 1
   # This script uses LDA to decrease the dimensionality prior to PLDA.
-  lda_dim=400
+  lda_dim=500
   ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
     "ark:ivector-subtract-global-mean scp:$train_xvector_dir/xvectors.scp ark:- |" \
     ark:$train_dir/utt2spk $train_xvector_dir/transform.mat || exit 1
