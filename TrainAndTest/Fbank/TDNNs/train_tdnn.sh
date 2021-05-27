@@ -428,7 +428,7 @@ if [ $stage -le 77 ]; then
   input_dim=40
   input_norm=Mean
 
-  for encod in STAP Ghos_v3; do
+  for encod in Ghos_v3; do
     feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
