@@ -1,6 +1,6 @@
 #!/bin/bash
 
-stage=12
+stage=10
 # global variale
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -22,7 +22,7 @@ train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors/epoch_60/train
 test_xvector_dir=${xvector_dir}/cnceleb_test_var/xvectors/epoch_60/test
 
 # test options
-adaptation=false
+adaptation=true
 
 #test_trials=${lstm_dir}/data/vox1/pyfb/test_fb40/trials
 #train_dir=${lstm_dir}/data/vox1/egs/pyfb/dev_fb40
@@ -132,6 +132,9 @@ fi
 # minDCF(p-target=0.01): 0.3538
 # minDCF(p-target=0.001): 0.4406
 
-EER: 18.68%
-minDCF(p-target=0.01):
-minDCF(p-target=0.001):
+# cnceleb test
+
+# no adaptation dim=500
+# EER: 18.68%
+# minDCF(p-target=0.01): 0.7867
+# minDCF(p-target=0.001): 0.8866
