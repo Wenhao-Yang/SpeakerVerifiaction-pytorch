@@ -325,7 +325,6 @@ class GhostVLAD_v3(nn.Module):
         if self.normalize_input:
             x = F.normalize(x, p=2, dim=-1)
 
-        feat = x
         cluster_score = self.fc(x)  # bz x N x cluster
 
         # num_features = feat.shape[-1]
@@ -335,18 +334,17 @@ class GhostVLAD_v3(nn.Module):
 
         # minus max_score so there will be a cluster which probability is equal to 1
         exp_cluster_score = torch.exp(cluster_score - max_cluster_score)
-        A = exp_cluster_score / torch.sum(exp_cluster_score, dim=-1, keepdim=True)
+        exp_cluster_score = exp_cluster_score / torch.sum(exp_cluster_score, dim=-1, keepdim=True)
 
         # Now, need to compute the residual, self.cluster: clusters x D
-        A = A.unsqueeze(-1)  # A : bz x N x clusters x 1
+        exp_cluster_score = exp_cluster_score.unsqueeze(-1)  # A : bz x N x clusters x 1
 
-        feat_broadcast = feat.unsqueeze(-2)  # feat_broadcast : bz x N x 1 x D
-        feat_res = feat_broadcast - self.centroids  # feat_res : bz x clusters x D
+        feat_res = x.unsqueeze(-2) - self.centroids  # feat_broadcast : bz x N x 1 x D
+        # feat_res : bz x clusters x D
 
-        weighted_res = torch.mul(A, feat_res)  # weighted_res : bz x clusters x D
+        weighted_res = torch.mul(exp_cluster_score, feat_res)  # weighted_res : bz x clusters x D
         # cluster_res = torch.sum(weighted_res, [1, 2])
-        cluster_res = weighted_res
-        cluster_res = cluster_res[:, :, :self.num_clusters, :]
+        cluster_res = weighted_res[:, :, :self.num_clusters, :]
 
         cluster_res = cluster_res.sum(dim=-2)
         cluster_l2 = torch.nn.functional.normalize(cluster_res, p=2, dim=-1)
