@@ -13,12 +13,14 @@ model=TDNN_v5
 encod=None
 #dataset=aishell2
 dataset=vox2
-test_set=vox1
+test_set=cnceleb
 
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
 xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
 train_xvector_dir=${xvector_dir}/train
+
+xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/cnceleb_test_var/xvectors/epoch_60
 test_xvector_dir=${xvector_dir}/test
 
 # test options
@@ -27,7 +29,7 @@ adaptation=false
 #test_trials=${lstm_dir}/data/vox1/pyfb/test_fb40/trials
 #train_dir=${lstm_dir}/data/vox1/egs/pyfb/dev_fb40
 
-test_trials=${lstm_dir}/data/vox1/spect/test_log/trials
+test_trials=${lstm_dir}/data/${test_set}/${feat_type}/test_${feat}/trials
 train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 #data_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 
