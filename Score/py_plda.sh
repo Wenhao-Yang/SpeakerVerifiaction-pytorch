@@ -131,3 +131,7 @@ fi
 # EER: 3.876%
 # minDCF(p-target=0.01): 0.3538
 # minDCF(p-target=0.001): 0.4406
+
+EER: 18.68%
+minDCF(p-target=0.01):
+minDCF(p-target=0.001):
