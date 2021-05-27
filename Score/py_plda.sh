@@ -1,17 +1,35 @@
-stage=9
+#!/bin/bash
+
+stage=10
+# global variale
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 nnet_dir=data
-
+# reusme options
 feat_type=spect
 feat=log
 loss=arcsoft
 model=TDNN_v5
 encod=None
-dataset=aishell2
+#dataset=aishell2
+dataset=vox2
 test_set=sitw
-lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
-if [ $stage -le 0 ]; then
+# extract options
+#xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
+xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
+train_xvector_dir=${xvector_dir}/train
+test_xvector_dir=${xvector_dir}/test
+
+# test options
+#test_trials=${lstm_dir}/data/vox1/pyfb/test_fb40/trials
+#train_dir=${lstm_dir}/data/vox1/egs/pyfb/dev_fb40
+
+test_trials=${lstm_dir}/data/vox1/spect/test_log/trials
+train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
+#data_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
+
+if [ $stage -le 9 ]; then
 
   for subset in dev eval; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
@@ -40,16 +58,9 @@ if [ $stage -le 0 ]; then
   exit
 fi
 
-xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
-train_xvector_dir=${xvector_dir}/train
-test_xvector_dir=${xvector_dir}/test
-test_trials=${lstm_dir}/data/vox1/pyfb/test_fb40/trials
-train_dir=${lstm_dir}/data/vox1/egs/pyfb/dev_fb40
-data_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
-
 if [ $stage -le 10 ]; then
   # Compute the mean vector for centering the evaluation xvectors.
-  ivector-mean scp:$train_xvector_dir/xvectors.scp $xvector_dir/mean.vec || exit 1
+  ivector-mean scp:$train_xvector_dir/xvectors.scp $train_xvector_dir/mean.vec || exit 1
   # This script uses LDA to decrease the dimensionality prior to PLDA.
   lda_dim=200
   ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
