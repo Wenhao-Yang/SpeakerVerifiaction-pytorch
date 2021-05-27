@@ -1,6 +1,6 @@
 #!/bin/bash
 
-stage=10
+stage=11
 # global variale
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -17,11 +17,9 @@ test_set=cnceleb
 
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
-xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
-train_xvector_dir=${xvector_dir}/train
-
-xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/cnceleb_test_var/xvectors/epoch_60
-test_xvector_dir=${xvector_dir}/test
+xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4
+train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors/epoch_60/train
+test_xvector_dir=${xvector_dir}/cnceleb_test_var/xvectors/epoch_60/test
 
 # test options
 adaptation=false
@@ -33,7 +31,7 @@ test_trials=${lstm_dir}/data/${test_set}/${feat_type}/test_${feat}/trials
 train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 #data_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 
-if [ $stage -le 9 ]; then
+if [ $stage -le 8 ]; then
 
   for subset in dev eval; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
@@ -62,7 +60,7 @@ if [ $stage -le 9 ]; then
   exit
 fi
 
-if [ $stage -le 10 ]; then
+if [ $stage -le 9 ]; then
   # Compute the mean vector for centering the evaluation xvectors.
   ivector-mean scp:$train_xvector_dir/xvectors.scp $train_xvector_dir/mean.vec || exit 1
   # This script uses LDA to decrease the dimensionality prior to PLDA.
@@ -76,7 +74,9 @@ if [ $stage -le 10 ]; then
   ivector-compute-plda ark:$train_dir/spk2utt \
     "ark:ivector-subtract-global-mean scp:$train_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
     $train_xvector_dir/plda || exit 1
+fi
 
+if [ $stage -le 10 ]; then
   # Adaptation plda using out-of-domain dataset
   if $adaptation; then
     ivector-adapt-plda --within-covar-scale=0.75 --between-covar-scale=0.25 \
