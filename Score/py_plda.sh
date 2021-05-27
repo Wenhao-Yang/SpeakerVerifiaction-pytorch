@@ -1,6 +1,6 @@
 #!/bin/bash
 
-stage=11
+stage=12
 # global variale
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
