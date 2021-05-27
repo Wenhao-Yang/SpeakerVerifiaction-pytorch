@@ -157,6 +157,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 uid_lst.append(a_uid[0])
 
                 if data.shape[0] >= batch_size or batch_idx + 1 == len(extract_loader):
+                    print(data.shape[0])
                     data = data.cuda() if next(model.parameters()).is_cuda else data
                     model_out = model(data)
                     try:
