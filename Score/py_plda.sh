@@ -13,7 +13,7 @@ model=TDNN_v5
 encod=None
 #dataset=aishell2
 dataset=vox2
-test_set=sitw
+test_set=vox1
 
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
