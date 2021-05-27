@@ -115,6 +115,12 @@ fi
 # Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
 
 # vox1 test
+# dim=200
 # EER: 4.38%
 #minDCF(p-target=0.01): 0.4245
 #minDCF(p-target=0.001): 0.5548
+
+# adaptation dim=400
+# EER: 4.38%
+# minDCF(p-target=0.01): 0.4245
+# minDCF(p-target=0.001): 0.5548
