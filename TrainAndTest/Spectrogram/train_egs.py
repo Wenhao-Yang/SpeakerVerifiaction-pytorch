@@ -343,7 +343,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             classfier_label, _ = classfier
             loss = xe_criterion(classfier, label)
 
-        elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+        elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
 

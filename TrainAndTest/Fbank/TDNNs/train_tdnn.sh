@@ -430,7 +430,7 @@ if [ $stage -le 77 ]; then
   lr_ratio=5
   loss_ratio=0.1
 
-  for loss in center variance; do
+  for loss in variance; do
     feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
