@@ -13,7 +13,7 @@
 import torch
 import torch.nn as nn
 from geomloss import SamplesLoss
-
+import numpy as np
 
 class CenterLoss(nn.Module):
     """Center loss.
@@ -26,15 +26,17 @@ class CenterLoss(nn.Module):
         feat_dim (int): feature dimension.
     """
 
-    def __init__(self, num_classes=10, feat_dim=2, alpha=10., partion=0.9):
+    def __init__(self, num_classes=10, feat_dim=2):
         super(CenterLoss, self).__init__()
         self.num_classes = num_classes
         self.feat_dim = feat_dim
-        self.alpha = alpha
-        self.partion = partion
 
-        self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim))
-        self.centers.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)  # 初始化权重，在第一维度上做normalize
+        centers = torch.randn(self.num_classes, self.feat_dim)
+        centers = torch.nn.functional.normalize(centers, p=2, dim=1)
+        alpha = np.ceil(np.log(0.99 * (num_classes - 2) / (1 - 0.99)))
+        centers *= np.sqrt(alpha)
+
+        self.centers = nn.Parameter(centers)
 
     def forward(self, x, labels):
         """
@@ -42,8 +44,8 @@ class CenterLoss(nn.Module):
             x: feature matrix with shape (batch_size, feat_dim).
             labels: ground truth labels with shape (batch_size).
         """
-        norms = self.centers.data.norm(p=2, dim=1, keepdim=True).add(1e-14)
-        self.centers.data = self.centers.data / norms * self.alpha
+        # norms = self.centers.data.norm(p=2, dim=1, keepdim=True).add(1e-14)
+        # self.centers.data = self.centers.data / norms * self.alpha
 
         batch_size = x.size(0)
         distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
@@ -51,7 +53,7 @@ class CenterLoss(nn.Module):
         distmat.addmm_(1, -2, x, self.centers.t())
 
         classes = torch.arange(self.num_classes).long()
-        #if self.use_gpu: classes = classes.cuda()
+        # if self.use_gpu: classes = classes.cuda()
         if self.centers.is_cuda:
             classes = classes.cuda()
 
@@ -59,14 +61,58 @@ class CenterLoss(nn.Module):
         mask = labels.eq(classes.expand(batch_size, self.num_classes))
 
         dist = distmat * mask.float()
+        loss = dist.mean()
 
-        # Variance for centers
-        # variance = torch.std(self.centers, dim=1).sum()
-        # loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
+        return loss
 
-        dist = dist.sum(dim=1).add(1e-14).sqrt()
-        dist = dist.index_select(0, torch.argsort(dist)[-int(self.partion * batch_size):])
-        loss = dist.clamp(min=1e-12, max=1e+12).sum() / int(self.partion * batch_size)
+
+class VarianceLoss(nn.Module):
+    """Center loss.
+
+    Reference:
+    Wen et al. A Discriminative Feature Learning Approach for Deep Face Recognition. ECCV 2016.
+
+    Args:
+        num_classes (int): number of classes.
+        feat_dim (int): feature dimension.
+    """
+
+    def __init__(self, num_classes=10, feat_dim=2):
+        super(VarianceLoss, self).__init__()
+        self.num_classes = num_classes
+        self.feat_dim = feat_dim
+
+        centers = torch.randn(self.num_classes, self.feat_dim)
+        centers = torch.nn.functional.normalize(centers, p=2, dim=1)
+        alpha = np.ceil(np.log(0.99 * (num_classes - 2) / (1 - 0.99)))
+        centers *= np.sqrt(alpha)
+
+        self.centers = nn.Parameter(centers)
+
+    def forward(self, x, labels):
+        """
+        Args:
+            x: feature matrix with shape (batch_size, feat_dim).
+            labels: ground truth labels with shape (batch_size).
+        """
+        # norms = self.centers.data.norm(p=2, dim=1, keepdim=True).add(1e-14)
+        # self.centers.data = self.centers.data / norms * self.alpha
+
+        batch_size = x.size(0)
+        distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
+                  torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(self.num_classes, batch_size).t()
+        distmat.addmm_(1, -2, x, self.centers.t())
+
+        classes = torch.arange(self.num_classes).long()
+        # if self.use_gpu: classes = classes.cuda()
+        if self.centers.is_cuda:
+            classes = classes.cuda()
+
+        labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
+        mask = labels.eq(classes.expand(batch_size, self.num_classes))
+
+        dist = distmat * mask.float()
+        loss = dist.mean() + dist.std()
 
         return loss
 
