@@ -300,32 +300,30 @@ def main():
 
     # optionally resume from a checkpoint
     # resume = args.ckp_dir + '/checkpoint_{}.pth'.format(args.epoch)
+    assert os.path.isfile(args.resume), print('=> no checkpoint found at {}'.format(args.resume))
 
-    if os.path.isfile(args.resume):
-        print('=> loading checkpoint {}'.format(args.resume))
-        checkpoint = torch.load(args.resume)
-        epoch = checkpoint['epoch']
+    print('=> loading checkpoint {}'.format(args.resume))
+    checkpoint = torch.load(args.resume)
+    epoch = checkpoint['epoch']
 
-        checkpoint_state_dict = checkpoint['state_dict']
-        if isinstance(checkpoint_state_dict, tuple):
-            checkpoint_state_dict = checkpoint_state_dict[0]
-        filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+    checkpoint_state_dict = checkpoint['state_dict']
+    if isinstance(checkpoint_state_dict, tuple):
+        checkpoint_state_dict = checkpoint_state_dict[0]
+    filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
 
-        # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-        if list(filtered.keys())[0].startswith('module'):
-            new_state_dict = OrderedDict()
-            for k, v in filtered.items():
-                name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+    # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+    if list(filtered.keys())[0].startswith('module'):
+        new_state_dict = OrderedDict()
+        for k, v in filtered.items():
+            name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+            new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
 
-            model.load_state_dict(new_state_dict)
-        else:
-            model_dict = model.state_dict()
-            model_dict.update(filtered)
-            model.load_state_dict(model_dict)
-        # model.dropout.p = args.dropout_p
+        model.load_state_dict(new_state_dict)
     else:
-        print('=> no checkpoint found at {}'.format(args.resume))
+        model_dict = model.state_dict()
+        model_dict.update(filtered)
+        model.load_state_dict(model_dict)
+    # model.dropout.p = args.dropout_p
 
     if args.cuda:
         model.cuda()
