@@ -56,6 +56,7 @@ parser.add_argument('--train-config-dir', type=str, required=True, help='path to
 parser.add_argument('--train-dir', type=str, default='', help='path to dataset')
 parser.add_argument('--test-dir', type=str, default='', help='path to test dataset')
 
+parser.add_argument('--xvector', action='store_true', default=False, help='The dir for extracting xvectors')
 parser.add_argument('--xvector-dir', type=str, help='The dir for extracting xvectors')
 
 parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
@@ -329,15 +330,17 @@ def main():
         model.cuda()
 
     extracted_set = []
+
+    vec_type = 'xvectors_a' if args.xvector else 'xvectors_b'
     if args.train_dir != '':
         train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform_V,
                                         extract_trials=False)
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
         # Extract Train set vectors
         # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
-        train_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/train' % epoch
+        train_xvector_dir = args.xvector_dir + '/%s/epoch_%d/train' % (vec_type, epoch)
         verification_extract(train_loader, model, train_xvector_dir, epoch=epoch, test_input=args.test_input,
-                             verbose=True)
+                             verbose=True, xvector=args.xvector)
         # copy wav.scp and utt2spk ...
         extracted_set.append('train')
 
@@ -347,14 +350,16 @@ def main():
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     # Extract test set vectors
-    test_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/test' % epoch
+    test_xvector_dir = args.xvector_dir + '/%s/epoch_%d/test' % (vec_type, epoch)
     # extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
-    verification_extract(test_loader, model, test_xvector_dir, epoch=epoch, test_input=args.test_input, verbose=True)
+    verification_extract(test_loader, model, test_xvector_dir, epoch=epoch, test_input=args.test_input,
+                         verbose=True, xvector=args.xvector)
     # copy wav.scp and utt2spk ...
     extracted_set.append('test')
 
     if len(extracted_set) > 0:
-        print('Extract x-vector completed for %s in %s!\n' % (','.join(extracted_set), args.xvector_dir + '/xvectors/'))
+        print('Extract x-vector completed for %s in %s!\n' % (
+        ','.join(extracted_set), args.xvector_dir + '/%s' % vec_type))
 
 
 if __name__ == '__main__':

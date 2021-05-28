@@ -2,7 +2,7 @@
 
 stage=77
 waited=0
-while [ $(ps 27241 | wc -l) -eq 2 ]; do
+while [ $(ps 18156 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -362,60 +362,7 @@ if [ $stage -le 70 ]; then
   exit
 fi
 
-if [ $stage -le 71 ]; then
-  model=TDNN_v5
-  datasets=vox2
-  #  feat=fb24
-  feat_type=pyfb
-  loss=arcsoft
-  encod=STAP
-  embedding_size=512
-  input_dim=40
-  input_norm=Mean
 
-  for loss in soft arcsoft; do
-    feat=fb${input_dim}_ws25
-    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
-    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
-      --nj 16 \
-      --epochs 40 \
-      --patience 3 \
-      --milestones 10,20,30 \
-      --model ${model} \
-      --scheduler rop \
-      --weight-decay 0.0005 \
-      --lr 0.1 \
-      --alpha 0 \
-      --feat-format kaldi \
-      --embedding-size ${embedding_size} \
-      --var-input \
-      --batch-size 128 \
-      --accu-steps 1 \
-      --random-chunk 200 400 \
-      --input-dim ${input_dim} \
-      --channels 512,512,512,512,1500 \
-      --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
-      --cos-sim \
-      --dropout-p 0.0 \
-      --veri-pairs 9600 \
-      --gpu-id 0,1 \
-      --num-valid 2 \
-      --loss-type ${loss} \
-      --margin 0.3 \
-      --s 15 \
-      --remove-vad \
-      --log-interval 10
-  done
-  exit
-fi
 
 if [ $stage -le 77 ]; then
   model=TDNN_v5
@@ -474,6 +421,61 @@ if [ $stage -le 77 ]; then
       --remove-vad \
       --log-interval 10
   done
+
+fi
+
+if [ $stage -le 78 ]; then
+  model=TDNN_v5
+  datasets=vox2
+  #  feat=fb24
+  feat_type=pyfb
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_dim=40
+  input_norm=Mean
+
+  for loss in arcsoft; do
+    feat=fb${input_dim}_ws25
+    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --nj 16 \
+      --epochs 41 \
+      --patience 3 \
+      --milestones 10,20,30 \
+      --model ${model} \
+      --scheduler rop \
+      --weight-decay 0.0005 \
+      --lr 0.01 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --embedding-size ${embedding_size} \
+      --var-input \
+      --batch-size 128 \
+      --accu-steps 1 \
+      --random-chunk 200 400 \
+      --input-dim ${input_dim} \
+      --channels 512,512,512,512,1500 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_9.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0,1 \
+      --num-valid 2 \
+      --loss-type ${loss} \
+      --margin 0.3 \
+      --s 15 \
+      --remove-vad \
+      --log-interval 10
+  done
   exit
 fi
 
@@ -486,7 +488,7 @@ if [ $stage -le 80 ]; then
   encod=STAP
   embedding_size=512
 
-  for model in TDNN_v5 ETDNN_v5; do
+  for model in TDNN_v5 ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
