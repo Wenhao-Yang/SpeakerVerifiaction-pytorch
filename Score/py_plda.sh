@@ -1,19 +1,19 @@
 #!/bin/bash
 
-stage=10
+stage=8
 # global variale
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
-nnet_dir=data
+nnet_dir=Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth
 # reusme options
 feat_type=spect
-feat=log
+feat=fb40_ws25
 loss=arcsoft
 model=TDNN_v5
 encod=None
 #dataset=aishell2
 dataset=vox2
-test_set=cnceleb
+test_set=vox1
 
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
@@ -33,7 +33,7 @@ train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 
 if [ $stage -le 8 ]; then
 
-  for subset in dev eval; do # 32,128,512; 8,32,128
+  for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
@@ -42,7 +42,7 @@ if [ $stage -le 8 ]; then
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi \
       --input-norm Mean \
-      --input-dim 161 \
+      --input-dim 40 \
       --nj 12 \
       --embedding-size 512 \
       --loss-type ${loss} \
@@ -52,8 +52,8 @@ if [ $stage -le 8 ]; then
       --s 30 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/aishell2/spect_egs_baseline/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_${subset}_epoch_60_var \
-      --resume Data/checkpoint/TDNN_v5/aishell2/spect_egs_baseline/arcsoft_0ce/inputMean_STAP_em512_wde4/checkpoint_60.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_40_var \
+      --resume ${nnet_dir} \
       --gpu-id 0 \
       --cos-sim
   done

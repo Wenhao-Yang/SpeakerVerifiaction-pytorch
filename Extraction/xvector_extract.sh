@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=80
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -164,7 +164,7 @@ if [ $stage -le 80 ]; then
   dataset=vox1
   loss=soft
   feat_type=pyfb
-  feat=fb40
+  feat=fb40_ws25
   loss=soft
   model=TDNN_v5
   encod=STAP
@@ -182,7 +182,7 @@ if [ $stage -le 80 ]; then
       --input-norm Mean \
       --input-dim 40 \
       --nj 12 \
-      --embedding-size 256 \
+      --embedding-size 512 \
       --loss-type ${loss} \
       --encoder-type STAP \
       --channels 512,512,512,512,1500 \

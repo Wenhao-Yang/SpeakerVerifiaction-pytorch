@@ -131,7 +131,7 @@ class AverageMeter(object):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True,
-                         verbose=False):
+                         verbose=False, xvector=False):
     model.eval()
 
     if not os.path.exists(xvector_dir):
@@ -174,7 +174,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     else:
 
                         data = data.cuda() if next(model.parameters()).is_cuda else data
-                        model_out = model(data)
+                        model_out = model.xvector(data) if xvector else model(data)
                         try:
                             _, out, _, _ = model_out
                         except:
@@ -200,7 +200,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
-                model_out = model(a_data)
+                model_out = model.xvector(a_data) if xvector else model(a_data)
                 try:
                     _, out, _, _ = model_out
                 except:
