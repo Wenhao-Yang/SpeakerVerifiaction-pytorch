@@ -429,8 +429,9 @@ if [ $stage -le 77 ]; then
   input_norm=Mean
   lr_ratio=5
   loss_ratio=0.1
+  # _lrr${lr_ratio}_lsr${loss_ratio}
 
-  for loss in variance; do
+  for loss in arcsoft; do
     feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
@@ -458,8 +459,8 @@ if [ $stage -le 77 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}_lrr${lr_ratio}_lsr${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}_lrr${lr_ratio}_lsr${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_13.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_13.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
