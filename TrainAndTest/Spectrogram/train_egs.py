@@ -455,7 +455,7 @@ def valid_class(valid_loader, model, ce, epoch):
             elif args.loss_type == 'asoft':
                 classfier_label, _ = classfier
                 loss = xe_criterion(classfier, label)
-            elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+            elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
                 loss_cent = ce_criterion(classfier, label)
                 loss_xent = xe_criterion(feats, label)
 

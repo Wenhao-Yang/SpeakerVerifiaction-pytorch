@@ -143,3 +143,8 @@ fi
 # EER: 18.68%
 # minDCF(p-target=0.01): 0.7867
 # minDCF(p-target=0.001): 0.8866
+
+# singing
+# EER: 35.3%
+# minDCF(p-target=0.01): 0.9995
+# minDCF(p-target=0.001): 0.9995
