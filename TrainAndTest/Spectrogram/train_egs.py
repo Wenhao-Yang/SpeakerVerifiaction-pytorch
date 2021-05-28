@@ -656,7 +656,7 @@ def main():
         args.alpha = 0.0
 
     model_para = model.parameters()
-    if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
+    if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert args.lr_ratio > 0
         model_para = [{'params': xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio},
                       {'params': model.parameters()}]

@@ -427,6 +427,7 @@ if [ $stage -le 77 ]; then
   embedding_size=256
   input_dim=40
   input_norm=Mean
+  lr_ratio=5
   loss_ratio=0.1
 
   for loss in center variance; do
@@ -457,14 +458,15 @@ if [ $stage -le 77 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}_${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}_${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}_lrr${lr_ratio}_lsr${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}__lrr${lr_ratio}_lsr${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-ratio ${loss_ratio} \
+      --lr-ratio ${lr_ratio} \
       --loss-type ${loss} \
       --margin 0.3 \
       --s 15 \
