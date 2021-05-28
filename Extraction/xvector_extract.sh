@@ -189,8 +189,8 @@ if [ $stage -le 80 ]; then
       --margin 0.25 \
       --s 30 \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/${test_set}_${subset}_var \
-      --resume Data/checkpoint/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/checkpoint_40.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth \
       --gpu-id 0 \
       --remove-vad \
       --cos-sim
