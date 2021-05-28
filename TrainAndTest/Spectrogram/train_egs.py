@@ -412,7 +412,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
-            if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+            if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
                 epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             100. * minibatch_acc)
