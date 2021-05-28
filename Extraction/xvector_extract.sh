@@ -164,7 +164,7 @@ if [ $stage -le 80 ]; then
   dataset=vox1
   loss=soft
   feat_type=pyfb
-  feat=fb40_ws25
+  feat=fb40
   loss=soft
   model=TDNN_v5
   encod=STAP
@@ -175,9 +175,9 @@ if [ $stage -le 80 ]; then
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
-      --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat} \
+      --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_ws25 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 40 \
