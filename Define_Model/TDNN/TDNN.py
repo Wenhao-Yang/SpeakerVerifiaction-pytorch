@@ -798,6 +798,35 @@ class TDNN_v5(nn.Module):
 
         return logits, embedding_b
 
+    def xvector(self, x):
+        # pdb.set_trace()
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
+        if len(x.shape) == 4:
+            x = x.squeeze(1).float()
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+
+        x = self.frame1(x)
+        x = self.frame2(x)
+        x = self.frame3(x)
+        x = self.frame4(x)
+        x = self.frame5(x)
+
+        if self.dropout_layer:
+            x = self.drop(x)
+
+        # print(x.shape)
+        x = self.encoder(x)
+        embedding_a = self.segment6(x)
+
+        return "", embedding_a
+
 
 class TDNN_v6(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',

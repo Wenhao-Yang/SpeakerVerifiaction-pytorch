@@ -441,7 +441,7 @@ if [ $stage -le 77 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --nj 16 \
-      --epochs 40 \
+      --epochs 30 \
       --patience 3 \
       --milestones 10,20,30 \
       --model ${model} \
@@ -459,7 +459,7 @@ if [ $stage -le 77 ]; then
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}_lrr${lr_ratio}_lsr${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}__lrr${lr_ratio}_lsr${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}__lrr${lr_ratio}_lsr${loss_ratio}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_10.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \

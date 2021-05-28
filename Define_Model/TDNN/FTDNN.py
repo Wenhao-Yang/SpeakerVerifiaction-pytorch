@@ -349,7 +349,7 @@ class FTDNN(nn.Module):
 
         embeddings_a = self.layer12(x)
 
-        return embeddings_a
+        return "", embeddings_a
 
     def step_ftdnn_layers(self):
         for layer in self.children():
