@@ -423,50 +423,6 @@ def test(test_loader):
     print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.\33[0m'.format(mindcf_01, mindcf_001))
 
 
-def sitw_test(sitw_test_loader, model, epoch):
-    # switch to evaluate mode
-    model.eval()
-
-    labels, distances = [], []
-    pbar = tqdm(enumerate(sitw_test_loader))
-    for batch_idx, (data_a, data_p, label) in pbar:
-
-        vec_shape = data_a.shape
-        # pdb.set_trace()
-        if vec_shape[1] != 1:
-            data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-            data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-
-        if args.cuda:
-            data_a, data_p = data_a.cuda(), data_p.cuda()
-        data_a, data_p = Variable(data_a), Variable(data_p)
-
-        # compute output
-        _, out_a = model(data_a)
-        _, out_p = model(data_p)
-        dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        if vec_shape[1] != 1:
-            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(axis=1)
-
-        dists = dists.data.cpu().numpy()
-
-        distances.append(dists)
-        labels.append(label.numpy())
-
-        if batch_idx % args.log_interval == 0:
-            pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-                epoch, batch_idx * vec_shape[0], len(sitw_test_loader.dataset),
-                       100. * batch_idx / len(sitw_test_loader)))
-
-    labels = np.array([sublabel for label in labels for sublabel in label])
-    distances = np.array([subdist for dist in distances for subdist in dist])
-
-    eer_t, eer_threshold_t, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
-    torch.cuda.empty_cache()
-
-    print('\33[91mFor Sitw Test ERR: {:.4f}%, Threshold: {}.\n\33[0m'.format(100. * eer_t, eer_threshold_t))
-
-
 if __name__ == '__main__':
 
     # Views the training images and displays the distance on anchor-negative and anchor-positive
@@ -511,7 +467,8 @@ if __name__ == '__main__':
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
                     'channels': channels, 'context': context,
-                    'alpha': args.alpha, 'dropout_p': args.dropout_p}
+                    'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
     print('Model options: {}'.format(model_kwargs))
     dist_type = 'cos' if args.cos_sim else 'l2'
