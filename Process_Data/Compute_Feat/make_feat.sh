@@ -183,7 +183,7 @@ if [ $stage -le 10 ]; then
   filters=40
   feat=fb40
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} for ${dataset}\033[0m\n"
-  for s in dev test; do
+  for s in eval ; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/pyfb \
