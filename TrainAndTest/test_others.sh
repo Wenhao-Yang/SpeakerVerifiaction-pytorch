@@ -644,7 +644,7 @@ if [ $stage -le 79 ]; then
   # |   aidata test   |   10.0972%    |   0.2952531   |    0.7859      |     0.9520     |   20210515   |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
 
-  for subset in dev test; do # 32,128,512; 8,32,128
+  for subset in eval ; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
