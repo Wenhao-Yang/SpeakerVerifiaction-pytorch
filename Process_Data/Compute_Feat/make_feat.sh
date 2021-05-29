@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=10
+stage=30
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -183,7 +183,7 @@ if [ $stage -le 10 ]; then
   filters=40
   feat=fb40
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} for ${dataset}\033[0m\n"
-  for s in eval ; do
+  for s in eval; do
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/pyfb \
@@ -433,19 +433,29 @@ fi
 
 if [ $stage -le 30 ]; then
   # dev
-  dataset=aishell2
-  #  dataset=aidata
-  for name in dev; do
+  #  dataset=aishell2
+  dataset=aidata
+  feat=pyfb
+  filters=40
+  feat_name=fb${filters}
+
+  if [ "$feat" = "pyfb" ]; then
+    feat_type=fbank
+  elif [ "$feat" = "spect" ]; then
+    feat_type=spectrogram
+  fi
+
+  for name in test; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/spect \
-      --nj 16 \
-      --out-set ${name}_log \
-      --feat-type spectrogram \
+      --data-dir ${lstm_dir}/data/${dataset}/${name} \
+      --out-dir ${lstm_dir}/data/${dataset}/${feat} \
+      --out-set dev_fb${filters} \
+      --nj 12 \
+      --feat-type ${feat_type} \
       --log-scale \
       --feat-format kaldi_cmp \
-      --nfft 320 \
-      --windowsize 0.02
+      --nfft 512 \
+      --windowsize 0.025
   done
   exit
 fi

@@ -67,7 +67,6 @@ parser.add_argument('--log-scale', action='store_true', default=False, help='log
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 
-parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--test-input', type=str, default='fix', help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
@@ -418,9 +417,36 @@ def test(test_loader):
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
     dist_type = 'cos' if args.cos_sim else 'l2'
+    test_directorys = args.test_dir.split('/')
+    test_set_name = '-'
+    for i, dir in enumerate(test_directorys):
+        if dir == 'data':
+            test_set_name = "-".join(test_directorys[i + 1], test_directorys[i + 3])
+
     print('\nFor %s_distance, %d pairs:' % (dist_type, len(labels)))
-    print('  \33[91mTest  ERR: {:.4f}%, Threshold: {:.4f}'.format(100. * eer, eer_threshold), end='')
-    print(' mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m'.format(mindcf_01, mindcf_001))
+    print('\33[91m')
+    print('    +--------------+---------------+-------------+--------------+--------------+--------------------+')
+    print('    |{: ^14s}|{: ^15s}|{: ^13s}|{: ^14s}|{: ^14s}|{: ^20s}|'.format('Test Set',
+                                                                               'EER (%)',
+                                                                               'Threshold',
+                                                                               'MinDCF-0.01'
+                                                                               'MinDCF-0.001',
+                                                                               'Date'))
+    print('    +--------------+---------------+-------------+--------------+--------------+--------------------+')
+    eer = '{:.4f}%'.format(eer * 100.)
+    threshold = '{:.4f}'.format(eer_threshold)
+    mindcf_01 = '{:.4f}'.format(mindcf_01)
+    mindcf_001 = '{:.4f}'.format(mindcf_001)
+    date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
+
+    print('    |{: ^14s}|{: ^15s}|{: ^13s}|{: ^14s}|{: ^14s}|{: ^20s}|'.format(test_set_name,
+                                                                               eer,
+                                                                               threshold,
+                                                                               mindcf_01,
+                                                                               mindcf_001,
+                                                                               date))
+    print('    +--------------+---------------+-------------+--------------+--------------+--------------------+')
+    print('\33[0m')
 
 
 if __name__ == '__main__':
