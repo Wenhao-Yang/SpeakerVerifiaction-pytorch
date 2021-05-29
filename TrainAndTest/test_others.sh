@@ -618,7 +618,7 @@ if [ $stage -le 77 ]; then
 fi
 if [ $stage -le 79 ]; then
   feat_type=pyfb
-  feat=fb40_ws25
+  feat=fb40
   loss=soft
   model=TDNN_v5
   encod=None
@@ -665,7 +665,7 @@ if [ $stage -le 79 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 40 \
