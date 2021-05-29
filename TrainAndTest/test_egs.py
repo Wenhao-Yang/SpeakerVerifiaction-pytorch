@@ -69,7 +69,7 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 
 parser.add_argument('--test-input', type=str, default='fix', help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
+parser.add_argument('--extract', action='store_false', default=True, help='need to make mfb file')
 parser.add_argument('--frame-shift', default=200, type=int, metavar='N', help='acoustic feature dimension')
 
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
