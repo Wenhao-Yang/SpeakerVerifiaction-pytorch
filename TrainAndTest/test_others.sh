@@ -623,9 +623,9 @@ if [ $stage -le 79 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox2
-  test_set=aidata
+  test_set=magic
 
-  # Training set: voxceleb 2 40-dimensional log fbanks  Loss: soft
+  # Training set: voxceleb 2 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
   #
   # |   Test Set      |    EER ( % )  | Threshold |  MinDCF-0.01  |   MinDCF-0.01  |     Date     |
@@ -640,8 +640,8 @@ if [ $stage -le 79 ]; then
 
   # +-----------------+---------------+-----------+---------------+----------------+--------------+
   # |  aishell2 test  |   10.8300%    |   0.2786811   |    0.8212      |     0.9527     |   20210515   |
-  # +-----------------+---------------+---------------+----------------+----------------+--------------+
-  # |   aidata test   |   10.0972%    |   0.2952531   |    0.7859      |     0.9520     |   20210515   |
+  # +-----------------+---------------+-----------+---------------+----------------+--------------+
+  # |   aidata-test   |    8.7480%    |   0.3503  |    0.7233     |    0.9196    | 20210529 21:04:32  |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
 
   # sitw dev Test  ERR: 4.0046%, Threshold: 0.2708 mindcf-0.01: 0.3919, mindcf-0.001: 0.5955.

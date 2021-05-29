@@ -421,31 +421,35 @@ def test(test_loader):
     test_set_name = '-'
     for i, dir in enumerate(test_directorys):
         if dir == 'data':
-            test_set_name = "-".join((test_directorys[i + 1], test_directorys[i + 3]))
+            test_subset = test_directorys[i + 3].split('_')[0]
+            test_set_name = "-".join((test_directorys[i + 1], test_subset))
 
     print('\nFor %s_distance, %d pairs:' % (dist_type, len(labels)))
     print('\33[91m')
-    print('    +--------------+---------------+-------------+--------------+--------------+--------------------+')
-    print('    |{: ^14s}|{: ^15s}|{: ^13s}|{: ^14s}|{: ^14s}|{: ^20s}|'.format('Test Set',
+    print(
+        '    +------------------------+---------------+-------------+--------------+--------------+--------------------+')
+    print('    |{: ^24s}|{: ^15s}|{: ^13s}|{: ^14s}|{: ^14s}|{: ^20s}|'.format('Test Set',
                                                                                'EER (%)',
                                                                                'Threshold',
                                                                                'MinDCF-0.01',
                                                                                'MinDCF-0.001',
                                                                                'Date'))
-    print('    +--------------+---------------+-------------+--------------+--------------+--------------------+')
+    print(
+        '    +------------------------+---------------+-------------+--------------+--------------+--------------------+')
     eer = '{:.4f}%'.format(eer * 100.)
     threshold = '{:.4f}'.format(eer_threshold)
     mindcf_01 = '{:.4f}'.format(mindcf_01)
     mindcf_001 = '{:.4f}'.format(mindcf_001)
     date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-    print('    |{: ^14s}|{: ^15s}|{: ^13s}|{: ^14s}|{: ^14s}|{: ^20s}|'.format(test_set_name,
+    print('    |{: ^24s}|{: ^15s}|{: ^13s}|{: ^14s}|{: ^14s}|{: ^20s}|'.format(test_set_name,
                                                                                eer,
                                                                                threshold,
                                                                                mindcf_01,
                                                                                mindcf_001,
                                                                                date))
-    print('    +--------------+---------------+-------------+--------------+--------------+--------------------+')
+    print(
+        '    +------------------------+---------------+-------------+--------------+--------------+--------------------+')
     print('\33[0m')
 
 

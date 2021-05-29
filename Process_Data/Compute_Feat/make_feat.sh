@@ -434,7 +434,7 @@ fi
 if [ $stage -le 30 ]; then
   # dev
   #  dataset=aishell2
-  dataset=aidata
+  dataset=magic
   feat=pyfb
   filters=40
   feat_name=fb${filters}
