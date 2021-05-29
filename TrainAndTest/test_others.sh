@@ -565,7 +565,7 @@ if [ $stage -le 60 ]; then
 
 fi
 
-if [ $stage -le 79 ]; then
+if [ $stage -le 77 ]; then
   feat_type=spect
   feat=log
   loss=arcsoft
@@ -616,6 +616,75 @@ if [ $stage -le 79 ]; then
   done
   exit
 fi
+if [ $stage -le 79 ]; then
+  feat_type=pyfb
+  feat=fb40_ws25
+  loss=soft
+  model=TDNN_v5
+  encod=None
+  dataset=vox2
+  test_set=vox1
+
+  # Training set: voxceleb 2 40-dimensional log fbanks  Loss: arcosft
+  # Cosine Similarity
+  #
+  # |   Test Set      |    EER ( % )  |   Threshold   |  MinDCF-0.01   |   MinDCF-0.01  |     Date     |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |   vox1 test     |    2.3542%    |   0.2698025   |    0.2192      |     0.2854     |   20210426   |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |   sitw dev      |    2.8109%    |   0.2630014   |    0.2466      |     0.4026     |   20210515   |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |   sitw eval     |    3.2531%    |   0.2642460   |    0.2984      |     0.4581     |   20210515   |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |  cnceleb test   |   16.8276%    |   0.2165570   |    0.6923      |     0.8009     |   20210515   |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |  aishell2 test  |   10.8300%    |   0.2786811   |    0.8212      |     0.9527     |   20210515   |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+  # |   aidata test   |   10.0972%    |   0.2952531   |    0.7859      |     0.9520     |   20210515   |
+  # +-----------------+---------------+---------------+----------------+----------------+--------------+
+
+  # 20210515
+  # test_set=sitw
+  # dev
+  # Test ERR is 2.8109%, Threshold is 0.2630014419555664
+  #  mindcf-0.01 0.2466, mindcf-0.001 0.4026.
+  # eval
+  # Test ERR is 3.2531%, Threshold is 0.26424601674079895
+  #  mindcf-0.01 0.2984, mindcf-0.001 0.4581.
+
+  # 20210515
+  # test_set=cnceleb
+  # aishell2 test 30w trials
+  # aidata test 50w trials
+
+  for subset in test; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 40 \
+      --nj 12 \
+      --embedding-size 512 \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --channels 512,512,512,512,1500 \
+      --margin 0.25 \
+      --s 30 \
+      --input-length var \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_40_var \
+      --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
+fi
 
 if [ $stage -le 80 ]; then
   feat_type=spect
@@ -626,7 +695,7 @@ if [ $stage -le 80 ]; then
   dataset=vox1
   test_set=aidata
 
-  # Training set: voxceleb 2 Loss: arcosft
+  # Training set: voxceleb 2 161-dimensional spectrogram  Loss: arcosft
   # Cosine Similarity
   #
   # |   Test Set      |    EER ( % )  |   Threshold   |  MinDCF-0.01   |   MinDCF-0.01  |     Date     |
