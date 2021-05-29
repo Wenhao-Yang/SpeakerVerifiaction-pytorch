@@ -288,8 +288,7 @@ def Make_Fbank(filename,  # sample_rate=c.SAMPLE_RATE,
 
     # audio, sample_rate = sf.read(filename, dtype='float32')
     audio, sample_rate = sf.read(filename, dtype='int16')
-    if not len(audio) > 0:
-        raise ValueError('wav file is empty?')
+    assert len(audio) > 0, print('wav file is empty?')
 
     filter_banks, energies = local_fbank(audio, samplerate=sample_rate, nfilt=nfilt, nfft=nfft, lowfreq=lowfreq,
                                          winlen=windowsize, filtertype=filtertype, winfunc=np.hamming,

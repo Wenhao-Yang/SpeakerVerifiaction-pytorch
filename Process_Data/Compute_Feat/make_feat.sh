@@ -453,6 +453,7 @@ if [ $stage -le 30 ]; then
       --filter-type mel \
       --nj 12 \
       --feat-type ${feat_type} \
+      --filters ${filters} \
       --log-scale \
       --feat-format kaldi_cmp \
       --nfft 512 \
