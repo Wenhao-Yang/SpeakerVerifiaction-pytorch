@@ -202,26 +202,26 @@ fi
 
 # ==================================================   timit   ==================================================
 if [ $stage -eq 20 ]; then
-  #  for name in train test ; do
-  #    python Process_Data/Compute_Feat/make_feat.py \
-  #      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
-  #      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
-  #      --nj 12 \
-  #      --out-set ${name}_log \
-  #      --log-scale \
-  #      --feat-type spectrogram \
-  #      --nfft 320 \
-  #      --windowsize 0.02
+  for name in train test; do
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
+      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
+      --nj 12 \
+      --out-set ${name}_log \
+      --log-scale \
+      --feat-type spectrogram \
+      --nfft 320 \
+      --windowsize 0.02
 
-  #    python Process_Data/Compute_Feat/make_feat.py \
-  #      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
-  #      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
-  #      --nj 12 \
-  #      --out-set ${name}_power \
-  #      --feat-type spectrogram \
-  #      --nfft 320 \
-  #      --windowsize 0.02
-  #  done
+    python Process_Data/Compute_Feat/make_feat.py \
+      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
+      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
+      --nj 12 \
+      --out-set ${name}_power \
+      --feat-type spectrogram \
+      --nfft 320 \
+      --windowsize 0.02
+  done
 fi
 
 if [ $stage -le 21 ]; then
