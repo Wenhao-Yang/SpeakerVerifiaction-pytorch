@@ -449,8 +449,9 @@ if [ $stage -le 30 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${dataset}/${name} \
       --out-dir ${lstm_dir}/data/${dataset}/${feat} \
-      --out-set ${name}_fb${filters} \
-      --nj 1 \
+      --out-set ${name}_fb${filters}_ws25 \
+      --filter-type mel \
+      --nj 12 \
       --feat-type ${feat_type} \
       --log-scale \
       --feat-format kaldi_cmp \
