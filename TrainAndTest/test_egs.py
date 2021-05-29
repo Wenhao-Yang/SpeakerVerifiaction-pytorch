@@ -421,7 +421,7 @@ def test(test_loader):
     test_set_name = '-'
     for i, dir in enumerate(test_directorys):
         if dir == 'data':
-            test_set_name = "-".join(test_directorys[i + 1], test_directorys[i + 3])
+            test_set_name = "-".join((test_directorys[i + 1], test_directorys[i + 3]))
 
     print('\nFor %s_distance, %d pairs:' % (dist_type, len(labels)))
     print('\33[91m')
