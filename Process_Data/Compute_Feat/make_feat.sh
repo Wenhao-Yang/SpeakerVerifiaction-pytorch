@@ -450,7 +450,7 @@ if [ $stage -le 30 ]; then
       --data-dir ${lstm_dir}/data/${dataset}/${name} \
       --out-dir ${lstm_dir}/data/${dataset}/${feat} \
       --out-set ${name}_fb${filters} \
-      --nj 12 \
+      --nj 1 \
       --feat-type ${feat_type} \
       --log-scale \
       --feat-format kaldi_cmp \
