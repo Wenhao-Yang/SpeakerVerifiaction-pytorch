@@ -623,16 +623,18 @@ if [ $stage -le 79 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox2
-  test_set=vox1
+  test_set=cnceleb
 
-  # Training set: voxceleb 2 40-dimensional log fbanks  Loss: arcosft
+  # Training set: voxceleb 2 40-dimensional log fbanks  Loss: soft
   # Cosine Similarity
   #
   # |   Test Set      |    EER ( % )  |   Threshold   |  MinDCF-0.01   |   MinDCF-0.01  |     Date     |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
-  # |   vox1 test     |    2.3542%    |   0.2698025   |    0.2192      |     0.2854     |   20210426   |
+  # |   vox1 test     |    2.6670%    |   0.2869451   |    0.2984      |     0.4581     |   20210529   |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
-  # |   sitw dev      |    2.8109%    |   0.2630014   |    0.2466      |     0.4026     |   20210515   |
+
+
+  # |   sitw dev      |    2.8109%    |   0.2630014   |    0.2984      |     0.4581     |   20210529   |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
   # |   sitw eval     |    3.2531%    |   0.2642460   |    0.2984      |     0.4581     |   20210515   |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
@@ -643,19 +645,6 @@ if [ $stage -le 79 ]; then
   # |   aidata test   |   10.0972%    |   0.2952531   |    0.7859      |     0.9520     |   20210515   |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
 
-  # 20210515
-  # test_set=sitw
-  # dev
-  # Test ERR is 2.8109%, Threshold is 0.2630014419555664
-  #  mindcf-0.01 0.2466, mindcf-0.001 0.4026.
-  # eval
-  # Test ERR is 3.2531%, Threshold is 0.26424601674079895
-  #  mindcf-0.01 0.2984, mindcf-0.001 0.4581.
-
-  # 20210515
-  # test_set=cnceleb
-  # aishell2 test 30w trials
-  # aidata test 50w trials
 
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
