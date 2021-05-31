@@ -231,14 +231,14 @@ class RET(nn.Module):
             self.mask_layer = None
 
         TDNN_layer = TimeDelayLayer_v5
-        if block_type == 'Basic':
+        if block_type.lower() == 'basic':
             Blocks = TDNNBlock
-        elif block_type == 'Basic_v6':
+        elif block_type.lower() == 'basic_v6':
             Blocks = TDNNBlock_v6
             TDNN_layer = TimeDelayLayer_v6
-        elif block_type == 'Agg':
+        elif block_type.lower() == 'agg':
             Blocks = TDNNBottleBlock
-        elif block_type == 'cbam':
+        elif block_type.lower() == 'cbam':
             Blocks = TDNNCBAMBlock
         else:
             raise ValueError(block_type)
