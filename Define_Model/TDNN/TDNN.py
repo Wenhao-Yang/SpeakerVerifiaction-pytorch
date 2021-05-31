@@ -22,7 +22,8 @@ from torch.autograd import Variable
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
-from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3
+from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
+    SelfAttentionPooling
 
 """Time Delay Neural Network as mentioned in the 1989 paper by Waibel et al. (Hinton) and the 2015 paper by Peddinti et al. (Povey)"""
 class TimeDelayLayer_v1(nn.Module):
@@ -726,15 +727,21 @@ class TDNN_v5(nn.Module):
 
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=self.channels[4])
-        elif encoder_type == 'SASP':
-            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=512)
+            self.encoder_output = self.channels[4] * 2
+        elif encoder_type == 'ASP':
+            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
+            self.encoder_output = self.channels[4] * 2
+        elif encoder_type == 'SAP':
+            self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
+            self.encoder_output = self.num_filter[4]
         elif encoder_type == 'Ghos_v3':
             self.encoder = GhostVLAD_v3(num_clusters=self.num_classes_b, gost=1, dim=self.channels[4])
+            self.encoder_output = self.num_filter[4] * 2
         else:
             raise ValueError(encoder_type)
 
         self.segment6 = nn.Sequential(
-            nn.Linear(self.channels[4] * 2, 512),
+            nn.Linear(self.encoder_output, 512),
             nn.ReLU(),
             nn.BatchNorm1d(512)
         )
