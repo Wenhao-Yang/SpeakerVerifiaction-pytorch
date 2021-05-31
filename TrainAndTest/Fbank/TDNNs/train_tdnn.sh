@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=78
 waited=0
 while [ $(ps 18156 | wc -l) -eq 2 ]; do
   sleep 60
@@ -423,7 +423,7 @@ if [ $stage -le 77 ]; then
 fi
 
 if [ $stage -le 78 ]; then
-  model=TDNN_v5
+  model=ETDNN_v5
   datasets=vox2
   #  feat=fb24
   feat_type=pyfb
@@ -444,7 +444,7 @@ if [ $stage -le 78 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --nj 16 \
-      --epochs 41 \
+      --epochs 50 \
       --patience 3 \
       --milestones 10,20,30 \
       --model ${model} \
