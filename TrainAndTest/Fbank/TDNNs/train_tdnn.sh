@@ -462,7 +462,7 @@ if [ $stage -le 78 ]; then
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
       --context 5,5,5 \
-      --channels 512,512,512,512,1500 \
+      --channels 512,512,512,512,512,1536 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}${resnet_size}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
       --resume Data/checkpoint/${model}/${datasets}${resnet_size}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_9.pth \
