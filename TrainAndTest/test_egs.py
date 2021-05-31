@@ -440,12 +440,12 @@ def test(test_loader):
     mindcf_001 = '{:.4f}'.format(mindcf_001)
     date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-    print('    |{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|'.format(test_set_name,
-                                                                               eer,
-                                                                               threshold,
-                                                                               mindcf_01,
-                                                                               mindcf_001,
-                                                                               date))
+    print('|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|'.format(test_set_name,
+                                                                           eer,
+                                                                           threshold,
+                                                                           mindcf_01,
+                                                                           mindcf_001,
+                                                                           date))
     print('+--------------+-------------+-------------+-------------+--------------+-------------------+')
     print('\33[0m')
 
