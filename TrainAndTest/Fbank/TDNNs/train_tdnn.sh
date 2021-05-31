@@ -423,10 +423,9 @@ if [ $stage -le 77 ]; then
 fi
 
 if [ $stage -le 78 ]; then
-  model=RET
+  model=ETDNN_v5
   datasets=vox2
   #  feat=fb24
-  resnet_size=14
   feat_type=pyfb
   loss=arcsoft
   encod=STAP
@@ -444,7 +443,6 @@ if [ $stage -le 78 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
-      --resnet-size ${resnet_size} \
       --nj 16 \
       --epochs 50 \
       --patience 3 \
@@ -461,11 +459,10 @@ if [ $stage -le 78 ]; then
       --accu-steps 1 \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
-      --context 5,5,5 \
-      --channels 512,512,512,512,512,1536 \
+      --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}${resnet_size}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}${resnet_size}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_9.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
