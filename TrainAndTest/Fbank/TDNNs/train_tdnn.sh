@@ -2,7 +2,7 @@
 
 stage=78
 waited=0
-while [ $(ps 18156 | wc -l) -eq 2 ]; do
+while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -423,17 +423,17 @@ if [ $stage -le 77 ]; then
 fi
 
 if [ $stage -le 78 ]; then
-  model=ETDNN_v5
+  model=TDNN_v5
   datasets=vox2
   #  feat=fb24
   feat_type=pyfb
-  loss=arcsoft
+  loss=soft
   encod=STAP
   embedding_size=512
   input_dim=40
   input_norm=Mean
 
-  for loss in arcsoft; do
+  for loss in soft arcsoft; do
     feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
