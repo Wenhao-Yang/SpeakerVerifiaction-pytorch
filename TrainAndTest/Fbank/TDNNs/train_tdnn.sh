@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=78
+stage=79
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -460,6 +460,63 @@ if [ $stage -le 78 ]; then
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_9.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0,1 \
+      --num-valid 2 \
+      --loss-type ${loss} \
+      --margin 0.3 \
+      --s 15 \
+      --remove-vad \
+      --log-interval 10
+  done
+  exit
+fi
+
+if [ $stage -le 79 ]; then
+  model=RET
+  datasets=vox2
+  feat_type=pyfb
+  loss=soft
+  encod=STAP
+  embedding_size=512
+  input_dim=40
+  input_norm=Mean
+  resnet_size=14
+
+  for loss in arcsoft; do
+    feat=fb${input_dim}_ws25
+    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --nj 16 \
+      --epochs 50 \
+      --patience 3 \
+      --milestones 10,20,30 \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --scheduler rop \
+      --weight-decay 0.0001 \
+      --lr 0.1 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --embedding-size ${embedding_size} \
+      --var-input \
+      --batch-size 128 \
+      --accu-steps 1 \
+      --random-chunk 200 400 \
+      --input-dim ${input_dim} \
+      --channels 512,512,512,512,512,1536 \
+      --context 5,5,5 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_9.pth \
