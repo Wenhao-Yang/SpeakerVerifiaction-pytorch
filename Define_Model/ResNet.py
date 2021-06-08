@@ -860,12 +860,9 @@ class LocalResNet(nn.Module):
         if layers[3] != 0:
             assert len(channels) == 4
             self.inplanes = channels[3]
-            if self.fast:
-                self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=1,
-                                       padding=padding, bias=False)
-            else:
-                self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=2,
-                                       padding=padding, bias=False)
+            stride = 1 if self.fast else 2
+            self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=stride,
+                                   padding=padding, bias=False)
             self.bn4 = nn.BatchNorm2d(channels[3])
             self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
 
