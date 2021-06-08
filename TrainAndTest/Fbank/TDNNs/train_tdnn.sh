@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=79
+stage=70
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -329,12 +329,12 @@ if [ $stage -le 70 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_f400 \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --nj 16 \
-      --epochs 40 \
+      --epochs 50 \
       --patience 3 \
       --milestones 10,20,30 \
       --model ${model} \
       --scheduler rop \
-      --weight-decay 0.0005 \
+      --weight-decay 0.001 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
@@ -346,8 +346,8 @@ if [ $stage -le 70 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_var/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
