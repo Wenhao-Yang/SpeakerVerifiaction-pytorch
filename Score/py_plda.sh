@@ -1,28 +1,30 @@
 #!/bin/bash
 
-stage=8
+stage=9
 # global variale
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 nnet_dir=Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth
 # reusme options
-feat_type=spect
+feat_type=pyfb
 feat=fb40_ws25
-loss=arcsoft
+loss=soft
 model=TDNN_v5
-encod=None
+encod=STAP
 #dataset=aishell2
-dataset=vox2
+dataset=vox1
 test_set=vox1
 
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
-xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4
-train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors/epoch_60/train
-test_xvector_dir=${xvector_dir}/cnceleb_test_var/xvectors/epoch_60/test
+#xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4
+xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var
+#/vox1_test_var/xvectors_a
+train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors_a/epoch_50/train
+test_xvector_dir=${xvector_dir}/${test_set}_test_var/xvectors_a/epoch_50/test
 
 # test options
-adaptation=true
+adaptation=false
 
 #test_trials=${lstm_dir}/data/vox1/pyfb/test_fb40/trials
 #train_dir=${lstm_dir}/data/vox1/egs/pyfb/dev_fb40
@@ -64,7 +66,7 @@ if [ $stage -le 9 ]; then
   # Compute the mean vector for centering the evaluation xvectors.
   ivector-mean scp:$train_xvector_dir/xvectors.scp $train_xvector_dir/mean.vec || exit 1
   # This script uses LDA to decrease the dimensionality prior to PLDA.
-  lda_dim=500
+  lda_dim=200
   ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
     "ark:ivector-subtract-global-mean scp:$train_xvector_dir/xvectors.scp ark:- |" \
     ark:$train_dir/utt2spk $train_xvector_dir/transform.mat || exit 1
