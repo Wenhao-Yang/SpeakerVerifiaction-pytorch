@@ -20,8 +20,8 @@ test_set=vox1
 #xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4
 xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var
 #/vox1_test_var/xvectors_a
-train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors_b/epoch_50/train
-test_xvector_dir=${xvector_dir}/${test_set}_test_var/xvectors_b/epoch_50/test
+train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors_a/epoch_50/train
+test_xvector_dir=${xvector_dir}/${test_set}_test_var/xvectors_a/epoch_50/test
 
 # test options
 adaptation=false
