@@ -132,6 +132,19 @@ class AverageMeter(object):
 
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True,
                          verbose=False, xvector=False):
+    """
+
+    :param extract_loader:
+    :param model:
+    :param xvector_dir:
+    :param epoch:
+    :param test_input:
+    :param ark_num:
+    :param gpu:
+    :param verbose:
+    :param xvector: extract xvectors in embedding-a layer
+    :return:
+    """
     model.eval()
 
     if not os.path.exists(xvector_dir):
@@ -163,7 +176,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         while i < data.shape[0]:
                             data_part = data[i:(i + batch_size)]
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
-                            model_out = model(data_part)
+                            model_out = model.xvector(data_part) if xvector else model(data_part)
                             try:
                                 _, out_part, _, _ = model_out
                             except:
