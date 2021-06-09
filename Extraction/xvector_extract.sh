@@ -187,6 +187,7 @@ if [ $stage -le 70 ]; then
       --channels 512,512,512,512,1500 \
       --margin 0.25 \
       --s 30 \
+      --xvector \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_${subset}_var \
       --resume Data/checkpoint/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_50.pth \
