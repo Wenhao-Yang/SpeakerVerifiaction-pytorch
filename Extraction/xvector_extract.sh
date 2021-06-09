@@ -182,7 +182,6 @@ if [ $stage -le 70 ]; then
       --input-dim 40 \
       --nj 12 \
       --embedding-size 256 \
-      --xvector \
       --loss-type ${loss} \
       --encoder-type STAP \
       --channels 512,512,512,512,1500 \
