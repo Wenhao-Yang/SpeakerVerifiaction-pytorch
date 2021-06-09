@@ -830,7 +830,7 @@ class TDNN_v5(nn.Module):
 
         # print(x.shape)
         x = self.encoder(x)
-        embedding_a = self.segment6(x)
+        embedding_a = self.segment6[0](x)
 
         return "", embedding_a
 
