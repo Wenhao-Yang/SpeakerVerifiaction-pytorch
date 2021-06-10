@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=30
+stage=2
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -82,15 +82,47 @@ fi
 
 #stage=200.0
 if [ $stage -le 2 ]; then
-  for name in dev test; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --nj 16 \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_fb64/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pymfcc40 \
-      --out-set ${name}_kaldi \
-      --feat-type mfcc \
-      --filters 40
+  dataset=vox1
+  feat=klfb
+
+  if [ "$feat" = "pyfb" ]; then
+    feat_type=fbank
+  elif [ "$feat" = "spect" ]; then
+    feat_type=spectrogram
+  elif [ "$feat" = "klfb" ]; then
+    feat_type=klfb
+  fi
+
+  echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs with kaldi fbank for ${dataset}\033[0m\n"
+  for s in combined; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
+      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
+      --nj 12 \
+      --feat-type ${feat_type} \
+      --train \
+      --input-per-spks 512 \
+      --num-frames 400 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --remove-vad \
+      --out-set dev_${s}_fb40
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
+      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
+      --nj 12 \
+      --feat-type ${feat_type} \
+      --num-frames 400 \
+      --input-per-spks 512 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --remove-vad \
+      --out-set valid_${s}_fb40
   done
+  exit
 fi
 
 if [ $stage -le 3 ]; then

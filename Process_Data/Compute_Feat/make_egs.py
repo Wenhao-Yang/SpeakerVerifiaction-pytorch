@@ -50,7 +50,7 @@ parser.add_argument('--out-format', type=str, choices=['kaldi', 'npy', 'kaldi_cm
 parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
+parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc', 'klfb'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
 
@@ -218,7 +218,7 @@ transform = ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_v
 
 if args.feat_format == 'npy':
     file_loader = np.load
-elif args.feat_format == 'kaldi':
+elif args.feat_format in ['kaldi', 'klfb']:
     file_loader = kaldi_io.read_mat
 
 train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
