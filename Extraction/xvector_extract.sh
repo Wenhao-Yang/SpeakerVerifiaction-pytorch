@@ -214,7 +214,7 @@ if [ $stage -le 71 ]; then
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
       --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_fb40 \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_fb40 \
       --feat-format kaldi \
       --input-norm Mean \
