@@ -150,3 +150,9 @@ fi
 # EER: 35.3%
 # minDCF(p-target=0.01): 0.9995
 # minDCF(p-target=0.001): 0.9995
+
+# Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var
+# test on voxceleb1 test
+# EER: 3.717%
+# minDCF(p-target=0.01): 0.3558
+# minDCF(p-target=0.001): 0.4107
