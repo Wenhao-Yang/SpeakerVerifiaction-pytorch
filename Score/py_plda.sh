@@ -4,7 +4,8 @@ stage=9
 # global variale
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
-nnet_dir=Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth
+#nnet_dir=Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth
+#Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var
 # reusme options
 feat_type=pyfb
 feat=fb40_ws25
@@ -18,7 +19,7 @@ test_set=vox1
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
 #xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4
-xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var
+xvector_dir=Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var
 #/vox1_test_var/xvectors_a
 train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors_a/epoch_50/train
 test_xvector_dir=${xvector_dir}/${test_set}_test_var/xvectors_a/epoch_50/test
