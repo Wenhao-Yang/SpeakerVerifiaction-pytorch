@@ -16,6 +16,7 @@ https://github.com/jonasvdd/TDNN/blob/master/tdnn.py
 import math
 
 import torch
+from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
@@ -25,7 +26,25 @@ from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
     SelfAttentionPooling
 
+
+def channel_shuffle(x: Tensor, groups: int) -> Tensor:
+    batchsize, num_channels, time_len = x.size()
+    channels_per_group = num_channels // groups
+
+    # reshape
+    x = x.view(batchsize, groups,
+               channels_per_group, time_len)
+
+    x = torch.transpose(x, 1, 2).contiguous()
+    # flatten
+    x = x.view(batchsize, -1, time_len)
+
+    return x
+
+
 """Time Delay Neural Network as mentioned in the 1989 paper by Waibel et al. (Hinton) and the 2015 paper by Peddinti et al. (Povey)"""
+
+
 class TimeDelayLayer_v1(nn.Module):
     def __init__(self, context, input_dim, output_dim, full_context=True):
         """
@@ -432,6 +451,69 @@ class TimeDelayLayer_v6(nn.Module):
         return x.transpose(1, 2)
 
 
+class ShuffleTDLayer(nn.Module):
+
+    def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
+                 dropout_p=0.0, padding=0, groups=1, activation='relu', ) -> None:
+        super(ShuffleTDLayer, self).__init__()
+        self.context_size = context_size
+        self.stride = stride
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.dilation = dilation
+        self.dropout_p = dropout_p
+        self.padding = padding
+        self.groups = groups
+
+        if not (1 <= stride <= 3):
+            raise ValueError('illegal stride value')
+        self.stride = stride
+
+        branch_features = self.output_dim // 2
+        assert (self.stride != 1) or (self.input_dim == branch_features << 1)
+
+        if self.stride > 1:
+            self.branch1 = nn.Sequential(
+                self.depthwise_conv(self.input_dim, self.input_dim, kernel_size=3, stride=self.stride, padding=1),
+                nn.BatchNorm1d(self.input_dim),
+                nn.Conv1d(self.input_dim, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm1d(branch_features),
+                nn.ReLU(inplace=True),
+            )
+        else:
+            self.branch1 = nn.Sequential()
+
+        self.branch2 = nn.Sequential(
+            nn.Conv1d(self.input_dim if (self.stride > 1) else branch_features,
+                      branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm1d(branch_features),
+            nn.ReLU(inplace=True),
+            self.depthwise_conv(branch_features, branch_features, kernel_size=self.context_size,
+                                dilation=self.dilation, stride=self.stride, padding=1),
+            nn.BatchNorm1d(branch_features),
+            nn.Conv1d(branch_features, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm1d(branch_features),
+            nn.ReLU(inplace=True),
+        )
+
+    @staticmethod
+    def depthwise_conv(i: int, o: int, kernel_size: int, stride: int = 1, padding: int = 0,
+                       dilation: int = 1, bias: bool = False) -> nn.Conv1d:
+        return nn.Conv1d(i, o, kernel_size, stride, padding, dilation=dilation, bias=bias, groups=i)
+
+    def forward(self, x):
+        x = x.transpose(1, 2)
+        if self.stride == 1:
+            x1, x2 = x.chunk(2, dim=1)
+            out = torch.cat((x1, self.branch2(x2)), dim=1)
+        else:
+            out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
+
+        out = channel_shuffle(out, 2)
+
+        return out.transpose(1, 2)
+
+
 class TDNN_v1(nn.Module):
     def __init__(self, context, input_dim, output_dim, node_num, full_context):
         super(TDNN_v1, self).__init__()
@@ -662,7 +744,7 @@ class TDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
-                 num_classes_b=0,
+                 num_classes_b=0, block_type='basic',
                  mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
@@ -675,6 +757,7 @@ class TDNN_v5(nn.Module):
         self.mask = mask
         self.filter = filter
         self.feat_dim = feat_dim
+        self.block_type = block_type.lower()
 
         if self.filter == 'fDLR':
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
@@ -711,17 +794,25 @@ class TDNN_v5(nn.Module):
 
         if self.filter_layer != None:
             self.input_dim = feat_dim
+        if self.block_type == 'basic':
+            TDlayer = TimeDelayLayer_v5
+        elif self.block_type == 'basic_v6':
+            TDlayer = TimeDelayLayer_v6
+        elif self.block_type == 'shuffle':
+            TDlayer = ShuffleTDLayer
+        else:
+            raise ValueError(self.block_type)
 
-        self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=self.channels[0],
-                                        context_size=5, dilation=1)
-        self.frame2 = TimeDelayLayer_v5(input_dim=self.channels[0], output_dim=self.channels[1],
-                                        context_size=3, dilation=2)
-        self.frame3 = TimeDelayLayer_v5(input_dim=self.channels[1], output_dim=self.channels[2],
-                                        context_size=3, dilation=3)
-        self.frame4 = TimeDelayLayer_v5(input_dim=self.channels[2], output_dim=self.channels[3],
-                                        context_size=1, dilation=1)
-        self.frame5 = TimeDelayLayer_v5(input_dim=self.channels[3], output_dim=self.channels[4],
-                                        context_size=1, dilation=1)
+        self.frame1 = TDlayer(input_dim=self.input_dim, output_dim=self.channels[0],
+                              context_size=5, dilation=1)
+        self.frame2 = TDlayer(input_dim=self.channels[0], output_dim=self.channels[1],
+                              context_size=3, dilation=2)
+        self.frame3 = TDlayer(input_dim=self.channels[1], output_dim=self.channels[2],
+                              context_size=3, dilation=3)
+        self.frame4 = TDlayer(input_dim=self.channels[2], output_dim=self.channels[3],
+                              context_size=1, dilation=1)
+        self.frame5 = TDlayer(input_dim=self.channels[3], output_dim=self.channels[4],
+                              context_size=1, dilation=1)
 
         self.drop = nn.Dropout(p=self.dropout_p)
 
