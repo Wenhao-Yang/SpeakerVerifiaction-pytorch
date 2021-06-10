@@ -115,9 +115,24 @@ if [ $stage -le 12 ]; then
   echo "minDCF(p-target=0.001): $mindcf2"
 fi
 
+# PLDA
 # 20210527
+# Training set: vox2_v2 Loss: arcosft
+  # +-----------------+---------+-------------+-------------+--------------+--------------+
+  # |   Test Set      | EER (%) |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |     Date     |
+  # +-----------------+---------+-------------+-------------+--------------+--------------+
+  # Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
+  # +-----------------+---------+-------------+-------------+--------------+--------------+
+  # |   vox1 test     |  4.38%  |  0.2578884  |   0.4245    |    0.5548    |   20210527   |
+  # +-----------------+------------+---------------+----------------+----------------+--------------+
+  # |   vox1 test     | 22.31%  |   0.2578884   |    0.8733      |     0.8923     |   20210517   |
+  # +-----------------+------------+---------------+----------------+----------------+--------------+
+  # |  aidata test    |  11.4180%  |   0.3180055   |    0.7140      |     0.8919     |   20210517   |
+  # +-----------------+------------+---------------+----------------+----------------+--------------+
+  # |  cnceleb test   |  27.6964%  |   0.2075080   |    0.9081      |     0.9997     |   20210517   |
+  # +-----------------+------------+---------------+----------------+----------------+--------------+
+
 # kaldi plda
-# Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/vox1_test_var/xvectors/epoch_60
 
 # vox1 test
 # dim=200
@@ -153,7 +168,15 @@ fi
 # minDCF(p-target=0.001): 0.9995
 
 # Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var
+# xvectors
 # test on voxceleb1 test
 # EER: 3.717%
 # minDCF(p-target=0.01): 0.3558
 # minDCF(p-target=0.001): 0.4107
+
+# Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var
+# xvectors
+# test on voxceleb1 test
+#EER: 3.648%
+#minDCF(p-target=0.01): 0.3292
+#minDCF(p-target=0.001): 0.4718

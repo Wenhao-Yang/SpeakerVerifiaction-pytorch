@@ -101,13 +101,13 @@ if [ $stage -le 2 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 512 \
+      --input-per-spks 768 \
       --num-frames 400 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --out-set dev_${s}_fb40
+      --out-set dev_${s}_fb40_v2
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
@@ -115,12 +115,12 @@ if [ $stage -le 2 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --num-frames 400 \
-      --input-per-spks 512 \
+      --input-per-spks 768 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --out-set valid_${s}_fb40
+      --out-set valid_${s}_fb40_v2
   done
   exit
 fi
