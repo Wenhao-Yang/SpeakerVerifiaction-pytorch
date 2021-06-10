@@ -311,23 +311,23 @@ if [ $stage -le 70 ]; then
   model=TDNN_v5
   datasets=vox1
   #  feat=fb24
-  feat_type=pyfb
+  feat_type=klfb
   loss=soft
   encod=STAP
   embedding_size=256
   input_dim=40
   input_norm=Mean
 
-  for embedding_size in 256 512; do
-    feat=fb${input_dim}_ws25
+  for embedding_size in 512; do
+    feat=combined_fb${input_dim}
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/Spectrogram/train_egs.py \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_f400 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_f400 \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_test_fb40 \
       --nj 16 \
       --epochs 50 \
       --patience 3 \
