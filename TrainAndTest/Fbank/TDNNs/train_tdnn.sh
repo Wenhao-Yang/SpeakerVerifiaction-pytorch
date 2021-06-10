@@ -327,7 +327,7 @@ if [ $stage -le 70 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_fb${input_dim} \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_test_fb40 \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb40 \
       --nj 16 \
       --epochs 50 \
       --patience 3 \
