@@ -19,7 +19,7 @@ test_set=vox1
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
 #xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4
-xvector_dir=Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v3
+xvector_dir=Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2
 #/vox1_test_var/xvectors_a
 train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors_a/epoch_50/train
 test_xvector_dir=${xvector_dir}/${test_set}_test_var/xvectors_a/epoch_50/test
@@ -32,7 +32,7 @@ adaptation=false
 feat_type=klfb
 feat=combined #fb40 #_ws25
 test_trials=${lstm_dir}/data/${test_set}/${feat_type}/test_fb40/trials
-train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
+train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40
 #data_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 
 if [ $stage -le 8 ]; then
@@ -68,7 +68,7 @@ if [ $stage -le 9 ]; then
   # Compute the mean vector for centering the evaluation xvectors.
   ivector-mean scp:$train_xvector_dir/xvectors.scp $train_xvector_dir/mean.vec || exit 1
   # This script uses LDA to decrease the dimensionality prior to PLDA.
-  lda_dim=200
+  lda_dim=256
   ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
     "ark:ivector-subtract-global-mean scp:$train_xvector_dir/xvectors.scp ark:- |" \
     ark:$train_dir/utt2spk $train_xvector_dir/transform.mat || exit 1
