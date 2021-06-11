@@ -228,8 +228,8 @@ if [ $stage -le 71 ]; then
       --s 30 \
       --xvector \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var/${test_set}_${subset}_var \
-      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2/${test_set}_${subset}_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2/checkpoint_50.pth \
       --gpu-id 0 \
       --remove-vad \
       --cos-sim
