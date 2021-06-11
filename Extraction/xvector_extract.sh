@@ -214,7 +214,7 @@ if [ $stage -le 71 ]; then
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
       --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_fb40 \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_combined \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_fb40 \
       --feat-format kaldi \
       --input-norm Mean \
@@ -228,7 +228,7 @@ if [ $stage -le 71 ]; then
       --s 30 \
       --xvector \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2/${test_set}_${subset}_var \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v3/${test_set}_${subset}_var \
       --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2/checkpoint_50.pth \
       --gpu-id 0 \
       --remove-vad \
