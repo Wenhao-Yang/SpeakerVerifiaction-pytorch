@@ -1005,6 +1005,52 @@ class LocalResNet(nn.Module):
 
         return logits, x
 
+    def xvector(self, x):
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        if self.fast:
+            x = self.maxpool(x)
+        x = self.layer1(x)
+
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = self.relu(x)
+        x = self.layer3(x)
+
+        if self.layers[3] != 0:
+            x = self.conv4(x)
+            x = self.bn4(x)
+            x = self.relu(x)
+            x = self.layer4(x)
+
+        if self.dropout_p > 0:
+            x = self.dropout(x)
+
+        x = self.avgpool(x)
+        if self.encoder != None:
+            x = self.encoder(x)
+
+        x = x.view(x.size(0), -1)
+        # x = self.fc1(x)
+        embeddings = self.fc[0](x)
+
+        return "", embeddings
+
 
 # previoud version for test
 # class LocalResNet(nn.Module):

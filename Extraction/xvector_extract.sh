@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=71
+stage=3
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -58,6 +58,51 @@ if [ $stage -le 2 ]; then
     --dropout-p 0.0 \
     --epoch 20 \
     --embedding-size 1024
+fi
+
+if [ $stage -le 3 ]; then
+  model=LoResNet
+  dataset=vox1
+  loss=soft
+  feat_type=spect
+  feat=log
+  loss=soft
+  encod=None
+  test_set=vox1
+  resnet_size=8
+  block_type=cbam
+
+  for subset in test; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore Extraction/extract_xvector_egs.py \
+      --model ${model} \
+      --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_log \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 40 \
+      --nj 12 \
+      --resnet-size ${resnet_size} \
+      --embedding-size 256 \
+      --loss-type ${loss} \
+      --encoder-type None \
+      --avg-size 4 \
+      --time-dim 1 \
+      --stride 1 \
+      --block-type ${block_type} \
+      --channels 64,128,256 \
+      --margin 0.25 \
+      --s 30 \
+      --xvector \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/LoResNet8/vox1/spect_egs/soft/None_cbam_dp25_alpha12_em256/${test_set}_${subset}_var \
+      --resume Data/checkpoint/LoResNet8/vox1/spect_egs/soft/None_cbam_dp25_alpha12_em256/checkpoint_5.pth \
+      --gpu-id 0 \
+      --remove-vad \
+      --cos-sim
+  done
+  exit
 fi
 
 if [ $stage -le 20 ]; then
