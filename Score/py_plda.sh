@@ -31,7 +31,7 @@ adaptation=false
 #train_dir=${lstm_dir}/data/vox1/egs/pyfb/dev_fb40
 feat_type=klfb
 feat=combined #fb40 #_ws25
-test_trials=${lstm_dir}/data/${test_set}/${feat_type}/test_${feat}/trials
+test_trials=${lstm_dir}/data/${test_set}/${feat_type}/test_fb40/trials
 train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 #data_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 
@@ -133,6 +133,9 @@ fi
 # |  cnceleb test   |  27.6964%  |   0.2075080   |    0.9081      |     0.9997     |   20210517   |
 # +-----------------+------------+---------------+----------------+----------------+--------------+
 
+# 20210611
+# Training set: vox1 Loss: soft
+
 # kaldi plda
 
 # vox1 test
@@ -183,6 +186,13 @@ fi
 #minDCF(p-target=0.001): 0.4718
 
 # Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2
+# xvectors
+# test on voxceleb1 test
+# EER: 3.823%
+# minDCF(p-target=0.01): 0.3529
+# minDCF(p-target=0.001): 0.4887
+
+# Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v3
 # xvectors
 # test on voxceleb1 test
 # EER: 3.823%
