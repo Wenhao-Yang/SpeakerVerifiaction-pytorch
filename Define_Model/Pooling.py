@@ -266,13 +266,13 @@ class GhostVLAD_v2(nn.Module):
 
     def forward(self, x):
         '''
-        x: N x D
+        x: B  x D
         '''
         if self.normalize_input:
             x = F.normalize(x, p=2, dim=-1)
 
         feat = x
-        cluster_score = self.fc(x)  # bz x cluster
+        cluster_score = self.fc(x)  # bz x N x cluster
 
         # num_features = feat.shape[-1]
         # softmax normalization to get soft-assignment.
@@ -284,15 +284,14 @@ class GhostVLAD_v2(nn.Module):
         A = exp_cluster_score / torch.sum(exp_cluster_score, dim=-1, keepdim=True)
 
         # Now, need to compute the residual, self.cluster: clusters x D
-        A = A.unsqueeze(-1)  # A : bz x clusters x 1
+        A = A.unsqueeze(-1)  # A : bz  x clusters x 1
 
         feat_broadcast = feat.unsqueeze(-2)  # feat_broadcast : bz x 1 x D
         feat_res = feat_broadcast - self.centroids  # feat_res : bz x clusters x D
 
         weighted_res = torch.mul(A, feat_res)  # weighted_res : bz x clusters x D
         # cluster_res = torch.sum(weighted_res, [1, 2])
-        cluster_res = weighted_res
-        cluster_res = cluster_res[:, :self.num_clusters, :]
+        cluster_res = weighted_res[:, :self.num_clusters, :]
 
         cluster_res = cluster_res.sum(dim=-2)
         cluster_l2 = torch.nn.functional.normalize(cluster_res, p=2, dim=-1)
@@ -302,6 +301,66 @@ class GhostVLAD_v2(nn.Module):
         # outputs = cluster_res.sum(dim=-2)
 
         return cluster_l2
+
+
+class GhostVLAD_v3(nn.Module):
+    def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=False):
+        super(GhostVLAD_v3, self).__init__()
+        self.num_clusters = num_clusters
+        self.dim = dim
+        self.gost = gost
+        self.normalize_input = normalize_input
+        self.fc = nn.Linear(dim, num_clusters + gost)
+        self.centroids = nn.Parameter(torch.rand(num_clusters + gost, dim))
+        self._init_params()
+
+    def _init_params(self):
+        nn.init.xavier_normal_(self.fc.weight.data)
+        nn.init.constant_(self.fc.bias.data, 0.0)
+
+    def forward(self, x):
+        '''
+        x: B x N x D
+        '''
+        if self.normalize_input:
+            x = F.normalize(x, p=2, dim=-1)
+
+        cluster_score = self.fc(x)  # bz x N x cluster
+
+        # num_features = feat.shape[-1]
+        # softmax normalization to get soft-assignment.
+        # A : bz  x clusters
+        max_cluster_score = torch.max(cluster_score, dim=-1, keepdim=True).values
+
+        # minus max_score so there will be a cluster which probability is equal to 1
+        exp_cluster_score = torch.exp(cluster_score - max_cluster_score)
+        exp_cluster_score = exp_cluster_score / torch.sum(exp_cluster_score, dim=-1, keepdim=True)
+
+        # Now, need to compute the residual, self.cluster: clusters x D
+        exp_cluster_score = exp_cluster_score.unsqueeze(-1)  # A : bz x N x clusters x 1
+
+        feat_res = x.unsqueeze(-2) - self.centroids  # feat_broadcast : bz x N x 1 x D
+        # feat_res : bz x clusters x D
+
+        feat_res = torch.mul(exp_cluster_score, feat_res)  # weighted_res : bz x clusters x D
+        # cluster_res = torch.sum(weighted_res, [1, 2])
+        cluster_res = feat_res[:, :, :self.num_clusters, :].sum(dim=-2)
+
+        cluster_l2 = torch.nn.functional.normalize(cluster_res, p=2, dim=-1)
+
+        mean_x = cluster_l2.mean(dim=1)
+        std_x = cluster_l2.var(dim=1, unbiased=False).add_(1e-12).sqrt()
+        cluster_l2_mean_std = torch.cat((mean_x, std_x), 1)
+
+        # cluster_l2 = torch.nn.functional.l2_normalize(cluster_res, -1)
+        # outputs = cluster_res.reshape([-1, int(self.num_clusters) * int(num_features)])
+        # outputs = cluster_res.sum(dim=-2)
+
+        return cluster_l2_mean_std
+
+    def __repr__(self):
+        return "GhostVLAD_v3(num_clusters=%d, gost=%d, dim=%d): ghostvald+statisticpooling" % (
+        self.num_clusters, self.gost, self.dim)
 
 
 class LinearTransform(nn.Module):

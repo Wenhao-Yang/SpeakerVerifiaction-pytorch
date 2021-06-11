@@ -144,7 +144,7 @@ def main():
         trial = utt1 + " " + utt2
         if trial in trials:
             scores.append(float(score))
-            if trials[trial] == "target":
+            if trials[trial] in ["target", "1"]:
                 labels.append(1)
             else:
                 labels.append(0)

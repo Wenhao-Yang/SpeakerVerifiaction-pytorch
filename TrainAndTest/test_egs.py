@@ -67,10 +67,9 @@ parser.add_argument('--log-scale', action='store_true', default=False, help='log
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 
-parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--test-input', type=str, default='fix', help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
+parser.add_argument('--extract', action='store_false', default=True, help='need to make mfb file')
 parser.add_argument('--frame-shift', default=200, type=int, metavar='N', help='acoustic feature dimension')
 
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
@@ -418,53 +417,37 @@ def test(test_loader):
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
     dist_type = 'cos' if args.cos_sim else 'l2'
+    test_directorys = args.test_dir.split('/')
+    test_set_name = '-'
+    for i, dir in enumerate(test_directorys):
+        if dir == 'data':
+            test_subset = test_directorys[i + 3].split('_')[0]
+            test_set_name = "-".join((test_directorys[i + 1], test_subset))
+
     print('\nFor %s_distance, %d pairs:' % (dist_type, len(labels)))
-    print('  \33[91mTest ERR is {:.4f}%, Threshold is {}'.format(100. * eer, eer_threshold))
-    print('  mindcf-0.01 {:.4f}, mindcf-0.001 {:.4f}.\33[0m'.format(mindcf_01, mindcf_001))
+    print('\33[91m')
+    print('+--------------+-------------+-------------+-------------+--------------+-------------------+')
+    print('|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|'.format('Test Set',
+                                                                           'EER (%)',
+                                                                           'Threshold',
+                                                                           'MinDCF-0.01',
+                                                                           'MinDCF-0.001',
+                                                                           'Date'))
+    print('+--------------+-------------+-------------+-------------+--------------+-------------------+')
+    eer = '{:.4f}%'.format(eer * 100.)
+    threshold = '{:.4f}'.format(eer_threshold)
+    mindcf_01 = '{:.4f}'.format(mindcf_01)
+    mindcf_001 = '{:.4f}'.format(mindcf_001)
+    date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-
-def sitw_test(sitw_test_loader, model, epoch):
-    # switch to evaluate mode
-    model.eval()
-
-    labels, distances = [], []
-    pbar = tqdm(enumerate(sitw_test_loader))
-    for batch_idx, (data_a, data_p, label) in pbar:
-
-        vec_shape = data_a.shape
-        # pdb.set_trace()
-        if vec_shape[1] != 1:
-            data_a = data_a.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-            data_p = data_p.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-
-        if args.cuda:
-            data_a, data_p = data_a.cuda(), data_p.cuda()
-        data_a, data_p = Variable(data_a), Variable(data_p)
-
-        # compute output
-        _, out_a = model(data_a)
-        _, out_p = model(data_p)
-        dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        if vec_shape[1] != 1:
-            dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(axis=1)
-
-        dists = dists.data.cpu().numpy()
-
-        distances.append(dists)
-        labels.append(label.numpy())
-
-        if batch_idx % args.log_interval == 0:
-            pbar.set_description('Test Epoch: {} [{}/{} ({:.0f}%)]'.format(
-                epoch, batch_idx * vec_shape[0], len(sitw_test_loader.dataset),
-                       100. * batch_idx / len(sitw_test_loader)))
-
-    labels = np.array([sublabel for label in labels for sublabel in label])
-    distances = np.array([subdist for dist in distances for subdist in dist])
-
-    eer_t, eer_threshold_t, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
-    torch.cuda.empty_cache()
-
-    print('\33[91mFor Sitw Test ERR: {:.4f}%, Threshold: {}.\n\33[0m'.format(100. * eer_t, eer_threshold_t))
+    print('|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|'.format(test_set_name,
+                                                                           eer,
+                                                                           threshold,
+                                                                           mindcf_01,
+                                                                           mindcf_001,
+                                                                           date))
+    print('+--------------+-------------+-------------+-------------+--------------+-------------------+')
+    print('\33[0m')
 
 
 if __name__ == '__main__':
@@ -511,7 +494,8 @@ if __name__ == '__main__':
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
                     'channels': channels, 'context': context,
-                    'alpha': args.alpha, 'dropout_p': args.dropout_p}
+                    'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
     print('Model options: {}'.format(model_kwargs))
     dist_type = 'cos' if args.cos_sim else 'l2'
@@ -519,10 +503,10 @@ if __name__ == '__main__':
 
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
-        if args.loss_type == 'asoft':
-            model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
-        elif args.loss_type in ['amsoft', 'arcsoft']:
-            model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
+        # if args.loss_type == 'asoft':
+        #     model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
+        # elif args.loss_type in ['amsoft', 'arcsoft']:
+        #     model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
 
         assert os.path.isfile(args.resume)
         print('=> loading checkpoint {}'.format(args.resume))

@@ -53,9 +53,10 @@ parser = argparse.ArgumentParser(description='Extract x-vector for plda')
 # Model options
 parser.add_argument('--train-config-dir', type=str, required=True, help='path to dataset')
 
-parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
-parser.add_argument('--test-dir', type=str, required=True, help='path to test dataset')
+parser.add_argument('--train-dir', type=str, default='', help='path to dataset')
+parser.add_argument('--test-dir', type=str, default='', help='path to test dataset')
 
+parser.add_argument('--xvector', action='store_true', default=False, help='The dir for extracting xvectors')
 parser.add_argument('--xvector-dir', type=str, help='The dir for extracting xvectors')
 
 parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
@@ -250,10 +251,6 @@ train_config_dir = EgsDataset(dir=args.train_config_dir, feat_dim=args.feat_dim,
                               transform=transform_V,
                               batch_size=args.batch_size, random_chunk=args.random_chunk)
 
-train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform_V,
-                                extract_trials=False)
-test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform_V, extract_trials=False)
-
 
 # test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
 
@@ -263,7 +260,15 @@ def main():
 
     # print the experiment configuration
     print('\nCurrent time is\33[91m {}\33[0m.'.format(str(time.asctime())))
-    print('Parsed options: {}'.format(vars(args)))
+    opts = vars(args)
+    keys = list(opts.keys())
+    keys.sort()
+
+    options = []
+    for k in keys:
+        options.append("\'%s\': \'%s\'" % (str(k), str(opts[k])))
+
+    print('Parsed options: \n{ %s }' % (', '.join(options)))
     print('Number of Speakers in training set: {}\n'.format(train_config_dir.num_spks))
 
     # instantiate model and initialize weights
@@ -304,52 +309,65 @@ def main():
 
     # optionally resume from a checkpoint
     # resume = args.ckp_dir + '/checkpoint_{}.pth'.format(args.epoch)
+    assert os.path.isfile(args.resume), print('=> no checkpoint found at {}'.format(args.resume))
 
-    if os.path.isfile(args.resume):
-        print('=> loading checkpoint {}'.format(args.resume))
-        checkpoint = torch.load(args.resume)
-        epoch = checkpoint['epoch']
+    print('=> loading checkpoint {}'.format(args.resume))
+    checkpoint = torch.load(args.resume)
+    epoch = checkpoint['epoch']
 
-        checkpoint_state_dict = checkpoint['state_dict']
-        if isinstance(checkpoint_state_dict, tuple):
-            checkpoint_state_dict = checkpoint_state_dict[0]
-        filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+    checkpoint_state_dict = checkpoint['state_dict']
+    if isinstance(checkpoint_state_dict, tuple):
+        checkpoint_state_dict = checkpoint_state_dict[0]
+    filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
 
-        # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-        if list(filtered.keys())[0].startswith('module'):
-            new_state_dict = OrderedDict()
-            for k, v in filtered.items():
-                name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+    # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+    if list(filtered.keys())[0].startswith('module'):
+        new_state_dict = OrderedDict()
+        for k, v in filtered.items():
+            name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+            new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
 
-            model.load_state_dict(new_state_dict)
-        else:
-            model_dict = model.state_dict()
-            model_dict.update(filtered)
-            model.load_state_dict(model_dict)
-        # model.dropout.p = args.dropout_p
+        model.load_state_dict(new_state_dict)
     else:
-        print('=> no checkpoint found at {}'.format(args.resume))
+        model_dict = model.state_dict()
+        model_dict.update(filtered)
+        model.load_state_dict(model_dict)
+    # model.dropout.p = args.dropout_p
 
     if args.cuda:
         model.cuda()
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+    extracted_set = []
+
+    vec_type = 'xvectors_a' if args.xvector else 'xvectors_b'
+    if args.train_dir != '':
+        train_dir = KaldiExtractDataset(dir=args.train_dir, filer_loader=file_loader, transform=transform_V,
+                                        extract_trials=False)
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+        # Extract Train set vectors
+        # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
+        train_xvector_dir = args.xvector_dir + '/%s/epoch_%d/train' % (vec_type, epoch)
+        verification_extract(train_loader, model, train_xvector_dir, epoch=epoch, test_input=args.test_input,
+                             verbose=True, xvector=args.xvector)
+        # copy wav.scp and utt2spk ...
+        extracted_set.append('train')
+
+    assert args.test_dir != ''
+    test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform_V,
+                                   extract_trials=False)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
 
-    # Extract Train set vectors
-    # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
-    train_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/train' % epoch
-    verification_extract(train_loader, model, train_xvector_dir, epoch=epoch, test_input=args.test_input, verbose=True)
-    # copy wav.scp and utt2spk ...
-
     # Extract test set vectors
-    test_xvector_dir = args.xvector_dir + '/xvectors/epoch_%d/test' % epoch
+    test_xvector_dir = args.xvector_dir + '/%s/epoch_%d/test' % (vec_type, epoch)
     # extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
-    verification_extract(test_loader, model, test_xvector_dir, epoch=epoch, test_input=args.test_input, verbose=True)
+    verification_extract(test_loader, model, test_xvector_dir, epoch=epoch, test_input=args.test_input,
+                         verbose=True, xvector=args.xvector)
     # copy wav.scp and utt2spk ...
+    extracted_set.append('test')
 
-    print('Extract x-vector completed for train and test in %s!\n' % (args.extract_path + '/xvectors/'))
+    if len(extracted_set) > 0:
+        print('Extract x-vector completed for %s in %s!\n' % (
+        ','.join(extracted_set), args.xvector_dir + '/%s' % vec_type))
 
 
 if __name__ == '__main__':

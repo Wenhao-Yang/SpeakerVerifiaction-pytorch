@@ -3,7 +3,7 @@
 import os
 import pathlib
 import traceback
-
+import random
 import librosa
 import numpy as np
 import soundfile as sf
@@ -288,8 +288,7 @@ def Make_Fbank(filename,  # sample_rate=c.SAMPLE_RATE,
 
     # audio, sample_rate = sf.read(filename, dtype='float32')
     audio, sample_rate = sf.read(filename, dtype='int16')
-    if not len(audio) > 0:
-        raise ValueError('wav file is empty?')
+    assert len(audio) > 0, print('wav file is empty?')
 
     filter_banks, energies = local_fbank(audio, samplerate=sample_rate, nfilt=nfilt, nfft=nfft, lowfreq=lowfreq,
                                          winlen=windowsize, filtertype=filtertype, winfunc=np.hamming,
@@ -670,7 +669,11 @@ class PadCollate:
             print('==> Generating %d different random length...' % (num_batch))
             for i in range(num_batch):
                 batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
-            self.batch_len = batch_len
+
+            self.batch_len = np.array(batch_len)
+            while np.mean(self.batch_len[:num_batch]) < 300:
+                self.batch_len += 1
+                self.batch_len = self.batch_len.clip(max=self.max_chunk_size)
 
             print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len[:num_batch])))
 
@@ -690,6 +693,8 @@ class PadCollate:
             frame_len = self.batch_len[self.iteration % self.num_batch]
             self.iteration += 1
             self.iteration %= self.num_batch
+            if self.iteration == 0:
+                np.random.shuffle(self.batch_len)
         # pad according to max_len
         # print()
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)

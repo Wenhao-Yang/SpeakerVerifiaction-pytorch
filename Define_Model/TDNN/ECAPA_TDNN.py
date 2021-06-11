@@ -133,22 +133,48 @@ class AttentiveStatsPool(nn.Module):
 '''
 
 
+# num_classes, embedding_size, input_dim, alpha=0., input_norm='',
+#                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
+#                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
+#                  num_classes_b=0, block_type='basic',
+#                  mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs
 class ECAPA_TDNN(nn.Module):
-    def __init__(self, in_channels=80, channels=512, embd_dim=192):
+    def __init__(self, num_classes, embedding_size=512, input_dim=80, input_norm='',
+                 filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
+                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
+                 num_classes_b=0, block_type='basic', alpha=0.,
+                 mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
         super().__init__()
-        self.layer1 = Conv1dReluBn(in_channels, channels, kernel_size=5, padding=2)
-        self.layer2 = SE_Res2Block(channels, kernel_size=3, stride=1, padding=2, dilation=2, scale=8)
-        self.layer3 = SE_Res2Block(channels, kernel_size=3, stride=1, padding=3, dilation=3, scale=8)
-        self.layer4 = SE_Res2Block(channels, kernel_size=3, stride=1, padding=4, dilation=4, scale=8)
+        self.num_classes = num_classes
+        self.num_classes_b = num_classes_b
+        self.dropout_p = dropout_p
+        self.dropout_layer = dropout_layer
+        self.input_dim = input_dim
+        self.channels = channels
+        self.alpha = alpha
+        self.mask = mask
+        self.filter = filter
+        self.feat_dim = feat_dim
+        self.block_type = block_type.lower()
+        self.embedding_size = embedding_size
 
-        cat_channels = channels * 3
-        self.conv = nn.Conv1d(cat_channels, cat_channels, kernel_size=1)
-        self.pooling = AttentiveStatsPool(cat_channels, 128)
-        self.bn1 = nn.BatchNorm1d(cat_channels * 2)
-        self.linear = nn.Linear(cat_channels * 2, embd_dim)
-        self.bn2 = nn.BatchNorm1d(embd_dim)
+        self.layer1 = Conv1dReluBn(input_dim, self.channels[0], kernel_size=5, padding=2)
+        self.layer2 = SE_Res2Block(self.channels[1], kernel_size=3, stride=1, padding=2, dilation=2, scale=8)
+        self.layer3 = SE_Res2Block(self.channels[2], kernel_size=3, stride=1, padding=3, dilation=3, scale=8)
+        self.layer4 = SE_Res2Block(self.channels[3], kernel_size=3, stride=1, padding=4, dilation=4, scale=8)
+
+        self.conv = nn.Conv1d(self.channels[4], self.channels[4], kernel_size=1)
+        self.pooling = AttentiveStatsPool(self.channels[4], 128)
+        self.bn0 = nn.BatchNorm1d(self.channels[4] * 2)
+        self.fc1 = nn.Linear(self.channels[4] * 2, self.embedding_size)
+        self.bn1 = nn.BatchNorm1d(self.embedding_size)
+
+        self.fc2 = nn.Linear(self.embedding_size, self.num_classes)
 
     def forward(self, x):
+        if len(x.shape) == 4:
+            x = x.squeeze(1).float()
+
         x = x.transpose(1, 2)
         out1 = self.layer1(x)
         out2 = self.layer2(out1) + out1
@@ -157,9 +183,11 @@ class ECAPA_TDNN(nn.Module):
 
         out = torch.cat([out2, out3, out4], dim=1)
         out = F.relu(self.conv(out))
-        out = self.bn1(self.pooling(out))
-        out = self.bn2(self.linear(out))
-        return out
+        out = self.bn0(self.pooling(out))
+        embeddings = self.bn1(self.fc1(out))
+        logits = self.fc2(embeddings)
+
+        return logits, embeddings
 
 # if __name__ == '__main__':
 #     # Input size: batch_size * seq_len * feat_dim

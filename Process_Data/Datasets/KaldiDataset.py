@@ -718,10 +718,12 @@ class ScriptTrainDataset(data.Dataset):
         assert os.path.exists(spk2utt), spk2utt
 
         invalid_uid = []
+        total_frames = 0
         if os.path.exists(utt2num_frames):
             with open(utt2num_frames, 'r') as f:
                 for l in f.readlines():
                     uid, num_frames = l.split()
+                    total_frames += int(num_frames)
                     if int(num_frames) < 50:
                         invalid_uid.append(uid)
 
@@ -833,7 +835,11 @@ class ScriptTrainDataset(data.Dataset):
         self.loader = loader
         self.feat_dim = loader(uid2feat[dataset[speakers[0]][0]]).shape[1]
         self.transform = transform
-        self.samples_per_speaker = samples_per_speaker
+        if samples_per_speaker == 0:
+            samples_per_speaker = np.power(2, np.ceil(np.log2(total_frames * 1.2 / c.NUM_FRAMES_SPECT / self.num_spks)))
+            print('    The number of sampling utterances for each speakers is decided by the number of total frames.')
+        self.samples_per_speaker = int(samples_per_speaker)
+        print('    Sample {} random utterances for each speakers.'.format(self.samples_per_speaker))
 
         if self.return_uid or self.domain:
             self.utt_dataset = []

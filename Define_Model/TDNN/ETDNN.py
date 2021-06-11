@@ -243,7 +243,7 @@ class ETDNN_v4(nn.Module):
 
 class ETDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size=256, batch_norm=True, input_norm='Mean',
-                 input_dim=80, dropout_p=0.0, encoder_type='STAP', activation='relu', **kwargs):
+                 input_dim=80, dropout_p=0.0, encoder_type='STAP', activation='leakyrelu', **kwargs):
         super(ETDNN_v5, self).__init__()
         self.num_classes = num_classes
         self.input_dim = input_dim
@@ -362,4 +362,4 @@ class ETDNN_v5(nn.Module):
         x = self.encoder(x)
         embeddings_a = self.segment12(x)
 
-        return embeddings_a
+        return "", embeddings_a

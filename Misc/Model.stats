@@ -1,0 +1,25 @@
+
+# tdnn_v5
+================================================================
+Total params: 5,138,511
+Trainable params: 5,138,511
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 5.86
+Forward/backward pass size (MB): 4002.89
+Params size (MB): 19.60
+Estimated Total Size (MB): 4028.35
+----------------------------------------------------------------
+
+
+# tdnn_v5 shuffle
+================================================================
+Total params: 3,698,511
+Trainable params: 3,698,511
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 5.86
+Forward/backward pass size (MB): 4553.49
+Params size (MB): 14.11
+Estimated Total Size (MB): 4573.46
+----------------------------------------------------------------

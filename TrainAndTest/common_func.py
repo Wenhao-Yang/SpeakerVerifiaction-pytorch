@@ -131,7 +131,20 @@ class AverageMeter(object):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True,
-                         verbose=False):
+                         verbose=False, xvector=False):
+    """
+
+    :param extract_loader:
+    :param model:
+    :param xvector_dir:
+    :param epoch:
+    :param test_input:
+    :param ark_num:
+    :param gpu:
+    :param verbose:
+    :param xvector: extract xvectors in embedding-a layer
+    :return:
+    """
     model.eval()
 
     if not os.path.exists(xvector_dir):
@@ -157,12 +170,28 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 uid_lst.append(a_uid[0])
 
                 if data.shape[0] >= batch_size or batch_idx + 1 == len(extract_loader):
-                    data = data.cuda() if next(model.parameters()).is_cuda else data
-                    model_out = model(data)
-                    try:
-                        _, out, _, _ = model_out
-                    except:
-                        _, out = model_out
+                    if data.shape[0] > (3 * batch_size):
+                        i = 0
+                        out = []
+                        while i < data.shape[0]:
+                            data_part = data[i:(i + batch_size)]
+                            data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
+                            model_out = model.xvector(data_part) if xvector else model(data_part)
+                            try:
+                                _, out_part, _, _ = model_out
+                            except:
+                                _, out_part = model_out
+                            out.append(out_part)
+                            i += batch_size
+                        out = torch.cat(out, dim=0)
+                    else:
+
+                        data = data.cuda() if next(model.parameters()).is_cuda else data
+                        model_out = model.xvector(data) if xvector else model(data)
+                        try:
+                            _, out, _, _ = model_out
+                        except:
+                            _, out = model_out
 
                     out = out.data.cpu().float().numpy()
                     # print(out.shape)
@@ -184,7 +213,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
-                model_out = model(a_data)
+                model_out = model.xvector(a_data) if xvector else model(a_data)
                 try:
                     _, out, _, _ = model_out
                 except:

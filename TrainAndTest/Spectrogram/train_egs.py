@@ -33,7 +33,8 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss
+from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
+    VarianceLoss
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
     GaussianLoss
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
@@ -342,7 +343,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             classfier_label, _ = classfier
             loss = xe_criterion(classfier, label)
 
-        elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+        elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
 
@@ -411,7 +412,7 @@ def train(train_loader, model, ce, optimizer, epoch):
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
-            if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+            if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
                 epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             100. * minibatch_acc)
@@ -454,7 +455,7 @@ def valid_class(valid_loader, model, ce, epoch):
             elif args.loss_type == 'asoft':
                 classfier_label, _ = classfier
                 loss = xe_criterion(classfier, label)
-            elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+            elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
                 loss_cent = ce_criterion(classfier, label)
                 loss_xent = xe_criterion(feats, label)
 
@@ -572,7 +573,6 @@ def main():
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
-
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix,
                     'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
@@ -581,6 +581,7 @@ def main():
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                    'num_classes_b': train_dir.num_doms,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}
@@ -631,6 +632,8 @@ def main():
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+    elif args.loss_type == 'variance':
+        xe_criterion = VarianceLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'gaussian':
         xe_criterion = GaussianLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'coscenter':
@@ -653,7 +656,7 @@ def main():
         args.alpha = 0.0
 
     model_para = model.parameters()
-    if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
+    if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert args.lr_ratio > 0
         model_para = [{'params': xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio},
                       {'params': model.parameters()}]
@@ -753,7 +756,10 @@ def main():
                                                  init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
                                                  rank=0,
                                                  world_size=1)
-            model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
+            # if args.gain
+            # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
+            model = DistributedDataParallel(model.cuda())
+
 
         else:
             model = model.cuda()

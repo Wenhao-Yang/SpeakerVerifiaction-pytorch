@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=3
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -58,6 +58,51 @@ if [ $stage -le 2 ]; then
     --dropout-p 0.0 \
     --epoch 20 \
     --embedding-size 1024
+fi
+
+if [ $stage -le 3 ]; then
+  model=LoResNet
+  dataset=vox1
+  loss=soft
+  feat_type=spect
+  feat=log
+  loss=soft
+  encod=None
+  test_set=vox1
+  resnet_size=8
+  block_type=cbam
+
+  for subset in test; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore Extraction/extract_xvector_egs.py \
+      --model ${model} \
+      --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_log \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 40 \
+      --nj 12 \
+      --resnet-size ${resnet_size} \
+      --embedding-size 256 \
+      --loss-type ${loss} \
+      --encoder-type None \
+      --avg-size 4 \
+      --time-dim 1 \
+      --stride 1 \
+      --block-type ${block_type} \
+      --channels 64,128,256 \
+      --margin 0.25 \
+      --s 30 \
+      --xvector \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/LoResNet8/vox1/spect_egs/soft/None_cbam_dp25_alpha12_em256/${test_set}_${subset}_var \
+      --resume Data/checkpoint/LoResNet8/vox1/spect_egs/soft/None_cbam_dp25_alpha12_em256/checkpoint_5.pth \
+      --gpu-id 0 \
+      --remove-vad \
+      --cos-sim
+  done
+  exit
 fi
 
 if [ $stage -le 20 ]; then
@@ -131,14 +176,14 @@ if [ $stage -le 60 ]; then
   model=TDNN_v5
   encod=STAP
   dataset=vox2
-  test_set=vox1
+  test_set=cnceleb
+  #       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
 
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
       --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi \
       --input-norm Mean \
@@ -159,7 +204,7 @@ if [ $stage -le 60 ]; then
   exit
 fi
 
-if [ $stage -le 80 ]; then
+if [ $stage -le 70 ]; then
   model=TDNN_v5
   dataset=vox1
   loss=soft
@@ -168,16 +213,15 @@ if [ $stage -le 80 ]; then
   loss=soft
   model=TDNN_v5
   encod=STAP
-  dataset=vox1
   test_set=vox1
 
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
-      --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_ws25 \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}_ws25 \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 40 \
@@ -188,9 +232,88 @@ if [ $stage -le 80 ]; then
       --channels 512,512,512,512,1500 \
       --margin 0.25 \
       --s 30 \
+      --xvector \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/${test_set}_${subset}_var \
-      --resume Data/checkpoint/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/checkpoint_40.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_${subset}_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_50.pth \
+      --gpu-id 0 \
+      --remove-vad \
+      --cos-sim
+  done
+  exit
+fi
+
+if [ $stage -le 71 ]; then
+  model=TDNN_v5
+  dataset=vox1
+  loss=soft
+  feat_type=klfb
+  feat=combined
+  loss=soft
+  model=TDNN_v5
+  encod=STAP
+  test_set=vox1
+
+  for subset in test; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore Extraction/extract_xvector_egs.py \
+      --model ${model} \
+      --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_fb40 \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_combined \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_fb40 \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 40 \
+      --nj 12 \
+      --embedding-size 512 \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --channels 512,512,512,512,1500 \
+      --margin 0.25 \
+      --s 30 \
+      --xvector \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v3/${test_set}_${subset}_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2/checkpoint_50.pth \
+      --gpu-id 0 \
+      --remove-vad \
+      --cos-sim
+  done
+  exit
+fi
+
+if [ $stage -le 80 ]; then
+  model=TDNN_v5
+  dataset=vox1
+  loss=soft
+  feat_type=pyfb
+  feat=fb40
+  loss=soft
+  model=TDNN_v5
+  encod=STAP
+  dataset=vox2
+  test_set=vox1
+
+  for subset in test; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore Extraction/extract_xvector_egs.py \
+      --model ${model} \
+      --train-config-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_ws25 \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 40 \
+      --nj 12 \
+      --embedding-size 512 \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --channels 512,512,512,512,1500 \
+      --margin 0.25 \
+      --s 30 \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_var \
+      --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth \
       --gpu-id 0 \
       --remove-vad \
       --cos-sim
