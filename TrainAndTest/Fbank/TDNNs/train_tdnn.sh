@@ -423,7 +423,7 @@ if [ $stage -le 77 ]; then
 fi
 
 if [ $stage -le 78 ]; then
-  model=TDNN_v5
+  model=ECAPA
   datasets=vox2
   #  feat=fb24
   feat_type=pyfb
@@ -446,7 +446,7 @@ if [ $stage -le 78 ]; then
       --nj 16 \
       --epochs 50 \
       --patience 3 \
-      --milestones 10,20,30 \
+      --milestones 10,20,30,40 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0001 \
@@ -459,7 +459,7 @@ if [ $stage -le 78 ]; then
       --accu-steps 1 \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
-      --channels 512,512,512,512,1500 \
+      --channels 512,512,512,512,1536 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_9.pth \
