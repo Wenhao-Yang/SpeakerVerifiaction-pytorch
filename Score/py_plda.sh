@@ -19,7 +19,7 @@ test_set=vox1
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
 #xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4
-xvector_dir=Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2
+xvector_dir=Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v3
 #/vox1_test_var/xvectors_a
 train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors_a/epoch_50/train
 test_xvector_dir=${xvector_dir}/${test_set}_test_var/xvectors_a/epoch_50/test
@@ -180,3 +180,10 @@ fi
 #EER: 3.648%
 #minDCF(p-target=0.01): 0.3292
 #minDCF(p-target=0.001): 0.4718
+
+# Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2
+# xvectors
+# test on voxceleb1 test
+# EER: 3.823%
+# minDCF(p-target=0.01): 0.3539
+# minDCF(p-target=0.001): 0.4887
