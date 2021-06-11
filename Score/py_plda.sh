@@ -186,5 +186,5 @@ fi
 # xvectors
 # test on voxceleb1 test
 # EER: 3.823%
-# minDCF(p-target=0.01): 0.3539
+# minDCF(p-target=0.01): 0.3529
 # minDCF(p-target=0.001): 0.4887
