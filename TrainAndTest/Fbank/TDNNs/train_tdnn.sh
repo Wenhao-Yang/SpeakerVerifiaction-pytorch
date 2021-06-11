@@ -346,8 +346,8 @@ if [ $stage -le 70 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wde3_var_v2 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wde3_var_v2/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wde3_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wde3_var/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
