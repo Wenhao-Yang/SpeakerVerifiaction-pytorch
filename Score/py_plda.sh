@@ -19,7 +19,7 @@ test_set=vox1
 # extract options
 #xvector_dir=Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4/vox1_test_var/xvectors/epoch_40
 #xvector_dir=Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4
-xvector_dir=Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v2
+xvector_dir=Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v3
 #/vox1_test_var/xvectors_a
 train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors_a/epoch_50/train
 test_xvector_dir=${xvector_dir}/${test_set}_test_var/xvectors_a/epoch_50/test
@@ -32,7 +32,7 @@ adaptation=false
 feat_type=klfb
 feat=combined #fb40 #_ws25
 test_trials=${lstm_dir}/data/${test_set}/${feat_type}/test_fb40/trials
-train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40
+train_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 #data_dir=${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}
 
 if [ $stage -le 8 ]; then
@@ -145,6 +145,15 @@ fi
 # |   aug + train   | aug+train  |   test   | 3.796%  |      --     |    0.3554   |    0.4805    |   20210611   |
 # +-----------------+------------+----------+---------+-------------+-------------+--------------+--------------+
 
+# TDNN_v5 wde-3, embedding_size 512; Training set: vox1; Loss: soft; PLDA; lda_dim=256
+# +-----------------+------------+----------+---------+-------------+-------------+--------------+--------------+
+# |   vox1 train    |   train    |   test   | 3.648%  |      --     |    0.3292   |    0.4718    |   20210611   |
+# +-----------------+------------+----------+---------+-------------+-------------+--------------+--------------+
+# |   aug + train   |   train    |   test   | 3.823%  |      --     |    0.3529   |    0.4887    |   20210611   |
+# +-----------------+------------+----------+---------+-------------+-------------+--------------+--------------+
+# |   aug + train   | aug+train  |   test   | 3.796%  |      --     |    0.3554   |    0.4805    |   20210611   |
+# +-----------------+------------+----------+---------+-------------+-------------+--------------+--------------+
+
 # kaldi plda
 
 # vox1 test
@@ -200,6 +209,11 @@ fi
 # EER: 3.823%
 # minDCF(p-target=0.01): 0.3529
 # minDCF(p-target=0.001): 0.4887
+
+#lda=256
+#EER: 3.823%
+#minDCF(p-target=0.01): 0.3540
+#minDCF(p-target=0.001): 0.4869
 
 # Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputMean_STAP_em512_wde3_var_v3
 # xvectors
