@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=3
+stage=80
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -312,6 +312,7 @@ if [ $stage -le 80 ]; then
       --margin 0.25 \
       --s 30 \
       --frame-shift 300 \
+      --xvector \
       --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_var \
       --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth \
       --gpu-id 0 \
