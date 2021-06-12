@@ -836,7 +836,7 @@ class ScriptTrainDataset(data.Dataset):
         self.feat_dim = loader(uid2feat[dataset[speakers[0]][0]]).shape[1]
         self.transform = transform
         if samples_per_speaker == 0:
-            samples_per_speaker = np.power(2, np.ceil(np.log2(total_frames * 1.2 / c.NUM_FRAMES_SPECT / self.num_spks)))
+            samples_per_speaker = np.power(2, np.ceil(np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
             print('    The number of sampling utterances for each speakers is decided by the number of total frames.')
         self.samples_per_speaker = int(samples_per_speaker)
         print('    Sample {} random utterances for each speakers.'.format(self.samples_per_speaker))
