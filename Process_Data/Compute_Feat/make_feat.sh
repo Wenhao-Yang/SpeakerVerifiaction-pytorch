@@ -94,7 +94,7 @@ if [ $stage -le 2 ]; then
   fi
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs with kaldi fbank for ${dataset}\033[0m\n"
-  for s in fb80; do
+  for s in combined; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
@@ -107,7 +107,7 @@ if [ $stage -le 2 ]; then
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --out-set dev_${s}
+      --out-set dev_${s}_fb40_v3
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
@@ -120,7 +120,7 @@ if [ $stage -le 2 ]; then
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --out-set valid_${s}
+      --out-set valid_${s}_fb40_v3
   done
   exit
 fi
