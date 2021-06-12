@@ -10,13 +10,16 @@
 @Overview:
 """
 import os
+import pdb
 
 import kaldi_io
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.nn.parallel.distributed import DistributedDataParallel
 from tqdm import tqdm
+import Process_Data.constants as c
 
 from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
@@ -25,6 +28,7 @@ from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, Simpl
 from Define_Model.SoftmaxLoss import AdditiveMarginLinear
 from Define_Model.TDNN.ARET import RET, RET_v2
 from Define_Model.TDNN.DTDNN import DTDNN
+from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
 from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6
@@ -86,6 +90,7 @@ __factory = {
     'ETDNN_v4': ETDNN_v4,
     'ETDNN_v5': ETDNN_v5,
     'FTDNN': FTDNN,
+    'ECAPA': ECAPA_TDNN,
     'RET': RET,
     'RET_v2': RET_v2,
     'GradResNet': GradResNet,
@@ -213,14 +218,33 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
-                model_out = model.xvector(a_data) if xvector else model(a_data)
+                if vec_shape[2] > 10 * c.NUM_FRAMES_SPECT:
+                    num_half = int(vec_shape[2] / 2)
+                    half_a = a_data[:, :, :num_half, :]
+                    half_b = a_data[:, :, num_half:, :]
+                    a_data = torch.cat((half_a, half_b), dim=0)
+
+                try:
+                    if xvector:
+                        model_out = model.module.xvector(a_data) if isinstance(model,
+                                                                               DistributedDataParallel) else model.xvector(
+                            a_data)
+                    else:
+                        model_out = model(a_data)
+                except Exception as e:
+                    pdb.set_trace()
+                    print('\ninput shape is ', a_data.shape)
+                    raise e
+
                 try:
                     _, out, _, _ = model_out
                 except:
                     _, out = model_out
-
+                if out.shape[0] != 1:
+                    out = out.mean(dim=0, keepdim=True)
                 out = out.data.cpu().float().numpy()
                 # print(out.shape)
+
                 if len(out.shape) == 3:
                     out = out.squeeze(0)
 
