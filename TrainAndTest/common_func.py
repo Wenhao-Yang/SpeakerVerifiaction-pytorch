@@ -221,7 +221,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if vec_shape[2] > 10 * c.NUM_FRAMES_SPECT:
                     num_half = int(vec_shape[2] / 2)
                     half_a = a_data[:, :, :num_half, :]
-                    half_b = a_data[:, :, num_half:, :]
+                    half_b = a_data[:, :, -num_half:, :]
                     a_data = torch.cat((half_a, half_b), dim=0)
 
                 try:
