@@ -18,7 +18,7 @@ import torch.nn.functional as F
 from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
-
+from torchvision.models.densenet import _DenseBlock
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
@@ -119,6 +119,90 @@ class CBAMBlock(nn.Module):
             identity = self.downsample(x)
 
         out = self.CBAM_layer(out)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class Res2Conv2dReluBn(nn.Module):
+    '''
+    in_channels == out_channels == channels
+    '''
+
+    def __init__(self, channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=False, scale=4):
+        super().__init__()
+        assert channels % scale == 0, "{} % {} != 0".format(channels, scale)
+        self.scale = scale
+        self.width = channels // scale
+        self.nums = scale if scale == 1 else scale - 1
+
+        self.convs = []
+        self.bns = []
+        for i in range(self.nums):
+            self.convs.append(nn.Conv2d(self.width, self.width, kernel_size, stride, padding, dilation, bias=bias))
+            self.bns.append(nn.BatchNorm2d(self.width))
+        self.convs = nn.ModuleList(self.convs)
+        self.bns = nn.ModuleList(self.bns)
+
+    def forward(self, x):
+        out = []
+        spx = torch.split(x, self.width, 1)
+        for i in range(self.nums):
+            if i == 0:
+                sp = spx[i]
+            else:
+                sp = sp + spx[i]
+            # Order: conv -> relu -> bn
+            sp = self.convs[i](sp)
+            sp = self.bns[i](F.relu(sp))
+            out.append(sp)
+        if self.scale != 1:
+            out.append(spx[self.nums])
+        out = torch.cat(out, dim=1)
+        return out
+
+
+class Conv2dReluBn(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=False):
+        super().__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, bias=bias)
+        self.bn = nn.BatchNorm2d(out_channels)
+
+    def forward(self, x):
+        return self.bn(F.relu(self.conv(x)))
+
+
+''' SE-Res2Block.
+    Note: residual connection is implemented in the ECAPA_TDNN model, not here.
+'''
+
+
+class SE_Res2Block(nn.Module):
+
+    def __init__(self, inplanes, planes, kernel_size, padding, stride=1, dilation=1,
+                 scale=8, reduction_ratio=2):
+        super(SE_Res2Block, self).__init__()
+        self.scale = scale
+        self.stride = stride
+
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = Conv2dReluBn(inplanes, planes, kernel_size=1, stride=1, padding=0),
+        self.conv2 = Res2Conv2dReluBn(planes, kernel_size, stride, padding, dilation, scale=scale),
+        self.conv3 = Conv2dReluBn(planes, planes, kernel_size=1, stride=1, padding=0),
+
+        # Squeeze-and-Excitation
+        self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.conv2(out)
+        out = self.conv3(out)
+
+        out = self.se_layer(out)
 
         out += identity
         out = self.relu(out)
