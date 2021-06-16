@@ -431,7 +431,7 @@ if [ $stage -le 78 ]; then
   encod=STAP
   embedding_size=512
   input_dim=40
-  input_norm=None
+  input_norm=Mean
 
   for loss in arcsoft; do
     feat=fb${input_dim}_ws25
@@ -469,7 +469,7 @@ if [ $stage -le 78 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.25 \
+      --margin 0.2 \
       --s 30 \
       --remove-vad \
       --log-interval 10
