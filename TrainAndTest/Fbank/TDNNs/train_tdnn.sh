@@ -469,7 +469,7 @@ if [ $stage -le 78 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
+      --margin 0.15 \
       --s 30 \
       --remove-vad \
       --log-interval 10
