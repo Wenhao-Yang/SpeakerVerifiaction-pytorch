@@ -433,7 +433,7 @@ if [ $stage -le 78 ]; then
   input_dim=40
   input_norm=None
 
-  for loss in arcsoft; do
+  for loss in soft; do
     feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
@@ -457,19 +457,19 @@ if [ $stage -le 78 ]; then
       --var-input \
       --batch-size 128 \
       --accu-steps 1 \
-      --random-chunk 200 400 \
+      --random-chunk 300 301 \
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1536 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4/checkpoint_9.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
       --margin 0.15 \
-      --s 1 \
+      --s 15 \
       --all-iteraion 50 \
       --remove-vad \
       --log-interval 10
