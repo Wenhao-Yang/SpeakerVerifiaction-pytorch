@@ -431,7 +431,7 @@ if [ $stage -le 78 ]; then
   encod=STAP
   embedding_size=512
   input_dim=40
-  input_norm=Mean
+  input_norm=None
 
   for loss in arcsoft; do
     feat=fb${input_dim}_ws25
