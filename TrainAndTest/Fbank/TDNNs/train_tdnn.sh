@@ -465,12 +465,12 @@ if [ $stage -le 78 ]; then
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_9.pth \
       --cos-sim \
       --dropout-p 0.0 \
-      --veri-pairs 9600 \
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.15 \
+      --margin 0.25 \
       --s 30 \
+      --all-iteraion 50 \
       --remove-vad \
       --log-interval 10
   done
