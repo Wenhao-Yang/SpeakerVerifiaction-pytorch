@@ -172,8 +172,9 @@ class ECAPA_TDNN(nn.Module):
         self.layer4 = SE_Res2Block(self.channels[3], kernel_size=3, stride=1, padding=4, dilation=4, scale=8)
 
         self.conv = nn.Conv1d(self.channels[4], self.channels[4], kernel_size=1)
-        self.pooling = AttentiveStatsPool(self.channels[4], 128)
+        self.pooling = AttentiveStatsPool(self.channels[4], 256)
         self.bn0 = nn.BatchNorm1d(self.channels[4] * 2)
+
         self.fc1 = nn.Linear(self.channels[4] * 2, self.embedding_size)
         self.bn1 = nn.BatchNorm1d(self.embedding_size)
 

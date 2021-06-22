@@ -428,7 +428,7 @@ if [ $stage -le 78 ]; then
   #  feat=fb24
   feat_type=pyfb
   loss=soft
-  encod=STAP
+  encod=SASP
   embedding_size=512
   input_dim=40
   input_norm=None
@@ -461,8 +461,8 @@ if [ $stage -le 78 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1536 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}256_em${embedding_size}_wde4 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}256_em${embedding_size}_wde4/checkpoint_9.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --gpu-id 0,1 \
