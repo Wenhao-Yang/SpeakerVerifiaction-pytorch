@@ -158,8 +158,8 @@ class AdditiveMarginLinear(nn.Module):
         # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
         # x_norm = torch.div(x, x_norm)
 
-        x_norm = F.normalize(x, dim=1)
-        w_norm = F.normalize(self.W, dim=0) #torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        x_norm = F.normalize(x, dim=1, eps=1e-6)
+        w_norm = F.normalize(self.W, dim=0, eps=1e-6)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
         # w_norm = torch.div(self.W, w_norm)
 
         costh = torch.mm(x_norm, w_norm)
