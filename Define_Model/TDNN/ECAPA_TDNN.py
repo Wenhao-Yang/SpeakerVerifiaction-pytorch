@@ -178,7 +178,7 @@ class ECAPA_TDNN(nn.Module):
         self.fc1 = nn.Linear(self.channels[4] * 2, self.embedding_size)
         self.bn1 = nn.BatchNorm1d(self.embedding_size)
 
-        self.fc2 = nn.Linear(self.embedding_size, self.num_classes)
+        self.classifier = nn.Linear(self.embedding_size, self.num_classes)
 
     def forward(self, x):
         if len(x.shape) == 4:
@@ -197,7 +197,7 @@ class ECAPA_TDNN(nn.Module):
         out = F.relu(self.conv(out))
         out = self.bn0(self.pooling(out))
         embeddings = self.bn1(self.fc1(out))
-        logits = self.fc2(embeddings)
+        logits = self.classifier(embeddings)
 
         return logits, embeddings
 
