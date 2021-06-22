@@ -226,11 +226,14 @@ class ArcSoftmaxLoss(nn.Module):
             delt_theta = Variable(delt_theta.cuda())
 
         costh_m = (theta + delt_theta).cos()
+        print('costh_m max is ', costh_m.max())
         if self.iteraion < self.all_iteraion:
             costh_m = 0.5 * costh + 0.5 * costh_m
             self.iteraion += 1
 
         costh_m_s = self.s * costh_m
+        print('costh_m max is ', costh_m_s.max())
+
         loss = self.ce(costh_m_s, label)
 
         return loss
