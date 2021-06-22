@@ -470,7 +470,6 @@ if [ $stage -le 78 ]; then
       --loss-type ${loss} \
       --margin 0.3 \
       --s 15 \
-      --all-iteraion 50 \
       --remove-vad \
       --log-interval 10
   done
