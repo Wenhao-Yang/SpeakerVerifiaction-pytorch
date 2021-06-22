@@ -158,11 +158,11 @@ class AdditiveMarginLinear(nn.Module):
         # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
         # x_norm = torch.div(x, x_norm)
 
-        x_norm = F.normalize(x, dim=1, eps=1e-6)
-        w_norm = F.normalize(self.W, dim=0, eps=1e-6)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        x_norm = F.normalize(x, dim=1)
+        w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
         # w_norm = torch.div(self.W, w_norm)
 
-        costh = torch.mm(x_norm, w_norm).clamp_(min=-1., max=1.)
+        costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
 
         return costh
 
@@ -215,7 +215,7 @@ class ArcSoftmaxLoss(nn.Module):
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
         theta = costh.acos()
-        print('theta is ', theta.max())
+        # print('theta is ', theta.max())
 
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
@@ -225,17 +225,17 @@ class ArcSoftmaxLoss(nn.Module):
         # pdb.set_trace()
         if costh.is_cuda:
             delt_theta = Variable(delt_theta.cuda())
-            print('delt_theta max is ', delt_theta.max())
-            print('theta + delt_theta max is ', (theta + delt_theta).max())
+            # print('delt_theta max is ', delt_theta.max())
+            # print('theta + delt_theta max is ', (theta + delt_theta).max())
 
         costh_m = (theta + delt_theta).cos()
-        print('costh_m max is ', costh_m.max())
+        # print('costh_m max is ', costh_m.max())
         if self.iteraion < self.all_iteraion:
             costh_m = 0.5 * costh + 0.5 * costh_m
             self.iteraion += 1
 
         costh_m_s = self.s * costh_m
-        print('costh_m_s max is ', costh_m_s.max())
+        # print('costh_m_s max is ', costh_m_s.max())
 
         loss = self.ce(costh_m_s, label)
 
