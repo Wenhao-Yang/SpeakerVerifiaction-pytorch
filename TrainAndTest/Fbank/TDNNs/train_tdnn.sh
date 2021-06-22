@@ -433,7 +433,7 @@ if [ $stage -le 78 ]; then
   input_dim=40
   input_norm=None
 
-  for loss in soft; do
+  for loss in arcsoft; do
     feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
@@ -468,7 +468,7 @@ if [ $stage -le 78 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.15 \
+      --margin 0.3 \
       --s 15 \
       --all-iteraion 50 \
       --remove-vad \
