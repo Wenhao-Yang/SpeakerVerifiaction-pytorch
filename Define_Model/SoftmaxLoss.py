@@ -226,6 +226,7 @@ class ArcSoftmaxLoss(nn.Module):
         if costh.is_cuda:
             delt_theta = Variable(delt_theta.cuda())
             print('delt_theta max is ', delt_theta.max())
+            print('theta + delt_theta max is ', (theta + delt_theta).max())
 
         costh_m = (theta + delt_theta).cos()
         print('costh_m max is ', costh_m.max())
