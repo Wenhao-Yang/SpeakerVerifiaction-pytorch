@@ -429,7 +429,7 @@ if [ $stage -le 78 ]; then
   feat_type=pyfb
   loss=soft
   encod=SASP
-  embedding_size=512
+  embedding_size=192
   input_dim=40
   input_norm=None
 
