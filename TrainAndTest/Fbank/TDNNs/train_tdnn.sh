@@ -450,7 +450,7 @@ if [ $stage -le 78 ]; then
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0001 \
-      --lr 0.1 \
+      --lr 0.001 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -462,7 +462,7 @@ if [ $stage -le 78 ]; then
       --channels 512,512,512,512,1536 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4/checkpoint_9.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4/checkpoint_50.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --gpu-id 0,1 \
