@@ -697,7 +697,7 @@ if [ $stage -le 90 ]; then
   input_norm=Mean
   batch_size=128
   resnet_size=14
-#  --dilation 1,2,3,1 \
+  #  --dilation 1,2,3,1 \
 
   for block_type in cbam; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
