@@ -811,7 +811,6 @@ if [ $stage -le 92 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat}_v2 \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
-      --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
       --epochs 50 \
