@@ -310,7 +310,7 @@ extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, file
 valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
 
 
-def train(train_loader, model, ce, optimizer, epoch):
+def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
 
@@ -402,6 +402,8 @@ def train(train_loader, model, ce, optimizer, epoch):
             torch.nn.utils.clip_grad_norm_(model.parameters(), this_lr * args.grad_clip)
 
         # optimizer.step()
+        if args.scheduler == 'cyclic':
+            scheduler.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
             epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
@@ -722,6 +724,8 @@ def main():
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
     elif args.scheduler == 'rop':
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
+    elif args.scheduler == 'rop':
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=1e-8, max_lr=args.lr, step_size_up=2000)
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
@@ -790,7 +794,7 @@ def main():
                 lr_string += '{:.6f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            train(train_loader, model, ce, optimizer, epoch)
+            train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
@@ -814,6 +818,8 @@ def main():
 
             if args.scheduler == 'rop':
                 scheduler.step(valid_loss)
+            elif args.scheduler == 'cyclic':
+                continue
             else:
                 scheduler.step()
 

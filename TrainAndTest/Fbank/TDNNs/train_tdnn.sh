@@ -449,9 +449,9 @@ if [ $stage -le 78 ]; then
       --milestones 10,20,30,40 \
       --model ${model} \
       --optimizer adam \
-      --scheduler rop \
+      --scheduler cyclic \
       --weight-decay 0.0001 \
-      --lr 0.1 \
+      --lr 0.001 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
