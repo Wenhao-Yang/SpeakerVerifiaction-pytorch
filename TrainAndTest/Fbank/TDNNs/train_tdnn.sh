@@ -450,7 +450,7 @@ if [ $stage -le 78 ]; then
       --model ${model} \
       --optimizer adam \
       --scheduler cyclic \
-      --weight-decay 0.0001 \
+      --weight-decay 0.00001 \
       --lr 0.001 \
       --alpha 0 \
       --feat-format kaldi \
@@ -462,15 +462,15 @@ if [ $stage -le 78 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1536 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4_adam \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4_adam/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde5_adam \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde5_adam/checkpoint_50.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.3 \
-      --s 15 \
+      --margin 0.2 \
+      --s 30 \
       --remove-vad \
       --log-interval 10
   done
