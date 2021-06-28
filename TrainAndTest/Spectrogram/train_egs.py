@@ -137,6 +137,7 @@ parser.add_argument('--inst-norm', action='store_true', default=False, help='bat
 
 parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str, metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--dilation', default='1,1,1,1', type=str, metavar='CHA', help='The dilation of convs layers)')
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--accu-steps', default=1, type=int, metavar='N', help='manual epoch number (useful on restarts)')
@@ -574,8 +575,11 @@ def main():
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
+
+    dilation = args.dilation.split(',')
+    dilation = [int(x) for x in dilation]
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'context': context, 'filter_fix': args.filter_fix,
+                    'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
                     'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
                     'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
