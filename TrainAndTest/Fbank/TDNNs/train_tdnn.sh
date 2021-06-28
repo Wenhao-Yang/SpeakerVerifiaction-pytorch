@@ -451,7 +451,7 @@ if [ $stage -le 78 ]; then
       --optimizer adam \
       --scheduler rop \
       --weight-decay 0.0001 \
-      --lr 0.001 \
+      --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
