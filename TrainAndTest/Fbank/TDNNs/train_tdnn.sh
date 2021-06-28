@@ -444,7 +444,7 @@ if [ $stage -le 78 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --nj 16 \
-      --epochs 50 \
+      --epochs 60 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
