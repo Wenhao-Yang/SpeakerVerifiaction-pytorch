@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=78
+stage=90
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -697,6 +697,7 @@ if [ $stage -le 90 ]; then
   input_norm=Mean
   batch_size=128
   resnet_size=14
+#  --dilation 1,2,3,1 \
 
   for block_type in cbam; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
@@ -726,10 +727,10 @@ if [ $stage -le 90 ]; then
       --input-dim 161 \
       --channels 512,512,512,512,512,1536 \
       --context 5,3,3 \
-      --dilation 1,2,3,1 \
+      --stride 1,2,2 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_wde4_diala \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_wde4_diala/checkpoint_45.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_wde4_stride2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_wde4_stride2/checkpoint_45.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
