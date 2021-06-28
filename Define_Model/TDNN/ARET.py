@@ -244,23 +244,23 @@ class RET(nn.Module):
             raise ValueError(block_type)
 
         self.frame1 = TDNN_layer(input_dim=self.input_dim, output_dim=self.channels[0],
-                                 context_size=self.self.context[0], dilation=dilation[0])
+                                 context_size=self.context[0], dilation=dilation[0])
         self.frame2 = Blocks(inplanes=self.channels[0], planes=self.channels[0],
                              downsample=downsample, dilation=1)
 
         self.frame4 = TDNN_layer(input_dim=self.channels[0], output_dim=self.channels[1],
-                                 context_size=self.self.context[1], dilation=dilation[1])
+                                 context_size=self.context[1], dilation=dilation[1])
         self.frame5 = Blocks(inplanes=self.channels[1], planes=self.channels[1],
                              downsample=downsample, dilation=1)
 
         self.frame7 = TDNN_layer(input_dim=self.channels[1], output_dim=self.channels[2],
-                                 context_size=self.self.context[2], dilation=dilation[2])
+                                 context_size=self.context[2], dilation=dilation[2])
         self.frame8 = Blocks(inplanes=self.channels[2], planes=self.channels[2],
                              downsample=downsample, dilation=1)
 
         if self.layers[3] != 0:
             self.frame10 = TDNN_layer(input_dim=self.channels[2], output_dim=self.channels[3],
-                                      context_size=self.self.context[3], dilation=dilation[3])
+                                      context_size=self.context[3], dilation=dilation[3])
             self.frame11 = Blocks(inplanes=self.channels[3], planes=self.channels[3],
                                   downsample=downsample, dilation=1)
 
