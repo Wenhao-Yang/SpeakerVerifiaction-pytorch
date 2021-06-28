@@ -791,7 +791,7 @@ def main():
             # pdb.set_trace()
             lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
             for param_group in optimizer.param_groups:
-                lr_string += '{:.6f} '.format(param_group['lr'])
+                lr_string += '{:.8f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
             train(train_loader, model, ce, optimizer, epoch, scheduler)
