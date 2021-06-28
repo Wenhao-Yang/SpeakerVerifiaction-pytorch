@@ -474,7 +474,8 @@ class ShuffleTDLayer(nn.Module):
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
-                self.depthwise_conv(self.input_dim, self.input_dim, kernel_size=3, stride=self.stride, padding=1),
+                self.depthwise_conv(self.input_dim, self.input_dim, kernel_size=3, stride=self.stride, padding=1,
+                                    dilation=dilation),
                 nn.BatchNorm1d(self.input_dim),
                 nn.Conv1d(self.input_dim, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
                 nn.BatchNorm1d(branch_features),

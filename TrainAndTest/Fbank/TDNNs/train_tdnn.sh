@@ -448,6 +448,7 @@ if [ $stage -le 78 ]; then
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
+      --optimizer adam \
       --scheduler rop \
       --weight-decay 0.0001 \
       --lr 0.001 \
@@ -461,8 +462,8 @@ if [ $stage -le 78 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1536 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4_adam \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde4_adam/checkpoint_50.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --gpu-id 0,1 \

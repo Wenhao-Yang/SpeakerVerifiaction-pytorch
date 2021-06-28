@@ -13,7 +13,7 @@ import torch.nn as nn
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
-from Define_Model.TDNN.TDNN import TimeDelayLayer_v5, TimeDelayLayer_v6
+from Define_Model.TDNN.TDNN import TimeDelayLayer_v5, TimeDelayLayer_v6, ShuffleTDLayer
 
 
 class TDNNBlock(nn.Module):
@@ -172,7 +172,7 @@ class TDNNBottleBlock(nn.Module):
                                        stride=1, dilation=dilation, padding=1, groups=groups)
 
         self.tdnn3 = TimeDelayLayer_v5(input_dim=inplanes * 2, output_dim=planes, context_size=1,
-                                       stride=1, dilation=dilation, )
+                                       stride=1, dilation=dilation)
 
         # self.downsample = downsample
 
@@ -236,6 +236,9 @@ class RET(nn.Module):
         elif block_type.lower() == 'basic_v6':
             Blocks = TDNNBlock_v6
             TDNN_layer = TimeDelayLayer_v6
+        elif block_type.lower() == 'shuffle':
+            Blocks = TDNNBlock
+            TDNN_layer = ShuffleTDLayer
         elif block_type.lower() == 'agg':
             Blocks = TDNNBottleBlock
         elif block_type.lower() == 'cbam':
