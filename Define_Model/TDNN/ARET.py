@@ -29,7 +29,7 @@ class TDNNBlock(nn.Module):
 
         self.tdnn1 = TimeDelayLayer_v5(input_dim=inplanes, output_dim=inter_connect, context_size=3,
                                        stride=1, dilation=dilation, padding=1)
-        self.relu = nn.ReLU(inplace=True)
+        # self.relu = nn.ReLU(inplace=True)
         self.tdnn2 = TimeDelayLayer_v5(input_dim=inter_connect, output_dim=planes, context_size=3,
                                        stride=1, dilation=dilation, padding=1)
         # self.downsample = downsample
@@ -41,7 +41,7 @@ class TDNNBlock(nn.Module):
         out = self.tdnn2(out)
 
         out += identity
-        out = self.relu(out)
+        # out = self.relu(out)
 
         return out
 
@@ -103,7 +103,7 @@ class TDNNCBAMBlock(nn.Module):
 
         self.tdnn1 = TimeDelayLayer_v5(input_dim=inplanes, output_dim=inter_connect, context_size=3,
                                        stride=1, dilation=dilation, padding=1)
-        self.relu = nn.ReLU(inplace=True)
+        # self.relu = nn.ReLU(inplace=True)
 
         self.tdnn2 = TimeDelayLayer_v5(input_dim=inter_connect, output_dim=planes, context_size=3,
                                        stride=1, dilation=dilation, padding=1)
@@ -120,7 +120,7 @@ class TDNNCBAMBlock(nn.Module):
         out = self.CBAM_layer(out)
 
         out += identity
-        out = self.relu(out)
+        # out = self.relu(out)
 
         return out
 
@@ -166,7 +166,7 @@ class TDNNBottleBlock(nn.Module):
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.tdnn1 = TimeDelayLayer_v5(input_dim=inplanes, output_dim=inplanes, context_size=1,
                                        stride=1, dilation=dilation)
-        self.relu = nn.ReLU(inplace=True)
+        # self.relu = nn.ReLU(inplace=True)
 
         self.tdnn2 = TimeDelayLayer_v5(input_dim=inplanes, output_dim=inplanes * 2, context_size=3,
                                        stride=1, dilation=dilation, padding=1, groups=groups)
@@ -187,7 +187,7 @@ class TDNNBottleBlock(nn.Module):
         #     identity = self.downsample(x)
 
         out += identity
-        out = self.relu(out)
+        # out = self.relu(out)
 
         return out
 
