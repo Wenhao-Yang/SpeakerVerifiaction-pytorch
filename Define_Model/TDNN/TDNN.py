@@ -439,9 +439,10 @@ class TimeDelayLayer_v6(nn.Module):
         outpu: size (batch, new_seq_len, output_features)
         '''
 
-        x = self.kernel(x.transpose(1, 2))
+        # x = self.kernel(x.transpose(1, 2))
+        x = self.kernel(x)
 
-        return x.transpose(1, 2)
+        return x  # .transpose(1, 2)
 
 
 class ShuffleTDLayer(nn.Module):
@@ -869,6 +870,7 @@ class TDNN_v5(nn.Module):
         if self.mask_layer != None:
             x = self.mask_layer(x)
 
+        x = x.transpose(1, 2)
         x = self.frame1(x)
         x = self.frame2(x)
         x = self.frame3(x)
@@ -879,7 +881,7 @@ class TDNN_v5(nn.Module):
             x = self.drop(x)
 
         # print(x.shape)
-        x = self.encoder(x)
+        x = self.encoder(x.transpose(1, 2))
         embedding_a = self.segment6(x)
         embedding_b = self.segment7(embedding_a)
 
@@ -903,7 +905,7 @@ class TDNN_v5(nn.Module):
 
         if self.mask_layer != None:
             x = self.mask_layer(x)
-
+        x = x.transpose(1, 2)
         x = self.frame1(x)
         x = self.frame2(x)
         x = self.frame3(x)
@@ -914,7 +916,7 @@ class TDNN_v5(nn.Module):
             x = self.drop(x)
 
         # print(x.shape)
-        x = self.encoder(x)
+        x = self.encoder(x.transpose(1, 2))
         embedding_a = self.segment6[0](x)
 
         return "", embedding_a

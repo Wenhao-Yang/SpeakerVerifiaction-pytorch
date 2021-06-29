@@ -729,8 +729,8 @@ if [ $stage -le 90 ]; then
       --context 5,3,3 \
       --stride 1,2,2 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_wde4_stride2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}_bs${batch_size}_wde4_stride2/checkpoint_45.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde4_stride2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_v2/${loss}_0ce/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde4_stride2/checkpoint_45.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \

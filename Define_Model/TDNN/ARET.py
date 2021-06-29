@@ -322,6 +322,7 @@ class RET(nn.Module):
         if self.mask_layer != None:
             x = self.mask_layer(x)
 
+        x = x.transpose(1, 2)
         x = self.frame1(x)
         x = self.frame2(x)
 
@@ -342,7 +343,7 @@ class RET(nn.Module):
             x = self.drop(x)
 
         # print(x.shape)
-        x = self.encoder(x)
+        x = self.encoder(x.transpose(1, 2))
         embedding_a = self.segment1(x)
         embedding_b = self.segment2(embedding_a)
 
@@ -493,6 +494,8 @@ class RET_v2(nn.Module):
         if self.mask_layer != None:
             x = self.mask_layer(x)
 
+        x = x.transpose(1, 2)
+
         x = self.frame1(x)
         x = self.frame2(x)
 
@@ -513,7 +516,7 @@ class RET_v2(nn.Module):
             x = self.drop(x)
 
         # print(x.shape)
-        x = self.encoder(x)
+        x = self.encoder(x.transpose(1, 2))
         embedding_a = self.segment1(x)
         embedding_b = self.segment2(embedding_a)
 
