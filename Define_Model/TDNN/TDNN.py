@@ -364,7 +364,7 @@ class TimeDelayLayer_v4(nn.Module):
 class TimeDelayLayer_v5(nn.Module):
 
     def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
-                 batch_norm=True, dropout_p=0.0, padding=0, groups=1, activation='relu'):
+                 dropout_p=0.0, padding=0, groups=1, activation='relu'):
         super(TimeDelayLayer_v5, self).__init__()
         self.context_size = context_size
         self.stride = stride
@@ -385,9 +385,7 @@ class TimeDelayLayer_v5(nn.Module):
         elif activation == 'prelu':
             self.nonlinearity = nn.PReLU()
 
-        self.batch_norm = batch_norm
-        if batch_norm:
-            self.bn = nn.BatchNorm1d(output_dim)
+        self.bn = nn.BatchNorm1d(output_dim)
 
         # self.drop = nn.Dropout(p=self.dropout_p)
     def forward(self, x):
@@ -400,12 +398,7 @@ class TimeDelayLayer_v5(nn.Module):
         #     self.input_dim, d)
         x = self.kernel(x.transpose(1, 2))
         x = self.nonlinearity(x)
-
-        # if self.dropout_p:
-        #     x = self.drop(x)
-
-        if self.batch_norm:
-            x = self.bn(x)
+        x = self.bn(x)
 
         return x.transpose(1, 2)
 
