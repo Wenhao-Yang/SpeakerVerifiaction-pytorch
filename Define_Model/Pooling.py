@@ -135,7 +135,7 @@ class StatisticPooling(nn.Module):
         if len(x.shape) != 3:
             x = x.reshape(x_shape[0], x_shape[-2], -1)
 
-        assert x.shape[-1] == self.input_dim
+        assert x.shape[-1] == self.input_dim, print(x.shape[-1])
 
         mean_x = x.mean(dim=1)
         std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()

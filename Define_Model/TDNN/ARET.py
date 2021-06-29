@@ -343,7 +343,7 @@ class RET(nn.Module):
             x = self.drop(x)
 
         # print(x.shape)
-        x = self.encoder(x.transpose(1, 2))
+        x = self.encoder(x)
         embedding_a = self.segment1(x)
         embedding_b = self.segment2(embedding_a)
 
