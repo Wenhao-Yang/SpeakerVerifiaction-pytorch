@@ -668,9 +668,9 @@ def valid_class(valid_loader, model, ce, epoch):
     valid_loss = total_loss / len(valid_loader)
 
     torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: Spk {:.f}% Dom {:.4f}%, Avg loss: {:.6f}.\33[0m'.format(spk_valid_accuracy,
-                                                                                                    spk_valid_accuracy,
-                                                                                                    valid_loss))
+    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Avg loss: {:.6f}.\33[0m'.format(spk_valid_accuracy,
+                                                                                                     spk_valid_accuracy,
+                                                                                                     valid_loss))
 
     return valid_loss
 
