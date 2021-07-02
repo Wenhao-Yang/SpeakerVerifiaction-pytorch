@@ -31,6 +31,7 @@ from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
 from Define_Model.LossFunction import CenterLoss
+from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
 from Process_Data import constants as c
@@ -67,6 +68,7 @@ parser.add_argument('--valid-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--trials', type=str, default='trials', help='trials filename')
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
+parser.add_argument('--speech-dom', default=11, type=int, help='set domain in dataset')
 
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
@@ -281,30 +283,45 @@ def main():
     # instantiate model and initialize weights
     kernel_size = args.kernel_size.split(',')
     kernel_size = [int(x) for x in kernel_size]
-    padding = [int((x - 1) / 2) for x in kernel_size]
+
+    context = args.context.split(',')
+    context = [int(x) for x in context]
+    if args.padding == '':
+        padding = [int((x - 1) / 2) for x in kernel_size]
+    else:
+        padding = args.padding.split(',')
+        padding = [int(x) for x in padding]
 
     kernel_size = tuple(kernel_size)
     padding = tuple(padding)
+    stride = args.stride.split(',')
+    stride = [int(x) for x in stride]
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
 
-    model_kwargs = {'embedding_size_a': args.embedding_size_a,
-                    'embedding_size_b': args.embedding_size_b,
-                    'embedding_size_o': args.embedding_size_o,
-                    'inst_norm': args.inst_norm,
-                    'resnet_size': args.resnet_size,
-                    'num_classes_a': train_dir.num_spks,
-                    'num_classes_b': train_dir.num_doms,
-                    'channels': channels,
-                    'avg_size': args.avg_size,
-                    'alpha': args.alpha,
-                    'kernel_size': kernel_size,
-                    'padding': padding,
-                    'dropout_p': args.dropout_p}
+    dilation = args.dilation.split(',')
+    dilation = [int(x) for x in dilation]
 
-    print('Model options: {}'.format(model_kwargs))
-    model = create_model(args.model, **model_kwargs)
+    xvector_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
+                      'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
+                      'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
+                      'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm,
+                      'input_norm': args.input_norm,
+                      'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
+                      'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
+                      'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
+                      'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                      'num_classes_b': train_dir.num_doms,
+                      'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                      'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
+                      'iteraion': 0, 'all_iteraion': args.all_iteraion}
+
+    print('xvector-Model options: {}'.format(xvector_kwargs))
+    xvector_model = create_model(args.model, **xvector_kwargs)
+
+    model = DomainNet(model=xvector_model, embedding_size=args.embedding_size,
+                      num_classes_a=train_dir.num_spks, num_classes_b=train_dir.num_doms)
 
     start_epoch = 0
     if args.save_init and not args.finetune:
@@ -321,7 +338,6 @@ def main():
             model_dict = model.state_dict()
             model_dict.update(filtered)
             model.load_state_dict(model_dict)
-            #
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
@@ -331,13 +347,11 @@ def main():
         xe_criterion = None
     elif args.loss_type == 'asoft':
         ce_criterion = None
-        model.classifier_spk = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'amsoft':
         ce_criterion = None
-        model.classifier_spk = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
 
     optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
@@ -367,16 +381,11 @@ def main():
 
     start = args.start_epoch + start_epoch
     print('Start epoch is : ' + str(start))
-    # start = 0
     end = start + args.epochs
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size, shuffle=False, **kwargs)
-    # sitw_test_loader = torch.utils.data.DataLoader(sitw_test_dir, batch_size=args.test_batch_size,
-    #                                                shuffle=False, **kwargs)
-    # sitw_dev_loader = torch.utils.data.DataLoader(sitw_dev_part, batch_size=args.test_batch_size, shuffle=False,
-    #                                               **kwargs)
 
     if args.cuda:
         model = model.cuda()
@@ -450,36 +459,39 @@ def train(train_loader, model, ce, optimizer, epoch):
         data, label_a = Variable(data), Variable(label_a)
         label_b = Variable(label_b)
 
-        logits_spk, feat_spk, logits_dom, feat_dom = model(data)
+        all_logits, spk_embeddings_new = model(data)
+        spk_logits, spk_logits_new, dom_logits, dom_logits_new = all_logits
 
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
+        speech_labels_b = torch.LongTensor(torch.ones_like(true_labels_b) * args.speech_dom).cuda()
 
         # pdb.set_trace()
         # cos_theta, phi_theta = classfier
-        spk_label = logits_spk
-        dom_lable = logits_dom
+        spk_label = spk_logits
+        dom_lable = dom_logits
 
         if args.loss_type == 'soft':
-            spk_loss = ce_criterion(logits_spk, true_labels_a)
+            spk_loss = ce_criterion(spk_logits, true_labels_a) + \
+                       ce_criterion(spk_logits_new, true_labels_a)
 
-        elif args.loss_type == 'asoft':
-            spk_label, _ = spk_label
-            spk_loss = xe_criterion(logits_spk, true_labels_a)
-        elif args.loss_type == 'center':
-            loss_cent = ce_criterion(logits_spk, true_labels_a)
-            loss_xent = xe_criterion(feat_spk, true_labels_a)
-            spk_loss = args.loss_ratio * loss_xent + loss_cent
-        elif args.loss_type == 'amsoft':
-            spk_loss = xe_criterion(logits_spk, true_labels_a)
-
-        dom_loss = (args.dom_ratio * ce_criterion(dom_lable, true_labels_b))
+        # elif args.loss_type == 'asoft':
+        #     spk_label, _ = spk_label
+        #     spk_loss = xe_criterion(logits_spk, true_labels_a)
+        # elif args.loss_type == 'center':
+        #     loss_cent = ce_criterion(logits_spk, true_labels_a)
+        #     loss_xent = xe_criterion(feat_spk, true_labels_a)
+        #     spk_loss = args.loss_ratio * loss_xent + loss_cent
+        # elif args.loss_type == 'amsoft':
+        #     spk_loss = xe_criterion(logits_spk, true_labels_a)
+        dom_loss = (args.dom_ratio * ce_criterion(dom_lable, true_labels_b) + ce_criterion(dom_logits_new,
+                                                                                           speech_labels_b))
         loss = spk_loss + dom_loss
 
-        if args.sim_ratio:
-            spk_dom_sim_loss = torch.cosine_similarity(feat_spk, feat_dom, dim=1).pow(2).mean()
-            spk_dom_sim_loss = args.sim_ratio * spk_dom_sim_loss
-            loss += spk_dom_sim_loss
+        # if args.sim_ratio:
+        #     spk_dom_sim_loss = torch.cosine_similarity(feat_spk, feat_dom, dim=1).pow(2).mean()
+        #     spk_dom_sim_loss = args.sim_ratio * spk_dom_sim_loss
+        #     loss += spk_dom_sim_loss
 
         predicted_labels_a = output_softmax(spk_label)
 
@@ -497,7 +509,7 @@ def train(train_loader, model, ce, optimizer, epoch):
         total_datasize += len(predicted_one_labels_a)
         total_loss_a += float(spk_loss.item())
         total_loss_b += float(dom_loss.item())
-        total_loss_c += float(spk_dom_sim_loss.item()) if args.sim_ratio else 0.
+        # total_loss_c += float(spk_dom_sim_loss.item()) if args.sim_ratio else 0.
         total_loss += float(loss.item())
 
         # compute gradient and update weights
@@ -511,19 +523,18 @@ def train(train_loader, model, ce, optimizer, epoch):
         optimizer.step()
 
         if batch_idx % args.log_interval == 0:
-            pbar.set_description(
-                'Train Epoch {:2d}: [{:4d}/{:4d}({:3.0f}%)] AvgLoss: {:.4f} SpkLoss: {:.4f} DomLoss: {:.4f} ' \
-                'SimLoss: {:.4f} Batch Accuracy: Spk: {:.4f}%, Dom: {:.4f}%'.format(
-                    epoch,
-                    batch_idx,
-                    len(train_loader),
-                    100. * batch_idx / len(train_loader),
-                    total_loss / (batch_idx + 1),
-                    total_loss_a / (batch_idx + 1),
-                    total_loss_b / (batch_idx + 1),
-                    total_loss_c / (batch_idx + 1),
-                    100. * minibatch_acc_a,
-                    100. * minibatch_acc_b))
+            print_desc = 'Train Epoch {:2d}: [{:4d}/{:4d}({:3.0f}%)]'.format(epoch,
+                                                                             batch_idx,
+                                                                             len(train_loader),
+                                                                             100. * batch_idx / len(train_loader))
+
+            print_desc += ' AvgLoss: {:.4f} SpkLoss: {:.4f} DomLoss: {:.4f}'.format(total_loss / (batch_idx + 1),
+                                                                                    total_loss_a / (batch_idx + 1),
+                                                                                    total_loss_b / (batch_idx + 1))
+            # print_desc += 'SimLoss: {:.4f}'.format(total_loss_c / (batch_idx + 1))
+            print_desc += ' Batch Accuracy: Spk: {:.4f}%, Dom: {:.4f}%'.format(100. * minibatch_acc_a,
+                                                                               100. * minibatch_acc_b)
+            pbar.set_description(print_desc)
 
     print('\n\33[91mTrain Epoch {}: Avg loss: {:.4f} Spk Loss: {:.4f} Dom Loss: {:.4f} .'.format(epoch,
                                                                                                  total_loss / len(
@@ -559,7 +570,9 @@ def test(test_loader, valid_loader, model, epoch):
         data = Variable(data.cuda())
 
         # compute output
-        out_a, _, out_b, _ = model(data)
+        all_logits, _ = model(data)
+        out_a, _, out_b, _ = all_logits
+
         if args.loss_type == 'asoft':
             predicted_labels_a, _ = out_a
 
@@ -620,14 +633,13 @@ def test(test_loader, valid_loader, model, epoch):
         data_a, data_p, label = Variable(data_a), Variable(data_p), Variable(label)
 
         # compute output
-        _, out_a_, _, _ = model(data_a)
-        _, out_p_, _, _ = model(data_p)
+        _, out_a_ = model(data_a)
+        _, out_p_ = model(data_p)
         # out_a = out_a_
         # out_p = out_p_
 
         out_a = out_a_.reshape(vec_a_shape[0], vec_a_shape[1], args.embedding_size_a).mean(dim=1)
         out_p = out_p_.reshape(vec_p_shape[0], vec_p_shape[1], args.embedding_size_a).mean(dim=1)
-
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         # dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
