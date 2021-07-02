@@ -491,9 +491,10 @@ def train(train_loader, model, ce, optimizer, epoch):
         all_logits, spk_embeddings_new = model(data)
         spk_logits, spk_logits_new, dom_logits, dom_logits_new = all_logits
 
+        speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
-        speech_labels_b = torch.LongTensor(torch.ones_like(true_labels_b) * args.speech_dom).cuda()
+        speech_labels_b = speech_labels_b.cuda()
 
         # pdb.set_trace()
         # cos_theta, phi_theta = classfier
