@@ -141,6 +141,8 @@ parser.add_argument('--cos-sim', action='store_true', default=True,
                     help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES',
                     help='Dimensionality of the embedding')
+parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
+
 parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
