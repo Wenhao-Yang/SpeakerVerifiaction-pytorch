@@ -106,7 +106,7 @@ if [ $stage -le 50 ]; then
   #  kernel_size=5,5
   channels=512,512,512,512,512,1536
   for loss in soft; do
-    echo -e "\033[1;4;31m Stage ${stage}: Train ${model} with ${loss} loss in ${datasets}\n.\033[0m\n"
+    echo -e "\033[1;4;31m Stage ${stage}: Train ${model} with ${loss} loss in ${datasets}.\033[0m\n"
     python TrainAndTest/Spectrogram/train_dom_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \

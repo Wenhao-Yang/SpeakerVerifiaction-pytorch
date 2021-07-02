@@ -35,13 +35,13 @@ from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
 from Process_Data import constants as c
-from Process_Data.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
+from Process_Data.Datasets.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, to2tensor, varLengthFeat, ConcateVarInput
+from Process_Data.Datasets.LmdbDataset import EgsDataset
+from Process_Data.audio_processing import concateinputfromMFB, to2tensor, ConcateVarInput
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
-from eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
+from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")

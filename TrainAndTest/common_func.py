@@ -23,7 +23,7 @@ import Process_Data.constants as c
 
 from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
-from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, DomainResNet, GradResNet, \
+from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
 from Define_Model.SoftmaxLoss import AdditiveMarginLinear
 from Define_Model.TDNN.ARET import RET, RET_v2
@@ -75,7 +75,6 @@ def create_optimizer(parameters, optimizer, **kwargs):
 __factory = {
     'AlexNet': AlexNet,
     'LoResNet': LocalResNet,
-    'DomResNet': DomainResNet,
     'ResNet20': ResNet20,
     'SiResNet34': SimpleResNet,
     'ThinResNet': ThinResNet,
