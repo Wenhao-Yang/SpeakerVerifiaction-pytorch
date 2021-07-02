@@ -112,6 +112,8 @@ parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--inst-norm', action='store_true', default=False,
                     help='replace batchnorm with instance norm')
+parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
+
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
 parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
