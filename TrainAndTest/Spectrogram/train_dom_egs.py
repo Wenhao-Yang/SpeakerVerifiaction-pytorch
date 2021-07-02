@@ -573,12 +573,12 @@ def train(train_loader, model, ce, optimizer, epoch):
                                                                              len(train_loader),
                                                                              100. * batch_idx / len(train_loader))
 
-            print_desc += ' AvgLoss: {:.4f} SpkLoss: {:.4f} DomLoss: {:.4f}'.format(total_loss / (batch_idx + 1),
-                                                                                    total_loss_a / (batch_idx + 1),
-                                                                                    total_loss_b / (batch_idx + 1))
+            print_desc += ' Loss[ Avg: {:.4f} Spk: {:.4f} Dom: {:.4f}]'.format(total_loss / (batch_idx + 1),
+                                                                               total_loss_a / (batch_idx + 1),
+                                                                               total_loss_b / (batch_idx + 1))
             # print_desc += 'SimLoss: {:.4f}'.format(total_loss_c / (batch_idx + 1))
-            print_desc += ' Batch Accuracy: Spk: {:.4f}%, Dom: {:.4f}%'.format(100. * minibatch_acc_a,
-                                                                               100. * minibatch_acc_b)
+            print_desc += ' Accuracy[ Spk: {:.4f}%, Dom: {:.4f}%]'.format(100. * minibatch_acc_a,
+                                                                          100. * minibatch_acc_b)
             pbar.set_description(print_desc)
 
     print('\n\33[91mTrain Epoch {}: Avg loss: {:.4f} Spk Loss: {:.4f} Dom Loss: {:.4f} .'.format(epoch,
