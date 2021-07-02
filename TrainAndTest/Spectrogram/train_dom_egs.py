@@ -113,6 +113,7 @@ parser.add_argument('--resnet-size', default=8, type=int,
 parser.add_argument('--inst-norm', action='store_true', default=False,
                     help='replace batchnorm with instance norm')
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
+parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
 
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
