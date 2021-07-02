@@ -262,7 +262,7 @@ elif args.feat_format == 'npy':
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform,
                        domain=args.domain)
-test_dir = ScriptTestDataset(dir=args.test_dir, loader=np.load, transform=transform_V)
+test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_V)
 
 if len(test_dir) < args.veri_pairs:
     args.veri_pairs = len(test_dir)
