@@ -1332,13 +1332,13 @@ class DomainNet(nn.Module):
 
         self.grl = GRL(lambda_=0.)
         self.classifier_dom = nn.Sequential(
-            nn.Linear(self.embedding_size, self.embedding_size / 2),
+            nn.Linear(self.embedding_size, int(self.embedding_size / 2)),
             nn.ReLU(inplace=True),
-            nn.BatchNorm1d(self.embedding_size / 2),
-            nn.Linear(self.embedding_size / 2, num_classes_b),
+            nn.BatchNorm1d(int(self.embedding_size / 2)),
+            nn.Linear(int(self.embedding_size / 2), num_classes_b),
         )
         self.fc2 = nn.Sequential(
-            nn.Linear(num_classes_b + self.embedding_size, self.embedding_size),
+            nn.Linear(int(num_classes_b + self.embedding_size), self.embedding_size),
             nn.ReLU(inplace=True),
             nn.BatchNorm1d(self.embedding_size)
         )
