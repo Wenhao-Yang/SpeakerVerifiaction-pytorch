@@ -444,9 +444,11 @@ def main():
         for param_group in optimizer.param_groups:
             print('{:.5f} '.format(param_group['lr']), end='')
         print(' \33[0m')
-        train(train_loader, model, ce, optimizer, epoch)
+
         if epoch % 2 == 1 and epoch != (end - 1):
             test(test_loader, valid_loader, model, epoch)
+
+        train(train_loader, model, ce, optimizer, epoch)
 
         if epoch % 4 == 1 or epoch == (end - 1):
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
@@ -683,8 +685,8 @@ def test(test_loader, valid_loader, model, epoch):
         # out_a = out_a_
         # out_p = out_p_
 
-        out_a = out_a_.reshape(vec_a_shape[0], vec_a_shape[1], args.embedding_size_a).mean(dim=1)
-        out_p = out_p_.reshape(vec_p_shape[0], vec_p_shape[1], args.embedding_size_a).mean(dim=1)
+        out_a = out_a_.reshape(vec_a_shape[0], vec_a_shape[1], args.embedding_size).mean(dim=1)
+        out_p = out_p_.reshape(vec_p_shape[0], vec_p_shape[1], args.embedding_size).mean(dim=1)
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         # dists = dists.reshape(vec_shape[0], vec_shape[1]).mean(dim=1)
