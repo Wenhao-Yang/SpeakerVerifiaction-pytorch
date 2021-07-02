@@ -102,6 +102,7 @@ if [ $stage -le 50 ]; then
   input_norm=Mean
   lr_ratio=5
   loss_ratio=0.1
+  feat=fb${input_dim}_ws25
   #  resnet_size=8
   #  kernel_size=5,5
   channels=512,512,512,512,512,1536
