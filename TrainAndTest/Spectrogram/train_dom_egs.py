@@ -113,6 +113,9 @@ parser.add_argument('--resnet-size', default=8, type=int,
 parser.add_argument('--inst-norm', action='store_true', default=False,
                     help='replace batchnorm with instance norm')
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
+parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
+parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
+parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
@@ -131,7 +134,6 @@ parser.add_argument('--remove-vad', action='store_true', default=False,
 
 parser.add_argument('--alpha', default=12, type=float, metavar='FEAT',
                     help='acoustic feature dimension')
-
 parser.add_argument('--cos-sim', action='store_true', default=True,
                     help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES',
