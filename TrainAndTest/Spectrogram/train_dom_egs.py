@@ -185,6 +185,8 @@ parser.add_argument('--s', type=float, default=15, metavar='S',
                     help='the margin value for the angualr softmax loss function (default: 3.0')
 
 # args for a-softmax
+parser.add_argument('--all-iteraion', type=int, default=0, metavar='M',
+                    help='the margin value for the angualr softmax loss function (default: 3.0')
 parser.add_argument('--m', type=int, default=3, metavar='M',
                     help='the margin value for the angualr softmax loss function (default: 3.0')
 parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
