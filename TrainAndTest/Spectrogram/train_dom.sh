@@ -115,6 +115,7 @@ if [ $stage -le 50 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+      --remove-vad \
       --feat-format kaldi \
       --inst-norm \
       --nj 10 \
