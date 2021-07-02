@@ -290,13 +290,8 @@ elif args.feat_format == 'npy':
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform,
                        domain=args.domain)
-test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_V)
+# test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_V)
 
-if len(test_dir) < args.veri_pairs:
-    args.veri_pairs = len(test_dir)
-    print('There are %d verification pairs.' % len(test_dir))
-else:
-    test_dir.partition(args.veri_pairs)
 
 valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform,
                        domain=args.domain)
@@ -458,7 +453,7 @@ def main():
             lr_string += '{:.8f} '.format(param_group['lr'])
         print('%s \33[0m' % lr_string)
 
-        train(train_loader, model, ce, optimizer, epoch, scheduler)
+        # train(train_loader, model, ce, optimizer, epoch, scheduler)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
