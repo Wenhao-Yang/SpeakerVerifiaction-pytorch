@@ -27,6 +27,7 @@ import torchvision.transforms as transforms
 from kaldi_io import read_mat, read_vec_flt
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
+from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
@@ -414,13 +415,27 @@ def main():
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size, shuffle=False, **kwargs)
 
     if args.cuda:
-        model = model.cuda()
+        if len(args.gpu_id) > 1:
+            print("Continue with gpu: %s ..." % str(args.gpu_id))
+            torch.distributed.init_process_group(backend="nccl",
+                                                 # init_method='tcp://localhost:23456',
+                                                 init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
+                                                 rank=0,
+                                                 world_size=1)
+            # if args.gain
+            # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
+            model = DistributedDataParallel(model.cuda())
+
+
+        else:
+            model = model.cuda()
+
         for i in range(len(ce)):
             if ce[i] != None:
                 ce[i] = ce[i].cuda()
         try:
             print('Dropout is {}.'.format(model.dropout_p))
-        except Exception as e:
+        except:
             pass
 
     for epoch in range(start, end):
