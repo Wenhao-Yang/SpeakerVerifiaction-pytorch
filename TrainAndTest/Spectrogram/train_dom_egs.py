@@ -494,7 +494,7 @@ def main():
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     exit(0)
 
-def train(train_loader, model, ce, optimizer, epoch):
+def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
     # lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1.
@@ -586,6 +586,8 @@ def train(train_loader, model, ce, optimizer, epoch):
                 param.grad.data *= (1. / args.loss_ratio)
 
         optimizer.step()
+        if args.scheduler == 'cyclic':
+            scheduler.step()
 
         if batch_idx % args.log_interval == 0:
             print_desc = 'Train Epoch {:2d}: [{:4d}/{:4d}({:3.0f}%)]'.format(epoch,
