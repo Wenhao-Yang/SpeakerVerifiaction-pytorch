@@ -477,8 +477,8 @@ def main():
 def train(train_loader, model, ce, optimizer, epoch):
     # switch to evaluate mode
     model.train()
-    lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1.
-    model.grl.set_lambda(lambda_)
+    # lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1.
+    # model.grl.set_lambda(lambda_)
 
     correct_a = 0.
     correct_b = 0.
