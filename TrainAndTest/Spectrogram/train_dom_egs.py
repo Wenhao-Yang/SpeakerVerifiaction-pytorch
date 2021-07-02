@@ -63,10 +63,15 @@ except AttributeError:
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
-parser.add_argument('--train-dir', type=str, help='path to dataset')
-parser.add_argument('--valid-dir', type=str, help='path to dataset')
-parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--trials', type=str, default='trials', help='trials filename')
+parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
+parser.add_argument('--train-test-dir', type=str, required=True, help='path to dataset')
+parser.add_argument('--valid-dir', type=str, required=True, help='path to dataset')
+parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
+parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
+parser.add_argument('--exp', action='store_true', default=False, help='exp power spectogram')
+parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
+parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
+
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
 parser.add_argument('--speech-dom', default=11, type=int, help='set domain in dataset')
 
