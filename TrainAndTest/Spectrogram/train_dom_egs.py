@@ -38,7 +38,7 @@ from Process_Data import constants as c
 from Process_Data.Datasets.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, to2tensor, ConcateVarInput
+from Process_Data.audio_processing import concateinputfromMFB, to2tensor, ConcateVarInput, ConcateOrgInput
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -232,19 +232,8 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDist
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
-        concateinputfromMFB(num_frames=c.NUM_FRAMES_SPECT, remove_vad=args.remove_vad),
-        # varLengthFeat(),
-        to2tensor()
+        totensor()
     ])
-    transform_T = transforms.Compose([
-        ConcateVarInput(num_frames=c.NUM_FRAMES_SPECT, remove_vad=args.remove_vad),
-        # to2tensor()
-    ])
-    transform_V = transforms.Compose([
-        varLengthFeat(remove_vad=args.remove_vad),
-        to2tensor()
-    ])
-
 else:
     transform = transforms.Compose([
         truncatedinput(),
@@ -252,7 +241,15 @@ else:
         totensor(),
         # tonormal()
     ])
-    file_loader = read_audio
+
+if args.test_input == 'var':
+    transform_V = transforms.Compose([
+        ConcateOrgInput(remove_vad=args.remove_vad),
+    ])
+elif args.test_input == 'fix':
+    transform_V = transforms.Compose([
+        ConcateVarInput(remove_vad=args.remove_vad),
+    ])
 
 # pdb.set_trace()
 torch.multiprocessing.set_sharing_strategy('file_system')
@@ -264,7 +261,7 @@ elif args.feat_format == 'npy':
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform,
                        domain=args.domain)
-test_dir = ScriptTestDataset(dir=args.test_dir, loader=np.load, transform=transform_T)
+test_dir = ScriptTestDataset(dir=args.test_dir, loader=np.load, transform=transform_V)
 
 if len(test_dir) < args.veri_pairs:
     args.veri_pairs = len(test_dir)
