@@ -120,11 +120,7 @@ parser.add_argument('--cos-sim', action='store_true', default=True,
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES',
                     help='Dimensionality of the embedding')
 
-parser.add_argument('--embedding-size-a', type=int, default=128, metavar='ES',
-                    help='Dimensionality of the embedding')
-parser.add_argument('--embedding-size-b', type=int, default=64, metavar='ES',
-                    help='Dimensionality of the embedding')
-parser.add_argument('--embedding-size-o', type=int, default=32, metavar='ES',
+parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                     help='Dimensionality of the embedding')
 
 parser.add_argument('--batch-size', type=int, default=128, metavar='BS',
