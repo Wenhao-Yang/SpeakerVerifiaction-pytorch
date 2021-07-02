@@ -598,13 +598,14 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                                                                           100. * minibatch_acc_b)
             pbar.set_description(print_desc)
 
-    print('\n\33[91mTrain Epoch {}: Avg loss: {:.4f} Spk Loss: {:.4f} Dom Loss: {:.4f} .'.format(epoch,
-                                                                                                 total_loss / len(
-                                                                                                     train_loader),
-                                                                                                 total_loss_a / len(
-                                                                                                     train_loader),
-                                                                                                 total_loss_b / len(
-                                                                                                     train_loader)))
+    print('\nEpoch {:>2d}: \33[91mAvg loss: {:.4f} Spk Loss: {:.4f} Dom Loss: {:.4f} '.format(epoch,
+                                                                                              total_loss / len(
+                                                                                                  train_loader),
+                                                                                              total_loss_a / len(
+                                                                                                  train_loader),
+                                                                                              total_loss_b / len(
+                                                                                                  train_loader)),
+          end='')
 
     print('Spk Accuracy:{:.4f}%, Dom Accuracy:{:.4f}%.\33[0m'.format(100 * correct_a / total_datasize,
                                                                      100 * correct_b / total_datasize, ))

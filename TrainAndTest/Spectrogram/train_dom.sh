@@ -119,14 +119,14 @@ if [ $stage -le 50 ]; then
       --feat-format kaldi \
       --inst-norm \
       --nj 10 \
-      --epochs 20 \
+      --epochs 50 \
       --lr 0.1 \
-      --milestones 10,20 \
+      --milestones 10,20,30,40 \
       --input-dim ${input_dim} \
       --channels ${channels} \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_domain/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_domain/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3/checkpoint_1.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_domain/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3/checkpoint_20.pth \
       --embedding-size ${embedding_size} \
       --num-valid 1 \
       --domain \
