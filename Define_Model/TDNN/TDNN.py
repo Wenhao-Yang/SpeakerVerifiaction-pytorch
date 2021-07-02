@@ -870,8 +870,6 @@ class TDNN_v5(nn.Module):
         if self.mask_layer != None:
             x = self.mask_layer(x)
 
-        if x.shape[-1] != self.input_dim:
-            x = x.transpose(1, 2)
         x = self.frame1(x)
         x = self.frame2(x)
         x = self.frame3(x)
@@ -882,7 +880,7 @@ class TDNN_v5(nn.Module):
             x = self.drop(x)
 
         # print(x.shape)
-        x = self.encoder(x.transpose(1, 2))
+        x = self.encoder(x)
         embedding_a = self.segment6(x)
         embedding_b = self.segment7(embedding_a)
 
