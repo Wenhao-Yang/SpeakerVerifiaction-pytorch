@@ -420,8 +420,8 @@ def main():
                 ce[i] = ce[i].cuda()
         try:
             print('Dropout is {}.'.format(model.dropout_p))
-        except:
-            continue
+        except Exception as e:
+            pass
 
     for epoch in range(start, end):
         # pdb.set_trace()
