@@ -109,6 +109,8 @@ parser.add_argument('--resnet-size', default=8, type=int,
                     metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--inst-norm', action='store_true', default=False,
                     help='replace batchnorm with instance norm')
+parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
+
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--feat-dim', default=161, type=int, metavar='FEAT',
@@ -124,6 +126,7 @@ parser.add_argument('--cos-sim', action='store_true', default=True,
                     help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES',
                     help='Dimensionality of the embedding')
+parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                     help='Dimensionality of the embedding')
