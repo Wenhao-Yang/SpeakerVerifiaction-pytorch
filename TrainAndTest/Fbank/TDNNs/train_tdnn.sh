@@ -399,7 +399,7 @@ if [ $stage -le 76 ]; then
       --accu-steps 1 \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
-      --first-ed \
+      --first-2d \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var \
