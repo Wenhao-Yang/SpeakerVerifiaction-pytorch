@@ -409,8 +409,6 @@ if [ $stage -le 76 ]; then
       --veri-pairs 9600 \
       --gpu-id 0,1 \
       --num-valid 2 \
-      --loss-ratio ${loss_ratio} \
-      --lr-ratio ${lr_ratio} \
       --loss-type ${loss} \
       --margin 0.3 \
       --s 15 \
