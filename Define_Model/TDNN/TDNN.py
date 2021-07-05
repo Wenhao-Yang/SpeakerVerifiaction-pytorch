@@ -14,7 +14,7 @@ https://github.com/jonasvdd/TDNN/blob/master/tdnn.py
 """
 
 import math
-
+import numpy as np
 import torch
 from torch import Tensor
 import torch.nn as nn
@@ -360,7 +360,7 @@ class TimeDelayLayer_v4(nn.Module):
 
         return x.transpose(1, 3)
 
-
+# My implement TDNN using 1dConv Layer
 class TimeDelayLayer_v5(nn.Module):
 
     def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
@@ -379,8 +379,8 @@ class TimeDelayLayer_v5(nn.Module):
                                 padding=self.padding, dilation=self.dilation, groups=self.groups)
 
         if activation == 'relu':
-            self.nonlinearity = nn.ReLU()
-        elif activation == 'leakyrelu':
+            self.nonlinearity = nn.ReLU(inplace=True)
+        elif activation in ['leakyrelu', 'leaky_relu']:
             self.nonlinearity = nn.LeakyReLU()
         elif activation == 'prelu':
             self.nonlinearity = nn.PReLU()
@@ -443,6 +443,54 @@ class TimeDelayLayer_v6(nn.Module):
         x = self.kernel(x)
 
         return x  # .transpose(1, 2)
+
+
+
+class Conv2DLayer(nn.Module):
+
+    def __init__(self, input_dim=40, output_dim=512, context_size=5, stride=1, dilation=1,
+                 batch_norm=True, dropout_p=0.0, padding=0, groups=8, activation='relu'):
+        super(Conv2DLayer, self).__init__()
+        self.context_size = context_size
+        self.stride = stride
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.dilation = dilation
+        self.dropout_p = dropout_p
+        self.padding = padding
+        self.groups = groups
+
+        self.conv1 = nn.Sequential(nn.Conv2d(1, 32, kernel_size=5, stride=(2, 1), padding=(2, 2)),
+                                   nn.BatchNorm2d(32),
+                                   nn.ReLU(),
+                                   nn.Conv2d(32, 64, kernel_size=5, stride=(2, stride), padding=(2, 2)),
+                                   nn.BatchNorm2d(64),
+                                   nn.ReLU())
+        concat_channels = int(np.ceil(input_dim / 4) * 64)
+
+        real_group = 196. * input_dim / (1625 - 5 * input_dim)
+        if int(2 ** np.ceil(np.log2(real_group))) > groups:
+            groups = min(int(2 ** np.ceil(np.log2(real_group))), 64)
+            print('number of Group is set to %d' % groups)
+        self.conv2 = nn.Sequential(
+            nn.Conv1d(concat_channels, output_dim, kernel_size=1, stride=1, groups=groups, bias=False),
+            nn.BatchNorm1d(output_dim),
+            nn.ReLU(),
+        )
+
+    def forward(self, x):
+        '''
+        input: size (batch, seq_len, input_features)
+        outpu: size (batch, new_seq_len, output_features)
+        '''
+        if len(x.shape) == 3:
+            x = x.unsqueeze(1)
+
+        x = self.conv1(x.transpose(2, 3))
+        x_shape = x.shape
+        x = x.reshape((x_shape[0], -1, x_shape[-1]))
+        x = self.conv2(x)
+        return x.transpose(1, 2)
 
 
 class ShuffleTDLayer(nn.Module):
@@ -739,7 +787,7 @@ class TDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
-                 num_classes_b=0, block_type='basic',
+                 num_classes_b=0, block_type='basic', first_2d=False, stride=[1],
                  mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
@@ -753,6 +801,12 @@ class TDNN_v5(nn.Module):
         self.filter = filter
         self.feat_dim = feat_dim
         self.block_type = block_type.lower()
+        self.stride = stride
+        if len(self.stride) == 1:
+            while len(self.stride) < 4:
+                self.stride.append(self.stride[0])
+        if np.sum((self.stride)) > 4:
+            print('The stride for tdnn layers are: ', str(self.stride))
 
         if self.filter == 'fDLR':
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
@@ -798,16 +852,19 @@ class TDNN_v5(nn.Module):
         else:
             raise ValueError(self.block_type)
 
-        self.frame1 = TDlayer(input_dim=self.input_dim, output_dim=self.channels[0],
-                              context_size=5, dilation=1)
+        if not first_2d:
+            self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=self.channels[0],
+                                            context_size=5, stride=self.stride[0], dilation=1)
+        else:
+            self.frame1 = Conv2DLayer(input_dim=self.input_dim, output_dim=512, stride=self.stride[0])
         self.frame2 = TDlayer(input_dim=self.channels[0], output_dim=self.channels[1],
-                              context_size=3, dilation=2)
+                              context_size=3, stride=self.stride[1], dilation=2)
         self.frame3 = TDlayer(input_dim=self.channels[1], output_dim=self.channels[2],
-                              context_size=3, dilation=3)
+                              context_size=3, stride=self.stride[2], dilation=3)
         self.frame4 = TDlayer(input_dim=self.channels[2], output_dim=self.channels[3],
-                              context_size=1, dilation=1)
-        self.frame5 = TDlayer(input_dim=self.channels[3], output_dim=self.channels[4],
-                              context_size=1, dilation=1)
+                              context_size=1, stride=self.stride[0], dilation=1)
+        self.frame5 = TimeDelayLayer_v5(input_dim=self.channels[3], output_dim=self.channels[4],
+                                        context_size=1, stride=self.stride[3], dilation=1)
 
         self.drop = nn.Dropout(p=self.dropout_p)
 
@@ -819,10 +876,10 @@ class TDNN_v5(nn.Module):
             self.encoder_output = self.channels[4] * 2
         elif encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
-            self.encoder_output = self.num_filter[4]
+            self.encoder_output = self.channels[4]
         elif encoder_type == 'Ghos_v3':
             self.encoder = GhostVLAD_v3(num_clusters=self.num_classes_b, gost=1, dim=self.channels[4])
-            self.encoder_output = self.num_filter[4] * 2
+            self.encoder_output = self.channels[4] * 2
         else:
             raise ValueError(encoder_type)
 
@@ -904,7 +961,7 @@ class TDNN_v5(nn.Module):
 
         if self.mask_layer != None:
             x = self.mask_layer(x)
-        x = x.transpose(1, 2)
+        # x = x.transpose(1, 2)
         x = self.frame1(x)
         x = self.frame2(x)
         x = self.frame3(x)
@@ -915,7 +972,9 @@ class TDNN_v5(nn.Module):
             x = self.drop(x)
 
         # print(x.shape)
-        x = self.encoder(x.transpose(1, 2))
+        # x = self.encoder(x.transpose(1, 2))
+        x = self.encoder(x)
+
         embedding_a = self.segment6[0](x)
 
         return "", embedding_a

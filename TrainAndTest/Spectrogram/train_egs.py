@@ -104,7 +104,7 @@ parser.add_argument('--epochs', type=int, default=20, metavar='E',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--scheduler', default='multi', type=str,
                     metavar='SCH', help='The optimizer to use (default: Adagrad)')
-parser.add_argument('--patience', default=2, type=int,
+parser.add_argument('--patience', default=3, type=int,
                     metavar='PAT', help='patience for scheduler (default: 4)')
 parser.add_argument('--gamma', default=0.75, type=float,
                     metavar='GAMMA', help='The optimizer to use (default: Adagrad)')
@@ -137,6 +137,8 @@ parser.add_argument('--inst-norm', action='store_true', default=False, help='bat
 
 parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
 parser.add_argument('--channels', default='64,128,256', type=str, metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--first-2d', action='store_true', default=False,
+                    help='replace first tdnn layer with conv2d layers')
 parser.add_argument('--dilation', default='1,1,1,1', type=str, metavar='CHA', help='The dilation of convs layers)')
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
@@ -149,7 +151,7 @@ parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help
 parser.add_argument('--context', default='5,3,3,5', type=str, metavar='KE', help='kernel size of conv filters')
 
 parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
-parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
+parser.add_argument('--stride', default='1', type=str, metavar='ST', help='stride size of conv filters')
 parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
 
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
@@ -582,6 +584,7 @@ def main():
     dilation = [int(x) for x in dilation]
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
+                    'first_2d': args.first_2d,
                     'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
                     'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
@@ -739,15 +742,17 @@ def main():
     if len(args.random_chunk) == 2 and args.random_chunk[0] < args.random_chunk[1]:
         min_chunk_size = int(args.random_chunk[0])
         max_chunk_size = int(args.random_chunk[1])
+        pad_dim = 2 if args.feat_format == 'kaldi' else 3
+
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size,
-                                                   collate_fn=PadCollate(dim=2,
+                                                   collate_fn=PadCollate(dim=pad_dim,
                                                                          num_batch=int(
                                                                              np.ceil(len(train_dir) / args.batch_size)),
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size),
                                                    shuffle=args.shuffle, **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
-                                                   collate_fn=PadCollate(dim=2, fix_len=True,
+                                                   collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                          min_chunk_size=args.chunk_size,
                                                                          max_chunk_size=args.chunk_size + 1),
                                                    shuffle=False, **kwargs)

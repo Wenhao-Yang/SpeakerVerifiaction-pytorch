@@ -478,7 +478,7 @@ if [ $stage -le 78 ]; then
 fi
 
 if [ $stage -le 79 ]; then
-  model=RET
+  model=TDNN_v5
   datasets=vox2
   feat_type=pyfb
   loss=soft
@@ -501,6 +501,7 @@ if [ $stage -le 79 ]; then
       --nj 16 \
       --epochs 50 \
       --patience 3 \
+      --first-2d \
       --milestones 10,20,30 \
       --model ${model} \
       --resnet-size ${resnet_size} \
@@ -518,8 +519,8 @@ if [ $stage -le 79 ]; then
       --channels 512,512,512,512,512,1536 \
       --context 5,5,5 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_first2d_wde4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_first2d_wde4_var/checkpoint_9.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
