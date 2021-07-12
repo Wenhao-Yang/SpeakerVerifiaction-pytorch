@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=76
+stage=78
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -485,7 +485,7 @@ if [ $stage -le 78 ]; then
   feat_type=pyfb
   loss=soft
   encod=SASP
-  embedding_size=512
+  embedding_size=192
   input_dim=40
   input_norm=None
 
