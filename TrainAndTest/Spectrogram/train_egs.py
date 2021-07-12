@@ -295,9 +295,12 @@ if args.feat_format == 'kaldi':
     file_loader = read_mat
 elif args.feat_format == 'npy':
     file_loader = np.load
+elif args.feat_format == 'wav':
+    file_loader = load_mat
+
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform,
+train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
                        batch_size=args.batch_size, random_chunk=args.random_chunk)
 
 train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
@@ -305,11 +308,12 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         filer_loader=file_loader,
                                         trials_file=args.train_trials)
 
-extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
+extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
+                                  trials_file=args.trials, filer_loader=file_loader)
 
 # train_test_dir = ScriptTestDataset(dir=args.train_test_dir, loader=file_loader, transform=transform_T)
 # test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T)
-valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.feat_dim, loader=file_loader, transform=transform)
+valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
@@ -342,22 +346,18 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         if args.loss_type == 'soft':
             loss = ce_criterion(classfier, label)
-
         elif args.loss_type == 'asoft':
             classfier_label, _ = classfier
             loss = xe_criterion(classfier, label)
-
         elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats, label)
 
             loss = args.loss_ratio * loss_xent + loss_cent
-
         elif args.loss_type == 'ring':
             loss_cent = ce_criterion(classfier, label)
             loss_xent = xe_criterion(feats)
             loss = args.loss_ratio * loss_xent + loss_cent
-
         elif args.loss_type in ['amsoft', 'arcsoft']:
             loss = xe_criterion(classfier, label)
 
@@ -727,8 +727,10 @@ def main():
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
     elif args.scheduler == 'rop':
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
-    elif args.scheduler == 'rop':
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=1e-8, max_lr=args.lr, step_size_up=13000)
+    elif args.scheduler == 'cyclic':
+        cycle_momentum = False if args.optimizer == 'adam' else True
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=1e-8, max_lr=args.lr, step_size_up=13000,
+                                          cycle_momentum=cycle_momentum)
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
@@ -796,7 +798,7 @@ def main():
             # pdb.set_trace()
             lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
             for param_group in optimizer.param_groups:
-                lr_string += '{:.8f} '.format(param_group['lr'])
+                lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
             train(train_loader, model, ce, optimizer, epoch, scheduler)
@@ -806,7 +808,7 @@ def main():
                 model.eval()
                 check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
                 model_state_dict = model.module.state_dict() \
-                                       if isinstance(model, DistributedDataParallel) else model.state_dict(),
+                    if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch,
                             'state_dict': model_state_dict,
                             'criterion': ce},
@@ -827,9 +829,6 @@ def main():
                 continue
             else:
                 scheduler.step()
-
-            # if args.shuffle:
-            #     train_dir.__shuffle__()
 
     except KeyboardInterrupt:
         end = epoch
