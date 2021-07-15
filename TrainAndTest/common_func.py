@@ -41,9 +41,9 @@ def create_optimizer(parameters, optimizer, **kwargs):
     if optimizer == 'sgd':
         opt = optim.SGD(parameters,
                         lr=kwargs['lr'],
-                              momentum=kwargs['momentum'],
-                              dampening=kwargs['dampening'],
-                              weight_decay=kwargs['weight_decay'])
+                        momentum=kwargs['momentum'],
+                        dampening=kwargs['dampening'],
+                        weight_decay=kwargs['weight_decay'])
 
     elif optimizer == 'adam':
         opt = optim.Adam(parameters,

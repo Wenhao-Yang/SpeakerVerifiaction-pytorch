@@ -207,6 +207,10 @@ parser.add_argument('--lr-decay', default=0, type=float, metavar='LRD',
                     help='learning rate decay ratio (default: 1e-4')
 parser.add_argument('--weight-decay', default=5e-4, type=float,
                     metavar='WEI', help='weight decay (default: 0.0)')
+parser.add_argument('--second-wd', default=0, type=float,
+                    metavar='SWEI', help='weight decay (default: 0.0)')
+parser.add_argument('--filter-wd', default=0, type=float,
+                    metavar='FWEI', help='weight decay (default: 0.0)')
 parser.add_argument('--momentum', default=0.9, type=float,
                     metavar='MOM', help='momentum for sgd (default: 0.9)')
 parser.add_argument('--dampening', default=0, type=float,
@@ -214,7 +218,7 @@ parser.add_argument('--dampening', default=0, type=float,
 parser.add_argument('--optimizer', default='sgd', type=str,
                     metavar='OPT', help='The optimizer to use (default: Adagrad)')
 parser.add_argument('--grad-clip', default=0., type=float,
-                    help='momentum for sgd (default: 0.9)')
+                    help='gradient clip threshold (default: 0)')
 # Device options
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='enables CUDA training')
@@ -639,7 +643,6 @@ def main():
         xe_criterion = None
     elif args.loss_type == 'asoft':
         ce_criterion = None
-        model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
@@ -654,11 +657,9 @@ def main():
                                        num_center=args.num_center)
     elif args.loss_type == 'amsoft':
         ce_criterion = None
-        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'arcsoft':
         ce_criterion = None
-        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
@@ -666,24 +667,30 @@ def main():
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0
 
-    model_para = model.parameters()
+    model_para = [{'params': model.parameters()}]
     if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert args.lr_ratio > 0
-        model_para = [{'params': xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio},
-                      {'params': model.parameters()}]
-    if args.finetune:
-        if args.loss_type == 'asoft' or args.loss_type == 'amsoft':
-            classifier_params = list(map(id, model.classifier.parameters()))
-            rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
-            assert args.lr_ratio > 0
-            model_para = [{'params': model.classifier.parameters(), 'lr': args.lr * args.lr_ratio},
-                          {'params': rest_params}]
+        model_para.append({'params': xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio})
+
+    if args.finetune or args.second_wd > 0:
+        # if args.loss_type in ['asoft', 'amsoft']:
+        classifier_params = list(map(id, model.classifier.parameters()))
+        rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
+        init_lr = args.lr * args.lr_ratio if args.lr_ratio > 0 else args.lr
+        init_wd = args.second_wd if args.second_wd > 0 else args.weight_decay
+        print('Set the lr and weight_decay of classifier to %f and %f' % (init_lr, init_wd))
+        model_para = [{'params': rest_params},
+                      {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
     if args.filter in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer']:
         filter_params = list(map(id, model.filter_layer.parameters()))
-        rest_params = filter(lambda p: id(p) not in filter_params, model.parameters())
-        model_para = [{'params': model.filter_layer.parameters(), 'lr': args.lr * args.lr_ratio},
-                      {'params': rest_params}]
+        rest_params = filter(lambda p: id(p) not in filter_params, model_para[0]['params'])
+        init_wd = args.filter_wd if args.filter_wd > 0 else args.weight_decay
+        init_lr = args.lr * args.lr_ratio if args.lr_ratio > 0 else args.lr
+        print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
+        model_para[0]['params'] = rest_params
+        model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
+                           'weight_decay': init_wd})
 
     optimizer = create_optimizer(model_para, args.optimizer, **opt_kwargs)
 
