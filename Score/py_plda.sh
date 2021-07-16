@@ -23,6 +23,7 @@ xvector_dir=Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/soft/featcombined_inputM
 #/vox1_test_var/xvectors_a
 train_xvector_dir=${xvector_dir}/vox1_test_var/xvectors_a/epoch_50/train
 test_xvector_dir=${xvector_dir}/${test_set}_test_var/xvectors_a/epoch_50/test
+sub_train_cohort=${xvector_dir}/vox1_test_var/xvectors_a/epoch_50/sub_train
 
 # test options
 adaptation=false
@@ -108,12 +109,40 @@ if [ $stage -le 11 ]; then
 fi
 
 if [ $stage -le 12 ]; then
-  eer=$(compute-eer <(Score/prepare_for_eer.py $test_trials $test_xvector_dir/scores_test) 2>/dev/null)
-  mindcf1=$(Score/compute_min_dcf.py --p-target 0.01 $test_xvector_dir/scores_test $test_trials 2>/dev/null)
-  mindcf2=$(Score/compute_min_dcf.py --p-target 0.001 $test_xvector_dir/scores_test $test_trials 2>/dev/null)
-  echo "EER: $eer%"
-  echo "minDCF(p-target=0.01): $mindcf1"
-  echo "minDCF(p-target=0.001): $mindcf2"
+  if [ ! -f $test_xvector_dir/test_cohort_score ]; then
+    ivector-plda-scoring --normalize-length=true \
+      "ivector-copy-plda --smoothing=0.0 $train_xvector_dir/plda - |" \
+      "ark:ivector-subtract-global-mean $train_xvector_dir/mean.vec scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      "ark:ivector-subtract-global-mean $train_xvector_dir/mean.vec scp:$sub_train_cohort/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      "cat '$test_cohort_trials' | cut -d\  --fields=1,2 |" $test_xvector_dir/test_cohort_score || exit 1
+  fi
+
+  if [ ! -f $test_xvector_dir/enroll_cohort_score ]; then
+    ivector-plda-scoring --normalize-length=true \
+      "ivector-copy-plda --smoothing=0.0 $train_xvector_dir/plda - |" \
+      "ark:ivector-subtract-global-mean $train_xvector_dir/mean.vec scp:$test_xvector_dir/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      "ark:ivector-subtract-global-mean $train_xvector_dir/mean.vec scp:$sub_train_cohort/xvectors.scp ark:- | transform-vec $train_xvector_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+      "cat '$enroll_cohort_trials' | cut -d\  --fields=1,2 |" $test_xvector_dir/enroll_cohort_score || exit 1
+  fi
+
+  norm_score_file=${scores_file}_norm
+  python Score/ScoreNormalization.py \
+    $test_xvector_dir/$scores_file \
+    $test_xvector_dir/enroll_cohort_score \
+    $test_xvector_dir/test_cohort_score \
+    $test_xvector_dir/$norm_score_file
+
+  scores_file=${norm_score_file}
+
+fi
+
+if [ $stage -le 13 ]; then
+  eer=$(compute-eer <(Score/prepare_for_eer.py $test_trials $test_xvector_dir/$scores_file) 2>/dev/null)
+  mindcf1=$(Score/compute_min_dcf.py --p-target 0.01 $test_xvector_dir/$scores_file $test_trials 2>/dev/null)
+  mindcf2=$(Score/compute_min_dcf.py --p-target 0.001 $test_xvector_dir/$scores_file $test_trials 2>/dev/null)
+  echo "EER: $eer%" >>$test_xvector_dir/test.log
+  echo "minDCF(p-target=0.01): $mindcf1" >>$test_xvector_dir/test.log
+  echo "minDCF(p-target=0.001): $mindcf2" >>$test_xvector_dir/test.log
 fi
 
 # PLDA

@@ -5,7 +5,7 @@ For cosine distance: when the distance is greater than the theshold, it's true.
 """
 import os
 from operator import itemgetter
-
+import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate
@@ -377,3 +377,123 @@ def save_det(save_path, score_files=[], names=[], pf_max=0.3):
 # plt.plot([-40, 1], [-40, 1])
 # plt.plot(np.arange(0,40,1),np.arange(0,40,1))
 # plt.show()
+
+# from asv-tools
+def load_score(score_path, names, sep=" "):
+    df = pd.read_csv(score_path, sep=sep, names=names, converters={0: str, 1: str, 2: float})
+    return df
+
+
+def save_score(score, score_path, sep=" "):
+    df = pd.DataFrame(score)
+    df.to_csv(score_path, header=None, sep=sep, index=False)
+
+
+def snorm(input_score, enroll_cohort_score, test_cohort_score, output_score,
+          second_cohort=True):
+    """ Symmetrical Normalization.
+    Reference: Kenny, P. (2010). Bayesian speaker verification with heavy-tailed priors. Paper presented at the Odyssey.
+    """
+    enroll_test_names = ["enroll", "test", "score"]
+
+    if second_cohort:
+        enroll_cohort_names = ["enroll", "cohort", "score"]
+        test_cohort_names = ["test", "cohort", "score"]
+    else:
+        enroll_cohort_names = ["cohort", "enroll", "score"]
+        test_cohort_names = ["cohort", "test", "score"]
+
+    input_score = load_score(input_score, enroll_test_names)
+    enroll_cohort_score = load_score(enroll_cohort_score, enroll_cohort_names)
+    test_cohort_score = load_score(test_cohort_score, test_cohort_names)
+
+    output_score = []
+
+    # This .groupby function is really an efficient method than 'for' grammar.
+    enroll_group = enroll_cohort_score.groupby("enroll")
+    test_group = test_cohort_score.groupby("test")
+
+    enroll_mean = enroll_group["score"].mean()
+    enroll_std = enroll_group["score"].std()
+    test_mean = test_group["score"].mean()
+    test_std = test_group["score"].std()
+
+    for _, row in input_score.iterrows():
+        enroll_key, test_key, score = row
+        normed_score = 0.5 * ((score - enroll_mean[enroll_key]) / enroll_std[enroll_key] + \
+                              (score - test_mean[test_key]) / test_std[test_key])
+        output_score.append([enroll_key, test_key, normed_score])
+
+    # logger.info("Normalize scores done.")
+    save_score(output_score, output_score)
+
+
+def asnorm(input_score, enroll_cohort_score, test_cohort_score, output_score,
+           top_n=300,
+           second_cohort=True, cross_select=False):
+    """ Adaptive Symmetrical Normalization.
+    Reference: Cumani, S., Batzu, P. D., Colibro, D., Vair, C., Laface, P., & Vasilakakis, V. (2011). Comparison of
+               speaker recognition approaches for real applications. Paper presented at the Twelfth Annual Conference
+               of the International Speech Communication Association.
+
+               Cai, Danwei, et al. “The DKU-SMIIP System for NIST 2018 Speaker Recognition Evaluation.” Interspeech 2019,
+               2019, pp. 4370–4374.
+
+    Recommend: Matejka, P., Novotný, O., Plchot, O., Burget, L., Sánchez, M. D., & Cernocký, J. (2017). Analysis of
+               Score Normalization in Multilingual Speaker Recognition. Paper presented at the Interspeech.
+
+    """
+    enroll_test_names = ["enroll", "test", "score"]
+
+    if second_cohort:
+        enroll_cohort_names = ["enroll", "cohort", "score"]
+        test_cohort_names = ["test", "cohort", "score"]
+    else:
+        enroll_cohort_names = ["cohort", "enroll", "score"]
+        test_cohort_names = ["cohort", "test", "score"]
+
+    input_score = load_score(input_score, enroll_test_names)
+    enroll_cohort_score = load_score(enroll_cohort_score, enroll_cohort_names)
+    test_cohort_score = load_score(test_cohort_score, test_cohort_names)
+
+    output_score = []
+
+    # Note that, .sort_values function will return NoneType with inplace=True and .head function will return a DataFrame object.
+    # The order sort->groupby is equal to groupby->sort, so there is no problem about independence of trials.
+    enroll_cohort_score.sort_values(by="score", ascending=False, inplace=True)
+    test_cohort_score.sort_values(by="score", ascending=False, inplace=True)
+
+    if cross_select == "true":
+        # The SQL grammar is used to implement the cross selection based on pandas.
+        # Let A is enroll_test table, B is enroll_cohort table and C is test_cohort table.
+        # To get a test_group (select "test:cohort" pairs) where the cohort utterances' scores is selected by enroll_top_n,
+        # we should get the D table by concatenating AxC with "enroll" key firstly and then
+        # we could get the target E table by concatenating BxD wiht "test"&"cohort" key.
+        # Finally, the E table should be grouped by "enroll"&"test" key to make sure the group key is unique.
+        enroll_top_n = enroll_cohort_score.groupby("enroll").head(top_n)[["enroll", "cohort"]]
+        test_group = pd.merge(pd.merge(input_score[["enroll", "test"]], enroll_top_n, on="enroll"),
+                              test_cohort_score, on=["test", "cohort"]).groupby(["enroll", "test"])
+
+        test_top_n = test_cohort_score.groupby("test").head(top_n)[["test", "cohort"]]
+        enroll_group = pd.merge(pd.merge(input_score[["enroll", "test"]], test_top_n, on="test"),
+                                enroll_cohort_score, on=["enroll", "cohort"]).groupby(["enroll", "test"])
+    else:
+        enroll_group = enroll_cohort_score.groupby("enroll").head(top_n).groupby("enroll")
+        test_group = test_cohort_score.groupby("test").head(top_n).groupby("test")
+
+    enroll_mean = enroll_group["score"].mean()
+    enroll_std = enroll_group["score"].std()
+    test_mean = test_group["score"].mean()
+    test_std = test_group["score"].std()
+
+    for _, row in input_score.iterrows():
+        enroll_key, test_key, score = row
+        if cross_select == "true":
+            normed_score = 0.5 * ((score - enroll_mean[enroll_key, test_key]) / enroll_std[enroll_key, test_key] + \
+                                  (score - test_mean[enroll_key, test_key]) / test_std[enroll_key, test_key])
+        else:
+            normed_score = 0.5 * ((score - enroll_mean[enroll_key]) / enroll_std[enroll_key] + \
+                                  (score - test_mean[test_key]) / test_std[test_key])
+        output_score.append([enroll_key, test_key, normed_score])
+
+    save_score(output_score, output_score)

@@ -520,7 +520,7 @@ class ThinResNet(nn.Module):
 
         self.input_norm = input_norm
         if input_norm == 'Instance':
-            self.inst_layer = nn.InstanceNorm1d(input_dim)
+            self.inst_layer = Inst_Norm(input_dim)
         elif input_norm == 'Mean':
             self.inst_layer = Mean_Norm()
         else:
@@ -530,22 +530,25 @@ class ThinResNet(nn.Module):
         self.bn1 = self._norm_layer(self.num_filter[0])
         self.relu = nn.ReLU(inplace=True)
 
-        if self.fast:
+        if self.fast.startswith('avp'):
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
             self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        elif self.fast.startswith('mxp'):
+            self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        else:
+            self.maxpool = None
 
         self.layer1 = self._make_layer(block, self.num_filter[0], layers[0])
         self.layer2 = self._make_layer(block, self.num_filter[1], layers[1], stride=2)
         self.layer3 = self._make_layer(block, self.num_filter[2], layers[2], stride=2)
 
-        if self.fast:
+        if self.fast in ['avp1', 'mxp1']:
             self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=1)
         else:
             self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=2)
 
         self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
         self.dropout = nn.Dropout(self.dropout_p)
-
         # [64, 128, 37, 8]
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
         # 300 is the length of features
@@ -628,7 +631,7 @@ class ThinResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        if self.fast:
+        if self.maxpool != None:
             x = self.maxpool(x)
 
         # print(x.shape)
