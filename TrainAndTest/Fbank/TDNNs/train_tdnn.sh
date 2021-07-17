@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=76
+stage=78
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -485,7 +485,7 @@ if [ $stage -le 78 ]; then
   feat_type=pyfb
   loss=soft
   encod=SASP
-  embedding_size=512
+  embedding_size=192
   input_dim=40
   input_norm=None
 
@@ -499,6 +499,7 @@ if [ $stage -le 78 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
+      --shuffle \
       --nj 16 \
       --epochs 60 \
       --patience 3 \
@@ -519,7 +520,7 @@ if [ $stage -le 78 ]; then
       --channels 512,512,512,512,1536 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde5_adam \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde5_adam/checkpoint_50.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}128_em${embedding_size}_wde5_adam/checkpoint_5.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --gpu-id 0,1 \
