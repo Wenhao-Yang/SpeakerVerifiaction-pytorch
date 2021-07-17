@@ -53,7 +53,7 @@ if [ $stage -le 1 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 768 \
+      --input-per-spks 1024 \
       --num-frames 400 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
@@ -66,7 +66,7 @@ if [ $stage -le 1 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --num-frames 400 \
-      --input-per-spks 768 \
+      --input-per-spks 1024 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
