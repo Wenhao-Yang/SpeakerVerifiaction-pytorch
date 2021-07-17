@@ -42,6 +42,7 @@ if [ $stage -le 1 ]; then
 #  feat_type=pyfb
 
   dataset=vox1
+  feat=klsp
   feat_type=klsp
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
