@@ -452,6 +452,9 @@ class TimeMaskLayer(nn.Module):
 
         return x
 
+    def __repr__(self):
+        return "TimeMaskLayer(mask_len=%f)" % self.mask_len
+
 
 class FreqMaskLayer(nn.Module):
     def __init__(self, mask_len=25, normalized=False):
@@ -478,6 +481,9 @@ class FreqMaskLayer(nn.Module):
                 (x.shape[0], x.shape[1], x.shape[2], this_len))
 
         return x
+
+    def __repr__(self):
+        return "FreqMaskLayer(mask_len=%f)" % self.mask_len
 
 
 class CBAM(nn.Module):
@@ -532,6 +538,9 @@ class SqueezeExcitation(nn.Module):
         output = input * scale
 
         return output
+
+    def __repr__(self):
+        return "SqueezeExcitation(reduction_ratio=%f)" % self.reduction_ratio
 
 
 class GAIN(nn.Module):

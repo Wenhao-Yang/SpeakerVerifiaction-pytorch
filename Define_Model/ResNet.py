@@ -460,6 +460,7 @@ class ThinResNet(nn.Module):
                  feat_dim=64, num_classes=1000, embedding_size=128, fast=False, time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None,
+                 mask='None', mask_len=10,
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -525,6 +526,18 @@ class ThinResNet(nn.Module):
             self.inst_layer = Mean_Norm()
         else:
             self.inst_layer = None
+
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+        elif self.mask == "freq":
+            self.mask = FreqMaskLayer(mask_len=mask_len)
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(),
+                FreqMaskLayer()
+            )
+        else:
+            self.mask_layer = None
 
         self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(self.num_filter[0])
@@ -624,6 +637,9 @@ class ThinResNet(nn.Module):
 
         if self.inst_layer != None:
             x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
