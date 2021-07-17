@@ -481,6 +481,7 @@ class ThinResNet(nn.Module):
         self.embedding_size = embedding_size
         self.dropout_p = dropout_p
         self.gain_layer = gain_layer
+        self.mask = mask
 
         self.dilation = 1
         self.fast = fast
