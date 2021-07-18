@@ -398,6 +398,21 @@ def read_MFB(filename):
 
     return audio
 
+
+def read_Waveform(filename):
+    """
+    read features from npy files
+    :param filename: the path of wav files.
+    :return:
+    """
+    # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
+    # audio = audio.flatten()
+    audio, sample_rate = sf.read(filename, dtype='int16')
+
+    return audio.astype(np.float32).reshape(1, -1)
+
+
+
 def read_from_npy(filename):
     """
     read features from npy files
@@ -421,32 +436,36 @@ class ConcateVarInput(object):
     interpolation: Default: PIL.Image.BILINEAR
     """
 
-    def __init__(self, num_frames=c.NUM_FRAMES_SPECT, frame_shift=c.NUM_SHIFT_SPECT, remove_vad=False):
+    def __init__(self, num_frames=c.NUM_FRAMES_SPECT, frame_shift=c.NUM_SHIFT_SPECT,
+                 feat_type='kaldi', remove_vad=False):
 
         super(ConcateVarInput, self).__init__()
         self.num_frames = num_frames
         self.remove_vad = remove_vad
         self.frame_shift = frame_shift
+        self.c_axis = 0 if feat_type != 'wav' else 1
 
     def __call__(self, frames_features):
 
         network_inputs = []
         output = frames_features
-        while len(output) < self.num_frames:
-            output = np.concatenate((output, frames_features), axis=0)
+        while output.shape[self.c_axis] < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=self.c_axis)
 
-        input_this_file = int(np.ceil(len(output) / self.frame_shift))
+        input_this_file = int(np.ceil(output.shape[self.c_axis] / self.frame_shift))
 
         for i in range(input_this_file):
             start = i * self.frame_shift
 
-            if start < len(output) - self.num_frames:
+            if start < output.shape[self.c_axis] - self.num_frames:
                 end = start + self.num_frames
             else:
-                start = len(output) - self.num_frames
-                end = len(output)
-
-            network_inputs.append(output[start:end])
+                start = output.shape[self.c_axis] - self.num_frames
+                end = output.shape[self.c_axis]
+            if self.c_axis == 0:
+                network_inputs.append(output[start:end])
+            else:
+                network_inputs.append(output[:, start:end])
 
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
         if self.remove_vad:
@@ -505,29 +524,40 @@ class ConcateNumInput(object):
     interpolation: Default: PIL.Image.BILINEAR
     """
 
-    def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
+    def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, feat_type='kaldi', remove_vad=False):
 
         super(ConcateNumInput, self).__init__()
         self.input_per_file = input_per_file
         self.num_frames = num_frames
         self.remove_vad = remove_vad
+        self.c_axis = 0 if feat_type != 'wav' else 1
 
     def __call__(self, frames_features):
         network_inputs = []
 
         output = frames_features
-        while len(output) < self.num_frames:
-            output = np.concatenate((output, frames_features), axis=0)
+        while output.shape[self.c_axis] < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=self.c_axis)
 
-        start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
-        frames_slice = output[start:start + self.num_frames]
-        network_inputs.append(frames_slice)
+        for i in range(self.input_per_file):
+            try:
+                start = np.random.randint(low=0, high=output.shape[self.c_axis] - self.num_frames + 1)
 
+                frames_slice = output[start:start + self.num_frames] if self.c_axis == 0 else output[:,
+                                                                                              start:start + self.num_frames]
+                network_inputs.append(frames_slice)
+            except Exception as e:
+                print(len(output))
+                raise e
+
+        # pdb.set_trace()
         network_inputs = np.array(network_inputs, dtype=np.float32)
         if self.remove_vad:
             network_inputs = network_inputs[:, :, 1:]
 
-        return network_inputs.squeeze()
+        if len(network_inputs.shape) > 2:
+            network_inputs = network_inputs.squeeze(0)
+        return network_inputs
 
 
 class ConcateNumInput_Test(object):

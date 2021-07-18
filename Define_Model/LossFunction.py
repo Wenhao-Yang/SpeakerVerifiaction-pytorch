@@ -15,6 +15,7 @@ import torch.nn as nn
 from geomloss import SamplesLoss
 import numpy as np
 
+
 class CenterLoss(nn.Module):
     """Center loss.
 

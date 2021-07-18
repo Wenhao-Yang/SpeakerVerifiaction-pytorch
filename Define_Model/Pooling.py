@@ -68,7 +68,6 @@ class SelfAttentionPooling(nn.Module):
         assert len(x.shape) == 3, print(x.shape)
         if x.shape[-2] == self.input_dim:
             x = x.transpose(-1, -2)
-        # print(x.shape)
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
         alpha = self.attention_soft(vf)
@@ -200,7 +199,6 @@ class AdaptiveStdPool2d(nn.Module):
 
 
 # https://github.com/keetsky/Net_ghostVLAD-pytorch
-
 class GhostVLAD_v1(nn.Module):
     def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=True):
         super(GhostVLAD_v1, self).__init__()

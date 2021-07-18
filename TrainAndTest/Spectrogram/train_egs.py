@@ -85,10 +85,10 @@ parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--shuffle', action='store_false', default=True, help='need to make mfb file')
+parser.add_argument('--shuffle', action='store_false', default=True, help='need to shuffle egs')
 
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
-parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
+parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy', 'wav'],
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--check-path', default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25',
@@ -153,7 +153,7 @@ parser.add_argument('--context', default='5,3,3,5', type=str, metavar='KE', help
 
 parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
 parser.add_argument('--stride', default='1', type=str, metavar='ST', help='stride size of conv filters')
-parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
 
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
@@ -280,11 +280,12 @@ else:
 
 if args.test_input == 'var':
     transform_V = transforms.Compose([
-        ConcateOrgInput(remove_vad=args.remove_vad),
+        ConcateOrgInput(remove_vad=args.remove_vad, feat_type=args.feat_format),
     ])
 elif args.test_input == 'fix':
     transform_V = transforms.Compose([
-        ConcateVarInput(remove_vad=args.remove_vad),
+        ConcateVarInput(remove_vad=args.remove_vad, num_frames=args.chunk_size, frame_shift=args.chunk_size,
+                        feat_type=args.feat_format),
     ])
 
 if args.log_scale:
@@ -639,7 +640,6 @@ def main():
         xe_criterion = None
     elif args.loss_type == 'asoft':
         ce_criterion = None
-        model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
@@ -654,11 +654,9 @@ def main():
                                        num_center=args.num_center)
     elif args.loss_type == 'amsoft':
         ce_criterion = None
-        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'arcsoft':
         ce_criterion = None
-        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)

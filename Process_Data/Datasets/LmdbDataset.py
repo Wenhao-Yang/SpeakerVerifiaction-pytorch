@@ -427,7 +427,8 @@ class LmdbTestDataset(Dataset):
 
 
 class EgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False, random_chunk=[], batch_size=0):
+    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
+                 random_chunk=[], batch_size=0):
 
         feat_scp = dir + '/feats.scp'
 
@@ -454,8 +455,9 @@ class EgsDataset(Dataset):
                 doms.add(dom_cls)
                 spks.add(cls)
 
-        print('==> There are {} speaker with {} utterances speakers in Dataset.'.format(len(spks), len(dataset)))
-        self.idxs = np.arange(0, len(dataset))
+        print('==> There are {} speakers in Dataset.'.format(len(spks)))
+        print('    There are {} egs in Dataset'.format(len(dataset)))
+
         self.dataset = dataset
         self.feat_dim = feat_dim
         self.loader = loader

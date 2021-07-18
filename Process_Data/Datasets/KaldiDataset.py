@@ -702,13 +702,13 @@ class ScriptVerifyDataset(data.Dataset):
 
 
 class ScriptTrainDataset(data.Dataset):
-    def __init__(self, dir, samples_per_speaker, transform, num_valid=5,
+    def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False):
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
 
-        feat_scp = dir + '/feats.scp'
+        feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
         utt2spk = dir + '/utt2spk'
         utt2num_frames = dir + '/utt2num_frames'
@@ -833,12 +833,14 @@ class ScriptTrainDataset(data.Dataset):
         self.num_doms = len(self.dom_to_idx) if dom_to_idx != None else 0
 
         self.loader = loader
-        self.feat_dim = loader(uid2feat[dataset[speakers[0]][0]]).shape[1]
+        self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[-1]
         self.transform = transform
         if samples_per_speaker == 0:
             samples_per_speaker = np.power(2, np.ceil(np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
             print('    The number of sampling utterances for each speakers is decided by the number of total frames.')
         self.samples_per_speaker = int(samples_per_speaker)
+        self.c_axis = 0 if feat_type != 'wav' else 1
+        self.feat_shape = (0, self.feat_dim) if feat_type != 'wav' else (1, 0)
         print('    Sample {} random utterances for each speakers.'.format(self.samples_per_speaker))
 
         if self.return_uid or self.domain:
@@ -849,7 +851,6 @@ class ScriptTrainDataset(data.Dataset):
                 utts = self.dataset[spk]
                 uid = utts[random.randrange(0, len(utts))]
                 self.utt_dataset.append([uid, sid])
-
 
     def __getitem__(self, sid):
         # start_time = time.time()
@@ -1010,8 +1011,10 @@ class ScriptTestDataset(data.Dataset):
         print('==>There are {} pairs in test Dataset with {} positive pairs'.format(len(trials_pair), positive_pairs))
 
         self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[1]
+        self.speakers = speakers
         self.uid2feat = uid2feat
         self.trials_pair = trials_pair
+        self.num_spks = len(speakers)
         self.numofpositive = positive_pairs
 
         self.loader = loader
