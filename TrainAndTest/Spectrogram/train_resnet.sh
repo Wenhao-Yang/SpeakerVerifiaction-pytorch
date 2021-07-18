@@ -113,7 +113,7 @@ if [ $stage -le 21 ]; then
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_log/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_log \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
