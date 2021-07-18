@@ -116,7 +116,7 @@ if [ $stage -le 21 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_log/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_log \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_log \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
