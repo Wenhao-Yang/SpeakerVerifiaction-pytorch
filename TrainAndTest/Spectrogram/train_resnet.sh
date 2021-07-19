@@ -103,7 +103,7 @@ if [ $stage -le 21 ]; then
   alpha=0
   block_type=basic
   embedding_size=256
-  input_norm=None
+  input_norm=Mean
   loss=soft
   feat_type=klsp
   sname=dev
@@ -128,8 +128,8 @@ if [ $stage -le 21 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}_var/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}_fix \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}_fix/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
