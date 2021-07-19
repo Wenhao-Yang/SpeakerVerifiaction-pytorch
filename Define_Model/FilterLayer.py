@@ -198,7 +198,7 @@ class fLLayer(nn.Module):
         return "fLLayer(input_dim=%d, num_filter=%d) without batchnorm2d " % (
             self.input_dim, self.num_filter)
 
-
+# https://github.com/mravanelli/SincNet
 class SincConv_fast(nn.Module):
     """Sinc-based convolution
     Parameters
@@ -452,6 +452,9 @@ class TimeMaskLayer(nn.Module):
 
         return x
 
+    def __repr__(self):
+        return "TimeMaskLayer(mask_len=%f)" % self.mask_len
+
 
 class FreqMaskLayer(nn.Module):
     def __init__(self, mask_len=25, normalized=False):
@@ -478,6 +481,9 @@ class FreqMaskLayer(nn.Module):
                 (x.shape[0], x.shape[1], x.shape[2], this_len))
 
         return x
+
+    def __repr__(self):
+        return "FreqMaskLayer(mask_len=%f)" % self.mask_len
 
 
 class CBAM(nn.Module):
@@ -532,6 +538,9 @@ class SqueezeExcitation(nn.Module):
         output = input * scale
 
         return output
+
+    def __repr__(self):
+        return "SqueezeExcitation(reduction_ratio=%f)" % self.reduction_ratio
 
 
 class GAIN(nn.Module):
@@ -673,3 +682,134 @@ class Back_GradCAM(object):
     #         gradient = self.gradient
     #
     #     return feature, gradient
+
+# https://github.com/mravanelli/SincNet
+class Sinc2Conv(nn.Module):
+    def __init__(self, input_dim, out_dim=60, fs=16000):
+        super(Sinc2Conv, self).__init__()
+        self.fs = fs
+        self.current_input = input_dim
+        self.out_dim = out_dim
+
+        # conv_layers = [(80, 251, 1), (60, 5, 1), (out_dim, 5, 1)]
+        self.conv_layers = nn.ModuleList()
+        self.sinc_conv = nn.Sequential(
+            SincConv_fast(80, 251, self.fs, stride=6),
+            nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
+            nn.InstanceNorm1d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
+            nn.LeakyReLU(),
+        )
+        self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
+
+        self.conv_layer2 = nn.Sequential(
+            nn.Conv1d(in_channels=80, out_channels=60, kernel_size=5, stride=1),
+            nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
+            nn.InstanceNorm1d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
+            nn.LeakyReLU(),
+        )
+
+        self.current_input = int((self.current_input - 5 + 1) / 3)
+        self.conv_layer3 = nn.Sequential(
+            nn.Conv1d(in_channels=60, out_channels=self.out_dim, kernel_size=5, stride=1),
+            nn.MaxPool1d(kernel_size=3),
+            nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            nn.LeakyReLU(),
+        )
+
+        # self.conv_layer4 = nn.Sequential(
+        #     nn.Conv1d(in_channels=128, out_channels=self.out_dim, kernel_size=5, stride=2),
+        #     nn.AvgPool1d(kernel_size=3),  # nn.MaxPool1d(kernel_size=3),
+        #     nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+        #     nn.LeakyReLU(),
+        # )
+
+        self.current_output = int((self.current_input - 5 + 1) / 3)
+
+    def forward(self, x):
+        # BxT -> BxCxT
+        if len(x.shape) == 2:
+            x = x.unsqueeze(1)
+        elif len(x.shape) == 4:
+            x = x.squeeze(1)
+
+        x = self.sinc_conv(x)
+        x = self.conv_layer2(x)
+        x = self.conv_layer3(x)
+        # x = self.conv_layer4(x)
+
+        return x.transpose(1, 2)
+
+    # 20210604 maxpooling :
+    # Epoch 40: Train Accuracy: 99.828235%, Avg loss: 0.139713.
+    #           Valid Accuracy: 88.391376%, Avg loss: 0.597342.
+    #           Train EER: 21.7448%, Threshold: 0.0681, mindcf-0.01: 0.8932, mindcf-0.001: 0.8932.
+    #           Test  ERR: 30.0954%, Threshold: 0.0494, mindcf-0.01: 0.9014, mindcf-0.001: 0.9014.
+
+    # # 20210604 avgpooling :
+    # Epoch 29: Train Accuracy: 82.360265%, Avg loss: 0.826197.
+    #           Valid Accuracy: 74.087894%, Avg loss: 1.180882.
+    #           Train EER: 27.2819%, Threshold: 0.0729, mindcf-0.01: 0.9020, mindcf-0.001: 0.9020.
+    #           Test  ERR: 31.4687%, Threshold: 0.0716, mindcf-0.01: 0.8942, mindcf-0.001: 0.9099.
+
+    # 20210605 con4 80 64 128
+    # Epoch 40: Train Accuracy: 99.947745%, Avg loss: 0.096998.
+    #           Valid Accuracy: 94.361526%, Avg loss: 0.361226.
+    #           Train EER: 18.6485%, Threshold: 0.0850, mindcf-0.01: 0.8663, mindcf-0.001: 0.9555.
+    #           Test  ERR: 28.2980%, Threshold: 0.0558, mindcf-0.01: 0.8640, mindcf-0.001: 0.8996.
+
+    # 20210605 sinc ==> lr 0.01 5e4
+    # Epoch 40: Train Accuracy: 99.999839%, Avg loss: 0.038800.
+    #           Valid Accuracy: 99.170813%, Avg loss: 0.109573.
+    #           Train EER: 2.0071%, Threshold: 0.2855, mindcf-0.01: 0.2954, mindcf-0.001: 0.5138.
+    #           Test  ERR: 7.1262%, Threshold: 0.2042, mindcf-0.01: 0.6215, mindcf-0.001: 0.8115.
+
+# https://github.com/pytorch/fairseq/blob/c47a9b2eef0f41b0564c8daf52cb82ea97fc6548/fairseq/models/wav2vec/wav2vec.py#L367
+class Wav2Conv(nn.Module):
+    def __init__(self, out_dim=512, log_compression=True):
+        super(Wav2Conv, self).__init__()
+
+        in_d = 1
+        conv_layers = [(40, 10, 5), (200, 5, 4), (300, 3, 2), (512, 3, 2), (out_dim, 3, 2)]
+        self.conv_layers = nn.ModuleList()
+        for dim, k, stride in conv_layers:
+            self.conv_layers.append(self.block(in_d, dim, k, stride))
+            in_d = dim
+        self.tmp_gate = nn.Sequential(
+            nn.Linear(out_dim, 1),
+            nn.Sigmoid()
+        )
+        self.log_compression = log_compression
+        # self.skip_connections = skip_connections
+        # self.residual_scale = math.sqrt(residual_scale)
+
+    def block(self, n_in, n_out, k, stride):
+        return nn.Sequential(
+            nn.Conv1d(n_in, n_out, k, stride=stride, bias=False),
+            nn.InstanceNorm1d(n_out),  # nn.GroupNorm(1, n_out), in wav2spk replace group by instance normalization
+            nn.ReLU(),
+        )
+
+    def forward(self, x):
+        # BxT -> BxCxT
+        if len(x.shape) == 2:
+            x = x.unsqueeze(1)
+        elif len(x.shape) == 4:
+            x = x.squeeze(1)
+
+        for conv in self.conv_layers:
+            x = conv(x)
+
+        if self.log_compression:
+            x = x.abs()
+            x = x + 1
+            x = x.log()
+
+        tmp_gate = self.tmp_gate(x.transpose(1, 2)).transpose(1, 2)
+        x = x * tmp_gate
+        return x.transpose(1, 2)
+
+    # 20210604
+    # Epoch 40: Train Accuracy: 99.999839%, Avg loss: 0.036217.
+    #           Valid Accuracy: 99.502488%, Avg loss: 0.078200.
+    #           Train EER: 2.4206%, Threshold: 0.2692, mindcf-0.01: 0.3075, mindcf-0.001: 0.5515.
+    #           Test  ERR: 7.2534%, Threshold: 0.2015, mindcf-0.01: 0.6058, mindcf-0.001: 0.7008.

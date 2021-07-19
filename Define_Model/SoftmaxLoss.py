@@ -145,6 +145,7 @@ class AdditiveMarginLinear(nn.Module):
     def __init__(self, feat_dim, num_classes, use_gpu=False):
         super(AdditiveMarginLinear, self).__init__()
         self.feat_dim = feat_dim
+        self.num_classes = num_classes
         self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes), requires_grad=True)
         if use_gpu:
             self.W.cuda()
@@ -165,6 +166,9 @@ class AdditiveMarginLinear(nn.Module):
         costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
 
         return costh
+
+    def __repr__(self):
+        return "AdditiveMarginLinear(feat_dim=%f, num_classes=%d)" % (self.feat_dim, self.num_classes)
 
 
 class AMSoftmaxLoss(nn.Module):
