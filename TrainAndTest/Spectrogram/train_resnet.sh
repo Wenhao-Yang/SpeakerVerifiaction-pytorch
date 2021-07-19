@@ -108,7 +108,7 @@ if [ $stage -le 21 ]; then
   feat_type=klsp
   sname=dev
 
-  for sname in dev_log; do
+  for sname in dev ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
