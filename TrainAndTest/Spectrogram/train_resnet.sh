@@ -119,6 +119,7 @@ if [ $stage -le 21 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --input-norm ${input_norm} \
+      --random-chunk 300 301 \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 60 \
@@ -127,8 +128,8 @@ if [ $stage -le 21 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}_var/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
