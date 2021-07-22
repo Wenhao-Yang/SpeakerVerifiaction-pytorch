@@ -17,7 +17,7 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.SoftmaxLoss import AngleLinear
+from Define_Model.Loss.SoftmaxLoss import AngleLinear
 
 
 def get_layer_param(model):
@@ -69,15 +69,16 @@ class TripletMarginCosLoss(Function):
         loss = torch.mean(dist_hinge)
         return loss
 
-class ReLU(nn.Hardtanh):
+
+class ReLU20(nn.Hardtanh):
 
     def __init__(self, inplace=False):
-        super(ReLU, self).__init__(0, 20, inplace)
+        super(ReLU20, self).__init__(0, 20, inplace)
 
     def __repr__(self):
         inplace_str = 'inplace' if self.inplace else ''
         return self.__class__.__name__ + ' (' \
-            + inplace_str + ')'
+               + inplace_str + ')'
 
 def conv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
@@ -91,7 +92,7 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = ReLU(inplace=True)
+        self.relu = ReLU20(inplace=True)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
         self.downsample = downsample
@@ -121,7 +122,7 @@ class myResNet(nn.Module):
 
         super(myResNet, self).__init__()
 
-        self.relu = ReLU(inplace=True)
+        self.relu = ReLU20(inplace=True)
         self.inplanes = 64
         self.conv1 = nn.Conv2d(1, 64, kernel_size=5, stride=2, padding=2,bias=False)
         self.bn1 = nn.BatchNorm2d(64)
@@ -488,7 +489,7 @@ class ResCNNSpeaker(nn.Module):
         layers = resnet_type[resnet_size]
 
         self.embedding_size = embedding_size
-        self.relu = ReLU(inplace=True)
+        self.relu = ReLU20(inplace=True)
 
         self.in_planes = 64
         self.conv1 = nn.Conv2d(1, 64, kernel_size=5, stride=2, padding=2, bias=False)

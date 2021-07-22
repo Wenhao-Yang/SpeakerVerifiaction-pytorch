@@ -9,4 +9,4 @@
 @Time: 2019/9/13 下午4:58
 @Overview:
 """
-__all__ = ['LossFunction', 'model', 'ResNet', 'TDNN', 'SoftmaxLoss']
+__all__ = ['Loss', 'model', 'ResNet', 'TDNN']
