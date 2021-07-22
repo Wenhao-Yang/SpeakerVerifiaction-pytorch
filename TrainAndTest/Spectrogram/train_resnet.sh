@@ -122,7 +122,7 @@ if [ $stage -le 21 ]; then
       --random-chunk 300 301 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 40 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
