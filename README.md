@@ -1,10 +1,12 @@
 # Speaker Recognition Systems - Pytorch Implementation
 
-This project was forked and started from
+At the beginning, this project was forked and started from
 the [qqueing/DeepSpeaker-pytorch](https://github.com/qqueing/DeepSpeaker-pytorch).
 
 ### 1. Datasets
-Prepare data in kaldi way, and make features in Process_Data. 
+
+Prepare data in [kaldi]() way, make features in Process_Data and store shuffled features with random length in egs.
+Other stages are processed in this [resposity]().
 
 - Development:
 
@@ -15,9 +17,10 @@ Prepare data in kaldi way, and make features in Process_Data.
 > MUSAN、RIRS
 
 - Test:
+
 > SITW、Librispeech、TIMIT
 
-####1.1 Pre-Processing
+#### 1.1 Pre-Processing
 
 - Resample
 
@@ -25,8 +28,15 @@ Prepare data in kaldi way, and make features in Process_Data.
 
 - Augmentation
 
-- [ ] LMS Filtering ( Defected )
+- LMS Filtering ( Defected )
 
+#### 1.2 Accoustic Features
+
+- MFCC
+
+- Fbank
+
+- Spectrogram
 
 ### 2. Deep Speaker Verification Systems
 
@@ -45,10 +55,10 @@ The TDNN_v2 is implemented from 'https://github.com/cvqluu/TDNN/blob/master/tdnn
 > Aggregated-Residual TDNN
 >
 > ECAPA TDNN
-
-- ResCNN
-
-- LSTM
+>
+> ResCNN
+>
+> LSTM
 
 LSTM and Attention-based LSTM
 
@@ -72,7 +82,7 @@ ResNet34
 
 - Ring Loss
 
-##### End-toEnd
+##### End-to-End
 
 - Generalized End-to-End Loss
 
@@ -104,8 +114,11 @@ ResNet34
 
 - t-sne
 
+### 4. Disrization
 
-### 4. Neural Network Analysis
+- Hierarchical Agglomerative Clustering
+
+### 5. Neural Network Analysis
 
 - Gradient
 
@@ -113,13 +126,17 @@ ResNet34
 
 - Grad-CAM++
 
+- Full-Grad
+
 ### . To do list
+
 Work accomplished so far:
 
 - [x] Models implementation
 - [x] Data pipeline implementation - "Voxceleb"
 - [x] Project structure cleanup.
-- [ ] Trained simple ResNet10 with softmax+triplet loss for pre-training 10 batch and triplet loss for 18 epoch , resulted in accuracy ???
+- [ ] Trained simple ResNet10 with softmax+triplet loss for pre-training 10 batch and triplet loss for 18 epoch ,
+  resulted in accuracy ???
 - [x] DET curve
 
 ### Timeline
