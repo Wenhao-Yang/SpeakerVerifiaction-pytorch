@@ -18,7 +18,7 @@ import torch
 import os
 
 from Define_Model.ResNet import LocalResNet
-from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
+from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 # Version conflict
 import warnings
 

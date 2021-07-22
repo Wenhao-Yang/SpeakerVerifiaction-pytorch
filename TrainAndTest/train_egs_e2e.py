@@ -34,15 +34,15 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-from Define_Model.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
+from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss
-from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, ArcSoftmaxLoss, \
+from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSoftmaxLoss, \
     GaussianLoss
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput
+from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, ConcateNumInput
+from Process_Data.audio_processing import totensor
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from logger import NewLogger
 
@@ -63,7 +63,7 @@ except AttributeError:
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 # Training settings
-parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
+parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: ENd-to-End')
 
 # Data options
 parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
@@ -91,13 +91,9 @@ parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of j
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy', 'wav'],
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--check-path', default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25',
-                    help='folder to output model checkpoints')
+parser.add_argument('--check-path', help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--resume',
-                    default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25/checkpoint_10.pth', type=str,
-                    metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--resume', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -272,14 +268,11 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.Pairwise
 
 if args.acoustic_feature == 'fbank':
     transform = transforms.Compose([
+        ConcateNumInput(input_per_file=args.input_per_spks,
+                        num_frames=args.chunk_size,
+                        feat_type=args.feat_format,
+                        remove_vad=args.remove_vad),
         totensor()
-    ])
-else:
-    transform = transforms.Compose([
-        truncatedinput(),
-        toMFB(),
-        totensor(),
-        # tonormal()
     ])
 
 if args.test_input == 'var':
@@ -337,43 +330,49 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
+        data_shape = data.shape
+        data = data.reshape(data_shape[0] * data_shape[1], data_shape[2], data_shape[3])
+        label = label.repeat_interleave(data_shape[1], dim=0)
+
         if args.cuda:
-            # label = label.cuda(non_blocking=True)
-            # data = data.cuda(non_blocking=True)
             label = label.cuda()
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
 
         classfier, feats = model(data)
-        # cos_theta, phi_theta = classfier
-        classfier_label = classfier
-        # print('max logit is ', classfier_label.max())
+
+        feats = feats.reshape(data_shape[0], data_shape[1], -1)
+
+        loss, prec1 = xe_criterion(feats)
 
         if args.loss_type == 'soft':
-            loss = ce_criterion(classfier, label)
+            loss_cent = ce_criterion(classfier, label)
+            loss += args.loss_ratio * loss_cent
         elif args.loss_type == 'asoft':
             classfier_label, _ = classfier
-            loss = xe_criterion(classfier, label)
+            loss_cent = ce_criterion(classfier, label)
+            loss += args.loss_ratio * loss_cent
         elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = xe_criterion(feats, label)
+            loss_cent = xe_criterion(feats, label)
+            loss += args.loss_ratio * loss_cent
 
-            loss = args.loss_ratio * loss_xent + loss_cent
         elif args.loss_type == 'ring':
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = xe_criterion(feats)
-            loss = args.loss_ratio * loss_xent + loss_cent
+            loss_cent = ce_criterion(feats)
+            loss += args.loss_ratio * loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft']:
-            loss = xe_criterion(classfier, label)
+            loss_cent = ce_criterion(classfier, label)
+            loss += args.loss_ratio * loss_cent
 
-        predicted_labels = output_softmax(classfier_label)
-        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
-        minibatch_acc = minibatch_correct / len(predicted_one_labels)
-        correct += minibatch_correct
+        # predicted_labels = output_softmax(classfier_label)
+        # predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+        # minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
 
-        total_datasize += len(predicted_one_labels)
+        # correct += minibatch_correct
+        minibatch_acc = prec1 / len(data)
+        correct += prec1
+        total_datasize += len(data)
+
         total_loss += float(loss.item())
 
         if np.isnan(loss.item()):
@@ -425,7 +424,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
             if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+                epoch_str += ' Center Loss: {:.4f}'.format(loss_cent.float())
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             100. * minibatch_acc)
             pbar.set_description(epoch_str)
@@ -451,38 +450,44 @@ def valid_class(valid_loader, model, ce, epoch):
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
+            data_shape = data.shape
+            data = data.reshape(data_shape[0] * data_shape[1], data_shape[2], data_shape[3])
+            label = label.repeat_interleave(data_shape[1], dim=0)
+
             data = data.cuda()
             label = label.cuda()
 
             # compute output
-            out, feats = model(data)
-            if args.loss_type == 'asoft':
-                predicted_labels, _ = out
-            else:
-                predicted_labels = out
+            classfier, feats = model(data)
 
-            classfier = predicted_labels
+            feats = feats.reshape(data_shape[0], data_shape[1], -1)
+            loss, prec1 = xe_criterion(feats)
+
             if args.loss_type == 'soft':
-                loss = ce_criterion(classfier, label)
+                loss_cent = ce_criterion(classfier, label)
+                loss += args.loss_ratio * loss_cent
             elif args.loss_type == 'asoft':
                 classfier_label, _ = classfier
-                loss = xe_criterion(classfier, label)
-            elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
                 loss_cent = ce_criterion(classfier, label)
-                loss_xent = xe_criterion(feats, label)
+                loss += args.loss_ratio * loss_cent
+            elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
+                loss_cent = xe_criterion(feats, label)
+                loss += args.loss_ratio * loss_cent
 
-                loss = args.loss_ratio * loss_xent + loss_cent
-            elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
-                loss = xe_criterion(classfier, label)
+            elif args.loss_type == 'ring':
+                loss_cent = ce_criterion(feats)
+                loss += args.loss_ratio * loss_cent
+            elif args.loss_type in ['amsoft', 'arcsoft']:
+                loss_cent = ce_criterion(classfier, label)
+                loss += args.loss_ratio * loss_cent
 
             total_loss += float(loss.item())
             # pdb.set_trace()
-            predicted_one_labels = softmax(predicted_labels)
-            predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
-
-            batch_correct = (predicted_one_labels.cuda() == label).sum().item()
-            correct += batch_correct
-            total_datasize += len(predicted_one_labels)
+            # predicted_one_labels = softmax(predicted_labels)
+            # predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+            # batch_correct = (predicted_one_labels.cuda() == label).sum().item()
+            correct += prec1
+            total_datasize += len(data)
 
     valid_loss = total_loss / len(valid_loader)
     valid_accuracy = 100. * correct / total_datasize

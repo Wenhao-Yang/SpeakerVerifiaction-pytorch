@@ -25,7 +25,7 @@ from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.SoftmaxLoss import AdditiveMarginLinear
+from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear
 from Define_Model.TDNN.ARET import RET, RET_v2
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
@@ -306,3 +306,38 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
     return eer, eer_threshold, mindcf_01, mindcf_001
+
+
+# https://github.com/clovaai/voxceleb_trainer
+def accuracy(output, target, topk=(1,)):
+    """Computes the precision@k for the specified values of k"""
+    maxk = max(topk)
+    batch_size = target.size(0)
+
+    _, pred = output.topk(maxk, 1, True, True)
+    pred = pred.t()
+    correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+    res = []
+    for k in topk:
+        correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+        res.append(correct_k.mul_(100.0 / batch_size))
+
+    return res
+
+
+def correct_output(output, target, topk=(1,)):
+    """Computes the precision@k for the specified values of k"""
+    maxk = max(topk)
+    # batch_size = target.size(0)
+
+    _, pred = output.topk(maxk, 1, True, True)
+    pred = pred.t()
+    correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+    res = []
+    for k in topk:
+        correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+        res.append(correct_k)
+
+    return res

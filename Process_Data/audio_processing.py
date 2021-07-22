@@ -539,16 +539,23 @@ class ConcateNumInput(object):
         while output.shape[self.c_axis] < self.num_frames:
             output = np.concatenate((output, frames_features), axis=self.c_axis)
 
-        for i in range(self.input_per_file):
-            try:
-                start = np.random.randint(low=0, high=output.shape[self.c_axis] - self.num_frames + 1)
-
+        if len(output) / self.num_frames >= self.input_per_file:
+            for i in range(self.input_per_file):
+                start = i * self.num_frames
                 frames_slice = output[start:start + self.num_frames] if self.c_axis == 0 else output[:,
                                                                                               start:start + self.num_frames]
                 network_inputs.append(frames_slice)
-            except Exception as e:
-                print(len(output))
-                raise e
+        else:
+            for i in range(self.input_per_file):
+                try:
+                    start = np.random.randint(low=0, high=output.shape[self.c_axis] - self.num_frames + 1)
+
+                    frames_slice = output[start:start + self.num_frames] if self.c_axis == 0 else output[:,
+                                                                                                  start:start + self.num_frames]
+                    network_inputs.append(frames_slice)
+                except Exception as e:
+                    print(len(output))
+                    raise e
 
         # pdb.set_trace()
         network_inputs = np.array(network_inputs, dtype=np.float32)
