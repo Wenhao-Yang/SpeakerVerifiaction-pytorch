@@ -172,7 +172,7 @@ if [ $stage -le 22 ]; then
 
   for sname in dev dev_aug_com; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    python TrainAndTest/Spectrogram/train_egs.py \
+    python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
