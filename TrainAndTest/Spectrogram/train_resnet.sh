@@ -209,7 +209,7 @@ if [ $stage -le 22 ]; then
       --s 30 \
       --lr-ratio 0.01 \
       --weight-decay 0.001 \
-      --dropout-p 0 \
+      --dropout-p ${dropout_p} \
       --gpu-id 0,1 \
       --all-iteraion 0 \
       --extract \
