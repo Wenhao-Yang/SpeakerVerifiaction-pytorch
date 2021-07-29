@@ -184,9 +184,9 @@ if [ $stage -le 22 ]; then
       --random-chunk 300 301 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 60 \
+      --epochs 40 \
       --scheduler rop \
-      --patience 3 \
+      --patience 2 \
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
