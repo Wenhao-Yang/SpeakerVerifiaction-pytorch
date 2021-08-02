@@ -128,7 +128,7 @@ if [ $stage -le 21 ]; then
       --optimizer sgd \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.001 \
+      --lr 0.1 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_fix_chn32 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_fix_chn32/checkpoint_10.pth \
