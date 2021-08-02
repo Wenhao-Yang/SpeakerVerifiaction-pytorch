@@ -132,11 +132,11 @@ if [ $stage -le 21 ]; then
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_fix_chn32 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_fix_chn32/checkpoint_10.pth \
-      --kernel-size 3,3 \
+      --kernel-size 5,5 \
       --channels 32,64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
-      --stride 1 \
+      --stride 1,2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
