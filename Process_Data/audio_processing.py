@@ -708,7 +708,7 @@ class PadCollate:
                 batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
 
             self.batch_len = np.array(batch_len)
-            while np.mean(self.batch_len[:num_batch]) < 300:
+            while np.mean(self.batch_len[:num_batch]) < int((self.min_chunk_size + self.max_chunk_size) / 2):
                 self.batch_len += 1
                 self.batch_len = self.batch_len.clip(max=self.max_chunk_size)
 

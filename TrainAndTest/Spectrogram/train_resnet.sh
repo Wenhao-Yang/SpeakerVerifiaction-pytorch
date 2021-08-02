@@ -107,7 +107,7 @@ if [ $stage -le 21 ]; then
   loss=arcsoft
   feat_type=klsp
   sname=dev
-#        --scheduler cyclic \
+  #        --scheduler cyclic \
 
   for sname in dev dev_aug_com; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
