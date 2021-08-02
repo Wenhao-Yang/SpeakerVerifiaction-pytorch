@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=22
+stage=21
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -107,6 +107,7 @@ if [ $stage -le 21 ]; then
   loss=arcsoft
   feat_type=klsp
   sname=dev
+#        --scheduler cyclic \
 
   for sname in dev dev_aug_com; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
@@ -119,26 +120,26 @@ if [ $stage -le 21 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --input-norm ${input_norm} \
-      --random-chunk 300 301 \
+      --random-chunk 200 201 \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 40 \
-      --optimizer adam \
-      --scheduler cyclic \
+      --optimizer sgd \
       --patience 2 \
       --accu-steps 1 \
       --lr 0.001 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}_fix_adam_chn32 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wde3_${sname}_fix_adam_chn32/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_fix_chn32 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_fix_chn32/checkpoint_10.pth \
+      --kernel-size 3,3 \
       --channels 32,64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
-      --stride 2 \
+      --stride 1 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 4 \
+      --avg-size 10 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
@@ -146,7 +147,7 @@ if [ $stage -le 21 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.001 \
+      --weight-decay 0.0005 \
       --dropout-p 0 \
       --gpu-id 0,1 \
       --all-iteraion 0 \
