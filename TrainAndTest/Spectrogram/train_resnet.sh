@@ -164,7 +164,7 @@ if [ $stage -le 22 ]; then
   encoder_type=None
   alpha=12
   block_type=basic
-  embedding_size=256
+  embedding_size=128
   input_norm=Mean
   loss=soft
   dropout_p=0.25
