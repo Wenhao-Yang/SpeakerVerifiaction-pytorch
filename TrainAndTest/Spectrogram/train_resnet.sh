@@ -136,7 +136,7 @@ if [ $stage -le 21 ]; then
       --channels 32,64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
-      --stride 1,2 \
+      --stride 2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
