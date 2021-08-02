@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=21
+stage=22
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -165,7 +165,7 @@ if [ $stage -le 22 ]; then
   resnet_size=8
   encoder_type=None
   alpha=12
-  block_type=basic
+  block_type=cbam
   embedding_size=128
   input_norm=Mean
   loss=soft
