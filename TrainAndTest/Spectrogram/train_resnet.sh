@@ -166,10 +166,10 @@ if [ $stage -le 22 ]; then
   encoder_type=None
   alpha=12
   block_type=cbam
-  embedding_size=128
+  embedding_size=256
   input_norm=Mean
   loss=soft
-  dropout_p=0.25
+  dropout_p=0.1
   feat_type=klsp
   sname=dev
 
@@ -193,8 +193,8 @@ if [ $stage -le 22 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde3_${sname}_fix \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde3_${sname}_fix/checkpoint_10.pth \
       --channels 64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
