@@ -193,8 +193,8 @@ if [ $stage -le 22 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde3_${sname}_fix \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde3_${sname}_fix/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde4_${sname}_fix \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde4_${sname}_fix/checkpoint_10.pth \
       --channels 64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
@@ -210,7 +210,7 @@ if [ $stage -le 22 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.001 \
+      --weight-decay 0.0001 \
       --dropout-p ${dropout_p} \
       --gpu-id 0,1 \
       --all-iteraion 0 \
