@@ -111,7 +111,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
 
                         temp_wav = temp_dir + '/%s.%s' % (key, args.data_format)
                         command = command.rstrip(' - ') + " " + temp_wav
-                        print(command)
+                        # print(command)
                         spid, stdout, error = RunCommand(command)
                         # os.waitpid(spid, 0)
 
