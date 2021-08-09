@@ -173,6 +173,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                     utt2num_frames_f.write('%s %d\n' % (key, len(feat)))
                 except Exception as e:
                     print(e)
+                    print(command)
 
                     print('line: ', e.__traceback__.tb_lineno)  # 发生异常所在的行数
                     print('file: ', e.__traceback__.tb_frame.f_globals["__file__"])  # 发生异常所在的文件
