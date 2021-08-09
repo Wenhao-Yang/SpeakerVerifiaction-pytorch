@@ -397,6 +397,7 @@ if [ $stage -le 76 ]; then
       --var-input \
       --batch-size 128 \
       --accu-steps 1 \
+      --shuffle \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
       --first-2d \
