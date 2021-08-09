@@ -109,7 +109,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
 
                         temp_wav = temp_dir + '/%s.%s' % (key, args.data_format)
                         if command.endswith('|'):
-                            command = command.replace("- |", temp_wav)
+                            command = command[:-3] + temp_wav
 
                         # command = command.rstrip(' - ') + " " + temp_wav
                         # print(command)
