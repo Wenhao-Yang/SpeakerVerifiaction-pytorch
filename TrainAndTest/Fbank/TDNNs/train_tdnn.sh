@@ -389,7 +389,7 @@ if [ $stage -le 76 ]; then
       --milestones 10,20,30 \
       --model ${model} \
       --scheduler rop \
-      --weight-decay 0.00001 \
+      --weight-decay 0.0001 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
@@ -400,10 +400,10 @@ if [ $stage -le 76 ]; then
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
       --first-2d \
-      --channels 512,512,512,512,1500 \
+      --channels 1024,1024,1024,1024,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_first2d_wde5_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_first2d_wde5_var/checkpoint_13.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/chn1024_feat${feat}_input${input_norm}_${encod}_em${embedding_size}_first2d_wde4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/chn1024_feat${feat}_input${input_norm}_${encod}_em${embedding_size}_first2d_wde4_var/checkpoint_13.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
