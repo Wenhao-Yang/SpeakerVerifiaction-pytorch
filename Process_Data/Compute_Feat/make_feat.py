@@ -108,12 +108,14 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                         command = ' '.join(pair[1:])
                         if command.endswith('|'):
                             command = command.rstrip('|')
+
+                        temp_wav = temp_dir + '/%s.%s' % (key, args.data_format)
+                        command = command.rstrip('-') + ' %s'.format(temp_wav)
                         spid, stdout, error = RunCommand(command)
                         # os.waitpid(spid, 0)
 
-                        temp_wav = temp_dir + '/%s.%s' % (key, args.data_format)
-                        with open(temp_wav, 'wb') as wav_f:
-                            wav_f.write(stdout)
+                        # with open(temp_wav, 'wb') as wav_f:
+                        #     wav_f.write(stdout)
                         if args.feat_type == 'fbank':
                             feat, duration = Make_Fbank(filename=temp_wav, filtertype=args.filter_type, use_energy=True,
                                                         lowfreq=args.lowfreq, log_scale=args.log_scale,

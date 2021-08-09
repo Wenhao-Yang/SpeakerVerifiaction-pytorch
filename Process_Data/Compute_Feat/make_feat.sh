@@ -17,7 +17,7 @@ done
 
 if [ $stage -le 0 ]; then
   dataset=vox1
-#  feat=fb40
+  #  feat=fb40
   feat=spect
   if [ "$feat" = "pyfb" ]; then
     feat_type=fbank
@@ -26,8 +26,8 @@ if [ $stage -le 0 ]; then
   elif [ "$feat" = "klfb" ]; then
     feat_type=klfb
   fi
-#        --filters ${filters} \
-#      --log-scale \
+  #        --filters ${filters} \
+  #      --log-scale \
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} for ${dataset}\033[0m\n"
   for filters in 40; do
@@ -46,15 +46,15 @@ fi
 #exit
 #stage=1000
 if [ $stage -le 1 ]; then
-#  dataset=vox2
-#  feat_type=pyfb
+  #  dataset=vox2
+  #  feat_type=pyfb
 
   dataset=vox1
   feat=klsp
   feat_type=klsp
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
-  for s in dev dev_aug_com ; do
+  for s in dev dev_aug_com; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
