@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=78
+stage=76
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -377,7 +377,7 @@ if [ $stage -le 76 ]; then
   for loss in arcsoft; do
     feat=fb${input_dim}_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
