@@ -856,7 +856,7 @@ class TDNN_v5(nn.Module):
             self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=self.channels[0],
                                             context_size=5, stride=self.stride[0], dilation=1)
         else:
-            self.frame1 = Conv2DLayer(input_dim=self.input_dim, output_dim=512, stride=self.stride[0])
+            self.frame1 = Conv2DLayer(input_dim=self.input_dim, output_dim=self.channels[0], stride=self.stride[0])
         self.frame2 = TDlayer(input_dim=self.channels[0], output_dim=self.channels[1],
                               context_size=3, stride=self.stride[1], dilation=2)
         self.frame3 = TDlayer(input_dim=self.channels[1], output_dim=self.channels[2],
