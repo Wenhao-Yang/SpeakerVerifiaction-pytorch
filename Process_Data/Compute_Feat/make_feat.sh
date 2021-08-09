@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=0
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -16,21 +16,29 @@ done
 # ==================================================   vox 1 & 2   ==================================================
 
 if [ $stage -le 0 ]; then
-  dataset=vox2
-  feat=fb40
+  dataset=vox1
+#  feat=fb40
+  feat=spect
+  if [ "$feat" = "pyfb" ]; then
+    feat_type=fbank
+  elif [ "$feat" = "spect" ]; then
+    feat_type=spectrogram
+  elif [ "$feat" = "klfb" ]; then
+    feat_type=klfb
+  fi
+#        --filters ${filters} \
+#      --log-scale \
+
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} for ${dataset}\033[0m\n"
   for filters in 40; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir ${lstm_dir}/data/${dataset}/dev \
-      --out-dir ${lstm_dir}/data/${dataset}/pyfb \
-      --out-set dev_fb${filters} \
-      --filter-type mel \
-      --feat-type fbank \
-      --filters ${filters} \
-      --log-scale \
+      --data-dir ${lstm_dir}/data/${dataset}/klsp/dev_aug \
+      --out-dir ${lstm_dir}/data/${dataset}/spect \
+      --out-set dev_aug \
+      --feat-type ${feat_type} \
       --feat-format kaldi_cmp \
-      --nfft 512 \
-      --windowsize 0.025 \
+      --nfft 320 \
+      --windowsize 0.02 \
       --nj 16
   done
   exit
