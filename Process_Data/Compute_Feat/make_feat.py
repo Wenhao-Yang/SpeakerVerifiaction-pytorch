@@ -126,8 +126,11 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                                                         multi_weight=args.multi_weight)
                         elif args.feat_type == 'spectrogram':
                             feat, duration = Make_Spect(wav_path=temp_wav, windowsize=args.windowsize,
-                                                        lowfreq=args.lowfreq, stride=args.stride, duration=True,
-                                                        nfft=args.nfft, normalize=args.normalize)
+                                                        bandpass=args.bandpass, lowfreq=args.lowfreq,
+                                                        highfreq=args.highfreq,
+                                                        log_scale=args.log_scale,
+                                                        stride=args.stride, duration=True, nfft=args.nfft,
+                                                        normalize=args.normalize)
                         elif args.feat_type == 'mfcc':
                             feat, duration = Make_MFCC(filename=temp_wav, numcep=args.numcep, nfilt=args.filters,
                                                        lowfreq=args.lowfreq, normalize=args.normalize, duration=True,
