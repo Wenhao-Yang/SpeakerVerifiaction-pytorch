@@ -34,7 +34,8 @@ if [ $stage -le 0 ]; then
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir ${lstm_dir}/data/${dataset}/klsp/dev_aug \
       --out-dir ${lstm_dir}/data/${dataset}/spect \
-      --out-set dev_aug \
+      --out-set dev_aug_log \
+      --log-scale \
       --feat-type ${feat_type} \
       --feat-format kaldi_cmp \
       --nfft 320 \
