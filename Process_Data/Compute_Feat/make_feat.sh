@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=1
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -51,11 +51,11 @@ if [ $stage -le 1 ]; then
   #  feat_type=pyfb
 
   dataset=vox1
-  feat=klsp
-  feat_type=klsp
+  feat=spect
+  feat_type=spectrogram
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
-  for s in dev dev_aug_com; do
+  for s in dev_log dev_aug_1m_log ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
