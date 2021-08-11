@@ -168,20 +168,20 @@ if [ $stage -le 22 ]; then
   block_type=cbam
   embedding_size=256
   input_norm=Mean
-  loss=arcsoft
-  dropout_p=0.1
-  feat_type=klsp
+  loss=soft
+  dropout_p=0.25
+  feat_type=spect
   sname=dev
 
-  for sname in dev dev_aug_com; do
+  for sname in dev_log dev_aug_1m_log; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_log/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_log \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --random-chunk 300 301 \
@@ -193,8 +193,8 @@ if [ $stage -le 22 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde4_${sname}_fix \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde4_${sname}_fix/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix/checkpoint_10.pth \
       --channels 64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
@@ -210,7 +210,7 @@ if [ $stage -le 22 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.001 \
       --dropout-p ${dropout_p} \
       --gpu-id 0,1 \
       --all-iteraion 0 \
