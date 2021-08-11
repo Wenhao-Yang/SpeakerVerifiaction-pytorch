@@ -194,7 +194,7 @@ if [ $stage -le 22 ]; then
       --lr 0.1 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix/checkpoint_10.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix/checkpoint_5.pth \
       --channels 64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
