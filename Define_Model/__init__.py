@@ -10,4 +10,4 @@
 @Overview:
 """
 import Define_Model.Loss.SoftmaxLoss as SoftmaxLoss
-__all__ = ['Loss', 'model', 'ResNet', 'TDNN']
+__all__ = ['Loss', 'model', 'ResNet', 'TDNN', 'SoftmaxLoss']
