@@ -110,7 +110,7 @@ parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='T
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
-parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
 
