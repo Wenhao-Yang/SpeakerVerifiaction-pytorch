@@ -741,7 +741,6 @@ if [ $stage -le 79 ]; then
       --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em512_wde4_var/${test_set}_${subset}_epoch_50_var \
       --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em512_wde4_var/checkpoint_50.pth \
       --gpu-id 0 \
-      --extract \
       --remove-vad \
       --cos-sim
   done
