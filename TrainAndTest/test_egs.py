@@ -30,7 +30,7 @@ from kaldi_io import read_mat, read_vec_flt
 from torch.autograd import Variable
 from tqdm import tqdm
 
-from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
+# from Define_Model.Loss.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 from Define_Model.model import PairwiseDistance
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
