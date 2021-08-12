@@ -691,7 +691,7 @@ if [ $stage -le 79 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox2
-  test_set=vox1
+  test_set=cnceleb
 
   # Training set: voxceleb 2 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
@@ -717,6 +717,12 @@ if [ $stage -le 79 ]; then
   # sitw dev Test  ERR: 4.0046%, Threshold: 0.2708 mindcf-0.01: 0.3919, mindcf-0.001: 0.5955.
   # Test  ERR: 4.5107%, Threshold: 0.2695 mindcf-0.01: 0.4683, mindcf-0.001: 0.7143
 
+  # Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/arcsoft/featfb40_ws25_inputMean_STAP_em512_wde4_var/checkpoint_50.phi_theta
+  # +--------------+-------------+-------------+-------------+--------------+-------------------+
+  # |   Test Set   |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  # +--------------+-------------+-------------+-------------+--------------+-------------------+
+  # |  vox1-test   |   2.3277%   |   0.3319    |   0.2805    |    0.4108    | 20210812 20:38:25 |
+  # +--------------+-------------+-------------+-------------+--------------+-------------------+
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
