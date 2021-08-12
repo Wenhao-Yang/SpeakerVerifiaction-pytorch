@@ -170,18 +170,18 @@ if [ $stage -le 22 ]; then
   input_norm=Mean
   loss=soft
   dropout_p=0.25
-  feat_type=spect
+  feat_type=klsp
   sname=dev
 
-  for sname in dev_log dev_aug_1m_log; do
+  for sname in dev dev_aug_com; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_log/trials_dir \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_log \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --random-chunk 300 301 \
