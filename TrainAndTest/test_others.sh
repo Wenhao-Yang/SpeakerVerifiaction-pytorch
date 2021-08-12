@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=76
+stage=79
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -575,7 +575,7 @@ if [ $stage -le 76 ]; then
   subset=test
   test_set=sitw
 
-  # Training set: voxceleb 2 40-dimensional log fbanks ws25  Loss: soft
+  # Training set: voxceleb 1 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
   #
   # |   Test Set   |   EER ( % ) | Threshold | MinDCF-0.01 | MinDCF-0.001 |       Date        |
@@ -687,15 +687,15 @@ fi
 if [ $stage -le 79 ]; then
   feat_type=pyfb
   feat=fb40
-  loss=soft
+  loss=arcsoft
   model=TDNN_v5
   encod=None
   dataset=vox2
-  test_set=magic
+  test_set=vox1
 
   # Training set: voxceleb 2 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
-  #
+  # Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth
   # |   Test Set      |    EER ( % )  | Threshold | MinDCF-0.01 | MinDCF-0.001 |     Date     |
   # +-----------------+---------------+-----------+-------------+--------------+--------------+
   # |   vox1 test     |    2.6670%    |   0.2869  |    0.2984   |     0.4581   | 20210529     |
@@ -734,12 +734,12 @@ if [ $stage -le 79 ]; then
       --loss-type ${loss} \
       --encoder-type STAP \
       --channels 512,512,512,512,1500 \
-      --margin 0.25 \
-      --s 30 \
+      --margin 0.3 \
+      --s 15 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_40_var \
-      --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em512_wde4_var/${test_set}_${subset}_epoch_50_var \
+      --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em512_wde4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --extract \
       --remove-vad \
