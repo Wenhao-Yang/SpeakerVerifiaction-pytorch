@@ -9,5 +9,5 @@
 @Time: 2019/9/13 下午4:58
 @Overview:
 """
-import Loss.SoftmaxLoss as SoftmaxLoss
+import Define_Model.Loss.SoftmaxLoss as SoftmaxLoss
 __all__ = ['Loss', 'model', 'ResNet', 'TDNN']
