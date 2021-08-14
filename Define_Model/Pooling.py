@@ -65,7 +65,8 @@ class SelfAttentionPooling(nn.Module):
         if x_shape[0] == 1:
             x = x.unsqueeze(0)
 
-        assert len(x.shape) == 3, print(x.shape)
+        if len(x.shape) == 4:
+            x = x.reshape(x_shape[0], -1, x_shape[2])# , print(x.shape)
         if x.shape[-2] == self.input_dim:
             x = x.transpose(-1, -2)
         fx = self.attention_activation(self.attention_linear(x))
