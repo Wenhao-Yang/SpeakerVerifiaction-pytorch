@@ -984,7 +984,7 @@ class LocalResNet(nn.Module):
         if encoder_type == 'SAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
             self.encoder = SelfAttentionPooling(input_dim=last_conv_chn*freq_dim, hidden_dim=int(last_conv_chn/2))
-            self.encoder_output = last_conv_chn
+            self.encoder_output = last_conv_chn*freq_dim
         elif encoder_type == 'SASP':
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = AttentionStatisticPooling(input_dim=last_conv_chn, hidden_dim=last_conv_chn)
