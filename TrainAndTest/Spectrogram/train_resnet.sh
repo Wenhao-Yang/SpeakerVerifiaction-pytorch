@@ -163,12 +163,12 @@ if [ $stage -le 22 ]; then
   datasets=vox1
   model=LoResNet
   resnet_size=8
-  encoder_type=None
-  alpha=12
+  encoder_type=SAP
+  alpha=0
   block_type=cbam
-  embedding_size=128
+  embedding_size=256
   input_norm=Mean
-  loss=soft
+  loss=arcsoft
   dropout_p=0.25
   feat_type=klsp
   sname=dev
@@ -184,7 +184,7 @@ if [ $stage -le 22 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --input-norm ${input_norm} \
-      --random-chunk 300 301 \
+      --random-chunk 200 400 \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 40 \
@@ -193,8 +193,8 @@ if [ $stage -le 22 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_fix/checkpoint_5.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wde3_${sname}_var/checkpoint_5.pth \
       --channels 64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
