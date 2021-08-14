@@ -434,21 +434,17 @@ class TimeMaskLayer(nn.Module):
         if not self.training:
             return x
 
-        assert self.mask_len < x.shape[-2]
+        # assert self.mask_len < x.shape[-2]
 
         this_len = np.random.randint(low=0, high=self.mask_len)
         start = np.random.randint(0, x.shape[-2] - this_len)
+        x_shape = len(x.shape)
 
-        if self.normalized:
-            one_mask = torch.ones(x.shape)
-            one_mask[:, :, start:(start + this_len), :] = 0
-            x = x * one_mask
-        else:
-            this_mean = x.mean(dim=-1, keepdim=True)
-            x[:, :, :, start:(start + this_len)] = this_mean[:, :, start:(start + this_len), :].expand(
-                (x.shape[0], x.shape[1], this_len, x.shape[3]))
-
-            # x[:, :, start:(start + this_len), :] = this_mean
+        this_mean = x.mean(dim=-2, keepdim=True)
+        if x_shape == 4:
+            x[:, :, start:(start + this_len), :] = this_mean
+        elif x_shape == 3:
+            x[:, start:(start + this_len), :] = this_mean
 
         return x
 
@@ -466,19 +462,16 @@ class FreqMaskLayer(nn.Module):
         if not self.training:
             return x
 
-        assert self.mask_len < x.shape[-1]
-
+       # assert self.mask_len < x.shape[-1]
         this_len = np.random.randint(low=0, high=self.mask_len)
         start = np.random.randint(0, x.shape[-1] - this_len)
+        x_shape = len(x.shape)
 
-        if self.normalized:
-            one_mask = torch.ones(x.shape)
-            one_mask[:, :, :, start:(start + this_len)] = 0
-            x = x * one_mask
-        else:
-            this_mean = x.mean(dim=-2, keepdim=True)
-            x[:, :, :, start:(start + this_len)] = this_mean[:, :, :, start:(start + this_len)].expand(
-                (x.shape[0], x.shape[1], x.shape[2], this_len))
+        this_mean = x.mean(dim=-1, keepdim=True)  # .add(1e-6)
+        if x_shape == 4:
+            x[:, :, :, start:(start + this_len)] = this_mean
+        elif x_shape == 3:
+            x[:, :, start:(start + this_len)] = this_mean
 
         return x
 
