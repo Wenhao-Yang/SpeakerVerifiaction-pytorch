@@ -144,7 +144,7 @@ class ECAPA_TDNN(nn.Module):
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
                  num_classes_b=0, block_type='basic', alpha=0.,
-                 mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
+                 mask='None', mask_len=20, channels=[512, 512, 512, 512, 1536], **kwargs):
         super().__init__()
         self.num_classes = num_classes
         self.num_classes_b = num_classes_b
