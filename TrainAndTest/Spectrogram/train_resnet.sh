@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=22
+stage=21
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -101,7 +101,7 @@ if [ $stage -le 21 ]; then
   resnet_size=34
   encoder_type=STAP
   alpha=0
-  block_type=basic
+  block_type=seblock
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
@@ -121,7 +121,7 @@ if [ $stage -le 21 ]; then
       --shuffle \
       --feat-format kaldi \
       --input-norm ${input_norm} \
-      --random-chunk 200 201 \
+      --random-chunk 200 400 \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 40 \
@@ -130,17 +130,17 @@ if [ $stage -le 21 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_fix_chn32 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_fix_chn32/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_${sname}_var/checkpoint_10.pth \
       --kernel-size 5,5 \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
       --stride 2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 5 \
+      --avg-size 4 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
