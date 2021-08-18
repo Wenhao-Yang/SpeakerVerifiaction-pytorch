@@ -1023,6 +1023,7 @@ if [ $stage -le 92 ]; then
   feat=log
   loss=arcsoft
   encod=None
+  alpha=0
   datasets=vox1
   block_type=cbam
   encoder_type=None
@@ -1050,7 +1051,7 @@ if [ $stage -le 92 ]; then
       --kernel-size 5,5 \
       --stride 2,2 \
       --channels 64,128,256 \
-      --alpha 0 \
+      --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
       --input-length var \
