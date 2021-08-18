@@ -1027,6 +1027,7 @@ if [ $stage -le 92 ]; then
   block_type=cbam
   encoder_type=None
   embedding_size=256
+  resnet_size=8
 
   for sname in dev dev_aug_com; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
