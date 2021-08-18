@@ -134,7 +134,7 @@ parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='aco
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
 parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
 parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
-parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
 
 parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
