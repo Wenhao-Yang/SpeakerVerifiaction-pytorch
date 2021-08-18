@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=79
+stage=92
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1017,6 +1017,51 @@ if [ $stage -le 91 ]; then
   exit
 fi
 
+if [ $stage -le 92 ]; then
+  feat_type=klsp
+  model=LoResNet
+  feat=log
+  loss=arcsoft
+  encod=None
+  dataset=vox1
+  block_type=cbam
+  embedding_size=256
+
+  for sname in dev dev_aug_com; do
+    echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size 8 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encod} \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2,2 \
+      --channels 64,128,256 \
+      --alpha 0 \
+      --margin 0.2 \
+      --s 30 \
+      --input-length var \
+      --dropout-p 0.25 \
+      --time-dim 1 \
+      --avg-size 4 \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wd5e4_${sname}_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wd5e4_${sname}_var/checkpoint_40.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
+fi
 # ===============================    MultiResNet    ===============================
 
 if [ $stage -le 100 ]; then
