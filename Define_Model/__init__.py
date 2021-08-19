@@ -9,4 +9,5 @@
 @Time: 2019/9/13 下午4:58
 @Overview:
 """
-__all__ = ['LossFunction.py', 'model', 'ResNet', 'TDNN', 'SoftmaxLoss']
+import Define_Model.Loss.SoftmaxLoss as SoftmaxLoss
+__all__ = ['Loss', 'model', 'ResNet', 'TDNN', 'SoftmaxLoss']

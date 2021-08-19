@@ -3,7 +3,11 @@
 import os
 import pathlib
 import traceback
+<<<<<<< HEAD
 
+=======
+import random
+>>>>>>> Server/Server
 import librosa
 import numpy as np
 import soundfile as sf
@@ -68,8 +72,22 @@ def butter_bandpass(cutoff, fs, order=15):
 
 
 def butter_bandpass_filter(data, cutoff, fs, order=15):
+<<<<<<< HEAD
     sos = butter_bandpass(cutoff, fs, order=order)
     y = sosfilt(sos, data)
+=======
+    int2float = False
+    if data.dtype == np.int16:
+        data = data / 32768.
+        data = data.astype(np.float32)
+        int2float = True
+
+    sos = butter_bandpass(cutoff, fs, order=order)
+    y = sosfilt(sos, data)
+
+    if int2float:
+        y = (y * 32768).astype(np.int16)
+>>>>>>> Server/Server
     return y  # Filter requirements.
 
 def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
@@ -86,7 +104,6 @@ def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
     sample_rate, audio = wavfile.read(filename)
     # audio, sr = librosa.load(filename, sr=None, mono=True)
     #audio = audio.flatten()
-
     filter_banks, energies = fbank(audio,
                                    samplerate=sample_rate,
                                    nfilt=nfilt,
@@ -229,7 +246,11 @@ def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT
 
 def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
                bandpass=False, lowfreq=0, highfreq=0, log_scale=True,
+<<<<<<< HEAD
                preemph=0.97, duration=False, nfft=None, normalize=True):
+=======
+               preemph=0.97, duration=False, nfft=None, normalize=False):
+>>>>>>> Server/Server
     """
     read wav as float type. [-1.0 ,1.0]
     :param wav_path:
@@ -240,7 +261,13 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
     """
 
     # samplerate, samples = wavfile.read(wav_path)
+<<<<<<< HEAD
     samples, samplerate = sf.read(wav_path, dtype='float32')
+=======
+    samples, samplerate = sf.read(wav_path, dtype='int16')
+    if not len(samples) > 0:
+        raise ValueError('wav file is empty?')
+>>>>>>> Server/Server
 
     if bandpass and highfreq > lowfreq:
         samples = butter_bandpass_filter(data=samples, cutoff=[lowfreq, highfreq], fs=samplerate)
@@ -276,7 +303,14 @@ def Make_Fbank(filename,  # sample_rate=c.SAMPLE_RATE,
     if not os.path.exists(filename):
         raise ValueError('wav file does not exist.')
 
+<<<<<<< HEAD
     audio, sample_rate = sf.read(filename, dtype='float32')
+=======
+    # audio, sample_rate = sf.read(filename, dtype='float32')
+    audio, sample_rate = sf.read(filename, dtype='int16')
+    assert len(audio) > 0, print('wav file is empty?')
+
+>>>>>>> Server/Server
     filter_banks, energies = local_fbank(audio, samplerate=sample_rate, nfilt=nfilt, nfft=nfft, lowfreq=lowfreq,
                                          winlen=windowsize, filtertype=filtertype, winfunc=np.hamming,
                                          multi_weight=multi_weight)
@@ -288,7 +322,12 @@ def Make_Fbank(filename,  # sample_rate=c.SAMPLE_RATE,
 
     if log_scale:
         # filter_banks = 20 * np.log10(np.maximum(filter_banks, 1e-5))
+<<<<<<< HEAD
         filter_banks = 10 * np.log10(filter_banks)
+=======
+        # filter_banks = 10 * np.log10(filter_banks)
+        filter_banks = np.log(filter_banks)
+>>>>>>> Server/Server
 
     if use_delta:
         delta_1 = delta(filter_banks, N=1)
@@ -326,6 +365,8 @@ def Make_MFCC(filename,
     audio, sample_rate = sf.read(filename, dtype='int16')
     # audio, sample_rate = librosa.load(filename, sr=None)
     # audio = audio.flatten()
+    if not len(audio) > 0:
+        raise ValueError('wav file is empty?')
     feats = local_mfcc(audio, samplerate=sample_rate,
                        nfilt=nfilt, winlen=winlen,
                        winstep=winstep, numcep=numcep,
@@ -382,6 +423,21 @@ def read_MFB(filename):
 
     return audio
 
+
+def read_Waveform(filename):
+    """
+    read features from npy files
+    :param filename: the path of wav files.
+    :return:
+    """
+    # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
+    # audio = audio.flatten()
+    audio, sample_rate = sf.read(filename, dtype='int16')
+
+    return audio.astype(np.float32).reshape(1, -1)
+
+
+
 def read_from_npy(filename):
     """
     read features from npy files
@@ -405,16 +461,27 @@ class ConcateVarInput(object):
     interpolation: Default: PIL.Image.BILINEAR
     """
 
+<<<<<<< HEAD
     def __init__(self, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
+=======
+    def __init__(self, num_frames=c.NUM_FRAMES_SPECT, frame_shift=c.NUM_SHIFT_SPECT,
+                 feat_type='kaldi', remove_vad=False):
+>>>>>>> Server/Server
 
         super(ConcateVarInput, self).__init__()
         self.num_frames = num_frames
         self.remove_vad = remove_vad
+<<<<<<< HEAD
+=======
+        self.frame_shift = frame_shift
+        self.c_axis = 0 if feat_type != 'wav' else 1
+>>>>>>> Server/Server
 
     def __call__(self, frames_features):
 
         network_inputs = []
         output = frames_features
+<<<<<<< HEAD
         while len(output) < self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
 
@@ -425,6 +492,25 @@ class ConcateVarInput(object):
                 network_inputs.append(output[len(output) - self.num_frames:])
             else:
                 network_inputs.append(output[i * self.num_frames:(i + 1) * self.num_frames])
+=======
+        while output.shape[self.c_axis] < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=self.c_axis)
+
+        input_this_file = int(np.ceil(output.shape[self.c_axis] / self.frame_shift))
+
+        for i in range(input_this_file):
+            start = i * self.frame_shift
+
+            if start < output.shape[self.c_axis] - self.num_frames:
+                end = start + self.num_frames
+            else:
+                start = output.shape[self.c_axis] - self.num_frames
+                end = output.shape[self.c_axis]
+            if self.c_axis == 0:
+                network_inputs.append(output[start:end])
+            else:
+                network_inputs.append(output[:, start:end])
+>>>>>>> Server/Server
 
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
         if self.remove_vad:
@@ -470,7 +556,92 @@ class ConcateInput(object):
         if self.remove_vad:
             network_inputs = network_inputs[:, :, 1:]
 
+<<<<<<< HEAD
         return network_inputs
+=======
+        return torch.tensor(network_inputs.squeeze())
+
+
+class ConcateNumInput(object):
+    """Rescales the input PIL.Image to the given 'size'.
+    If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
+    If 'size' is a number, it will indicate the size of the smaller edge.
+    For example, if height > width, then image will be
+    rescaled to (size * height / width, size)
+    size: size of the exactly size or the smaller edge
+    interpolation: Default: PIL.Image.BILINEAR
+    """
+
+    def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, feat_type='kaldi', remove_vad=False):
+
+        super(ConcateNumInput, self).__init__()
+        self.input_per_file = input_per_file
+        self.num_frames = num_frames
+        self.remove_vad = remove_vad
+        self.c_axis = 0 if feat_type != 'wav' else 1
+
+    def __call__(self, frames_features):
+        network_inputs = []
+
+        output = frames_features
+        while output.shape[self.c_axis] < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=self.c_axis)
+
+        if len(output) / self.num_frames >= self.input_per_file:
+            for i in range(self.input_per_file):
+                start = i * self.num_frames
+                frames_slice = output[start:start + self.num_frames] if self.c_axis == 0 else output[:,
+                                                                                              start:start + self.num_frames]
+                network_inputs.append(frames_slice)
+        else:
+            for i in range(self.input_per_file):
+                try:
+                    start = np.random.randint(low=0, high=output.shape[self.c_axis] - self.num_frames + 1)
+
+                    frames_slice = output[start:start + self.num_frames] if self.c_axis == 0 else output[:,
+                                                                                                  start:start + self.num_frames]
+                    network_inputs.append(frames_slice)
+                except Exception as e:
+                    print(len(output))
+                    raise e
+
+        # pdb.set_trace()
+        network_inputs = np.array(network_inputs, dtype=np.float32)
+        if self.remove_vad:
+            network_inputs = network_inputs[:, :, 1:]
+
+        if len(network_inputs.shape) > 2:
+            network_inputs = network_inputs.squeeze(0)
+        return network_inputs
+
+
+class ConcateNumInput_Test(object):
+    """Rescales the input PIL.Image to the given 'size'.
+    If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
+    If 'size' is a number, it will indicate the size of the smaller edge.
+    For example, if height > width, then image will be
+    rescaled to (size * height / width, size)
+    size: size of the exactly size or the smaller edge
+    interpolation: Default: PIL.Image.BILINEAR
+    """
+
+    def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
+        super(ConcateNumInput_Test, self).__init__()
+        self.input_per_file = input_per_file
+        self.num_frames = num_frames
+        self.remove_vad = remove_vad
+
+    def __call__(self, frames_features):
+        network_inputs = []
+
+        output = frames_features
+        while len(output) < self.num_frames:
+            output = np.concatenate((output, frames_features), axis=0)
+
+        start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
+
+        return start, len(output)
+>>>>>>> Server/Server
 
 
 class concateinputfromMFB(object):
@@ -513,17 +684,14 @@ class concateinputfromMFB(object):
 
         return network_inputs
 
-class varLengthFeat(object):
+class ConcateOrgInput(object):
     """
     prepare feats with true length.
     """
 
-    def __init__(self, min_chunk_size=300, max_chunk_size=500, remove_vad=False):
-
-        super(varLengthFeat, self).__init__()
+    def __init__(self, remove_vad=False):
+        super(ConcateOrgInput, self).__init__()
         self.remove_vad = remove_vad
-        self.min_chunk_size = min_chunk_size
-        self.max_chunk_size = max_chunk_size
 
     def __call__(self, frames_features):
         # pdb.set_trace()
@@ -559,7 +727,9 @@ class PadCollate:
     a batch of sequences
     """
 
-    def __init__(self, dim=0, min_chunk_size=300, max_chunk_size=400, normlize=True, fix_len=False):
+    def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
+                 num_batch=0,
+                 fix_len=False):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
@@ -567,11 +737,31 @@ class PadCollate:
         self.dim = dim
         self.min_chunk_size = min_chunk_size
         self.max_chunk_size = max_chunk_size
+        self.num_batch = num_batch
         self.fix_len = fix_len
         self.normlize = normlize
 
         if self.fix_len:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+        else:
+            assert num_batch > 0
+            batch_len = []
+            self.iteration = 0
+            # print('==> Generating %d different random length...' % (int(np.ceil(num_batch/100))))
+            # for i in range(int(np.ceil(num_batch/100))):
+            #     batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
+            # self.batch_len = np.repeat(batch_len, 100)
+
+            print('==> Generating %d different random length...' % (num_batch))
+            for i in range(num_batch):
+                batch_len.append(np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size))
+
+            self.batch_len = np.array(batch_len)
+            while np.mean(self.batch_len[:num_batch]) < int((self.min_chunk_size + self.max_chunk_size) / 2):
+                self.batch_len += 1
+                self.batch_len = self.batch_len.clip(max=self.max_chunk_size)
+
+            print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len[:num_batch])))
 
     def pad_collate(self, batch):
         """
@@ -585,20 +775,30 @@ class PadCollate:
         if self.fix_len:
             frame_len = self.frame_len
         else:
-            frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
-
+            # frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+            frame_len = self.batch_len[self.iteration % self.num_batch]
+            self.iteration += 1
+            self.iteration %= self.num_batch
+            if self.iteration == 0:
+                np.random.shuffle(self.batch_len)
         # pad according to max_len
-        map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
-        pad_batch = list(map_batch)
-        # print(frame_len)
-        # stack all
-        # if self.normlize:
-        #     xs = torch.stack(list(map(lambda x: (x[0] - torch.mean(x[0], dim=1)) / torch.std(x[0], dim=1), pad_batch)),
-        #                      dim=0)
-        # else:
-        xs = torch.stack(list(map(lambda x: x[0], pad_batch)), dim=0)
+        # print()
+        xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
 
-        ys = torch.LongTensor(list(map(lambda x: x[1], pad_batch)))
+        if frame_len < batch[0][0].shape[-2]:
+            start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len)
+            end = start + frame_len
+            xs = xs[:, :, start:end, :].contiguous()
+        else:
+            xs = xs.contiguous()
+
+        ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
+
+        # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
+        # pad_batch = list(map_batch)
+        #
+        # xs = torch.stack(list(map(lambda x: x[0], pad_batch)), dim=0)
+        # ys = torch.LongTensor(list(map(lambda x: x[1], pad_batch)))
 
         return xs, ys
 
@@ -947,5 +1147,20 @@ class mvnormal(object):
         # TODO: make efficient
         tensor = (tensor - torch.mean(tensor, dim=-2, keepdim=True)) / torch.std(tensor, dim=-2, keepdim=True).add_(
             1e-12)
+
+        return tensor.float()
+
+
+class tolog(object):
+
+    def __call__(self, tensor):
+        """
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+
+        Returns:
+            Tensor: Normalized image.
+        """
+        tensor = torch.log(tensor)
 
         return tensor.float()

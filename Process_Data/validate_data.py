@@ -21,8 +21,8 @@ from multiprocessing import Queue, Process
 import multiprocessing
 
 import numpy as np
-from Process_Data.voxceleb2_wav_reader import voxceleb2_list_reader
-from Process_Data.voxceleb_wav_reader import wav_list_reader
+from Process_Data.Datasets.voxceleb2_wav_reader import voxceleb2_list_reader
+from Process_Data.Datasets.voxceleb_wav_reader import wav_list_reader
 
 dataroot = '/home/cca01/work2019/yangwenhao/mydataset/voxceleb1/Fbank64_Norm'
 

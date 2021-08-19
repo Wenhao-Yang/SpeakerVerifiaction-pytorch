@@ -380,6 +380,10 @@ def train(train_loader, model, optimizer, ce, epoch):
 
         total_datasize += len(predicted_one_labels)
         total_loss += float(loss.item())
+
+        if np.isnan(loss.item()):
+            raise ValueError('Loss value is NaN!')
+
         # pdb.set_trace()
         # compute gradient and update weights
         optimizer.zero_grad()

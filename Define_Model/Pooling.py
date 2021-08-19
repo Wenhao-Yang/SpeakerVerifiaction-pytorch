@@ -9,9 +9,43 @@
 @Time: 2020/4/15 10:57 PM
 @Overview:
 """
+<<<<<<< HEAD
+=======
+
+>>>>>>> Server/Server
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+
+class SelfVadPooling(nn.Module):
+    def __init__(self, input_dim, input_length=300):
+        super(SelfVadPooling, self).__init__()
+        self.conv1 = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
+        self.fc1 = nn.Linear(input_dim, 1)
+        self.bn1 = nn.BatchNorm1d(1)
+        #
+        # self.conv2 = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
+        # self.fc2 = nn.Linear(input_length, 1)
+        # self.bn2 = nn.BatchNorm1d(1)
+
+        self.activation = nn.Hardtanh(min_val=0.001, max_val=1.0)
+        # nn.init.constant(self.fc1.weight, 0.1)
+
+    def forward(self, x):
+        x_energy = self.fc1(x).squeeze(-1)  # .log()
+        x_energy = self.bn1(x_energy)
+        vad = self.conv1(x_energy).unsqueeze(-1)
+        vad_weight = self.activation(vad)
+
+        # x_freq = self.fc2(x.transpose(2, 3)).squeeze(-1).log()
+        # x_freq = self.bn2(x_freq)
+        # freq = self.conv2(x_freq).unsqueeze(2)
+        # freq_weight = self.activation(freq)
+
+        # x_weight = 2. * x_weight - x_weight.pow(2)
+        return x * vad_weight  # * freq_weight
 
 
 class SelfVadPooling(nn.Module):
@@ -63,10 +97,17 @@ class SelfAttentionPooling(nn.Module):
         if x_shape[0] == 1:
             x = x.unsqueeze(0)
 
+<<<<<<< HEAD
         assert len(x.shape) == 3, print(x.shape)
         if x.shape[-2] == self.input_dim:
             x = x.transpose(-1, -2)
         # print(x.shape)
+=======
+        if len(x.shape) == 4:
+            x = x.reshape(x_shape[0], -1, x_shape[2])# , print(x.shape)
+        if x.shape[-2] == self.input_dim:
+            x = x.transpose(-1, -2)
+>>>>>>> Server/Server
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
         alpha = self.attention_soft(vf)
@@ -106,13 +147,14 @@ class AttentionStatisticPooling(nn.Module):
         alpha = self.attention_soft(vf)
 
         alpha_ht = x.mul(alpha)
-        mean = torch.sum(alpha_ht, dim=-2, keepdim=True)
+        mean = torch.sum(alpha_ht, dim=-2)
 
-        sigma_power = torch.sum(torch.pow(x - mean, 2).mul(alpha), dim=-2).add_(1e-12)
+        # pdb.set_trace()
+        sigma_power = torch.sum(torch.pow(x, 2).mul(alpha), dim=-2) - torch.pow(mean, 2)
         # alpha_ht_ht = x*x.mul(alpha)
-        sigma = torch.sqrt(sigma_power)
+        sigma = torch.sqrt(sigma_power.clamp(min=1e-12))
 
-        mean_sigma = torch.cat((mean.squeeze(1), sigma), 1)
+        mean_sigma = torch.cat((mean, sigma), 1)
 
         return mean_sigma
 
@@ -129,6 +171,7 @@ class StatisticPooling(nn.Module):
         :return:   [feat_dim] vector
         """
         x_shape = x.shape
+<<<<<<< HEAD
         x = x.squeeze()
         if x_shape[0] == 1:
             x = x.unsqueeze(0)
@@ -136,6 +179,12 @@ class StatisticPooling(nn.Module):
         assert len(x.shape) == 3, print(x.shape)
         if x.shape[-2] == self.input_dim:
             x = x.transpose(-1, -2)
+=======
+        if len(x.shape) != 3:
+            x = x.reshape(x_shape[0], x_shape[-2], -1)
+
+        assert x.shape[-1] == self.input_dim, print(x.shape[-1])
+>>>>>>> Server/Server
 
         mean_x = x.mean(dim=1)
         std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
@@ -190,6 +239,7 @@ class AdaptiveStdPool2d(nn.Module):
 
                 x_output.append(means)
                 x_output.append(stds)
+<<<<<<< HEAD
 
             output.append(torch.cat(x_output, dim=2))
         output = torch.cat(output, dim=3)
@@ -197,3 +247,193 @@ class AdaptiveStdPool2d(nn.Module):
         # print(output.isnan())
 
         return output
+=======
+
+            output.append(torch.cat(x_output, dim=2))
+        output = torch.cat(output, dim=3)
+
+        # print(output.isnan())
+
+        return output
+
+
+# https://github.com/keetsky/Net_ghostVLAD-pytorch
+class GhostVLAD_v1(nn.Module):
+    def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=True):
+        super(GhostVLAD_v1, self).__init__()
+        self.num_clusters = num_clusters
+        self.dim = dim
+        self.gost = gost
+        self.normalize_input = normalize_input
+        self.fc = nn.Linear(dim, num_clusters + gost)
+        self.centroids = nn.Parameter(torch.rand(num_clusters + gost, dim))
+        self._init_params()
+
+    def _init_params(self):
+        nn.init.xavier_normal_(self.fc.weight.data)
+        nn.init.constant_(self.fc.bias.data, 0.0)
+
+    def forward(self, x):
+        '''
+        x: N x D
+        '''
+        N, C = x.shape[:2]  # 10,128
+        assert C == self.dim, "feature dim not correct"
+
+        if self.normalize_input:
+            x = F.normalize(x, p=2, dim=0)
+
+        soft_assign = self.fc(x).unsqueeze(0).permute(0, 2, 1)  # (N, C+g)->(1, N, C+g)->(1, C+g, N)
+        soft_assign = F.softmax(soft_assign, dim=1)  # (1, C+g, N)
+
+        # soft_assign=soft_assign[:,:self.num_clusters,:]#(1,8,10)
+        x_flatten = x.unsqueeze(0).permute(0, 2, 1)  # x.view(1, C, N)
+
+        residual = x_flatten.expand(self.num_clusters + self.gost, -1, -1, -1).permute(1, 0, 2, 3) - \
+                   self.centroids.expand(x_flatten.size(-1), -1, -1).permute(1, 2, 0).unsqueeze(0)
+        # (1, c+g, C, N)
+
+        residual *= soft_assign.unsqueeze(2)
+        print(residual.shape)
+
+        vlad = residual.sum(dim=-1)  # (1,9,128)
+        vlad = vlad[:, :self.num_clusters, :]  # (1,8,128)
+        vlad = F.normalize(vlad, p=2, dim=2)
+        vlad = vlad.view(1, -1)
+        vlad = F.normalize(vlad, p=2, dim=1)  # (1,8*128)
+
+        return vlad
+
+
+# https://github.com/taylorlu/Speaker-Diarization/blob/master/ghostvlad/model.py
+class GhostVLAD_v2(nn.Module):
+    def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=False):
+        super(GhostVLAD_v2, self).__init__()
+        self.num_clusters = num_clusters
+        self.dim = dim
+        self.gost = gost
+        self.normalize_input = normalize_input
+        self.fc = nn.Linear(dim, num_clusters + gost)
+        self.centroids = nn.Parameter(torch.rand(num_clusters + gost, dim))
+        self._init_params()
+
+    def _init_params(self):
+        nn.init.xavier_normal_(self.fc.weight.data)
+        nn.init.constant_(self.fc.bias.data, 0.0)
+
+    def forward(self, x):
+        '''
+        x: B  x D
+        '''
+        if self.normalize_input:
+            x = F.normalize(x, p=2, dim=-1)
+
+        feat = x
+        cluster_score = self.fc(x)  # bz x N x cluster
+
+        # num_features = feat.shape[-1]
+        # softmax normalization to get soft-assignment.
+        # A : bz  x clusters
+        max_cluster_score = torch.max(cluster_score, dim=-1, keepdim=True).values
+
+        # minus max_score so there will be a cluster which probability is equal to 1
+        exp_cluster_score = torch.exp(cluster_score - max_cluster_score)
+        A = exp_cluster_score / torch.sum(exp_cluster_score, dim=-1, keepdim=True)
+
+        # Now, need to compute the residual, self.cluster: clusters x D
+        A = A.unsqueeze(-1)  # A : bz  x clusters x 1
+
+        feat_broadcast = feat.unsqueeze(-2)  # feat_broadcast : bz x 1 x D
+        feat_res = feat_broadcast - self.centroids  # feat_res : bz x clusters x D
+
+        weighted_res = torch.mul(A, feat_res)  # weighted_res : bz x clusters x D
+        # cluster_res = torch.sum(weighted_res, [1, 2])
+        cluster_res = weighted_res[:, :self.num_clusters, :]
+
+        cluster_res = cluster_res.sum(dim=-2)
+        cluster_l2 = torch.nn.functional.normalize(cluster_res, p=2, dim=-1)
+
+        # cluster_l2 = torch.nn.functional.l2_normalize(cluster_res, -1)
+        # outputs = cluster_res.reshape([-1, int(self.num_clusters) * int(num_features)])
+        # outputs = cluster_res.sum(dim=-2)
+
+        return cluster_l2
+
+
+class GhostVLAD_v3(nn.Module):
+    def __init__(self, num_clusters=8, gost=1, dim=128, normalize_input=False):
+        super(GhostVLAD_v3, self).__init__()
+        self.num_clusters = num_clusters
+        self.dim = dim
+        self.gost = gost
+        self.normalize_input = normalize_input
+        self.fc = nn.Linear(dim, num_clusters + gost)
+        self.centroids = nn.Parameter(torch.rand(num_clusters + gost, dim))
+        self._init_params()
+
+    def _init_params(self):
+        nn.init.xavier_normal_(self.fc.weight.data)
+        nn.init.constant_(self.fc.bias.data, 0.0)
+
+    def forward(self, x):
+        '''
+        x: B x N x D
+        '''
+        if self.normalize_input:
+            x = F.normalize(x, p=2, dim=-1)
+
+        cluster_score = self.fc(x)  # bz x N x cluster
+
+        # num_features = feat.shape[-1]
+        # softmax normalization to get soft-assignment.
+        # A : bz  x clusters
+        max_cluster_score = torch.max(cluster_score, dim=-1, keepdim=True).values
+
+        # minus max_score so there will be a cluster which probability is equal to 1
+        exp_cluster_score = torch.exp(cluster_score - max_cluster_score)
+        exp_cluster_score = exp_cluster_score / torch.sum(exp_cluster_score, dim=-1, keepdim=True)
+
+        # Now, need to compute the residual, self.cluster: clusters x D
+        exp_cluster_score = exp_cluster_score.unsqueeze(-1)  # A : bz x N x clusters x 1
+
+        feat_res = x.unsqueeze(-2) - self.centroids  # feat_broadcast : bz x N x 1 x D
+        # feat_res : bz x clusters x D
+
+        feat_res = torch.mul(exp_cluster_score, feat_res)  # weighted_res : bz x clusters x D
+        # cluster_res = torch.sum(weighted_res, [1, 2])
+        cluster_res = feat_res[:, :, :self.num_clusters, :].sum(dim=-2)
+
+        cluster_l2 = torch.nn.functional.normalize(cluster_res, p=2, dim=-1)
+
+        mean_x = cluster_l2.mean(dim=1)
+        std_x = cluster_l2.var(dim=1, unbiased=False).add_(1e-12).sqrt()
+        cluster_l2_mean_std = torch.cat((mean_x, std_x), 1)
+
+        # cluster_l2 = torch.nn.functional.l2_normalize(cluster_res, -1)
+        # outputs = cluster_res.reshape([-1, int(self.num_clusters) * int(num_features)])
+        # outputs = cluster_res.sum(dim=-2)
+
+        return cluster_l2_mean_std
+
+    def __repr__(self):
+        return "GhostVLAD_v3(num_clusters=%d, gost=%d, dim=%d): ghostvald+statisticpooling" % (
+        self.num_clusters, self.gost, self.dim)
+
+
+class LinearTransform(nn.Module):
+    def __init__(self, dim=128, normalize_input=True):
+        super(LinearTransform, self).__init__()
+        self.dim = dim
+        self.normalize_input = normalize_input
+        self.linear_trans = nn.Sequential(nn.Linear(dim, dim, bias=False),
+                                          nn.ReLU(),
+                                          nn.BatchNorm1d(dim))
+
+    def forward(self, x):
+        if self.normalize_input:
+            x = F.normalize(x, p=2, dim=-1)
+
+        trans = self.linear_trans(x)
+
+        return x + trans
+>>>>>>> Server/Server

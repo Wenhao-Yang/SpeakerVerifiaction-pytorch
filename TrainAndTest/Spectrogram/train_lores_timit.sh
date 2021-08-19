@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
 #stage=3
+<<<<<<< HEAD
 stage=4
+=======
+stage=60
+>>>>>>> Server/Server
 
 waited=0
 while [ `ps 27212 | wc -l` -eq 2 ]; do
@@ -41,7 +45,11 @@ if [ $stage -le 1 ]; then
   datasets=timit
 #  loss=soft
   for loss in soft ; do
+<<<<<<< HEAD
     echo -e "\n\033[1;4;31m Training with ${loss}\033[0m\n"
+=======
+    echo -e "\n\033[1;4;31m Training with ${loss} minus mean \033[0m\n"
+>>>>>>> Server/Server
     python TrainAndTest/Spectrogram/train_lores10_var.py \
       --model GradResNet \
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_power \
@@ -50,12 +58,18 @@ if [ $stage -le 1 ]; then
       --epochs 12 \
       --lr 0.1 \
       --milestones 6,10 \
+<<<<<<< HEAD
       --check-path Data/checkpoint/GradResNet8/${datasets}/spect_power_ln/${loss}_var \
       --resume Data/checkpoint/GradResNet8/${datasets}/spect_power_ln/${loss}_var/checkpoint_7.pth \
+=======
+      --check-path Data/checkpoint/GradResNet8/${datasets}/spect_power_inst/${loss}_var \
+      --resume Data/checkpoint/GradResNet8/${datasets}/spect_power_inst/${loss}_var/checkpoint_12.pth \
+>>>>>>> Server/Server
       --channels 4,16,64 \
       --embedding-size 128 \
       --input-per-spks 256 \
       --num-valid 1 \
+      --inst-norm \
       --weight-decay 0.001 \
       --alpha 10.8 \
       --dropout-p 0.5 \
@@ -64,6 +78,10 @@ if [ $stage -le 1 ]; then
   done
 fi
 
+<<<<<<< HEAD
+=======
+stage=100
+>>>>>>> Server/Server
 if [ $stage -le 2 ]; then
   datasets=vox1
 #  loss=soft
@@ -116,6 +134,7 @@ if [ $stage -le 3 ]; then
       --feat-format kaldi \
       --dropout-p 0.5 \
       --gpu-id 0 \
+<<<<<<< HEAD
       --loss-type ${loss}
   done
 fi
@@ -145,10 +164,44 @@ if [ $stage -le 4 ]; then
       --feat-format kaldi \
       --dropout-p 0.5 \
       --gpu-id 0 \
+=======
+>>>>>>> Server/Server
       --loss-type ${loss}
   done
 fi
 
+<<<<<<< HEAD
+=======
+if [ $stage -le 4 ]; then
+  datasets=vox1_3w_power_25
+  model=GradResNet
+#  loss=soft
+  for loss in soft ; do
+    echo -e "\n\033[1;4;31m Training with ${loss}\033[0m\n"
+    python TrainAndTest/Spectrogram/train_lores10_var.py \
+      --model ${model} \
+      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/dev_3w_power_25 \
+      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_3w_power_25 \
+      --nj 10 \
+      --epochs 12 \
+      --lr 0.1 \
+      --milestones 6,10 \
+      --check-path Data/checkpoint/${model}8_32/${datasets}/spect/${loss}_var \
+      --resume Data/checkpoint/${model}8_32/${datasets}/spect/${loss}_var/checkpoint_7.pth \
+      --channels 4,32,64 \
+      --embedding-size 128 \
+      --input-per-spks 256 \
+      --num-valid 1 \
+      --weight-decay 0.001 \
+      --alpha 10 \
+      --feat-format kaldi \
+      --dropout-p 0.5 \
+      --gpu-id 0 \
+      --loss-type ${loss}
+  done
+fi
+
+>>>>>>> Server/Server
 stage=60
 if [ $stage -le 6 ]; then
   datasets=libri
@@ -278,4 +331,54 @@ if [ $stage -le 15 ]; then
       --loss-type ${loss}
   done
 fi
+
+if [ $stage -le 60 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=timit
+  model=LoResNet
+  resnet_size=8
+#  loss=coscenter
+  encoder=None
+  loss_ratio=0.1
+
+  for loss in amsoft ; do
+    python TrainAndTest/Spectrogram/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/train_log \
+      --train-test-dir ${lstm_dir}/data/${datasets}/spect/train_log \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
+      --test-dir ${lstm_dir}/data/${datasets}/spect/test_log \
+      --feat-format kaldi \
+      --input-norm None \
+      --train-trials trials_2w \
+      --resnet-size ${resnet_size} \
+      --nj 10 \
+      --epochs 12 \
+      --lr 0.1 \
+      --input-dim 161 \
+      --milestones 1,5 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs_${encoder}/${loss}_dp05_${loss_ratio}/checkpoint_24.pth \
+      --channels 4,16,64 \
+      --stride 2 \
+      --embedding-size 128 \
+      --optimizer sgd \
+      --avg-size 4 \
+      --time-dim 1 \
+      --num-valid 2 \
+      --alpha 10.8 \
+      --margin 0.4 \
+      --s 30 \
+      --m 3 \
+      --loss-ratio ${loss_ratio} \
+      --weight-decay 0.001 \
+      --dropout-p 0.5 \
+      --gpu-id 0 \
+      --cos-sim \
+      --extract \
+      --encoder-type ${encoder} \
+      --loss-type ${loss}
+  done
+fi
+
 exit 0;

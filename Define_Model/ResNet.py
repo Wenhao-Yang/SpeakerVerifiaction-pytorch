@@ -14,9 +14,16 @@ For all model, the pre_forward function is for extract vectors and forward for c
 """
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
+from torchvision.models.densenet import _DenseBlock
+from torchvision.models.shufflenetv2 import InvertedResidual
+from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer
+from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
+from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
+    SelfVadPooling, GhostVLAD_v2
 
 from Define_Model.FilterLayer import fDLR, GRL
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
@@ -31,6 +38,297 @@ def conv3x3(in_planes, out_planes, stride=1):
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, padding=1,
                      stride=stride, bias=False)
+
+
+class SEBasicBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+                 base_width=64, dilation=1, norm_layer=None, reduction_ratio=4):
+        super(SEBasicBlock, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        if groups != 1 or base_width != 64:
+            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+        if dilation > 1:
+            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.bn1 = norm_layer(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = norm_layer(planes)
+        self.downsample = downsample
+        self.stride = stride
+        self.reduction_ratio = reduction_ratio
+
+        # Squeeze-and-Excitation
+        self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out = self.se_layer(out)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+class CBAMBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+                 base_width=64, dilation=1, norm_layer=None, reduction_ratio=16):
+        super(CBAMBlock, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        if groups != 1 or base_width != 64:
+            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+        if dilation > 1:
+            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.bn1 = norm_layer(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = norm_layer(planes)
+        self.downsample = downsample
+        self.stride = stride
+        self.reduction_ratio = reduction_ratio
+
+        # Squeeze-and-Excitation
+        self.CBAM_layer = CBAM(planes, planes)
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out = self.CBAM_layer(out)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+class Res2Conv2dReluBn(nn.Module):
+    '''
+    in_channels == out_channels == channels
+    '''
+
+    def __init__(self, channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=False, scale=4):
+        super().__init__()
+        assert channels % scale == 0, "{} % {} != 0".format(channels, scale)
+        self.scale = scale
+        self.width = channels // scale
+        self.nums = scale if scale == 1 else scale - 1
+
+        self.convs = []
+        self.bns = []
+        for i in range(self.nums):
+            self.convs.append(nn.Conv2d(self.width, self.width, kernel_size, stride, padding, dilation, bias=bias))
+            self.bns.append(nn.BatchNorm2d(self.width))
+        self.convs = nn.ModuleList(self.convs)
+        self.bns = nn.ModuleList(self.bns)
+
+    def forward(self, x):
+        out = []
+        spx = torch.split(x, self.width, 1)
+        for i in range(self.nums):
+            if i == 0:
+                sp = spx[i]
+            else:
+                sp = sp + spx[i]
+            # Order: conv -> relu -> bn
+            sp = self.convs[i](sp)
+            sp = self.bns[i](F.relu(sp))
+            out.append(sp)
+        if self.scale != 1:
+            out.append(spx[self.nums])
+        out = torch.cat(out, dim=1)
+        return out
+
+
+class Conv2dReluBn(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=False):
+        super().__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, bias=bias)
+        self.bn = nn.BatchNorm2d(out_channels)
+
+    def forward(self, x):
+        return self.bn(F.relu(self.conv(x)))
+
+
+''' SE-Res2Block.
+    Note: residual connection is implemented in the ECAPA_TDNN model, not here.
+'''
+
+
+class SE_Res2Block(nn.Module):
+
+    def __init__(self, inplanes, planes, kernel_size, padding, stride=1, dilation=1,
+                 scale=8, reduction_ratio=2):
+        super(SE_Res2Block, self).__init__()
+        self.scale = scale
+        self.stride = stride
+
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = Conv2dReluBn(inplanes, planes, kernel_size=1, stride=1, padding=0),
+        self.conv2 = Res2Conv2dReluBn(planes, kernel_size, stride, padding, dilation, scale=scale),
+        self.conv3 = Conv2dReluBn(planes, planes, kernel_size=1, stride=1, padding=0),
+
+        # Squeeze-and-Excitation
+        self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.conv2(out)
+        out = self.conv3(out)
+
+        out = self.se_layer(out)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class Block3x3(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(Block3x3, self).__init__()
+        self.conv1 = conv3x3(inplanes, planes)
+        self.bn1 = nn.BatchNorm2d(planes)
+
+        self.conv2 = conv3x3(planes, planes, stride)
+        self.bn2 = nn.BatchNorm2d(planes)
+
+        self.conv3 = conv3x3(planes, planes)
+        self.bn3 = nn.BatchNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class InstBlock3x3(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(InstBlock3x3, self).__init__()
+        self.conv1 = conv3x3(inplanes, planes)
+        self.bn1 = nn.InstanceNorm2d(planes)
+
+        self.conv2 = conv3x3(planes, planes, stride)
+        self.bn2 = nn.InstanceNorm2d(planes)
+
+        self.conv3 = conv3x3(planes, planes)
+        self.bn3 = nn.InstanceNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class VarSizeConv(nn.Module):
+
+    def __init__(self, inplanes, planes, stride=1, kernel_size=[3, 5, 9]):
+        super(VarSizeConv, self).__init__()
+        self.stide = stride
+
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
+        self.bn1 = nn.InstanceNorm2d(planes)
+
+        self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
+        self.bn2 = nn.InstanceNorm2d(planes)
+
+        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=4)
+        self.bn3 = nn.InstanceNorm2d(planes)
+
+        self.avg = nn.AvgPool2d(kernel_size=int(stride * 2 + 1), stride=stride, padding=stride)
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x1 = self.bn1(x1)
+
+        x2 = self.conv2(x)
+        x2 = self.bn2(x2)
+
+        x3 = self.conv3(x)
+        x3 = self.bn3(x3)
+
+        if self.stide != 1:
+            x = self.avg(x)
+
+        return torch.cat([x, x1, x2, x3], dim=1)
+        # return torch.cat([x, x1, x2, x3], dim=1)
+
 
 class SimpleResNet(nn.Module):
 
@@ -157,6 +455,7 @@ class SimpleResNet(nn.Module):
 
 # Analysis of Length Normalization in End-to-End Speaker Verification System
 # https://arxiv.org/abs/1806.03209
+<<<<<<< HEAD
 
 class ExporingResNet(nn.Module):
 
@@ -167,6 +466,20 @@ class ExporingResNet(nn.Module):
                  replace_stride_with_dilation=None,
                  norm_layer=None, **kwargs):
         super(ExporingResNet, self).__init__()
+=======
+
+class ThinResNet(nn.Module):
+
+    def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
+                 input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
+                 kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
+                 feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
+                 alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
+                 filter=None, replace_stride_with_dilation=None, norm_layer=None,
+                 mask='None', mask_len=10,
+                 input_norm='', gain_layer=False, **kwargs):
+        super(ThinResNet, self).__init__()
+>>>>>>> Server/Server
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
                        18: [2, 2, 2, 2],
@@ -175,6 +488,7 @@ class ExporingResNet(nn.Module):
                        101: [3, 4, 23, 3]}
 
         layers = resnet_type[resnet_size]
+<<<<<<< HEAD
 
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -184,11 +498,40 @@ class ExporingResNet(nn.Module):
 
         self._norm_layer = norm_layer
 
+=======
+        freq_dim = avg_size  # default 1
+        time_dim = time_dim  # default 4
+        self.input_len = input_len
+        self.input_dim = input_dim
+        self.inst_norm = inst_norm
+        self.filter = filter
+        self._norm_layer = nn.BatchNorm2d
+>>>>>>> Server/Server
         self.embedding_size = embedding_size
-        self.inplanes = 16
+        self.dropout_p = dropout_p
+        self.gain_layer = gain_layer
+        self.gain_axis = gain_axis
+        self.mask = mask
+
         self.dilation = 1
+<<<<<<< HEAD
         self.fast = fast
         num_filter = [16, 32, 64, 128]
+=======
+        self.fast = str(fast)
+        self.num_filter = channels  # [16, 32, 64, 128]
+        self.inplanes = self.num_filter[0]
+
+        if block_type == "seblock":
+            block = SEBasicBlock
+        elif block_type == 'cbam':
+            block = CBAMBlock
+        else:
+            block = BasicBlock if resnet_size < 50 else Bottleneck
+
+        block.expansion = expansion
+        # num_filter = [32, 64, 128, 256]
+>>>>>>> Server/Server
 
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
@@ -200,6 +543,7 @@ class ExporingResNet(nn.Module):
         self.groups = groups
         self.base_width = width_per_group
 
+<<<<<<< HEAD
         self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim)
 
         self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
@@ -223,10 +567,71 @@ class ExporingResNet(nn.Module):
         freq_dim = avg_size  # default 1
         time_dim = time_dim  # default 4
 
+=======
+        if self.filter == 'fDLR':
+            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        elif self.filter == 'fBLayer':
+            self.filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        elif self.filter == 'fBPLayer':
+            self.filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
+                                         filter_fix=filter_fix)
+        elif self.filter == 'fLLayer':
+            self.filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
+        elif self.filter == 'Avg':
+            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
+        else:
+            self.filter_layer = None
+
+        self.input_norm = input_norm
+        if input_norm == 'Instance':
+            self.inst_layer = Inst_Norm(input_dim)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        else:
+            self.inst_layer = None
+
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+        elif self.mask == "freq":
+            self.mask = FreqMaskLayer(mask_len=mask_len)
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(),
+                FreqMaskLayer()
+            )
+        else:
+            self.mask_layer = None
+
+        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
+        self.bn1 = self._norm_layer(self.num_filter[0])
+        self.relu = nn.ReLU(inplace=True)
+
+        if self.fast.startswith('avp'):
+            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+        elif self.fast.startswith('mxp'):
+            self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+        else:
+            self.maxpool = None
+
+        self.layer1 = self._make_layer(block, self.num_filter[0], layers[0])
+        self.layer2 = self._make_layer(block, self.num_filter[1], layers[1], stride=2)
+        self.layer3 = self._make_layer(block, self.num_filter[2], layers[2], stride=2)
+
+        if self.fast in ['avp1', 'mxp1']:
+            self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=1)
+        else:
+            self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=2)
+
+        self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
+        self.dropout = nn.Dropout(self.dropout_p)
+        # [64, 128, 37, 8]
+>>>>>>> Server/Server
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
         # 300 is the length of features
 
         if encoder_type == 'SAP':
+<<<<<<< HEAD
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = SelfAttentionPooling(input_dim=num_filter[3], hidden_dim=num_filter[3])
             self.fc1 = nn.Sequential(
@@ -263,15 +668,48 @@ class ExporingResNet(nn.Module):
             )
 
         self.alpha = alpha
+=======
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = SelfAttentionPooling(input_dim=self.num_filter[3] * block.expansion,
+                                                hidden_dim=self.num_filter[3] * block.expansion)
+            self.encoder_output = self.num_filter[3] * block.expansion
+        elif encoder_type == 'SASP':
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.encoder = AttentionStatisticPooling(input_dim=self.num_filter[3] * block.expansion,
+                                                     hidden_dim=self.num_filter[3])
+            self.encoder_output = self.num_filter[3] * 2 * block.expansion
+        elif encoder_type == 'STAP':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = StatisticPooling(input_dim=self.num_filter[3] * freq_dim * block.expansion)
+            self.encoder_output = self.num_filter[3] * freq_dim * 2 * block.expansion
+        elif encoder_type == 'ASTP':
+            self.avgpool = AdaptiveStdPool2d((time_dim, freq_dim))
+            self.encoder = None
+            self.encoder_output = self.num_filter[3] * freq_dim * time_dim * block.expansion
+        else:
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.encoder = None
+            self.encoder_output = self.num_filter[3] * freq_dim * time_dim * block.expansion
+
+        self.fc1 = nn.Sequential(
+            nn.Linear(self.encoder_output, embedding_size),
+            nn.BatchNorm1d(embedding_size)
+        )
+
+        self.alpha = alpha
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
+>>>>>>> Server/Server
         self.classifier = nn.Linear(embedding_size, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                nn.init.normal(m.weight, mean=0., std=1.)
+                nn.init.normal_(m.weight, mean=0., std=1.)
             elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant(m.weight, 1)
-                nn.init.constant(m.bias, 0)
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
         # Zero-initialize the last BN in each residual branch, so that the residual branch
         # starts with zeros, and each residual block behaves like an identity.
@@ -279,8 +717,9 @@ class ExporingResNet(nn.Module):
         if zero_init_residual:
             for m in self.modules():
                 if isinstance(m, Bottleneck):
-                    nn.init.constant(m.bn3.weight, 0)
+                    nn.init.constant_(m.bn3.weight, 0)
                 elif isinstance(m, BasicBlock):
+<<<<<<< HEAD
                     nn.init.constant(m.bn2.weight, 0)
 
     def l2_norm(self, input):
@@ -297,6 +736,9 @@ class ExporingResNet(nn.Module):
             return output * self.alpha
         else:
             return input
+=======
+                    nn.init.constant_(m.bn2.weight, 0)
+>>>>>>> Server/Server
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
@@ -317,17 +759,32 @@ class ExporingResNet(nn.Module):
     def _forward(self, x):
         # pdb.set_trace()
         # print(x.shape)
+<<<<<<< HEAD
         if self.filter:
             x = self.filter_layer(x)
             x = torch.log(x)
 
         if self.inst_norm:
             x = x - torch.mean(x, dim=-2, keepdim=True)
+=======
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+>>>>>>> Server/Server
 
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
+<<<<<<< HEAD
         if self.fast:
+=======
+        if self.maxpool != None:
+>>>>>>> Server/Server
             x = self.maxpool(x)
 
         # print(x.shape)
@@ -344,10 +801,17 @@ class ExporingResNet(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
 
+<<<<<<< HEAD
         feat = self.l2_norm(x)
         x = self.classifier(feat)
+=======
+        if self.alpha:
+            x = self.l2_norm(x)
 
-        return x, feat
+        logits = self.classifier(x)
+>>>>>>> Server/Server
+
+        return logits, x
 
     # Allow for accessing forward method in a inherited class
     forward = _forward
@@ -459,114 +923,6 @@ class ResNet(nn.Module):
 
 # M. Hajibabaei and D. Dai, “Unified hypersphere embedding for speaker recognition,”
 # arXiv preprint arXiv:1807.08312, 2018.
-class Block3x3(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(Block3x3, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes)
-        self.bn1 = nn.BatchNorm2d(planes)
-
-        self.conv2 = conv3x3(planes, planes, stride)
-        self.bn2 = nn.BatchNorm2d(planes)
-
-        self.conv3 = conv3x3(planes, planes)
-        self.bn3 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        identity = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.downsample is not None:
-            identity = self.downsample(x)
-
-        out += identity
-        out = self.relu(out)
-
-        return out
-
-
-class InstBlock3x3(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(InstBlock3x3, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes)
-        self.bn1 = nn.InstanceNorm2d(planes)
-
-        self.conv2 = conv3x3(planes, planes, stride)
-        self.bn2 = nn.InstanceNorm2d(planes)
-
-        self.conv3 = conv3x3(planes, planes)
-        self.bn3 = nn.InstanceNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        identity = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.downsample is not None:
-            identity = self.downsample(x)
-
-        out += identity
-        out = self.relu(out)
-
-        return out
-
-
-class VarSizeConv(nn.Module):
-
-    def __init__(self, inplanes, planes, stride=1, kernel_size=[3, 5, 7]):
-        super(VarSizeConv, self).__init__()
-
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
-        self.bn1 = nn.InstanceNorm2d(planes)
-
-        self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
-        self.bn2 = nn.InstanceNorm2d(planes)
-
-        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=3)
-        self.bn3 = nn.InstanceNorm2d(planes)
-
-    def forward(self, x):
-        x1 = self.conv1(x)
-        x1 = self.bn1(x1)
-
-        x2 = self.conv2(x)
-        x2 = self.bn2(x2)
-
-        x3 = self.conv3(x)
-        x3 = self.bn3(x3)
-
-        return torch.cat([x1, x2, x3], dim=1)
-
 
 class ResNet20(nn.Module):
     def __init__(self, num_classes=1000, embedding_size=128, dropout_p=0.0,
@@ -644,13 +1000,547 @@ class LocalResNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, embedding_size, num_classes,
-                 input_dim=161, block=BasicBlock,
-                 resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
-                 inst_norm=False, alpha=12,
-                 avg_size=4, kernal_size=5, padding=2, **kwargs):
+    def __init__(self, embedding_size, num_classes, block_type='basic',
+                 input_dim=161, input_len=300, gain_layer=False,
+                 relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
+                 input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
+                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=25, **kwargs):
 
         super(LocalResNet, self).__init__()
+        resnet_type = {8: [1, 1, 1, 0],
+                       10: [1, 1, 1, 1],
+                       14: [2, 2, 2, 0],
+                       18: [2, 2, 2, 2],
+                       34: [3, 4, 6, 3],
+                       50: [3, 4, 6, 3],
+                       101: [3, 4, 23, 3]}
+
+        layers = resnet_type[resnet_size]
+
+        if block_type == "seblock":
+            block = SEBasicBlock
+        elif block_type == 'cbam':
+            block = CBAMBlock
+        else:
+            block = BasicBlock
+
+        self.input_len = input_len
+        self.input_dim = input_dim
+
+        self.alpha = alpha
+        self.layers = layers
+        self.dropout_p = dropout_p
+        self.transform = transform
+        self.fast = fast
+        self.mask = mask
+        self.relu_type = relu_type
+        self.embedding_size = embedding_size
+        self.gain_layer = gain_layer
+        #
+        if self.relu_type == 'relu6':
+            self.relu = nn.ReLU6(inplace=True)
+        elif self.relu_type == 'leakyrelu':
+            self.relu = nn.LeakyReLU()
+        elif self.relu_type == 'relu':
+            self.relu = nn.ReLU(inplace=True)
+
+        self.input_norm = input_norm
+        self.input_len = input_len
+        self.filter = filter
+
+        if self.filter == 'Avg':
+            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 5), stride=(1, 2))
+        else:
+            self.filter_layer = None
+
+        if input_norm == 'Inst':
+            self.inst_layer = Inst_Norm(self.input_len)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        elif input_norm == 'Mstd':
+            self.inst_layer = MeanStd_Norm()
+        else:
+            self.inst_layer = None
+
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+        elif self.mask == "freq":
+            self.mask = FreqMaskLayer(mask_len=mask_len)
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(),
+                FreqMaskLayer()
+            )
+        else:
+            self.mask_layer = None
+
+        self.inplanes = channels[0]
+        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=kernal_size, stride=stride, padding=padding)
+        self.bn1 = nn.BatchNorm2d(channels[0])
+        if self.fast.startswith('avp'):
+            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            # self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            self.maxpool = nn.Sequential(
+                nn.Conv2d(channels[0], channels[0], kernel_size=1, stride=1),
+                nn.ReLU(),
+                nn.BatchNorm2d(channels[0]),
+                nn.AvgPool2d(kernel_size=3, stride=2)
+            )
+        else:
+            self.maxpool = None
+        # self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
+        self.layer1 = self._make_layer(block, channels[0], layers[0])
+
+        self.inplanes = channels[1]
+        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=(5, 5), stride=2,
+                               padding=padding, bias=False)
+        self.bn2 = nn.BatchNorm2d(channels[1])
+        self.layer2 = self._make_layer(block, channels[1], layers[1])
+
+        self.inplanes = channels[2]
+        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=(5, 5), stride=2,
+                               padding=padding, bias=False)
+        self.bn3 = nn.BatchNorm2d(channels[2])
+        self.layer3 = self._make_layer(block, channels[2], layers[2])
+
+        if layers[3] != 0:
+            assert len(channels) == 4
+            self.inplanes = channels[3]
+            stride = 1 if self.fast else 2
+            self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=stride,
+                                   padding=padding, bias=False)
+            self.bn4 = nn.BatchNorm2d(channels[3])
+            self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
+
+        self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
+        self.dropout = nn.Dropout(self.dropout_p)
+
+        last_conv_chn = channels[-1]
+        freq_dim = avg_size
+        if encoder_type == 'SAP':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = SelfAttentionPooling(input_dim=last_conv_chn*freq_dim, hidden_dim=int(last_conv_chn/2))
+            self.encoder_output = last_conv_chn*freq_dim
+        elif encoder_type == 'SASP':
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.encoder = AttentionStatisticPooling(input_dim=last_conv_chn, hidden_dim=last_conv_chn)
+            self.encoder_output = last_conv_chn * 2
+
+        elif encoder_type == 'STAP':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = StatisticPooling(input_dim=last_conv_chn * freq_dim)
+            self.encoder_output = last_conv_chn * freq_dim * 2
+        elif encoder_type == 'ASTP':
+            self.avgpool = AdaptiveStdPool2d((time_dim, freq_dim))
+            self.encoder = None
+            self.encoder_output = last_conv_chn * freq_dim * time_dim
+        else:
+            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.encoder = None
+            self.encoder_output = last_conv_chn * freq_dim * time_dim
+
+        # self.fc1 = nn.Sequential(
+        #     nn.Linear(self.encoder_output, embedding_size),
+        #     nn.ReLU(),
+        #     nn.BatchNorm1d(embedding_size)
+        # )
+
+        # self.fc1 = nn.Sequential(
+        #     nn.Linear(self.encoder_output, embedding_size),
+        #     nn.BatchNorm1d(embedding_size)
+        # )
+        self.fc = nn.Sequential(
+            nn.Linear(self.encoder_output, embedding_size),
+            nn.BatchNorm1d(embedding_size)
+        )
+
+        if self.transform == 'Linear':
+            self.trans_layer = nn.Sequential(
+                nn.Linear(embedding_size, embedding_size),
+                nn.ReLU(),
+                nn.BatchNorm1d(embedding_size)
+            )
+        elif self.transform == 'GhostVLAD':
+            self.trans_layer = GhostVLAD_v2(num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
+        else:
+            self.trans_layer = None
+
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
+        # self.fc = nn.Linear(self.inplanes * avg_size, embedding_size)
+        self.classifier = nn.Linear(self.embedding_size, num_classes)
+
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
+                # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                # m.weight.data.normal_(0, math.sqrt(2. / n))
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
+    def _make_layer(self, block, planes, blocks, stride=1):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                conv1x1(self.inplanes, planes * block.expansion, stride),
+                nn.BatchNorm2d(planes * block.expansion),
+            )
+
+        layers = []
+        layers.append(block(self.inplanes, planes, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for _ in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        if self.maxpool != None:
+            x = self.maxpool(x)
+        x = self.layer1(x)
+
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = self.relu(x)
+        x = self.layer3(x)
+
+        if self.layers[3] != 0:
+            x = self.conv4(x)
+            x = self.bn4(x)
+            x = self.relu(x)
+            x = self.layer4(x)
+
+        if self.dropout_p > 0:
+            x = self.dropout(x)
+
+        x = self.avgpool(x)
+        if self.encoder != None:
+            x = self.encoder(x)
+
+        x = x.view(x.size(0), -1)
+        # x = self.fc1(x)
+        x = self.fc(x)
+
+        if self.trans_layer != None:
+            x = self.trans_layer(x)
+            # x = t_x + x
+
+        if self.alpha:
+            x = self.l2_norm(x)
+
+        logits = self.classifier(x)
+
+        return logits, x
+
+    def xvector(self, x):
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        if self.fast:
+            x = self.maxpool(x)
+        x = self.layer1(x)
+
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = self.relu(x)
+        x = self.layer3(x)
+
+        if self.layers[3] != 0:
+            x = self.conv4(x)
+            x = self.bn4(x)
+            x = self.relu(x)
+            x = self.layer4(x)
+
+        if self.dropout_p > 0:
+            x = self.dropout(x)
+
+        x = self.avgpool(x)
+        if self.encoder != None:
+            x = self.encoder(x)
+
+        x = x.view(x.size(0), -1)
+        # x = self.fc1(x)
+        embeddings = self.fc[0](x)
+
+        return "", embeddings
+
+
+# previoud version for test
+# class LocalResNet(nn.Module):
+#     """
+#     Define the ResNet model with A-softmax and AM-softmax loss.
+#     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
+#     """
+#
+#     def __init__(self, embedding_size, num_classes,
+#                  input_dim=161, block=BasicBlock,
+#                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
+#                  inst_norm=False, alpha=12, stride=2, transform=False,
+#                  avg_size=4, kernal_size=5, padding=2, **kwargs):
+#
+#         super(LocalResNet, self).__init__()
+#         resnet_type = {8: [1, 1, 1, 0],
+#                        10: [1, 1, 1, 1],
+#                        18: [2, 2, 2, 2],
+#                        34: [3, 4, 6, 3],
+#                        50: [3, 4, 6, 3],
+#                        101: [3, 4, 23, 3]}
+#
+#         layers = resnet_type[resnet_size]
+#         self.alpha = alpha
+#         self.layers = layers
+#         self.dropout_p = dropout_p
+#         self.transform = transform
+#
+#         self.embedding_size = embedding_size
+#         # self.relu = nn.LeakyReLU()
+#         self.relu = nn.ReLU(inplace=True)
+#         self.inst_norm = inst_norm
+#         self.inst_layer = nn.InstanceNorm1d(input_dim)
+#
+#         self.inplanes = channels[0]
+#         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=stride, padding=(3, 2))
+#         self.bn1 = nn.BatchNorm2d(channels[0])
+#         self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
+#
+#         self.layer1 = self._make_layer(block, channels[0], layers[0])
+#
+#         self.inplanes = channels[1]
+#         self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size, stride=2,
+#                                padding=padding, bias=False)
+#         self.bn2 = nn.BatchNorm2d(channels[1])
+#         self.layer2 = self._make_layer(block, channels[1], layers[1])
+#
+#         self.inplanes = channels[2]
+#         self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size, stride=2,
+#                                padding=padding, bias=False)
+#         self.bn3 = nn.BatchNorm2d(channels[2])
+#         self.layer3 = self._make_layer(block, channels[2], layers[2])
+#
+#         if layers[3] != 0:
+#             assert len(channels) == 4
+#             self.inplanes = channels[3]
+#             self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernal_size, stride=2,
+#                                    padding=padding, bias=False)
+#             self.bn4 = nn.BatchNorm2d(channels[3])
+#             self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
+#
+#         self.dropout = nn.Dropout(self.dropout_p)
+#         self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
+#
+#         self.fc = nn.Sequential(
+#             nn.Linear(self.inplanes * avg_size, embedding_size),
+#             nn.BatchNorm1d(embedding_size)
+#         )
+#
+#         if self.transform:
+#             self.trans_layer = nn.Sequential(
+#                 nn.Linear(embedding_size, embedding_size, bias=False),
+#                 nn.BatchNorm1d(embedding_size),
+#                 nn.ReLU()
+#             )
+#
+#         # self.fc = nn.Linear(self.inplanes * avg_size, embedding_size)
+#         self.classifier = nn.Linear(self.embedding_size, num_classes)
+#
+#         for m in self.modules():  # 对于各层参数的初始化
+#             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
+#                 # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+#                 # m.weight.data.normal_(0, math.sqrt(2. / n))
+#                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+#             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
+#                 m.weight.data.fill_(1)
+#                 m.bias.data.zero_()
+#
+#     def l2_norm(self, input, alpha=1.0):
+#         # alpha = log(p * ( class -2) / (1-p))
+#         input_size = input.size()
+#         buffer = torch.pow(input, 2)
+#
+#         normp = torch.sum(buffer, 1).add_(1e-12)
+#         norm = torch.sqrt(normp)
+#
+#         _output = torch.div(input, norm.view(-1, 1).expand_as(input))
+#         output = _output.view(input_size)
+#         # # # input = input.renorm(p=2, dim=1, maxnorm=1.0)
+#         # norm = input.norm(p=2, dim=1, keepdim=True).add(1e-14)
+#         # output = input / norm
+#
+#         return output * alpha
+#
+#     def _make_layer(self, block, planes, blocks, stride=1):
+#         downsample = None
+#         if stride != 1 or self.inplanes != planes * block.expansion:
+#             downsample = nn.Sequential(
+#                 conv1x1(self.inplanes, planes * block.expansion, stride),
+#                 nn.BatchNorm2d(planes * block.expansion),
+#             )
+#
+#         layers = []
+#         layers.append(block(self.inplanes, planes, stride, downsample))
+#         self.inplanes = planes * block.expansion
+#         for _ in range(1, blocks):
+#             layers.append(block(self.inplanes, planes))
+#
+#         return nn.Sequential(*layers)
+#
+#     def forward(self, x):
+#         if self.inst_norm:
+#             x = x.squeeze(1).transpose(1, 2)
+#             x = self.inst_layer(x)
+#             x = x.transpose(1, 2).unsqueeze(1)
+#
+#             # x = x - torch.mean(x, dim=-2, keepdim=True)
+#
+#         x = self.conv1(x)
+#         x = self.bn1(x)
+#         x = self.relu(x)
+#         x = self.maxpool(x)
+#
+#         x = self.layer1(x)
+#
+#         x = self.conv2(x)
+#         x = self.bn2(x)
+#         x = self.relu(x)
+#         x = self.layer2(x)
+#
+#         x = self.conv3(x)
+#         x = self.bn3(x)
+#         x = self.relu(x)
+#         x = self.layer3(x)
+#
+#         if self.layers[3] != 0:
+#             x = self.conv4(x)
+#             x = self.bn4(x)
+#             x = self.relu(x)
+#             x = self.layer4(x)
+#
+#         if self.dropout_p > 0:
+#             x = self.dropout(x)
+#
+#         # if self.statis_pooling:
+#         #     mean_x = self.avg_pool(x)
+#         #     mean_x = mean_x.view(mean_x.size(0), -1)
+#         #
+#         #     std_x = self.std_pool(x)
+#         #     std_x = std_x.view(std_x.size(0), -1)
+#         #
+#         #     x = torch.cat((mean_x, std_x), dim=1)
+#         #
+#         # else:
+#         # print(x.shape)
+#         x = self.avg_pool(x)
+#         x = x.view(x.size(0), -1)
+#
+#         x = self.fc(x)
+#         if self.transform == True:
+#             x += self.trans_layer(x)
+#             t_x = self.trans_layer(x)
+#             x = t_x + x
+#
+#         if self.alpha:
+#             x = self.l2_norm(x, alpha=self.alpha)
+#
+#         logits = self.classifier(x)
+#
+#         return logits, x
+
+
+class DomainNet(nn.Module):
+    """
+    Define the ResNet model with A-softmax and AM-softmax loss.
+    Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
+    """
+
+    def __init__(self, model, embedding_size, num_classes_a, num_classes_b, **kwargs):
+
+        super(DomainNet, self).__init__()
+
+        self.xvectors = model
+        self.embedding_size = embedding_size
+
+        self.grl = GRL(lambda_=0.)
+        self.classifier_dom = nn.Sequential(
+            nn.Linear(self.embedding_size, int(self.embedding_size / 2)),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(int(self.embedding_size / 2)),
+            nn.Linear(int(self.embedding_size / 2), num_classes_b),
+        )
+        self.fc2 = nn.Sequential(
+            nn.Linear(int(num_classes_b + self.embedding_size), self.embedding_size),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(self.embedding_size)
+        )
+        self.classifier_spk = nn.Linear(self.embedding_size, num_classes_a)
+
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
+                # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                # m.weight.data.normal_(0, math.sqrt(2. / n))
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
+    def forward(self, x):
+        logits, embeddings = self.xvectors(x)
+
+        # dom_x = self.grl(embeddings)
+        dom_logits = self.classifier_dom(embeddings)
+
+        spk_embeddings_new = torch.cat((embeddings, dom_logits), dim=1)
+        spk_embeddings_new = self.fc2(spk_embeddings_new)
+        spk_logits_new = self.classifier_spk(spk_embeddings_new)
+        dom_logits_new = self.classifier_dom(spk_embeddings_new)
+        all_logits = (logits, spk_logits_new, dom_logits, dom_logits_new)
+
+        return all_logits, spk_embeddings_new
+
+
+class GradResNet(nn.Module):
+    """
+    Define the ResNet model with A-softmax and AM-softmax loss.
+    Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
+    """
+
+    def __init__(self, embedding_size, num_classes, block=BasicBlock, input_dim=161,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., ince=False, transform=False,
+                 inst_norm=False, alpha=12, vad=False, avg_size=4, kernal_size=5, padding=2, **kwargs):
+
+        super(GradResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
                        18: [2, 2, 2, 2],
@@ -659,32 +1549,43 @@ class LocalResNet(nn.Module):
                        101: [3, 4, 23, 3]}
 
         layers = resnet_type[resnet_size]
+        self.ince = ince
         self.alpha = alpha
         self.layers = layers
         self.dropout_p = dropout_p
+        self.transform = transform
 
         self.embedding_size = embedding_size
         # self.relu = nn.LeakyReLU()
         self.relu = nn.ReLU(inplace=True)
+        self.vad = vad
+        if self.vad:
+            self.vad_layer = SelfVadPooling(input_dim)
+
         self.inst_norm = inst_norm
-        self.inst_layer = nn.InstanceNorm2d(input_dim)
+        # self.inst_layer = nn.InstanceNorm1d(input_dim)
+
+        if self.ince:
+            self.pre_conv = VarSizeConv(1, 1)
+            self.conv1 = nn.Conv2d(4, channels[0], kernel_size=5, stride=2, padding=2)
+        else:
+            self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
+
+        self.bn1 = nn.BatchNorm2d(channels[0])
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=2, padding=(3, 2))
-        self.bn1 = nn.BatchNorm2d(channels[0])
-        self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
-
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
-        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size, stride=2,
-                               padding=padding, bias=False)
+        self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size,
+                               stride=2, padding=padding, bias=False)
         self.bn2 = nn.BatchNorm2d(channels[1])
         self.layer2 = self._make_layer(block, channels[1], layers[1])
 
         self.inplanes = channels[2]
-        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size, stride=2,
-                               padding=padding, bias=False)
+        self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size,
+                               stride=2, padding=padding, bias=False)
         self.bn3 = nn.BatchNorm2d(channels[2])
         self.layer3 = self._make_layer(block, channels[2], layers[2])
 
@@ -698,6 +1599,92 @@ class LocalResNet(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_p)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
+
+<<<<<<< HEAD
+
+class InstBlock3x3(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(InstBlock3x3, self).__init__()
+        self.conv1 = conv3x3(inplanes, planes)
+        self.bn1 = nn.InstanceNorm2d(planes)
+
+        self.conv2 = conv3x3(planes, planes, stride)
+        self.bn2 = nn.InstanceNorm2d(planes)
+
+        self.conv3 = conv3x3(planes, planes)
+        self.bn3 = nn.InstanceNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class VarSizeConv(nn.Module):
+
+    def __init__(self, inplanes, planes, stride=1, kernel_size=[3, 5, 7]):
+        super(VarSizeConv, self).__init__()
+
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
+        self.bn1 = nn.InstanceNorm2d(planes)
+
+        self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
+        self.bn2 = nn.InstanceNorm2d(planes)
+
+        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=3)
+        self.bn3 = nn.InstanceNorm2d(planes)
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x1 = self.bn1(x1)
+
+        x2 = self.conv2(x)
+        x2 = self.bn2(x2)
+
+        x3 = self.conv3(x)
+        x3 = self.bn3(x3)
+
+        return torch.cat([x1, x2, x3], dim=1)
+
+
+class ResNet20(nn.Module):
+    def __init__(self, num_classes=1000, embedding_size=128, dropout_p=0.0,
+                 block=BasicBlock, input_frames=300, **kwargs):
+        super(ResNet20, self).__init__()
+        self.dropout_p = dropout_p
+        self.inplanes = 1
+        self.layer1 = self._make_layer(Block3x3, planes=64, blocks=1, stride=2)
+=======
+        if self.transform:
+            self.trans_layer = nn.Sequential(
+                nn.Linear(embedding_size, embedding_size, bias=False),
+                nn.BatchNorm1d(embedding_size),
+                nn.ReLU()
+            )
+>>>>>>> Server/Server
 
         self.fc = nn.Sequential(
             nn.Linear(self.inplanes * avg_size, embedding_size),
@@ -717,7 +1704,7 @@ class LocalResNet(nn.Module):
                 m.bias.data.zero_()
 
     def l2_norm(self, input, alpha=1.0):
-        # alpha = log(p * ( class -2) / (1-p))
+        # alpha = log(p * (class -2) / (1-p))
         input_size = input.size()
         buffer = torch.pow(input, 2)
 
@@ -749,15 +1736,22 @@ class LocalResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        if self.vad:
+            x = self.vad_layer(x)
+
+        x = torch.log(x)
+
         if self.inst_norm:
-            x = x.squeeze(1)
-            x = self.inst_layer(x)
-            x = x.unsqueeze(1)
+            # x = self.inst_layer(x)
+            x = x - torch.mean(x, dim=-2, keepdim=True)
+
+        if self.ince:
+            x = self.pre_conv(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x)
+        # x = self.maxpool(x)
 
         x = self.layer1(x)
 
@@ -795,6 +1789,10 @@ class LocalResNet(nn.Module):
         x = x.view(x.size(0), -1)
 
         x = self.fc(x)
+        if self.transform:
+            t_x = self.trans_layer(x)
+            x = t_x + x
+
         if self.alpha:
             x = self.l2_norm(x, alpha=self.alpha)
 
@@ -803,20 +1801,247 @@ class LocalResNet(nn.Module):
         return logits, x
 
 
-class DomainResNet(nn.Module):
+class TimeFreqResNet(nn.Module):
     """
     Define the ResNet model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
+<<<<<<< HEAD
+    def __init__(self, embedding_size, num_classes,
+                 input_dim=161, block=BasicBlock,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
+                 inst_norm=False, alpha=12,
+                 avg_size=4, kernal_size=5, padding=2, **kwargs):
+=======
+    def __init__(self, embedding_size, num_classes, block=BasicBlock, input_dim=161,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., ince=False,
+                 inst_norm=False, alpha=12, vad=False, avg_size=4, kernal_size=5, padding=2, **kwargs):
+>>>>>>> Server/Server
+
+        super(TimeFreqResNet, self).__init__()
+        resnet_type = {8: [1, 1, 1, 0],
+                       10: [1, 1, 1, 1],
+                       18: [2, 2, 2, 2],
+                       34: [3, 4, 6, 3],
+                       50: [3, 4, 6, 3],
+                       101: [3, 4, 23, 3]}
+
+        layers = resnet_type[resnet_size]
+        self.ince = ince
+        self.alpha = alpha
+        self.layers = layers
+        self.dropout_p = dropout_p
+
+        self.embedding_size = embedding_size
+        # self.relu = nn.LeakyReLU()
+        self.relu = nn.ReLU(inplace=True)
+<<<<<<< HEAD
+        self.inst_norm = inst_norm
+        self.inst_layer = nn.InstanceNorm2d(input_dim)
+
+        self.inplanes = channels[0]
+        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=(5, 5), stride=2, padding=(3, 2))
+        self.bn1 = nn.BatchNorm2d(channels[0])
+        self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=(1, 0))
+
+=======
+        self.vad = vad
+        if self.vad:
+            self.vad_layer = SelfVadPooling(input_dim)
+
+        self.inst_norm = inst_norm
+        # self.inst_layer = nn.InstanceNorm1d(input_dim)
+
+        self.conv1 = nn.Sequential(nn.Conv2d(1, channels[0], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+                                   nn.BatchNorm2d(channels[0]),
+                                   nn.Conv2d(channels[0], channels[0], kernel_size=(1, 5), stride=(1, 2),
+                                             padding=(0, 2)),
+                                   )
+
+
+        self.bn1 = nn.BatchNorm2d(channels[0])
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        self.inplanes = channels[0]
+>>>>>>> Server/Server
+        self.layer1 = self._make_layer(block, channels[0], layers[0])
+
+        self.inplanes = channels[1]
+
+        # self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size,
+        #                        stride=2, padding=padding, bias=False)
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(channels[0], channels[1], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+            nn.BatchNorm2d(channels[1]),
+            nn.Conv2d(channels[1], channels[1], kernel_size=(1, 5), stride=(1, 2),
+                      padding=(0, 2)),
+            )
+
+        self.bn2 = nn.BatchNorm2d(channels[1])
+        self.layer2 = self._make_layer(block, channels[1], layers[1])
+
+        self.inplanes = channels[2]
+        # self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size,
+        #                        stride=2, padding=padding, bias=False)
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(channels[1], channels[2], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+            nn.BatchNorm2d(channels[2]),
+            nn.Conv2d(channels[2], channels[2], kernel_size=(1, 5), stride=(1, 2), padding=(0, 2)),
+        )
+
+        self.bn3 = nn.BatchNorm2d(channels[2])
+        self.layer3 = self._make_layer(block, channels[2], layers[2])
+
+        if layers[3] != 0:
+            assert len(channels) == 4
+            self.inplanes = channels[3]
+            self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernal_size, stride=2,
+                                   padding=padding, bias=False)
+            self.bn4 = nn.BatchNorm2d(channels[3])
+            self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
+
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
+
+        self.fc = nn.Sequential(
+            nn.Linear(self.inplanes * avg_size, embedding_size),
+            nn.BatchNorm1d(embedding_size)
+        )
+        # self.fc = nn.Linear(self.inplanes * avg_size, embedding_size)
+        self.classifier = nn.Linear(self.embedding_size, num_classes)
+
+        for m in self.modules():  # 对于各层参数的初始化
+            if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
+                # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                # m.weight.data.normal_(0, math.sqrt(2. / n))
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
+    def l2_norm(self, input, alpha=1.0):
+<<<<<<< HEAD
+        # alpha = log(p * ( class -2) / (1-p))
+=======
+        # alpha = log(p * (class -2) / (1-p))
+>>>>>>> Server/Server
+        input_size = input.size()
+        buffer = torch.pow(input, 2)
+
+        normp = torch.sum(buffer, 1).add_(1e-12)
+        norm = torch.sqrt(normp)
+
+        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
+        output = _output.view(input_size)
+<<<<<<< HEAD
+        # # # input = input.renorm(p=2, dim=1, maxnorm=1.0)
+        # norm = input.norm(p=2, dim=1, keepdim=True).add(1e-14)
+        # output = input / norm
+=======
+>>>>>>> Server/Server
+
+        return output * alpha
+
+    def _make_layer(self, block, planes, blocks, stride=1):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                conv1x1(self.inplanes, planes * block.expansion, stride),
+                nn.BatchNorm2d(planes * block.expansion),
+            )
+
+        layers = []
+        layers.append(block(self.inplanes, planes, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for _ in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+<<<<<<< HEAD
+        if self.inst_norm:
+            x = x.squeeze(1)
+            x = self.inst_layer(x)
+            x = x.unsqueeze(1)
+=======
+        if self.vad:
+            x = self.vad_layer(x)
+
+        x = torch.log(x)
+
+        if self.inst_norm:
+            # x = self.inst_layer(x)
+            x = x - torch.mean(x, dim=-2, keepdim=True)
+
+        if self.ince:
+            x = self.pre_conv(x)
+>>>>>>> Server/Server
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        x = self.layer1(x)
+
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = self.relu(x)
+        x = self.layer3(x)
+
+        if self.layers[3] != 0:
+            x = self.conv4(x)
+            x = self.bn4(x)
+            x = self.relu(x)
+            x = self.layer4(x)
+
+        if self.dropout_p > 0:
+            x = self.dropout(x)
+
+        x = self.avg_pool(x)
+        x = x.view(x.size(0), -1)
+
+        x = self.fc(x)
+        if self.alpha:
+            x = F.self.l2_norm(x, alpha=self.alpha)
+
+        logits = self.classifier(x)
+
+        return logits, x
+
+
+<<<<<<< HEAD
+class DomainResNet(nn.Module):
+=======
+class MultiResNet(nn.Module):
+>>>>>>> Server/Server
+    """
+    Define the ResNet model with A-softmax and AM-softmax loss.
+    Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
+    """
+
+<<<<<<< HEAD
     def __init__(self, embedding_size_a, embedding_size_b, embedding_size_o,
                  num_classes_a, num_classes_b,
                  block=BasicBlock, input_dim=161,
                  resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
                  inst_norm=False, alpha=12,
                  avg_size=4, kernal_size=5, padding=2, **kwargs):
+=======
+    def __init__(self, embedding_size, num_classes_a, num_classes_b, block=BasicBlock, input_dim=161,
+                 resnet_size=8, channels=[64, 128, 256], dropout_p=0., stride=2, fast=False,
+                 inst_norm=False, alpha=12, input_norm='None', transform=False,
+                 avg_size=4, kernal_size=5, padding=2, mask='None', mask_len=25, **kwargs):
+>>>>>>> Server/Server
 
-        super(DomainResNet, self).__init__()
+        super(MultiResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
                        18: [2, 2, 2, 2],
@@ -828,22 +2053,60 @@ class DomainResNet(nn.Module):
         self.alpha = alpha
         self.layers = layers
         self.dropout_p = dropout_p
-
-        self.embedding_size_a = embedding_size_a
-        self.embedding_size_b = embedding_size_b
-        self.embedding_size = embedding_size_a + embedding_size_b - embedding_size_o
-
-        # self.relu = nn.LeakyReLU()
+        self.embedding_size = embedding_size
         self.relu = nn.ReLU(inplace=True)
+<<<<<<< HEAD
 
         self.inst_norm = inst_norm
         # self.inst_layer = nn.InstanceNorm1d(input_dim)
+=======
+        self.transform = transform
+        self.fast = fast
+        self.input_norm = input_norm
+        self.mask = mask
+
+        if input_norm == 'Instance':
+            self.inst_layer = nn.InstanceNorm1d(input_dim)
+        elif input_norm == 'Mean':
+            self.inst_layer = Mean_Norm()
+        elif input_norm == 'MeanStd':
+            self.inst_layer = MeanStd_Norm()
+        else:
+            self.inst_layer = None
+
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+        elif self.mask == "freq":
+            self.mask_layer = FreqMaskLayer(mask_len=mask_len)
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(mask_len=mask_len),
+                FreqMaskLayer(mask_len=mask_len)
+            )
+        else:
+            self.mask_layer = None
+>>>>>>> Server/Server
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=stride, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(channels[0])
 
+<<<<<<< HEAD
         self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=1)
+=======
+        # fast v3
+        if self.fast:
+            self.maxpool = nn.Sequential(
+                nn.Conv2d(channels[0], channels[0], kernel_size=1, stride=1),
+                nn.ReLU(),
+                nn.BatchNorm2d(channels[0]),
+                nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            )
+        else:
+            self.maxpool = None
+
+        # self.maxpool = nn.MaxPool2d(kernel_size=(3, 1), stride=(2, 1), padding=1)
+>>>>>>> Server/Server
         self.layer1 = self._make_layer(block, channels[0], layers[0])
 
         self.inplanes = channels[1]
@@ -879,7 +2142,19 @@ class DomainResNet(nn.Module):
             nn.Linear(self.inplanes * avg_size, self.embedding_size),
             nn.BatchNorm1d(self.embedding_size)
         )
+        if self.transform == 'Linear':
+            self.trans_layer = nn.Sequential(
+                nn.Linear(embedding_size, embedding_size),
+                nn.ReLU(),
+                nn.BatchNorm1d(embedding_size))
+        elif self.transform == 'GhostVLAD':
+            self.trans_layer = GhostVLAD_v2(num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
+        else:
+            self.trans_layer = None
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
 
+<<<<<<< HEAD
         self.classifier_spk = nn.Linear(self.embedding_size_a, num_classes_a)
 
         self.grl = GRL(lambda_=0.)
@@ -888,6 +2163,10 @@ class DomainResNet(nn.Module):
                                             nn.Linear(int(self.embedding_size_b / 4), num_classes_b),
                                             )
 
+=======
+        self.classifier_a = nn.Linear(self.embedding_size, num_classes_a)
+        self.classifier_b = nn.Linear(self.embedding_size, num_classes_b)
+>>>>>>> Server/Server
 
         for m in self.modules():  # 对于各层参数的初始化
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
@@ -897,25 +2176,6 @@ class DomainResNet(nn.Module):
             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
-
-    def l2_norm(self, input, alpha=1.0):
-        # alpha = log(p * (
-        #
-        # class -2) / (1-p))
-        input_size = input.size()
-        buffer = torch.pow(input, 2)
-
-        normp = torch.sum(buffer, 1).add_(1e-12)
-        norm = torch.sqrt(normp)
-
-        _output = torch.div(input, norm.view(-1, 1).expand_as(input))
-        output = _output.view(input_size)
-        # # # input = input.renorm(p=2, dim=1, maxnorm=1.0)
-        #
-        # norm = input.norm(p=2, dim=1, keepdim=True).add(1e-14)
-        # output = input / norm
-
-        return output * alpha
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
@@ -934,16 +2194,35 @@ class DomainResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+<<<<<<< HEAD
         if self.inst_norm:
             # x = x.squeeze(1)
             # x = self.inst_layer(x)
             # x = x.unsqueeze(1)
             x = x - torch.mean(x, dim=-2, keepdim=True)
+=======
+        tuple_input = False
+        if isinstance(x, tuple):
+            tuple_input = True
+            size_a = len(x[0])
+            x = torch.cat(x, dim=0)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+>>>>>>> Server/Server
 
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
+<<<<<<< HEAD
         x = self.maxpool(x)
+=======
+        if self.maxpool != None:
+            x = self.maxpool(x)
+>>>>>>> Server/Server
 
         x = self.layer1(x)
 
@@ -971,14 +2250,16 @@ class DomainResNet(nn.Module):
         x = self.avg_pool(x)
         x = x.view(x.size(0), -1)
 
-        x = self.fc(x)
+        embeddings = self.fc(x)
 
-        spk_x = x[:, :self.embedding_size_a]
-        dom_x = x[:, -self.embedding_size_b:]
+        if self.trans_layer != None:
+            embeddings = self.trans_layer(embeddings)
 
         if self.alpha:
-            spk_x = self.l2_norm(spk_x, alpha=self.alpha)
+            embeddings = self.l2_norm(embeddings)
+            # embeddings = self.l2_norm(embeddings, alpha=self.alpha)
 
+<<<<<<< HEAD
         spk_logits = self.classifier_spk(spk_x)
 
         dom_x = self.grl(dom_x)
@@ -1165,3 +2446,22 @@ class GradResNet(nn.Module):
         logits = self.classifier(x)
 
         return logits, x
+=======
+        if tuple_input:
+            embeddings_a = embeddings[:size_a]
+            embeddings_b = embeddings[size_a:]
+
+            logits_a = self.classifier_a(embeddings_a)
+            logits_b = self.classifier_b(embeddings_b)
+
+            return (logits_a, logits_b), (embeddings_a, embeddings_b)
+        else:
+            return '', embeddings
+
+    # def cls_forward(self, a, b):
+    #
+    #     logits_a = self.classifier_a(a)
+    #     logits_b = self.classifier_b(b)
+    #
+    #     return logits_a, logits_b
+>>>>>>> Server/Server
