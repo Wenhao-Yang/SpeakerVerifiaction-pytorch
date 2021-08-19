@@ -17,3 +17,12 @@ Data/
 *.bin
 Lime/SuResCNN10/data
 *.pickle
+Score/data
+*.local
+Lime/Plot/.ipynb_checkpoints
+Misc_de
+test.jpg
+test.log.jpg
+test.v11.jpg
+test.v11.log.jpg
+test.v11.log.np.jpg
