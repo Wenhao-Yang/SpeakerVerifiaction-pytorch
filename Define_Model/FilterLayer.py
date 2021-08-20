@@ -692,8 +692,8 @@ class Sinc2Conv(nn.Module):
             nn.InstanceNorm1d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
             nn.LeakyReLU(),
         )
-        self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
 
+        self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
         self.conv_layer2 = nn.Sequential(
             nn.Conv1d(in_channels=80, out_channels=60, kernel_size=5, stride=1),
             nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
