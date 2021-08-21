@@ -493,7 +493,7 @@ class ThinResNet(nn.Module):
             block = SEBasicBlock
         elif block_type == 'cbam':
             block = CBAMBlock
-        else:
+        elif block_type in ['basic', 'None']:
             block = BasicBlock if resnet_size < 50 else Bottleneck
 
         block.expansion = expansion
