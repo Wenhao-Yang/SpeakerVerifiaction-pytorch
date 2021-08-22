@@ -237,7 +237,7 @@ if args.cuda:
     cudnn.benchmark = True
 
 # create logger Define visulaize SummaryWriter instance
-writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
+writer = SummaryWriter(log_dir=args.check_path, filename_suffix='_first')
 
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.txt'))
 
