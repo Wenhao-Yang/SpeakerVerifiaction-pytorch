@@ -136,7 +136,7 @@ if [ $stage -le 50 ]; then
       --sim-ratio 0 \
       --weight-decay 0.001 \
       --dropout-p 0 \
-      --gpu-id 0,1 \
+      --gpu-id 0 \
       --loss-type ${loss}
   done
 fi
