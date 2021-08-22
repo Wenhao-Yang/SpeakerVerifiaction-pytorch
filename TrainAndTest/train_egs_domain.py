@@ -543,7 +543,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # Training the Generator
         spk_loss = ce_criterion(spk_logits, true_labels_a)
-        new_dom_logits = model.classifier_dom(spk_embeddings)
+        if isinstance(model, DistributedDataParallel):
+            new_dom_logits = model.module.classifier_dom(spk_embeddings)
+        else:
+            new_dom_logits = model.classifier_dom(spk_embeddings)
         loss = spk_loss + args.dom_ratio * ce_criterion(new_dom_logits, true_labels_b)
 
         spk_optimizer.zero_grad()
