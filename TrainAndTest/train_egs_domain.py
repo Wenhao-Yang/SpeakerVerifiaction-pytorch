@@ -380,7 +380,8 @@ def main():
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
 
     dom_params = list(map(id, model.classifier_dom.parameters()))
-    rest_params = filter(lambda p: id(p) not in dom_params, model.parameters())
+    rest_params = list(map(id, model.xvectors.parameters()))
+    # rest_params = filter(lambda p: id(p) not in dom_params, model.parameters())
 
     spk_optimizer = create_optimizer(rest_params, args.optimizer, **opt_kwargs)
     dom_optimizer = create_optimizer(dom_params, args.optimizer, **opt_kwargs)
