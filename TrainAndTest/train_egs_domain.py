@@ -536,7 +536,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # Training the discriminator
         dom_loss = ce_criterion(dom_logits, true_labels_b)
-        dom_loss.backward()
+        dom_loss.backward(retain_graph=True)
         dom_optimizer.step()
         dom_optimizer.zero_grad()
 
