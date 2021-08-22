@@ -536,12 +536,13 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # Training the discriminator
         dom_loss = ce_criterion(dom_logits, true_labels_b)
-
         dom_optimizer.zero_grad()
         dom_loss.backward()
         dom_optimizer.step()
 
         # Training the Generator
+        all_logits, spk_embeddings = model(data)
+        spk_logits, dom_logits = all_logits
         spk_loss = ce_criterion(spk_logits, true_labels_a)
         if isinstance(model, DistributedDataParallel):
             new_dom_logits = model.module.classifier_dom(spk_embeddings)
