@@ -536,13 +536,13 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # Training the discriminator
         dom_loss = ce_criterion(dom_logits, true_labels_b)
-        dom_optimizer.zero_grad()
         dom_loss.backward()
         dom_optimizer.step()
+        dom_optimizer.zero_grad()
 
         # Training the Generator
-        all_logits, spk_embeddings = model(data)
-        spk_logits, dom_logits = all_logits
+        # all_logits, spk_embeddings = model(data)
+        # spk_logits, dom_logits = all_logits
         spk_loss = ce_criterion(spk_logits, true_labels_a)
         if isinstance(model, DistributedDataParallel):
             new_dom_logits = model.module.classifier_dom(spk_embeddings)
@@ -550,9 +550,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             new_dom_logits = model.classifier_dom(spk_embeddings)
         loss = spk_loss + args.dom_ratio * ce_criterion(new_dom_logits, true_labels_b)
 
-        spk_optimizer.zero_grad()
         loss.backward()
         spk_optimizer.step()
+        spk_optimizer.zero_grad()
 
         # speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
         # speech_labels_b = speech_labels_b.cuda()
