@@ -100,15 +100,15 @@ if [ $stage -le 50 ]; then
   embedding_size=256
   input_dim=40
   input_norm=Mean
-  lr_ratio=5
-  loss_ratio=0.1
+  lr_ratio=1
+  loss_ratio=1
   feat=fb${input_dim}_ws25
   #  resnet_size=8
   #  kernel_size=5,5
-  channels=512,512,512,512,512,1536
+#  channels=
   for loss in soft; do
     echo -e "\033[1;4;31m Stage ${stage}: Train ${model} with ${loss} loss in ${datasets}.\033[0m\n"
-    python TrainAndTest/Spectrogram/train_dom_egs.py \
+    python TrainAndTest/train_egs_dom.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
@@ -123,7 +123,7 @@ if [ $stage -le 50 ]; then
       --lr 0.1 \
       --milestones 10,20,30,40 \
       --input-dim ${input_dim} \
-      --channels ${channels} \
+      --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_domain/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3 \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_domain/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3/checkpoint_20.pth \

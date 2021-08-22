@@ -26,13 +26,13 @@ import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torchvision.transforms as transforms
 from kaldi_io import read_mat, read_vec_flt
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from torch.autograd import Variable
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
-from Define_Model.LossFunction import CenterLoss
+from Define_Model.Loss.LossFunction import CenterLoss
 from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
@@ -81,13 +81,9 @@ parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of j
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--check-path', default='Data/checkpoint/LoResNet10/spect/soft',
-                    help='folder to output model checkpoints')
+parser.add_argument('--check-path', help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--resume',
-                    default='Data/checkpoint/LoResNet10/spect/soft/checkpoint_10.pth', type=str,
-                    metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--resume', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -251,9 +247,7 @@ extract_kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else
 if not os.path.exists(args.check_path):
     os.makedirs(args.check_path)
 
-opt_kwargs = {'lr': args.lr,
-              'lr_decay': args.lr_decay,
-              'weight_decay': args.weight_decay,
+opt_kwargs = {'lr': args.lr, 'lr_decay': args.lr_decay, 'weight_decay': args.weight_decay,
               'dampening': args.dampening,
               'momentum': args.momentum}
 
@@ -349,11 +343,10 @@ def main():
                       'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                       'iteraion': 0, 'all_iteraion': args.all_iteraion}
 
-    print('xvector-Model options: {}'.format(xvector_kwargs))
+    print('Model options: {}'.format(xvector_kwargs))
     xvector_model = create_model(args.model, **xvector_kwargs)
 
-    model = DomainNet(model=xvector_model, embedding_size=args.embedding_size,
-                      num_classes_a=train_dir.num_spks, num_classes_b=train_dir.num_doms)
+    model = DomainNet(model=xvector_model, embedding_size=args.embedding_size, num_classes_b=train_dir.num_doms)
 
     start_epoch = 0
     if args.save_init and not args.finetune:
@@ -386,28 +379,36 @@ def main():
         ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
 
-    optimizer = create_optimizer(model.parameters(), args.optimizer, **opt_kwargs)
-    if args.loss_type == 'center':
-        optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
-                                     {'params': model.parameters()}],
-                                    lr=args.lr, weight_decay=args.weight_decay,
-                                    momentum=args.momentum)
-    if args.finetune:
-        if args.loss_type == 'asoft' or args.loss_type == 'amsoft':
-            classifier_params = list(map(id, model.classifier.parameters()))
-            rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
-            optimizer = torch.optim.SGD([{'params': model.classifier.parameters(), 'lr': args.lr * 5},
-                                         {'params': rest_params}],
-                                        lr=args.lr, weight_decay=args.weight_decay,
-                                        momentum=args.momentum)
+    dom_params = list(map(id, model.classifier_dom.parameters()))
+    rest_params = filter(lambda p: id(p) not in dom_params, model.parameters())
+
+    spk_optimizer = create_optimizer(rest_params, args.optimizer, **opt_kwargs)
+    dom_optimizer = create_optimizer(dom_params, args.optimizer, **opt_kwargs)
+
+    # if args.loss_type == 'center':
+    #     optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
+    #                                  {'params': model.parameters()}],
+    #                                 lr=args.lr, weight_decay=args.weight_decay,
+    #                                 momentum=args.momentum)
+    # if args.finetune:
+    #     if args.loss_type == 'asoft' or args.loss_type == 'amsoft':
+    #         classifier_params = list(map(id, model.classifier.parameters()))
+    #         rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
+    #         optimizer = torch.optim.SGD([{'params': model.classifier.parameters(), 'lr': args.lr * 5},
+    #                                      {'params': rest_params}],
+    #                                     lr=args.lr, weight_decay=args.weight_decay,
+    #                                     momentum=args.momentum)
 
     if args.scheduler == 'exp':
-        scheduler = ExponentialLR(optimizer, gamma=args.gamma)
+        spk_scheduler = ExponentialLR(spk_optimizer, gamma=args.gamma)
+        dom_scheduler = ExponentialLR(dom_optimizer, gamma=args.gamma)
     else:
         milestones = args.milestones.split(',')
         milestones = [int(x) for x in milestones]
         milestones.sort()
-        scheduler = MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
+
+        spk_scheduler = MultiStepLR(spk_optimizer, milestones=milestones, gamma=0.1)
+        dom_scheduler = MultiStepLR(dom_optimizer, milestones=milestones, gamma=0.1)
 
     ce = [ce_criterion, xe_criterion]
 
@@ -431,7 +432,6 @@ def main():
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             model = DistributedDataParallel(model.cuda())
 
-
         else:
             model = model.cuda()
 
@@ -448,10 +448,16 @@ def main():
     start_time = time.time()
 
     for epoch in range(start, end):
-        lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
-        for param_group in optimizer.param_groups:
-            lr_string += '{:.8f} '.format(param_group['lr'])
-        print('%s \33[0m' % lr_string)
+        spk_lr_string = '\n\33[1;34m Spk \'{}\' learning rate is '.format(args.optimizer)
+        for param_group in spk_optimizer.param_groups:
+            spk_lr_string += '{:.8f} '.format(param_group['lr'])
+
+        dom_lr_string = 'Domain \'{}\' learning rate is '.format(args.optimizer)
+        for param_group in dom_optimizer.param_groups:
+            dom_lr_string += '{:.8f} '.format(param_group['lr'])
+        print('%s %s \33[0m' % (spk_lr_string, dom_lr_string))
+        optimizer = (spk_optimizer, dom_optimizer)
+        scheduler = (spk_scheduler, dom_scheduler)
 
         train(train_loader, model, ce, optimizer, epoch, scheduler)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
@@ -475,12 +481,14 @@ def main():
                 except Exception as e:
                     print('rm dir xvectors error:', e)
 
-        if args.scheduler == 'rop':
-            scheduler.step(valid_loss)
-        elif args.scheduler == 'cyclic':
-            continue
-        else:
-            scheduler.step()
+        # if args.scheduler == 'rop':
+        #     spkscheduler.step(valid_loss)
+        # elif args.scheduler == 'cyclic':
+        #     continue
+        # else:
+        #     scheduler.step()
+        spk_scheduler.step()
+        dom_scheduler.step()
 
         # exit(1)
 
@@ -492,6 +500,8 @@ def main():
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
+    spk_optimizer, dom_optimizer = optimizer
+    spk_scheduler, dom_scheduler = scheduler
     # lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1.
     # model.grl.set_lambda(lambda_)
 
@@ -517,23 +527,30 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         data, label_a = Variable(data), Variable(label_a)
         label_b = Variable(label_b)
-
-        all_logits, spk_embeddings_new = model(data)
-        spk_logits, spk_logits_new, dom_logits, dom_logits_new = all_logits
-
-        speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
-        speech_labels_b = speech_labels_b.cuda()
 
-        # pdb.set_trace()
-        # cos_theta, phi_theta = classfier
-        spk_label = spk_logits
-        dom_lable = dom_logits
+        all_logits, spk_embeddings = model(data)
+        spk_logits, dom_logits = all_logits
 
-        if args.loss_type == 'soft':
-            spk_loss = ce_criterion(spk_logits, true_labels_a) + \
-                       ce_criterion(spk_logits_new, true_labels_a)
+        # Training the discriminator
+        dom_loss = ce_criterion(dom_logits, true_labels_b)
+
+        dom_optimizer.zero_grad()
+        dom_loss.backward()
+        dom_optimizer.step()
+
+        # Training the Generator
+        spk_loss = ce_criterion(spk_logits, true_labels_a)
+        new_dom_logits = model.classifier_dom(spk_embeddings)
+        loss = spk_loss + args.dom_ratio * ce_criterion(new_dom_logits, true_labels_b)
+
+        spk_optimizer.zero_grad()
+        loss.backward()
+        spk_optimizer.step()
+
+        # speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
+        # speech_labels_b = speech_labels_b.cuda()
 
         # elif args.loss_type == 'asoft':
         #     spk_label, _ = spk_label
@@ -544,23 +561,20 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         #     spk_loss = args.loss_ratio * loss_xent + loss_cent
         # elif args.loss_type == 'amsoft':
         #     spk_loss = xe_criterion(logits_spk, true_labels_a)
-        dom_loss = (args.dom_ratio * ce_criterion(dom_lable, true_labels_b) + ce_criterion(dom_logits_new,
-                                                                                           speech_labels_b))
-        loss = spk_loss + dom_loss
 
         # if args.sim_ratio:
         #     spk_dom_sim_loss = torch.cosine_similarity(feat_spk, feat_dom, dim=1).pow(2).mean()
         #     spk_dom_sim_loss = args.sim_ratio * spk_dom_sim_loss
         #     loss += spk_dom_sim_loss
 
-        predicted_labels_a = output_softmax(spk_label)
+        predicted_labels_a = output_softmax(spk_logits)
 
         predicted_one_labels_a = torch.max(predicted_labels_a, dim=1)[1]
         minibatch_correct_a = float((predicted_one_labels_a.cuda() == true_labels_a.cuda()).sum().item())
         minibatch_acc_a = minibatch_correct_a / len(predicted_one_labels_a)
         correct_a += minibatch_correct_a
 
-        predicted_labels_b = output_softmax(dom_lable)
+        predicted_labels_b = output_softmax(dom_logits)
         predicted_one_labels_b = torch.max(predicted_labels_b, dim=1)[1]
         minibatch_correct_b = float((predicted_one_labels_b.cuda() == true_labels_b.cuda()).sum().item())
         minibatch_acc_b = minibatch_correct_b / len(predicted_one_labels_b)
@@ -573,16 +587,16 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         total_loss += float(loss.item())
 
         # compute gradient and update weights
-        optimizer.zero_grad()
-        loss.backward()
+        # optimizer.zero_grad()
+        # loss.backward()
 
         if args.loss_type == 'center' and args.loss_ratio != 0:
             for param in xe_criterion.parameters():
                 param.grad.data *= (1. / args.loss_ratio)
 
-        optimizer.step()
-        if args.scheduler == 'cyclic':
-            scheduler.step()
+        # optimizer.step()
+        # if args.scheduler == 'cyclic':
+        #     scheduler.step()
 
         if batch_idx % args.log_interval == 0:
             print_desc = 'Train Epoch {:2d}: [{:4d}/{:4d}({:3.0f}%)]'.format(epoch,
@@ -590,7 +604,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                                                                              len(train_loader),
                                                                              100. * batch_idx / len(train_loader))
 
-            print_desc += ' Loss[ Avg: {:.4f} Spk: {:.4f} Dom: {:.4f}]'.format(total_loss / (batch_idx + 1),
+            print_desc += ' Loss[ Gen: {:.4f} Spk: {:.4f} Dom: {:.4f}]'.format(total_loss / (batch_idx + 1),
                                                                                total_loss_a / (batch_idx + 1),
                                                                                total_loss_b / (batch_idx + 1))
             # print_desc += 'SimLoss: {:.4f}'.format(total_loss_c / (batch_idx + 1))
@@ -634,7 +648,7 @@ def valid_class(valid_loader, model, ce, epoch):
             data = data.cuda()
 
             all_logits, _ = model(data)
-            out_a, _, out_b, _ = all_logits
+            out_a,out_b = all_logits
 
             if args.loss_type == 'asoft':
                 predicted_labels_a, _ = out_a

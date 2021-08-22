@@ -1349,26 +1349,21 @@ class DomainNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, model, embedding_size, num_classes_a, num_classes_b, **kwargs):
+    def __init__(self, model, embedding_size, num_classes_b, **kwargs):
 
         super(DomainNet, self).__init__()
 
         self.xvectors = model
         self.embedding_size = embedding_size
 
-        self.grl = GRL(lambda_=0.)
+        # self.grl = GRL(lambda_=0.)
         self.classifier_dom = nn.Sequential(
+            GRL(lambda_=0.),
             nn.Linear(self.embedding_size, int(self.embedding_size / 2)),
             nn.ReLU(inplace=True),
             nn.BatchNorm1d(int(self.embedding_size / 2)),
             nn.Linear(int(self.embedding_size / 2), num_classes_b),
         )
-        self.fc2 = nn.Sequential(
-            nn.Linear(int(num_classes_b + self.embedding_size), self.embedding_size),
-            nn.ReLU(inplace=True),
-            nn.BatchNorm1d(self.embedding_size)
-        )
-        self.classifier_spk = nn.Linear(self.embedding_size, num_classes_a)
 
         for m in self.modules():  # 对于各层参数的初始化
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
@@ -1380,18 +1375,12 @@ class DomainNet(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        logits, embeddings = self.xvectors(x)
-
+        spk_logits, embeddings = self.xvectors(x)
         # dom_x = self.grl(embeddings)
         dom_logits = self.classifier_dom(embeddings)
+        all_logits = (spk_logits, dom_logits)
 
-        spk_embeddings_new = torch.cat((embeddings, dom_logits), dim=1)
-        spk_embeddings_new = self.fc2(spk_embeddings_new)
-        spk_logits_new = self.classifier_spk(spk_embeddings_new)
-        dom_logits_new = self.classifier_dom(spk_embeddings_new)
-        all_logits = (logits, spk_logits_new, dom_logits, dom_logits_new)
-
-        return all_logits, spk_embeddings_new
+        return all_logits, embeddings
 
 
 class GradResNet(nn.Module):
