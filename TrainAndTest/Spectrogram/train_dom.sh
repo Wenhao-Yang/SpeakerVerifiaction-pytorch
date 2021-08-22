@@ -108,7 +108,7 @@ if [ $stage -le 50 ]; then
 #  channels=
   for loss in soft; do
     echo -e "\033[1;4;31m Stage ${stage}: Train ${model} with ${loss} loss in ${datasets}.\033[0m\n"
-    python TrainAndTest/train_egs_dom.py \
+    python TrainAndTest/train_egs_domain.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
