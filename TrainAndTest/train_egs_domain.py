@@ -492,12 +492,17 @@ def main():
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
-            model.eval()
+            xvector_model, classifier_spk, classifier_dom = model
+            xvector_model.eval()
+            classifier_spk.eval()
+            classifier_dom.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-            model_state_dict = model.module.state_dict() \
+            model_state_dict = xvector_model.module.state_dict() \
                                    if isinstance(model, DistributedDataParallel) else model.state_dict(),
             torch.save({'epoch': epoch,
                         'state_dict': model_state_dict,
+                        'spk_classifier': classifier_spk,
+                        'dom_classifier': classifier_dom,
                         'criterion': ce},
                        check_path)
 
