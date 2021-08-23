@@ -59,7 +59,6 @@ except AttributeError:
         tensor._backward_hooks = backward_hooks
         return tensor
 
-
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 # Training settings
@@ -238,7 +237,6 @@ if args.cuda:
 
 # create logger Define visulaize SummaryWriter instance
 writer = SummaryWriter(log_dir=args.check_path, filename_suffix='_first')
-
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.txt'))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
@@ -705,9 +703,10 @@ def valid_class(valid_loader, model, ce, epoch):
     valid_loss = spk_loss + args.dom_ratio * dis_loss
 
     torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Loss: Spk {:.6f} Domain {:.6f}.\33[0m'.format(spk_valid_accuracy,
-                                                                                                     spk_valid_accuracy,
-                                                                                                     spk_loss, dis_loss))
+    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Loss: Spk {:.6f} Domain {:.6f}.\33[0m'.format(
+        spk_valid_accuracy,
+        dom_valid_accuracy,
+        spk_loss, dis_loss))
 
     return valid_loss
 
