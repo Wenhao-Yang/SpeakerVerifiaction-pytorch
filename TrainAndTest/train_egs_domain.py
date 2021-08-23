@@ -75,6 +75,7 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
+parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
 parser.add_argument('--speech-dom', default=11, type=int, help='set domain in dataset')
 
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
@@ -455,6 +456,7 @@ def main():
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
+    steps = args.domain_steps
 
     for epoch in range(start, end):
         spk_lr_string = '\n\33[1;34m Spk \'{}\' learning rate is '.format(args.optimizer)
@@ -468,7 +470,7 @@ def main():
         optimizer = (spk_optimizer, dom_optimizer)
         scheduler = (spk_scheduler, dom_scheduler)
 
-        train(train_loader, model, ce, optimizer, epoch, scheduler)
+        train(train_loader, model, ce, optimizer, epoch, scheduler, steps)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
@@ -506,7 +508,7 @@ def main():
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     exit(0)
 
-def train(train_loader, model, ce, optimizer, epoch, scheduler):
+def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     # switch to evaluate mode
     model.train()
     spk_optimizer, dom_optimizer = optimizer
@@ -539,14 +541,15 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
 
-        all_logits, spk_embeddings = model(data)
-        spk_logits, dom_logits = all_logits
+        for i in range(steps):
+            all_logits, spk_embeddings = model(data)
+            spk_logits, dom_logits = all_logits
 
-        # Training the discriminator
-        dom_loss = ce_criterion(dom_logits, true_labels_b)
-        dom_optimizer.zero_grad()
-        dom_loss.backward(retain_graph=True)
-        dom_optimizer.step()
+            # Training the discriminator
+            dom_loss = ce_criterion(dom_logits, true_labels_b)
+            dom_optimizer.zero_grad()
+            dom_loss.backward(retain_graph=True)
+            dom_optimizer.step()
 
 
         # Training the Generator
