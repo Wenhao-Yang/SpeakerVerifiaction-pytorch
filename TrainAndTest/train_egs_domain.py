@@ -529,9 +529,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     # switch to evaluate mode
     xvector_model, classifier_spk, classifier_dom = model
 
-    xvector_model = xvector_model.train()
-    classifier_spk = classifier_spk.train()
-    classifier_dom = classifier_dom.train()
+    xvector_model.train()
+    classifier_spk.train()
+    classifier_dom.train()
 
     spk_optimizer, dom_optimizer = optimizer
     spk_scheduler, dom_scheduler = scheduler
