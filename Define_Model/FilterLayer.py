@@ -372,7 +372,7 @@ class RevGrad(torch.autograd.Function):
             grad_input = -grad_output
         return grad_input
 
-class RevGrad(nn.Module):
+class RevGradLayer(nn.Module):
     def __init__(self, *args, **kwargs):
         """
         A gradient reversal layer.
@@ -380,7 +380,6 @@ class RevGrad(nn.Module):
         This layer has no parameters, and simply reverses the gradient
         in the backward pass.
         """
-
         super().__init__(*args, **kwargs)
 
     def forward(self, input_):

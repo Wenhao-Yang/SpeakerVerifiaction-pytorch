@@ -20,8 +20,7 @@ from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
-from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
-    RevGrad
+from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, RevGradLayer
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2
@@ -1359,7 +1358,7 @@ class DomainNet(nn.Module):
 
         # self.grl = GRL(lambda_=0.)
         self.classifier_dom = nn.Sequential(
-            RevGrad(),
+            RevGradLayer(),
             nn.Linear(self.embedding_size, int(self.embedding_size / 2)),
             nn.ReLU(inplace=True),
             nn.BatchNorm1d(int(self.embedding_size / 2)),
