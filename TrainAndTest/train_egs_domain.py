@@ -488,7 +488,7 @@ def main():
         optimizer = (spk_optimizer, dom_optimizer)
         scheduler = (spk_scheduler, dom_scheduler)
 
-        train(train_loader, model, ce, optimizer, epoch, scheduler, steps)
+        # train(train_loader, model, ce, optimizer, epoch, scheduler, steps)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
@@ -671,7 +671,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
 def valid_class(valid_loader, model, ce, epoch):
     # switch to evaluate mode
-    model.eval()
+    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model.eval()
+    classifier_spk.eval()
+    classifier_dom.eval()
 
     spk_loss = 0.
     dis_loss = 0.
@@ -686,16 +689,13 @@ def valid_class(valid_loader, model, ce, epoch):
         for batch_idx, (data, label_a, label_b) in enumerate(valid_loader):
             data = data.cuda()
 
-            _, embeddings = model(data)
-            if isinstance(model, DistributedDataParallel):
-                out_a, out_b = model.module.classifier(embeddings)
-            else:
-                out_a, out_b = model.classifier(embeddings)
+            _, embeddings = xvector_model(data)
+            out_a = classifier_spk(embeddings)
+            out_b = classifier_dom(embeddings)
 
 
             if args.loss_type == 'asoft':
                 predicted_labels_a, _ = out_a
-
             else:
                 predicted_labels_a = out_a
             predicted_labels_b = out_b
@@ -742,10 +742,12 @@ def valid_class(valid_loader, model, ce, epoch):
 
 def valid_test(train_extract_loader, model, epoch, xvector_dir):
     # switch to evaluate mode
-    model.eval()
+    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model.eval()
+
 
     this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
-    verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
+    verification_extract(train_extract_loader, xvector_model, this_xvector_dir, epoch, test_input=args.test_input)
 
     verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
                                      xvectors_dir=this_xvector_dir,
@@ -772,10 +774,12 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
 
 def test(model, epoch, writer, xvector_dir):
+    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model.eval()
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
-    verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
+    verification_extract(extract_loader, xvector_model, this_xvector_dir, epoch, test_input=args.test_input)
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
