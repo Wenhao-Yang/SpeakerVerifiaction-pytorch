@@ -1357,7 +1357,7 @@ class DomainNet(nn.Module):
         self.embedding_size = embedding_size
 
         # self.grl = GRL(lambda_=0.)
-        self.classifier_spk = nn.Linear(embedding_size, num_classes_a),
+        self.classifier_spk = nn.Linear(embedding_size, num_classes_a)
         self.classifier_dom = nn.Sequential(
             RevGradLayer(),
             nn.Linear(self.embedding_size, num_classes_b),
