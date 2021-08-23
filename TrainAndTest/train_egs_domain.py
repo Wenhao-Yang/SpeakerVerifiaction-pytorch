@@ -488,7 +488,7 @@ def main():
         optimizer = (spk_optimizer, dom_optimizer)
         scheduler = (spk_scheduler, dom_scheduler)
 
-        # train(train_loader, model, ce, optimizer, epoch, scheduler, steps)
+        train(train_loader, model, ce, optimizer, epoch, scheduler, steps)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
