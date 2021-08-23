@@ -498,7 +498,7 @@ def main():
             classifier_dom.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             model_state_dict = xvector_model.module.state_dict() \
-                                   if isinstance(model, DistributedDataParallel) else model.state_dict(),
+                                   if isinstance(xvector_model, DistributedDataParallel) else xvector_model.state_dict(),
             torch.save({'epoch': epoch,
                         'state_dict': model_state_dict,
                         'spk_classifier': classifier_spk,
