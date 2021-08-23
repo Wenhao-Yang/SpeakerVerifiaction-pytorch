@@ -117,7 +117,6 @@ if [ $stage -le 50 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --remove-vad \
       --feat-format kaldi \
-      --inst-norm \
       --nj 10 \
       --epochs 50 \
       --lr 0.1 \
@@ -125,18 +124,19 @@ if [ $stage -le 50 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3/checkpoint_20.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5/checkpoint_20.pth \
       --embedding-size ${embedding_size} \
       --stride 1 \
       --num-valid 1 \
       --domain \
+      --domain-steps 5 \
       --dom-ratio 1 \
       --loss-ratio 0.05 \
       --sim-ratio 0 \
       --weight-decay 0.001 \
       --dropout-p 0 \
-      --gpu-id 0 \
+      --gpu-id 0,1 \
       --loss-type ${loss}
   done
 fi

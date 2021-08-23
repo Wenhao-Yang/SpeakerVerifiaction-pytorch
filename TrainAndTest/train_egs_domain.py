@@ -540,17 +540,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         label_b = Variable(label_b)
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
+        if steps>1:
+            for i in range(steps-1):
+                all_logits, spk_embeddings = model(data)
+                spk_logits, dom_logits = all_logits
 
-        for i in range(steps):
-            all_logits, spk_embeddings = model(data)
-            spk_logits, dom_logits = all_logits
+                # Training the discriminator
+                dom_loss = ce_criterion(dom_logits, true_labels_b)
+                dom_optimizer.zero_grad()
+                dom_loss.backward()
+                dom_optimizer.step()
 
-            # Training the discriminator
-            dom_loss = ce_criterion(dom_logits, true_labels_b)
-            dom_optimizer.zero_grad()
-            dom_loss.backward(retain_graph=True)
-            dom_optimizer.step()
+        all_logits, spk_embeddings = model(data)
+        spk_logits, dom_logits = all_logits
 
+        # Training the discriminator
+        dom_loss = ce_criterion(dom_logits, true_labels_b)
+        dom_optimizer.zero_grad()
+        dom_loss.backward(retain_graph=True)
+        dom_optimizer.step()
 
         # Training the Generator
         # all_logits, spk_embeddings = model(data)
