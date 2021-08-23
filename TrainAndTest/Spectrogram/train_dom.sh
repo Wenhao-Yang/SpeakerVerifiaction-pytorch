@@ -118,9 +118,9 @@ if [ $stage -le 50 ]; then
       --remove-vad \
       --feat-format kaldi \
       --nj 10 \
-      --epochs 50 \
+      --epochs 60 \
       --lr 0.1 \
-      --milestones 10,20,30,40 \
+      --milestones 12,24,36,48 \
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
