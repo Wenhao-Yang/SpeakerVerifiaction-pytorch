@@ -579,15 +579,11 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         # Training the Generator
         spk_logits = classifier_spk(spk_embeddings)
         dom_logits = classifier_dom(spk_embeddings)
-        pdb.set_trace()
         spk_loss = ce_criterion(spk_logits, true_labels_a)
 
         loss = spk_loss + args.dom_ratio * ce_criterion(dom_logits, true_labels_b)
+        loss.backward()
 
-        try:
-            loss.backward()
-        except:
-            pdb.set_trace()
         spk_optimizer.step()
         spk_optimizer.zero_grad()
 
