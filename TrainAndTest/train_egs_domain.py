@@ -36,6 +36,7 @@ from Define_Model.Loss.LossFunction import CenterLoss
 from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
+from FilterLayer import RevGradLayer
 from Process_Data import constants as c
 from Process_Data.Datasets.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -355,13 +356,21 @@ def main():
     print('Model options: {}'.format(xvector_kwargs))
     xvector_model = create_model(args.model, **xvector_kwargs)
 
-    model = DomainNet(model=xvector_model, embedding_size=args.embedding_size,
-                      num_classes_a=train_dir.num_spks, num_classes_b=train_dir.num_doms)
+    classifier_spk = nn.Linear(args.embedding_size, train_dir.num_doms)
+    classifier_dom = nn.Sequential(
+        RevGradLayer(),
+        nn.Linear(args.embedding_size, train_dir.num_doms),
+    )
+
+    # model = DomainNet(model=xvector_model, embedding_size=args.embedding_size,
+    #                   num_classes_a=train_dir.num_spks, num_classes_b=train_dir.num_doms)
 
     start_epoch = 0
     if args.save_init and not args.finetune:
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
-        torch.save(model, check_path)
+        torch.save({"xvector": xvector_model,
+                    "spk_classifier": classifier_spk,
+                    "dom_classifier": classifier_dom}, check_path)
 
     if args.resume:
         if os.path.isfile(args.resume):
@@ -370,9 +379,9 @@ def main():
             start_epoch = checkpoint['epoch']
 
             filtered = {k: v for k, v in checkpoint['state_dict'][0].items() if 'num_batches_tracked' not in k}
-            model_dict = model.state_dict()
+            model_dict = xvector_model.state_dict()
             model_dict.update(filtered)
-            model.load_state_dict(model_dict)
+            xvector_model.load_state_dict(model_dict)
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
@@ -393,8 +402,9 @@ def main():
     # rest_params = list(map(id, model.xvectors.parameters()))
     # rest_params = filter(lambda p: id(p) not in dom_params, model.parameters())
 
-    spk_optimizer = create_optimizer(model.xvectors.parameters(), args.optimizer, **opt_kwargs)
-    dom_optimizer = create_optimizer(model.classifier_dom.parameters(), args.optimizer, **opt_kwargs)
+    spk_optimizer = create_optimizer([{'params': xvector_model.parameters()},
+                                      {'params': classifier_spk.parameters()}], args.optimizer, **opt_kwargs)
+    dom_optimizer = create_optimizer(classifier_dom.parameters(), args.optimizer, **opt_kwargs)
 
     # if args.loss_type == 'center':
     #     optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
@@ -441,19 +451,25 @@ def main():
                                                  world_size=1)
             # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
-            model = DistributedDataParallel(model.cuda())
+            # model = DistributedDataParallel(model.cuda())
+            xvector_model = DistributedDataParallel(xvector_model.cuda())
+            classifier_spk = DistributedDataParallel(classifier_spk.cuda())
+            classifier_dom = DistributedDataParallel(classifier_dom.cuda())
 
         else:
-            model = model.cuda()
+            xvector_model = xvector_model.cuda()
+            classifier_spk = classifier_spk.cuda()
+            classifier_dom = classifier_dom.cuda()
 
         for i in range(len(ce)):
             if ce[i] != None:
                 ce[i] = ce[i].cuda()
         try:
-            print('Dropout is {}.'.format(model.dropout_p))
+            print('Dropout is {}.'.format(xvector_model.dropout_p))
         except:
             pass
 
+    model = (xvector_model, classifier_spk, classifier_dom)
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
@@ -511,7 +527,12 @@ def main():
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     # switch to evaluate mode
-    model.train()
+    xvector_model, classifier_spk, classifier_dom = model
+
+    xvector_model = xvector_model.train()
+    classifier_spk = classifier_spk.train()
+    classifier_dom = classifier_dom.train()
+
     spk_optimizer, dom_optimizer = optimizer
     spk_scheduler, dom_scheduler = scheduler
     # lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1.
@@ -542,30 +563,29 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
 
-
-        _, spk_embeddings = model(data)
+        _, spk_embeddings = xvector_model(data)
 
         # Training the discriminator
         domain_embeddings = spk_embeddings.detach()
         for i in range(steps):
-            dom_logits = model.module.classifier_dom(domain_embeddings) if isinstance(model, DistributedDataParallel) else model.classifier_dom(domain_embeddings)
+            dom_logits = classifier_dom(domain_embeddings)
             dom_loss = ce_criterion(dom_logits, true_labels_b)
 
             dom_loss.backward()
             dom_optimizer.step()
             dom_optimizer.zero_grad()
 
-        # Training the discriminator
-        spk_logits, dom_logits = model.module.classifier(spk_embeddings) if isinstance(model, DistributedDataParallel) else model.classifier(domain_embeddings)
 
         # Training the Generator
+        spk_logits = classifier_spk(spk_embeddings)
+        dom_logits = classifier_dom(spk_embeddings)
+
         spk_loss = ce_criterion(spk_logits, true_labels_a)
         loss = spk_loss + args.dom_ratio * ce_criterion(dom_logits, true_labels_b)
 
         loss.backward()
         spk_optimizer.step()
         spk_optimizer.zero_grad()
-
 
         # speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
         # speech_labels_b = speech_labels_b.cuda()
