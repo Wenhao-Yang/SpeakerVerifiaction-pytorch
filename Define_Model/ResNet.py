@@ -1349,7 +1349,7 @@ class DomainNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, model, embedding_size, num_classes_b, **kwargs):
+    def __init__(self, model, embedding_size, num_classes_a, num_classes_b, **kwargs):
 
         super(DomainNet, self).__init__()
 
@@ -1357,12 +1357,10 @@ class DomainNet(nn.Module):
         self.embedding_size = embedding_size
 
         # self.grl = GRL(lambda_=0.)
+        self.classifier_spk = nn.Linear(embedding_size, num_classes_a),
         self.classifier_dom = nn.Sequential(
             RevGradLayer(),
-            nn.Linear(self.embedding_size, int(self.embedding_size / 2)),
-            nn.ReLU(inplace=True),
-            nn.BatchNorm1d(int(self.embedding_size / 2)),
-            nn.Linear(int(self.embedding_size / 2), num_classes_b),
+            nn.Linear(self.embedding_size, num_classes_b),
         )
 
         for m in self.modules():  # 对于各层参数的初始化
@@ -1375,12 +1373,13 @@ class DomainNet(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        spk_logits, embeddings = self.xvectors(x)
-        # dom_x = self.grl(embeddings)
-        dom_logits = self.classifier_dom(embeddings)
-        all_logits = (spk_logits, dom_logits)
+        return self.xvectors(x)
 
-        return all_logits, embeddings
+    def classifier(self, embeddings):
+        spk_logits = self.classifier_spk(embeddings)
+        dom_logits = self.classifier_dom(embeddings)
+
+        return spk_logits, dom_logits
 
 
 class GradResNet(nn.Module):

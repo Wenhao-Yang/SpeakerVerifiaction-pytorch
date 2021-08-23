@@ -346,7 +346,7 @@ def main():
                       'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                       'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                       'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                      'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                      'resnet_size': args.resnet_size, 'num_classes': 0,
                       'num_classes_b': train_dir.num_doms,
                       'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
                       'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
@@ -355,7 +355,8 @@ def main():
     print('Model options: {}'.format(xvector_kwargs))
     xvector_model = create_model(args.model, **xvector_kwargs)
 
-    model = DomainNet(model=xvector_model, embedding_size=args.embedding_size, num_classes_b=train_dir.num_doms)
+    model = DomainNet(model=xvector_model, embedding_size=args.embedding_size,
+                      num_classes_a=train_dir.num_spks, num_classes_b=train_dir.num_doms)
 
     start_epoch = 0
     if args.save_init and not args.finetune:
@@ -540,38 +541,30 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         label_b = Variable(label_b)
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
-        if steps>1:
-            for i in range(steps-1):
-                all_logits, spk_embeddings = model(data)
-                spk_logits, dom_logits = all_logits
 
-                # Training the discriminator
-                dom_loss = ce_criterion(dom_logits, true_labels_b)
-                dom_optimizer.zero_grad()
-                dom_loss.backward()
-                dom_optimizer.step()
 
-        all_logits, spk_embeddings = model(data)
-        spk_logits, dom_logits = all_logits
+        _, spk_embeddings = model(data)
 
         # Training the discriminator
-        dom_loss = ce_criterion(dom_logits, true_labels_b)
-        dom_optimizer.zero_grad()
-        dom_loss.backward(retain_graph=True)
-        dom_optimizer.step()
+        domain_embeddings = spk_embeddings.detach()
+        for i in range(steps):
+            dom_logits = model.module.classifier_dom(domain_embeddings) if isinstance(model, DistributedDataParallel) else model.classifier_dom(domain_embeddings)
+            dom_loss = ce_criterion(dom_logits, true_labels_b)
+
+            dom_loss.backward()
+            dom_optimizer.step()
+            dom_optimizer.zero_grad()
+
+        # Training the discriminator
+        spk_logits, dom_logits = model.module.classifier(spk_embeddings) if isinstance(model, DistributedDataParallel) else model.classifier(domain_embeddings)
 
         # Training the Generator
-        # all_logits, spk_embeddings = model(data)
-        # spk_logits, dom_logits = all_logits
         spk_loss = ce_criterion(spk_logits, true_labels_a)
-        if isinstance(model, DistributedDataParallel):
-            new_dom_logits = model.module.classifier_dom(spk_embeddings)
-        else:
-            new_dom_logits = model.classifier_dom(spk_embeddings)
-        loss = spk_loss + args.dom_ratio * ce_criterion(new_dom_logits, true_labels_b)
-        spk_optimizer.zero_grad()
+        loss = spk_loss + args.dom_ratio * ce_criterion(dom_logits, true_labels_b)
+
         loss.backward()
         spk_optimizer.step()
+        spk_optimizer.zero_grad()
 
 
         # speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
@@ -673,8 +666,12 @@ def valid_class(valid_loader, model, ce, epoch):
         for batch_idx, (data, label_a, label_b) in enumerate(valid_loader):
             data = data.cuda()
 
-            all_logits, _ = model(data)
-            out_a,out_b = all_logits
+            _, embeddings = model(data)
+            if isinstance(model, DistributedDataParallel):
+                out_a, out_b = model.module.classifier(embeddings)
+            else:
+                out_a, out_b = model.classifier(embeddings)
+
 
             if args.loss_type == 'asoft':
                 predicted_labels_a, _ = out_a
