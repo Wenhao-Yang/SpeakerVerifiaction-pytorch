@@ -130,6 +130,36 @@ ResNet34
 
 ### . To do list
 
+### X. Miscellaneous
+
+#### Mixed precision training test
+
+1.Result:
+1.1 torch with one 2080ti ThinResNet for one epoch
+
+```text
+Normal torch
+> Running 10.9361 minutes for Epoch  1, GPU Memory-3799M: 
+> Train Accuracy: 17.641670%, Avg loss: 4.453071.
+  Valid Accuracy: 24.607762%, Avg loss: 3.693921.
+  Train EER: 14.4528%, Threshold: 0.5362, mindcf-0.01: 0.8898, mindcf-0.001: 0.9166. 
+  Test  ERR: 12.7572%, Threshold: 0.5246, mindcf-0.01: 0.8408, mindcf-0.001: 0.9176.
+
+Nvidia Apex
+> Running 9.1049 minutes for Epoch  1, GPU Memory-3799M: 
+> Train Accuracy: 17.752310%, Avg loss: 4.443472.
+  Valid Accuracy: 23.905863%, Avg loss: 3.808081.
+  Train EER: 13.8477%, Threshold: 0.5310, mindcf-0.01: 0.8706, mindcf-0.001: 0.9282. 
+  Test  ERR: 12.7784%, Threshold: 0.5301, mindcf-0.01: 0.8184, mindcf-0.001: 0.8848. 
+
+Torch amp
+> Running 8.9960 minutes for Epoch  1, GPU Memory-3729M: 
+> Train Accuracy: 17.992458%, Avg loss: 4.410025.
+  Valid Accuracy: 30.470685%, Avg loss: 3.432679.
+  Train EER: 14.8058%, Threshold: 0.4383, mindcf-0.01: 0.9010, mindcf-0.001: 0.9551. 
+  Test  ERR: 12.8420%, Threshold: 0.4092, mindcf-0.01: 0.7864, mindcf-0.001: 0.8909.
+```
+
 Work accomplished so far:
 
 - [x] Models implementation
