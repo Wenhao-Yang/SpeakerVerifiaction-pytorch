@@ -131,7 +131,7 @@ if [ $stage -le 50 ]; then
       --stride 1 \
       --num-valid 1 \
       --domain \
-      --dom-ratio 0.1 \
+      --dom-ratio 1 \
       --loss-ratio 0.05 \
       --sim-ratio 0 \
       --weight-decay 0.001 \

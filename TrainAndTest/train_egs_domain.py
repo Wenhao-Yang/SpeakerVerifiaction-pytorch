@@ -303,7 +303,15 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    print('Parsed options: {}'.format(vars(args)))
+    opts = vars(args)
+    keys = list(opts.keys())
+    keys.sort()
+
+    options = []
+    for k in keys:
+        options.append("\'%s\': \'%s\'" % (str(k), str(opts[k])))
+
+    print('Parsed options: \n{ %s }' % (', '.join(options)))
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     # instantiate model and initialize weights
@@ -641,7 +649,8 @@ def valid_class(valid_loader, model, ce, epoch):
     # switch to evaluate mode
     model.eval()
 
-    total_loss = 0.
+    spk_loss = 0.
+    dis_loss = 0.
     ce_criterion, xe_criterion = ce
     softmax = nn.Softmax(dim=1)
     correct_a = 0.
@@ -663,8 +672,11 @@ def valid_class(valid_loader, model, ce, epoch):
                 predicted_labels_a = out_a
             predicted_labels_b = out_b
 
-            true_labels_a = Variable(label_a.cuda())
-            true_labels_b = Variable(label_b.cuda())
+            true_labels_a = label_a.cuda()
+            true_labels_b = label_b.cuda()
+
+            loss_a = ce_criterion(out_a, true_labels_a)
+            loss_b = ce_criterion(out_b, true_labels_b)
 
             # pdb.set_trace()
             predicted_one_labels_a = softmax(predicted_labels_a)
@@ -679,6 +691,8 @@ def valid_class(valid_loader, model, ce, epoch):
             correct_b += batch_correct_b
 
             total_datasize += len(predicted_one_labels_a)
+            spk_loss += float(loss_a.item())
+            dis_loss += float(loss_b.item())
 
     spk_valid_accuracy = 100. * correct_a / total_datasize
     dom_valid_accuracy = 100. * correct_b / total_datasize
@@ -686,12 +700,14 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Spk_Valid_Accuracy', spk_valid_accuracy, epoch)
     writer.add_scalar('Train/Dom_Valid_Accuracy', dom_valid_accuracy, epoch)
 
-    valid_loss = total_loss / len(valid_loader)
+    spk_loss /= len(valid_loader)
+    dis_loss /= len(valid_loader)
+    valid_loss = spk_loss + args.dom_ratio * dis_loss
 
     torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Avg loss: {:.6f}.\33[0m'.format(spk_valid_accuracy,
+    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Loss: Spk {:.6f} Domain {:.6f}.\33[0m'.format(spk_valid_accuracy,
                                                                                                      spk_valid_accuracy,
-                                                                                                     valid_loss))
+                                                                                                     spk_loss, dis_loss))
 
     return valid_loss
 
