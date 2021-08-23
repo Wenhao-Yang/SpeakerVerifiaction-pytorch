@@ -357,7 +357,7 @@ def main():
     print('Model options: {}'.format(xvector_kwargs))
     xvector_model = create_model(args.model, **xvector_kwargs)
 
-    classifier_spk = nn.Linear(args.embedding_size, train_dir.num_doms)
+    classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)
     classifier_dom = nn.Sequential(
         RevGradLayer(),
         nn.Linear(args.embedding_size, train_dir.num_doms),
