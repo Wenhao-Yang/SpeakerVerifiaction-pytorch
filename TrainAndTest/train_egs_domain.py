@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import pdb
 import shutil
 import sys
 import time
@@ -583,7 +584,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         spk_loss = ce_criterion(spk_logits, true_labels_a)
         loss = spk_loss + args.dom_ratio * ce_criterion(dom_logits, true_labels_b)
 
-        loss.backward()
+        try:
+            loss.backward()
+        except:
+            pdb.set_trace()
         spk_optimizer.step()
         spk_optimizer.zero_grad()
 
