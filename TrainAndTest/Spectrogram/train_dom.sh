@@ -125,8 +125,8 @@ if [ $stage -le 50 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_adversarial/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_adversarial/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3/checkpoint_20.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3/checkpoint_20.pth \
       --embedding-size ${embedding_size} \
       --stride 1 \
       --num-valid 1 \
