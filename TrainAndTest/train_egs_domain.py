@@ -591,6 +591,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
         spk_optimizer.step()
         spk_optimizer.zero_grad()
+        dom_optimizer.zero_grad()
 
         # speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
         # speech_labels_b = speech_labels_b.cuda()
