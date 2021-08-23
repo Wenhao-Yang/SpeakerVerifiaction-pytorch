@@ -583,7 +583,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
         spk_loss = ce_criterion(spk_logits, true_labels_a)
         loss = spk_loss + args.dom_ratio * ce_criterion(dom_logits, true_labels_b)
-
+        pdb.set_trace()
         try:
             loss.backward()
         except:
