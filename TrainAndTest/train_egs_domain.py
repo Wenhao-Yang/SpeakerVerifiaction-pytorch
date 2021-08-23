@@ -36,7 +36,7 @@ from Define_Model.Loss.LossFunction import CenterLoss
 from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
-from FilterLayer import RevGradLayer
+from Define_Model.FilterLayer import RevGradLayer
 from Process_Data import constants as c
 from Process_Data.Datasets.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
