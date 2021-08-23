@@ -453,9 +453,9 @@ def main():
             # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             # model = DistributedDataParallel(model.cuda())
-            xvector_model = DistributedDataParallel(xvector_model.cuda())
-            classifier_spk = DistributedDataParallel(classifier_spk.cuda())
-            classifier_dom = DistributedDataParallel(classifier_dom.cuda())
+            xvector_model = DistributedDataParallel(xvector_model.cuda(), find_unused_parameters=True)
+            classifier_spk = DistributedDataParallel(classifier_spk.cuda(), find_unused_parameters=True)
+            classifier_dom = DistributedDataParallel(classifier_dom.cuda(), find_unused_parameters=True)
 
         else:
             xvector_model = xvector_model.cuda()
