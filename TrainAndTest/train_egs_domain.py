@@ -393,6 +393,9 @@ def main():
             model_dict = xvector_model.state_dict()
             model_dict.update(filtered)
             xvector_model.load_state_dict(model_dict)
+
+            classifier_spk = checkpoint['spk_classifier']
+            classifier_dom = checkpoint['dom_classifier']
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
