@@ -128,6 +128,8 @@ parser.add_argument('--transform', type=str, default="None", help='add a transfo
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--first-2d', action='store_true', default=False,
+                    help='replace first tdnn layer with conv2d layers')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
                     help='kernel size of conv filters')
 parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
@@ -344,7 +346,7 @@ def main():
                       'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
                       'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
                       'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm,
-                      'input_norm': args.input_norm,
+                      'input_norm': args.input_norm, 'first_2d': args.first_2d,
                       'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                       'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                       'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
@@ -699,11 +701,7 @@ def valid_class(valid_loader, model, ce, epoch):
             out_a = classifier_spk(embeddings)
             out_b = classifier_dom(embeddings)
 
-
-            if args.loss_type == 'asoft':
-                predicted_labels_a, _ = out_a
-            else:
-                predicted_labels_a = out_a
+            predicted_labels_a = out_a
             predicted_labels_b = out_b
 
             true_labels_a = label_a.cuda()
@@ -740,7 +738,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
     torch.cuda.empty_cache()
     print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Loss: Spk {:.6f} Domain {:.6f}.\33[0m'.format(spk_valid_accuracy,
-                                                                                                     spk_valid_accuracy,
+                                                                                                     dom_valid_accuracy,
                                                                                                      spk_loss, dis_loss))
 
     return valid_loss
