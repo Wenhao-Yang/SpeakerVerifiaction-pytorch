@@ -377,15 +377,16 @@ def main():
     #                   num_classes_a=train_dir.num_spks, num_classes_b=train_dir.num_doms)
 
     start_epoch = 0
+    if args.cuda:
+        if len(args.gpu_id) > 1:
+            print("Continue with gpu: %s ..." % str(args.gpu_id))
+            torch.distributed.init_process_group(backend="nccl",
+                                                 # init_method='tcp://localhost:23456',
+                                                 init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
+                                                 rank=0,
+                                                 world_size=1)
     if args.save_init and not args.finetune:
-        if args.cuda:
-            if len(args.gpu_id) > 1:
-                print("Continue with gpu: %s ..." % str(args.gpu_id))
-                torch.distributed.init_process_group(backend="nccl",
-                                                     # init_method='tcp://localhost:23456',
-                                                     init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
-                                                     rank=0,
-                                                     world_size=1)
+
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
         torch.save({"xvector": xvector_model,
                     "spk_classifier": classifier_spk,
@@ -466,12 +467,12 @@ def main():
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
-            torch.distributed.init_process_group(backend="nccl",
-                                                 # init_method='tcp://localhost:23456',
-                                                 init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
-                                                 rank=0,
-                                                 world_size=1)
-            # if args.gain
+            # torch.distributed.init_process_group(backend="nccl",
+            #                                      # init_method='tcp://localhost:23456',
+            #                                      init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
+            #                                      rank=0,
+            #                                      world_size=1)
+            # # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             # model = DistributedDataParallel(model.cuda())
             xvector_model = DistributedDataParallel(xvector_model.cuda(), find_unused_parameters=True)
