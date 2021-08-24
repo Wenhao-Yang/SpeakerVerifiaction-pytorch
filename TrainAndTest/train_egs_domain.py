@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import pdb
 import shutil
 import sys
 import time
@@ -36,6 +37,7 @@ from Define_Model.Loss.LossFunction import CenterLoss
 from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
+from Define_Model.FilterLayer import RevGradLayer
 from Process_Data import constants as c
 from Process_Data.Datasets.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -59,6 +61,7 @@ except AttributeError:
         tensor._backward_hooks = backward_hooks
         return tensor
 
+
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 # Training settings
@@ -74,6 +77,7 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
+parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
 parser.add_argument('--speech-dom', default=11, type=int, help='set domain in dataset')
 
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
@@ -124,6 +128,8 @@ parser.add_argument('--transform', type=str, default="None", help='add a transfo
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--first-2d', action='store_true', default=False,
+                    help='replace first tdnn layer with conv2d layers')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
                     help='kernel size of conv filters')
 parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
@@ -237,6 +243,7 @@ if args.cuda:
 
 # create logger Define visulaize SummaryWriter instance
 writer = SummaryWriter(log_dir=args.check_path, filename_suffix='_first')
+
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.txt'))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
@@ -339,11 +346,11 @@ def main():
                       'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
                       'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
                       'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm,
-                      'input_norm': args.input_norm,
+                      'input_norm': args.input_norm, 'first_2d': args.first_2d,
                       'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                       'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                       'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                      'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                      'resnet_size': args.resnet_size, 'num_classes': 0,
                       'num_classes_b': train_dir.num_doms,
                       'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
                       'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
@@ -352,12 +359,24 @@ def main():
     print('Model options: {}'.format(xvector_kwargs))
     xvector_model = create_model(args.model, **xvector_kwargs)
 
-    model = DomainNet(model=xvector_model, embedding_size=args.embedding_size, num_classes_b=train_dir.num_doms)
+    classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)
+    classifier_dom = nn.Sequential(
+        RevGradLayer(),
+        nn.Linear(args.embedding_size, int(args.embedding_size / 2)),
+        nn.ReLU(inplace=True),
+        nn.BatchNorm1d(int(args.embedding_size / 2)),
+        nn.Linear(int(args.embedding_size / 2), train_dir.num_doms),
+    )
+
+    # model = DomainNet(model=xvector_model, embedding_size=args.embedding_size,
+    #                   num_classes_a=train_dir.num_spks, num_classes_b=train_dir.num_doms)
 
     start_epoch = 0
     if args.save_init and not args.finetune:
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
-        torch.save(model, check_path)
+        torch.save({"xvector": xvector_model,
+                    "spk_classifier": classifier_spk,
+                    "dom_classifier": classifier_dom}, check_path)
 
     if args.resume:
         if os.path.isfile(args.resume):
@@ -366,9 +385,9 @@ def main():
             start_epoch = checkpoint['epoch']
 
             filtered = {k: v for k, v in checkpoint['state_dict'][0].items() if 'num_batches_tracked' not in k}
-            model_dict = model.state_dict()
+            model_dict = xvector_model.state_dict()
             model_dict.update(filtered)
-            model.load_state_dict(model_dict)
+            xvector_model.load_state_dict(model_dict)
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
@@ -389,8 +408,9 @@ def main():
     # rest_params = list(map(id, model.xvectors.parameters()))
     # rest_params = filter(lambda p: id(p) not in dom_params, model.parameters())
 
-    spk_optimizer = create_optimizer(model.xvectors.parameters(), args.optimizer, **opt_kwargs)
-    dom_optimizer = create_optimizer(model.classifier_dom.parameters(), args.optimizer, **opt_kwargs)
+    spk_optimizer = create_optimizer([{'params': xvector_model.parameters()},
+                                      {'params': classifier_spk.parameters()}], args.optimizer, **opt_kwargs)
+    dom_optimizer = create_optimizer(classifier_dom.parameters(), args.optimizer, **opt_kwargs)
 
     # if args.loss_type == 'center':
     #     optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
@@ -437,22 +457,29 @@ def main():
                                                  world_size=1)
             # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
-            model = DistributedDataParallel(model.cuda())
+            # model = DistributedDataParallel(model.cuda())
+            xvector_model = DistributedDataParallel(xvector_model.cuda(), find_unused_parameters=True)
+            classifier_spk = DistributedDataParallel(classifier_spk.cuda(), find_unused_parameters=True)
+            classifier_dom = DistributedDataParallel(classifier_dom.cuda(), find_unused_parameters=True)
 
         else:
-            model = model.cuda()
+            xvector_model = xvector_model.cuda()
+            classifier_spk = classifier_spk.cuda()
+            classifier_dom = classifier_dom.cuda()
 
         for i in range(len(ce)):
             if ce[i] != None:
                 ce[i] = ce[i].cuda()
         try:
-            print('Dropout is {}.'.format(model.dropout_p))
+            print('Dropout is {}.'.format(xvector_model.dropout_p))
         except:
             pass
 
+    model = (xvector_model, classifier_spk, classifier_dom)
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
+    steps = args.domain_steps
 
     for epoch in range(start, end):
         spk_lr_string = '\n\33[1;34m Spk \'{}\' learning rate is '.format(args.optimizer)
@@ -466,16 +493,21 @@ def main():
         optimizer = (spk_optimizer, dom_optimizer)
         scheduler = (spk_scheduler, dom_scheduler)
 
-        train(train_loader, model, ce, optimizer, epoch, scheduler)
+        train(train_loader, model, ce, optimizer, epoch, scheduler, steps)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
-            model.eval()
+            xvector_model, classifier_spk, classifier_dom = model
+            xvector_model.eval()
+            classifier_spk.eval()
+            classifier_dom.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-            model_state_dict = model.module.state_dict() \
-                                   if isinstance(model, DistributedDataParallel) else model.state_dict(),
+            model_state_dict = xvector_model.module.state_dict() \
+                                   if isinstance(xvector_model, DistributedDataParallel) else xvector_model.state_dict(),
             torch.save({'epoch': epoch,
                         'state_dict': model_state_dict,
+                        'spk_classifier': classifier_spk,
+                        'dom_classifier': classifier_dom,
                         'criterion': ce},
                        check_path)
 
@@ -504,12 +536,17 @@ def main():
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     exit(0)
 
-def train(train_loader, model, ce, optimizer, epoch, scheduler):
+def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     # switch to evaluate mode
-    model.train()
+    xvector_model, classifier_spk, classifier_dom = model
+
+    xvector_model.train()
+    classifier_spk.train()
+    classifier_dom.train()
+
     spk_optimizer, dom_optimizer = optimizer
     spk_scheduler, dom_scheduler = scheduler
-    # lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1.
+    lambda_ = min(2. / (1 + np.exp(-10. * (epoch-2) / args.epochs)) - 1., 0)
     # model.grl.set_lambda(lambda_)
 
     correct_a = 0.
@@ -537,29 +574,29 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
 
-        all_logits, spk_embeddings = model(data)
-        spk_logits, dom_logits = all_logits
+        _, spk_embeddings = xvector_model(data)
 
         # Training the discriminator
-        dom_loss = ce_criterion(dom_logits, true_labels_b)
-        dom_optimizer.zero_grad()
-        dom_loss.backward(retain_graph=True)
-        dom_optimizer.step()
+        domain_embeddings = spk_embeddings.detach()
+        for i in range(steps):
+            dom_logits = classifier_dom(domain_embeddings)
+            dom_loss = args.dom_ratio * ce_criterion(dom_logits, true_labels_b)
 
+            dom_loss.backward()
+            dom_optimizer.step()
+            dom_optimizer.zero_grad()
 
         # Training the Generator
-        # all_logits, spk_embeddings = model(data)
-        # spk_logits, dom_logits = all_logits
+        spk_logits = classifier_spk(spk_embeddings)
+        dom_logits = classifier_dom(spk_embeddings)
         spk_loss = ce_criterion(spk_logits, true_labels_a)
-        if isinstance(model, DistributedDataParallel):
-            new_dom_logits = model.module.classifier_dom(spk_embeddings)
-        else:
-            new_dom_logits = model.classifier_dom(spk_embeddings)
-        loss = spk_loss + args.dom_ratio * ce_criterion(new_dom_logits, true_labels_b)
-        spk_optimizer.zero_grad()
-        loss.backward()
-        spk_optimizer.step()
 
+        loss = spk_loss + args.dom_ratio * ce_criterion(dom_logits, true_labels_b) * lambda_
+        loss.backward()
+
+        spk_optimizer.step()
+        spk_optimizer.zero_grad()
+        dom_optimizer.zero_grad()
 
         # speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
         # speech_labels_b = speech_labels_b.cuda()
@@ -645,7 +682,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
 def valid_class(valid_loader, model, ce, epoch):
     # switch to evaluate mode
-    model.eval()
+    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model.eval()
+    classifier_spk.eval()
+    classifier_dom.eval()
 
     spk_loss = 0.
     dis_loss = 0.
@@ -660,14 +700,11 @@ def valid_class(valid_loader, model, ce, epoch):
         for batch_idx, (data, label_a, label_b) in enumerate(valid_loader):
             data = data.cuda()
 
-            all_logits, _ = model(data)
-            out_a,out_b = all_logits
+            _, embeddings = xvector_model(data)
+            out_a = classifier_spk(embeddings)
+            out_b = classifier_dom(embeddings)
 
-            if args.loss_type == 'asoft':
-                predicted_labels_a, _ = out_a
-
-            else:
-                predicted_labels_a = out_a
+            predicted_labels_a = out_a
             predicted_labels_b = out_b
 
             true_labels_a = label_a.cuda()
@@ -703,20 +740,21 @@ def valid_class(valid_loader, model, ce, epoch):
     valid_loss = spk_loss + args.dom_ratio * dis_loss
 
     torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Loss: Spk {:.6f} Domain {:.6f}.\33[0m'.format(
-        spk_valid_accuracy,
-        dom_valid_accuracy,
-        spk_loss, dis_loss))
+    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Loss: Spk {:.6f} Domain {:.6f}.\33[0m'.format(spk_valid_accuracy,
+                                                                                                     dom_valid_accuracy,
+                                                                                                     spk_loss, dis_loss))
 
     return valid_loss
 
 
 def valid_test(train_extract_loader, model, epoch, xvector_dir):
     # switch to evaluate mode
-    model.eval()
+    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model.eval()
+
 
     this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
-    verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
+    verification_extract(train_extract_loader, xvector_model, this_xvector_dir, epoch, test_input=args.test_input)
 
     verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
                                      xvectors_dir=this_xvector_dir,
@@ -743,10 +781,12 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
 
 def test(model, epoch, writer, xvector_dir):
+    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model.eval()
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
     extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
-    verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
+    verification_extract(extract_loader, xvector_model, this_xvector_dir, epoch, test_input=args.test_input)
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)

@@ -898,7 +898,11 @@ class TDNN_v5(nn.Module):
         if self.alpha:
             self.l2_norm = L2_Norm(self.alpha)
 
-        self.classifier = nn.Linear(embedding_size, num_classes)
+        if num_classes > 0:
+            self.classifier = nn.Linear(embedding_size, num_classes)
+        else:
+            print("Set not classifier in xvectors model!")
+            self.classifier = None
         # self.bn = nn.BatchNorm1d(num_classes)
 
         for m in self.modules():  # 对于各层参数的初始化
@@ -915,36 +919,15 @@ class TDNN_v5(nn.Module):
 
     def forward(self, x):
         # pdb.set_trace()
-        if self.filter_layer != None:
-            x = self.filter_layer(x)
-
-        if len(x.shape) == 4:
-            x = x.squeeze(1).float()
-
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
-        if self.mask_layer != None:
-            x = self.mask_layer(x)
-
-        x = self.frame1(x)
-        x = self.frame2(x)
-        x = self.frame3(x)
-        x = self.frame4(x)
-        x = self.frame5(x)
-
-        if self.dropout_layer:
-            x = self.drop(x)
-
-        # print(x.shape)
-        x = self.encoder(x)
-        embedding_a = self.segment6(x)
-        embedding_b = self.segment7(embedding_a)
-
+        x_vectors = self.xvector(x)
+        embedding_b = self.segment7(x_vectors)
         if self.alpha:
             embedding_b = self.l2_norm(embedding_b)
 
-        logits = self.classifier(embedding_b)
+        if self.classifier == None:
+            logits = ""
+        else:
+            logits = self.classifier(embedding_b)
 
         return logits, embedding_b
 
@@ -961,6 +944,7 @@ class TDNN_v5(nn.Module):
 
         if self.mask_layer != None:
             x = self.mask_layer(x)
+
         # x = x.transpose(1, 2)
         x = self.frame1(x)
         x = self.frame2(x)
@@ -974,10 +958,9 @@ class TDNN_v5(nn.Module):
         # print(x.shape)
         # x = self.encoder(x.transpose(1, 2))
         x = self.encoder(x)
-
         embedding_a = self.segment6[0](x)
 
-        return "", embedding_a
+        return embedding_a
 
 
 class TDNN_v6(nn.Module):
