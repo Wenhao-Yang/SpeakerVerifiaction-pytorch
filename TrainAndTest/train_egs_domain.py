@@ -377,20 +377,11 @@ def main():
     #                   num_classes_a=train_dir.num_spks, num_classes_b=train_dir.num_doms)
 
     start_epoch = 0
-    if args.cuda:
-        if len(args.gpu_id) > 1:
-            print("Continue with gpu: %s ..." % str(args.gpu_id))
-            torch.distributed.init_process_group(backend="nccl",
-                                                 # init_method='tcp://localhost:23456',
-                                                 init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
-                                                 rank=0,
-                                                 world_size=1)
     if args.save_init and not args.finetune:
-
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
-        torch.save({"xvector": xvector_model,
-                    "spk_classifier": classifier_spk,
-                    "dom_classifier": classifier_dom}, check_path)
+        torch.save({"xvector": xvector_model.state_dict(),
+                    "spk_classifier": classifier_spk.state_dict(),
+                    "dom_classifier": classifier_dom.state_dict()}, check_path)
 
     if args.resume:
         if os.path.isfile(args.resume):
@@ -404,7 +395,7 @@ def main():
             xvector_model.load_state_dict(model_dict)
 
             classifier_spk = checkpoint['spk_classifier']
-            classifier_dom = checkpoint['dom_classifier']
+            classifier_dom = checkpoint['spk_classifier']
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
@@ -467,12 +458,12 @@ def main():
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
-            # torch.distributed.init_process_group(backend="nccl",
-            #                                      # init_method='tcp://localhost:23456',
-            #                                      init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
-            #                                      rank=0,
-            #                                      world_size=1)
-            # # if args.gain
+            torch.distributed.init_process_group(backend="nccl",
+                                                 # init_method='tcp://localhost:23456',
+                                                 init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
+                                                 rank=0,
+                                                 world_size=1)
+            # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             # model = DistributedDataParallel(model.cuda())
             xvector_model = DistributedDataParallel(xvector_model.cuda(), find_unused_parameters=True)
@@ -520,11 +511,16 @@ def main():
             classifier_dom.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             model_state_dict = xvector_model.module.state_dict() \
-                                   if isinstance(xvector_model, DistributedDataParallel) else xvector_model.state_dict(),
+                                   if isinstance(xvector_model, DistributedDataParallel) else xvector_model.state_dict()
+            classifier_spk_dict = classifier_spk.module.state_dict() \
+                if isinstance(classifier_spk, DistributedDataParallel) else classifier_spk.state_dict()
+            classifier_dom_dict = classifier_dom.module.state_dict() \
+                if isinstance(classifier_dom, DistributedDataParallel) else classifier_dom.state_dict()
+
             torch.save({'epoch': epoch,
                         'state_dict': model_state_dict,
-                        'spk_classifier': classifier_spk,
-                        'dom_classifier': classifier_dom,
+                        'spk_classifier': classifier_spk_dict,
+                        'dom_classifier': classifier_dom_dict,
                         'criterion': ce},
                        check_path)
 
