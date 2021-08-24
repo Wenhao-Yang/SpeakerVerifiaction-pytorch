@@ -378,6 +378,14 @@ def main():
 
     start_epoch = 0
     if args.save_init and not args.finetune:
+        if args.cuda:
+            if len(args.gpu_id) > 1:
+                print("Continue with gpu: %s ..." % str(args.gpu_id))
+                torch.distributed.init_process_group(backend="nccl",
+                                                     # init_method='tcp://localhost:23456',
+                                                     init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
+                                                     rank=0,
+                                                     world_size=1)
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
         torch.save({"xvector": xvector_model,
                     "spk_classifier": classifier_spk,
