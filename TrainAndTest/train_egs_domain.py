@@ -34,6 +34,7 @@ from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
 from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss
+from Define_Model.Loss.SoftmaxLoss import ArcSoftmaxLoss
 from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
@@ -359,7 +360,11 @@ def main():
     print('Model options: {}'.format(xvector_kwargs))
     xvector_model = create_model(args.model, **xvector_kwargs)
 
-    classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)
+    if args.loss_type == 'soft':
+        classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)
+    elif args.loss_type in ['arcsoft', 'amsoft']:
+        classifier_spk = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
+
     classifier_dom = nn.Sequential(
         RevGradLayer(),
         nn.Linear(args.embedding_size, int(args.embedding_size / 2)),
@@ -396,13 +401,13 @@ def main():
     if args.loss_type == 'soft':
         xe_criterion = None
     elif args.loss_type == 'asoft':
-        ce_criterion = None
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'amsoft':
-        ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+    elif args.loss_type == 'arcsoft':
+        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
 
     # dom_params = list(map(id, model.classifier_dom.parameters()))
     # rest_params = list(map(id, model.xvectors.parameters()))
@@ -589,8 +594,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         # Training the Generator
         spk_logits = classifier_spk(spk_embeddings)
         dom_logits = classifier_dom(spk_embeddings)
-        spk_loss = ce_criterion(spk_logits, true_labels_a)
 
+        spk_loss = ce_criterion(spk_logits, true_labels_a) if xe_criterion == None else xe_criterion(spk_logits,
+                                                                                                     true_labels_a)
         loss = spk_loss + args.dom_ratio * ce_criterion(dom_logits, true_labels_b) * lambda_
         loss.backward()
 

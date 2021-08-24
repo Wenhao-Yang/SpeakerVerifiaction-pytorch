@@ -105,7 +105,7 @@ if [ $stage -le 50 ]; then
   feat=fb${input_dim}_ws25
   #  resnet_size=8
   #  kernel_size=5,5
-#  channels=
+  #  channels=
   for loss in soft; do
     echo -e "\033[1;4;31m Stage ${stage}: Train ${model} with ${loss} loss in ${datasets}.\033[0m\n"
     python TrainAndTest/train_egs_domain.py \
