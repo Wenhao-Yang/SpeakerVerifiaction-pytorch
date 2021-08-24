@@ -1360,7 +1360,10 @@ class DomainNet(nn.Module):
         self.classifier_spk = nn.Linear(embedding_size, num_classes_a)
         self.classifier_dom = nn.Sequential(
             RevGradLayer(),
-            nn.Linear(self.embedding_size, num_classes_b),
+            nn.Linear(self.embedding_size, int(self.embedding_size / 2)),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(int(self.embedding_size / 2)),
+            nn.Linear(int(self.embedding_size/2), num_classes_b),
         )
 
         for m in self.modules():  # 对于各层参数的初始化

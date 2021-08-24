@@ -362,7 +362,10 @@ def main():
     classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)
     classifier_dom = nn.Sequential(
         RevGradLayer(),
-        nn.Linear(args.embedding_size, train_dir.num_doms),
+        nn.Linear(args.embedding_size, int(args.embedding_size / 2)),
+        nn.ReLU(inplace=True),
+        nn.BatchNorm1d(int(args.embedding_size / 2)),
+        nn.Linear(int(args.embedding_size / 2), train_dir.num_doms),
     )
 
     # model = DomainNet(model=xvector_model, embedding_size=args.embedding_size,
