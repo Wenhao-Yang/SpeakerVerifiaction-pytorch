@@ -543,7 +543,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
     spk_optimizer, dom_optimizer = optimizer
     spk_scheduler, dom_scheduler = scheduler
-    lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1.
+    lambda_ = min(2. / (1 + np.exp(-10. * (epoch-2) / args.epochs)) - 1., 0)
     # model.grl.set_lambda(lambda_)
 
     correct_a = 0.
@@ -577,7 +577,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         domain_embeddings = spk_embeddings.detach()
         for i in range(steps):
             dom_logits = classifier_dom(domain_embeddings)
-            dom_loss = ce_criterion(dom_logits, true_labels_b)
+            dom_loss = args.dom_ratio * ce_criterion(dom_logits, true_labels_b)
 
             dom_loss.backward()
             dom_optimizer.step()
