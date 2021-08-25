@@ -969,6 +969,7 @@ if [ $stage -le 83 ]; then
       --loss-type ${loss} \
       --encoder-type STAP \
       --input-length var \
+      --remove-vad \
       --xvector-dir Data/xvector/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_test_epoch20_var \
       --resume Data/checkpoint/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_80.pth \
       --gpu-id 0 \
