@@ -95,10 +95,7 @@ parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi'
 parser.add_argument('--check-path', default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25',
                     help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--resume',
-                    default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25/checkpoint_10.pth', type=str,
-                    metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--resume', metavar='PATH', help='path to latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -128,7 +125,7 @@ parser.add_argument('--filter-fix', action='store_true', default=False, help='re
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
 
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
-parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
+parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
 parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
@@ -584,13 +581,15 @@ def main():
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
-
     dilation = args.dilation.split(',')
     dilation = [int(x) for x in dilation]
+
+    mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len)>1 else []
+
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
                     'first_2d': args.first_2d,
-                    'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
+                    'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
                     'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,

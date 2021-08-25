@@ -476,7 +476,7 @@ if [ $stage -le 77 ]; then
       --remove-vad \
       --log-interval 10
   done
-
+  exit
 fi
 
 if [ $stage -le 78 ]; then
