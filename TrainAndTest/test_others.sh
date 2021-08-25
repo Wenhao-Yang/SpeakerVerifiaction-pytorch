@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=92
+stage=83
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -923,6 +923,54 @@ if [ $stage -le 82 ]; then
       --input-length var \
       --xvector-dir Data/xvector/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/${test_set}_test_epoch20_var \
       --resume Data/checkpoint/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/checkpoint_20.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
+fi
+
+if [ $stage -le 83 ]; then
+  feat_type=pyfb
+  feat=fb40_ws25
+  input_norm=Mean
+  loss=arcsoft
+  encod=STAP
+  block_type=basic
+  model=TDNN_v5
+  embedding_size=256
+  train_set=cnceleb
+
+  test_set=cnceleb
+  # 20210515
+  #  Test ERR is 19.5295%, Threshold is 0.28571683168411255
+  #  mindcf-0.01 0.7313, mindcf-0.001 0.8193.
+
+  for loss in arcsoft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size 14 \
+      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim 161 \
+      --channels 512,512,512,512,1536 \
+      --context 5,3,3,5 \
+      --nj 12 \
+      --alpha 0 \
+      --margin 0.15 \
+      --s 30 \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --input-length var \
+      --xvector-dir Data/xvector/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_test_epoch20_var \
+      --resume Data/checkpoint/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_80.pt \
       --gpu-id 0 \
       --cos-sim
   done
