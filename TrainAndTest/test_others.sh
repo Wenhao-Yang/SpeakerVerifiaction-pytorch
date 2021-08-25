@@ -953,6 +953,7 @@ if [ $stage -le 83 ]; then
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
+      --trials trials_speech \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
       --feat-format kaldi \
@@ -971,9 +972,10 @@ if [ $stage -le 83 ]; then
       --encoder-type STAP \
       --input-length var \
       --remove-vad \
-      --xvector-dir Data/xvector/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_test_epoch20_var \
+      --xvector-dir Data/xvector/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_test_epoch80_var \
       --resume Data/checkpoint/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_80.pth \
       --gpu-id 0 \
+      --extract \
       --cos-sim
   done
   exit
