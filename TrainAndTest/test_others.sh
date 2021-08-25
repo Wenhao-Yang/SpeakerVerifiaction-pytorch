@@ -964,6 +964,7 @@ if [ $stage -le 83 ]; then
       --alpha 0 \
       --margin 0.15 \
       --s 30 \
+      --stride 1 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
