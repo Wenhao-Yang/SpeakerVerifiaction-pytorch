@@ -957,7 +957,7 @@ if [ $stage -le 83 ]; then
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
       --feat-format kaldi \
       --input-norm ${input_norm} \
-      --input-dim 161 \
+      --input-dim 40 \
       --channels 512,512,512,512,1500 \
       --context 5,3,3,5 \
       --nj 12 \
