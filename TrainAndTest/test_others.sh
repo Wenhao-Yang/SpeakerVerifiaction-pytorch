@@ -691,7 +691,7 @@ if [ $stage -le 79 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox2
-  test_set=sitw
+  test_set=cnceleb
 
   # Training set: voxceleb 2 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
@@ -729,13 +729,14 @@ if [ $stage -le 79 ]; then
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
   # |  sitw-eval   |   3.4445%   |   0.3201    |   0.3290    |    0.5059    | 20210813 13:45:34 |
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
-  for subset in dev eval; do # 32,128,512; 8,32,128
+  for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
+      --trials trials_speech \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
       --feat-format kaldi \
@@ -942,8 +943,13 @@ if [ $stage -le 83 ]; then
 
   test_set=cnceleb
   # 20210515
-  #  Test ERR is 19.5295%, Threshold is 0.28571683168411255
-  #  mindcf-0.01 0.7313, mindcf-0.001 0.8193.
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #|   Test Set   |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test |  16.8387%   |   0.1933    |   0.7987    |    0.8964    | 20210825 20:54:13 |
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-spee |   7.9099%   |   0.2843    |   0.4350    |    0.5942    | 20210825 21:01:33 |
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
 
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
@@ -953,7 +959,7 @@ if [ $stage -le 83 ]; then
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials trials_speech \
+      --trials trials_singing \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
       --feat-format kaldi \
