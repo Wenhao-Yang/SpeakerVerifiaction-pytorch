@@ -781,8 +781,8 @@ def main():
                                                  rank=0,
                                                  world_size=1)
             # if args.gain
-            # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
-            model = DistributedDataParallel(model.cuda())
+            model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
+            # model = DistributedDataParallel(model.cuda())
 
 
         else:
