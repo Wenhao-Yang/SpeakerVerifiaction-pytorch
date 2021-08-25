@@ -958,7 +958,7 @@ if [ $stage -le 83 ]; then
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --input-dim 161 \
-      --channels 512,512,512,512,1536 \
+      --channels 512,512,512,512,1500 \
       --context 5,3,3,5 \
       --nj 12 \
       --alpha 0 \
