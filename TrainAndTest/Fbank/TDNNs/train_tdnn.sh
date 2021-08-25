@@ -471,7 +471,7 @@ if [ $stage -le 77 ]; then
       --loss-ratio ${loss_ratio} \
       --lr-ratio ${lr_ratio} \
       --loss-type ${loss} \
-      --margin 0.2 \
+      --margin 0.15 \
       --s 30 \
       --remove-vad \
       --log-interval 10
