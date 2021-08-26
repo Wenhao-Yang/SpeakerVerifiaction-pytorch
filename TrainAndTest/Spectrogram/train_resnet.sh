@@ -136,6 +136,7 @@ if [ $stage -le 21 ]; then
       --input-dim 161 \
       --block-type ${block_type} \
       --fast none1 \
+      --red-ratio 8 \
       --stride 2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \

@@ -460,7 +460,7 @@ class ThinResNet(nn.Module):
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None,
-                 mask='None', mask_len=10,
+                 mask='None', mask_len=10, red_ratio=8,
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -490,9 +490,9 @@ class ThinResNet(nn.Module):
         self.inplanes = self.num_filter[0]
 
         if block_type == "seblock":
-            block = SEBasicBlock
+            block = SEBasicBlock()
         elif block_type == 'cbam':
-            block = CBAMBlock
+            block = CBAMBlock(reduction_ratio=red_ratio)
         elif block_type in ['basic', 'None']:
             block = BasicBlock if resnet_size < 50 else Bottleneck
 
