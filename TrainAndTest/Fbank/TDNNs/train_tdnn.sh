@@ -450,7 +450,7 @@ if [ $stage -le 77 ]; then
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0005 \
-      --lr 0.1 \
+      --lr 0.001 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -462,7 +462,7 @@ if [ $stage -le 77 ]; then
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_13.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \

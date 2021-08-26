@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=92
+stage=83
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -691,7 +691,7 @@ if [ $stage -le 79 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox2
-  test_set=sitw
+  test_set=cnceleb
 
   # Training set: voxceleb 2 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
@@ -729,13 +729,14 @@ if [ $stage -le 79 ]; then
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
   # |  sitw-eval   |   3.4445%   |   0.3201    |   0.3290    |    0.5059    | 20210813 13:45:34 |
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
-  for subset in dev eval; do # 32,128,512; 8,32,128
+  for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
+      --trials trials_speech \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
       --feat-format kaldi \
@@ -924,6 +925,65 @@ if [ $stage -le 82 ]; then
       --xvector-dir Data/xvector/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/${test_set}_test_epoch20_var \
       --resume Data/checkpoint/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/checkpoint_20.pth \
       --gpu-id 0 \
+      --cos-sim
+  done
+  exit
+fi
+
+if [ $stage -le 83 ]; then
+  feat_type=pyfb
+  feat=fb40_ws25
+  input_norm=Mean
+  loss=arcsoft
+  encod=STAP
+  block_type=basic
+  model=TDNN_v5
+  embedding_size=256
+  train_set=cnceleb
+
+  test_set=cnceleb
+  # 20210515
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #|   Test Set   |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test |  16.8387%   |   0.1933    |   0.7987    |    0.8964    | 20210825 20:54:13 |
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-spee |   7.9099%   |   0.2843    |   0.4350    |    0.5942    | 20210825 21:01:33 |
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-sing |  25.5825%   |   0.1310    |   0.9821    |    0.9965    | 20210825 21:06:39 |
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+
+  for loss in arcsoft; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size 14 \
+      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --trials trials_singing \
+      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim 40 \
+      --channels 512,512,512,512,1500 \
+      --context 5,3,3,5 \
+      --nj 12 \
+      --alpha 0 \
+      --margin 0.15 \
+      --s 30 \
+      --stride 1 \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --input-length var \
+      --remove-vad \
+      --xvector-dir Data/xvector/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_test_epoch80_var \
+      --resume Data/checkpoint/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_80.pth \
+      --gpu-id 0 \
+      --extract \
       --cos-sim
   done
   exit
