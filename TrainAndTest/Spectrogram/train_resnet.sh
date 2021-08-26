@@ -101,7 +101,7 @@ if [ $stage -le 21 ]; then
   resnet_size=34
   encoder_type=STAP
   alpha=0
-  block_type=cbam
+  block_type=seblock
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
@@ -129,15 +129,15 @@ if [ $stage -le 21 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_fast_${sname}_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_fast_${sname}_var/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_stride1_${sname}_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_stride1_${sname}_var/checkpoint_10.pth \
       --kernel-size 5,5 \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
-      --fast none1 \
+      --fast none \
       --red-ratio 8 \
-      --stride 2 \
+      --stride 1 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
