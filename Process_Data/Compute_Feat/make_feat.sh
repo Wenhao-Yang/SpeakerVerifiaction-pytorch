@@ -47,22 +47,22 @@ fi
 #exit
 #stage=1000
 if [ $stage -le 1 ]; then
-  #  dataset=vox2
+    dataset=vox2
   #  feat_type=pyfb
-
-  dataset=vox1
-  feat=spect
-  feat_type=spectrogram
+#  dataset=vox1
+  feat=klsp
+  feat_type=klsp
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
-  for s in dev_log dev_aug_1m_log ; do
+#  for s in dev_log dev_aug_1m_log ; do
+  for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 1024 \
+      --input-per-spks 768 \
       --num-frames 400 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
@@ -75,7 +75,7 @@ if [ $stage -le 1 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --num-frames 400 \
-      --input-per-spks 1024 \
+      --input-per-spks 768 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
