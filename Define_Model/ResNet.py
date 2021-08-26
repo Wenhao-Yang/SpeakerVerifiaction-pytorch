@@ -559,7 +559,7 @@ class ThinResNet(nn.Module):
         self.layer2 = self._make_layer(block, self.num_filter[1], layers[1], stride=2)
         self.layer3 = self._make_layer(block, self.num_filter[2], layers[2], stride=2)
 
-        if self.fast in ['avp1', 'mxp1']:
+        if self.fast in ['avp1', 'mxp1', 'none1']:
             self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=1)
         else:
             self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=2)
