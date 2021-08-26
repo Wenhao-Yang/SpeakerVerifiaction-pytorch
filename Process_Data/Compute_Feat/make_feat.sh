@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=63
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
