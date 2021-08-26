@@ -101,7 +101,7 @@ if [ $stage -le 21 ]; then
   resnet_size=34
   encoder_type=STAP
   alpha=0
-  block_type=seblock
+  block_type=cbam
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
