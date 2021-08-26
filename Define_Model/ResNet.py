@@ -490,9 +490,10 @@ class ThinResNet(nn.Module):
         self.inplanes = self.num_filter[0]
 
         if block_type == "seblock":
-            block = SEBasicBlock()
+            block = SEBasicBlock
+            block.reduction_ratio = red_ratio
         elif block_type == 'cbam':
-            block = CBAMBlock(reduction_ratio=red_ratio)
+            block = CBAMBlock
         elif block_type in ['basic', 'None']:
             block = BasicBlock if resnet_size < 50 else Bottleneck
 
