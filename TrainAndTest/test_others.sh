@@ -961,7 +961,7 @@ if [ $stage -le 83 ]; then
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials trials_singing \
+      --trials trials_entertainment \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
       --feat-format kaldi \
