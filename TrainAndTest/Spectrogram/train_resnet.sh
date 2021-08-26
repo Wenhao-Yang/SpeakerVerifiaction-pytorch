@@ -124,7 +124,7 @@ if [ $stage -le 21 ]; then
       --random-chunk 200 400 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 40 \
+      --epochs 50 \
       --optimizer sgd \
       --patience 2 \
       --accu-steps 1 \
@@ -136,7 +136,7 @@ if [ $stage -le 21 ]; then
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
-      --stride 2 \
+      --stride 1 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
@@ -173,7 +173,7 @@ if [ $stage -le 22 ]; then
   feat_type=klsp
   sname=dev
 
-  for sname in dev ; do
+  for sname in dev; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
