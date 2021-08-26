@@ -129,9 +129,9 @@ if [ $stage -le 21 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_fast_${sname}_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_fast_${sname}_var/checkpoint_10.pth \
-      --kernel-size 5,5 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_fastk7_${sname}_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_fastk7_${sname}_var/checkpoint_10.pth \
+      --kernel-size 7,7 \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
