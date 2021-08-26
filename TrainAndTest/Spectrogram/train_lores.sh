@@ -1087,8 +1087,9 @@ fi
 if [ $stage -le 80 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
+  feat_type=klsp
   model=LoResNet
-  resnet_size=18
+  resnet_size=8
   encoder_type=None
   embedding_size=512
   block_type=cbam
@@ -1099,37 +1100,36 @@ if [ $stage -le 80 ]; then
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/spect/dev_log \
-      --train-test-dir ${lstm_dir}/data/vox1/spect/dev_log/trials_dir \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/spect/valid_log \
-      --test-dir ${lstm_dir}/data/vox1/spect/test_log \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
-      --fix-length \
+      --random-chunk 200 400 \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 32 \
+      --epochs 50 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
       --lr 0.01 \
-      --milestones 8,14,20 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/spect_egs/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_fast3/checkpoint_8.pth \
+      --milestones 10,20,30,40 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_var/checkpoint_8.pth \
       --kernel-size ${kernel} \
-      --fast \
-      --channels 32,64,128,256 \
-      --stride 1 \
+      --channels 64,128,256 \
+      --stride 2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 6 \
+      --avg-size 4 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.3 \
+      --margin 0.2 \
       --s 30 \
       --m 3 \
       --loss-ratio 0.01 \
