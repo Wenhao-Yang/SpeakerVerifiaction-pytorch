@@ -1114,7 +1114,7 @@ if [ $stage -le 80 ]; then
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.01 \
+      --lr 0.1 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_var/checkpoint_8.pth \
