@@ -1091,7 +1091,7 @@ if [ $stage -le 80 ]; then
   model=LoResNet
   resnet_size=8
   encoder_type=None
-  embedding_size=512
+  embedding_size=256
   block_type=cbam
   kernel=5,5
   alpha=0
@@ -1103,7 +1103,7 @@ if [ $stage -le 80 ]; then
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --random-chunk 200 400 \
