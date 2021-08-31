@@ -738,7 +738,7 @@ if [ $stage -le 79 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --trials trials \
-      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/vox2/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
       --feat-format kaldi \
       --input-norm Mean \

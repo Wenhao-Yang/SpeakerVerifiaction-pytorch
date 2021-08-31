@@ -921,8 +921,8 @@ class TDNN_v5(nn.Module):
         # pdb.set_trace()
         x_vectors = self.xvector(x)
         embedding_b = self.segment7(x_vectors)
-        if self.alpha:
-            embedding_b = self.l2_norm(embedding_b)
+        # if self.alpha:
+        #     embedding_b = self.l2_norm(embedding_b)
 
         if self.classifier == None:
             logits = ""
