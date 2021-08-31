@@ -919,8 +919,34 @@ class TDNN_v5(nn.Module):
 
     def forward(self, x):
         # pdb.set_trace()
-        x_vectors = self.xvector(x)
-        embedding_b = self.segment7(x_vectors)
+        # x_vectors = self.xvector(x)
+        # embedding_b = self.segment7(x_vectors)
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
+        if len(x.shape) == 4:
+            x = x.squeeze(1).float()
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+
+        x = self.frame1(x)
+        x = self.frame2(x)
+        x = self.frame3(x)
+        x = self.frame4(x)
+        x = self.frame5(x)
+
+        if self.dropout_layer:
+            x = self.drop(x)
+
+        # print(x.shape)
+        x = self.encoder(x)
+        embedding_a = self.segment6(x)
+        embedding_b = self.segment7(embedding_a)
+
         if self.alpha:
             embedding_b = self.l2_norm(embedding_b)
 
