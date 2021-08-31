@@ -122,11 +122,10 @@ if [ $stage -le 50 ]; then
       --lr 0.1 \
       --milestones 12,24,36,48 \
       --input-dim ${input_dim} \
-      --first-2d \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_first2d_domain2 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_first2d_domain2/checkpoint_21.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2/checkpoint_21.pth \
       --embedding-size ${embedding_size} \
       --stride 1 \
       --num-valid 1 \
