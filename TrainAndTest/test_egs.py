@@ -544,7 +544,7 @@ if __name__ == '__main__':
             pass
         start = args.start_epoch
         print('Epoch is : ' + str(start))
-
+        print(model)
         if args.cuda:
             model.cuda()
         # train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=True, **kwargs)
