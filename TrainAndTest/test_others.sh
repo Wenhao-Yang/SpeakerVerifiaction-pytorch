@@ -655,7 +655,7 @@ if [ $stage -le 77 ]; then
   # |  cnceleb test   |   27.6964%    |   0.2075080   |    0.9081      |     0.9997     |   20210517   |
   # +-----------------+---------------+---------------+----------------+----------------+--------------+
 
-  for subset in dev eval; do # 32,128,512; 8,32,128
+  for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
