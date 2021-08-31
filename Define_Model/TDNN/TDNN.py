@@ -379,7 +379,7 @@ class TimeDelayLayer_v5(nn.Module):
                                 padding=self.padding, dilation=self.dilation, groups=self.groups)
 
         if activation == 'relu':
-            self.nonlinearity = nn.ReLU()
+            self.nonlinearity = nn.ReLU(inplace=True)
         elif activation in ['leakyrelu', 'leaky_relu']:
             self.nonlinearity = nn.LeakyReLU()
         elif activation == 'prelu':
