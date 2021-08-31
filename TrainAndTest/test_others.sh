@@ -664,7 +664,7 @@ if [ $stage -le 77 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/aishell2/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
-      --trials trials \
+      --trials trials_30w \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 161 \
