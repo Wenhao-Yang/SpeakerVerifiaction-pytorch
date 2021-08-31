@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=83
+stage=77
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -640,7 +640,7 @@ if [ $stage -le 77 ]; then
   model=TDNN_v5
   encod=None
   dataset=aishell2
-  test_set=sitw
+  test_set=aishell2
 
   # Training set: aishell 2 Loss: arcosft
 
@@ -673,6 +673,7 @@ if [ $stage -le 77 ]; then
       --loss-type ${loss} \
       --encoder-type STAP \
       --channels 512,512,512,512,1500 \
+      --stride 1 \
       --margin 0.25 \
       --s 30 \
       --input-length var \

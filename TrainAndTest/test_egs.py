@@ -501,7 +501,7 @@ if __name__ == '__main__':
     print('Model options: {}'.format(model_kwargs))
     dist_type = 'cos' if args.cos_sim else 'l2'
     print('Testing with %s distance, ' % dist_type)
-
+    start_time = time.time()
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
         # if args.loss_type == 'asoft':
@@ -567,6 +567,10 @@ if __name__ == '__main__':
                                    loader=file_loader)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
     test(test_loader)
+
+    stop_time = time.time()
+    t = float(stop_time - start_time)
+    print("Running %.4f minutes for testing.\n" % (t / 60 ))
 
 # python TrainAndTest/Spectrogram/train_surescnn10_kaldi.py > Log/SuResCNN10/spect_161/
 
