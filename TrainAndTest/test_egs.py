@@ -592,7 +592,7 @@ if __name__ == '__main__':
     test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
                                    loader=file_loader)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
-    test(test_loader, xvectors_dir=args.xvector_dir)
+    test(test_loader, xvector_dir=args.xvector_dir)
 
     stop_time = time.time()
     t = float(stop_time - start_time)
