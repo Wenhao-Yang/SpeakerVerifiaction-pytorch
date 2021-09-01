@@ -354,8 +354,14 @@ def save_det(save_path, score_files=[], names=[], pf_max=0.3):
                 with open(scf, 'r') as f:
                     for line in f.readlines():
                         score, label = line.split()
-                        scores.append(float(score))
-                        labels.append(int(label))
+                        try:
+                            s = float(score)
+                            l = int(label)
+                        except:
+                            l = int(score)
+                            s = float(label)
+                        scores.append(s)
+                        labels.append(l)
 
                 fnrs, fprs, _ = ComputeErrorRates(scores, labels)
                 x, y = norm.ppf(fnrs), norm.ppf(fprs)

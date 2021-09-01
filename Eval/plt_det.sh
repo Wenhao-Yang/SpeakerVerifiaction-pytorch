@@ -13,5 +13,4 @@ if [ $stage -le 0 ]; then
     --save-path Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/arcsoft/featfb40_ws25_inputMean_STAP_em512_wde4_var/vox1_test_epoch_50_var \
     --pf-max 0.1
 
-
 fi
