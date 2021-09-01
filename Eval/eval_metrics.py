@@ -324,7 +324,9 @@ def plot_DET_curve(pf_max=0.3):
 
     # FRR
     plt.figure(figsize=(12, 12))
-    plt.rc('font', family='Times New Roman')
+    # plt.rc('font', family='Times New Roman')
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # 步骤一（替换sans-serif字体）
+    plt.rcParams['axes.unicode_minus'] = False
     plt.title('DET', fontsize=22)
     plt.xlim(norm.ppf(pfa_min), norm.ppf(pfa_max))
 
