@@ -43,7 +43,8 @@ if __name__ == '__main__':
         if os.path.exists(score_files[i]):
             scores.append(score_files[i])
             names.append(score_names[i])
-
+    print("Plot det for: \n")
+    print(scores)
     if len(scores) > 0:
         save_det(save_path=save_path, score_files=scores, names=names, pf_max=args.pf_max)
         print("Saving det.png to %s !" % save_path)
