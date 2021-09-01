@@ -743,6 +743,7 @@ if [ $stage -le 79 ]; then
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
       --feat-format kaldi \
       --input-norm Mean \
+      --block-type basic \
       --input-dim 40 \
       --nj 12 \
       --embedding-size 512 \
