@@ -627,7 +627,7 @@ class ScriptVerifyDataset(data.Dataset):
                     skip_pairs += 1
 
         trials_pair = np.array(trials_pair)
-        trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
+        # trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
 
         # print('    There are {} pairs in trials with {} positive pairs'.format(len(trials_pair),
         #                                                                        positive_pairs))
@@ -647,7 +647,7 @@ class ScriptVerifyDataset(data.Dataset):
         data_a = self.loader(feat_a)
         data_b = self.loader(feat_b)
 
-        if label == 'True' or label == True:
+        if label in ['True', True]:
             label = True
         else:
             label = False
@@ -663,34 +663,13 @@ class ScriptVerifyDataset(data.Dataset):
         if num > len(self.trials_pair):
             print('%d is greater than the total number of pairs')
 
-        elif num * 0.3 > self.numofpositive:
-            indices = list(range(self.numofpositive, len(self.trials_pair)))
-            random.shuffle(indices)
-            indices = indices[:(num - self.numofpositive)]
-            positive_idx = list(range(self.numofpositive))
-
-            positive_pairs = self.trials_pair[positive_idx].copy()
-            nagative_pairs = self.trials_pair[indices].copy()
-
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
         else:
-            indices = list(range(self.numofpositive, len(self.trials_pair)))
-            random.shuffle(indices)
-            indices = indices[:(num - int(0.3 * num))]
-
-            positive_idx = list(range(self.numofpositive))
-            random.shuffle(positive_idx)
-            positive_idx = positive_idx[:int(0.3 * num)]
-            positive_pairs = self.trials_pair[positive_idx].copy()
-            nagative_pairs = self.trials_pair[indices].copy()
-
-            self.numofpositive = len(positive_pairs)
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = self.trials_pair[:num]
 
         assert len(self.trials_pair) == num
         num_positive = 0
         for x, y, z in self.trials_pair:
-            if z == 'True':
+            if z in ['True', True]:
                 num_positive += 1
 
         assert len(self.trials_pair) == num, '%d != %d' % (len(self.trials_pair), num)
