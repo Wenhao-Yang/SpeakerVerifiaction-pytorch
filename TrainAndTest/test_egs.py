@@ -110,8 +110,10 @@ parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
-parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
-parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
+parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
+parser.add_argument('--first-2d', action='store_true', default=False,
+                    help='replace first tdnn layer with conv2d layers')
+parser.add_argument('--dilation', default='1,1,1,1', type=str, metavar='CHA', help='The dilation of convs layers)')
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
 
@@ -392,7 +394,7 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
     torch.cuda.empty_cache()
 
 
-def test(test_loader):
+def test(test_loader, xvector_dir):
     # switch to evaluate mode
     labels, distances = [], []
     pbar = tqdm(enumerate(test_loader))
@@ -414,6 +416,11 @@ def test(test_loader):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
 
+    score_file = os.path.join(xvector_dir, 'score.' + time.strftime("%Y.%m.%d.%X", time.localtime()))
+    with open(score_file, 'w') as f:
+        for l in zip(labels, distances):
+            f.write(l + '\n')
+
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
@@ -425,30 +432,43 @@ def test(test_loader):
             test_subset = test_directorys[i + 3].split('_')[0]
             test_set_name = "-".join((test_directorys[i + 1], test_subset))
 
-    print('\nFor %s_distance, %d pairs:' % (dist_type, len(labels)))
-    print('\33[91m')
-    print('+--------------+-------------+-------------+-------------+--------------+-------------------+')
-    print('|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|'.format('Test Set',
-                                                                           'EER (%)',
-                                                                           'Threshold',
-                                                                           'MinDCF-0.01',
-                                                                           'MinDCF-0.001',
-                                                                           'Date'))
-    print('+--------------+-------------+-------------+-------------+--------------+-------------------+')
+    result_file = os.path.join(xvector_dir, 'result.' + time.strftime("%Y.%m.%d.%X", time.localtime()))
+    with open(result_file, 'w') as f:
+        for l in zip(labels, distances):
+            f.write(l + '\n')
+
+    result_str = ''
+    result_str += '\nFor %s_distance, %d pairs:\n\33[91m' % (dist_type, len(labels))
+    result_str += '+--------------+-------------+-------------+-------------+--------------+-------------------+\n'
+
+    result_str += '|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format('Test Set',
+                                                                                     'EER (%)',
+                                                                                     'Threshold',
+                                                                                     'MinDCF-0.01',
+                                                                                     'MinDCF-0.001',
+                                                                                     'Date')
+    result_str += '+--------------+-------------+-------------+-------------+--------------+-------------------+\n'
+
     eer = '{:.4f}%'.format(eer * 100.)
     threshold = '{:.4f}'.format(eer_threshold)
     mindcf_01 = '{:.4f}'.format(mindcf_01)
     mindcf_001 = '{:.4f}'.format(mindcf_001)
     date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-    print('|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|'.format(test_set_name,
-                                                                           eer,
-                                                                           threshold,
-                                                                           mindcf_01,
-                                                                           mindcf_001,
-                                                                           date))
-    print('+--------------+-------------+-------------+-------------+--------------+-------------------+')
-    print('\33[0m')
+    result_str += '|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format(test_set_name,
+                                                                                     eer,
+                                                                                     threshold,
+                                                                                     mindcf_01,
+                                                                                     mindcf_001,
+                                                                                     date)
+    result_str += '+--------------+-------------+-------------+-------------+--------------+-------------------+\n'
+    result_str += '\33[0m'
+
+    print(result_str)
+
+    result_file = os.path.join(xvector_dir, 'result.' + time.strftime("%Y.%m.%d.%X", time.localtime()))
+    with open(result_file, 'w') as f:
+        f.write(result_str)
 
 
 if __name__ == '__main__':
@@ -486,9 +506,14 @@ if __name__ == '__main__':
     channels = [int(x) for x in channels]
     context = args.context.split(',')
     context = [int(x) for x in context]
+    dilation = args.dilation.split(',')
+    dilation = [int(x) for x in dilation]
+
+    mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'mask_layer': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
+                    'mask_layer': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
+                    'dilation': dilation, 'first_2d': args.first_2d,
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
@@ -566,7 +591,7 @@ if __name__ == '__main__':
     test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
                                    loader=file_loader)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
-    test(test_loader)
+    test(test_loader, xvectors_dir=args.xvector_dir)
 
     stop_time = time.time()
     t = float(stop_time - start_time)

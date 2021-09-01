@@ -692,7 +692,7 @@ if [ $stage -le 79 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox2
-  test_set=cnceleb
+  test_set=vox1
 
   # Training set: voxceleb 2 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
@@ -730,7 +730,8 @@ if [ $stage -le 79 ]; then
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
   # |  sitw-eval   |   3.4445%   |   0.3201    |   0.3290    |    0.5059    | 20210813 13:45:34 |
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
-  for subset in test; do # 32,128,512; 8,32,128
+  for test_set in vox1 cnceleb; do # 32,128,512; 8,32,128
+    subset=test
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
