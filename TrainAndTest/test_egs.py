@@ -433,11 +433,6 @@ def test(test_loader, xvector_dir):
             test_subset = test_directorys[i + 3].split('_')[0]
             test_set_name = "-".join((test_directorys[i + 1], test_subset))
 
-    result_file = os.path.join(xvector_dir, 'result.' + time.strftime("%Y.%m.%d.%X", time.localtime()))
-    with open(result_file, 'w') as f:
-        for l in zip(labels, distances):
-            f.write(l + '\n')
-
     result_str = ''
     result_str += '\nFor %s_distance, %d pairs:\n\33[91m' % (dist_type, len(labels))
     result_str += '+--------------+-------------+-------------+-------------+--------------+-------------------+\n'
