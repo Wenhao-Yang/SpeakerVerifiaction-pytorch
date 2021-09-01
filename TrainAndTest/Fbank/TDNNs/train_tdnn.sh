@@ -449,7 +449,7 @@ if [ $stage -le 77 ]; then
       --milestones 10,20,30,40,50 \
       --model ${model} \
       --scheduler rop \
-      --weight-decay 0.001 \
+      --weight-decay 0.1 \
       --lr 0.001 \
       --alpha 0 \
       --feat-format kaldi \
