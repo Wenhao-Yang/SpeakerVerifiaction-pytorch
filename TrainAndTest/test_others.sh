@@ -667,6 +667,7 @@ if [ $stage -le 77 ]; then
       --trials trials_30w \
       --feat-format kaldi \
       --input-norm Mean \
+      --block-type basic \
       --input-dim 161 \
       --nj 12 \
       --embedding-size 512 \
