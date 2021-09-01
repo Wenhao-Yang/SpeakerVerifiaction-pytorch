@@ -417,7 +417,8 @@ def test(test_loader, xvector_dir):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
 
-    score_file = os.path.join(xvector_dir, 'score.' + time.strftime("%Y.%m.%d.%X", time.localtime()))
+    time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
+    score_file = os.path.join(xvector_dir, 'score.' + time_stamp)
     with open(score_file, 'w') as f:
         for l in zip(labels, distances):
             f.write(" ".join([str(i) for i in l]) + '\n')
@@ -462,7 +463,7 @@ def test(test_loader, xvector_dir):
 
     print(result_str)
 
-    result_file = os.path.join(xvector_dir, 'result.' + time.strftime("%Y.%m.%d.%X", time.localtime()))
+    result_file = os.path.join(xvector_dir, 'result.' + time_stamp)
     with open(result_file, 'w') as f:
         f.write(result_str)
 

@@ -730,7 +730,7 @@ if [ $stage -le 79 ]; then
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
   # |  sitw-eval   |   3.4445%   |   0.3201    |   0.3290    |    0.5059    | 20210813 13:45:34 |
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
-  for test_set in vox1 cnceleb; do # 32,128,512; 8,32,128
+  for test_set in vox1 aishell2 ; do # 32,128,512; 8,32,128
     subset=test
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
@@ -758,7 +758,6 @@ if [ $stage -le 79 ]; then
       --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em512_wde4_var/${test_set}_${subset}_epoch_50_var \
       --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em512_wde4_var/checkpoint_50.pth \
       --gpu-id 0 \
-      --extract \
       --remove-vad \
       --cos-sim
   done

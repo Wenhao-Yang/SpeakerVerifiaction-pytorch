@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=64
+stage=30
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -470,8 +470,8 @@ fi
 
 if [ $stage -le 30 ]; then
   # dev
-  #  dataset=aishell2
-  dataset=magic
+  dataset=aishell2
+  #  dataset=magic
   feat=pyfb
   filters=40
   feat_name=fb${filters}
