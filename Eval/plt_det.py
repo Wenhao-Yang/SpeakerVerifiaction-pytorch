@@ -18,30 +18,34 @@ from eval_metrics import save_det
 
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
-parser.add_argument('--score-dir', type=str,
-                    default='Data/xvector/LoResNet8/timit/spect_egs_None',
-                    help='path to scp file for xvectors')
-parser.add_argument('--save-path', type=str,
-                    default='Data/xvector/LoResNet8/timit/spect_egs_None',
-                    help='path to scp file for xvectors')
+parser.add_argument('--score-name', type=str, help='names for score files splited by ,')
+parser.add_argument('--score-file', type=str, help='paths for score files splited by ,')
+parser.add_argument('--save-path', type=str, help='paths for saving det plot')
 parser.add_argument('--pf-max', default=0.1, type=float,
-                    help='num of speakers to plot (default: 10)')
+                    help='the maximum value for axis(default: 0.1(10%))')
 
 args = parser.parse_args()
 
 if __name__ == '__main__':
 
-    loss_dir = args.score_dir
-    score_files = glob.glob(loss_dir + "/*/scores")
-    score_files.sort()
-    save_path = args.save_path if os.path.exists(args.save_path) else args.score_dir
+    score_files = list(args.score_file.split(','))
+    score_names = list(args.score_name.split(','))
 
-    if len(score_files) > 0:
-        names = []
-        for s in score_files:
-            names.append(os.path.basename(os.path.dirname(s)))
+    assert len(score_files) == len(score_names)
 
-        save_det(save_path=save_path, score_files=score_files, names=names, pf_max=args.pf_max)
+    save_path = args.save_path
+    if not os.path.exists(args.save_path):
+        os.makedirs(args.save_path)
+
+    scores = []
+    names = []
+    for i in range(len(score_files)):
+        if os.path.exists(score_files[i]):
+            scores.append(score_files[i])
+            names.append(score_names[i])
+
+    if len(scores) > 0:
+        save_det(save_path=save_path, score_files=scores, names=names, pf_max=args.pf_max)
         print("Saving det.png to %s !" % save_path)
     else:
-        print("There is not score files in %s !" % loss_dir)
+        print("There is not score files in %s !" % args.score_file)
