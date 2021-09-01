@@ -420,7 +420,7 @@ def test(test_loader, xvector_dir):
     score_file = os.path.join(xvector_dir, 'score.' + time.strftime("%Y.%m.%d.%X", time.localtime()))
     with open(score_file, 'w') as f:
         for l in zip(labels, distances):
-            f.write(" ".join(l) + '\n')
+            f.write(" ".join([str(i) for i in l]) + '\n')
 
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
