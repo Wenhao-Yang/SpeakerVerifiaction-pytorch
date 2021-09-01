@@ -349,7 +349,7 @@ def save_det(save_path, score_files=[], names=[], pf_max=0.3):
 
         for i, scf in enumerate(score_files):
             if os.path.exists(scf):
-
+                print(scf)
                 scores, labels = [], []
                 with open(scf, 'r') as f:
                     for line in f.readlines():
