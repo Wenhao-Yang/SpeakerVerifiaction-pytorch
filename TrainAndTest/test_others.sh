@@ -944,7 +944,6 @@ if [ $stage -le 83 ]; then
   model=TDNN_v5
   embedding_size=256
   train_set=cnceleb
-
   test_set=cnceleb
   # 20210515
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
@@ -957,7 +956,16 @@ if [ $stage -le 83 ]; then
   #| cnceleb-sing |  25.5825%   |   0.1310    |   0.9821    |    0.9965    | 20210825 21:06:39 |
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
 
-  for loss in soft arcsoft; do # 32,128,512; 8,32,128
+  # 20210902 test with fix length 300 frames
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #|   Test Set   |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #| cnceleb-test |  14.9190%   |   0.1512    |   0.7366    |    0.8458    | 20210902 12:45:19 | soft
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test |  14.8080%   |   0.1580    |   0.7482    |    0.8556    | 20210902 12:50:19 | arcsoft
+  #+--------------+-------------+-------------+-------------+--------------+-------------------+
+
+#  for loss in soft arcsoft; do # 32,128,512; 8,32,128
+  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog;do
     echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -965,7 +973,8 @@ if [ $stage -le 83 ]; then
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials trials \
+      --trials trials_${s} \
+      --score-suffix ${s} \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
       --feat-format kaldi \

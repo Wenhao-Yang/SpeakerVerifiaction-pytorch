@@ -67,6 +67,7 @@ parser.add_argument('--log-scale', action='store_true', default=False, help='log
 
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
+parser.add_argument('--score-suffix', type=str, default='', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--test-input', type=str, default='fix', help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
@@ -418,7 +419,8 @@ def test(test_loader, xvector_dir):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
 
-    time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
+    time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime()) if args.score_suffix == '' else args.score_suffix
+
     score_file = os.path.join(xvector_dir, 'score.' + time_stamp)
     with open(score_file, 'w') as f:
         for l in zip(labels, distances):
