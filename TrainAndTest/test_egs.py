@@ -436,18 +436,20 @@ def test(test_loader, xvector_dir):
         if dir == 'data':
             test_subset = test_directorys[i + 3].split('_')[0]
             test_set_name = "-".join((test_directorys[i + 1], test_subset))
+    if args.score_suffix != '':
+        test_set_name = ''.join((test_set_name, args.score_suffix[:4]))
 
     result_str = ''
     result_str += '\nFor %s_distance, %d pairs:\n\33[91m' % (dist_type, len(labels))
-    result_str += '+--------------+-------------+-------------+-------------+--------------+-------------------+\n'
+    result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
 
-    result_str += '|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format('Test Set',
+    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format('Test Set',
                                                                                      'EER (%)',
                                                                                      'Threshold',
                                                                                      'MinDCF-0.01',
                                                                                      'MinDCF-0.001',
                                                                                      'Date')
-    result_str += '+--------------+-------------+-------------+-------------+--------------+-------------------+\n'
+    result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
 
     eer = '{:.4f}%'.format(eer * 100.)
     threshold = '{:.4f}'.format(eer_threshold)
@@ -455,13 +457,13 @@ def test(test_loader, xvector_dir):
     mindcf_001 = '{:.4f}'.format(mindcf_001)
     date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-    result_str += '|{: ^14s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format(test_set_name,
+    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format(test_set_name,
                                                                                      eer,
                                                                                      threshold,
                                                                                      mindcf_01,
                                                                                      mindcf_001,
                                                                                      date)
-    result_str += '+--------------+-------------+-------------+-------------+--------------+-------------------+\n'
+    result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
     result_str += '\33[0m'
 
     print(result_str)
