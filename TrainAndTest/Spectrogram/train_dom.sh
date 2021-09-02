@@ -117,6 +117,7 @@ if [ $stage -le 50 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --remove-vad \
       --feat-format kaldi \
+      --random-chunk 200 400 \
       --nj 10 \
       --epochs 60 \
       --lr 0.1 \
