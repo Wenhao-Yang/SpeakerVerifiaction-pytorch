@@ -43,7 +43,7 @@ from Process_Data import constants as c
 from Process_Data.Datasets.KaldiDataset import ScriptTestDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import concateinputfromMFB, to2tensor, ConcateVarInput, ConcateOrgInput
+from Process_Data.audio_processing import concateinputfromMFB, to2tensor, ConcateVarInput, ConcateOrgInput, PadCollate3d
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, read_audio
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -80,6 +80,9 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
 parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
 parser.add_argument('--speech-dom', default=11, type=int, help='set domain in dataset')
+parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
+parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
+parser.add_argument('--shuffle', action='store_false', default=True, help='need to shuffle egs')
 
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
@@ -277,7 +280,7 @@ if args.test_input == 'var':
     ])
 elif args.test_input == 'fix':
     transform_V = transforms.Compose([
-        ConcateVarInput(remove_vad=args.remove_vad),
+        ConcateVarInput(num_frames=args.chunk_size, remove_vad=args.remove_vad),
     ])
 
 # pdb.set_trace()
@@ -450,9 +453,31 @@ def main():
     start = args.start_epoch + start_epoch
     print('Start epoch is : ' + str(start))
     end = start + args.epochs
+    if len(args.random_chunk) == 2 and args.random_chunk[0] < args.random_chunk[1]:
+        min_chunk_size = int(args.random_chunk[0])
+        max_chunk_size = int(args.random_chunk[1])
+        pad_dim = 2 if args.feat_format == 'kaldi' else 3
 
-    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
-    valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size,
+                                                   collate_fn=PadCollate3d(dim=pad_dim,
+                                                                           num_batch=int(
+                                                                               np.ceil(
+                                                                                   len(train_dir) / args.batch_size)),
+                                                                           min_chunk_size=min_chunk_size,
+                                                                           max_chunk_size=max_chunk_size),
+                                                   shuffle=args.shuffle, **kwargs)
+        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
+                                                   collate_fn=PadCollate3d(dim=pad_dim, fix_len=True,
+                                                                           min_chunk_size=args.chunk_size,
+                                                                           max_chunk_size=args.chunk_size + 1),
+                                                   shuffle=False, **kwargs)
+    else:
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=args.shuffle,
+                                                   **kwargs)
+        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False,
+                                                   **kwargs)
+
+    # valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
 
     if args.cuda:
