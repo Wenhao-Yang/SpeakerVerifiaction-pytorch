@@ -526,7 +526,7 @@ class KaldiTupleDataset(data.Dataset):
 
 
 class KaldiExtractDataset(data.Dataset):
-    def __init__(self, dir, transform, filer_loader, trials_file='trials', extract_trials=True):
+    def __init__(self, dir, transform, filer_loader, trials_file='trials', extract_trials=True, verbose=0):
 
         feat_scp = dir + '/feats.scp'
         trials = dir + '/%s' % trials_file
@@ -549,7 +549,7 @@ class KaldiExtractDataset(data.Dataset):
 
             uid2feat = {}
             with open(feat_scp, 'r') as u:
-                all_cls = tqdm(u.readlines())
+                all_cls = tqdm(u.readlines()) if verbose > 0 else u.readlines()
                 for line in all_cls:
                     utt_path = line.split(' ')
                     uid = utt_path[0]
@@ -570,7 +570,8 @@ class KaldiExtractDataset(data.Dataset):
         utts = list(uid2feat.keys())
         utts.sort()
         # assert len(utts) == len(trials_utts)
-        print('==> There are {} utterances in Verifcation set to extract vectors.'.format(len(utts)))
+        if verbose > 0:
+            print('==> There are {} utterances in Verifcation set to extract vectors.'.format(len(utts)))
 
         self.uid2feat = uid2feat
         self.transform = transform
@@ -682,7 +683,7 @@ class ScriptVerifyDataset(data.Dataset):
 
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
-                 loader=np.load, return_uid=False, domain=False, rand_test=False):
+                 loader=np.load, return_uid=False, domain=False, rand_test=False, verbose=1):
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
@@ -748,14 +749,16 @@ class ScriptTrainDataset(data.Dataset):
             domains.sort()
             dom_to_idx = {domains[i]: i for i in range(len(domains))}
             self.dom_to_idx = dom_to_idx
-            print("Domain idx: ", str(self.dom_to_idx))
+            if verbose > 1:
+                print("Domain idx: ", str(self.dom_to_idx))
             self.utt2dom_dict = utt2dom_dict
 
         # pdb.set_trace()
 
         speakers = [spk for spk in dataset.keys()]
         speakers.sort()
-        print('==> There are {} speakers in Dataset.'.format(len(speakers)))
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(speakers)))
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
 
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
@@ -768,8 +771,9 @@ class ScriptTrainDataset(data.Dataset):
                     continue
                 uid2feat[uid] = feat_offset
 
-        print('    There are {} utterances in Train Dataset, where {} utterances are removed.'.format(len(uid2feat),
-                                                                                                      len(invalid_uid)))
+        if verbose > 0:
+            print('    There are {} utterances in Train Dataset, where {} utterances are removed.'.format(len(uid2feat),
+                                                                                                          len(invalid_uid)))
         self.valid_set = None
         self.valid_uid2feat = None
         self.valid_utt2spk_dict = None
@@ -796,7 +800,8 @@ class ScriptTrainDataset(data.Dataset):
                         if self.domain:
                             valid_utt2dom_dict[utt] = utt2dom_dict[utt]
 
-            print('    Spliting {} utterances for Validation.'.format(len(valid_uid2feat)))
+            if verbose > 0:
+                print('    Spliting {} utterances for Validation.'.format(len(valid_uid2feat)))
             self.valid_set = valid_set
             self.valid_uid2feat = valid_uid2feat
             self.valid_utt2spk_dict = valid_utt2spk_dict
@@ -816,11 +821,14 @@ class ScriptTrainDataset(data.Dataset):
         self.transform = transform
         if samples_per_speaker == 0:
             samples_per_speaker = np.power(2, np.ceil(np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
-            print('    The number of sampling utterances for each speakers is decided by the number of total frames.')
+            if verbose > 1:
+                print(
+                    '    The number of sampling utterances for each speakers is decided by the number of total frames.')
         self.samples_per_speaker = int(samples_per_speaker)
         self.c_axis = 0 if feat_type != 'wav' else 1
         self.feat_shape = (0, self.feat_dim) if feat_type != 'wav' else (1, 0)
-        print('    Sample {} random utterances for each speakers.'.format(self.samples_per_speaker))
+        if verbose > 0:
+            print('    Sample {} random utterances for each speakers.'.format(self.samples_per_speaker))
 
         if self.return_uid or self.domain:
             self.utt_dataset = []
@@ -891,7 +899,7 @@ class ScriptTrainDataset(data.Dataset):
 class ScriptValidDataset(data.Dataset):
     def __init__(self, valid_set, spk_to_idx, valid_uid2feat, valid_utt2spk_dict,
                  transform, dom_to_idx=None, valid_utt2dom_dict=None, loader=np.load,
-                 return_uid=False, domain=False):
+                 return_uid=False, domain=False, verbose=1):
         speakers = [spk for spk in valid_set.keys()]
         speakers.sort()
 
@@ -906,7 +914,8 @@ class ScriptValidDataset(data.Dataset):
 
         uids = list(valid_uid2feat.keys())
         uids.sort()
-        print('Examples uids: ', uids[:5])
+        if verbose > 0:
+            print('Examples uids: ', uids[:5])
 
         self.uids = uids
         self.utt2spk_dict = valid_utt2spk_dict

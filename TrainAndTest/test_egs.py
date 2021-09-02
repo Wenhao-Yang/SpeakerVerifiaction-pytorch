@@ -276,16 +276,17 @@ if not args.valid:
     args.num_valid = 0
 
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
-                               transform=transform, num_valid=args.num_valid)
+                               transform=transform, num_valid=args.num_valid, verbose=args.verbose)
 
-verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader)
+verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
+                                  verbose=args.verbose)
 
 if args.valid:
     valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader,
                                    spk_to_idx=train_dir.spk_to_idx,
                                    valid_uid2feat=train_dir.valid_uid2feat,
                                    valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
-                                   transform=transform)
+                                   transform=transform, verbose=args.verbose)
 
 
 def valid(valid_loader, model):
@@ -339,45 +340,46 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
 
     if not os.path.exists(xvector_dir):
         os.makedirs(xvector_dir)
-        print('Creating xvector path: %s' % xvector_dir)
+        if args.verbose > 0:
+            print('Creating xvector path: %s' % xvector_dir)
 
-    pbar = tqdm(enumerate(test_loader))
+    pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
     vectors = []
     uids = []
-    for batch_idx, (data, uid) in pbar:
-        # print(model.conv1.weight)
-        # print(data)
-        # raise ValueError('Conv1')
+    with torch.no_grad():
+        for batch_idx, (data, uid) in pbar:
+            # print(model.conv1.weight)
+            # print(data)
+            # raise ValueError('Conv1')
+            vec_shape = data.shape
+            # pdb.set_trace()
+            if vec_shape[1] != 1:
+                # print(data.shape)
+                data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
-        vec_shape = data.shape
-        # pdb.set_trace()
-        if vec_shape[1] != 1:
-            # print(data.shape)
-            data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+            if args.cuda:
+                data = data.cuda()
 
-        if args.cuda:
-            data = data.cuda()
+            # compute output
+            _, out = model(data)
 
-        data = Variable(data)
+            if vec_shape[1] != 1:
+                out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
 
-        # compute output
-        _, out = model(data)
+            # pdb.set_trace()
 
-        if vec_shape[1] != 1:
-            out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
+            vectors.append(out.squeeze().data.cpu().numpy())
+            uids.append(uid[0])
 
-        # pdb.set_trace()
-
-        vectors.append(out.squeeze().data.cpu().numpy())
-        uids.append(uid[0])
-
-        del data, out
-        if batch_idx % args.log_interval == 0:
-            pbar.set_description('Extracting: [{}/{} ({:.0f}%)]'.format(
-                batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+            del data, out
+            if args.verbose > 0 and batch_idx % args.log_interval == 0:
+                pbar.set_description('Extracting: [{}/{} ({:.0f}%)]'.format(
+                    batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
     assert len(uids) == len(vectors)
-    print('There are %d vectors' % len(uids))
+    if args.verbose > 0:
+        print('There are %d vectors' % len(uids))
+
     scp_file = xvector_dir + '/xvectors.scp'
     scp = open(scp_file, 'w')
 
@@ -395,14 +397,15 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
                 # print(ark.tell())
                 scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
     scp.close()
-    print('There are %d vectors. Saving to %s' % (len(uids), xvector_dir))
+    if args.verbose > 0:
+        print('There are %d vectors. Saving to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
 
 def test(test_loader, xvector_dir):
     # switch to evaluate mode
     labels, distances = [], []
-    pbar = tqdm(enumerate(test_loader))
+    pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
     for batch_idx, (data_a, data_p, label) in pbar:
 
         out_a = torch.tensor(data_a)
@@ -414,7 +417,7 @@ def test(test_loader, xvector_dir):
         distances.append(dists)
         labels.append(label.numpy())
 
-        if batch_idx % args.log_interval == 0:
+        if args.verbose > 0 and batch_idx % args.log_interval == 0:
             pbar.set_description('Test: [{}/{} ({:.0f}%)]'.format(
                 batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
