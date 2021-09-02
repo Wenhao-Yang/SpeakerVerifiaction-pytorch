@@ -964,8 +964,8 @@ if [ $stage -le 83 ]; then
   #| cnceleb-test |  14.8080%   |   0.1580    |   0.7482    |    0.8556    | 20210902 12:50:19 | arcsoft
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
 
-#  for loss in soft arcsoft; do # 32,128,512; 8,32,128
-  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog;do
+  #  for loss in soft arcsoft; do # 32,128,512; 8,32,128
+  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
     echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -997,6 +997,7 @@ if [ $stage -le 83 ]; then
       --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_test_epoch60_fix \
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
       --gpu-id 0 \
+      --extract \
       --cos-sim
   done
   exit
