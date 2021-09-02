@@ -71,7 +71,8 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 parser.add_argument('--test-input', type=str, default='fix', help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract', action='store_false', default=True, help='need to make mfb file')
-parser.add_argument('--frame-shift', default=200, type=int, metavar='N', help='acoustic feature dimension')
+parser.add_argument('--num-frames', default=300, type=int, metavar='N', help='acoustic feature dimension')
+parser.add_argument('--frame-shift', default=300, type=int, metavar='N', help='acoustic feature dimension')
 
 parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
@@ -249,10 +250,10 @@ if args.input_length == 'var':
 
 elif args.input_length == 'fix':
     transform = transforms.Compose([
-        ConcateVarInput(frame_shift=args.frame_shift, remove_vad=args.remove_vad),
+        ConcateVarInput(num_frames=args.num_frames, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
     ])
     transform_T = transforms.Compose([
-        ConcateVarInput(frame_shift=args.frame_shift, remove_vad=args.remove_vad),
+        ConcateVarInput(num_frames=args.num_frames, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
     ])
 else:
     raise ValueError('input length must be var or fix.')
