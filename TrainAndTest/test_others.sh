@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=83
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -957,7 +957,7 @@ if [ $stage -le 83 ]; then
   #| cnceleb-sing |  25.5825%   |   0.1310    |   0.9821    |    0.9965    | 20210825 21:06:39 |
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
 
-  for loss in arcsoft; do # 32,128,512; 8,32,128
+  for loss in soft arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -984,10 +984,9 @@ if [ $stage -le 83 ]; then
       --encoder-type STAP \
       --input-length var \
       --remove-vad \
-      --xvector-dir Data/xvector/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_test_epoch80_var \
-      --resume Data/checkpoint/${model}/${train_set}/${feat_type}_egs/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_80.pth \
+      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var//${test_set}_test_epoch60_var \
+      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
       --gpu-id 0 \
-      --extract \
       --cos-sim
   done
   exit
