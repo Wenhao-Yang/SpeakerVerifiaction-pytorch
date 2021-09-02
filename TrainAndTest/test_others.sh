@@ -984,7 +984,7 @@ if [ $stage -le 83 ]; then
       --encoder-type STAP \
       --input-length var \
       --remove-vad \
-      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var//${test_set}_test_epoch60_var \
+      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_test_epoch60_var \
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
