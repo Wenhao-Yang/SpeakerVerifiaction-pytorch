@@ -217,6 +217,8 @@ parser.add_argument('--mvnorm', action='store_true', default=False,
                     help='need to make spectrograms file')
 parser.add_argument('--valid', action='store_true', default=False,
                     help='need to make spectrograms file')
+parser.add_argument('--verbose', type=int, default=0, choices=[0, 1, 2],
+                    help='how many batches to wait before logging training status')
 
 args = parser.parse_args()
 
@@ -437,7 +439,7 @@ def test(test_loader, xvector_dir):
             test_subset = test_directorys[i + 3].split('_')[0]
             test_set_name = "-".join((test_directorys[i + 1], test_subset))
     if args.score_suffix != '':
-        test_set_name = ''.join((test_set_name, args.score_suffix[:4]))
+        test_set_name = '-'.join((test_set_name, args.score_suffix[:4]))
 
     result_str = ''
     result_str += '\nFor %s_distance, %d pairs:\n\33[91m' % (dist_type, len(labels))
@@ -487,8 +489,9 @@ if __name__ == '__main__':
     for k in keys:
         options.append("\'%s\': \'%s\'" % (str(k), str(opts[k])))
 
-    print('Parsed options: \n{ %s }' % (', '.join(options)))
-    print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
+    if args.verbose > 1:
+        print('Parsed options: \n{ %s }' % (', '.join(options)))
+        print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     # instantiate model and initialize weights
     kernel_size = args.kernel_size.split(',')
@@ -525,9 +528,10 @@ if __name__ == '__main__':
                     'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
-    print('Model options: {}'.format(model_kwargs))
-    dist_type = 'cos' if args.cos_sim else 'l2'
-    print('Testing with %s distance, ' % dist_type)
+    if args.verbose > 1:
+        print('Model options: {}'.format(model_kwargs))
+        dist_type = 'cos' if args.cos_sim else 'l2'
+        print('Testing with %s distance, ' % dist_type)
     start_time = time.time()
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
