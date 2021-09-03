@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=83
+stage=79
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -693,7 +693,7 @@ if [ $stage -le 79 ]; then
   model=TDNN_v5
   encod=None
   dataset=vox2
-  test_set=vox1
+  test_set=cnceleb
 
   # Training set: voxceleb 2 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
@@ -731,7 +731,8 @@ if [ $stage -le 79 ]; then
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
   # |  sitw-eval   |   3.4445%   |   0.3201    |   0.3290    |    0.5059    | 20210813 13:45:34 |
   # +--------------+-------------+-------------+-------------+--------------+-------------------+
-  for test_set in vox1 aishell2; do # 32,128,512; 8,32,128
+#  for test_set in vox1 aishell2; do # 32,128,512; 8,32,128
+  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
     subset=test
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
@@ -739,7 +740,8 @@ if [ $stage -le 79 ]; then
       --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials trials \
+      --trials trials_${s} \
+      --score-suffix ${s} \
       --valid-dir ${lstm_dir}/data/vox2/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
       --feat-format kaldi \
