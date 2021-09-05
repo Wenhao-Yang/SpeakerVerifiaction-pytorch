@@ -316,7 +316,7 @@ if [ $stage -le 22 ]; then
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
     --train-set-name vox1 \
     --test-set-name vox1 \
-    --test-dir ${lstm_dir}/data/${dataset}/${feat_type}/test \
+    --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
     --input-norm Mean \
     --kernel-size ${kernel} \
     --stride 2 \
