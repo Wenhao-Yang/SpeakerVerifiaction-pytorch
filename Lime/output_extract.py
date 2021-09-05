@@ -99,7 +99,7 @@ parser.add_argument('--transform', type=str, default="None", help='add a transfo
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
-parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
 
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
                     help='kernel size of conv filters')
@@ -125,7 +125,7 @@ parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
 parser.add_argument('--lambda-max', type=float, default=0.05, metavar='S',
                     help='random seed (default: 0)')
 
-parser.add_argument('--alpha', default=12, type=float,
+parser.add_argument('--alpha', default=0, type=float,
                     metavar='l2 length', help='acoustic feature dimension')
 parser.add_argument('--cos-sim', action='store_true', default=True, help='using Cosine similarity')
 parser.add_argument('--embedding-size', type=int, metavar='ES', help='Dimensionality of the embedding')
@@ -374,15 +374,16 @@ def main():
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
+                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,}
 
     print('Model options: {}'.format(model_kwargs))
 
     model = create_model(args.model, **model_kwargs)
-    if args.loss_type == 'asoft':
-        model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
-    elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
-        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
+    # if args.loss_type == 'asoft':
+    #     model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
+    # elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
+    #     model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
 
     train_loader = DataLoader(train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
