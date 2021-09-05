@@ -314,7 +314,7 @@ if [ $stage -le 22 ]; then
     --start-epochs 50 \
     --epochs 50 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
-    --train-set-name vox2 \
+    --train-set-name vox1 \
     --test-set-name vox1 \
     --test-dir ${lstm_dir}/data/${dataset}/${feat_type}/test \
     --input-norm Mean \
