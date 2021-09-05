@@ -295,7 +295,7 @@ fi
 
 if [ $stage -le 22 ]; then
   model=LoResNet
-  dataset=timit
+  dataset=vox2
   train_set=vox2
   test_set=vox1
   feat_type=klsp
@@ -306,7 +306,7 @@ if [ $stage -le 22 ]; then
   embedding_size=256
   block_type=cbam
   kernel=5,5
-  echo -e "\n\033[1;4;31m Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
 
   python Lime/output_extract.py \
     --model ${model} \
