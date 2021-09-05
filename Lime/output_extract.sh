@@ -332,6 +332,8 @@ if [ $stage -le 22 ]; then
     --check-path Data/checkpoint/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var \
     --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_50_var_50 \
     --gpu-id 1 \
+    --margin 0.2 \
+    --s 30 \
     --sample-utt 120
   exit
 fi
