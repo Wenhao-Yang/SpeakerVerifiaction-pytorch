@@ -504,6 +504,16 @@ class FreqMaskLayer(nn.Module):
     def __repr__(self):
         return "FreqMaskLayer(mask_len=%f)" % self.mask_len
 
+class DropweightLayer(nn.Module):
+    def __init__(self, drop_p=[0.1]):
+        super(DropweightLayer, self).__init__()
+        self.drop_p = drop_p
+
+    def forward(self, x):
+        if not self.training:
+            return x
+        else:
+            return x
 
 class CBAM(nn.Module):
     # input should be like [Batch, channel, time, frequency]
