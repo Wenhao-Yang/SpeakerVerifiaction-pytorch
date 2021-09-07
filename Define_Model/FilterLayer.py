@@ -18,7 +18,7 @@ import torch.nn.functional as F
 from python_speech_features import hz2mel, mel2hz
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel
-
+from scipy import interpolate
 
 class fDLR(nn.Module):
     def __init__(self, input_dim, sr, num_filter, exp=False, filter_fix=False):
@@ -504,16 +504,41 @@ class FreqMaskLayer(nn.Module):
     def __repr__(self):
         return "FreqMaskLayer(mask_len=%f)" % self.mask_len
 
+
 class DropweightLayer(nn.Module):
-    def __init__(self, drop_p=[0.1]):
+    def __init__(self, drop_p=0.1):
         super(DropweightLayer, self).__init__()
-        self.drop_p = drop_p
+
+        m = np.arange(0, 2840.0230467083188)
+        m = 700 * (10 ** (m / 2595.0) - 1)
+        n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
+        n = 1 / n
+        x = np.arange(161) * 8000 / (161 - 1)  # [0-8000]
+
+        f = interpolate.interp1d(m[1:], n)
+        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / 161)
+        ynew = f(xnew)
+        ynew = 1 / ynew  # .max()
+        ynew /= ynew.max()
+
+        self.drop_p = ynew * drop_p
 
     def forward(self, x):
         if not self.training:
             return x
         else:
-            return x
+            assert len(self.drop_p) == x.shape(-1)
+            drop_weight = []
+            for i in self.drop_p:
+                drop_weight.append((torch.Tensor(1).uniform_(0, 1) > i).float())
+
+            drop_weight = torch.tensor(drop_weight).reshape(1, 1, 1, -1)
+
+            if x.is_cuda:
+                drop_weight = drop_weight.cuda()
+
+            return x * drop_weight
+
 
 class CBAM(nn.Module):
     # input should be like [Batch, channel, time, frequency]

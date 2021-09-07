@@ -20,7 +20,8 @@ from torchvision.models.resnet import BasicBlock
 from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
-from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, RevGradLayer
+from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
+    RevGradLayer, DropweightLayer
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2
@@ -936,6 +937,8 @@ class LocalResNet(nn.Module):
                 TimeMaskLayer(),
                 FreqMaskLayer()
             )
+        elif self.mask == 'drop':
+            self.mask_layer = DropweightLayer(dropout_p=0.1)
         else:
             self.mask_layer = None
 
