@@ -506,17 +506,17 @@ class FreqMaskLayer(nn.Module):
 
 
 class DropweightLayer(nn.Module):
-    def __init__(self, dropout_p=0.1):
+    def __init__(self, dropout_p=0.1, input_dim=161):
         super(DropweightLayer, self).__init__()
-
+        self.input_dim = input_dim
         m = np.arange(0, 2840.0230467083188)
         m = 700 * (10 ** (m / 2595.0) - 1)
         n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
         n = 1 / n
-        x = np.arange(161) * 8000 / (161 - 1)  # [0-8000]
+        x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
 
         f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / 161)
+        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
         ynew = f(xnew)
         ynew = 1 / ynew  # .max()
         ynew /= ynew.max()
@@ -527,7 +527,7 @@ class DropweightLayer(nn.Module):
         if not self.training:
             return x
         else:
-            assert len(self.drop_p) == x.shape[-1]
+            assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
             drop_weight = []
             for i in self.drop_p:
                 drop_weight.append((torch.Tensor(1).uniform_(0, 1) > i).float())
