@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=79
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -1097,7 +1097,7 @@ if [ $stage -le 79 ]; then
   alpha=0
   input_norm=Mean
   for loss in arcsoft; do
-    echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
