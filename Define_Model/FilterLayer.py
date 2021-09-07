@@ -527,7 +527,7 @@ class DropweightLayer(nn.Module):
         if not self.training:
             return x
         else:
-            assert len(self.drop_p) == x.shape(-1)
+            assert len(self.drop_p) == x.shape[-1]
             drop_weight = []
             for i in self.drop_p:
                 drop_weight.append((torch.Tensor(1).uniform_(0, 1) > i).float())
