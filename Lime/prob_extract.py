@@ -60,7 +60,6 @@ parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 parser.add_argument('--train-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
-parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
 
 parser.add_argument('--sample-utt', type=int, default=0, metavar='SU', help='Dimensionality of the embedding')
 parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
