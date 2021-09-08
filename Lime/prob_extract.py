@@ -222,7 +222,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=25000):
 
         # orig = data.detach().numpy().squeeze().astype(np.float32)
         with torch.no_grad():
-            data = data.cuda()
+            if args.cuda:
+                data = data.cuda()
             logits, _ = model(data)
             label = label.numpy()
             logits = logits.cpu().numpy()
