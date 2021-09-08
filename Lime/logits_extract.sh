@@ -29,6 +29,7 @@ if [ $stage -le 0 ]; then
     --train-set-name ${train_set} \
     --input-norm Mean \
     --stride 1 \
+    --input-dim 4 \
     --channels 512,512,512,512,1500 \
     --encoder-type ${encoder_type} \
     --block-type ${block_type} \
@@ -41,6 +42,7 @@ if [ $stage -le 0 ]; then
     --gpu-id 0 \
     --margin 0.15 \
     --s 30 \
+    --remove-vad \
     --sample-utt 12000
   exit
 fi
