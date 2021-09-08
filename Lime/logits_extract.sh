@@ -29,7 +29,7 @@ if [ $stage -le 0 ]; then
     --train-set-name ${train_set} \
     --input-norm Mean \
     --stride 1 \
-    --input-dim 4 \
+    --input-dim 40 \
     --channels 512,512,512,512,1500 \
     --encoder-type ${encoder_type} \
     --block-type ${block_type} \
