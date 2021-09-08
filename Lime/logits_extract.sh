@@ -23,8 +23,8 @@ if [ $stage -le 0 ]; then
 
   python Lime/prob_extract.py \
     --model ${model} \
-    --start-epochs 50 \
-    --epochs 50 \
+    --start-epochs 60 \
+    --epochs 60 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
     --train-set-name ${train_set} \
     --input-norm Mean \
@@ -36,7 +36,7 @@ if [ $stage -le 0 ]; then
     --alpha 0 \
     --loss-type ${loss} \
     --dropout-p 0.0 \
-    --check-path Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/arcsoft/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
+    --check-path Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/arcsoft/featfb40_ws25_inputMean_STAP_em256_wde3_var \
     --extract-path Data/logits/TDNN_v5/cnceleb/pyfb_egs_baseline/arcsoft/featfb40_ws25_inputMean_STAP_em256_wde3_var/epoch_60_var \
     --gpu-id 0 \
     --margin 0.15 \
