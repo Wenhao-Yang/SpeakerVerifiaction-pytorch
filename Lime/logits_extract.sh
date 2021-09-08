@@ -19,9 +19,9 @@ if [ $stage -le 0 ]; then
   encoder_type=STAP
   embedding_size=256
   block_type=basic
-  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  echo -e "\n\033[1;4;31m stage${stage} Extracting Logits ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
 
-  python Lime/output_extract.py \
+  python Lime/prob_extract.py \
     --model ${model} \
     --start-epochs 50 \
     --epochs 50 \
