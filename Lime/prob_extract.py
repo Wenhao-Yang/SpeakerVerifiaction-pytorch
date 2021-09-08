@@ -225,7 +225,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=25000):
             data = data.cuda()
             logits, _ = model(data)
             label = label.numpy()
-            logits = logits.numpy()
+            logits = logits.cpu().numpy()
 
             input_grads.append([uid, label, logits])
 
