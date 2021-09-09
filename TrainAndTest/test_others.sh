@@ -1071,10 +1071,10 @@ if [ $stage -le 84 ]; then
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type STAP \
-      --input-length var \
+      --input-length fix \
       --remove-vad \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/soft/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2dr1/${test_set}_test_epoch60_var \
+      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/soft/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2dr1/${test_set}_test_epoch60_fix \
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/soft/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2dr1/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
