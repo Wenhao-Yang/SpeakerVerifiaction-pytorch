@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=79
+stage=84
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1026,6 +1026,56 @@ if [ $stage -le 83 ]; then
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_test_epoch60_fix \
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
+      --gpu-id 0 \
+      --extract \
+      --cos-sim
+  done
+  exit
+fi
+
+if [ $stage -le 84 ]; then
+  feat_type=pyfb
+  feat=fb40_ws25
+  input_norm=Mean
+  loss=arcsoft
+  encod=STAP
+  block_type=basic
+  model=TDNN_v5
+  embedding_size=256
+  train_set=cnceleb
+  test_set=cnceleb
+  # 20210515
+#      --trials trials_${s} \
+#      --score-suffix ${s} \
+
+  #  for loss in soft arcsoft; do # 32,128,512; 8,32,128
+  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size 14 \
+      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim 40 \
+      --channels 512,512,512,512,1500 \
+      --context 5,3,3,5 \
+      --nj 12 \
+      --alpha 0 \
+      --stride 1 \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type STAP \
+      --input-length var \
+      --remove-vad \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/soft/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2dr1/${test_set}_test_epoch60_var \
+      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/soft/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2dr1/checkpoint_60.pth \
       --gpu-id 0 \
       --extract \
       --cos-sim
