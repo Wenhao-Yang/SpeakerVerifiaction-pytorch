@@ -1049,7 +1049,7 @@ if [ $stage -le 84 ]; then
 #      --score-suffix ${s} \
 
   #  for loss in soft arcsoft; do # 32,128,512; 8,32,128
-  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
+  for s in all; do
     echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1077,7 +1077,6 @@ if [ $stage -le 84 ]; then
       --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/soft/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2dr1/${test_set}_test_epoch60_var \
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/soft/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2dr1/checkpoint_60.pth \
       --gpu-id 0 \
-      --extract \
       --cos-sim
   done
   exit
