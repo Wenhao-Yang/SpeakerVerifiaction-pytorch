@@ -19,6 +19,7 @@ from python_speech_features import hz2mel, mel2hz
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 from scipy import interpolate
+import Process_Data.constants as c
 
 class fDLR(nn.Module):
     def __init__(self, input_dim, sr, num_filter, exp=False, filter_fix=False):
@@ -541,7 +542,7 @@ class DropweightLayer(nn.Module):
 
 
 class GaussianNoiseLayer(nn.Module):
-    def __init__(self, dropout_p=0.1, input_dim=161):
+    def __init__(self, dropout_p=0.01, input_dim=161):
         super(GaussianNoiseLayer, self).__init__()
         self.input_dim = input_dim
         m = np.arange(0, 2840.0230467083188)
@@ -572,6 +573,29 @@ class GaussianNoiseLayer(nn.Module):
             gaussian_noise *= drop_weight
 
             return x * gaussian_noise
+
+
+class MusanNoiseLayer(nn.Module):
+    def __init__(self, snr=15, input_dim=161):
+        super(MusanNoiseLayer, self).__init__()
+        self.input_dim = input_dim
+        self.mean = torch.FloatTensor(c.MUSAN_MEAN)
+        self.std = torch.FloatTensor(c.MUSAN_STD)
+
+        self.weight = 1 / np.power(10, snr / 10)
+
+    def forward(self, x):
+        if not self.training:
+            return x
+        else:
+            gaussian_noise = torch.normal(mean=self.mean, std=self.std)
+            weight = torch.ones(size=(1, 1, x.shape[2], 1))
+            torch.nn.init.uniform_(weight, 0, self.weight)
+
+            gaussian_noise *= weight
+            noise_weight = gaussian_noise.cuda() if x.is_cuda else gaussian_noise
+
+            return x * noise_weight
 
 
 class CBAM(nn.Module):
