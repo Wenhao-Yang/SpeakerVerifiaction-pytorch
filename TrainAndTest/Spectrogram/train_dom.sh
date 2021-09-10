@@ -118,7 +118,7 @@ if [ $stage -le 50 ]; then
       --remove-vad \
       --feat-format kaldi \
       --shuffle \
-      --random-chunk 200 400 \
+      --random-chunk 300 400 \
       --nj 10 \
       --epochs 60 \
       --lr 0.1 \
@@ -126,14 +126,14 @@ if [ $stage -le 50 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2/checkpoint_21.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2dr1_longer \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2dr1_longer/checkpoint_21.pth \
       --embedding-size ${embedding_size} \
       --stride 1 \
       --num-valid 1 \
       --domain \
       --domain-steps 5 \
-      --dom-ratio 0.5 \
+      --dom-ratio 1 \
       --loss-ratio 0.05 \
       --sim-ratio 0 \
       --weight-decay 0.001 \

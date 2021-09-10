@@ -618,7 +618,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         domain_embeddings = spk_embeddings.detach()
         for i in range(steps):
             dom_logits = classifier_dom(domain_embeddings)
-            dom_loss = args.dom_ratio * ce_criterion(dom_logits, true_labels_b)
+            dom_loss = ce_criterion(dom_logits, true_labels_b)
 
             dom_loss.backward()
             dom_optimizer.step()
