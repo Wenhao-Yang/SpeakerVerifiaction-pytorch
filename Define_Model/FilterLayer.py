@@ -572,7 +572,7 @@ class GaussianNoiseLayer(nn.Module):
             drop_weight = self.gaussion_weight.cuda() if x.is_cuda else self.gaussian_noise
             gaussian_noise *= drop_weight
 
-            return x * gaussian_noise
+            return x + gaussian_noise
 
 
 class MusanNoiseLayer(nn.Module):
@@ -595,7 +595,7 @@ class MusanNoiseLayer(nn.Module):
             gaussian_noise *= weight
             noise_weight = gaussian_noise.cuda() if x.is_cuda else gaussian_noise
 
-            return x * noise_weight
+            return x + noise_weight
 
 
 class CBAM(nn.Module):
