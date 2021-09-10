@@ -1096,6 +1096,7 @@ if [ $stage -le 79 ]; then
   kernel=5,5
   alpha=0
   input_norm=Mean
+  mask_layer=gau_noise
   for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
@@ -1115,10 +1116,10 @@ if [ $stage -le 79 ]; then
       --patience 2 \
       --accu-steps 1 \
       --lr 0.1 \
-      --mask-layer drop \
+      --mask-layer ${mask_layer} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_drop/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wde3_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_drop/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wde3_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wde3_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wde3_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --channels 64,128,256 \
       --stride 2 \
