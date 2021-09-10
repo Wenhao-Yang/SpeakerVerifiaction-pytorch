@@ -556,7 +556,7 @@ class GaussianNoiseLayer(nn.Module):
         ynew = 1 / ynew  # .max()
         ynew /= ynew.max()
 
-        self.gaussion_weight = torch.tensor(ynew * dropout_p).reshape(1, 1, 1, -1)
+        self.gaussion_weight = torch.tensor(ynew * dropout_p).reshape(1, 1, 1, -1).float()
 
     def forward(self, x):
         if not self.training:
@@ -564,8 +564,8 @@ class GaussianNoiseLayer(nn.Module):
         else:
             assert self.gaussion_weight.shape[-1] == x.shape[-1], print(len(self.gaussion_weight), x.shape)
 
-            x_mean = torch.mean(x, dim=2, keepdim=True)
-            x_std = torch.std(x, dim=2, keepdim=True)
+            x_mean = torch.mean(x, dim=2, keepdim=True, dtype=torch.float32)
+            x_std = torch.std(x, dim=2, keepdim=True, dtype=torch.float32)
 
             gaussian_noise = torch.normal(mean=x_mean, std=x_std)
             drop_weight = self.gaussion_weight.cuda() if x.is_cuda else self.gaussian_noise
