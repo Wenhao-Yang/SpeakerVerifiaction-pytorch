@@ -589,6 +589,7 @@ class MusanNoiseLayer(nn.Module):
             return x
         else:
             gaussian_noise = torch.normal(mean=self.mean, std=self.std).reshape(1, 1, 1, x.shape[3])
+            gaussian_noise = gaussian_noise.repeat(1,1,x.shape[2],1)
             weight = torch.ones(size=(1, 1, x.shape[2], 1))
             torch.nn.init.uniform_(weight, self.weight, 1.25)
 
