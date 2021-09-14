@@ -596,7 +596,8 @@ class MusanNoiseLayer(nn.Module):
 
             weight = torch.ones(size=(1, 1, x.shape[2], 1))
             torch.nn.init.uniform_(weight, self.weight, 1)
-            weight = torch.nn.functional.dropout(weight, p=0.5, training=True).clamp(max=1.0)
+            weight = torch.nn.functional.dropout(weight, p=0.5, training=True)
+            weight = torch.where(weight>1.0, torch.tensor((self.weight+1.0)/2), weight)
 
             gaussian_noise *= weight
             noise_weight = gaussian_noise.cuda() if x.is_cuda else gaussian_noise
