@@ -591,13 +591,19 @@ class MusanNoiseLayer(nn.Module):
         else:
             gaussian_noise = torch.normal(mean=self.mean, std=self.std).reshape(1, 1, 1, x.shape[3])
             gaussian_noise = gaussian_noise.repeat(1,1,x.shape[2],1)
+
+
+
             weight = torch.ones(size=(1, 1, x.shape[2], 1))
             torch.nn.init.uniform_(weight, self.weight, 1.25)
+            for i in range(x.shape[2]):
+                if torch.Tensor(1).uniform_(0, 1) > 0.5:
+                    weight[0][0][i][0] = 0.
 
             gaussian_noise *= weight
             noise_weight = gaussian_noise.cuda() if x.is_cuda else gaussian_noise
 
-            return x + self.drop(noise_weight)
+            return x + noise_weight
 
 
 class CBAM(nn.Module):
