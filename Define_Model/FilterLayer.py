@@ -595,10 +595,7 @@ class MusanNoiseLayer(nn.Module):
 
 
             weight = torch.ones(size=(1, 1, x.shape[2], 1))
-            torch.nn.init.uniform_(weight, self.weight, 1.25)
-            for i in range(x.shape[2]):
-                if torch.Tensor(1).uniform_(0, 1) > 0.5:
-                    weight[0][0][i][0] = 0.
+            torch.nn.init.uniform_(weight, self.weight, 1)
 
             gaussian_noise *= weight
             noise_weight = gaussian_noise.cuda() if x.is_cuda else gaussian_noise
