@@ -583,6 +583,7 @@ class MusanNoiseLayer(nn.Module):
         self.std = torch.FloatTensor(c.MUSAN_STD)
 
         self.weight = 1 / np.power(10, snr / 10)
+        self.drop = nn.Dropout2d(0.5)
 
     def forward(self, x):
         if not self.training:
@@ -596,7 +597,7 @@ class MusanNoiseLayer(nn.Module):
             gaussian_noise *= weight
             noise_weight = gaussian_noise.cuda() if x.is_cuda else gaussian_noise
 
-            return x + noise_weight
+            return x + self.drop(noise_weight)
 
 
 class CBAM(nn.Module):
