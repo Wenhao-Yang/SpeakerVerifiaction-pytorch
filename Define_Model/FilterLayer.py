@@ -541,6 +541,45 @@ class DropweightLayer(nn.Module):
             return x * drop_weight
 
 
+class AttentionweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(AttentionweightLayer, self).__init__()
+        self.input_dim = input_dim
+        m = np.arange(0, 2840.0230467083188)
+        m = 700 * (10 ** (m / 2595.0) - 1)
+        n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
+        n = 1 / n
+        x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+
+        f = interpolate.interp1d(m[1:], n)
+        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+        ynew = f(xnew)
+        ynew = 1 / ynew  # .max()
+        ynew /= ynew.max()
+        self.w = nn.Parameter(torch.tensor(10.0))
+        self.b = nn.Parameter(torch.tensor(-5.0))
+
+        self.drop_p = ynew  # * dropout_p
+        # self.activation = nn.Tanh()
+        self.activation = nn.Softmax(dim=-1)
+        # self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        if not self.training:
+            return x
+        else:
+            assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+
+            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1)
+            if x.is_cuda:
+                drop_weight = drop_weight.cuda()
+
+            drop_weight = self.W * drop_weight + self.b
+            drop_weight = self.activation(drop_weight)
+
+            return x * drop_weight
+
+
 class GaussianNoiseLayer(nn.Module):
     def __init__(self, dropout_p=0.01, input_dim=161):
         super(GaussianNoiseLayer, self).__init__()

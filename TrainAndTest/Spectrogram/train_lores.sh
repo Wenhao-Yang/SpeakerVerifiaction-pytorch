@@ -1098,7 +1098,7 @@ if [ $stage -le 79 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=gau_noise
-  for mask_layer in drop; do
+  for mask_layer in attention; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
