@@ -565,17 +565,15 @@ class AttentionweightLayer(nn.Module):
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
-        if not self.training:
-            return x
-        else:
-            assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
 
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
-            if x.is_cuda:
-                drop_weight = drop_weight.cuda()
+        assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
 
-            drop_weight = self.w * drop_weight + self.b
-            drop_weight = self.activation(drop_weight)
+        drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
+        if x.is_cuda:
+            drop_weight = drop_weight.cuda()
+
+        drop_weight = self.w * drop_weight + self.b
+        drop_weight = self.activation(drop_weight)
 
             return x * drop_weight
 
