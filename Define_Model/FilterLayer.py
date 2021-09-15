@@ -554,7 +554,7 @@ class AttentionweightLayer(nn.Module):
         f = interpolate.interp1d(m[1:], n)
         xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
         ynew = f(xnew)
-        ynew = 1 / ynew  # .max()
+        # ynew = 1 / ynew  # .max()
         ynew /= ynew.max()
         self.w = nn.Parameter(torch.tensor(10.0))
         self.b = nn.Parameter(torch.tensor(-5.0))
