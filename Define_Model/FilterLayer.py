@@ -561,8 +561,8 @@ class AttentionweightLayer(nn.Module):
 
         self.drop_p = ynew  # * dropout_p
         # self.activation = nn.Tanh()
-        # self.activation = nn.Softmax(dim=-1)
-        self.activation = nn.Sigmoid()
+        self.activation = nn.Softmax(dim=-1)
+        # self.activation = nn.Sigmoid()
 
     def forward(self, x):
 
@@ -575,7 +575,7 @@ class AttentionweightLayer(nn.Module):
         drop_weight = self.w * drop_weight + self.b
         drop_weight = self.activation(drop_weight)
 
-            return x * drop_weight
+        return x * drop_weight
 
 
 class GaussianNoiseLayer(nn.Module):
