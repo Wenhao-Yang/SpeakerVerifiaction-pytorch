@@ -570,7 +570,7 @@ class AttentionweightLayer(nn.Module):
         else:
             assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
 
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1)
+            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
             if x.is_cuda:
                 drop_weight = drop_weight.cuda()
 
