@@ -561,8 +561,8 @@ class AttentionweightLayer(nn.Module):
 
         self.drop_p = ynew  # * dropout_p
         # self.activation = nn.Tanh()
-        self.activation = nn.Softmax(dim=-1)
-        # self.activation = nn.Sigmoid()
+        # self.activation = nn.Softmax(dim=-1)
+        self.activation = nn.Sigmoid()
 
     def forward(self, x):
         if not self.training:
