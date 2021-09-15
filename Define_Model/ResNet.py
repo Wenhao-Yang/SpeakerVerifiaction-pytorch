@@ -938,7 +938,7 @@ class LocalResNet(nn.Module):
                 FreqMaskLayer()
             )
         elif self.mask == 'drop':
-            self.mask_layer = DropweightLayer(dropout_p=0.1)
+            self.mask_layer = DropweightLayer(dropout_p=0.25)
         elif self.mask == 'gau_noise':
             self.mask_layer = GaussianNoiseLayer(dropout_p=0.01)
         elif self.mask == 'mus_noise':
