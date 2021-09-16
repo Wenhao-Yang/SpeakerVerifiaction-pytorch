@@ -1083,8 +1083,7 @@ if [ $stage -le 66 ]; then
 fi
 #exit
 
-#stage=10000
-if [ $stage -le 79 ]; then
+if [ $stage -le 78 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   feat_type=klsp
@@ -1098,7 +1097,7 @@ if [ $stage -le 79 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=gau_noise
-  for mask_layer in attention; do
+  for mask_layer in None; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -1118,6 +1117,73 @@ if [ $stage -le 79 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --mask-layer ${mask_layer} \
+      --milestones 10,20,30,40 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var/checkpoint_50.pth \
+      --kernel-size ${kernel} \
+      --channels 32,64,128 \
+      --stride 2 \
+      --batch-size 128 \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --encoder-type ${encoder_type} \
+      --block-type ${block_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --m 3 \
+      --loss-ratio 0.01 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.2 \
+      --gpu-id 0,1 \
+      --extract \
+      --cos-sim \
+      --all-iteraion 0 \
+      --loss-type ${loss}
+  done
+
+fi
+
+
+#stage=10000
+if [ $stage -le 79 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=vox1
+  feat_type=klsp
+  model=LoResNet
+  resnet_size=8
+  encoder_type=None
+  embedding_size=256
+  block_type=cbam
+  kernel=5,5
+  loss=arcsoft
+  alpha=0
+  input_norm=Mean
+#  mask_layer=gau_noise
+  mask_layer=attention
+  for weight in mel clean aug vox2; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    python TrainAndTest/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --feat-format kaldi \
+      --random-chunk 200 400 \
+      --input-norm ${input_norm} \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 50 \
+      --scheduler rop \
+      --patience 2 \
+      --accu-steps 1 \
+      --lr 0.1 \
+      --mask-layer ${mask_layer} \
+      --init-weight ${weight} \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wde3_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wde3_var/checkpoint_50.pth \

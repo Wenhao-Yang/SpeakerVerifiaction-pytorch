@@ -560,7 +560,7 @@ class AttentionweightLayer(nn.Module):
             ynew = c.VOX1_CLEAN
         elif weight=='aug':
             ynew = c.VOX1_AUG
-        elif weight == 'vox2':
+        elif weight == 'aug':
             ynew = c.VOX2_CLEAN
         else:
             raise ValueError(weight)
