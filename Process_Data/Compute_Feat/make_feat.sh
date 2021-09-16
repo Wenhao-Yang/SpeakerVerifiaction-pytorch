@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=30
+stage=1
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -62,8 +62,8 @@ if [ $stage -le 1 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 768 \
-      --num-frames 400 \
+      --input-per-spks 896 \
+      --num-frames 600 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
@@ -74,8 +74,8 @@ if [ $stage -le 1 ]; then
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
-      --num-frames 400 \
-      --input-per-spks 768 \
+      --num-frames 600 \
+      --input-per-spks 896 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \

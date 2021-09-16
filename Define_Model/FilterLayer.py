@@ -556,8 +556,8 @@ class AttentionweightLayer(nn.Module):
         ynew = f(xnew)
         # ynew = 1 / ynew  # .max()
         ynew /= ynew.max()
-        self.w = nn.Parameter(torch.tensor(4.0))
-        self.b = nn.Parameter(torch.tensor(-2.0))
+        self.w = nn.Parameter(torch.tensor(2.0))
+        self.b = nn.Parameter(torch.tensor(-1.0))
 
         self.drop_p = ynew  # * dropout_p
         # self.activation = nn.Tanh()
