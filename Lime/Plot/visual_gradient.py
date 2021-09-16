@@ -20,6 +20,7 @@ import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 from python_speech_features import mel2hz
 from scipy import interpolate
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Model options
@@ -66,7 +67,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (data, grad) in sets:
+                for (data, grad, uid) in tqdm(sets):
                     time_data.append((data, grad))
                     num_utt += 1
                     if num_utt >= args.samples:
@@ -85,7 +86,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (data, grad, uid) in sets:
+                for (data, grad, uid) in tqdm(sets):
                     train_time_mean += np.mean(grad, axis=0)
                     train_time_var += np.var(grad, axis=0)
                     train_data_mean += np.mean(data, axis=0)
@@ -110,7 +111,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (data, grad, uid) in sets:
+                for (data, grad, uid) in tqdm(sets):
                     valid_data_mean += np.mean(np.abs(data), axis=0)
                     valid_time_mean += np.mean(np.abs(grad), axis=0)
                     valid_time_var += np.var(grad, axis=0)
@@ -138,7 +139,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (label, grad_a, grad_b, data_a, data_b) in sets:
+                for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets):
                     train_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
                     train_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
                     train_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) +
@@ -170,7 +171,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (label, grad_a, grad_b, data_a, data_b) in sets:
+                for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets):
                     test_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
                     test_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
                     test_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) + np.mean(
