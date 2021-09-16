@@ -194,7 +194,7 @@ class TDNNBottleBlock(nn.Module):
 
 class RET(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
-                 channels=[512, 512, 512, 512, 512, 1536], context=[5, 3, 3, 5],
+                 channels=[512, 512, 512, 512, 512, 1536], context=[5, 3, 3, 5], activation='relu',
                  downsample=None, resnet_size=17, dilation=[1, 1, 1, 1], stride=[1],
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', block_type='Basic',
                  mask='None', mask_len=20, **kwargs):
@@ -207,6 +207,7 @@ class RET(nn.Module):
         self.mask = mask
         self.channels = channels
         self.context = context
+        self.activation = activation
         tdnn_type = {14: [1, 1, 1, 0],
                      17: [1, 1, 1, 1],
                      21: [1, 1, 1, 1]}
@@ -252,30 +253,34 @@ class RET(nn.Module):
             raise ValueError(block_type)
 
         self.frame1 = TDNN_layer(input_dim=self.input_dim, output_dim=self.channels[0],
-                                 context_size=self.context[0], dilation=dilation[0], stride=self.stride[0])
+                                 context_size=self.context[0], dilation=dilation[0], stride=self.stride[0],
+                                 activation=self.activation)
         self.frame2 = Blocks(inplanes=self.channels[0], planes=self.channels[0],
-                             downsample=downsample, dilation=1)
+                             downsample=downsample, dilation=1, activation=self.activation)
 
         self.frame4 = TDNN_layer(input_dim=self.channels[0], output_dim=self.channels[1],
-                                 context_size=self.context[1], dilation=dilation[1], stride=self.stride[1])
+                                 context_size=self.context[1], dilation=dilation[1], stride=self.stride[1],
+                                 activation=self.activation)
         self.frame5 = Blocks(inplanes=self.channels[1], planes=self.channels[1],
-                             downsample=downsample, dilation=1)
+                             downsample=downsample, dilation=1, activation=self.activation)
 
         self.frame7 = TDNN_layer(input_dim=self.channels[1], output_dim=self.channels[2],
-                                 context_size=self.context[2], dilation=dilation[2], stride=self.stride[2])
+                                 context_size=self.context[2], dilation=dilation[2], stride=self.stride[2],
+                                 activation=self.activation)
         self.frame8 = Blocks(inplanes=self.channels[2], planes=self.channels[2],
-                             downsample=downsample, dilation=1)
+                             downsample=downsample, dilation=1, activation=self.activation)
 
         if self.layers[3] != 0:
             self.frame10 = TDNN_layer(input_dim=self.channels[2], output_dim=self.channels[3],
-                                      context_size=self.context[3], dilation=dilation[3], stride=self.stride[3])
+                                      context_size=self.context[3], dilation=dilation[3], stride=self.stride[3],
+                                      activation=self.activation)
             self.frame11 = Blocks(inplanes=self.channels[3], planes=self.channels[3],
-                                  downsample=downsample, dilation=1)
+                                  downsample=downsample, dilation=1, activation=self.activation)
 
         self.frame13 = TDNN_layer(input_dim=self.channels[3], output_dim=self.channels[4],
-                                  context_size=1, dilation=1)
+                                  context_size=1, dilation=1, activation=self.activation)
         self.frame14 = TDNN_layer(input_dim=self.channels[4], output_dim=self.channels[5],
-                                  context_size=1, dilation=1)
+                                  context_size=1, dilation=1, activation=self.activation)
 
         self.drop = nn.Dropout(p=self.dropout_p)
 
@@ -286,15 +291,22 @@ class RET(nn.Module):
         else:
             raise ValueError(encoder_type)
 
+        if activation == 'relu':
+            nonlinearity = nn.ReLU
+        elif activation in ['leakyrelu', 'leaky_relu']:
+            nonlinearity = nn.LeakyReLU
+        elif activation == 'prelu':
+            nonlinearity = nn.PReLU
+
         self.segment1 = nn.Sequential(
             nn.Linear(self.channels[5] * 2, 512),
-            nn.ReLU(),
+            nonlinearity(),
             nn.BatchNorm1d(512)
         )
 
         self.segment2 = nn.Sequential(
             nn.Linear(512, embedding_size),
-            nn.ReLU(),
+            nonlinearity(),
             nn.BatchNorm1d(embedding_size)
         )
 

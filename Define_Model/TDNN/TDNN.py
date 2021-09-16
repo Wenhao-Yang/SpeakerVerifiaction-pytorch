@@ -25,6 +25,7 @@ from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMask
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
     SelfAttentionPooling
+from Define_Model.model import get_activation
 
 
 def channel_shuffle(x: Tensor, groups: int) -> Tensor:
@@ -496,7 +497,7 @@ class Conv2DLayer(nn.Module):
 class ShuffleTDLayer(nn.Module):
 
     def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
-                 dropout_p=0.0, padding=0, groups=1, activation='relu', ) -> None:
+                 dropout_p=0.0, padding=0, groups=1, activation='relu') -> None:
         super(ShuffleTDLayer, self).__init__()
         self.context_size = context_size
         self.stride = stride
@@ -506,6 +507,8 @@ class ShuffleTDLayer(nn.Module):
         self.dropout_p = dropout_p
         self.padding = padding
         self.groups = groups
+        self.activation = activation
+        nonlinearity = get_activation(activation)
 
         if not (1 <= stride <= 3):
             raise ValueError('illegal stride value')
@@ -521,7 +524,7 @@ class ShuffleTDLayer(nn.Module):
                 nn.BatchNorm1d(self.input_dim),
                 nn.Conv1d(self.input_dim, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
                 nn.BatchNorm1d(branch_features),
-                nn.ReLU(inplace=True),
+                nonlinearity(inplace=True),
             )
         else:
             self.branch1 = nn.Sequential()
@@ -530,13 +533,93 @@ class ShuffleTDLayer(nn.Module):
             nn.Conv1d(self.input_dim if (self.stride > 1) else branch_features,
                       branch_features, kernel_size=1, stride=1, padding=0, bias=False),
             nn.BatchNorm1d(branch_features),
-            nn.ReLU(inplace=True),
+            nonlinearity(inplace=True),
             self.depthwise_conv(branch_features, branch_features, kernel_size=self.context_size,
                                 dilation=self.dilation, stride=self.stride, padding=1),
             nn.BatchNorm1d(branch_features),
             nn.Conv1d(branch_features, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
             nn.BatchNorm1d(branch_features),
-            nn.ReLU(inplace=True),
+            nonlinearity(inplace=True),
+        )
+
+    @staticmethod
+    def depthwise_conv(i: int, o: int, kernel_size: int, stride: int = 1, padding: int = 0,
+                       dilation: int = 1, bias: bool = False) -> nn.Conv1d:
+        return nn.Conv1d(i, o, kernel_size, stride, padding, dilation=dilation, bias=bias, groups=int(i / 2))
+
+    def forward(self, x):
+        x = x.transpose(1, 2)
+        if self.stride == 1:
+            x1, x2 = x.chunk(2, dim=1)
+            out = torch.cat((x1, self.branch2(x2)), dim=1)
+        else:
+            out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
+
+        out = channel_shuffle(out, 2)
+
+        return out.transpose(1, 2)
+
+
+class AttentionSum(nn.Module):
+    def __init__(self):
+        super(AttentionSum, self).__init__()
+        self.pooling = nn.AdaptiveAvgPool2d((1, 1))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        chn_weight = self.pooling(x)
+        chn_weight = self.activation(chn_weight)
+
+        x = x * chn_weight
+
+        return torch.mean(x, dim=1)
+
+
+class MixDLayer(nn.Module):
+
+    def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
+                 dropout_p=0.0, padding=0, groups=1, activation='relu') -> None:
+        super(MixDLayer, self).__init__()
+        self.context_size = context_size
+        self.stride = stride
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.dilation = dilation
+        self.dropout_p = dropout_p
+        self.padding = padding
+        self.groups = groups
+        self.activation = activation
+        nonlinearity = get_activation(activation)
+
+        if not (1 <= stride <= 3):
+            raise ValueError('illegal stride value')
+        self.stride = stride
+
+        input_branch = self.input_dim // 2
+        branch_features = self.output_dim // 2
+
+        self.branch1 = nn.Sequential(
+            self.depthwise_conv(input_branch, input_branch, kernel_size=3, stride=self.stride, padding=1,
+                                dilation=dilation),
+            nn.BatchNorm1d(input_branch),
+            nn.Conv1d(input_branch, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm1d(branch_features),
+            nonlinearity(inplace=True),
+        )
+
+        input_groups = math.gcd(input_branch, branch_features)
+        self.branch2 = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=3, stride=self.stride, padding=1),
+            nn.BatchNorm2d(16),
+            nonlinearity(inplace=True),
+            nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(32),
+            nonlinearity(inplace=True),
+            AttentionSum(),
+            nn.Conv1d(input_branch, branch_features, kernel_size=1, stride=1, padding=0, bias=False,
+                      groups=input_groups),
+            nn.BatchNorm1d(branch_features),
+            nonlinearity(inplace=True),
         )
 
     @staticmethod
@@ -546,11 +629,13 @@ class ShuffleTDLayer(nn.Module):
 
     def forward(self, x):
         x = x.transpose(1, 2)
-        if self.stride == 1:
-            x1, x2 = x.chunk(2, dim=1)
-            out = torch.cat((x1, self.branch2(x2)), dim=1)
-        else:
-            out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
+
+        x1, x2 = x.chunk(2, dim=1)
+        x1 = self.branch1(x1)
+
+        x2 = self.branch2(x2.unsqueeze(1))
+
+        out = torch.cat((x1, x2), dim=1)
 
         out = channel_shuffle(out, 2)
 
@@ -786,7 +871,7 @@ class TDNN_v4(nn.Module):
 class TDNN_v5(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
-                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
+                 dropout_p=0.0, dropout_layer=False, encoder_type='STAP', activation='relu',
                  num_classes_b=0, block_type='basic', first_2d=False, stride=[1],
                  mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
@@ -802,11 +887,16 @@ class TDNN_v5(nn.Module):
         self.feat_dim = feat_dim
         self.block_type = block_type.lower()
         self.stride = stride
+        self.activation = activation
+
         if len(self.stride) == 1:
             while len(self.stride) < 4:
                 self.stride.append(self.stride[0])
         if np.sum((self.stride)) > 4:
             print('The stride for tdnn layers are: ', str(self.stride))
+        if activation != 'relu':
+            print('The activation function is : ', activation)
+        nonlinearity = get_activation(activation)
 
         if self.filter == 'fDLR':
             self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
@@ -854,17 +944,19 @@ class TDNN_v5(nn.Module):
 
         if not first_2d:
             self.frame1 = TimeDelayLayer_v5(input_dim=self.input_dim, output_dim=self.channels[0],
-                                            context_size=5, stride=self.stride[0], dilation=1)
+                                            context_size=5, stride=self.stride[0], dilation=1,
+                                            activation=self.activation)
         else:
-            self.frame1 = Conv2DLayer(input_dim=self.input_dim, output_dim=self.channels[0], stride=self.stride[0])
+            self.frame1 = Conv2DLayer(input_dim=self.input_dim, output_dim=self.channels[0], stride=self.stride[0],
+                                      activation=self.activation)
         self.frame2 = TDlayer(input_dim=self.channels[0], output_dim=self.channels[1],
-                              context_size=3, stride=self.stride[1], dilation=2)
+                              context_size=3, stride=self.stride[1], dilation=2, activation=self.activation)
         self.frame3 = TDlayer(input_dim=self.channels[1], output_dim=self.channels[2],
-                              context_size=3, stride=self.stride[2], dilation=3)
+                              context_size=3, stride=self.stride[2], dilation=3, activation=self.activation)
         self.frame4 = TDlayer(input_dim=self.channels[2], output_dim=self.channels[3],
-                              context_size=1, stride=self.stride[0], dilation=1)
+                              context_size=1, stride=self.stride[0], dilation=1, activation=self.activation)
         self.frame5 = TimeDelayLayer_v5(input_dim=self.channels[3], output_dim=self.channels[4],
-                                        context_size=1, stride=self.stride[3], dilation=1)
+                                        context_size=1, stride=self.stride[3], dilation=1, activation=self.activation)
 
         self.drop = nn.Dropout(p=self.dropout_p)
 
@@ -883,15 +975,16 @@ class TDNN_v5(nn.Module):
         else:
             raise ValueError(encoder_type)
 
+
         self.segment6 = nn.Sequential(
             nn.Linear(self.encoder_output, 512),
-            nn.ReLU(),
+            nonlinearity(),
             nn.BatchNorm1d(512)
         )
 
         self.segment7 = nn.Sequential(
             nn.Linear(512, embedding_size),
-            nn.ReLU(),
+            nonlinearity(),
             nn.BatchNorm1d(embedding_size)
         )
 

@@ -23,6 +23,18 @@ from Define_Model.Loss.SoftmaxLoss import AngleLinear
 def get_layer_param(model):
     return sum([torch.numel(param) for param in model.parameters()])
 
+
+def get_activation(activation):
+    if activation == 'relu':
+        nonlinearity = nn.ReLU
+    elif activation in ['leakyrelu', 'leaky_relu']:
+        nonlinearity = nn.LeakyReLU
+    elif activation == 'prelu':
+        nonlinearity = nn.PReLU
+
+    return nonlinearity
+
+
 class PairwiseDistance(Function):
     def __init__(self, p):
         super(PairwiseDistance, self).__init__()
