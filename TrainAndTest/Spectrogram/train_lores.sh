@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=79
+stage=78
 
 waited=0
 while [ $(ps 17810 | wc -l) -eq 2 ]; do
