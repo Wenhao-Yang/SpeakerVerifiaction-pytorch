@@ -542,27 +542,37 @@ class DropweightLayer(nn.Module):
 
 
 class AttentionweightLayer(nn.Module):
-    def __init__(self, input_dim=161):
+    def __init__(self, input_dim=161, weight='mel'):
         super(AttentionweightLayer, self).__init__()
         self.input_dim = input_dim
-        m = np.arange(0, 2840.0230467083188)
-        m = 700 * (10 ** (m / 2595.0) - 1)
-        n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-        n = 1 / n
-        x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
 
-        f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-        ynew = f(xnew)
-        # ynew = 1 / ynew  # .max()
+        if weight == 'mel':
+            m = np.arange(0, 2840.0230467083188)
+            m = 700 * (10 ** (m / 2595.0) - 1)
+            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
+            n = 1 / n
+            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+            f = interpolate.interp1d(m[1:], n)
+            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+            ynew = f(xnew)
+            # ynew = 1 / ynew  # .max()
+        elif weight=='clean':
+            ynew = c.VOX1_CLEAN
+        elif weight=='aug':
+            ynew = c.VOX1_AUG
+        elif weight == 'vox2':
+            ynew = c.VOX2_CLEAN
+        else:
+            raise ValueError(weight)
+
         ynew /= ynew.max()
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
 
         self.drop_p = ynew  # * dropout_p
         # self.activation = nn.Tanh()
-        self.activation = nn.Softmax(dim=-1)
-        # self.activation = nn.Sigmoid()
+        # self.activation = nn.Softmax(dim=-1)
+        self.activation = nn.Sigmoid()
 
     def forward(self, x):
 

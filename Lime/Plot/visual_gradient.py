@@ -85,7 +85,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (data, grad) in sets:
+                for (data, grad, uid) in sets:
                     train_time_mean += np.mean(grad, axis=0)
                     train_time_var += np.var(grad, axis=0)
                     train_data_mean += np.mean(data, axis=0)
@@ -110,7 +110,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (data, grad) in sets:
+                for (data, grad, uid) in sets:
                     valid_data_mean += np.mean(np.abs(data), axis=0)
                     valid_time_mean += np.mean(np.abs(grad), axis=0)
                     valid_time_var += np.var(grad, axis=0)

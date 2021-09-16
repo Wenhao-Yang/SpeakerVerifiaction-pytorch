@@ -867,7 +867,7 @@ class LocalResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes, block_type='basic',
-                 input_dim=161, input_len=300, gain_layer=False,
+                 input_dim=161, input_len=300, gain_layer=False, init_weight='mel',
                  relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
                  avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=25, **kwargs):
@@ -944,7 +944,7 @@ class LocalResNet(nn.Module):
         elif self.mask == 'mus_noise':
             self.mask_layer = MusanNoiseLayer(snr=15)
         elif self.mask == 'attention':
-            self.mask_layer = AttentionweightLayer()
+            self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
         else:
             self.mask_layer = None
 
