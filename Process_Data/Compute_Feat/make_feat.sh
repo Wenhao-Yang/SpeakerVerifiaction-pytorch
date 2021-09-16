@@ -7,7 +7,7 @@ lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 # echo $(awk '{n += $2} END{print n}' <utt2num_frames)
 
 waited=0
-while [ $(ps 2841 | wc -l) -eq 2 ]; do
+while [ $(ps 12841 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
