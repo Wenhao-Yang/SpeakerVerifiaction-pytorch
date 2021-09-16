@@ -179,7 +179,7 @@ fi
 if [ $stage -le 111 ]; then
   for s in dev dev_aug_com;do
     python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_${s}_var/epoch_40_va/epoch_40 \
+      --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_${s}_var/epoch_40_var_40/epoch_40 \
       --feat-dim 161 \
       --acoustic-feature spectrogram
   done
