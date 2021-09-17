@@ -311,8 +311,8 @@ if [ $stage -le 22 ]; then
   python Lime/output_extract.py \
     --model ${model} \
     --resnet-size ${resnet_size} \
-    --start-epochs 50 \
-    --epochs 50 \
+    --start-epochs 61 \
+    --epochs 61 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
     --train-set-name vox2 \
     --test-set-name vox1 \
