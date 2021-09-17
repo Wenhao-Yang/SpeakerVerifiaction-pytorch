@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=84
+stage=93
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1222,9 +1222,66 @@ if [ $stage -le 92 ]; then
 #+--------------+-------------+-------------+-------------+--------------+-------------------+
 #|  vox1-test   |   3.2715%   |   0.2473    |   0.3078    |    0.4189    | 20210818 19:07:02 |
 #+--------------+-------------+-------------+-------------+--------------+-------------------+
-#|  vox1-test   |   2.8367%   |   0.2615    |   0.2735    |    0.4051    | 20210818 19:11:29 |
+#| vox1-test-aug|   2.8367%   |   0.2615    |   0.2735    |    0.4051    | 20210818 19:11:29 |
 #+--------------+-------------+-------------+-------------+--------------+-------------------+
 fi
+
+if [ $stage -le 93 ]; then
+  feat_type=klsp
+  model=LoResNet
+  feat=log
+  loss=arcsoft
+  encod=None
+  alpha=0
+  datasets=vox2
+  block_type=cbam
+  encoder_type=None
+  embedding_size=256
+  resnet_size=8
+
+  for sname in dev ; do
+    echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size 8 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encod} \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2,2 \
+      --channels 64,128,256 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --input-length var \
+      --dropout-p 0.1 \
+      --time-dim 1 \
+      --avg-size 4 \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_var/checkpoint_61.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
+#+--------------+-------------+-------------+-------------+--------------+-------------------+
+#|   Test Set   |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+#+--------------+-------------+-------------+-------------+--------------+-------------------+
+#|  vox2-test   |   3.2715%   |   0.2473    |   0.3078    |    0.4189    | 20210818 19:07:02 |
+#+--------------+-------------+-------------+-------------+--------------+-------------------+
+#|  vox2-test   |   2.8367%   |   0.2615    |   0.2735    |    0.4051    | 20210818 19:11:29 |
+#+--------------+-------------+-------------+-------------+--------------+-------------------+
+fi
+
 # ===============================    MultiResNet    ===============================
 
 if [ $stage -le 100 ]; then
