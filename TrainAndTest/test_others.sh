@@ -1267,8 +1267,8 @@ if [ $stage -le 93 ]; then
       --dropout-p 0.1 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_var/checkpoint_61.pth \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/Mean_cbam_None_dp01_alpha0_em256_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/Mean_cbam_None_dp01_alpha0_em256_var/checkpoint_61.pth \
       --gpu-id 0 \
       --cos-sim
   done
