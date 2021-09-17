@@ -314,7 +314,7 @@ if [ $stage -le 22 ]; then
     --start-epochs 50 \
     --epochs 50 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
-    --train-set-name vox1 \
+    --train-set-name vox2 \
     --test-set-name vox1 \
     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
     --input-norm Mean \
@@ -330,8 +330,8 @@ if [ $stage -le 22 ]; then
     --loss-type ${loss} \
     --dropout-p 0.1 \
     --check-path Data/checkpoint/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var \
-    --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_50_var_50 \
-    --gpu-id 0 \
+    --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_61_var \
+    --gpu-id 1 \
     --margin 0.2 \
     --s 30 \
     --sample-utt 5994

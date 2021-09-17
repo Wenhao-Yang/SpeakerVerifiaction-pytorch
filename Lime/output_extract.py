@@ -252,7 +252,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             grad = grad.transpose()
             data = data.transpose()
 
-        input_grads.append([data, grad, uid])
+        input_grads.append([data, grad])
         inputs_uids.append(uid)
 
         model.zero_grad()
