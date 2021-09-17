@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=23
+stage=22
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 15414 | wc -l) -eq 2 ]; do
@@ -331,10 +331,10 @@ if [ $stage -le 22 ]; then
     --dropout-p 0.1 \
     --check-path Data/checkpoint/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var \
     --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_50_var_50 \
-    --gpu-id 1 \
+    --gpu-id 0 \
     --margin 0.2 \
     --s 30 \
-    --sample-utt 120
+    --sample-utt 5994
   exit
 fi
 
