@@ -564,7 +564,7 @@ class AttentionweightLayer(nn.Module):
             ynew = c.VOX2_CLEAN
         else:
             raise ValueError(weight)
-
+        ynew = np.array(ynew)
         ynew /= ynew.max()
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))

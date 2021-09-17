@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=78
+stage=79
 
 waited=0
 while [ $(ps 17810 | wc -l) -eq 2 ]; do
@@ -1143,7 +1143,7 @@ if [ $stage -le 78 ]; then
       --all-iteraion 0 \
       --loss-type ${loss}
   done
-
+  exit
 fi
 
 
