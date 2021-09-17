@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=93
+stage=92
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1178,12 +1178,15 @@ if [ $stage -le 92 ]; then
   encod=None
   alpha=0
   datasets=vox1
+  testset=sitw
+#  test_subset=
   block_type=cbam
   encoder_type=None
   embedding_size=256
   resnet_size=8
+  sname=dev #dev_aug_com
 
-  for sname in dev dev_aug_com; do
+  for test_subset in dev test; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1192,7 +1195,7 @@ if [ $stage -le 92 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 161 \
