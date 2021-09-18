@@ -749,7 +749,7 @@ def valid_class(valid_loader, model, ce, epoch):
             true_labels_b = label_b.cuda()
 
             loss_a = ce_criterion(out_a, true_labels_a)
-            loss_b = bin_ce(out_b, true_labels_b)
+            loss_b = xe_criterion(out_b, true_labels_b)
 
             # pdb.set_trace()
             predicted_one_labels_a = softmax(predicted_labels_a)
