@@ -79,7 +79,7 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
 parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
-parser.add_argument('--speech-dom', default=11, type=int, help='set domain in dataset')
+parser.add_argument('--speech-dom', default=9, type=int, help='set domain in dataset')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 parser.add_argument('--shuffle', action='store_false', default=True, help='need to shuffle egs')
@@ -736,6 +736,7 @@ def valid_class(valid_loader, model, ce, epoch):
     with torch.no_grad():
         for batch_idx, (data, label_a, label_b) in enumerate(valid_loader):
             data = data.cuda()
+            label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
 
             _, embeddings = xvector_model(data)
             out_a = classifier_spk(embeddings)
