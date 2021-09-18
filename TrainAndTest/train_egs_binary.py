@@ -412,6 +412,7 @@ def main():
     elif args.loss_type == 'arcsoft':
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
 
+    xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.06, 0.94]))
     # dom_params = list(map(id, model.classifier_dom.parameters()))
     # rest_params = list(map(id, model.xvectors.parameters()))
     # rest_params = filter(lambda p: id(p) not in dom_params, model.parameters())
@@ -445,8 +446,6 @@ def main():
         spk_scheduler = MultiStepLR(spk_optimizer, milestones=milestones, gamma=0.1)
         dom_scheduler = MultiStepLR(dom_optimizer, milestones=milestones, gamma=0.1)
 
-    ce = [ce_criterion, xe_criterion]
-
     start = args.start_epoch + start_epoch
     print('Start epoch is : ' + str(start))
     end = start + args.epochs
@@ -473,7 +472,7 @@ def main():
                                                    **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False,
                                                    **kwargs)
-
+    ce = [ce_criterion, xe_criterion]
     # valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False, **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
 
@@ -616,7 +615,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         domain_embeddings = spk_embeddings.detach()
         for i in range(steps):
             dom_logits = classifier_dom(domain_embeddings)
-            dom_loss = ce_criterion(dom_logits, true_labels_b)
+            dom_loss = xe_criterion(dom_logits, true_labels_b)
 
             dom_loss.backward()
             dom_optimizer.step()
@@ -626,9 +625,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         spk_logits = classifier_spk(spk_embeddings)
         dom_logits = classifier_dom(spk_embeddings)
 
-        spk_loss = ce_criterion(spk_logits, true_labels_a) if xe_criterion == None else xe_criterion(spk_logits,
-                                                                                                     true_labels_a)
-        loss = spk_loss + args.dom_ratio * ce_criterion(dom_logits, true_labels_b) * lambda_
+        spk_loss = ce_criterion(spk_logits, true_labels_a) #if xe_criterion == None else xe_criterion(spk_logits,
+                                                                                                     #true_labels_a)
+        loss = spk_loss + args.dom_ratio * xe_criterion(dom_logits, true_labels_b) * lambda_
         loss.backward()
 
         spk_optimizer.step()
@@ -728,7 +727,7 @@ def valid_class(valid_loader, model, ce, epoch):
     dis_loss = 0.
     ce_criterion, xe_criterion = ce
     softmax = nn.Softmax(dim=1)
-    bin_ce = nn.CrossEntropyLoss(weight=torch.tensor([0.06, 0.94]))
+
     correct_a = 0.
     correct_b = 0.
 
