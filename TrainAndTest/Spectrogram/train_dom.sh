@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=60
 
 waited=0
 while [ $(ps 113458 | wc -l) -eq 2 ]; do
@@ -119,6 +119,58 @@ if [ $stage -le 50 ]; then
       --feat-format kaldi \
       --shuffle \
       --random-chunk 300 400 \
+      --nj 10 \
+      --epochs 60 \
+      --lr 0.1 \
+      --milestones 12,24,36,48 \
+      --input-dim ${input_dim} \
+      --channels 512,512,512,512,1500 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2dr1_longer \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2dr1_longer/checkpoint_21.pth \
+      --embedding-size ${embedding_size} \
+      --stride 1 \
+      --num-valid 1 \
+      --domain \
+      --domain-steps 5 \
+      --dom-ratio 1 \
+      --loss-ratio 0.05 \
+      --sim-ratio 0 \
+      --weight-decay 0.001 \
+      --dropout-p 0 \
+      --gpu-id 0,1 \
+      --loss-type ${loss}
+  done
+fi
+
+if [ $stage -le 60 ]; then
+  datasets=cnceleb
+  model=TDNN_v5
+  feat_type=pyfb
+  loss=soft
+  encod=STAP
+  embedding_size=256
+  input_dim=40
+  input_norm=Mean
+  lr_ratio=1
+  loss_ratio=1
+  feat=fb${input_dim}_ws25
+  #  resnet_size=8
+  #  kernel_size=5,5
+  #  channels=
+  for loss in soft; do
+    echo -e "\033[1;4;31m Stage ${stage}: Train ${model} with ${loss} loss in ${datasets}.\033[0m\n"
+    python TrainAndTest/train_egs_binary.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+      --remove-vad \
+      --feat-format kaldi \
+      --shuffle \
+      --random-chunk 200 400 \
       --nj 10 \
       --epochs 60 \
       --lr 0.1 \
