@@ -178,8 +178,8 @@ if [ $stage -le 60 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2dr1_longer \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_revg/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_domain2dr1_longer/checkpoint_21.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_binary/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_binary/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_step5_var/checkpoint_21.pth \
       --embedding-size ${embedding_size} \
       --stride 1 \
       --num-valid 1 \
