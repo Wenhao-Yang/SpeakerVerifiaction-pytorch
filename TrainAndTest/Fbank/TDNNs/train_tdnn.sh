@@ -871,6 +871,7 @@ if [ $stage -le 91 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --input-norm ${input_norm} \
+      --shuffle \
       --nj 12 \
       --epochs 60 \
       --patience 2 \
