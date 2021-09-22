@@ -874,6 +874,7 @@ if [ $stage -le 91 ]; then
       --nj 12 \
       --epochs 60 \
       --patience 2 \
+      --random-chunk 200 400 \
       --milestones 10,20,30,40,50 \
       --model ${model} \
       --resnet-size ${resnet_size} \
@@ -891,8 +892,8 @@ if [ $stage -le 91 ]; then
       --context 5,3,3,5 \
       --stride 1,2,1,1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2/checkpoint_45.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2_var/checkpoint_45.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
