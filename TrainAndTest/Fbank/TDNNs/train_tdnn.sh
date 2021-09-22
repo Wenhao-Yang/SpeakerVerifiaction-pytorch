@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=91
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -845,6 +845,65 @@ if [ $stage -le 90 ]; then
   #      --all-iteraion 0 \
   #      --log-interval 10
   #  done
+  exit
+fi
+
+if [ $stage -le 91 ]; then
+  model=RET
+  datasets=vox2
+  feat=log
+  feat_type=klsp
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_norm=Mean
+  batch_size=128
+  resnet_size=17
+  #  --dilation 1,2,3,1 \
+
+  for block_type in cbam; do
+    echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --input-norm ${input_norm} \
+      --nj 12 \
+      --epochs 60 \
+      --patience 2 \
+      --milestones 10,20,30,40,50 \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --block-type ${block_type} \
+      --scheduler rop \
+      --weight-decay 0.00001 \
+      --lr 0.1 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --embedding-size ${embedding_size} \
+      --batch-size ${batch_size} \
+      --accu-steps 1 \
+      --input-dim 161 \
+      --channels 512,512,512,512,512,1536 \
+      --context 5,3,3,5 \
+      --stride 1,2,1,1 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2/checkpoint_45.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0,1 \
+      --num-valid 2 \
+      --loss-type ${loss} \
+      --margin 0.2 \
+      --s 30 \
+      --all-iteraion 0 \
+      --log-interval 10
+  done
   exit
 fi
 
