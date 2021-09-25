@@ -882,7 +882,7 @@ if [ $stage -le 91 ]; then
       --block-type ${block_type} \
       --scheduler rop \
       --weight-decay 0.00001 \
-      --lr 0.1 \
+      --lr 0.01 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -894,7 +894,7 @@ if [ $stage -le 91 ]; then
       --stride 1,2,1,1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2_var/checkpoint_45.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}norelu_bs${batch_size}_wde5_stride2_var/checkpoint_33.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
