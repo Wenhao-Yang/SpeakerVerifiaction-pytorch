@@ -884,7 +884,7 @@ if [ $stage -le 91 ]; then
       --block-type ${block_type} \
       --scheduler rop \
       --weight-decay 0.00001 \
-      --lr 0.01 \
+      --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
