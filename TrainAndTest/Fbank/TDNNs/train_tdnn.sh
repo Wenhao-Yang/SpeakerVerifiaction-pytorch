@@ -858,7 +858,7 @@ if [ $stage -le 91 ]; then
   embedding_size=512
   input_norm=Mean
   batch_size=128
-  resnet_size=17
+  resnet_size=14
   activation=leakyrelu
   #  --dilation 1,2,3,1 \
 
