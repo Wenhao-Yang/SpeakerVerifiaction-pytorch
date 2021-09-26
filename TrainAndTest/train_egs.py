@@ -591,7 +591,7 @@ def main():
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
-                    'first_2d': args.first_2d, 'red_ratio': args.red_ratio,
+                    'first_2d': args.first_2d, 'red_ratio': args.red_ratio, 'activation': args.activation,
                     'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
                     'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
