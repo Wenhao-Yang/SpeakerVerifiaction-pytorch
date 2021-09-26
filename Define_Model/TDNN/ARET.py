@@ -125,6 +125,52 @@ class TDNNCBAMBlock(nn.Module):
         return out
 
 
+class TDNNCBAMBlock_v2(nn.Module):
+
+    def __init__(self, inplanes, planes, downsample=None, dilation=1, activation='relu', **kwargs):
+        super(TDNNCBAMBlock_v2, self).__init__()
+
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        if isinstance(downsample, int) and downsample > 0:
+            inter_connect = int(planes / downsample)
+        else:
+            inter_connect = planes
+
+        if activation == 'relu':
+            act_fn = nn.ReLU
+        elif activation in ['leakyrelu', 'leaky_relu']:
+            act_fn = nn.LeakyReLU
+        elif activation == 'prelu':
+            act_fn = nn.PReLU
+
+        self.tdnn1_kernel = nn.Conv1d(inplanes, inter_connect, 3, stride=1,
+                                padding=1, dilation=dilation, bias=False)
+        self.tdnn1_bn = nn.BatchNorm1d(inter_connect)
+        self.act = act_fn()
+
+        self.tdnn2_kernel = nn.Conv1d(inter_connect, planes, 3, stride=1,
+                                      padding=1, dilation=dilation, bias=False)
+        self.tdnn2_bn = nn.BatchNorm1d(planes)
+
+        self.CBAM_layer = TDCBAM(planes, planes)
+
+    def forward(self, x):
+        identity = x
+
+        out = self.tdnn1_kernel(x.transpose(1, 2))
+        out = self.tdnn1_bn(out)
+        out = self.act(out)
+
+        out = self.tdnn2_kernel(out)
+        out = self.tdnn2_bn(out)
+
+        out = self.CBAM_layer(out).transpose(1, 2)
+        out += identity
+        out = self.act(out)
+
+        return out
+
+
 class TDNNBlock_v6(nn.Module):
 
     def __init__(self, inplanes, planes, downsample=None, dilation=1, **kwargs):
@@ -249,6 +295,9 @@ class RET(nn.Module):
             Blocks = TDNNBottleBlock
         elif block_type.lower() == 'cbam':
             Blocks = TDNNCBAMBlock
+        elif block_type.lower() == 'cbam_v2':
+            TDNN_layer = TimeDelayLayer_v6
+            Blocks = TDNNCBAMBlock_v2
         else:
             raise ValueError(block_type)
 
