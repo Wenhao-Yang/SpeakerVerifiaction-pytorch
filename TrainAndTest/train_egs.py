@@ -603,10 +603,9 @@ def main():
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}
 
-    model_opts = model_kwargs
-    keys = list(model_opts.keys())
+    keys = list(model_kwargs.keys())
     keys.sort()
-    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_opts[k])) for k in keys]
+    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
     print('Model options: {}'.format(model_options))
     dist_type = 'cos' if args.cos_sim else 'l2'
     print('Testing with %s distance, ' % dist_type)
