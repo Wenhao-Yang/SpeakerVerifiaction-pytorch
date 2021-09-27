@@ -603,7 +603,7 @@ def main():
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}
 
-    model_opts = vars(model_kwargs)
+    model_opts = model_kwargs
     keys = list(model_opts.keys())
     keys.sort()
     model_options = ["\'%s\': \'%s\'" % (str(k), str(model_opts[k])) for k in keys]
