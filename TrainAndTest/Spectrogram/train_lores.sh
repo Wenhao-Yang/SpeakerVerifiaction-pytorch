@@ -1163,7 +1163,7 @@ if [ $stage -le 79 ]; then
   input_norm=Mean
 #  mask_layer=gau_noise
   mask_layer=attention
-  for weight in vox2; do
+  for weight in mel clean aug vox2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -1186,8 +1186,8 @@ if [ $stage -le 79 ]; then
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_${weight}_chn32_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_${weight}_chn32_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --channels 32,64,128 \
       --stride 2 \
