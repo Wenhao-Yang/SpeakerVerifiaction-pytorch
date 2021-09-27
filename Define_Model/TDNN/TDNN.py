@@ -429,10 +429,8 @@ class TimeDelayLayer_v6(nn.Module):
         elif activation == 'prelu':
             act_fn = nn.PReLU
 
+        self.kernel.add_module('tdnn_bn', nn.BatchNorm1d(output_dim))
         self.kernel.add_module('tdnn_act', act_fn())
-
-        if batch_norm:
-            self.kernel.add_module('tdnn_bn', nn.BatchNorm1d(output_dim))
 
     def forward(self, x):
         '''
@@ -440,10 +438,9 @@ class TimeDelayLayer_v6(nn.Module):
         outpu: size (batch, new_seq_len, output_features)
         '''
 
-        # x = self.kernel(x.transpose(1, 2))
-        x = self.kernel(x)
+        x = self.kernel(x.transpose(1, 2))
 
-        return x  # .transpose(1, 2)
+        return x.transpose(1, 2)
 
 
 
