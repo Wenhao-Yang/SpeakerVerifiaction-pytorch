@@ -1337,7 +1337,7 @@ if [ $stage -le 94 ]; then
       --cos-sim
   done
   exit
-
+fi
 # ===============================    MultiResNet    ===============================
 
 if [ $stage -le 100 ]; then
