@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=95
+stage=94
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1294,7 +1294,7 @@ if [ $stage -le 94 ]; then
   encod=None
   alpha=0
   datasets=vox1
-  testset=vox1
+  testset=sitw
 #  test_subset=
   block_type=cbam
   encoder_type=None
@@ -1336,7 +1336,7 @@ if [ $stage -le 94 ]; then
       --gpu-id 0 \
       --cos-sim
   done
-  exit
+#  exit
 fi
 
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
@@ -1353,7 +1353,7 @@ if [ $stage -le 95 ]; then
   encod=None
   alpha=0
   datasets=vox1
-  testset=vox1
+  testset=sitw
 #  test_subset=
   block_type=cbam
   encoder_type=None
