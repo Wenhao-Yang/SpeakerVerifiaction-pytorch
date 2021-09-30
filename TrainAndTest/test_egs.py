@@ -110,6 +110,7 @@ parser.add_argument('--veri-pairs', type=int, default=20000, metavar='VP',
 # Model options
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
+parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
@@ -527,7 +528,7 @@ if __name__ == '__main__':
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'channels': channels, 'context': context,
+                    'channels': channels, 'context': context, 'init_weight': args.init_weight,
                     'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
