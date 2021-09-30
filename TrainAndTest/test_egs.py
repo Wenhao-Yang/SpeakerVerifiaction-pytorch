@@ -521,7 +521,7 @@ if __name__ == '__main__':
     mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'mask_layer': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
+                    'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
                     'dilation': dilation, 'first_2d': args.first_2d,
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
