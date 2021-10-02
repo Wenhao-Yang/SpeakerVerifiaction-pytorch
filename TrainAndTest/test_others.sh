@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=94
+stage=95
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1353,7 +1353,7 @@ if [ $stage -le 95 ]; then
   encod=None
   alpha=0
   datasets=vox1
-  testset=sitw
+  testset=vox1
 #  test_subset=
   block_type=cbam
   encoder_type=None
@@ -1364,7 +1364,7 @@ if [ $stage -le 95 ]; then
   test_subset=test
   input_norm=Mean
 
-  for weight in mel clean aug ; do
+  for weight in vox2 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
