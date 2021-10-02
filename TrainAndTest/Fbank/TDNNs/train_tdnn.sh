@@ -384,8 +384,8 @@ if [ $stage -le 75 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --nj 12 \
-      --epochs 50 \
-      --patience 3 \
+      --epochs 40 \
+      --patience 2 \
       --milestones 10,20,30 \
       --model ${model} \
       --scheduler rop \
@@ -412,7 +412,6 @@ if [ $stage -le 75 ]; then
       --loss-type ${loss} \
       --margin 0.2 \
       --s 30 \
-      --remove-vad \
       --log-interval 10
   done
   exit
