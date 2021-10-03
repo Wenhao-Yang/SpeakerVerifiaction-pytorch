@@ -1364,7 +1364,7 @@ if [ $stage -le 95 ]; then
   test_subset=test
   input_norm=Mean
 
-  for weight in vox2 ; do
+  for weight in mel clean aug vox2 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1387,16 +1387,16 @@ if [ $stage -le 95 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 32,64,128 \
+      --channels 16,32,64 \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
       --input-length var \
-      --dropout-p 0.2 \
+      --dropout-p 0.125 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_${weight}_chn32_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_${weight}_chn32_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
