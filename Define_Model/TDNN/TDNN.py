@@ -21,7 +21,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
+from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer, AttentionweightLayer
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
     SelfAttentionPooling
@@ -870,6 +870,7 @@ class TDNN_v5(nn.Module):
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', activation='relu',
                  num_classes_b=0, block_type='basic', first_2d=False, stride=[1],
+                 init_weight='mel',
                  mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
@@ -925,6 +926,8 @@ class TDNN_v5(nn.Module):
                 TimeMaskLayer(mask_len=mask_len),
                 FreqMaskLayer(mask_len=mask_len)
             )
+        elif self.mask == 'attention':
+            self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
         else:
             self.mask_layer = None
 
