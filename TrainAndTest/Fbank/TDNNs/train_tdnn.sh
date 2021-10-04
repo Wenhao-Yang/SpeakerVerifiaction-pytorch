@@ -456,10 +456,10 @@ if [ $stage -le 74 ]; then
 #      --s 30 \
 #      --log-interval 10
 #  done
-
-  for loss in arcsoft; do
+  loss=arcsoft
+  for weight in mel aug vox2; do
     mask_layer=attention
-    weight=clean
+#    weight=clean
 
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/train_egs.py \
@@ -489,8 +489,8 @@ if [ $stage -le 74 ]; then
       --init-weight ${weight} \
       --channels 256,256,256,256,768 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_clean_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_clean_wd5e4_var/checkpoint_13.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_13.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
