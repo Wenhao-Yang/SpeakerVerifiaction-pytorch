@@ -442,7 +442,7 @@ if [ $stage -le 74 ]; then
       --shuffle \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
-      --channels 256,256,256,256,1024 \
+      --channels 256,256,256,256,768 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_chn256_wd5e4_var \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_chn256_wd5e4_var/checkpoint_13.pth \
@@ -487,7 +487,7 @@ if [ $stage -le 74 ]; then
       --input-dim ${input_dim} \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
-      --channels 256,256,256,256,1024 \
+      --channels 256,256,256,256,768 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_clean_wd5e4_var \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_clean_wd5e4_var/checkpoint_13.pth \
