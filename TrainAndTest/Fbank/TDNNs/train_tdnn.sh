@@ -374,6 +374,47 @@ if [ $stage -le 74 ]; then
   input_norm=Mean
   # _lrr${lr_ratio}_lsr${loss_ratio}
   feat=klsp
+#
+#  for loss in arcsoft; do
+#
+#    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+#    python -W ignore TrainAndTest/train_egs.py \
+#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
+#      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+#      --train-trials trials_2w \
+#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
+#      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+#      --nj 12 \
+#      --epochs 40 \
+#      --patience 2 \
+#      --milestones 10,20,30 \
+#      --model ${model} \
+#      --scheduler rop \
+#      --weight-decay 0.0005 \
+#      --lr 0.1 \
+#      --alpha 0 \
+#      --feat-format kaldi \
+#      --embedding-size ${embedding_size} \
+#      --var-input \
+#      --batch-size 128 \
+#      --accu-steps 1 \
+#      --shuffle \
+#      --random-chunk 200 400 \
+#      --input-dim ${input_dim} \
+#      --channels 512,512,512,512,1500 \
+#      --encoder-type ${encod} \
+#      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+#      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_13.pth \
+#      --cos-sim \
+#      --dropout-p 0.0 \
+#      --veri-pairs 9600 \
+#      --gpu-id 0,1 \
+#      --num-valid 2 \
+#      --loss-type ${loss} \
+#      --margin 0.2 \
+#      --s 30 \
+#      --log-interval 10
+#  done
 
   for loss in arcsoft; do
 
@@ -401,10 +442,10 @@ if [ $stage -le 74 ]; then
       --shuffle \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
-      --channels 512,512,512,512,1500 \
+      --channels 256,256,256,256,1024 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_13.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_chn256_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_chn256_wd5e4_var/checkpoint_13.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -448,8 +489,8 @@ if [ $stage -le 74 ]; then
       --init-weight ${weight} \
       --channels 256,256,256,256,1024 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_13.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_clean_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_clean_wd5e4_var/checkpoint_13.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
