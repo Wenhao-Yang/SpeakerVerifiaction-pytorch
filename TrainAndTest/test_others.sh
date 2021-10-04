@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=95
+stage=96
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1402,6 +1402,61 @@ if [ $stage -le 95 ]; then
   done
   exit
 fi
+if [ $stage -le 96 ]; then
+  feat_type=klsp
+  model=LoResNet
+  feat=log
+  loss=arcsoft
+  encod=None
+  alpha=0
+  datasets=vox1
+  testset=vox1
+#  test_subset=
+  block_type=cbam
+  encoder_type=None
+  embedding_size=256
+  resnet_size=8
+#  sname=dev #dev_aug_com
+  sname=dev #_aug_com
+  test_subset=test
+  input_norm=Mean
+
+  for weight in None ; do
+    echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size 8 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encod} \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2,2 \
+      --channels 16,32,64 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --input-length var \
+      --dropout-p 0.125 \
+      --time-dim 1 \
+      --avg-size 4 \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_chn16_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_chn16_wd5e4_var/checkpoint_50.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
+fi
+
 
 # ===============================    MultiResNet    ===============================
 
