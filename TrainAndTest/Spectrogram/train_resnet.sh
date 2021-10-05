@@ -101,7 +101,7 @@ if [ $stage -le 21 ]; then
   resnet_size=34
   encoder_type=STAP
   alpha=0
-  block_type=seblock
+  block_type=basic
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
@@ -109,7 +109,7 @@ if [ $stage -le 21 ]; then
   sname=dev
   #        --scheduler cyclic \
 
-  for sname in dev dev_aug_com; do
+  for sname in dev; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -129,13 +129,12 @@ if [ $stage -le 21 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_fastk7_chn32_${sname}_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_fastk7_chn32_${sname}_var/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_k7_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_alpha${alpha}_wd5e4_k7_var/checkpoint_10.pth \
       --kernel-size 7,7 \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
-      --fast none1 \
       --red-ratio 8 \
       --stride 2 \
       --batch-size 128 \
