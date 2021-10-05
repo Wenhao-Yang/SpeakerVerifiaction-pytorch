@@ -140,7 +140,7 @@ if [ $stage -le 21 ]; then
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 4 \
+      --avg-size 1 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
