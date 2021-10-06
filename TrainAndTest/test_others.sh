@@ -696,6 +696,36 @@ if [ $stage -le 78 ]; then
   dataset=vox1
   test_set=vox1
 
+#  for subset in test; do # 32,128,512; 8,32,128
+#    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+#    python -W ignore TrainAndTest/test_egs.py \
+#      --model ${model} \
+#      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+#      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev/trials_dir \
+#      --train-trials trials_2w \
+#      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_valid \
+#      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset} \
+#      --trials trials \
+#      --feat-format kaldi \
+#      --input-norm Mean \
+#      --block-type basic \
+#      --input-dim 161 \
+#      --nj 12 \
+#      --embedding-size 512 \
+#      --loss-type ${loss} \
+#      --encoder-type STAP \
+#      --channels 512,512,512,512,1500 \
+#      --stride 1 \
+#      --margin 0.2 \
+#      --s 30 \
+#      --input-length var \
+#      --frame-shift 300 \
+#      --xvector-dir Data/xvector/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_40_var \
+#      --resume Data/checkpoint/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_40.pth \
+#      --gpu-id 0 \
+#      --cos-sim
+#  done
+
   for subset in test; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
@@ -714,17 +744,18 @@ if [ $stage -le 78 ]; then
       --embedding-size 512 \
       --loss-type ${loss} \
       --encoder-type STAP \
-      --channels 512,512,512,512,1500 \
+      --channels 256,256,256,256,768 \
       --stride 1 \
       --margin 0.2 \
       --s 30 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_40_var \
-      --resume Data/checkpoint/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_40.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_chn256_wd5e4_var/${test_set}_${subset}_epoch_40_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_chn256_wd5e4_var/checkpoint_40.pth \
       --gpu-id 0 \
       --cos-sim
   done
+
   exit
 fi
 
