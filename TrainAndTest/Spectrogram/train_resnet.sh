@@ -120,7 +120,7 @@ if [ $stage -le 21 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --input-norm ${input_norm} \
-      --mask attention \
+      --mask-layer attention \
       --init-weight clean \
       --random-chunk 200 400 \
       --resnet-size ${resnet_size} \
