@@ -472,8 +472,8 @@ class ThinResNet(nn.Module):
                        101: [3, 4, 23, 3]}
 
         layers = resnet_type[resnet_size]
-        freq_dim = avg_size  # default 1
-        time_dim = time_dim  # default 4
+        freq_dim = avg_size  # default 4
+        time_dim = time_dim  # default 1
         self.input_len = input_len
         self.input_dim = input_dim
         self.inst_norm = inst_norm
