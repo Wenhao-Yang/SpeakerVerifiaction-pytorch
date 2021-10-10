@@ -667,6 +667,8 @@ class ThinResNet(nn.Module):
         x = self.layer4(x)
         # print(x.shape)
 
+        if self.dropout_p > 0:
+            x = self.dropout(x)
         x = self.avgpool(x)
         if self.encoder != None:
             x = self.encoder(x)
