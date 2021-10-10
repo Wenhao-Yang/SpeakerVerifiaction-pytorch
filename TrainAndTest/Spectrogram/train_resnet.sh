@@ -129,7 +129,7 @@ if [ $stage -le 21 ]; then
       --lr 0.001 \
       --milestones 5,15 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var/checkpoint_250.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var/checkpoint_25.pth \
       --kernel-size 5,5 \
       --channels 16,32,64,128 \
       --input-dim 161 \
