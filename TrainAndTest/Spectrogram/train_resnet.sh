@@ -122,12 +122,13 @@ if [ $stage -le 21 ]; then
       --random-chunk 200 400 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 25 \
+      --epochs 50 \
       --optimizer sgd \
+      --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
       --lr 0.1 \
-      --milestones 5,15 \
+      --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var/checkpoint_25.pth \
       --kernel-size 5,5 \
