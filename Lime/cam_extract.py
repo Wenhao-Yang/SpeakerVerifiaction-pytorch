@@ -295,9 +295,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
         # orig = data.detach().numpy().squeeze().astype(np.float32)
         if data.shape[2] > 10 * c.NUM_FRAMES_SPECT:
             num_half = int(data.shape[2] / (10 * c.NUM_FRAMES_SPECT))
-            # half_a = data[:, :, :num_half, :]
-            # half_b = data[:, :, -num_half:, :]
-            # data = torch.cat((half_a, half_b), dim=0)
 
             x = data.chunk(num_half, dim=2)
             data = torch.cat(x, dim=0)
@@ -311,7 +308,11 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             else:
                 classifed = logit
 
-            classifed[0][label.long()].backward()
+            try:
+                classifed[0][label.long()].backward()
+            except Exception as e:
+                print(uid)
+                raise e
             ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
 
             if args.cam == 'gradient':
@@ -487,7 +488,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 batch_idx + 1,
                 len(train_loader.dataset),
                 100. * batch_idx / len(train_loader)))
-            torch.cuda.empty_cache()
 
         if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
             num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
