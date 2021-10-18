@@ -83,7 +83,8 @@ parser.add_argument('--mvnorm', action='store_true', default=False,
 # Model options
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
-parser.add_argument('--cam', default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
+parser.add_argument('--cam-layers',
+                    default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
                     type=list, metavar='CAML', help='The channels of convs layers)')
 parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
 
@@ -588,9 +589,9 @@ def main():
 
             train_extract(train_loader, model, file_dir, '%s_train'%args.train_set_name)
             train_extract(valid_loader, model, file_dir, '%s_valid'%args.train_set_name)
-            test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
+            # test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
 
-        test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
+        # test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
 
 
 if __name__ == '__main__':

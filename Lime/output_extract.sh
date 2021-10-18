@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=22
+stage=100
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 15414 | wc -l) -eq 2 ]; do
@@ -599,4 +599,52 @@ if [ $stage -le 80 ]; then
       --extract-frames \
       --feat-dim 161
   done
+fi
+
+
+if [ $stage -le 100 ]; then
+  model=LoResNet
+  dataset=vox2
+  train_set=vox2
+  test_set=vox1
+  feat_type=klsp
+  feat=log
+  loss=arcsoft
+  resnet_size=8
+  encoder_type=None
+  embedding_size=256
+  block_type=cbam
+  kernel=5,5
+  cam=grad_cam
+  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+
+  python Lime/cam_extract.py \
+    --model ${model} \
+    --resnet-size ${resnet_size} \
+    --cam ${cam} \
+    --start-epochs 61 \
+    --epochs 61 \
+    --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+    --train-set-name vox2 \
+    --test-set-name vox1 \
+    --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+    --input-norm Mean \
+    --kernel-size ${kernel} \
+    --stride 2 \
+    --channels 64,128,256 \
+    --encoder-type ${encoder_type} \
+    --block-type ${block_type} \
+    --time-dim 1 \
+    --avg-size 4 \
+    --embedding-size ${embedding_size} \
+    --alpha 0 \
+    --loss-type ${loss} \
+    --dropout-p 0.1 \
+    --check-path Data/checkpoint/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var \
+    --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_61_var_${cam} \
+    --gpu-id 1 \
+    --margin 0.2 \
+    --s 30 \
+    --sample-utt 5994
+  exit
 fi
