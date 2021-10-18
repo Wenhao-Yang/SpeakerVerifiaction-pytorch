@@ -293,12 +293,15 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     for batch_idx, (data, label, uid) in pbar:
 
         # orig = data.detach().numpy().squeeze().astype(np.float32)
+
         if data.shape[2] > 5 * c.NUM_FRAMES_SPECT:
             num_half = int(data.shape[2] / (4 * c.NUM_FRAMES_SPECT))
             rest_frame = data.shape[2] % num_half
             x = data[:, :, :-rest_frame, :].chunk(num_half, dim=2)
             data = torch.cat(x, dim=0)
             print(data.shape)
+            if data.shape[2]==0:
+                raise Exception(uid)
 
         data = Variable(data.cuda(), requires_grad=True)
         if len(data) == 1:
