@@ -1059,7 +1059,7 @@ if [ $stage -le 91 ]; then
   activation=relu
   #  --dilation 1,2,3,1 \
 
-  for block_type in basic; do
+  for block_type in basic_v2 ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/train_egs.py \
