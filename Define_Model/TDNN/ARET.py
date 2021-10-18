@@ -519,6 +519,8 @@ class RET_v2(nn.Module):
         TDNN_layer = TimeDelayLayer_v5
         if block_type.lower() == 'basic':
             Blocks = TDNNBlock
+        if block_type.lower() == 'basic_v2':
+            Blocks = TDNNBlock_v2
         elif block_type.lower() == 'basic_v6':
             Blocks = TDNNBlock_v6
             TDNN_layer = TimeDelayLayer_v6
