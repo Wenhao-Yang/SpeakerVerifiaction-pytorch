@@ -374,12 +374,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 full_grad /= full_grad.max()
                 grad = full_grad
 
-            out_feature_grads = []
-            in_feature_grads = []
-            in_layer_feat = []
-            out_layer_feat = []
-            in_layer_grad = []
-            out_layer_grad = []
+
         else:
             grad = []
             all_data = []
@@ -468,6 +463,13 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
             grad = torch.cat(grad, dim=0)
             data = torch.cat(all_data, dim=0)
+
+        out_feature_grads = []
+        in_feature_grads = []
+        in_layer_feat = []
+        out_layer_feat = []
+        in_layer_grad = []
+        out_layer_grad = []
 
         data = data.data.cpu().numpy().squeeze().astype(np.float32)
 
