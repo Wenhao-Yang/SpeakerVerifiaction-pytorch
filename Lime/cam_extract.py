@@ -524,7 +524,7 @@ def main():
     for ep in epochs:
         # Load model from Checkpoint file
         if os.path.isfile(resume_path.format(ep)):
-            print('=> loading checkpoint {}'.format(resume_path.format(e)))
+            print('=> loading checkpoint {}'.format(resume_path.format(ep)))
             checkpoint = torch.load(resume_path.format(ep))
             checkpoint_state_dict = checkpoint['state_dict']
             if isinstance(checkpoint_state_dict, tuple):
