@@ -487,6 +487,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 batch_idx + 1,
                 len(train_loader.dataset),
                 100. * batch_idx / len(train_loader)))
+            torch.cuda.empty_cache()
 
         if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
             num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
