@@ -18,6 +18,7 @@ import pickle
 import random
 import time
 from collections import OrderedDict
+import Process_Data.constants as c
 
 import numpy as np
 import torch
@@ -292,86 +293,184 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     for batch_idx, (data, label, uid) in pbar:
 
         # orig = data.detach().numpy().squeeze().astype(np.float32)
+        if data.shape[2] > 10 * c.NUM_FRAMES_SPECT:
+            num_half = int(data.shape[2] / 2)
+            half_a = data[:, :, :num_half, :]
+            half_b = data[:, :, -num_half:, :]
+            data = torch.cat((half_a, half_b), dim=0)
+
+            # x1, x2 = data.chunk(2, dim=2)
+            # data = torch.cat((x1, x2), dim=0)
+
         data = Variable(data.cuda(), requires_grad=True)
+        if len(data) == 1:
 
-        logit, _ = model(data)
 
-        if args.loss_type == 'asoft':
-            classifed, _ = logit
-        else:
-            classifed = logit
+            logit, _ = model(data)
 
-        classifed[0][label.long()].backward()
-        ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
+            if args.loss_type == 'asoft':
+                classifed, _ = logit
+            else:
+                classifed = logit
 
-        if args.cam =='gradient':
-
-            grad = data.grad.cpu().numpy().squeeze().astype(np.float32)
-        elif args.cam =='grad_cam':
-            grad = torch.zeros_like(data)
-            L = len(cam_layers)
-            assert len(out_layer_grad) == L, print(len(out_layer_grad))
-
-            last_grad = out_layer_grad[0]
-            last_feat = out_layer_feat[-1]
-
-            weight = last_grad.mean(dim=(2, 3), keepdim=True)
-            weight /= weight.sum()
-            feat = last_feat  # .copy()
-
-            T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
+            classifed[0][label.long()].backward()
             ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
-            grad += ups(T).abs()
 
-        elif args.cam =='grad_cam_pp':
-            # grad cam ++ last
-            last_grad = out_layer_grad[0]
-            last_feat = out_layer_feat[-1]
-            first_derivative = classifed[0][label.long()].exp() * last_grad
-            alpha = last_grad.pow(2) / (
+            if args.cam == 'gradient':
+                grad = data.grad.cpu().numpy().squeeze().astype(np.float32)
+            elif args.cam == 'grad_cam':
+                grad = torch.zeros_like(data)
+                L = len(cam_layers)
+                assert len(out_layer_grad) == L, print(len(out_layer_grad))
+
+                last_grad = out_layer_grad[0]
+                last_feat = out_layer_feat[-1]
+
+                weight = last_grad.mean(dim=(2, 3), keepdim=True)
+                weight /= weight.sum()
+                feat = last_feat  # .copy()
+
+                T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
+                ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
+                grad += ups(T).abs()
+
+            elif args.cam == 'grad_cam_pp':
+                # grad cam ++ last
+                last_grad = out_layer_grad[0]
+                last_feat = out_layer_feat[-1]
+                first_derivative = classifed[0][label.long()].exp() * last_grad
+                alpha = last_grad.pow(2) / (
                         2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
-            # weight = alpha * (first_derivative.clamp_min_(0))
-            weight = alpha * (first_derivative.abs())
+                # weight = alpha * (first_derivative.clamp_min_(0))
+                weight = alpha * (first_derivative.abs())
 
-            weight = weight.mean(dim=(2, 3), keepdim=True)
-            weight /= weight.sum()
+                weight = weight.mean(dim=(2, 3), keepdim=True)
+                weight /= weight.sum()
 
-            grad = (last_feat * weight).sum(dim=1, keepdim=True)
-            grad = ups(grad)
+                grad = (last_feat * weight).sum(dim=1, keepdim=True)
+                grad = ups(grad)
 
-            # grad_cam_pp -= grad_cam_pp.min()
-            grad = grad.abs()
-            grad /= grad.max()
-        elif args.cam == 'fullgrad':
-            # full grad
-            input_gradient = (data.grad * data)
-            full_grad = input_gradient.clone().clamp_min(0)
+                # grad_cam_pp -= grad_cam_pp.min()
+                grad = grad.abs()
+                grad /= grad.max()
+            elif args.cam == 'fullgrad':
+                # full grad
+                input_gradient = (data.grad * data)
+                full_grad = input_gradient.clone().clamp_min(0)
 
-            L = len(bias_layers)
+                L = len(bias_layers)
 
-            for i, l in enumerate(bias_layers):
-                bias = biases[L - i - 1]
-                if len(bias.shape) == 1:
-                    bias = bias.reshape(1, -1, 1, 1)
-                bias = bias.expand_as(out_feature_grads[i])
+                for i, l in enumerate(bias_layers):
+                    bias = biases[L - i - 1]
+                    if len(bias.shape) == 1:
+                        bias = bias.reshape(1, -1, 1, 1)
+                    bias = bias.expand_as(out_feature_grads[i])
 
-                #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
-                #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
-                bias_grad /= bias_grad.max()
-                full_grad += ups(bias_grad)
+                    #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
+                    #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
+                    bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
+                    bias_grad /= bias_grad.max()
+                    full_grad += ups(bias_grad)
 
-            # full_grad -= full_grad.min()
-            # full_grad = full_grad.abs()
-            full_grad /= full_grad.max()
-            grad = full_grad
+                # full_grad -= full_grad.min()
+                # full_grad = full_grad.abs()
+                full_grad /= full_grad.max()
+                grad = full_grad
 
-        out_feature_grads = []
-        in_feature_grads = []
-        in_layer_feat = []
-        out_layer_feat = []
-        in_layer_grad = []
-        out_layer_grad = []
+            out_feature_grads = []
+            in_feature_grads = []
+            in_layer_feat = []
+            out_layer_feat = []
+            in_layer_grad = []
+            out_layer_grad = []
+        else:
+            grad = []
+            all_data = []
+            for i in range(len(data)):
+                out_feature_grads = []
+                in_feature_grads = []
+                in_layer_feat = []
+                out_layer_feat = []
+                in_layer_grad = []
+                out_layer_grad = []
+
+                data_a = data[i].unsqueeze(0)
+                logit, _ = model(data_a)
+
+                if args.loss_type == 'asoft':
+                    classifed, _ = logit
+                else:
+                    classifed = logit
+
+                classifed[0][label.long()].backward()
+
+                if args.cam == 'gradient':
+                    grad_a = data_a.grad.cpu().numpy().squeeze().astype(np.float32)
+                elif args.cam == 'grad_cam':
+                    grad_a = torch.zeros_like(data_a)
+                    L = len(cam_layers)
+                    assert len(out_layer_grad) == L, print(len(out_layer_grad))
+
+                    last_grad = out_layer_grad[0]
+                    last_feat = out_layer_feat[-1]
+
+                    weight = last_grad.mean(dim=(2, 3), keepdim=True)
+                    weight /= weight.sum()
+                    feat = last_feat  # .copy()
+
+                    T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
+                    ups = torch.nn.UpsamplingBilinear2d(size=data_a.shape[-2:])
+                    grad_a += ups(T).abs()
+
+                elif args.cam == 'grad_cam_pp':
+                    # grad cam ++ last
+                    last_grad = out_layer_grad[0]
+                    last_feat = out_layer_feat[-1]
+                    first_derivative = classifed[0][label.long()].exp() * last_grad
+                    alpha = last_grad.pow(2) / (
+                            2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
+                    # weight = alpha * (first_derivative.clamp_min_(0))
+                    weight = alpha * (first_derivative.abs())
+
+                    weight = weight.mean(dim=(2, 3), keepdim=True)
+                    weight /= weight.sum()
+
+                    grad_a = (last_feat * weight).sum(dim=1, keepdim=True)
+                    grad_a = ups(grad_a)
+
+                    # grad_cam_pp -= grad_cam_pp.min()
+                    grad_a = grad_a.abs()
+                    grad_a /= grad_a.max()
+                elif args.cam == 'fullgrad':
+                    # full grad
+                    input_gradient = (grad_a.grad * grad_a)
+                    full_grad = input_gradient.clone().clamp_min(0)
+
+                    L = len(bias_layers)
+
+                    for i, l in enumerate(bias_layers):
+                        bias = biases[L - i - 1]
+                        if len(bias.shape) == 1:
+                            bias = bias.reshape(1, -1, 1, 1)
+                        bias = bias.expand_as(out_feature_grads[i])
+
+                        #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
+                        #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
+                        bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
+                        bias_grad /= bias_grad.max()
+                        full_grad += ups(bias_grad)
+
+                    # full_grad -= full_grad.min()
+                    # full_grad = full_grad.abs()
+                    full_grad /= full_grad.max()
+                    grad_a = full_grad
+
+                grad.append(grad_a)
+                all_data.append(data_a.squeeze())
+
+
+            grad = torch.cat(grad, dim=0)
+            data = torch.cat(all_data, dim=0)
 
         data = data.data.cpu().numpy().squeeze().astype(np.float32)
 
