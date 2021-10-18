@@ -282,6 +282,12 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     input_grads = []
     inputs_uids = []
     pbar = tqdm(enumerate(train_loader))
+    global out_feature_grads
+    global in_feature_grads
+    global in_layer_feat
+    global out_layer_feat
+    global in_layer_grad
+    global out_layer_grad
 
     for batch_idx, (data, label, uid) in pbar:
 
@@ -359,12 +365,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             # full_grad = full_grad.abs()
             full_grad /= full_grad.max()
             grad = full_grad
-        global out_feature_grads
-        global in_feature_grads
-        global in_layer_feat
-        global out_layer_feat
-        global in_layer_grad
-        global out_layer_grad
 
         out_feature_grads = []
         in_feature_grads = []
