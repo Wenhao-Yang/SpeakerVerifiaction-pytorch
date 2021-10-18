@@ -256,7 +256,8 @@ class RET(nn.Module):
         self.activation = activation
         tdnn_type = {14: [1, 1, 1, 0],
                      17: [1, 1, 1, 1],
-                     21: [1, 1, 1, 1]}
+                     21: [1, 1, 1, 1],
+                     34: [3, 4, 6, 3], }
         self.layers = tdnn_type[resnet_size] if resnet_size in tdnn_type else tdnn_type[17]
         self.stride = stride
         if len(self.stride) == 1:

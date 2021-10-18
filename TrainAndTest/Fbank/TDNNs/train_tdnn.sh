@@ -1055,11 +1055,11 @@ if [ $stage -le 91 ]; then
   embedding_size=512
   input_norm=Mean
   batch_size=128
-  resnet_size=14
-  activation=leakyrelu
+  resnet_size=34
+  activation=relu
   #  --dilation 1,2,3,1 \
 
-  for block_type in cbam_v2; do
+  for block_type in basic; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/train_egs.py \
@@ -1088,12 +1088,12 @@ if [ $stage -le 91 ]; then
       --batch-size ${batch_size} \
       --accu-steps 1 \
       --input-dim 161 \
-      --channels 512,512,512,512,512,1536 \
-      --context 5,3,3,5 \
-      --stride 1,1,1,1 \
+      --channels 128,128,256,256,512,1536 \
+      --context 5,3,3,3 \
+      --stride 2,1,2,1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride1_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride1_var/checkpoint_5.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride2121_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride2121_var/checkpoint_5.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
