@@ -299,7 +299,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             # half_b = data[:, :, -num_half:, :]
             # data = torch.cat((half_a, half_b), dim=0)
 
-            x = num_half.chunk(2, dim=2)
+            x = data.chunk(num_half, dim=2)
             data = torch.cat(x, dim=0)
 
         data = Variable(data.cuda(), requires_grad=True)
