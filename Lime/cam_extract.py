@@ -304,8 +304,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
         data = Variable(data.cuda(), requires_grad=True)
         if len(data) == 1:
-
-
             logit, _ = model(data)
 
             if args.loss_type == 'asoft':
@@ -320,8 +318,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 grad = data.grad.cpu().numpy().squeeze().astype(np.float32)
             elif args.cam == 'grad_cam':
                 grad = torch.zeros_like(data)
-                L = len(cam_layers)
-                assert len(out_layer_grad) == L, print(len(out_layer_grad))
+                assert len(out_layer_grad) == len(cam_layers), print(len(out_layer_grad), " is not equal to ", len(cam_layers))
 
                 last_grad = out_layer_grad[0]
                 last_feat = out_layer_feat[-1]
