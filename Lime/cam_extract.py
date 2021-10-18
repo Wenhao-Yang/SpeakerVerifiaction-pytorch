@@ -311,7 +311,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             try:
                 classifed[0][label.long()].backward()
             except Exception as e:
-                print(uid)
+                print(data.shape, ",", uid)
                 raise e
             ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
 
