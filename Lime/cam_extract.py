@@ -295,13 +295,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
         # orig = data.detach().numpy().squeeze().astype(np.float32)
         if data.shape[2] > 5 * c.NUM_FRAMES_SPECT:
             num_half = int(data.shape[2] / (4 * c.NUM_FRAMES_SPECT))
-            if num_half == 2:
-                time_len = int(data.shape[2] / 2)
-                half_a = data[:, :, :time_len, :]
-                half_b = data[:, :, -time_len:, :]
-                x = [half_a, half_b]
-            else:
-                x = data.chunk(num_half, dim=2)
+            rest_frame = data.shape[2] % num_half
+            x = data[:, :, -rest_frame:, :].chunk(num_half, dim=2)
             data = torch.cat(x, dim=0)
 
         data = Variable(data.cuda(), requires_grad=True)
