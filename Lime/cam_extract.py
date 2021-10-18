@@ -525,7 +525,7 @@ def main():
         # Load model from Checkpoint file
         if os.path.isfile(resume_path.format(ep)):
             print('=> loading checkpoint {}'.format(resume_path.format(e)))
-            checkpoint = torch.load(resume_path.format(e))
+            checkpoint = torch.load(resume_path.format(ep))
             checkpoint_state_dict = checkpoint['state_dict']
             if isinstance(checkpoint_state_dict, tuple):
                 checkpoint_state_dict = checkpoint_state_dict[0]
@@ -548,7 +548,7 @@ def main():
                 model.load_state_dict(model_dict)
 
         else:
-            print('=> no checkpoint found at %s' % resume_path.format(e))
+            print('=> no checkpoint found at %s' % resume_path.format(ep))
             continue
         model.cuda()
 
