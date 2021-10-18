@@ -372,7 +372,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 # full_grad -= full_grad.min()
                 # full_grad = full_grad.abs()
                 full_grad /= full_grad.max()
-                grad = full_grad.detach()
+                grad = full_grad.detach().cpu()
 
         else:
             grad = []
@@ -456,7 +456,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     full_grad /= full_grad.max()
                     grad_a = full_grad
 
-                grad.append(grad.detach())
+                grad.append(grad_a.detach().cpu())
                 all_data.append(data_a.detach().squeeze())
 
 
