@@ -489,7 +489,7 @@ if [ $stage -le 40 ]; then
   done
 fi
 
-stage=1000
+#stage=1000
 if [ $stage -le 50 ]; then
   model=SiResNet34
   feat=fb40_wcmvn
