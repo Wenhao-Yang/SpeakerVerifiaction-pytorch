@@ -521,9 +521,9 @@ def main():
     print('=> Saving output in {}\n'.format(args.extract_path))
     epochs = np.arange(args.start_epochs, args.epochs + 1)
 
-    for e in epochs:
+    for ep in epochs:
         # Load model from Checkpoint file
-        if os.path.isfile(resume_path.format(e)):
+        if os.path.isfile(resume_path.format(ep)):
             print('=> loading checkpoint {}'.format(resume_path.format(e)))
             checkpoint = torch.load(resume_path.format(e))
             checkpoint_state_dict = checkpoint['state_dict']
@@ -578,7 +578,7 @@ def main():
                 continue
         print("The number of layers with biases: ", len(biases))
 
-        file_dir = args.extract_path + '/epoch_%d' % e
+        file_dir = args.extract_path + '/epoch_%d' % ep
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
 
