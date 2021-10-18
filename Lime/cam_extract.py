@@ -372,8 +372,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 # full_grad -= full_grad.min()
                 # full_grad = full_grad.abs()
                 full_grad /= full_grad.max()
-                grad = full_grad
-
+                grad = full_grad.detach()
 
         else:
             grad = []
@@ -457,8 +456,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     full_grad /= full_grad.max()
                     grad_a = full_grad
 
-                grad.append(grad_a)
-                all_data.append(data_a.squeeze())
+                grad.append(grad.detach())
+                all_data.append(data_a.detach().squeeze())
 
 
             grad = torch.cat(grad, dim=0)
