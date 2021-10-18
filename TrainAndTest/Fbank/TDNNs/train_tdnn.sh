@@ -1071,7 +1071,7 @@ if [ $stage -le 91 ]; then
       --input-norm ${input_norm} \
       --shuffle \
       --nj 12 \
-      --epochs 60 \
+      --epochs 55 \
       --patience 2 \
       --random-chunk 200 400 \
       --milestones 10,20,30,40,50 \
@@ -1093,7 +1093,7 @@ if [ $stage -le 91 ]; then
       --stride 1,1,1,1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride1_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride1_var/checkpoint_45.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride1_var/checkpoint_5.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
