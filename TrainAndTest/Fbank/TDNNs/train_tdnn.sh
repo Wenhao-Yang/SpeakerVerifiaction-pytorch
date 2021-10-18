@@ -1046,7 +1046,7 @@ if [ $stage -le 90 ]; then
 fi
 
 if [ $stage -le 91 ]; then
-  model=RET
+  model=RET_v2
   datasets=vox2
   feat=log
   feat_type=klsp
@@ -1055,7 +1055,7 @@ if [ $stage -le 91 ]; then
   embedding_size=512
   input_norm=Mean
   batch_size=128
-  resnet_size=34
+  resnet_size=18
   activation=relu
   #  --dilation 1,2,3,1 \
 
@@ -1077,7 +1077,7 @@ if [ $stage -le 91 ]; then
       --milestones 10,20,30,40,50 \
       --model ${model} \
       --resnet-size ${resnet_size} \
-      --activation leakyrelu\
+      --activation ${activation} \
       --block-type ${block_type} \
       --scheduler rop \
       --weight-decay 0.00001 \
@@ -1088,7 +1088,7 @@ if [ $stage -le 91 ]; then
       --batch-size ${batch_size} \
       --accu-steps 1 \
       --input-dim 161 \
-      --channels 128,128,256,256,512,1536 \
+      --channels 256,256,512,512,1024,1024 \
       --context 5,3,3,3 \
       --stride 2,1,2,1 \
       --encoder-type ${encod} \
