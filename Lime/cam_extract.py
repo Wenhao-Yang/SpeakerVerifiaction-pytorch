@@ -464,7 +464,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 grad.append(grad_a.detach().cpu())
                 all_data.append(data_a.detach().squeeze())
 
-
             grad = torch.cat(grad, dim=0)
             data = torch.cat(all_data, dim=0)
 
