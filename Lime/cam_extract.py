@@ -401,6 +401,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     classifed = logit
 
                 classifed[0][label.long()].backward()
+                ups = torch.nn.UpsamplingBilinear2d(size=data_a.shape[-2:])
 
                 if args.cam == 'gradient':
                     grad_a = data_a.grad.cpu().numpy().squeeze().astype(np.float32)
@@ -417,7 +418,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     feat = last_feat  # .copy()
 
                     T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
-                    ups = torch.nn.UpsamplingBilinear2d(size=data_a.shape[-2:])
+
                     grad_a += ups(T).abs()
 
                 elif args.cam == 'grad_cam_pp':
