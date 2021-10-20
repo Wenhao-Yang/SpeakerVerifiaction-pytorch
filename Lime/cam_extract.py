@@ -391,6 +391,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 out_layer_grad = []
 
                 data_a = data[i].unsqueeze(0)
+                data_a = Variable(data_a.cuda(), requires_grad=True)
+
                 logit, _ = model(data_a)
 
                 if args.loss_type == 'asoft':
