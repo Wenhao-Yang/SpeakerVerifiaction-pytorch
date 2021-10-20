@@ -149,10 +149,11 @@ def main():
 
                     num_utt += 1
 
-        train_veri_data /= num_utt
-        train_veri_mean /= num_utt
-        train_veri_var /= num_utt
-        train_veri_relu /= num_utt
+        if num_utt > 0:
+            train_veri_data /= num_utt
+            train_veri_mean /= num_utt
+            train_veri_var /= num_utt
+            train_veri_relu /= num_utt
 
         freq_data['train.veri.time.mean'] = train_veri_mean
         freq_data['train.veri.time.var'] = train_veri_var
@@ -180,11 +181,11 @@ def main():
                     test_veri_var += (np.var(grad_a, axis=0) + np.var(grad_b, axis=0)) / 2
 
                     num_utt += 1
-
-        test_veri_data /= num_utt
-        test_veri_mean /= num_utt
-        test_veri_var /= num_utt
-        test_veri_relu /= num_utt
+        if num_utt > 0:
+            test_veri_data /= num_utt
+            test_veri_mean /= num_utt
+            test_veri_var /= num_utt
+            test_veri_relu /= num_utt
 
         freq_data['test.veri.time.mean'] = test_veri_mean
         freq_data['test.veri.time.var'] = test_veri_var
