@@ -439,7 +439,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     grad_a /= grad_a.max()
                 elif args.cam == 'fullgrad':
                     # full grad
-                    input_gradient = (grad_a.grad * grad_a)
+                    input_gradient = (data_a.grad * data_a)
                     full_grad = input_gradient.clone().clamp_min(0)
 
                     L = len(bias_layers)
