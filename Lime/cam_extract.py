@@ -479,6 +479,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
         in_layer_grad = []
         out_layer_grad = []
 
+        grad = grad.cpu().numpy().squeeze().astype(np.float32)
         data = data.data.cpu().numpy().squeeze().astype(np.float32)
 
         if args.revert:
