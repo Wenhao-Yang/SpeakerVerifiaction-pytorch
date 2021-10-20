@@ -339,9 +339,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
             elif args.cam == 'grad_cam_pp':
                 # grad cam ++ last
-                last_grad = out_layer_grad[0]
-                last_feat = out_layer_feat[-1]
-                first_derivative = classifed[0][label.long()].exp() * last_grad
+                last_grad = out_layer_grad[0].cpu()
+                last_feat = out_layer_feat[-1].cpu()
+                first_derivative = classifed[0][label.long()].exp().cpu() * last_grad
                 alpha = last_grad.pow(2) / (
                         2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
                 # weight = alpha * (first_derivative.clamp_min_(0))
