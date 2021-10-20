@@ -456,7 +456,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
                         bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
                         bias_grad /= bias_grad.max()
-                        full_grad += ups(bias_grad)
+                        full_grad += ups(bias_grad.squeeze())
 
                     # full_grad -= full_grad.min()
                     # full_grad = full_grad.abs()
