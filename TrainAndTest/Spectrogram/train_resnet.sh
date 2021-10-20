@@ -98,7 +98,7 @@ fi
 if [ $stage -le 21 ]; then
   datasets=vox1
   model=ThinResNet
-  resnet_size=34
+  resnet_size=18
   encoder_type=AVG
   alpha=0
   block_type=basic
@@ -109,56 +109,58 @@ if [ $stage -le 21 ]; then
   sname=dev
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-#    echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-#    python TrainAndTest/train_egs.py \
-#      --model ${model} \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
-#      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
-#      --train-trials trials_2w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
-#      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
-#      --feat-format kaldi \
-#      --input-norm ${input_norm} \
-#      --random-chunk 200 400 \
-#      --resnet-size ${resnet_size} \
-#      --nj 12 \
-#      --epochs 50 \
-#      --optimizer sgd \
-#      --scheduler rop \
-#      --patience 2 \
-#      --accu-steps 1 \
-#      --lr 0.1 \
-#      --milestones 10,20,30,40 \
-#      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var \
-#      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var/checkpoint_25.pth \
-#      --kernel-size 5,5 \
-#      --channels 16,32,64,128 \
-#      --input-dim 161 \
-#      --block-type ${block_type} \
-#      --red-ratio 8 \
-#      --stride 2 \
-#      --batch-size 128 \
-#      --embedding-size ${embedding_size} \
-#      --time-dim 1 \
-#      --avg-size 5 \
-#      --encoder-type ${encoder_type} \
-#      --num-valid 2 \
-#      --alpha ${alpha} \
-#      --margin 0.2 \
-#      --grad-clip 0 \
-#      --s 30 \
-#      --lr-ratio 0.01 \
-#      --weight-decay 0.0005 \
-#      --dropout-p 0.25 \
-#      --gpu-id 0,1 \
-#      --all-iteraion 0 \
-#      --extract \
-#      --cos-sim \
-#      --loss-type ${loss}
-#  done
+  for block_type in basic ; do
+    echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
+    python TrainAndTest/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --random-chunk 200 400 \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 50 \
+      --optimizer sgd \
+      --scheduler rop \
+      --patience 2 \
+      --accu-steps 1 \
+      --lr 0.1 \
+      --milestones 10,20,30,40 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var/checkpoint_25.pth \
+      --kernel-size 5,5 \
+      --channels 16,32,64,128 \
+      --input-dim 161 \
+      --block-type ${block_type} \
+      --red-ratio 8 \
+      --stride 2 \
+      --batch-size 128 \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 5 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --grad-clip 0 \
+      --s 30 \
+      --lr-ratio 0.01 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.25 \
+      --gpu-id 0,1 \
+      --all-iteraion 0 \
+      --extract \
+      --cos-sim \
+      --loss-type ${loss}
+  done
 
 #  for sname in dev; do
-  for block_type in seblock cbam; do
+#  for block_type in basic seblock cbam; do
+  for block_type in basic; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
