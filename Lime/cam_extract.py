@@ -304,6 +304,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             data = torch.cat(x, dim=0)
 
         data = Variable(data.cuda(), requires_grad=True)
+        ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
+
         if len(data) == 1:
             logit, _ = model(data)
 
@@ -317,10 +319,10 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             except Exception as e:
                 print(data.shape, ",", uid)
                 raise e
-            ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
 
             if args.cam == 'gradient':
                 grad = data.grad.cpu().numpy().squeeze().astype(np.float32)
+
             elif args.cam == 'grad_cam':
                 grad = torch.zeros_like(data)
                 assert len(out_layer_grad) == len(cam_layers), print(len(out_layer_grad), " is not equal to ", len(cam_layers))
@@ -333,7 +335,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 feat = last_feat  # .copy()
 
                 T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
-                ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
                 grad += ups(T).abs()
 
             elif args.cam == 'grad_cam_pp':
@@ -355,6 +356,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 # grad_cam_pp -= grad_cam_pp.min()
                 grad = grad.abs()
                 grad /= grad.max()
+
             elif args.cam == 'fullgrad':
                 # full grad
                 input_gradient = (data.grad * data)
@@ -401,7 +403,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     classifed = logit
 
                 classifed[0][label.long()].backward()
-                ups = torch.nn.UpsamplingBilinear2d(size=data_a.shape[-2:])
 
                 if args.cam == 'gradient':
                     grad_a = data_a.grad.cpu().numpy().squeeze().astype(np.float32)
@@ -440,6 +441,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     # grad_cam_pp -= grad_cam_pp.min()
                     grad_a = grad_a.abs()
                     grad_a /= grad_a.max()
+
                 elif args.cam == 'fullgrad':
                     # full grad
                     input_gradient = (data_a.grad * data_a)
@@ -457,11 +459,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
                         bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
                         bias_grad /= bias_grad.max()
-                        try:
-                            full_grad += ups(bias_grad)
-                        except Exception as e:
-                            print(bias_grad.shape, full_grad.shape)
-                            raise e
+                        full_grad += ups(bias_grad)
 
                     # full_grad -= full_grad.min()
                     # full_grad = full_grad.abs()
