@@ -459,7 +459,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         try:
                             full_grad += ups(bias_grad)
                         except Exception as e:
-                            print(bias_grad.shape)
+                            print(bias_grad.shape, full_grad.shape)
                             raise e
 
                     # full_grad -= full_grad.min()
