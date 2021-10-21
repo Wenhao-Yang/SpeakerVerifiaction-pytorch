@@ -333,7 +333,7 @@ class RET(nn.Module):
         if block_type.lower() == 'basic':
             Blocks = TDNNBlock
         elif block_type.lower() == 'basic_v2':
-            Blocks = TDNNBlock
+            Blocks = TDNNBlock_v2
         elif block_type.lower() == 'basic_v6':
             Blocks = TDNNBlock_v6
             TDNN_layer = TimeDelayLayer_v6

@@ -522,7 +522,7 @@ class ThinResNet(nn.Module):
                  kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
-                 filter=None, replace_stride_with_dilation=None, norm_layer=None,
+                 filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
                  mask='None', mask_len=10, red_ratio=8, init_weight='mel',
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
@@ -551,6 +551,7 @@ class ThinResNet(nn.Module):
         self.fast = str(fast)
         self.num_filter = channels  # [16, 32, 64, 128]
         self.inplanes = self.num_filter[0]
+        self.downsample = str(downsample)
 
         if block_type == "seblock":
             block = SEBasicBlock
@@ -693,10 +694,21 @@ class ThinResNet(nn.Module):
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                conv1x1(self.inplanes, planes * block.expansion, stride),
-                nn.BatchNorm2d(planes * block.expansion),
-            )
+            if self.downsample == 'None':
+                downsample = nn.Sequential(
+                    conv1x1(self.inplanes, planes * block.expansion, stride),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k3':
+                downsample = nn.Sequential(
+                    conv3x3(self.inplanes, planes * block.expansion, stride),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k5':
+                downsample = nn.Sequential(
+                    conv5x5(self.inplanes, planes * block.expansion, stride),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
 
         layers = []
         layers.append(block(self.inplanes, planes, stride, downsample))
