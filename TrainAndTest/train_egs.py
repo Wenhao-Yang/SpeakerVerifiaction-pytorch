@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import random
 import shutil
 import sys
 import time
@@ -248,6 +249,8 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
+random.seed(args.seed)
+
 # torch.multiprocessing.set_sharing_strategy('file_system')
 
 if args.cuda:
