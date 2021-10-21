@@ -109,7 +109,7 @@ if [ $stage -le 21 ]; then
   sname=dev
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for block_type in basic ; do
+  for block_type in basic_v2 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -160,7 +160,7 @@ if [ $stage -le 21 ]; then
 
 #  for sname in dev; do
 #  for block_type in basic seblock cbam; do
-  for block_type in basic; do
+  for block_type in basic_v2 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \

@@ -26,14 +26,24 @@ from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, M
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2
 
+from typing import Type, Any, Callable, Union, List, Optional
+from torch import Tensor
+
 
 def conv1x1(in_planes, out_planes, stride=1):
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
 
+
 def conv3x3(in_planes, out_planes, stride=1):
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, padding=1,
+                     stride=stride, bias=False)
+
+
+def conv5x5(in_planes, out_planes, stride=2):
+    """1x1 convolution"""
+    return nn.Conv2d(in_planes, out_planes, kernel_size=5, padding=2,
                      stride=stride, bias=False)
 
 
@@ -453,6 +463,58 @@ class SimpleResNet(nn.Module):
 # Analysis of Length Normalization in End-to-End Speaker Verification System
 # https://arxiv.org/abs/1806.03209
 
+class BasicBlock_v2(nn.Module):
+    expansion: int = 1
+
+    def __init__(
+            self,
+            inplanes: int,
+            planes: int,
+            stride: int = 1,
+            downsample: Optional[nn.Module] = None,
+            groups: int = 1,
+            base_width: int = 64,
+            dilation: int = 1,
+            norm_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
+        super(BasicBlock_v2, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        if groups != 1 or base_width != 64:
+            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+        if dilation > 1:
+            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        if stride == 1:
+            self.conv1 = conv3x3(inplanes, planes, stride)
+        elif stride == 2:
+            self.conv1 = conv5x5(inplanes, planes, stride)
+        self.bn1 = norm_layer(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = norm_layer(planes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x: Tensor) -> Tensor:
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
 class ThinResNet(nn.Module):
 
     def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
@@ -497,6 +559,8 @@ class ThinResNet(nn.Module):
             block = CBAMBlock
         elif block_type in ['basic', 'None']:
             block = BasicBlock if resnet_size < 50 else Bottleneck
+        elif block_type == 'basic_v2':
+            block = BasicBlock_v2
 
         block.expansion = expansion
         # num_filter = [32, 64, 128, 256]
