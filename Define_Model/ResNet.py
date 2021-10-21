@@ -694,7 +694,7 @@ class ThinResNet(nn.Module):
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
-            if self.downsample == 'None':
+            if self.downsample in ['None', 'k1']:
                 downsample = nn.Sequential(
                     conv1x1(self.inplanes, planes * block.expansion, stride),
                     nn.BatchNorm2d(planes * block.expansion),
