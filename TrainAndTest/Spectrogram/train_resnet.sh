@@ -101,7 +101,7 @@ if [ $stage -le 21 ]; then
   resnet_size=18
   encoder_type=AVG
   alpha=0
-  block_type=basic
+  block_type=basic_v2
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
@@ -110,7 +110,7 @@ if [ $stage -le 21 ]; then
   downsample=k3
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for block_type in basic_v2 ; do
+  for downsample in k1avg k3 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -125,7 +125,7 @@ if [ $stage -le 21 ]; then
       --resnet-size ${resnet_size} \
       --downsample ${downsample} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 20 \
       --optimizer sgd \
       --scheduler rop \
       --patience 2 \

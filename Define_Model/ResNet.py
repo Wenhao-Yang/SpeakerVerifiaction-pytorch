@@ -699,6 +699,12 @@ class ThinResNet(nn.Module):
                     conv1x1(self.inplanes, planes * block.expansion, stride),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
+            elif self.downsample == 'k1avg':
+                downsample = nn.Sequential(
+                    nn.AvgPool2d(kernel_size=3, stride=stride, padding=1),
+                    conv1x1(self.inplanes, planes * block.expansion, 1),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
             elif self.downsample == 'k3':
                 downsample = nn.Sequential(
                     conv3x3(self.inplanes, planes * block.expansion, stride),
