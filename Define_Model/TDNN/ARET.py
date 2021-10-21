@@ -386,7 +386,7 @@ class RET(nn.Module):
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=self.channels[5])
         elif encoder_type == 'SASP':
-            self.encoder = AttentionStatisticPooling(input_dim=self.channels[5], hidden_dim=512)
+            self.encoder = AttentionStatisticPooling(input_dim=self.channels[5], hidden_dim=256)
         else:
             raise ValueError(encoder_type)
 
