@@ -130,16 +130,17 @@ if [ $stage -le 21 ]; then
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
+      --fast none1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_stride12_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_stride12_wd5e4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_fastnone1_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_fastnone1_wd5e4_var/checkpoint_25.pth \
       --kernel-size 5,5 \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
       --red-ratio 8 \
-      --stride 1,2 \
+      --stride 2,2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
