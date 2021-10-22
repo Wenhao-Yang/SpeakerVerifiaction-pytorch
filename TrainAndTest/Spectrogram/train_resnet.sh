@@ -110,7 +110,7 @@ if [ $stage -le 21 ]; then
   downsample=k3
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for downsample in k1avg k3 k5; do
+  for downsample in k5; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -132,14 +132,14 @@ if [ $stage -le 21 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_wd5e4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_stride12_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp25_alpha${alpha}_stride12_wd5e4_var/checkpoint_25.pth \
       --kernel-size 5,5 \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
       --red-ratio 8 \
-      --stride 2 \
+      --stride 1,2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
