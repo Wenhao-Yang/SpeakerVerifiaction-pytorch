@@ -969,6 +969,7 @@ if [ $stage -le 90 ]; then
       --nj 12 \
       --epochs 60 \
       --patience 2 \
+      --random-chunk 200 400 \
       --milestones 10,20,30,40,50 \
       --model ${model} \
       --resnet-size ${resnet_size} \
