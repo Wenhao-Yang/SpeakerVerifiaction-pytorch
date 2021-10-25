@@ -1194,8 +1194,7 @@ if [ $stage -le 83 ]; then
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_test_epoch60_fix \
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/checkpoint_60.pth \
-      --gpu-id 0 \
-      --extract \
+      --gpu-id 1 \
       --cos-sim
   done
   exit
