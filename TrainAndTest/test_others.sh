@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=78
+stage=83
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1046,7 +1046,7 @@ if [ $stage -le 83 ]; then
   feat_type=pyfb
   feat=fb40_ws25
   input_norm=Mean
-  loss=arcsoft
+  loss=soft
   encod=STAP
   block_type=basic
   model=TDNN_v5
