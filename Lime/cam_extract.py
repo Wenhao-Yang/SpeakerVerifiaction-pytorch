@@ -321,7 +321,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 raise e
 
             if args.cam == 'gradient':
-                grad = data.grad.cpu().numpy().squeeze().astype(np.float32)
+                grad = data.grad  # .cpu().numpy().squeeze().astype(np.float32)
 
             elif args.cam == 'grad_cam':
                 grad = torch.zeros_like(data)
@@ -405,7 +405,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 classifed[0][label.long()].backward()
 
                 if args.cam == 'gradient':
-                    grad_a = data_a.grad.cpu().numpy().squeeze().astype(np.float32)
+                    grad_a = data_a.grad  # .cpu().numpy().squeeze().astype(np.float32)
                 elif args.cam == 'grad_cam':
                     grad_a = torch.zeros_like(data_a)
                     L = len(cam_layers)
