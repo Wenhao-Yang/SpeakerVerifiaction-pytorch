@@ -1100,7 +1100,69 @@ if [ $stage -le 83 ]; then
   #| cnceleb-test-vlog |  11.3402%   |   0.1905    |   0.7051    |    0.8299    | 20210902 15:43:58 |
   #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
+  # 20211025 test with fix length 300 frames soft
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-adve |  26.3158%   |   0.0976    |   0.9997    |    1.0000    | 20211025 22:09:29 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-dram |  15.1927%   |   0.1357    |   0.8360    |    0.9366    | 20211025 22:09:41 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-ente |  15.7526%   |   0.1438    |   0.8186    |    0.9053    | 20211025 22:10:18 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-inte |  13.6238%   |   0.1683    |   0.7267    |    0.8177    | 20211025 22:11:35 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-live |  10.5035%   |   0.1903    |   0.5658    |    0.7634    | 20211025 22:12:00 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-movi |  24.1228%   |   0.1062    |   0.9538    |    0.9912    | 20211025 22:12:08 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-play |  16.0000%   |   0.1427    |   0.9299    |    0.9600    | 20211025 22:12:14 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-reci |   5.7143%   |   0.2620    |   0.5899    |    0.8766    | 20211025 22:12:21 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-sing |  24.9380%   |   0.0765    |   0.9824    |    0.9961    | 20211025 22:12:42 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-spee |   6.3279%   |   0.2391    |   0.3689    |    0.4642    | 20211025 22:13:05 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #| cnceleb-test-vlog |  10.8247%   |   0.1890    |   0.6853    |    0.7926    | 20211025 22:13:16 |
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+
   #  for loss in soft arcsoft; do # 32,128,512; 8,32,128
+#  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
+#    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
+#    python -W ignore TrainAndTest/test_egs.py \
+#      --model ${model} \
+#      --resnet-size 14 \
+#      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+#      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
+#      --train-trials trials_2w \
+#      --trials trials_${s} \
+#      --score-suffix ${s} \
+#      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
+#      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
+#      --feat-format kaldi \
+#      --input-norm ${input_norm} \
+#      --input-dim 40 \
+#      --channels 512,512,512,512,1500 \
+#      --context 5,3,3,5 \
+#      --nj 12 \
+#      --alpha 0 \
+#      --margin 0.15 \
+#      --s 30 \
+#      --stride 1 \
+#      --block-type ${block_type} \
+#      --embedding-size ${embedding_size} \
+#      --loss-type ${loss} \
+#      --encoder-type STAP \
+#      --input-length fix \
+#      --remove-vad \
+#      --frame-shift 300 \
+#      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_test_epoch60_fix \
+#      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
+#      --gpu-id 0 \
+#      --extract \
+#      --cos-sim
+#  done
   for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
     echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
@@ -1130,8 +1192,8 @@ if [ $stage -le 83 ]; then
       --input-length fix \
       --remove-vad \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_test_epoch60_fix \
-      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
+      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_test_epoch60_fix \
+      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/checkpoint_60.pth \
       --gpu-id 0 \
       --extract \
       --cos-sim
