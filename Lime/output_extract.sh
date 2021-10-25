@@ -617,7 +617,7 @@ if [ $stage -le 100 ]; then
   kernel=5,5
   cam=grad_cam
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
-  for cam in grad_cam_pp fullgrad;do
+  for cam in gradient ;do
     python Lime/cam_extract.py \
       --model ${model} \
       --resnet-size ${resnet_size} \
