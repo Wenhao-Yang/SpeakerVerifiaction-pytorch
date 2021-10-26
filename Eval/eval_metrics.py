@@ -189,7 +189,12 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
 
     # max_threshold = np.max(distances)
     # thresholds = np.arange(0, max_threshold, 0.001)
-    thresholds = np.sort(np.unique(target))
+    all_thre = (target.max() - target.min()) / 0.0001
+    if len(all_thre) < len(target):
+        thresholds = np.arange(target.min(), target.max(), step=0.0001)
+    else:
+        thresholds = np.sort(np.unique(target))
+
     tpr, fpr, best_accuracy = calculate_roc(thresholds, new_distances, labels)
 
     # return eer threshold.
