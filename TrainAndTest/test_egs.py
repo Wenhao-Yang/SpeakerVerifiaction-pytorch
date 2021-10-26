@@ -447,7 +447,8 @@ def test(test_loader, xvector_dir):
 
     result_str = ''
     if args.verbose > 0:
-        result_str += '\nFor %s_distance, %d pairs:\n\33[91m' % (dist_type, len(labels))
+        result_str += '\nFor %s_distance, %d pairs:' % (dist_type, len(labels))
+    result_str += '\n\33[91m'
     result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
 
     result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format('Test Set',
