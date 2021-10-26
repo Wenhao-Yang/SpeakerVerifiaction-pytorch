@@ -1270,7 +1270,7 @@ if [ $stage -le 83 ]; then
 #      --cos-sim
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
-  for s in drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
+  for s in entertainment interview live_broadcast movie play recitation singing speech vlog; do
 #    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1278,8 +1278,8 @@ if [ $stage -le 83 ]; then
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials subtrials/trials_drama_${s} \
-      --score-suffix dr${s} \
+      --trials subtrials/trials_entertainment_${s} \
+      --score-suffix en${s} \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
       --feat-format kaldi \
