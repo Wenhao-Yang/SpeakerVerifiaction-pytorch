@@ -1231,6 +1231,7 @@ if [ $stage -le 83 ]; then
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
       --gpu-id 0 \
       --verbose 2 \
+      --extract \
       --cos-sim
 
 #  python -W ignore TrainAndTest/test_egs.py \
