@@ -1201,15 +1201,15 @@ if [ $stage -le 83 ]; then
 #      --extract \
 #      --cos-sim
 #  done
-  for s in entertainment interview live_broadcast movie play recitation singing speech vlog; do
+  for s in interview live_broadcast movie play recitation singing speech vlog; do
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 14 \
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials subtrials/trials_entertainment_${s} \
-      --score-suffix en${s} \
+      --trials subtrials/trials_interview_${s} \
+      --score-suffix in${s} \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
       --feat-format kaldi \
