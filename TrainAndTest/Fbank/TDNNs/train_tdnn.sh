@@ -1243,7 +1243,7 @@ if [ $stage -le 93 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --input-norm ${input_norm} \
       --nj 12 \
-      --epochs 39 \
+      --epochs 30 \
       --patience 2 \
       --random-chunk 200 400 \
       --milestones 10,20,30,40,50 \
@@ -1266,7 +1266,7 @@ if [ $stage -le 93 ]; then
       --stride 1,2,1,1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride2_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride2_var/checkpoint_21.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride2_var/checkpoint_30.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
