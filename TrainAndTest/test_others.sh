@@ -1236,14 +1236,49 @@ if [ $stage -le 83 ]; then
 #      --cos-sim
 #  done
 
-  python -W ignore TrainAndTest/test_egs.py \
+#  python -W ignore TrainAndTest/test_egs.py \
+#      --model ${model} \
+#      --resnet-size 14 \
+#      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+#      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
+#      --train-trials trials_2w \
+#      --trials trials_640w \
+#      --score-suffix dev_640w \
+#      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
+#      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
+#      --feat-format kaldi \
+#      --input-norm ${input_norm} \
+#      --input-dim 40 \
+#      --channels 512,512,512,512,1500 \
+#      --context 5,3,3,5 \
+#      --nj 12 \
+#      --alpha 0 \
+#      --margin 0.15 \
+#      --s 30 \
+#      --stride 1 \
+#      --block-type ${block_type} \
+#      --embedding-size ${embedding_size} \
+#      --loss-type ${loss} \
+#      --encoder-type STAP \
+#      --input-length fix \
+#      --remove-vad \
+#      --frame-shift 300 \
+#      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
+#      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/checkpoint_60.pth \
+#      --gpu-id 1 \
+#      --verbose 2 \
+#      --cos-sim
+
+  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 14 \
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials trials_640w \
-      --score-suffix dev_640w \
+      --trials subtrials/trials_advertisement_${s} \
+      --score-suffix ad${s} \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
       --feat-format kaldi \
@@ -1266,44 +1301,9 @@ if [ $stage -le 83 ]; then
       --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/checkpoint_60.pth \
       --gpu-id 1 \
-      --verbose 2 \
+      --extract \
       --cos-sim
-
-#  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
-#    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
-#    python -W ignore TrainAndTest/test_egs.py \
-#      --model ${model} \
-#      --resnet-size 14 \
-#      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
-#      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w \
-#      --trials trials_${s} \
-#      --score-suffix ${s} \
-#      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
-#      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
-#      --feat-format kaldi \
-#      --input-norm ${input_norm} \
-#      --input-dim 40 \
-#      --channels 512,512,512,512,1500 \
-#      --context 5,3,3,5 \
-#      --nj 12 \
-#      --alpha 0 \
-#      --margin 0.15 \
-#      --s 30 \
-#      --stride 1 \
-#      --block-type ${block_type} \
-#      --embedding-size ${embedding_size} \
-#      --loss-type ${loss} \
-#      --encoder-type STAP \
-#      --input-length fix \
-#      --remove-vad \
-#      --frame-shift 300 \
-#      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_test_epoch60_fix \
-#      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/checkpoint_60.pth \
-#      --gpu-id 1 \
-#      --extract \
-#      --cos-sim
-#  done
+  done
   exit
 fi
 
