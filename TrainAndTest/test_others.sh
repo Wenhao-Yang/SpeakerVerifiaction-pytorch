@@ -1199,7 +1199,7 @@ if [ $stage -le 83 ]; then
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials trials_${s} \
+      --trials dev_30w \
       --score-suffix dev_30w \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
@@ -1224,6 +1224,7 @@ if [ $stage -le 83 ]; then
       --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/checkpoint_60.pth \
       --gpu-id 1 \
       --verbose 2 \
+      --extract \
       --cos-sim
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
