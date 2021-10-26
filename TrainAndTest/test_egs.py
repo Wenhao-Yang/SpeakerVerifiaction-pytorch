@@ -446,7 +446,8 @@ def test(test_loader, xvector_dir):
         test_set_name = '-'.join((test_set_name, args.score_suffix[:4]))
 
     result_str = ''
-    result_str += '\nFor %s_distance, %d pairs:\n\33[91m' % (dist_type, len(labels))
+    if args.verbose > 0:
+        result_str += '\nFor %s_distance, %d pairs:\n\33[91m' % (dist_type, len(labels))
     result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
 
     result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format('Test Set',
