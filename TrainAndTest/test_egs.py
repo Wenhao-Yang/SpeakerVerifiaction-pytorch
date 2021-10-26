@@ -606,7 +606,8 @@ if __name__ == '__main__':
 
     stop_time = time.time()
     t = float(stop_time - start_time)
-    print("Running %.4f minutes for testing.\n" % (t / 60 ))
+    if args.verbose > 0:
+        print("Running %.4f minutes for testing.\n" % (t / 60))
 
 # python TrainAndTest/Spectrogram/train_surescnn10_kaldi.py > Log/SuResCNN10/spect_161/
 
