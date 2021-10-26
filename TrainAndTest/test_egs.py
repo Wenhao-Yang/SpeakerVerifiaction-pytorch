@@ -449,7 +449,8 @@ def test(test_loader, xvector_dir):
     if args.verbose > 0:
         result_str += '\nFor %s_distance, %d pairs:' % (dist_type, len(labels))
     result_str += '\n\33[91m'
-    # result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
+    if args.verbose > 0:
+        result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
 
     result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format('Test Set',
                                                                                      'EER (%)',
@@ -457,7 +458,8 @@ def test(test_loader, xvector_dir):
                                                                                      'MinDCF-0.01',
                                                                                      'MinDCF-0.001',
                                                                                      'Date')
-    # result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
+    if args.verbose > 0:
+        result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
 
     eer = '{:.4f}%'.format(eer * 100.)
     threshold = '{:.4f}'.format(eer_threshold)
@@ -471,7 +473,8 @@ def test(test_loader, xvector_dir):
                                                                                      mindcf_01,
                                                                                      mindcf_001,
                                                                                      date)
-    # result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
+    if args.verbose > 0:
+        result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
     result_str += '\33[0m'
 
     print(result_str)
