@@ -1104,7 +1104,9 @@ if [ $stage -le 83 ]; then
   #+-------------------+-------------+-------------+-------------+--------------+-------------------+
   #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
   #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-  #|    cnceleb-dev    |   5.8668%   |   0.1983    |   0.5304    |    0.7234    | 20211026 14:29:48 | 30w trials
+  #|    cnceleb-dev    |   5.8668%   |   0.1983    |   0.5304    |    0.7234    | 20211026 14:29:48 |  30w trials
+  #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+  #|  cnceleb-dev-dev  |   5.7318%   |   0.1989    |   0.5328    |    0.8036    | 20211026 19:46:28 | 640w
   #+-------------------+-------------+-------------+-------------+--------------+-------------------+
   #|    cnceleb-test   |  14.9190%   |   0.1512    |   0.7366    |    0.8458    | 20210902 12:45:19 |
   #+-------------------+-------------+-------------+-------------+--------------+-------------------+
@@ -1199,15 +1201,15 @@ if [ $stage -le 83 ]; then
 #      --extract \
 #      --cos-sim
 #  done
-
-  python -W ignore TrainAndTest/test_egs.py \
+  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
+    python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 14 \
       --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --trials trials_640w \
-      --score-suffix dev \
+      --trials subtrials/trials_advertisement_${s} \
+      --score-suffix a_${s} \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
       --feat-format kaldi \
@@ -1233,6 +1235,7 @@ if [ $stage -le 83 ]; then
       --verbose 2 \
       --extract \
       --cos-sim
+  done
 
 #  python -W ignore TrainAndTest/test_egs.py \
 #      --model ${model} \
