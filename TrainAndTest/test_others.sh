@@ -1201,7 +1201,7 @@ if [ $stage -le 83 ]; then
 #      --extract \
 #      --cos-sim
 #  done
-  for s in movie play recitation singing speech vlog; do
+  for s in play recitation singing speech vlog; do
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 14 \
@@ -1209,7 +1209,7 @@ if [ $stage -le 83 ]; then
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --trials subtrials/trials_movie_${s} \
-      --score-suffix mo${s} \
+      --score-suffix pl${s} \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
       --feat-format kaldi \
