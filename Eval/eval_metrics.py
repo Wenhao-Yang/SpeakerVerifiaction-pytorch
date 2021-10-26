@@ -160,9 +160,9 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
         else:
             non_target.append(distance)
 
-    new_distances = np.array(new_distances)
-    target = np.sort(target)
-    non_target = np.sort(non_target)
+    new_distances = np.array(new_distances).astype(np.float)
+    target = np.sort(target).astype(np.float)
+    non_target = np.sort(non_target).astype(np.float)
 
     target_size = target.size
     nontarget_size = non_target.size
@@ -190,8 +190,8 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
     # max_threshold = np.max(distances)
     # thresholds = np.arange(0, max_threshold, 0.001)
     all_thre = (target.max() - target.min()) / 0.0001
-    if len(all_thre) < len(target):
-        thresholds = np.arange(target.min(), target.max(), step=0.0001)
+    if len(all_thre) < target_size:
+        thresholds = np.arange(target.min(), target.max(), step=0.0001).astype(np.float)
     else:
         thresholds = np.sort(np.unique(target))
 
