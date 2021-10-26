@@ -1209,7 +1209,7 @@ if [ $stage -le 83 ]; then
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --trials subtrials/trials_drama_${s} \
-      --score-suffix a_${s} \
+      --score-suffix dr${s} \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
       --feat-format kaldi \
