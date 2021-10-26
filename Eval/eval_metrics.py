@@ -168,7 +168,8 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
     nontarget_size = non_target.size
     # pdb.set_trace()
     target_position = 0
-    while target_position + 1 < target_size:
+    steps = max(1, int(target_size / 1e5))
+    while target_position + steps < target_size:
         # for target_position in range(target_size):
         nontarget_n = nontarget_size * target_position * 1.0 / target_size
         nontarget_position = int(nontarget_size - 1 - nontarget_n)
@@ -181,7 +182,7 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
         if (non_target[nontarget_position] < target[target_position]):
             # print('target[{}]={} is < non_target[{}]={}.'.format(target_position, target[target_position], nontarget_position, non_target[nontarget_position]))
             break
-        target_position += 1
+        target_position += steps
 
     eer_threshold = target[target_position]
     eer = target_position * 1.0 / target_size
