@@ -484,7 +484,8 @@ if __name__ == '__main__':
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
     # print the experiment configuration
-    print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
+    if args.verbose > 0:
+        print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()
