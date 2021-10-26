@@ -190,7 +190,7 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
     # max_threshold = np.max(distances)
     # thresholds = np.arange(0, max_threshold, 0.001)
     all_thre = (target.max() - target.min()) / 0.0001
-    if len(all_thre) < target_size:
+    if all_thre < target_size:
         thresholds = np.arange(target.min(), target.max(), step=0.0001).astype(np.float)
     else:
         thresholds = np.sort(np.unique(target))
