@@ -1306,6 +1306,9 @@ if [ $stage -le 83 ]; then
       --cos-sim
   done
   exit
+#  for s in vlog; do
+#    wc -l data/cnceleb/dev/subtrials/trials_vlog_${s}
+#  done
 fi
 
 if [ $stage -le 84 ]; then
