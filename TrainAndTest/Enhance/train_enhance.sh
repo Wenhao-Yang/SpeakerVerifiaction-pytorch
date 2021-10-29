@@ -41,7 +41,7 @@ if [ $stage -le 1 ]; then
       --stride 2 \
       --batch-size 128 \
       --num-valid 2 \
-      --grad-clip 0 \
+      --grad-clip 10 \
       --s 30 \
       --lr-ratio 0.01 \
       --weight-decay 0.0001 \
