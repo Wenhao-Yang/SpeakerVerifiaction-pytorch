@@ -357,6 +357,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         if torch.isnan(predict_data_a).sum() > 0:
             print("output: ", torch.isnan(predict_data_a).sum())
+
+        if (predict_data_a.isinf()).sum() > 0:
+            print("output: ", (predict_data_a.isinf()).sum())
+
         loss_a = ce_criterion(predict_data_a, data_a)  # / predict_data_a.shape[1]
         # loss_b = xe_criterion(predict_data_a, data_a, data_b)
 
