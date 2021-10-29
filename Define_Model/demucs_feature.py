@@ -196,7 +196,6 @@ class Demucs(nn.Module):
             encode += [
                 nn.Conv1d(chin, hidden, kernel_size, stride),
                 nn.ReLU(),
-                nn.BatchNorm1d(hidden),
                 nn.Conv1d(hidden, hidden * ch_scale, 1), activation,
             ]
             self.encoder.append(nn.Sequential(*encode))
@@ -204,7 +203,6 @@ class Demucs(nn.Module):
             decode = []
             decode += [
                 nn.Conv1d(hidden, ch_scale * hidden, 1),
-                nn.BatchNorm1d(ch_scale * hidden),
                 activation,
                 nn.ConvTranspose1d(hidden, chout, kernel_size, stride),
             ]
@@ -256,8 +254,10 @@ class Demucs(nn.Module):
         #     mix = mix / (self.floor + std)
         # else:
         #     std = 1
-        length = mix.shape[-1]
+        std = mix.std(dim=-1, keepdim=True)
+        mix = mix / (self.floor + std)
 
+        length = mix.shape[-1]
         x = mix
         x = F.pad(x, (0, self.valid_length(length) - length))
 
@@ -272,6 +272,7 @@ class Demucs(nn.Module):
             skips.append(x)
         x = x.permute(2, 0, 1)
         x, _ = self.lstm(x)
+
         x = x.permute(1, 2, 0)
         for decode in self.decoder:
             skip = skips.pop(-1)
@@ -285,6 +286,7 @@ class Demucs(nn.Module):
         #     x = downsample2(x)
 
         x = x[..., :length]
+        x = x * std
 
         return x.transpose(1, 2)
 
