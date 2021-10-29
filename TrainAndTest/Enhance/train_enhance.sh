@@ -38,6 +38,7 @@ if [ $stage -le 1 ]; then
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cyclic_cliplen_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cyclic_cliplen_var/checkpoint_25.pth \
       --kernel-size 3 \
+      --shuffle \
       --input-dim 40 \
       --batch-size 128 \
       --num-valid 2 \
