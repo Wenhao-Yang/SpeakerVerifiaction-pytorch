@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=300
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -1095,6 +1095,49 @@ if [ $stage -le 250 ]; then
       --log-scale \
       --nfft 160 \
       --windowsize 0.02
+  done
+  exit
+fi
+
+
+if [ $stage -le 300 ]; then
+  dataset=vox1
+  #  feat_type=pyfb
+  #  dataset=vox1
+  feat=klfb
+  feat_type=klfb
+
+  echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
+  #  for s in dev_log dev_aug_1m_log ; do
+  for s in dev_aug_fb40; do
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
+      --nj 12 \
+      --feat-type ${feat_type} \
+      --train \
+      --input-per-spks 1024 \
+      --num-frames 600 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --enhance \
+      --sets reverb music noise babble \
+      --out-set ${s}_pair
+
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
+      --nj 12 \
+      --feat-type ${feat_type} \
+      --num-frames 600 \
+      --input-per-spks 1024 \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --num-valid 2 \
+      --enhance \
+      --sets reverb music noise babble \
+      --out-set ${s}_pair_valid
   done
   exit
 fi
