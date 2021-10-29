@@ -1109,20 +1109,20 @@ if [ $stage -le 300 ]; then
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
-  for s in dev_aug_fb40; do
+  for s in dev_auged_fb40; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 1024 \
-      --num-frames 600 \
+      --input-per-spks 128 \
+      --num-frames 300 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --enhance \
-      --sets reverb music noise babble \
+      --sets none reverb music noise babble \
       --out-set ${s}_pair
 
     python Process_Data/Compute_Feat/make_egs.py \
@@ -1130,13 +1130,13 @@ if [ $stage -le 300 ]; then
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
-      --num-frames 600 \
-      --input-per-spks 1024 \
+      --num-frames 300 \
+      --input-per-spks 128 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --enhance \
-      --sets reverb music noise babble \
+      --sets none reverb music noise babble \
       --out-set ${s}_pair_valid
   done
   exit

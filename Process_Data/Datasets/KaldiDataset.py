@@ -1266,7 +1266,8 @@ class AugTrainDataset(data.Dataset):
         rand_utt_idx = np.random.randint(0, num_utt)
         rand_idxs.append(rand_utt_idx)
         uid = utts[rand_utt_idx]
-        uid_aug = utts[rand_utt_idx] + '-' + random.choice(self.sets)
+        this_set = random.choice(self.sets)
+        uid_aug = utts[rand_utt_idx] + '-' + this_set if this_set != 'none' else utts[rand_utt_idx]
 
         feature = self.loader(self.uid2feat[uid])
         y1 = np.concatenate((y1, feature), axis=0)
@@ -1279,7 +1280,8 @@ class AugTrainDataset(data.Dataset):
             rand_idxs.append(rand_utt_idx)
 
             uid = utts[rand_utt_idx]
-            uid_aug = utts[rand_utt_idx] + '-' + random.choice(self.sets)
+            this_set = random.choice(self.sets)
+            uid_aug = utts[rand_utt_idx] + '-' + this_set if this_set != 'none' else utts[rand_utt_idx]
 
             feature = self.loader(self.uid2feat[uid])
             y1 = np.concatenate((y1, feature), axis=0)
@@ -1347,7 +1349,8 @@ class AugValidDataset(data.Dataset):
 
     def __getitem__(self, index):
         uid = self.uids[index]
-        uid_aug = uid + '-' + random.choice(self.sets)
+        this_set = random.choice(self.sets)
+        uid_aug = uid + '-' + this_set if this_set != 'none' else uid
 
         spk = self.utt2spk_dict[uid]
         y1 = self.loader(self.uid2feat[uid])
