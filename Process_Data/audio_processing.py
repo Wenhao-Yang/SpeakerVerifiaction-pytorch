@@ -679,7 +679,7 @@ class PadCollate:
     """
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
-                 num_batch=0,
+                 num_batch=0, split=False,
                  fix_len=False):
         """
         args:
@@ -691,6 +691,7 @@ class PadCollate:
         self.num_batch = num_batch
         self.fix_len = fix_len
         self.normlize = normlize
+        self.split = split
 
         if self.fix_len:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
@@ -721,6 +722,8 @@ class PadCollate:
         # pad according to max_len
         # print()
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
+        if self.split:
+            xs = torch.cat(xs.chunk(2, dim=2), dim=1)
 
         if frame_len < batch[0][0].shape[-2]:
             start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len)
