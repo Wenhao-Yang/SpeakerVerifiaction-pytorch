@@ -724,6 +724,7 @@ class PadCollate:
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
         if self.split:
             xs = torch.cat(xs.chunk(2, dim=2), dim=1)
+            print(xs.shape)
 
         if frame_len < batch[0][0].shape[-2]:
             start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len)
