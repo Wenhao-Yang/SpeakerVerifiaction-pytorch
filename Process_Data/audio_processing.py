@@ -726,11 +726,12 @@ class PadCollate:
             xs = torch.cat(xs.chunk(2, dim=2), dim=1)
             # print(xs.shape)
 
-        if frame_len < batch[0][0].shape[-2]:
+        if frame_len < xs.shape[-2]:
             start = np.random.randint(low=0, high=xs.shape[-2] - frame_len)
             end = start + frame_len
             xs = xs[:, :, start:end, :].contiguous()
         else:
+            print(frame_len, xs.shape[-2])
             xs = xs.contiguous()
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
