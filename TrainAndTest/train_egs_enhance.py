@@ -417,7 +417,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             epoch_str += ' Avg Loss: {:.4f}'.format(total_loss / (batch_idx + 1))
             pbar.set_description(epoch_str)
 
-    print('\nEpoch {:>2d}: \33[91m Avg loss: {:6f}.\33[0m'.format(epoch, total_loss / len(train_loader)))
+    print('\nEpoch {:>2d}: \33[91m Train Avg loss: {:6f}.\33[0m'.format(epoch, total_loss / len(train_loader)))
     # writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
     torch.cuda.empty_cache()
@@ -455,7 +455,7 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     # writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
-    print('          \33[91mAvg loss: {:.6f}.\33[0m'.format(valid_loss))
+    print('          \33[91mValid Avg loss: {:.6f}.\33[0m'.format(valid_loss))
 
     return valid_loss
 
