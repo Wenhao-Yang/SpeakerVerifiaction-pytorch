@@ -175,7 +175,7 @@ class Demucs(nn.Module):
         self.hidden = hidden
         depth = resnet_size
         self.depth = depth
-        self.kernel_size = kernel_size
+        self.kernel_size = kernel_size if isinstance(kernel_size, int) else kernel_size[0]
         self.stride = stride
         self.causal = causal
         self.floor = floor
