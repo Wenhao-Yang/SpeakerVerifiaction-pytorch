@@ -1303,7 +1303,9 @@ class AugTrainDataset(data.Dataset):
 
         feature1 = self.transform(y1)
         feature2 = self.transform(y2)
-        feature = torch.cat([feature1, feature2], dim=1)
+
+        print(feature1.shape)
+        feature = np.concatenate([feature1, feature2], axis=1)
         # label = sid
 
         return feature, sid
