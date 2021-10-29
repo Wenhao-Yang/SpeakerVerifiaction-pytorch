@@ -355,7 +355,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # print('max logit is ', classfier_label.max())
 
-        loss_a = ce_criterion(predict_data_a, data_a) / predict_data_a.shape[1]
+        loss_a = ce_criterion(predict_data_a, data_a)  # / predict_data_a.shape[1]
         # loss_b = xe_criterion(predict_data_a, data_a, data_b)
 
         loss = loss_a  # + loss_b
@@ -608,7 +608,8 @@ def main():
             print('=> no checkpoint found at {}'.format(args.resume))
 
     # ce_criterion = nn.CrossEntropyLoss()
-    ce_criterion = nn.MSELoss()
+    # ce_criterion = nn.MSELoss()
+    ce_criterion = nn.L1Loss()
     xe_criterion = None
     # if args.loss_type == 'soft':
     #     xe_criterion = None
