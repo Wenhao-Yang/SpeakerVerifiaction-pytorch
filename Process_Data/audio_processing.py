@@ -731,7 +731,7 @@ class PadCollate:
             end = start + frame_len
             xs = xs[:, :, start:end, :].contiguous()
         else:
-            print(frame_len, xs.shape[-2])
+            # print(frame_len, xs.shape[-2])
             xs = xs.contiguous()
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))

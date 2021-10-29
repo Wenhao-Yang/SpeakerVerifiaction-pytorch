@@ -610,8 +610,8 @@ def main():
             print('=> no checkpoint found at {}'.format(args.resume))
 
     # ce_criterion = nn.CrossEntropyLoss()
-    # ce_criterion = nn.MSELoss()
-    ce_criterion = nn.L1Loss()
+    ce_criterion = nn.MSELoss()
+    # ce_criterion = nn.L1Loss()
     xe_criterion = None
     # if args.loss_type == 'soft':
     #     xe_criterion = None
