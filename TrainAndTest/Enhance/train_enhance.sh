@@ -13,6 +13,7 @@ if [ $stage -le 1 ]; then
   feat_type=klfb
   sname=dev_auged1_fb40_pair
   downsample=k3
+  input_norm=none
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for downsample in k5; do
