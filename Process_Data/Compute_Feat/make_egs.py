@@ -41,7 +41,7 @@ parser.add_argument('--data-dir', type=str,
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--sets', type=list, default=[], help='number of jobs to make feats (default: 10)')
+parser.add_argument('--sets', nargs='+', default=[], help='number of jobs to make feats (default: 10)')
 parser.add_argument('--enhance', action='store_true', default=False, help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
