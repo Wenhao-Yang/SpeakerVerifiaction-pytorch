@@ -244,7 +244,7 @@ class Demucs(nn.Module):
         if mix.dim() == 4:
             mix = mix.unsqueeze(1)
 
-        assert mix.dim() == 3
+        assert mix.dim() == 3, print(mix.shape)
         mix = mix.transpose(1, 2)
 
         # if self.normalize:
