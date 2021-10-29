@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import os
 import os.path as osp
+import pdb
 import random
 import shutil
 import sys
@@ -372,6 +373,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
+            pdb.set_trace()
             print("inf: ", (predict_data_a.isinf()).sum())
             print("nan: ", (predict_data_a.isnan()).sum())
             raise ValueError('Loss value is NaN!')
