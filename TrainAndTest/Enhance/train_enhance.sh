@@ -7,7 +7,7 @@ lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 1 ]; then
   datasets=vox1
   model=Demucs
-  resnet_size=3
+  resnet_size=4
 
   loss=mse
   feat_type=klfb
@@ -32,11 +32,11 @@ if [ $stage -le 1 ]; then
       --scheduler rop \
       --patience 3 \
       --accu-steps 1 \
-      --stride 2,1,2 \
+      --stride 2,2,2,2 \
       --lr 0.0001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/stride212_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/stride212_wde4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/wde4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/wde4_var/checkpoint_25.pth \
       --kernel-size 3 \
       --input-dim 40 \
       --batch-size 128 \
