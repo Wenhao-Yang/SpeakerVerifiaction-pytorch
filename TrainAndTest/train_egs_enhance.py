@@ -360,6 +360,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         loss = loss_a  # + loss_b
         total_loss += float(loss.item())
+        writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
             raise ValueError('Loss value is NaN!')
@@ -427,7 +428,6 @@ def valid_class(valid_loader, model, ce, epoch):
     total_loss = 0.
     ce_criterion, xe_criterion = ce
     softmax = nn.Softmax(dim=1)
-
     correct = 0.
     total_datasize = 0.
 
@@ -607,34 +607,36 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
 
-    ce_criterion = nn.CrossEntropyLoss()
-    if args.loss_type == 'soft':
-        xe_criterion = None
-    elif args.loss_type == 'asoft':
-        ce_criterion = None
-        xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
-    elif args.loss_type == 'center':
-        xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
-    elif args.loss_type == 'variance':
-        xe_criterion = VarianceLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
-    elif args.loss_type == 'gaussian':
-        xe_criterion = GaussianLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
-    elif args.loss_type == 'coscenter':
-        xe_criterion = CenterCosLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
-    elif args.loss_type == 'mulcenter':
-        xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
-                                       num_center=args.num_center)
-    elif args.loss_type == 'amsoft':
-        ce_criterion = None
-        xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
-    elif args.loss_type == 'arcsoft':
-        ce_criterion = None
-        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
-    elif args.loss_type == 'wasse':
-        xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
-    elif args.loss_type == 'ring':
-        xe_criterion = RingLoss(ring=args.ring)
-        args.alpha = 0.0
+    # ce_criterion = nn.CrossEntropyLoss()
+    ce_criterion = nn.MSELoss()
+    xe_criterion = None
+    # if args.loss_type == 'soft':
+    #     xe_criterion = None
+    # elif args.loss_type == 'asoft':
+    #     ce_criterion = None
+    #     xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
+    # elif args.loss_type == 'center':
+    #     xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+    # elif args.loss_type == 'variance':
+    #     xe_criterion = VarianceLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+    # elif args.loss_type == 'gaussian':
+    #     xe_criterion = GaussianLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+    # elif args.loss_type == 'coscenter':
+    #     xe_criterion = CenterCosLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+    # elif args.loss_type == 'mulcenter':
+    #     xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
+    #                                    num_center=args.num_center)
+    # elif args.loss_type == 'amsoft':
+    #     ce_criterion = None
+    #     xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+    # elif args.loss_type == 'arcsoft':
+    #     ce_criterion = None
+    #     xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
+    # elif args.loss_type == 'wasse':
+    #     xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
+    # elif args.loss_type == 'ring':
+    #     xe_criterion = RingLoss(ring=args.ring)
+    #     args.alpha = 0.0
 
     model_para = [{'params': model.parameters()}]
     if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
