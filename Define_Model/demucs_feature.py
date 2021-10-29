@@ -241,6 +241,9 @@ class Demucs(nn.Module):
         return self.stride ** self.depth // self.resample
 
     def forward(self, mix):
+        if mix.dim() == 4:
+            mix = mix.unsqueeze(1)
+
         assert mix.dim() == 3
         mix = mix.transpose(1, 2)
 
