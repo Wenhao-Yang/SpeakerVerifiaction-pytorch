@@ -6,7 +6,7 @@ lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 # ===============================    LoResNet10    ===============================
 if [ $stage -le 1 ]; then
   datasets=vox1
-  model=demucs
+  model=Demucs
   resnet_size=3
 
   loss=mse
