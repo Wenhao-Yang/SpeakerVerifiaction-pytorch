@@ -196,13 +196,16 @@ class Demucs(nn.Module):
             encode += [
                 nn.Conv1d(chin, hidden, kernel_size, stride),
                 nn.ReLU(),
+                nn.BatchNorm1d(hidden),
                 nn.Conv1d(hidden, hidden * ch_scale, 1), activation,
             ]
             self.encoder.append(nn.Sequential(*encode))
 
             decode = []
             decode += [
-                nn.Conv1d(hidden, ch_scale * hidden, 1), activation,
+                nn.Conv1d(hidden, ch_scale * hidden, 1),
+                nn.BatchNorm1d(ch_scale * hidden),
+                activation,
                 nn.ConvTranspose1d(hidden, chout, kernel_size, stride),
             ]
             if index > 0:
