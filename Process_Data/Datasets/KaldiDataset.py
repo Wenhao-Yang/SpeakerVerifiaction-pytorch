@@ -1304,8 +1304,8 @@ class AugTrainDataset(data.Dataset):
         feature1 = self.transform(y1)
         feature2 = self.transform(y2)
 
-        print(feature1.shape)
-        feature = np.concatenate([feature1, feature2], axis=1)
+        # print(feature1.shape)
+        feature = np.concatenate([feature1, feature2], axis=0)
         # label = sid
 
         return feature, sid
@@ -1361,7 +1361,8 @@ class AugValidDataset(data.Dataset):
         feature1 = self.transform(y1)
         feature2 = self.transform(y2)
 
-        feature = torch.cat([feature1, feature2], dim=1)
+        # feature = torch.cat([feature1, feature2], dim=1)
+        feature = np.concatenate([feature1, feature2], axis=0)
         label = self.spk_to_idx[spk]
 
         if self.domain:

@@ -1122,6 +1122,7 @@ if [ $stage -le 300 ]; then
       --out-format kaldi_cmp \
       --num-valid 2 \
       --enhance \
+      --remove-vad \
       --sets none reverb music noise babble \
       --out-set ${s}_pair
 
@@ -1136,6 +1137,7 @@ if [ $stage -le 300 ]; then
       --out-format kaldi_cmp \
       --num-valid 2 \
       --enhance \
+      --remove-vad \
       --sets none reverb music noise babble \
       --out-set ${s}_pair_valid
   done
