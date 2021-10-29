@@ -11,7 +11,7 @@ if [ $stage -le 1 ]; then
 
   loss=mse
   feat_type=klfb
-  sname=dev_auged1_fb40_pair
+  sname=dev_auged2_fb40_pair
   downsample=k3
   input_norm=none
   #        --scheduler cyclic \
@@ -35,8 +35,8 @@ if [ $stage -le 1 ]; then
       --stride 2,2,2,2 \
       --lr 0.0001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/wde4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_var/checkpoint_25.pth \
       --kernel-size 3 \
       --input-dim 40 \
       --batch-size 128 \
