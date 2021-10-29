@@ -39,7 +39,6 @@ if [ $stage -le 1 ]; then
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/stride212_wde4_var/checkpoint_25.pth \
       --kernel-size 3 \
       --input-dim 40 \
-      --stride 2 \
       --batch-size 128 \
       --num-valid 2 \
       --grad-clip 10 \
