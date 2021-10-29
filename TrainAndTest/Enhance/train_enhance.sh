@@ -27,15 +27,16 @@ if [ $stage -le 1 ]; then
       --random-chunk 150 250 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 20 \
+      --epochs 30 \
       --optimizer adam \
       --scheduler rop \
       --patience 3 \
       --accu-steps 1 \
+      --stride 2,1,2 \
       --lr 0.0001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/wde4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/stride212_wde4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_enhance/${loss}/stride212_wde4_var/checkpoint_25.pth \
       --kernel-size 3 \
       --input-dim 40 \
       --stride 2 \

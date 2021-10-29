@@ -194,7 +194,7 @@ class Demucs(nn.Module):
         for index in range(depth):
             encode = []
             encode += [
-                nn.Conv1d(chin, hidden, kernel_size, stride),
+                nn.Conv1d(chin, hidden, kernel_size, stride[index]),
                 nn.ReLU(),
                 nn.Conv1d(hidden, hidden * ch_scale, 1), activation,
             ]
@@ -204,7 +204,7 @@ class Demucs(nn.Module):
             decode += [
                 nn.Conv1d(hidden, ch_scale * hidden, 1),
                 activation,
-                nn.ConvTranspose1d(hidden, chout, kernel_size, stride),
+                nn.ConvTranspose1d(hidden, chout, kernel_size, stride[index]),
             ]
             if index > 0:
                 decode.append(nn.ReLU())
@@ -230,10 +230,10 @@ class Demucs(nn.Module):
         """
         length = math.ceil(length * self.resample)
         for idx in range(self.depth):
-            length = math.ceil((length - self.kernel_size) / self.stride) + 1
+            length = math.ceil((length - self.kernel_size) / self.stride[idx]) + 1
             length = max(length, 1)
         for idx in range(self.depth):
-            length = (length - 1) * self.stride + self.kernel_size
+            length = (length - 1) * self.stride[idx] + self.kernel_size
         length = int(math.ceil(length / self.resample))
         return int(length)
 

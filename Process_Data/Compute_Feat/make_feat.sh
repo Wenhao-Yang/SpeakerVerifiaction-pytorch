@@ -1116,7 +1116,7 @@ if [ $stage -le 300 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 128 \
+      --input-per-spks 2048 \
       --num-frames 300 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
@@ -1132,7 +1132,7 @@ if [ $stage -le 300 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --num-frames 300 \
-      --input-per-spks 128 \
+      --input-per-spks 2048 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
