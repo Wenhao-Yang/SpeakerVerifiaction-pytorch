@@ -44,7 +44,7 @@ if [ $stage -le 1 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.0001\ \
       --gpu-id 0,1 \
       --all-iteraion 0 \
       --cos-sim \
