@@ -29,6 +29,8 @@ from kaldiio import WriteHelper
 from tqdm import tqdm
 
 from Process_Data.Datasets.KaldiDataset import ScriptValidDataset, ScriptTrainDataset
+from Process_Data.Datasets.KaldiDataset import AugTrainDataset, AugValidDataset
+
 from Process_Data.audio_augment.common import RunCommand
 from Process_Data.audio_processing import ConcateNumInput
 from logger import NewLogger
@@ -39,6 +41,9 @@ parser.add_argument('--data-dir', type=str,
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
+parser.add_argument('--sets', type=list, default=[], help='number of jobs to make feats (default: 10)')
+parser.add_argument('--enhance', action='store_true', default=False, help='number of jobs to make feats (default: 10)')
+
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
 
 parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
@@ -221,15 +226,31 @@ if args.feat_format == 'npy':
 elif args.feat_format in ['kaldi', 'klfb']:
     file_loader = kaldi_io.read_mat
 
-train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
-                               transform=transform, num_valid=args.num_valid, domain=args.domain)
-# train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
-#                                transform=transform, num_valid=args.num_valid, domain=args.domain)
+if not args.enhance:
+    train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
+                                   transform=transform, num_valid=args.num_valid, domain=args.domain)
+    # train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
+    #                                transform=transform, num_valid=args.num_valid, domain=args.domain)
 
-valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
-                               dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
-                               valid_uid2feat=train_dir.valid_uid2feat, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
-                               transform=transform, domain=args.domain)
+    valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
+                                   dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
+                                   valid_uid2feat=train_dir.valid_uid2feat,
+                                   valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                   transform=transform, domain=args.domain)
+
+else:
+    train_dir = AugTrainDataset(dir=args.data_dir, sets=args.sets, samples_per_speaker=args.input_per_spks,
+                                loader=file_loader,
+                                transform=transform, num_valid=args.num_valid, domain=args.domain)
+    # train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
+    #                                transform=transform, num_valid=args.num_valid, domain=args.domain)
+
+    valid_dir = AugValidDataset(valid_set=train_dir.valid_set, sets=args.sets, loader=file_loader,
+                                spk_to_idx=train_dir.spk_to_idx,
+                                dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
+                                valid_uid2feat=train_dir.valid_uid2feat,
+                                valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                transform=transform, domain=args.domain)
 
 if __name__ == "__main__":
     np.random.seed(args.seed)
