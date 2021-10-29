@@ -29,14 +29,14 @@ if [ $stage -le 1 ]; then
       --nj 12 \
       --epochs 40 \
       --optimizer adam \
-      --scheduler rop \
+      --scheduler cyclic \
       --patience 3 \
       --accu-steps 1 \
       --stride 2,2,2,2 \
-      --lr 0.0001 \
+      --lr 0.001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cliplen_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cliplen_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cyclic_cliplen_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cyclic_cliplen_var/checkpoint_25.pth \
       --kernel-size 3 \
       --input-dim 40 \
       --batch-size 128 \
@@ -44,7 +44,7 @@ if [ $stage -le 1 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.0001\ \
+      --weight-decay 0.0001 \
       --gpu-id 0,1 \
       --all-iteraion 0 \
       --cos-sim \
