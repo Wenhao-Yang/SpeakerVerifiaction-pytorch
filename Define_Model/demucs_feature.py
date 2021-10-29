@@ -161,9 +161,9 @@ class Demucs(nn.Module):
     """
 
     @capture_init
-    def __init__(self, input_dim=40, hidden=64, resnet_size=3, kernel_size=3,
+    def __init__(self, input_dim=40, hidden=80, resnet_size=3, kernel_size=3,
                  stride=2, causal=True, resample=1, growth=2, max_hidden=10_000,
-                 normalize=True, glu=True, rescale=0.1, floor=1e-3, sample_rate=16_000):
+                 normalize=True, glu=True, rescale=0.1, floor=1e-3, sample_rate=16_000, **kwargs):
 
         super().__init__()
         if resample not in [1, 2, 4]:
