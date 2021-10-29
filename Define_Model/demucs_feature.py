@@ -261,6 +261,7 @@ class Demucs(nn.Module):
         x = mix
         x = F.pad(x, (0, self.valid_length(length) - length))
 
+        print("1: ", th.isnan(x).sum())
         # if self.resample == 2:
         #     x = upsample2(x)
         # elif self.resample == 4:
@@ -271,14 +272,18 @@ class Demucs(nn.Module):
             x = encode(x)
             skips.append(x)
         x = x.permute(2, 0, 1)
+
+        print("2: ", th.isnan(x).sum())
         x, _ = self.lstm(x)
 
+        print("3: ", th.isnan(x).sum())
         x = x.permute(1, 2, 0)
         for decode in self.decoder:
             skip = skips.pop(-1)
             x = x + skip[..., :x.shape[-1]]
             x = decode(x)
 
+        print("4: ", th.isnan(x).sum())
         # if self.resample == 2:
         #     x = downsample2(x)
         # elif self.resample == 4:
@@ -287,6 +292,8 @@ class Demucs(nn.Module):
 
         x = x[..., :length]
         x = x * std
+
+        print("5: ", th.isnan(x).sum())
 
         return x.transpose(1, 2)
 
