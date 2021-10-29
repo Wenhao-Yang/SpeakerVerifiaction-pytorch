@@ -347,8 +347,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             # label = label.cuda()
             data = data.cuda()
 
-        data_a = data[:, 0].unsqueeze(1)
-        data_b = data[:, 1].unsqueeze(1)
+        data_a = data[:, 0]  # .unsqueeze(1)
+        data_b = data[:, 1]  # .unsqueeze(1)
 
         data_a, data_b = Variable(data_a), Variable(data_b)
         predict_data_a = model(data_b)
@@ -433,8 +433,8 @@ def valid_class(valid_loader, model, ce, epoch):
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
-            data_a = data[:, 0].unsqueeze(1)
-            data_b = data[:, 1].unsqueeze(1)
+            data_a = data[:, 0]  # .unsqueeze(1)
+            data_b = data[:, 1]  # .unsqueeze(1)
 
             data_a, data_b = data_a.cuda(), data_b.cuda()
             predict_data_a = model(data_b)
