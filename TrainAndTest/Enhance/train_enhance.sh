@@ -35,13 +35,13 @@ if [ $stage -le 1 ]; then
       --stride 2,2,2,2 \
       --lr 0.0001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cliplen_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cliplen_var/checkpoint_25.pth \
       --kernel-size 3 \
       --input-dim 40 \
       --batch-size 128 \
       --num-valid 2 \
-      --grad-clip 10 \
+      --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
       --weight-decay 0.0001 \
