@@ -27,7 +27,7 @@ if [ $stage -le 1 ]; then
       --random-chunk 150 400 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 250 \
+      --epochs 210 \
       --optimizer adam \
       --scheduler cyclic \
       --patience 3 \
@@ -36,7 +36,7 @@ if [ $stage -le 1 ]; then
       --lr 0.001 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic_cliplen_var275 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic_cliplen_var275/checkpoint_25.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic_cliplen_var275/checkpoint_40.pth \
       --kernel-size 3 \
       --shuffle \
       --input-dim 40 \
