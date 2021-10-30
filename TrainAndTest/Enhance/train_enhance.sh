@@ -33,10 +33,10 @@ if [ $stage -le 1 ]; then
       --patience 3 \
       --accu-steps 1 \
       --stride 2,2,2,2 \
-      --lr 0.0005 \
+      --lr 0.001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic5e4_cliplen_var275 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic5e4_cliplen_var275/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic_cliplen_var275 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic_cliplen_var275/checkpoint_25.pth \
       --kernel-size 3 \
       --shuffle \
       --input-dim 40 \
