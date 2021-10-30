@@ -27,7 +27,7 @@ if [ $stage -le 1 ]; then
       --random-chunk 150 400 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 40 \
+      --epochs 250 \
       --optimizer adam \
       --scheduler cyclic \
       --patience 3 \
