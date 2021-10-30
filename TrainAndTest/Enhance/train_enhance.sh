@@ -35,9 +35,9 @@ if [ $stage -le 1 ]; then
       --stride 2,2,2,2 \
       --lr 0.001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cyclic_cliplen_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_cyclic_cliplen_var/checkpoint_25.pth \
-      --kernel-size 3 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_k5_cyclic_cliplen_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde4_k5_cyclic_cliplen_var/checkpoint_25.pth \
+      --kernel-size 5 \
       --shuffle \
       --input-dim 40 \
       --batch-size 128 \
