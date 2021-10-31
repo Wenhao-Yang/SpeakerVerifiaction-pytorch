@@ -7,7 +7,7 @@ lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 1 ]; then
   datasets=vox1
   model=Demucs
-  resnet_size=4
+  resnet_size=5
 
   loss=mse
   feat_type=klfb
@@ -32,7 +32,7 @@ if [ $stage -le 1 ]; then
       --scheduler cyclic \
       --patience 3 \
       --accu-steps 1 \
-      --stride 2,2,2,2 \
+      --stride 2,2,2,2,2 \
       --lr 0.001 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic_cliplen_var275 \
