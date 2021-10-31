@@ -161,7 +161,7 @@ class Demucs(nn.Module):
     """
 
     @capture_init
-    def __init__(self, input_dim=40, hidden=80, resnet_size=3, kernel_size=3,
+    def __init__(self, input_dim=40, embedding_size=80, resnet_size=3, kernel_size=3,
                  stride=[2, 1, 2], causal=True, resample=1, growth=2, max_hidden=10_000,
                  normalize=True, glu=True, rescale=0.1, floor=1e-3, sample_rate=16_000, **kwargs):
 
@@ -171,8 +171,8 @@ class Demucs(nn.Module):
 
         self.chin = input_dim
         self.chout = input_dim
-
-        self.hidden = hidden
+        hidden = embedding_size
+        self.hidden = embedding_size
         depth = resnet_size
         self.depth = depth
         self.kernel_size = kernel_size if isinstance(kernel_size, int) else kernel_size[0]

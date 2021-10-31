@@ -14,6 +14,7 @@ if [ $stage -le 1 ]; then
   sname=dev_auged2_fb40_pair
   downsample=k3
   input_norm=none
+  hidden_size=64
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for downsample in k5; do
@@ -35,12 +36,13 @@ if [ $stage -le 1 ]; then
       --stride 2,2,2,2,2 \
       --lr 0.001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic_cliplen_var275 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_cyclic_cliplen_var275/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_hidden${hidden_size}_cyclic_cliplen_var275 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_hidden${hidden_size}_cyclic_cliplen_var275/checkpoint_40.pth \
       --kernel-size 3 \
       --shuffle \
       --input-dim 40 \
       --batch-size 128 \
+      --embedding-size ${hidden_size} \
       --num-valid 2 \
       --grad-clip 0 \
       --s 30 \
