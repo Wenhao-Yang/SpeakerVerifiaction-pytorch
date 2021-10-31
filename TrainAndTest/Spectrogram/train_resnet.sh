@@ -129,12 +129,14 @@ if [ $stage -le 21 ]; then
       --optimizer sgd \
       --scheduler rop \
       --patience 2 \
+      --mask-layer attention \
+      --init-weight vox2 \
       --accu-steps 1 \
       --fast none1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_wde4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec_attention/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_vox2_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec_attention/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_vox2_wd5e4_var/checkpoint_25.pth \
       --kernel-size 5,5 \
       --channels 16,32,64,128 \
       --input-dim 161 \
@@ -152,7 +154,7 @@ if [ $stage -le 21 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.0005 \
       --dropout-p 0.125 \
       --gpu-id 0,1 \
       --all-iteraion 0 \
