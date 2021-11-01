@@ -157,6 +157,7 @@ if [ $stage -le 21 ]; then
       --gpu-id 0,1 \
       --all-iteraion 0 \
       --extract \
+      --shuffle \
       --cos-sim \
       --loss-type ${loss}
   done
@@ -208,6 +209,7 @@ if [ $stage -le 21 ]; then
       --weight-decay 0.0005 \
       --dropout-p 0.125 \
       --gpu-id 0,1 \
+      --shuffle \
       --all-iteraion 0 \
       --extract \
       --cos-sim \
