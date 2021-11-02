@@ -710,7 +710,7 @@ class ScriptTrainDataset(data.Dataset):
                     total_frames += num_frames
                     this_numofseg = int(np.ceil(float(num_frames) / segment_len))
 
-                    for i in this_numofseg:
+                    for i in range(this_numofseg):
                         end = min((i + 1) * segment_len, num_frames)
                         start = min(end - segment_len, 0)
                         base_utts.append((uid, start, end))
