@@ -683,10 +683,12 @@ class ScriptVerifyDataset(data.Dataset):
 
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
-                 loader=np.load, return_uid=False, domain=False, rand_test=False, verbose=1):
+                 loader=np.load, return_uid=False, domain=False, rand_test=False,
+                 segment_len=c.N_SAMPLES, verbose=1):
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
+        self.segment_len = segment_len
 
         feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
@@ -698,15 +700,24 @@ class ScriptTrainDataset(data.Dataset):
         assert os.path.exists(spk2utt), spk2utt
 
         invalid_uid = []
+        base_utts = []
         total_frames = 0
         if os.path.exists(utt2num_frames):
             with open(utt2num_frames, 'r') as f:
                 for l in f.readlines():
                     uid, num_frames = l.split()
-                    total_frames += int(num_frames)
-                    if int(num_frames) < 50:
-                        invalid_uid.append(uid)
+                    num_frames = int(num_frames)
+                    total_frames += num_frames
+                    this_numofseg = int(np.ceil(float(num_frames) / segment_len))
 
+                    for i in this_numofseg:
+                        end = min((i + 1) * segment_len, num_frames)
+                        start = min(end - segment_len, 0)
+                        base_utts.append((uid, start, end))
+
+                    # if int(num_frames) < 50:
+                    #     invalid_uid.append(uid)
+        self.base_utts = base_utts
         dataset = {}
         with open(spk2utt, 'r') as u:
             all_cls = u.readlines()
@@ -760,7 +771,6 @@ class ScriptTrainDataset(data.Dataset):
         if verbose > 0:
             print('==> There are {} speakers in Dataset.'.format(len(speakers)))
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
-
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
         uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
@@ -807,8 +817,8 @@ class ScriptTrainDataset(data.Dataset):
             self.valid_utt2spk_dict = valid_utt2spk_dict
             self.valid_utt2dom_dict = valid_utt2dom_dict
 
-
         self.speakers = speakers
+        self.utt2spk = utt2spk_dict
         self.dataset = dataset
         self.uid2feat = uid2feat
         self.spk_to_idx = spk_to_idx
@@ -824,6 +834,11 @@ class ScriptTrainDataset(data.Dataset):
             if verbose > 1:
                 print(
                     '    The number of sampling utterances for each speakers is decided by the number of total frames.')
+        else:
+            samples_per_speaker = max(len(base_utts) / len(speakers), samples_per_speaker)
+            if verbose > 1:
+                print('    The number of sampling utterances for each speakers is add to the number of total frames.')
+
         self.samples_per_speaker = int(samples_per_speaker)
         self.c_axis = 0 if feat_type != 'wav' else 1
         self.feat_shape = (0, self.feat_dim) if feat_type != 'wav' else (1, 0)
@@ -852,40 +867,48 @@ class ScriptTrainDataset(data.Dataset):
             else:
                 return feature, label, uid
 
-        rand_idxs = [sid]
-        sid %= self.num_spks
-        spk = self.idx_to_spk[sid]
-        utts = self.dataset[spk]
-        num_utt = len(utts)
+        if len(self.base_utts) > 0:
+            while True:
+                (uid, start, end) = self.base_utts.pop()
+                if uid not in self.valid_utt2spk_dict:
+                    y = self.loader(self.uid2feat[uid])[start:end]
+                    sid = self.utt2spk_dict[uid]
+                    sid = self.spk_to_idx[sid]
+                    break
+        else:
+            rand_idxs = [sid]
+            sid %= self.num_spks
+            spk = self.idx_to_spk[sid]
+            utts = self.dataset[spk]
+            num_utt = len(utts)
 
-        y = np.array([[]]).reshape(0, self.feat_dim)
-        rand_utt_idx = np.random.randint(0, num_utt)
-        rand_idxs.append(rand_utt_idx)
-        uid = utts[rand_utt_idx]
-
-        feature = self.loader(self.uid2feat[uid])
-        y = np.concatenate((y, feature), axis=0)
-
-        while len(y) < c.N_SAMPLES:
+            y = np.array([[]]).reshape(0, self.feat_dim)
             rand_utt_idx = np.random.randint(0, num_utt)
             rand_idxs.append(rand_utt_idx)
-
             uid = utts[rand_utt_idx]
 
             feature = self.loader(self.uid2feat[uid])
             y = np.concatenate((y, feature), axis=0)
 
-            # transform features if required
-        if self.rand_test:
-            while len(rand_idxs) < 4:
-                rand_idxs.append(-1)
+            while len(y) < self.segment_len:
+                rand_utt_idx = np.random.randint(0, num_utt)
+                rand_idxs.append(rand_utt_idx)
 
-            start, length = self.transform(y)
-            rand_idxs.append(start)
-            rand_idxs.append(length)
+                uid = utts[rand_utt_idx]
 
-            # [uttid uttid -1 -1 start lenght]
-            return torch.tensor(rand_idxs).reshape(1, -1), sid
+                feature = self.loader(self.uid2feat[uid])
+                y = np.concatenate((y, feature), axis=0)
+
+                # transform features if required
+                if self.rand_test:
+                    while len(rand_idxs) < 4:
+                        rand_idxs.append(-1)
+                    start, length = self.transform(y)
+                    rand_idxs.append(start)
+                    rand_idxs.append(length)
+
+                    # [uttid uttid -1 -1 start lenght]
+                    return torch.tensor(rand_idxs).reshape(1, -1), sid
 
         feature = self.transform(y)
         label = sid

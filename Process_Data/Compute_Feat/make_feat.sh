@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300
+stage=2
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -99,33 +99,33 @@ if [ $stage -le 2 ]; then
   fi
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs with kaldi fbank for ${dataset}\033[0m\n"
-  for s in combined; do
+  for s in fb40; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 0 \
-      --num-frames 400 \
+      --input-per-spks 1024 \
+      --num-frames 600 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --out-set dev_${s}_fb40_v3
+      --out-set dev_${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
-      --num-frames 400 \
-      --input-per-spks 0 \
+      --num-frames 600 \
+      --input-per-spks 1024 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --out-set valid_${s}_fb40_v3
+      --out-set valid_${s}
   done
   exit
 fi

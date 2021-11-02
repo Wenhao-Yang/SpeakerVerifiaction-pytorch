@@ -228,7 +228,8 @@ elif args.feat_format in ['kaldi', 'klfb']:
 
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
-                                   transform=transform, num_valid=args.num_valid, domain=args.domain)
+                                   transform=transform, num_valid=args.num_valid, domain=args.domain,
+                                   segment_len=args.num_frames)
     # train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
     #                                transform=transform, num_valid=args.num_valid, domain=args.domain)
 
