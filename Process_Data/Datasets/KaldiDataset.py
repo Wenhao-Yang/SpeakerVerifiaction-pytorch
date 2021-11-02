@@ -818,7 +818,7 @@ class ScriptTrainDataset(data.Dataset):
             self.valid_utt2dom_dict = valid_utt2dom_dict
 
         self.speakers = speakers
-        self.utt2spk = utt2spk_dict
+        self.utt2spk_dict = utt2spk_dict
         self.dataset = dataset
         self.uid2feat = uid2feat
         self.spk_to_idx = spk_to_idx
