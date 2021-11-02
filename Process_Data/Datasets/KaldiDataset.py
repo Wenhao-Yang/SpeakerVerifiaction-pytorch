@@ -714,9 +714,11 @@ class ScriptTrainDataset(data.Dataset):
                         end = min((i + 1) * segment_len, num_frames)
                         start = min(end - segment_len, 0)
                         base_utts.append((uid, start, end))
+            if verbose > 0:
+                print('    There are {} basic segments.'.format(len(base_utts)))
 
-                    # if int(num_frames) < 50:
-                    #     invalid_uid.append(uid)
+                # if int(num_frames) < 50:
+                #     invalid_uid.append(uid)
         self.base_utts = base_utts
         dataset = {}
         with open(spk2utt, 'r') as u:
