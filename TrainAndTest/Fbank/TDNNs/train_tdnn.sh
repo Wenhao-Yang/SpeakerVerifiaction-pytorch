@@ -335,7 +335,7 @@ if [ $stage -le 70 ]; then
       --milestones 10,20,30,40 \
       --model ${model} \
       --scheduler rop \
-      --weight-decay 0.001 \
+      --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
@@ -346,8 +346,8 @@ if [ $stage -le 70 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wde3_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wde3_var/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
