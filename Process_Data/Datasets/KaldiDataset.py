@@ -869,9 +869,9 @@ class ScriptTrainDataset(data.Dataset):
             else:
                 return feature, label, uid
 
-        if len(self.base_utts) > 0:
+        if sid < len(self.base_utts):
             while True:
-                (uid, start, end) = self.base_utts.pop()
+                (uid, start, end) = self.base_utts[sid]
                 if uid not in self.valid_utt2spk_dict:
                     y = self.loader(self.uid2feat[uid])[start:end]
                     sid = self.utt2spk_dict[uid]

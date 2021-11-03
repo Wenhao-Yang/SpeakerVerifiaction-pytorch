@@ -107,6 +107,7 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
                 pairs = (label, domlab, feature)
             else:
                 feature, label = train_dir.__getitem__(idx)
+                # print(label)
                 pairs = (label, feature)
 
             # lock_t.acquire()
