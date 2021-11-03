@@ -315,10 +315,10 @@ if [ $stage -le 70 ]; then
   loss=soft
   encod=STAP
   embedding_size=512
-  input_dim=80
+  input_dim=40
   input_norm=Mean
 
-  for embedding_size in 512; do
+  for embedding_size in 256 512; do
     #    feat=combined
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
@@ -331,7 +331,7 @@ if [ $stage -le 70 ]; then
       --nj 16 \
       --epochs 50 \
       --patience 3 \
-      --milestones 10,20,30 \
+      --milestones 10,20,30,40 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.001 \
