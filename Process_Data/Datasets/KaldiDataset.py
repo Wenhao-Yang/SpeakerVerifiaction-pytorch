@@ -877,6 +877,8 @@ class ScriptTrainDataset(data.Dataset):
                     sid = self.utt2spk_dict[uid]
                     sid = self.spk_to_idx[sid]
                     break
+                else:
+                    self.base_utts.pop(sid)
         else:
             rand_idxs = [sid]
             sid %= self.num_spks
