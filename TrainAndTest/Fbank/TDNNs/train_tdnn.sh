@@ -312,7 +312,7 @@ if [ $stage -le 70 ]; then
   datasets=vox1
   #  feat=fb24
   feat_type=klfb
-  loss=soft
+  loss=arcsoft
   encod=STAP
   embedding_size=512
   input_dim=40
@@ -326,6 +326,7 @@ if [ $stage -le 70 ]; then
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
+      --shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
       --nj 16 \
@@ -339,7 +340,6 @@ if [ $stage -le 70 ]; then
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
-      --var-input \
       --batch-size 128 \
       --accu-steps 1 \
       --random-chunk 200 400 \
