@@ -964,7 +964,7 @@ class TDNN_v5(nn.Module):
             self.encoder = StatisticPooling(input_dim=self.channels[4])
             self.encoder_output = self.channels[4] * 2
         elif encoder_type == 'ASTP':
-            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
+            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=256)
             self.encoder_output = self.channels[4] * 2
         elif encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
