@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=83
+stage=75
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -563,6 +563,56 @@ if [ $stage -le 60 ]; then
       --gpu-id 0
   done
 
+fi
+
+if [ $stage -le 75 ]; then
+  feat_type=klfb
+  feat=fb40
+  loss=arcsoft
+  model=TDNN_v5
+  encod=STAP
+  dataset=vox1
+  subset=test
+  test_set=vox1
+  input_dim=40
+  input_norm=Mean
+
+  # Training set: voxceleb 1 40-dimensional log fbanks kaldi  Loss: arcsoft
+  # Cosine Similarity
+  #
+  # |   Test Set   |   EER ( % ) | Threshold | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  # +--------------+-------------+-----------+-------------+--------------+-------------------+
+  # |  vox1-test   |   4.5864%   |   0.2424    |   0.4426    |    0.5638    | 20210531 17:00:32 |
+
+
+  for embedding_size in 256 512; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim ${input_dim} \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encod} \
+      --channels 512,512,512,512,1500 \
+      --margin 0.25 \
+      --s 30 \
+      --input-length var \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/${model}/${dataset}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_${subset}_epoch_50_var \
+      --resume Data/checkpoint/${model}/${dataset}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
+      --gpu-id 1 \
+      --remove-vad \
+      --cos-sim
+  done
+  exit
 fi
 
 if [ $stage -le 76 ]; then
