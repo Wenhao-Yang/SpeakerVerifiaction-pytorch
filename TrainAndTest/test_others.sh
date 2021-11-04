@@ -580,10 +580,9 @@ if [ $stage -le 75 ]; then
   # Training set: voxceleb 1 40-dimensional log fbanks kaldi  Loss: arcsoft
   # Cosine Similarity
   #
-  # |   Test Set   |   EER ( % ) | Threshold | MinDCF-0.01 | MinDCF-0.001 |       Date        |
-  # +--------------+-------------+-----------+-------------+--------------+-------------------+
-  # |  vox1-test   |   4.5864%   |   0.2424    |   0.4426    |    0.5638    | 20210531 17:00:32 |
-
+  #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #|     vox1-test     |   4.3054%   |   0.2299    |   0.4212    |    0.6275    | 20211104 15:29:25 | embedding_size=256
+  #|     vox1-test     |   4.3478%   |   0.1949    |   0.4755    |    0.5709    | 20211104 15:30:08 | embedding_size=512
 
   for embedding_size in 256 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
@@ -603,7 +602,7 @@ if [ $stage -le 75 ]; then
       --encoder-type ${encod} \
       --channels 512,512,512,512,1500 \
       --stride 1,1,1,1 \
-      --margin 0.25 \
+      --margin 0.2 \
       --s 30 \
       --input-length var \
       --frame-shift 300 \
