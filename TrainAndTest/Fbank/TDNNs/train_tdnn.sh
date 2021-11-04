@@ -313,12 +313,12 @@ if [ $stage -le 70 ]; then
   #  feat=fb24
   feat_type=klfb
   loss=arcsoft
-  encod=STAP
+  encod=ASTP
   embedding_size=512
   input_dim=40
   input_norm=Mean
 
-  for embedding_size in 256 512; do
+  for embedding_size in 512; do
     #    feat=combined
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \

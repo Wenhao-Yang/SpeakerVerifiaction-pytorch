@@ -644,7 +644,7 @@ class ThinResNet(nn.Module):
             self.encoder = SelfAttentionPooling(input_dim=self.num_filter[3] * block.expansion,
                                                 hidden_dim=self.num_filter[3] * block.expansion)
             self.encoder_output = self.num_filter[3] * block.expansion
-        elif encoder_type == 'SASP':
+        elif encoder_type in ['ASTP', 'SASP']:
             self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
             self.encoder = AttentionStatisticPooling(input_dim=self.num_filter[3] * block.expansion,
                                                      hidden_dim=self.num_filter[3])
