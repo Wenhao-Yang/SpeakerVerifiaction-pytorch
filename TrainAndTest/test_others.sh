@@ -602,6 +602,7 @@ if [ $stage -le 75 ]; then
       --loss-type ${loss} \
       --encoder-type ${encod} \
       --channels 512,512,512,512,1500 \
+      --stride 1,1,1,1 \
       --margin 0.25 \
       --s 30 \
       --input-length var \
