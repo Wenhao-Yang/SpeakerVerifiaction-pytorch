@@ -593,7 +593,7 @@ if [ $stage -le 75 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --input-dim ${input_dim} \
