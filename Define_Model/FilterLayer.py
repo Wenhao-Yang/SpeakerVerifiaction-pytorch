@@ -556,9 +556,9 @@ class AttentionweightLayer(nn.Module):
             xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
             ynew = f(xnew)
             # ynew = 1 / ynew  # .max()
-        elif weight=='clean':
+        elif weight == 'clean':
             ynew = c.VOX1_CLEAN
-        elif weight=='aug':
+        elif weight == 'aug':
             ynew = c.VOX1_AUG
         elif weight == 'vox2':
             ynew = c.VOX2_CLEAN
@@ -566,8 +566,8 @@ class AttentionweightLayer(nn.Module):
             raise ValueError(weight)
         ynew = np.array(ynew)
         ynew /= ynew.max()
-        self.w = nn.Parameter(torch.tensor(2.0))
-        self.b = nn.Parameter(torch.tensor(-1.0))
+        self.w = nn.Parameter(torch.tensor(4.0))
+        self.b = nn.Parameter(torch.tensor(-2.0))
 
         self.drop_p = ynew  # * dropout_p
         # self.activation = nn.Tanh()
