@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=75
+stage=95
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1723,8 +1723,8 @@ if [ $stage -le 95 ]; then
       --dropout-p 0.125 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
