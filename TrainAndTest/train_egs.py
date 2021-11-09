@@ -207,6 +207,8 @@ parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
                     help='random seed (default: 0)')
 
 parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.125)')
+parser.add_argument('--base-lr', type=float, default=1e-8, metavar='LR', help='learning rate (default: 0.125)')
+
 parser.add_argument('--lr-decay', default=0, type=float, metavar='LRD',
                     help='learning rate decay ratio (default: 1e-4')
 parser.add_argument('--weight-decay', default=5e-4, type=float,
@@ -747,7 +749,8 @@ def main():
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
     elif args.scheduler == 'cyclic':
         cycle_momentum = False if args.optimizer == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=1e-8, max_lr=args.lr, step_size_up=13000,
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr, max_lr=args.lr, step_size_up=4 * int(
+            np.ceil(len(train_dir) / args.batch_size)),
                                           cycle_momentum=cycle_momentum)
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
