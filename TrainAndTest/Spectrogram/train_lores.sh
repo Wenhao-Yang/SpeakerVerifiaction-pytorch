@@ -1181,7 +1181,7 @@ if [ $stage -le 79 ]; then
       --nj 12 \
       --epochs 50 \
       --optimizer ${optimizer} \
-      --scheduler cyclic \
+      --scheduler exp \
       --patience 2 \
       --accu-steps 1 \
       --lr 0.1 \
@@ -1189,8 +1189,8 @@ if [ $stage -le 79 ]; then
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_exp/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_exp/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --channels 16,32,64 \
       --stride 2 \

@@ -744,7 +744,8 @@ def main():
     milestones = [int(x) for x in milestones]
     milestones.sort()
     if args.scheduler == 'exp':
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
+        gamma = np.power(args.base_lr / args.lr, 1 / args.epoch) if args.gamma == 0 else args.gamma
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
     elif args.scheduler == 'rop':
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
     elif args.scheduler == 'cyclic':
