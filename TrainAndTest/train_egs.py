@@ -106,7 +106,7 @@ parser.add_argument('--scheduler', default='multi', type=str,
                     metavar='SCH', help='The optimizer to use (default: Adagrad)')
 parser.add_argument('--patience', default=3, type=int,
                     metavar='PAT', help='patience for scheduler (default: 4)')
-parser.add_argument('--gamma', default=0.75, type=float,
+parser.add_argument('--gamma', default=0, type=float,
                     metavar='GAMMA', help='The optimizer to use (default: Adagrad)')
 parser.add_argument('--milestones', default='10,15', type=str,
                     metavar='MIL', help='The optimizer to use (default: Adagrad)')
