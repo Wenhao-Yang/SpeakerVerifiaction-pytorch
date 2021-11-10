@@ -1184,7 +1184,8 @@ if [ $stage -le 79 ]; then
       --scheduler cyclic \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.001 \
+      --lr 0.1 \
+      --base-lr 0.000005 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 10,20,30,40 \
