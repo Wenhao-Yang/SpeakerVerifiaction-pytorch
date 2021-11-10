@@ -1161,9 +1161,10 @@ if [ $stage -le 79 ]; then
   loss=arcsoft
   alpha=0
   input_norm=Mean
+  optimizer=sgd
 #  mask_layer=gau_noise
   mask_layer=attention
-  for weight in mel clean aug vox2; do
+  for weight in mel; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -1179,7 +1180,7 @@ if [ $stage -le 79 ]; then
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 50 \
-      --optimizer adam \
+      --optimizer ${optimizer} \
       --scheduler cyclic \
       --patience 2 \
       --accu-steps 1 \
