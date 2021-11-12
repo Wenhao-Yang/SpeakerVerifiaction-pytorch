@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=74
+stage=76
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -563,31 +563,35 @@ if [ $stage -le 76 ]; then
   model=TDNN_v5
   datasets=vox2
   #  feat=fb24
-  feat_type=pyfb
-  loss=soft
+  feat_type=klfb
+  loss=arcsoft
   encod=STAP
   embedding_size=512
   input_dim=40
   input_norm=Mean
+  optimizer=sgd
+  scheduler=exp
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
   for loss in arcsoft; do
-    feat=fb${input_dim}_ws25
+    feat=fb${input_dim}
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --nj 16 \
       --epochs 50 \
       --patience 3 \
       --milestones 10,20,30 \
       --model ${model} \
-      --scheduler rop \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
       --weight-decay 0.0001 \
       --lr 0.1 \
+      --base-lr 0.000005 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -597,19 +601,18 @@ if [ $stage -le 76 ]; then
       --shuffle \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
-      --first-2d \
-      --channels 1024,1024,1024,1024,1500 \
+      --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/chn1024_feat${feat}_input${input_norm}_${encod}_em${embedding_size}_first2d_wde4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs/${loss}/chn1024_feat${feat}_input${input_norm}_${encod}_em${embedding_size}_first2d_wde4_var/checkpoint_13.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wde4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_13.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.3 \
-      --s 15 \
+      --margin 0.2 \
+      --s 30 \
       --remove-vad \
       --log-interval 10
   done
