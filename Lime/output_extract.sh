@@ -652,7 +652,7 @@ fi
 
 
 if [ $stage -le 200 ]; then
-  model=TDNN
+  model=TDNN_v5
   dataset=vox2
   train_set=vox2
   test_set=vox1
