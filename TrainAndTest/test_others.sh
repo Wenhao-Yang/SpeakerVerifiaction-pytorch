@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=95
+stage=75
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -584,7 +584,7 @@ if [ $stage -le 75 ]; then
   #|     vox1-test     |   4.3054%   |   0.2299    |   0.4212    |    0.6275    | 20211104 15:29:25 | embedding_size=256
   #|     vox1-test     |   4.3478%   |   0.1949    |   0.4755    |    0.5709    | 20211104 15:30:08 | embedding_size=512
 
-  for embedding_size in 256 512; do # 32,128,512; 8,32,128
+  for embedding_size in 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -606,8 +606,8 @@ if [ $stage -le 75 ]; then
       --s 30 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/${model}/${dataset}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_${subset}_epoch_50_var \
-      --resume Data/checkpoint/${model}/${dataset}/${feat_type}_egs_baseline/${loss}/featfb${input_dim}_input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model}/${dataset}/${feat_type}_egs_baseline/${loss}_sgd_exp/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_${subset}_epoch_50_var \
+      --resume Data/checkpoint/${model}/${dataset}/${feat_type}_egs_baseline/${loss}_sgd_exp/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
       --gpu-id 1 \
       --remove-vad \
       --cos-sim
