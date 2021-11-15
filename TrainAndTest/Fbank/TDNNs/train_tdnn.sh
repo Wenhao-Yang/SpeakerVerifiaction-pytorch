@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=70
+stage=90
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -338,8 +338,8 @@ if [ $stage -le 70 ]; then
       --model ${model} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.1 \
-      --base-lr 0.000005 \
+      --lr 0.12 \
+      --base-lr 0.000006 \
       --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
@@ -957,14 +957,16 @@ if [ $stage -le 90 ]; then
   loss=arcsoft
   encod=STAP
   embedding_size=512
-  block_type=cbam_v2
+  block_type=basic_v2
   input_norm=Mean
   batch_size=128
   resnet_size=14
   activation=leakyrelu
+  scheduler=exp
+  optimizer=sgd
   #  --dilation 1,2,3,1 \
 
-  for encod in STAP SASP ; do
+  for encod in STAP ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/train_egs.py \
@@ -983,9 +985,11 @@ if [ $stage -le 90 ]; then
       --resnet-size ${resnet_size} \
       --block-type ${block_type} \
       --activation ${activation} \
-      --scheduler rop \
-      --weight-decay 0.00001 \
+      --weight-decay 0.00005 \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
       --lr 0.1 \
+      --base-lr 0.000006 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -994,11 +998,11 @@ if [ $stage -le 90 ]; then
       --input-dim 161 \
       --channels 512,512,512,512,512,1536 \
       --context 5,3,3,5 \
-      --dilation 1,1,3,1 \
-      --stride 1,2,1,1 \
+      --dilation 1,1,1,1 \
+      --stride 1,1,1,1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride1211_dila_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride1211_dila_var/checkpoint_45.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_em${embedding_size}_${block_type}_${activation}_wd5e5_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_em${embedding_size}_${block_type}_${activation}_wd5e5_var/checkpoint_45.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \

@@ -577,11 +577,11 @@ if [ $stage -le 74 ]; then
   input_dim=40
   input_norm=Mean
 
-  # Training set: voxceleb 1 40-dimensional log fbanks kaldi  Loss: arcsoft
+  # Training set: voxceleb 2 40-dimensional log fbanks kaldi  Loss: arcsoft sgd exp
   # Cosine Similarity
   #
   #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
-  #|     vox1-test     |   4.3054%   |   0.2299    |   0.4212    |    0.6275    | 20211104 15:29:25 | embedding_size=256
+  #|     vox1-test     |   2.3913%   |   0.2701    |   0.2368    |    0.3318    | 20211115 09:10:35 |
 
   for embedding_size in 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
