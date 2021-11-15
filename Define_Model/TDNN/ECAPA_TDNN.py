@@ -197,9 +197,30 @@ class ECAPA_TDNN(nn.Module):
         out = F.relu(self.conv(out))
         out = self.bn0(self.pooling(out))
         embeddings = self.bn1(self.fc1(out))
+
         logits = self.classifier(embeddings)
 
         return logits, embeddings
+
+    def xvector(self, x):
+        if len(x.shape) == 4:
+            x = x.squeeze(1).float()
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        x = x.transpose(1, 2)
+        out1 = self.layer1(x)
+        out2 = self.layer2(out1) + out1
+        out3 = self.layer3(out1 + out2) + out1 + out2
+        out4 = self.layer4(out1 + out2 + out3) + out1 + out2 + out3
+
+        out = torch.cat([out2, out3, out4], dim=1)
+        out = F.relu(self.conv(out))
+        out = self.bn0(self.pooling(out))
+        embeddings = self.fc1(out)
+
+        return embeddings
 
 # if __name__ == '__main__':
 #     # Input size: batch_size * seq_len * feat_dim
