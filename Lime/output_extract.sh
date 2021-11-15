@@ -652,7 +652,7 @@ fi
 
 
 if [ $stage -le 200 ]; then
-  model=LoResNet
+  model=TDNN
   dataset=vox2
   train_set=vox2
   test_set=vox1
@@ -667,7 +667,7 @@ if [ $stage -le 200 ]; then
   cam=grad_cam
 
 
-  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  echo -e "\n\033[1;4;31m Stage ${stage} Extracting ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
     python Lime/cam_extract.py \
       --model ${model} \
