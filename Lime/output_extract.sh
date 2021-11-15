@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=200
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 15414 | wc -l) -eq 2 ]; do
@@ -645,6 +645,56 @@ if [ $stage -le 100 ]; then
       --gpu-id 1 \
       --margin 0.2 \
       --s 30 \
+      --sample-utt 5994
+    done
+  exit
+fi
+
+
+if [ $stage -le 200 ]; then
+  model=LoResNet
+  dataset=vox2
+  train_set=vox2
+  test_set=vox1
+  feat_type=klfb
+  feat=fb40
+  loss=arcsoft
+  resnet_size=8
+  encoder_type=STAP
+  embedding_size=512
+  block_type=basic
+  kernel=5,5
+  cam=grad_cam
+
+
+  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  for cam in gradient ;do
+    python Lime/cam_extract.py \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --cam ${cam} \
+      --start-epochs 50 \
+      --epochs 50 \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
+      --train-set-name vox2 \
+      --test-set-name vox1 \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
+      --input-norm Mean \
+      --input-dim 40 \
+      --stride 1 \
+      --channels 512,512,512,512,1500 \
+      --encoder-type ${encoder_type} \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --alpha 0 \
+      --loss-type ${loss} \
+      --dropout-p 0.0 \
+      --check-path Data/checkpoint/TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_exp/inputMean_STAP_em512_wde4_var \
+      --extract-path Data/gradient/TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_exp/inputMean_STAP_em512_wde4_var/epoch_50_var_${cam} \
+      --gpu-id 1 \
+      --margin 0.2 \
+      --s 30 \
+      --remove-vad \
       --sample-utt 5994
     done
   exit
