@@ -421,7 +421,8 @@ class RET(nn.Module):
                 m.bias.data.zero_()
             elif isinstance(m, TimeDelayLayer_v5):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity=self.activation)
+                nonlinearity = 'leaky_relu' if self.activation == 'leakyrelu' else self.activation
+                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity=nonlinearity)
 
     def forward(self, x):
         # pdb.set_trace()
