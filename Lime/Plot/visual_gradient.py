@@ -67,7 +67,8 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (data, grad, uid) in tqdm(sets):
+                # for (data, grad, uid) in tqdm(sets):
+                for (data, grad) in tqdm(sets):
                     time_data.append((data, grad))
                     num_utt += 1
                     if num_utt >= args.samples:
@@ -86,7 +87,8 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (data, grad, uid) in tqdm(sets):
+                # for (data, grad, uid) in tqdm(sets):
+                for (data, grad) in tqdm(sets):
                     train_time_mean += np.mean(np.abs(grad), axis=0)
                     train_time_var += np.var(grad, axis=0)
                     train_data_mean += np.mean(data, axis=0)
