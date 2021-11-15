@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=75
+stage=74
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -565,6 +565,55 @@ if [ $stage -le 60 ]; then
 
 fi
 
+if [ $stage -le 74 ]; then
+  feat_type=klfb
+  feat=fb40
+  loss=arcsoft
+  model=TDNN_v5
+  encod=STAP
+  dataset=vox2
+  subset=test
+  test_set=vox1
+  input_dim=40
+  input_norm=Mean
+
+  # Training set: voxceleb 1 40-dimensional log fbanks kaldi  Loss: arcsoft
+  # Cosine Similarity
+  #
+  #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #|     vox1-test     |   4.3054%   |   0.2299    |   0.4212    |    0.6275    | 20211104 15:29:25 | embedding_size=256
+
+  for embedding_size in 512; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_valid \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim ${input_dim} \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encod} \
+      --channels 512,512,512,512,1500 \
+      --stride 1,1,1,1 \
+      --margin 0.2 \
+      --s 30 \
+      --input-length var \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/${model}/${dataset}/${feat_type}_egs_baseline/${loss}_sgd_exp/input${input_norm}_${encod}_em${embedding_size}_wde4_var/${test_set}_${subset}_epoch_50_var \
+      --resume Data/checkpoint/${model}/${dataset}/${feat_type}_egs_baseline/${loss}_sgd_exp/input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_50.pth \
+      --gpu-id 1 \
+      --remove-vad \
+      --cos-sim
+  done
+  exit
+fi
+
 if [ $stage -le 75 ]; then
   feat_type=klfb
   feat=fb40
@@ -584,14 +633,18 @@ if [ $stage -le 75 ]; then
   #|     vox1-test     |   4.3054%   |   0.2299    |   0.4212    |    0.6275    | 20211104 15:29:25 | embedding_size=256
   #|     vox1-test     |   4.3478%   |   0.1949    |   0.4755    |    0.5709    | 20211104 15:30:08 | embedding_size=512
 
+  # Training set: voxceleb 1 40-dimensional log fbanks kaldi  Loss: arcsoft  sgd exp
+  #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #|     vox1-test     |   4.9841%   |   0.1783    |   0.5531    |    0.6566    | 20211115 09:03:38 |
+
   for embedding_size in 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi \
       --input-norm ${input_norm} \
