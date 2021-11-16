@@ -765,7 +765,7 @@ def main():
     # start = 0
     end = start + args.epochs
 
-    if len(args.random_chunk) == 2 and args.random_chunk[0] < args.random_chunk[1]:
+    if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
         min_chunk_size = int(args.random_chunk[0])
         max_chunk_size = int(args.random_chunk[1])
         pad_dim = 2 if args.feat_format == 'kaldi' else 3
