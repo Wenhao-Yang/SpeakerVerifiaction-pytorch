@@ -21,7 +21,7 @@ from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
-    RevGradLayer, DropweightLayer, GaussianNoiseLayer, MusanNoiseLayer, AttentionweightLayer
+    RevGradLayer, DropweightLayer, GaussianNoiseLayer, MusanNoiseLayer, AttentionweightLayer, TimeFreqMaskLayer
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2
@@ -1015,14 +1015,16 @@ class LocalResNet(nn.Module):
             self.inst_layer = None
 
         if self.mask == "time":
-            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
         elif self.mask == "freq":
-            self.mask = FreqMaskLayer(mask_len=mask_len)
+            self.mask = FreqMaskLayer(mask_len=mask_len[0])
         elif self.mask == "time_freq":
             self.mask_layer = nn.Sequential(
                 TimeMaskLayer(),
                 FreqMaskLayer()
             )
+        elif self.mask == "both":
+            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
         elif self.mask == 'drop':
             self.mask_layer = DropweightLayer(dropout_p=0.25)
         elif self.mask == 'gau_noise':
@@ -1082,8 +1084,8 @@ class LocalResNet(nn.Module):
             self.encoder = SelfAttentionPooling(input_dim=last_conv_chn*freq_dim, hidden_dim=int(last_conv_chn/2))
             self.encoder_output = last_conv_chn*freq_dim
         elif encoder_type == 'SASP':
-            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
-            self.encoder = AttentionStatisticPooling(input_dim=last_conv_chn, hidden_dim=last_conv_chn)
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = AttentionStatisticPooling(input_dim=last_conv_chn, hidden_dim=int(last_conv_chn / 2))
             self.encoder_output = last_conv_chn * 2
 
         elif encoder_type == 'STAP':
@@ -1160,11 +1162,11 @@ class LocalResNet(nn.Module):
         if self.filter_layer != None:
             x = self.filter_layer(x)
 
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
         if self.mask_layer != None:
             x = self.mask_layer(x)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
