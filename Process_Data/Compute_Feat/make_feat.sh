@@ -47,7 +47,8 @@ fi
 #exit
 #stage=1000
 if [ $stage -le 1 ]; then
-  dataset=vox2
+#  dataset=vox2
+  dataset=cnceleb
   #  feat_type=pyfb
   #  dataset=vox1
   feat=klfb
@@ -62,7 +63,7 @@ if [ $stage -le 1 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 896 \
+      --input-per-spks 1024 \
       --num-frames 600 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
@@ -76,7 +77,7 @@ if [ $stage -le 1 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --num-frames 600 \
-      --input-per-spks 896 \
+      --input-per-spks 1024 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
