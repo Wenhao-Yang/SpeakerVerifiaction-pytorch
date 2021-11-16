@@ -1158,6 +1158,7 @@ if [ $stage -le 77 ]; then
       --nj 12 \
       --epochs 60 \
       --batch-size 128 \
+      --shuffle \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --lr 0.1 \
