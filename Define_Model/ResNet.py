@@ -41,10 +41,10 @@ def conv3x3(in_planes, out_planes, stride=1):
                      stride=stride, bias=False)
 
 
-def conv5x5(in_planes, out_planes, stride=2):
+def conv5x5(in_planes, out_planes, stride=2, groups=1):
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=5, padding=2,
-                     stride=stride, bias=False)
+                     stride=stride, bias=False, groups=groups)
 
 
 class SEBasicBlock(nn.Module):
@@ -713,6 +713,11 @@ class ThinResNet(nn.Module):
             elif self.downsample == 'k5':
                 downsample = nn.Sequential(
                     conv5x5(self.inplanes, planes * block.expansion, stride),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k5_v2':
+                downsample = nn.Sequential(
+                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=int(self.inplanes / 2)),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
 
