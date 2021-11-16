@@ -15,6 +15,8 @@ if [ $stage -le 1 ]; then
   downsample=k3
   input_norm=none
   hidden_size=64
+  scheduler=cyclic
+  optimizer=adam
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for downsample in k5; do
@@ -28,16 +30,17 @@ if [ $stage -le 1 ]; then
       --random-chunk 150 400 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 210 \
-      --optimizer adam \
-      --scheduler cyclic \
+      --epochs 200 \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
       --patience 3 \
       --accu-steps 1 \
       --stride 2,2,2,2,2 \
       --lr 0.001 \
+      --base-lr 0.00000001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_hidden${hidden_size}_cyclic_cliplen_var275 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}/wde5_hidden${hidden_size}_cyclic_cliplen_var275/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}_${optimizer}_${scheduler}/wde5_hidden${hidden_size}_var275 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs2_enhance/${loss}_${optimizer}_${scheduler}/wde5_hidden${hidden_size}_var275/checkpoint_40.pth \
       --kernel-size 3 \
       --shuffle \
       --input-dim 40 \

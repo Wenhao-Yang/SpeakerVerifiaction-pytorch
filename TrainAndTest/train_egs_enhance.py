@@ -706,13 +706,17 @@ def main():
     milestones = [int(x) for x in milestones]
     milestones.sort()
     if args.scheduler == 'exp':
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
+        gamma = np.power(args.base_lr / args.lr, 1 / args.epochs) if args.gamma == 0 else args.gamma
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
     elif args.scheduler == 'rop':
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
     elif args.scheduler == 'cyclic':
         cycle_momentum = False if args.optimizer == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=1e-8, max_lr=args.lr, step_size_up=13000,
-                                          cycle_momentum=cycle_momentum)
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
+                                          max_lr=args.lr,
+                                          step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
