@@ -7,7 +7,7 @@ lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 1 ]; then
   datasets=vox1
   model=Demucs
-  resnet_size=5
+  resnet_size=4
 
   loss=mse
   feat_type=klfb
