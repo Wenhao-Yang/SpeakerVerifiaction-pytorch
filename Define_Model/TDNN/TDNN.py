@@ -963,8 +963,8 @@ class TDNN_v5(nn.Module):
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=self.channels[4])
             self.encoder_output = self.channels[4] * 2
-        elif encoder_type == 'ASTP':
-            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=256)
+        elif encoder_type in ['ASTP']:
+            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
             self.encoder_output = self.channels[4] * 2
         elif encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
@@ -1004,7 +1004,8 @@ class TDNN_v5(nn.Module):
                 m.bias.data.zero_()
             elif isinstance(m, TimeDelayLayer_v5):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
+                nonlinear = 'leaky_relu' if self.activation == 'leakyrelu' else self.activation
+                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity=nonlinear)
 
     def set_global_dropout(self, dropout_p):
         self.dropout_p = dropout_p

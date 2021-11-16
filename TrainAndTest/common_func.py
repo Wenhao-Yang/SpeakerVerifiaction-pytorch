@@ -26,7 +26,7 @@ from Define_Model.Optimizer import SAMSGD
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
 from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear
-from Define_Model.TDNN.ARET import RET, RET_v2
+from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
@@ -94,6 +94,7 @@ __factory = {
     'ECAPA': ECAPA_TDNN,
     'RET': RET,
     'RET_v2': RET_v2,
+    'RET_v3': RET_v3,
     'GradResNet': GradResNet,
     'TimeFreqResNet': TimeFreqResNet,
     'Demucs': Demucs

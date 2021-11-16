@@ -750,9 +750,11 @@ def main():
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
     elif args.scheduler == 'cyclic':
         cycle_momentum = False if args.optimizer == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr, max_lr=args.lr, step_size_up=5 * int(
-            np.ceil(len(train_dir) / args.batch_size)),
-                                          cycle_momentum=cycle_momentum)
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
+                                          max_lr=args.lr,
+                                          step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
