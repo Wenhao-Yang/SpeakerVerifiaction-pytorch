@@ -341,7 +341,6 @@ if [ $stage -le 70 ]; then
       --lr 0.001 \
       --base-lr 0.00000001 \
       --weight-decay 0.0005 \
-      --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
