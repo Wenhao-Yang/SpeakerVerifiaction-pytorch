@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=90
+stage=70
 waited=0
 while [ $(ps 16447 | wc -l) -eq 2 ]; do
   sleep 60
@@ -317,8 +317,8 @@ if [ $stage -le 70 ]; then
   embedding_size=512
   input_dim=40
   input_norm=Mean
-  optimizer=sgd
-  scheduler=exp
+  optimizer=adam
+  scheduler=cyclic
 
   for embedding_size in 512; do
     #    feat=combined
@@ -338,8 +338,8 @@ if [ $stage -le 70 ]; then
       --model ${model} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.12 \
-      --base-lr 0.000006 \
+      --lr 0.001 \
+      --base-lr 0.00000001 \
       --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
