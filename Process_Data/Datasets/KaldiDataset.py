@@ -613,6 +613,7 @@ class ScriptVerifyDataset(data.Dataset):
         trials_pair = []
         positive_pairs = 0
         skip_pairs = 0
+        assert os.path.exists(trials)
         with open(trials, 'r') as t:
             all_pairs = t.readlines()
             for line in all_pairs:
@@ -622,13 +623,14 @@ class ScriptVerifyDataset(data.Dataset):
                 else:
                     pair_true = True
                     positive_pairs += 1
+
                 if pair[0] in utts and pair[1] in utts:
                     trials_pair.append((pair[0], pair[1], pair_true))
                 else:
                     skip_pairs += 1
 
         trials_pair = np.array(trials_pair)
-        pdb.set_trace()
+        assert len(trials_pair) > 0
         # trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
         # print('    There are {} pairs in trials with {} positive pairs'.format(len(trials_pair),
         #                                                                        positive_pairs))
