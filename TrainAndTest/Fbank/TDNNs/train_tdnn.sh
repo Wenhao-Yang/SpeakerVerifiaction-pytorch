@@ -639,7 +639,8 @@ if [ $stage -le 77 ]; then
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
   for loss in arcsoft; do
-    feat=fb${input_dim}#_ws25
+    feat=fb${input_dim}
+    #_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/train_egs.py \
