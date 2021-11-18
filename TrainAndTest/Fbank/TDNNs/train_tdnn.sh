@@ -660,9 +660,7 @@ if [ $stage -le 77 ]; then
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
-      --var-input \
       --batch-size 128 \
-      --accu-steps 1 \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \

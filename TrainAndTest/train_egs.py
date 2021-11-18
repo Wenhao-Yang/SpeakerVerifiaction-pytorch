@@ -543,7 +543,7 @@ def test(model, epoch, writer, xvector_dir):
                                      loader=read_vec_flt)
     verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
 
-    pdb.set_trace()
+    # pdb.set_trace()
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
                                                                   dist_type=('cos' if args.cos_sim else 'l2'),
                                                                   log_interval=args.log_interval,
@@ -796,7 +796,6 @@ def main():
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
             torch.distributed.init_process_group(backend="nccl",
-                                                 # init_method='tcp://localhost:23456',
                                                  init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
                                                  rank=0,
                                                  world_size=1)
