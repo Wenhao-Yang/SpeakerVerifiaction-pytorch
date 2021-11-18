@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=64
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -56,7 +56,7 @@ if [ $stage -le 1 ]; then
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
-  for s in dev_fb40; do
+  for s in dev12_fb40; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
@@ -910,34 +910,37 @@ fi
 
 if [ $stage -le 64 ]; then
   datasets=cnceleb
+  feat_type=klfb
+  num_per_spk=512
+
   echo -e "\n\033[1;4;31m Stage ${stage}: Making log fbank egs for ${datasets}\033[0m\n"
-  for s in dev; do
+  for s in dev12_fb40 ; do #dev_fb40_ws25
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/cnceleb/pyfb/dev_fb40_ws25 \
-      --out-dir ${lstm_dir}/data/cnceleb/egs/pyfb \
-      --feat-type fbank \
+      --data-dir ${lstm_dir}/data/${datasets}/${feat_type}/${s} \
+      --out-dir ${lstm_dir}/data/${datasets}/egs/${feat_type} \
+      --feat-type ${feat_type} \
       --train \
       --domain \
-      --input-per-spks 512 \
-      --num-frames 400 \
+      --input-per-spks ${num_per_spk} \
+      --num-frames 600 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --out-set dev_fb40_ws25
+      --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/cnceleb/pyfb/dev_fb40_ws25 \
-      --out-dir ${lstm_dir}/data/cnceleb/egs/pyfb \
-      --feat-type fbank \
-      --input-per-spks 512 \
+      --data-dir ${lstm_dir}/data/${datasets}/${feat_type}/${s} \
+      --out-dir ${lstm_dir}/data/${datasets}/egs/${feat_type} \
+      --feat-type ${feat_type} \
+      --input-per-spks ${num_per_spk} \
       --feat-format kaldi \
-      --num-frames 400 \
+      --num-frames 600 \
       --domain \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --out-set valid_fb40_ws25
+      --out-set ${s}_valid
   done
   exit
 fi
