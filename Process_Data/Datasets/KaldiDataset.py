@@ -617,7 +617,7 @@ class ScriptVerifyDataset(data.Dataset):
             all_pairs = t.readlines()
             for line in all_pairs:
                 pair = line.split()
-                if pair[2] == 'nontarget' or pair[2] == '0':
+                if pair[2] in ['nontarget', '0']:
                     pair_true = False
                 else:
                     pair_true = True
@@ -629,7 +629,6 @@ class ScriptVerifyDataset(data.Dataset):
 
         trials_pair = np.array(trials_pair)
         # trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
-
         # print('    There are {} pairs in trials with {} positive pairs'.format(len(trials_pair),
         #                                                                        positive_pairs))
 
