@@ -719,6 +719,14 @@ def main():
                                           step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
+    elif args.scheduler == 'cyclic_exp':
+        cycle_momentum = False if args.optimizer == 'adam' else True
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
+                                          max_lr=args.lr,
+                                          step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
+                                          cycle_momentum=cycle_momentum,
+                                          gamma=0.98,
+                                          mode='exp_range')
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 

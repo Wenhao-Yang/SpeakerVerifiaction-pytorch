@@ -14,7 +14,7 @@ if [ $stage -le 1 ]; then
   sname=dev_auged2_fb40_pair
   downsample=k3
   input_norm=none
-  hidden_size=64
+  hidden_size=80
   scheduler=cyclic
   optimizer=adam
   #        --scheduler cyclic \
