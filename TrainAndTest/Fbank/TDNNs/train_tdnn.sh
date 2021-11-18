@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=70
+stage=77
 waited=0
 while [ $(ps 5690 | wc -l) -eq 2 ]; do
   sleep 60
@@ -627,33 +627,34 @@ if [ $stage -le 77 ]; then
   model=TDNN_v5
   datasets=cnceleb
   #  feat=fb24
-  feat_type=pyfb
+#  feat_type=pyfb
+  feat_type=klfb
   loss=soft
   encod=STAP
-  embedding_size=256
+  embedding_size=512
   input_dim=40
   input_norm=Mean
-  lr_ratio=5
+  lr_ratio=0
   loss_ratio=0.1
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
-  for loss in soft arcsoft; do
-    feat=fb${input_dim}_ws25
+  for loss in arcsoft; do
+    feat=fb${input_dim}#_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-      --nj 23 \
-      --epochs 60 \
+      --nj 12 \
+      --epochs 50 \
       --patience 3 \
-      --milestones 10,20,30,40,50 \
+      --milestones 10,20,30,40 \
       --model ${model} \
       --scheduler rop \
-      --weight-decay 0.001 \
+      --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
@@ -665,8 +666,8 @@ if [ $stage -le 77 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/feat${feat}_input${input_norm}_${encod}_em${embedding_size}_wde3_var/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -675,7 +676,7 @@ if [ $stage -le 77 ]; then
       --loss-ratio ${loss_ratio} \
       --lr-ratio ${lr_ratio} \
       --loss-type ${loss} \
-      --margin 0.15 \
+      --margin 0.2 \
       --s 30 \
       --remove-vad \
       --log-interval 10
