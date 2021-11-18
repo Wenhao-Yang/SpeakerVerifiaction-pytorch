@@ -543,7 +543,7 @@ def test(model, epoch, writer, xvector_dir):
                                      loader=read_vec_flt)
     verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
 
-    pdb.set_trace()
+    # pdb.set_trace()
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
                                                                   dist_type=('cos' if args.cos_sim else 'l2'),
                                                                   log_interval=args.log_interval,

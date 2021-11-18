@@ -628,6 +628,7 @@ class ScriptVerifyDataset(data.Dataset):
                     skip_pairs += 1
 
         trials_pair = np.array(trials_pair)
+        pdb.set_trace()
         # trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
         # print('    There are {} pairs in trials with {} positive pairs'.format(len(trials_pair),
         #                                                                        positive_pairs))
