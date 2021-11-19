@@ -1987,8 +1987,6 @@ if [ $stage -le 200 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.25 \
-      --time-dim 1 \
-      --avg-size 4 \
       --xvector-dir Data/xvector/ThinResNet18/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/epoch_50_var \
       --resume Data/checkpoint/ThinResNet18/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
