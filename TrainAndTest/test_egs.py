@@ -126,6 +126,8 @@ parser.add_argument('--inception', action='store_true', default=False, help='mul
 parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
 parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
+parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
+
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--context', default='5,3,3,5', type=str, metavar='KE', help='kernel size of conv filters')
@@ -532,6 +534,7 @@ if __name__ == '__main__':
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
+                    'downsample': args.downsample,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
                     'channels': channels, 'context': context, 'init_weight': args.init_weight,
