@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=93
 waited=0
 while [ $(ps 27488 | wc -l) -eq 2 ]; do
   sleep 60
@@ -1264,20 +1264,20 @@ if [ $stage -le 93 ]; then
       --activation ${activation} \
       --scheduler rop \
       --weight-decay 0.00001 \
-      --lr 0.01 \
+      --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
       --batch-size ${batch_size} \
       --accu-steps 1 \
-      --input-dim 161 \
+      --input-dim 40 \
       --channels 512,512,512,512,512,1536 \
       --context 5,3,3,5 \
       --dilation 1,1,1,1 \
       --stride 1,2,1,1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_2s \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_2s/checkpoint_33.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_wde5_2s \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_wde5_2s/checkpoint_33.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -1286,6 +1286,7 @@ if [ $stage -le 93 ]; then
       --loss-type ${loss} \
       --margin 0.2 \
       --s 30 \
+      --remove-vad \
       --all-iteraion 0 \
       --log-interval 10
   done

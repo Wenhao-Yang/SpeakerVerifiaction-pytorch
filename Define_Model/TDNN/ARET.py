@@ -1033,11 +1033,11 @@ class RET_v3(nn.Module):
         if len(x.shape) == 4:
             x = x.squeeze(1).float()
 
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
         if self.mask_layer != None:
             x = self.mask_layer(x)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
 
         x = self.frame1(x)
         x = self.frame2(x)
