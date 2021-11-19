@@ -1251,7 +1251,7 @@ if [ $stage -le 93 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb40/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb40_valid \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb20 \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb40 \
       --input-norm ${input_norm} \
       --nj 12 \
       --epochs 60 \
