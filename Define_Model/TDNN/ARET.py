@@ -502,6 +502,7 @@ class RET(nn.Module):
         tdnn_type = {14: [1, 1, 1, 0],
                      17: [1, 1, 1, 1],
                      21: [1, 1, 1, 1],
+                     18: [2, 2, 2, 2],
                      34: [3, 4, 6, 3], }
         self.layers = tdnn_type[resnet_size] if resnet_size in tdnn_type else tdnn_type[17]
         self.stride = stride

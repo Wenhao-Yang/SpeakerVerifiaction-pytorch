@@ -1232,31 +1232,31 @@ if [ $stage -le 93 ]; then
   model=RET
   datasets=vox2
   feat=log
-  feat_type=klsp
+  feat_type=klfb
   loss=arcsoft
   encod=STAP
   embedding_size=512
-  block_type=cbam_v2
+  block_type=shublock
   input_norm=Mean
   batch_size=128
-  resnet_size=14
+  resnet_size=18
   activation=leakyrelu
   #  --dilation 1,2,3,1 \
 
-  for encod in STAP ; do
+  for encod in SASP ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
     python -W ignore TrainAndTest/train_egs.py \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb40 \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb40/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb40_valid \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb20 \
       --input-norm ${input_norm} \
       --nj 12 \
-      --epochs 37 \
-      --patience 2 \
-      --random-chunk 200 400 \
+      --epochs 60 \
+      --patience 3 \
+      --random-chunk 200 200 \
       --milestones 10,20,30,40,50 \
       --model ${model} \
       --resnet-size ${resnet_size} \
@@ -1276,8 +1276,8 @@ if [ $stage -le 93 ]; then
       --dilation 1,1,1,1 \
       --stride 1,2,1,1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride2_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_stride2_var/checkpoint_33.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_2s \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/em${embedding_size}_input${input_norm}_${block_type}_${activation}_wde5_2s/checkpoint_33.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
