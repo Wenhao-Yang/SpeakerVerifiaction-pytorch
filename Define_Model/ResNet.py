@@ -715,7 +715,12 @@ class ThinResNet(nn.Module):
                     conv5x5(self.inplanes, planes * block.expansion, stride),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
-            elif self.downsample == 'k5_v2':
+            elif self.downsample == 'k51':
+                downsample = nn.Sequential(
+                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=self.inplanes),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k52':
                 downsample = nn.Sequential(
                     conv5x5(self.inplanes, planes * block.expansion, stride, groups=int(self.inplanes / 2)),
                     nn.BatchNorm2d(planes * block.expansion),
