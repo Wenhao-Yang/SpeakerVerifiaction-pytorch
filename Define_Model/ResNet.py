@@ -555,7 +555,7 @@ class ThinResNet(nn.Module):
 
         if block_type == "seblock":
             block = SEBasicBlock
-            block.reduction_ratio = red_ratio
+            # block.reduction_ratio = red_ratio
         elif block_type == 'cbam':
             block = CBAMBlock
         elif block_type in ['basic', 'None']:

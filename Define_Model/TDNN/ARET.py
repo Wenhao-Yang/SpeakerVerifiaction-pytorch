@@ -9,11 +9,13 @@
 @Time: 2021/2/13 17:36
 @Overview:
 """
+import torch
 import torch.nn as nn
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
-from Define_Model.TDNN.TDNN import TimeDelayLayer_v5, TimeDelayLayer_v6, ShuffleTDLayer
+from Define_Model.TDNN.TDNN import TimeDelayLayer_v5, TimeDelayLayer_v6, ShuffleTDLayer, channel_shuffle
+from Define_Model.model import get_activation
 
 
 class TDNNBlock(nn.Module):
@@ -217,6 +219,80 @@ class TDNNCBAMBlock_v2(nn.Module):
         return out
 
 
+class SqueezeExcitation(nn.Module):
+    # input should be like [Batch, channel, time, frequency]
+    def __init__(self, inplanes, reduction_ratio=2):
+        super(SqueezeExcitation, self).__init__()
+        self.reduction_ratio = reduction_ratio
+        self.fc1 = nn.Linear(inplanes, max(int(inplanes / self.reduction_ratio), 1))
+        self.relu = nn.ReLU(inplace=True)
+        self.fc2 = nn.Linear(max(int(inplanes / self.reduction_ratio), 1), inplanes)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, input):
+        scale = input.mean(dim=2)
+        scale = self.fc1(scale)
+        scale = self.relu(scale)
+        scale = self.fc2(scale)
+        scale = self.activation(scale).unsqueeze(2)
+
+        output = input * scale
+
+        return output
+
+    def __repr__(self):
+        return "SqueezeExcitation(reduction_ratio=%f)" % self.reduction_ratio
+
+
+class TDNNSEBlock_v2(nn.Module):
+
+    def __init__(self, inplanes, planes, downsample=None, dilation=1,
+                 activation='relu', reduction_ratio=2, **kwargs):
+        super(TDNNSEBlock_v2, self).__init__()
+
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        if isinstance(downsample, int) and downsample > 0:
+            inter_connect = int(planes / downsample)
+        else:
+            inter_connect = planes
+
+        if activation == 'relu':
+            act_fn = nn.ReLU
+        elif activation in ['leakyrelu', 'leaky_relu']:
+            act_fn = nn.LeakyReLU
+        elif activation == 'prelu':
+            act_fn = nn.PReLU
+
+        self.tdnn1_kernel = nn.Conv1d(inplanes, inter_connect, 3, stride=1,
+                                      padding=1, dilation=dilation, bias=False)
+        self.tdnn1_bn = nn.BatchNorm1d(inter_connect)
+        self.act = act_fn()
+        self.reduction_ratio = reduction_ratio
+
+        self.tdnn2_kernel = nn.Conv1d(inter_connect, planes, 3, stride=1,
+                                      padding=1, dilation=dilation, bias=False)
+        self.tdnn2_bn = nn.BatchNorm1d(planes)
+
+        self.SE_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
+
+    def forward(self, x):
+        identity = x
+
+        out = self.tdnn1_kernel(x.transpose(1, 2))
+        out = self.tdnn1_bn(out)
+        out = self.act(out)
+
+        out = self.tdnn2_kernel(out)
+        out = self.tdnn2_bn(out)
+
+        out = self.SE_layer(out).transpose(1, 2)
+
+        out += identity
+        out = self.act(out)
+
+        return out
+
+
 class TDNNBlock_v6(nn.Module):
 
     def __init__(self, inplanes, planes, downsample=None, dilation=1, **kwargs):
@@ -284,10 +360,131 @@ class TDNNBottleBlock(nn.Module):
         return out
 
 
+class TDNNBottleBlock_v2(nn.Module):
+
+    def __init__(self, inplanes, planes, downsample=None, dilation=1, activation='relu', **kwargs):
+        super(TDNNBottleBlock_v2, self).__init__()
+
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        if isinstance(downsample, int):
+            inter_connect = int(planes / downsample)
+        else:
+            inter_connect = planes
+
+        if activation == 'relu':
+            act_fn = nn.ReLU
+        elif activation in ['leakyrelu', 'leaky_relu']:
+            act_fn = nn.LeakyReLU
+        elif activation == 'prelu':
+            act_fn = nn.PReLU
+
+        self.tdnn1_kernel = nn.Conv1d(inplanes, inter_connect, 1, stride=1,
+                                      padding=0, dilation=dilation, bias=False)
+        self.tdnn1_bn = nn.BatchNorm1d(inter_connect)
+        self.act = act_fn()
+
+        self.tdnn2_kernel = nn.Conv1d(inter_connect, planes, 3, stride=1,
+                                      padding=1, dilation=dilation, bias=False)
+        self.tdnn2_bn = nn.BatchNorm1d(planes)
+
+        self.tdnn3_kernel = nn.Conv1d(inter_connect, planes, 1, stride=1,
+                                      padding=0, dilation=dilation, bias=False)
+        self.tdnn3_bn = nn.BatchNorm1d(planes)
+
+        # self.downsample = downsample
+
+    def forward(self, x):
+        identity = x
+
+        out = self.tdnn1_kernel(x.transpose(1, 2))
+        out = self.tdnn1_bn(out)
+        out = self.act(out)
+
+        out = self.tdnn2_kernel(out)
+        out = self.tdnn2_bn(out)  # .transpose(1, 2)
+        out = self.act(out)
+
+        out = self.tdnn3_kernel(out)
+        out = self.tdnn3_bn(out).transpose(1, 2)
+
+        out += identity
+        out = self.act(out)
+        # out = self.relu(out)
+
+        return out
+
+
+class ShuffleTDNNBlock(nn.Module):
+
+    def __init__(self, inplanes=512, planes=512, context_size=5, stride=1, dilation=1,
+                 dropout_p=0.0, padding=0, groups=1, activation='relu') -> None:
+        super(ShuffleTDNNBlock, self).__init__()
+        self.context_size = context_size
+        self.stride = stride
+        self.input_dim = inplanes
+        self.output_dim = planes
+        self.dilation = dilation
+        self.dropout_p = dropout_p
+        self.padding = padding
+        self.groups = groups
+        self.activation = activation
+        nonlinearity = get_activation(activation)
+
+        if not (1 <= stride <= 3):
+            raise ValueError('illegal stride value')
+        self.stride = stride
+
+        branch_features = self.output_dim // 2
+        assert (self.stride != 1) or (self.input_dim == branch_features << 1)
+
+        if self.stride > 1:
+            self.branch1 = nn.Sequential(
+                self.depthwise_conv(self.input_dim, self.input_dim, kernel_size=3, stride=self.stride, padding=1,
+                                    dilation=dilation),
+                nn.BatchNorm1d(self.input_dim),
+                nn.Conv1d(self.input_dim, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm1d(branch_features),
+                nonlinearity(inplace=True),
+            )
+        else:
+            self.branch1 = nn.Sequential()
+
+        self.branch2 = nn.Sequential(
+            nn.Conv1d(self.input_dim if (self.stride > 1) else branch_features,
+                      branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm1d(branch_features),
+            nonlinearity(inplace=True),
+            self.depthwise_conv(branch_features, branch_features, kernel_size=self.context_size,
+                                dilation=self.dilation, stride=self.stride, padding=int((self.context_size - 1) / 2)),
+            nn.BatchNorm1d(branch_features),
+            nn.Conv1d(branch_features, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm1d(branch_features),
+            nonlinearity(inplace=True),
+        )
+
+    @staticmethod
+    def depthwise_conv(i: int, o: int, kernel_size: int, stride: int = 1, padding: int = 0,
+                       dilation: int = 1, bias: bool = False) -> nn.Conv1d:
+        return nn.Conv1d(i, o, kernel_size, stride, padding, dilation=dilation, bias=bias, groups=i)
+
+    def forward(self, x):
+        x = x.transpose(1, 2)
+        if self.stride == 1:
+            x1, x2 = x.chunk(2, dim=1)
+            out = torch.cat((x1, self.branch2(x2)), dim=1)
+        else:
+            out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
+
+        out = channel_shuffle(out, 2)
+
+        return out.transpose(1, 2)
+
+
 class RET(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
                  channels=[512, 512, 512, 512, 512, 1536], context=[5, 3, 3, 5], activation='relu',
                  downsample=None, resnet_size=17, dilation=[1, 1, 1, 1], stride=[1],
+                 red_ratio=2,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', block_type='basic',
                  mask='None', mask_len=20, **kwargs):
         super(RET, self).__init__()
@@ -300,6 +497,8 @@ class RET(nn.Module):
         self.channels = channels
         self.context = context
         self.activation = activation
+        self.red_ratio = red_ratio
+
         tdnn_type = {14: [1, 1, 1, 0],
                      17: [1, 1, 1, 1],
                      21: [1, 1, 1, 1],
@@ -340,13 +539,19 @@ class RET(nn.Module):
         elif block_type.lower() == 'shuffle':
             Blocks = TDNNBlock
             TDNN_layer = ShuffleTDLayer
+        elif block_type.lower() == 'shublock':
+            Blocks = ShuffleTDNNBlock
         elif block_type.lower() == 'agg':
             Blocks = TDNNBottleBlock
+        elif block_type.lower() == 'agg_v2':
+            Blocks = TDNNBottleBlock_v2
         elif block_type.lower() == 'cbam':
             Blocks = TDNNCBAMBlock
         elif block_type.lower() == 'cbam_v2':
             TDNN_layer = TimeDelayLayer_v6
             Blocks = TDNNCBAMBlock_v2
+        elif block_type.lower() == 'seblock_v2':
+            Blocks = TDNNSEBlock_v2
         else:
             raise ValueError(block_type)
 
@@ -667,7 +872,7 @@ class RET_v3(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
                  channels=[512, 512, 512, 512, 512, 1536], context=[5, 3, 3, 5],
                  downsample=None, resnet_size=17, stride=[1], activation='relu',
-                 dilation=[1, 1, 1, 1],
+                 dilation=[1, 1, 1, 1], red_ratio=2,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', block_type='Basic',
                  mask='None', mask_len=20, **kwargs):
         super(RET_v3, self).__init__()
@@ -682,6 +887,7 @@ class RET_v3(nn.Module):
         self.stride = stride
         self.activation = activation
         self.dilation = dilation
+        self.red_ratio = red_ratio
 
         if len(self.stride) == 1:
             while len(self.stride) < 4:
@@ -723,6 +929,8 @@ class RET_v3(nn.Module):
         elif block_type.lower() == 'shuffle':
             Blocks = TDNNBlock
             TDNN_layer = ShuffleTDLayer
+        elif block_type.lower() == 'shublock':
+            Blocks = ShuffleTDNNBlock
         elif block_type.lower() == 'agg':
             Blocks = TDNNBottleBlock
         elif block_type.lower() == 'cbam':
@@ -730,6 +938,8 @@ class RET_v3(nn.Module):
         elif block_type.lower() == 'cbam_v2':
             TDNN_layer = TimeDelayLayer_v6
             Blocks = TDNNCBAMBlock_v2
+        elif block_type.lower() == 'seblock_v2':
+            Blocks = TDNNSEBlock_v2
         else:
             raise ValueError(block_type)
 
@@ -738,14 +948,14 @@ class RET_v3(nn.Module):
                                  activation=self.activation)
         self.frame2 = self._make_block(block=Blocks, inplanes=self.channels[0], planes=self.channels[0],
                                        downsample=downsample, dilation=1, blocks=self.layers[0],
-                                       activation=self.activation)
+                                       activation=self.activation, reduction_ratio=self.red_ratio)
 
         self.frame4 = TDNN_layer(input_dim=self.channels[0], output_dim=self.channels[1],
                                  context_size=self.context[1], dilation=self.dilation[1], stride=self.stride[1],
                                  activation=self.activation)
         self.frame5 = self._make_block(block=Blocks, inplanes=self.channels[1], planes=self.channels[1],
                                        downsample=downsample, dilation=1, blocks=self.layers[1],
-                                       activation=self.activation)
+                                       activation=self.activation, reduction_ratio=self.red_ratio)
 
         self.frame7 = TDNN_layer(input_dim=self.channels[1], output_dim=self.channels[2],
                                  context_size=self.context[2], dilation=self.dilation[2], stride=self.stride[2],
@@ -753,7 +963,7 @@ class RET_v3(nn.Module):
 
         self.frame8 = self._make_block(block=Blocks, inplanes=self.channels[2], planes=self.channels[2],
                                        downsample=downsample, dilation=1, blocks=self.layers[2],
-                                       activation=self.activation)
+                                       activation=self.activation, reduction_ratio=self.red_ratio)
 
         if self.layers[3] != 0:
             self.frame10 = TDNN_layer(input_dim=self.channels[2], output_dim=self.channels[3],
@@ -761,7 +971,7 @@ class RET_v3(nn.Module):
                                       activation=self.activation)
             self.frame11 = self._make_block(block=Blocks, inplanes=self.channels[3], planes=self.channels[3],
                                             downsample=downsample, dilation=1, blocks=self.layers[3],
-                                            activation=self.activation)
+                                            activation=self.activation, reduction_ratio=self.red_ratio)
 
         self.frame13 = TDNN_layer(input_dim=self.channels[3], output_dim=self.channels[4],
                                   context_size=1, dilation=1, activation=self.activation)
@@ -802,17 +1012,18 @@ class RET_v3(nn.Module):
                 m.bias.data.zero_()
             elif isinstance(m, TimeDelayLayer_v5):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity=self.activation)
+                nonlinear = 'leaky_relu' if self.activation == 'leakyrelu' else self.activation
+                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity=nonlinear)
 
-    def _make_block(self, block, inplanes, planes, downsample, dilation, activation, blocks=1):
+    def _make_block(self, block, inplanes, planes, downsample, dilation, activation, blocks=1, reduction_ratio=2):
         if blocks == 0:
             return None
         layers = []
         layers.append(block(inplanes=inplanes, planes=planes, downsample=downsample,
-                            dilation=dilation, activation=activation))
+                            dilation=dilation, activation=activation, reduction_ratio=reduction_ratio))
         for _ in range(1, blocks):
             layers.append(block(inplanes=inplanes, planes=planes, downsample=downsample,
-                                dilation=dilation, activation=activation))
+                                dilation=dilation, activation=activation, reduction_ratio=reduction_ratio))
 
         return nn.Sequential(*layers)
 

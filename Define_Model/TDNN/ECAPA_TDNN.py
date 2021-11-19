@@ -14,7 +14,7 @@ https://github.com/lawlict/ECAPA-TDNN/blob/master/ecapa_tdnn.py
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from Define_Model.FilterLayer import Mean_Norm
+from Define_Model.FilterLayer import Mean_Norm, TimeMaskLayer, FreqMaskLayer, TimeFreqMaskLayer
 
 ''' Res2Conv1d + BatchNorm1d + ReLU
 '''
@@ -144,7 +144,7 @@ class ECAPA_TDNN(nn.Module):
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
                  num_classes_b=0, block_type='basic', alpha=0.,
-                 mask='None', mask_len=20, channels=[512, 512, 512, 512, 1536], **kwargs):
+                 mask='None', mask_len=[5, 20], channels=[512, 512, 512, 512, 1536], **kwargs):
         super().__init__()
         self.num_classes = num_classes
         self.num_classes_b = num_classes_b
@@ -166,6 +166,20 @@ class ECAPA_TDNN(nn.Module):
         else:
             self.inst_layer = None
 
+        if self.mask == "time":
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
+        elif self.mask == "freq":
+            self.mask_layer = FreqMaskLayer(mask_len=mask_len[0])
+        elif self.mask == "time_freq":
+            self.mask_layer = nn.Sequential(
+                TimeMaskLayer(mask_len=mask_len[0]),
+                FreqMaskLayer(mask_len=mask_len[1])
+            )
+        elif self.mask == "both":
+            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
+        else:
+            self.mask_layer = None
+
         self.layer1 = Conv1dReluBn(input_dim, self.channels[0], kernel_size=5, padding=2)
         self.layer2 = SE_Res2Block(self.channels[1], kernel_size=3, stride=1, padding=2, dilation=2, scale=8)
         self.layer3 = SE_Res2Block(self.channels[2], kernel_size=3, stride=1, padding=3, dilation=3, scale=8)
@@ -183,6 +197,9 @@ class ECAPA_TDNN(nn.Module):
     def forward(self, x):
         if len(x.shape) == 4:
             x = x.squeeze(1).float()
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
 
         if self.inst_layer != None:
             x = self.inst_layer(x)
