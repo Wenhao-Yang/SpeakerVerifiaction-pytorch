@@ -1979,7 +1979,7 @@ if [ $stage -le 200 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 16,64,128,256 \
+      --channels 16,32,64,128 \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
