@@ -417,7 +417,7 @@ class TDNNBottleBlock_v2(nn.Module):
 class ShuffleTDNNBlock(nn.Module):
 
     def __init__(self, inplanes=512, planes=512, context_size=5, stride=1, dilation=1,
-                 dropout_p=0.0, padding=0, groups=1, activation='relu') -> None:
+                 dropout_p=0.0, padding=0, groups=1, activation='relu', **kwargs) -> None:
         super(ShuffleTDNNBlock, self).__init__()
         self.context_size = context_size
         self.stride = stride
