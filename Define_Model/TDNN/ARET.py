@@ -455,7 +455,7 @@ class ShuffleTDNNBlock(nn.Module):
             nn.BatchNorm1d(branch_features),
             nonlinearity(inplace=True),
             self.depthwise_conv(branch_features, branch_features, kernel_size=self.context_size,
-                                dilation=self.dilation, stride=self.stride, padding=int((self.context_size - 1) / 2)),
+                                dilation=self.dilation, stride=self.stride, padding=int((self.context_size - 1)*dilation / 2)),
             nn.BatchNorm1d(branch_features),
             nn.Conv1d(branch_features, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
             nn.BatchNorm1d(branch_features),
@@ -1024,7 +1024,7 @@ class RET_v3(nn.Module):
                             dilation=dilation, activation=activation, reduction_ratio=reduction_ratio))
         for _ in range(1, blocks):
             layers.append(block(inplanes=inplanes, planes=planes, downsample=downsample,
-                                dilation=dilation, activation=activation, reduction_ratio=reduction_ratio))
+                                dilation=1, activation=activation, reduction_ratio=reduction_ratio))
 
         return nn.Sequential(*layers)
 
