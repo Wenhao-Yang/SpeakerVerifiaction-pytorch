@@ -1274,7 +1274,7 @@ if [ $stage -le 93 ]; then
       --channels 512,512,512,512,512,1536 \
       --context 5,3,3,5 \
       --dilation 1,1,1,1 \
-      --stride 1,2,1,1 \
+      --stride 1,1,1,1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_wde5_2s \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_wde5_2s/checkpoint_33.pth \
