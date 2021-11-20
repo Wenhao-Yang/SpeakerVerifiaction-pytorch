@@ -207,7 +207,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             optimizer.step()  # update parameters of net
             optimizer.zero_grad()  # reset gradient
 
-            if args.model == 'FTDNN':
+            if args.model == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
                 if isinstance(model, DistributedDataParallel):
                     model.module.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
                     orth_err += model.module.get_orth_errors()
