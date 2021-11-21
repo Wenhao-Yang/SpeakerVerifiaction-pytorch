@@ -12,7 +12,7 @@
 import torch
 import torch.nn as nn
 
-from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer
+from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer, TimeFreqMaskLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
 from Define_Model.TDNN.TDNN import TimeDelayLayer_v5, TimeDelayLayer_v6, ShuffleTDLayer, channel_shuffle
 from Define_Model.model import get_activation
@@ -491,7 +491,7 @@ class TDNNBottleBlock_v2(nn.Module):
 
 class ShuffleTDNNBlock(nn.Module):
 
-    def __init__(self, inplanes=512, planes=512, context_size=5, stride=1, dilation=1,
+    def __init__(self, inplanes=512, planes=512, context_size=3, stride=1, dilation=1,
                  dropout_p=0.0, padding=0, groups=1, activation='relu', **kwargs) -> None:
         super(ShuffleTDNNBlock, self).__init__()
         self.context_size = context_size
@@ -950,7 +950,7 @@ class RET_v3(nn.Module):
                  downsample=None, resnet_size=17, stride=[1], activation='relu',
                  dilation=[1, 1, 1, 1], red_ratio=2,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', block_type='Basic',
-                 mask='None', mask_len=20, **kwargs):
+                 mask='None', mask_len=[5,20], **kwargs):
         super(RET_v3, self).__init__()
         self.num_classes = num_classes
         self.dropout_p = dropout_p
@@ -971,6 +971,7 @@ class RET_v3(nn.Module):
 
         self.tdnn_size = resnet_size
         tdnn_type = {14: [1, 1, 1, 0],
+                     24: [2, 2, 2, 0],
                      17: [1, 1, 1, 1],
                      18: [2, 2, 2, 2]}
         self.layers = tdnn_type[resnet_size] if resnet_size in tdnn_type else tdnn_type[17]
@@ -983,13 +984,15 @@ class RET_v3(nn.Module):
             self.inst_layer = None
 
         if self.mask == "time":
-            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
         elif self.mask == "freq":
-            self.mask = FreqMaskLayer(mask_len=mask_len)
+            self.mask = FreqMaskLayer(mask_len=mask_len[0])
+        elif self.mask == "both":
+            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
         elif self.mask == "time_freq":
             self.mask_layer = nn.Sequential(
-                TimeMaskLayer(mask_len=mask_len),
-                FreqMaskLayer(mask_len=mask_len)
+                TimeMaskLayer(mask_len=mask_len[0]),
+                FreqMaskLayer(mask_len=mask_len[1])
             )
         else:
             self.mask_layer = None
@@ -1099,7 +1102,7 @@ class RET_v3(nn.Module):
                             dilation=dilation, activation=activation, reduction_ratio=reduction_ratio))
         for _ in range(1, blocks):
             layers.append(block(inplanes=inplanes, planes=planes, downsample=downsample,
-                                dilation=1, activation=activation, reduction_ratio=reduction_ratio))
+                                dilation=dilation, activation=activation, reduction_ratio=reduction_ratio))
 
         return nn.Sequential(*layers)
 

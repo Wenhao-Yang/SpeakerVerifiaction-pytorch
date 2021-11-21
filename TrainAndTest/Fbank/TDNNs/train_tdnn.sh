@@ -1235,7 +1235,7 @@ if [ $stage -le 93 ]; then
   feat_type=klfb
   loss=arcsoft
   encod=STAP
-  embedding_size=512
+  embedding_size=256
   block_type=shublock
   input_norm=Mean
   batch_size=128
@@ -1272,12 +1272,12 @@ if [ $stage -le 93 ]; then
       --accu-steps 1 \
       --input-dim 40 \
       --channels 512,512,512,512,512,1536 \
-      --context 5,3,3,5 \
-      --dilation 1,1,1,1 \
+      --context 5,3,3,3 \
+      --dilation 1,2,3,1 \
       --stride 1,1,1,1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_wde5_2s \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_wde5_2s/checkpoint_33.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila_wde5_2s \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila_wde5_2s/checkpoint_33.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
