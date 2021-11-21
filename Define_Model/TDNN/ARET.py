@@ -668,6 +668,8 @@ class RET(nn.Module):
             self.encoder = StatisticPooling(input_dim=self.channels[5])
         elif encoder_type in ['SASP', 'ASTP']:
             self.encoder = AttentionStatisticPooling(input_dim=self.channels[5], hidden_dim=int(embedding_size / 2))
+        elif encoder_type in ['SASP2', 'ASTP2']:
+            self.encoder = AttentionStatisticPooling_v2(input_dim=self.channels[5], hidden_dim=int(embedding_size / 2))
         else:
             raise ValueError(encoder_type)
 
