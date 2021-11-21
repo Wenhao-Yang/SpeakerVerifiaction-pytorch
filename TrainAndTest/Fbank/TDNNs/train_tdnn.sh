@@ -1229,7 +1229,7 @@ fi
 
 
 if [ $stage -le 93 ]; then
-  model=RET_v3
+  model=RET
   datasets=vox2
   feat=log
   feat_type=klfb
