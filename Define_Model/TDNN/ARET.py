@@ -138,6 +138,35 @@ class TDCBAM(nn.Module):
         return output
 
 
+class TDCBAM_v2(nn.Module):
+    # input should be like [Batch, time, frequency]
+    def __init__(self, inplanes, planes, time_freq='time', pooling='avg'):
+        super(TDCBAM_v2, self).__init__()
+        self.time_freq = time_freq
+        self.activation = nn.Sigmoid()
+        self.pooling = pooling
+
+        self.cov_t = nn.Conv1d(1, 1, kernel_size=7, stride=1, padding=3)
+        self.cov_f = nn.Conv1d(1, 1, kernel_size=7, stride=1, padding=3)
+
+    def forward(self, input):
+
+        t_output = input.mean(dim=2)
+
+        t_output = self.cov_t(t_output.unsqueeze(1))
+        t_output = self.activation(t_output)
+        t_output = input * t_output.transpose(1,2)
+
+        f_output = input.mean(dim=1)
+        f_output = self.cov_f(f_output.unsqueeze(1))
+        f_output = self.activation(f_output)
+        f_output = input * f_output
+
+        output = (t_output + f_output) / 2
+
+        return output
+
+
 class TDNNCBAMBlock(nn.Module):
 
     def __init__(self, inplanes, planes, downsample=None, dilation=1, **kwargs):
@@ -201,6 +230,52 @@ class TDNNCBAMBlock_v2(nn.Module):
         self.tdnn2_bn = nn.BatchNorm1d(planes)
 
         self.CBAM_layer = TDCBAM(planes, planes)
+
+    def forward(self, x):
+        identity = x
+
+        out = self.tdnn1_kernel(x.transpose(1, 2))
+        out = self.tdnn1_bn(out)
+        out = self.act(out)
+
+        out = self.tdnn2_kernel(out)
+        out = self.tdnn2_bn(out)
+
+        out = self.CBAM_layer(out).transpose(1, 2)
+        out += identity
+        out = self.act(out)
+
+        return out
+
+
+class TDNNCBAMBlock_v3(nn.Module):
+
+    def __init__(self, inplanes, planes, downsample=None, dilation=1, activation='relu', **kwargs):
+        super(TDNNCBAMBlock_v3, self).__init__()
+
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        if isinstance(downsample, int) and downsample > 0:
+            inter_connect = int(planes / downsample)
+        else:
+            inter_connect = planes
+
+        if activation == 'relu':
+            act_fn = nn.ReLU
+        elif activation in ['leakyrelu', 'leaky_relu']:
+            act_fn = nn.LeakyReLU
+        elif activation == 'prelu':
+            act_fn = nn.PReLU
+
+        self.tdnn1_kernel = nn.Conv1d(inplanes, inter_connect, 3, stride=1,
+                                padding=1, dilation=dilation, bias=False)
+        self.tdnn1_bn = nn.BatchNorm1d(inter_connect)
+        self.act = act_fn()
+
+        self.tdnn2_kernel = nn.Conv1d(inter_connect, planes, 3, stride=1,
+                                      padding=1, dilation=dilation, bias=False)
+        self.tdnn2_bn = nn.BatchNorm1d(planes)
+
+        self.CBAM_layer = TDCBAM_v2(planes, planes)
 
     def forward(self, x):
         identity = x
