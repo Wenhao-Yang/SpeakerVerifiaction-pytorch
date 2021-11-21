@@ -1253,6 +1253,7 @@ if [ $stage -le 93 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb40_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb40 \
       --input-norm ${input_norm} \
+      --shuffle \
       --nj 12 \
       --epochs 60 \
       --patience 3 \
