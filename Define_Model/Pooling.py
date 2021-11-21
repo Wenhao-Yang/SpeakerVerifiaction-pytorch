@@ -126,7 +126,7 @@ class AttentionStatisticPooling_v2(nn.Module):
         self.hidden_dim = hidden_dim
         self.input_dim = input_dim
         self.attention_linear = nn.Linear(input_dim, self.hidden_dim)
-        self.attention_vector = nn.Parameter(torch.rand(self.hidden_dim, 1))
+        self.attention_vector = nn.Linear(self.hidden_dim, input_dim)
         self.Tanh = nn.Tanh()
         self.softmax = torch.nn.Softmax(dim=1)
 
