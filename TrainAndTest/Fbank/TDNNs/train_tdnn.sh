@@ -1274,11 +1274,11 @@ if [ $stage -le 93 ]; then
       --input-dim 40 \
       --channels 512,512,512,512,512,1536 \
       --context 5,3,3,3 \
-      --dilation 1,2,3,1 \
+      --dilation 1,2,3,4 \
       --stride 1,1,1,1 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila_wde5_2s \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila_wde5_2s/checkpoint_33.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila4_wde5_2s \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila4_wde5_2s/checkpoint_33.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
