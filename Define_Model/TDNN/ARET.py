@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer, TimeFreqMaskLayer
-from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling
+from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, AttentionStatisticPooling_v2
 from Define_Model.TDNN.TDNN import TimeDelayLayer_v5, TimeDelayLayer_v6, ShuffleTDLayer, channel_shuffle
 from Define_Model.model import get_activation
 
@@ -1063,6 +1063,8 @@ class RET_v3(nn.Module):
             self.encoder = StatisticPooling(input_dim=self.channels[5])
         elif encoder_type in ['SASP', 'ASTP']:
             self.encoder = AttentionStatisticPooling(input_dim=self.channels[5], hidden_dim=int(embedding_size / 2))
+        elif encoder_type in ['SASP2', 'ASTP2']:
+            self.encoder = AttentionStatisticPooling_v2(input_dim=self.channels[5], hidden_dim=int(embedding_size / 2))
         else:
             raise ValueError(encoder_type)
 

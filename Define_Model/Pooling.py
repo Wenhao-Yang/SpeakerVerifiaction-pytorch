@@ -120,6 +120,44 @@ class AttentionStatisticPooling(nn.Module):
         return mean_sigma
 
 
+class AttentionStatisticPooling_v2(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super(AttentionStatisticPooling_v2, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.input_dim = input_dim
+        self.attention_linear = nn.Linear(input_dim, self.hidden_dim)
+        self.attention_vector = nn.Parameter(torch.rand(self.hidden_dim, 1))
+        self.Tanh = nn.Tanh()
+        self.softmax = torch.nn.Softmax(dim=1)
+
+    def forward(self, x):
+        """
+        :param x:   [length,feat_dim] vector
+        :return:   [feat_dim] vector
+        """
+        x_shape = x.shape
+        x = x.squeeze()
+        if x_shape[0] == 1:
+            x = x.unsqueeze(0)
+
+        assert len(x.shape) == 3, print(x.shape)
+        if x.shape[-2] == self.input_dim:
+            x = x.transpose(-1, -2)
+
+        alpha = self.Tanh(self.attention_linear(x))
+        alpha = self.softmax(self.attention_vector(alpha))
+
+        mean = torch.sum(alpha * x, dim=1)
+
+        # pdb.set_trace()
+        residuals = torch.sum(alpha * x ** 2, dim=1) - mean ** 2
+        std = torch.sqrt(residuals.clamp(min=1e-9))
+
+        mean_sigma = torch.cat((mean, std), 1)
+
+        return mean_sigma
+
+
 class StatisticPooling(nn.Module):
 
     def __init__(self, input_dim):
