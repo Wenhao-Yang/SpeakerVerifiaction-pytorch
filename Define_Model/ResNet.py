@@ -24,7 +24,7 @@ from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcita
     RevGradLayer, DropweightLayer, GaussianNoiseLayer, MusanNoiseLayer, AttentionweightLayer, TimeFreqMaskLayer
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
-    SelfVadPooling, GhostVLAD_v2
+    SelfVadPooling, GhostVLAD_v2, AttentionStatisticPooling_v2, SelfAttentionPooling_v2
 
 from typing import Type, Any, Callable, Union, List, Optional
 from torch import Tensor
@@ -642,13 +642,23 @@ class ThinResNet(nn.Module):
         if encoder_type == 'SAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
             self.encoder = SelfAttentionPooling(input_dim=self.num_filter[3] * block.expansion,
-                                                hidden_dim=self.num_filter[3] * block.expansion)
-            self.encoder_output = self.num_filter[3] * block.expansion
+                                                hidden_dim=int(embedding_size / 2))
+            self.encoder_output = self.num_filter[3] * block.expansion * freq_dim
+        elif encoder_type == 'SAP2':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = SelfAttentionPooling_v2(input_dim=self.num_filter[3] * block.expansion,
+                                                   hidden_dim=int(embedding_size / 2))
+            self.encoder_output = self.num_filter[3] * block.expansion * freq_dim
         elif encoder_type in ['ASTP', 'SASP']:
-            self.avgpool = nn.AdaptiveAvgPool2d((time_dim, freq_dim))
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
             self.encoder = AttentionStatisticPooling(input_dim=self.num_filter[3] * block.expansion,
-                                                     hidden_dim=self.num_filter[3])
-            self.encoder_output = self.num_filter[3] * 2 * block.expansion
+                                                     hidden_dim=int(embedding_size / 2))
+            self.encoder_output = self.num_filter[3] * 2 * block.expansion * freq_dim
+        elif encoder_type in ['ASTP2', 'SASP2']:
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = AttentionStatisticPooling_v2(input_dim=self.num_filter[3] * block.expansion,
+                                                        hidden_dim=int(embedding_size / 2))
+            self.encoder_output = self.num_filter[3] * 2 * block.expansion * freq_dim
         elif encoder_type == 'STAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
             self.encoder = StatisticPooling(input_dim=self.num_filter[3] * freq_dim * block.expansion)
@@ -1089,15 +1099,24 @@ class LocalResNet(nn.Module):
 
         last_conv_chn = channels[-1]
         freq_dim = avg_size
+
         if encoder_type == 'SAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            self.encoder = SelfAttentionPooling(input_dim=last_conv_chn*freq_dim, hidden_dim=int(last_conv_chn/2))
-            self.encoder_output = last_conv_chn*freq_dim
+            self.encoder = SelfAttentionPooling(input_dim=last_conv_chn * freq_dim, hidden_dim=int(embedding_size / 2))
+            self.encoder_output = last_conv_chn * freq_dim
+        elif encoder_type == 'SAP2':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = SelfAttentionPooling_v2(input_dim=last_conv_chn * freq_dim,
+                                                   hidden_dim=int(embedding_size / 2))
+            self.encoder_output = last_conv_chn * freq_dim
         elif encoder_type == 'SASP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            self.encoder = AttentionStatisticPooling(input_dim=last_conv_chn, hidden_dim=int(last_conv_chn / 2))
-            self.encoder_output = last_conv_chn * 2
-
+            self.encoder = AttentionStatisticPooling(input_dim=last_conv_chn, hidden_dim=int(embedding_size / 2))
+            self.encoder_output = last_conv_chn * 2 * freq_dim
+        elif encoder_type == 'SASP2':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = AttentionStatisticPooling_v2(input_dim=last_conv_chn, hidden_dim=int(embedding_size / 2))
+            self.encoder_output = last_conv_chn * 2 * freq_dim
         elif encoder_type == 'STAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
             self.encoder = StatisticPooling(input_dim=last_conv_chn * freq_dim)

@@ -61,20 +61,48 @@ class SelfAttentionPooling(nn.Module):
         :return:   [batch, feat_dim] vector
         """
         x_shape = x.shape
-        x = x.squeeze()
-        if x_shape[0] == 1:
-            x = x.unsqueeze(0)
-
         if len(x.shape) == 4:
-            x = x.reshape(x_shape[0], -1, x_shape[2])# , print(x.shape)
-        if x.shape[-2] == self.input_dim:
-            x = x.transpose(-1, -2)
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
+        assert x.shape[-1] == self.input_dim
+
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
         alpha = self.attention_soft(vf)
 
         alpha_ht = x.mul(alpha)
         mean = torch.sum(alpha_ht, dim=-2)
+
+        return mean
+
+
+class SelfAttentionPooling_v2(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super(SelfAttentionPooling_v2, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.input_dim = input_dim
+        self.attention_linear = nn.Linear(input_dim, self.hidden_dim)
+        self.Tanh = nn.Tanh()
+        self.attention_vector = nn.Linear(self.hidden_dim, input_dim)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        """
+        :param x:   [batch, length, feat_dim] vector
+        :return:   [batch, feat_dim] vector
+        """
+        x_shape = x.shape
+        if len(x.shape) == 4:
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
+
+        assert x.shape[-1] == self.input_dim
+
+        fx = self.Tanh(self.attention_linear(x))
+        vf = self.softmax(self.attention_vector(fx))
+
+        alpha = self.attention_soft(vf)
+        mean = torch.sum(alpha * x, dim=1)
 
         return mean
 
@@ -95,13 +123,11 @@ class AttentionStatisticPooling(nn.Module):
         :return:   [feat_dim] vector
         """
         x_shape = x.shape
-        x = x.squeeze()
-        if x_shape[0] == 1:
-            x = x.unsqueeze(0)
+        if len(x_shape) == 4:
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
 
-        assert len(x.shape) == 3, print(x.shape)
-        if x.shape[-2] == self.input_dim:
-            x = x.transpose(-1, -2)
+        assert x.shape[-1] == self.input_dim
 
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
@@ -132,17 +158,15 @@ class AttentionStatisticPooling_v2(nn.Module):
 
     def forward(self, x):
         """
-        :param x:   [length,feat_dim] vector
+        :param x:   [batch, channels, length, feat_dim] or [batch, length, feat_dim]
         :return:   [feat_dim] vector
         """
         x_shape = x.shape
-        x = x.squeeze()
-        if x_shape[0] == 1:
-            x = x.unsqueeze(0)
+        if len(x_shape) == 4:
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
 
-        assert len(x.shape) == 3, print(x.shape)
-        if x.shape[-2] == self.input_dim:
-            x = x.transpose(-1, -2)
+        assert x.shape[-1] == self.input_dim
 
         alpha = self.Tanh(self.attention_linear(x))
         alpha = self.softmax(self.attention_vector(alpha))
