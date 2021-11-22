@@ -1278,7 +1278,7 @@ if [ $stage -le 93 ]; then
       --stride 1,1,1,1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila4_wde5_2s \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila4_wde5_2s/checkpoint_33.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_${encod}_baseline/${loss}/${input_norm}_em${embedding_size}_${block_type}_${activation}_dila4_wde5_2s/checkpoint_10.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
