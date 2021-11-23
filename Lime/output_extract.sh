@@ -744,7 +744,7 @@ if [ $stage -le 201 ]; then
       --margin 0.2 \
       --s 30 \
       --remove-vad \
-      --sample-utt 5994
+      --sample-utt 2800
     done
   exit
 fi
