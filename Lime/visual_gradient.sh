@@ -203,7 +203,7 @@ if [ $stage -le 113 ]; then
 #      --acoustic-feature fbank
 
     python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_60_var_gradient/epoch_60 \
+      --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_50_var_gradient/epoch_50 \
       --feat-dim 40 \
       --acoustic-feature fbank
   done
