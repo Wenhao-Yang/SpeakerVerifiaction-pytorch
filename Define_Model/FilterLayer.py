@@ -601,8 +601,13 @@ class AttentionweightLayer(nn.Module):
             ynew = c.VOX1_AUG
         elif weight == 'vox2':
             ynew = c.VOX2_CLEAN
+        elif weight == 'vox1_cf':
+            ynew = c.VOX1_CFB40
+        elif weight == 'vox2_cf':
+            ynew = c.VOX2_CFB40
         else:
             raise ValueError(weight)
+
         ynew = np.array(ynew)
         ynew /= ynew.max()
         self.w = nn.Parameter(torch.tensor(4.0))
