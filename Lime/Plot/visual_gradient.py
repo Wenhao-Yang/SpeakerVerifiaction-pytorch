@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 parser.add_argument('--extract-path', help='folder to output model checkpoints')
 # Training options
 parser.add_argument('--feat-dim', type=int, default=161, metavar='ES', help='Dimensionality of the features')
-parser.add_argument('--samples', type=int, default=5, metavar='ES', help='Dimensionality of the features')
+parser.add_argument('--samples', type=int, default=0, metavar='ES', help='Dimensionality of the features')
 parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='spectrogram',
                     help='choose the acoustic features type.')
 
@@ -71,7 +71,7 @@ def main():
                 for (data, grad) in tqdm(sets):
                     time_data.append((data, grad))
                     num_utt += 1
-                    if num_utt >= args.samples:
+                    if args.samples > 0 and num_utt >= args.samples:
                         break
         with open(args.extract_path + '/time.data.pickle', 'wb') as f:
             pickle.dump(time_data, f, protocol=pickle.HIGHEST_PROTOCOL)
