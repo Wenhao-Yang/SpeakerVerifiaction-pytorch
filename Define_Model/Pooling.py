@@ -98,8 +98,8 @@ class SelfAttentionPooling_v2(nn.Module):
 
         assert x.shape[-1] == self.input_dim
 
-        fx = self.Tanh(self.attention_linear(x))
-        alpha = self.softmax(self.attention_vector(fx))
+        alpha = self.Tanh(self.attention_linear(x))
+        alpha = self.softmax(self.attention_vector(alpha))
 
         mean = torch.sum(alpha * x, dim=1)
 
