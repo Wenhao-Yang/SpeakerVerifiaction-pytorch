@@ -694,13 +694,13 @@ if [ $stage -le 77 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --nj 12 \
-      --epochs 60 \
+      --epochs 40 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0005 \
-      --lr 0.1 \
+      --lr 0.01 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -712,7 +712,7 @@ if [ $stage -le 77 ]; then
       --init-weight ${weight} \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_40.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_20.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
