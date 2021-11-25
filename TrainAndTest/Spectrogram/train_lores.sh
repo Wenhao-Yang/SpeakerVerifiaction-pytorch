@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=79
 
 waited=0
 while [ $(ps 17765 | wc -l) -eq 2 ]; do
@@ -1272,7 +1272,7 @@ if [ $stage -le 79 ]; then
   input_norm=Mean
   optimizer=sgd
 #  mask_layer=gau_noise
-  mask_layer=attention
+  mask_layer=attention2
   for weight in clean aug vox2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
