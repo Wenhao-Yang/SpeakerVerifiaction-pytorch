@@ -21,7 +21,8 @@ from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
-    RevGradLayer, DropweightLayer, GaussianNoiseLayer, MusanNoiseLayer, AttentionweightLayer, TimeFreqMaskLayer
+    RevGradLayer, DropweightLayer, GaussianNoiseLayer, MusanNoiseLayer, AttentionweightLayer, TimeFreqMaskLayer, \
+    AttentionweightLayer_v2
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2, AttentionStatisticPooling_v2, SelfAttentionPooling_v2
@@ -523,7 +524,7 @@ class ThinResNet(nn.Module):
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
-                 mask='None', mask_len=10, red_ratio=8, init_weight='mel',
+                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel',
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -599,16 +600,20 @@ class ThinResNet(nn.Module):
             self.inst_layer = None
 
         if self.mask == "time":
-            self.maks_layer = TimeMaskLayer(mask_len=mask_len)
+            self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
         elif self.mask == "freq":
-            self.mask = FreqMaskLayer(mask_len=mask_len)
+            self.mask = FreqMaskLayer(mask_len=mask_len[0])
+        elif self.mask == "both":
+            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
         elif self.mask == "time_freq":
             self.mask_layer = nn.Sequential(
-                TimeMaskLayer(),
-                FreqMaskLayer()
+                TimeMaskLayer(mask_len=mask_len[0]),
+                FreqMaskLayer(mask_len=mask_len[1])
             )
         elif self.mask == 'attention':
             self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+        elif self.mask == 'attention2':
+            self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         else:
             self.mask_layer = None
 
@@ -976,7 +981,7 @@ class LocalResNet(nn.Module):
                  input_dim=161, input_len=300, gain_layer=False, init_weight='mel',
                  relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
-                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=25, **kwargs):
+                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 20], **kwargs):
 
         super(LocalResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -1040,8 +1045,8 @@ class LocalResNet(nn.Module):
             self.mask = FreqMaskLayer(mask_len=mask_len[0])
         elif self.mask == "time_freq":
             self.mask_layer = nn.Sequential(
-                TimeMaskLayer(),
-                FreqMaskLayer()
+                TimeMaskLayer(mask_len=mask_len[0]),
+                FreqMaskLayer(mask_len=mask_len[1])
             )
         elif self.mask == "both":
             self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
@@ -1053,6 +1058,8 @@ class LocalResNet(nn.Module):
             self.mask_layer = MusanNoiseLayer(snr=15)
         elif self.mask == 'attention':
             self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+        elif self.mask == 'attention2':
+            self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         else:
             self.mask_layer = None
 
