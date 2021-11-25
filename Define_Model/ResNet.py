@@ -22,7 +22,7 @@ from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, GaussianNoiseLayer, MusanNoiseLayer, AttentionweightLayer, TimeFreqMaskLayer, \
-    AttentionweightLayer_v2
+    AttentionweightLayer_v2, AttentionweightLayer_v3
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2, AttentionStatisticPooling_v2, SelfAttentionPooling_v2
@@ -1060,6 +1060,8 @@ class LocalResNet(nn.Module):
             self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'attention2':
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
+        elif self.mask == 'attention3':
+            self.mask_layer = AttentionweightLayer_v3(input_dim=input_dim, weight=init_weight)
         else:
             self.mask_layer = None
 

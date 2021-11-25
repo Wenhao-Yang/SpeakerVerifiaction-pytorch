@@ -687,6 +687,59 @@ class AttentionweightLayer_v2(nn.Module):
         return x * drop_weight
 
 
+class AttentionweightLayer_v3(nn.Module):
+    def __init__(self, input_dim=161, weight='mel'):
+        super(AttentionweightLayer_v3, self).__init__()
+        self.input_dim = input_dim
+
+        if weight == 'mel':
+            m = np.arange(0, 2840.0230467083188)
+            m = 700 * (10 ** (m / 2595.0) - 1)
+            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
+            n = 1 / n
+            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+            f = interpolate.interp1d(m[1:], n)
+            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+            ynew = f(xnew)
+            # ynew = 1 / ynew  # .max()
+        elif weight == 'clean':
+            ynew = c.VOX1_CLEAN
+        elif weight == 'aug':
+            ynew = c.VOX1_AUG
+        elif weight == 'vox2':
+            ynew = c.VOX2_CLEAN
+        elif weight == 'vox1_cf':
+            ynew = c.VOX1_CFB40
+        elif weight == 'vox2_cf':
+            ynew = c.VOX2_CFB40
+        else:
+            raise ValueError(weight)
+
+        ynew = np.array(ynew)
+        ynew /= ynew.max()
+        self.s = nn.Parameter(torch.tensor(0.5))
+        self.b = nn.Parameter(torch.tensor(0.75))
+
+        self.drop_p = ynew  # * dropout_p
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+
+        assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+
+        if len(x.shape) == 4:
+            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
+        else:
+            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
+        if x.is_cuda:
+            drop_weight = drop_weight.cuda()
+
+        drop_weight = (drop_weight - self.b * drop_weight.mean()) / self.s.clamp(min=0.0625, max=2.0)
+        drop_weight = self.activation(drop_weight)
+
+        return x * drop_weight
+
+
 class GaussianNoiseLayer(nn.Module):
     def __init__(self, dropout_p=0.01, input_dim=161):
         super(GaussianNoiseLayer, self).__init__()
