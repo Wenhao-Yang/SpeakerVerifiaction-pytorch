@@ -25,7 +25,7 @@ from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcita
     AttentionweightLayer_v2, AttentionweightLayer_v3
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
-    SelfVadPooling, GhostVLAD_v2, AttentionStatisticPooling_v2, SelfAttentionPooling_v2
+    SelfVadPooling, GhostVLAD_v2, AttentionStatisticPooling_v2, SelfAttentionPooling_v2, SelfAttentionPooling_v3
 
 from typing import Type, Any, Callable, Union, List, Optional
 from torch import Tensor
@@ -1116,6 +1116,11 @@ class LocalResNet(nn.Module):
         elif encoder_type == 'SAP2':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
             self.encoder = SelfAttentionPooling_v2(input_dim=last_conv_chn * freq_dim,
+                                                   hidden_dim=int(embedding_size / 2))
+            self.encoder_output = last_conv_chn * freq_dim
+        elif encoder_type == 'SAP3':
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            self.encoder = SelfAttentionPooling_v3(input_dim=last_conv_chn * freq_dim,
                                                    hidden_dim=int(embedding_size / 2))
             self.encoder_output = last_conv_chn * freq_dim
         elif encoder_type == 'SASP':

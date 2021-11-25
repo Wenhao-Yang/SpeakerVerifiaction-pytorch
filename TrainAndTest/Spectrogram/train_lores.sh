@@ -1100,7 +1100,7 @@ if [ $stage -le 77 ]; then
   scheduler=exp
   optimizer=sgd
 
-  for mask_layer in None; do
+  for encoder_type in SAP2 SAP3; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 #    python TrainAndTest/train_egs.py \
 #      --model ${model} \
