@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=79
+stage=77
 
 waited=0
 while [ $(ps 17765 | wc -l) -eq 2 ]; do
@@ -1089,7 +1089,7 @@ if [ $stage -le 77 ]; then
   feat_type=klsp
   model=LoResNet
   resnet_size=8
-  encoder_type=None
+  encoder_type=SAP2
   embedding_size=256
   block_type=cbam
   kernel=5,5
