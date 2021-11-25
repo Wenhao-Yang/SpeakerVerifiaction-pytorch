@@ -489,7 +489,7 @@ def main():
 
     if not args.finetune and args.resume:
         if os.path.isfile(args.resume):
-            print('==> loading checkpoint: {}'.format(args.resume))
+            print('=> loading checkpoint {}'.format(args.resume))
             checkpoint = torch.load(args.resume)
             start_epoch = checkpoint['epoch']
 
@@ -510,18 +510,13 @@ def main():
                 model_dict = model.state_dict()
                 model_dict.update(filtered)
                 model.load_state_dict(model_dict)
-
-            if 'optimizer' in checkpoint:
-                optimizer = checkpoint['optimizer']
-                print('=> loading optimizer...')
-
             # model.dropout.p = args.dropout_p
         else:
-            print('==> no checkpoint found at {}'.format(args.resume))
+            print('=> no checkpoint found at {}'.format(args.resume))
 
     # Save model config txt
     with open(osp.join(args.check_path, 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
-        f.write('Model: ' + str(model) + '\n')
+        f.write('model: ' + str(model) + '\n')
         f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
         f.write('Optimizer: ' + str(optimizer) + '\n')
@@ -547,7 +542,7 @@ def main():
     ce = [ce_criterion, xe_criterion]
 
     start = args.start_epoch + start_epoch
-    print('    Start epoch is : ' + str(start))
+    print('Start epoch is : ' + str(start))
     # start = 0
     end = start + args.epochs
 
@@ -620,8 +615,7 @@ def main():
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch,
                             'state_dict': model_state_dict,
-                            'criterion': ce,
-                            'optimizer': optimizer},
+                            'criterion': ce},
                            check_path)
 
                 valid_test(train_extract_loader, model, epoch, xvector_dir)
