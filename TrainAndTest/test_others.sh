@@ -2118,6 +2118,8 @@ if [ $stage -le 300 ]; then
     for test_set in cnceleb; do # 32,128,512; 8,32,128
 #    --trials trials_${s} \
 #      --score-suffix ${s} \
+#      --extract \
+
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
     echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
@@ -2148,7 +2150,6 @@ if [ $stage -le 300 ]; then
       --xvector-dir Data/xvectorData/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_epoch50_fix \
       --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
-      --extract \
       --cos-sim
   done
 #  for s in vlog; do
