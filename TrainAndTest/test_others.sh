@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300
+stage=75
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -621,7 +621,7 @@ if [ $stage -le 75 ]; then
   model=TDNN_v5
   encod=STAP
   dataset=vox1
-  subset=test
+  subset=dev
   test_set=vox1
   input_dim=40
   input_norm=Mean
@@ -659,8 +659,8 @@ if [ $stage -le 75 ]; then
       --s 30 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/${model}/${dataset}/${feat_type}_egs_baseline/${loss}_sgd_exp/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/${test_set}_${subset}_epoch_50_var \
-      --resume Data/checkpoint/${model}/${dataset}/${feat_type}_egs_baseline/${loss}_sgd_exp/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_50_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/checkpoint_50.pth \
       --gpu-id 1 \
       --remove-vad \
       --cos-sim
@@ -2147,7 +2147,7 @@ if [ $stage -le 300 ]; then
       --input-length fix \
       --remove-vad \
       --frame-shift 300 \
-      --xvector-dir Data/xvectorData/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_epoch50_fix \
+      --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_epoch50_fix \
       --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
