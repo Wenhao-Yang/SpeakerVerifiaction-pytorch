@@ -2115,7 +2115,7 @@ if [ $stage -le 300 ]; then
   #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
 
-    for test_set in dev; do # 32,128,512; 8,32,128
+    for test_set in cnceleb; do # 32,128,512; 8,32,128
 #    --trials trials_${s} \
 #      --score-suffix ${s} \
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
@@ -2127,7 +2127,7 @@ if [ $stage -le 300 ]; then
       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --input-dim 40 \
