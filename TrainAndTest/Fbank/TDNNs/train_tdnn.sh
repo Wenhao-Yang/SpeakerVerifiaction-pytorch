@@ -650,6 +650,7 @@ if [ $stage -le 77 ]; then
 #      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat}_valid \
 #      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
 #      --nj 12 \
+#      --shuffle \
 #      --epochs 60 \
 #      --patience 3 \
 #      --milestones 10,20,30,40 \
@@ -686,6 +687,7 @@ if [ $stage -le 77 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --nj 12 \
+      --shuffle \
       --epochs 60 \
       --patience 3 \
       --milestones 10,20,30,40 \
