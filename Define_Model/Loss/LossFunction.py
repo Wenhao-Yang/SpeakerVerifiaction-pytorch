@@ -316,7 +316,7 @@ class DistributeLoss(nn.Module):
         if len(labels.shape) == 1:
             labels = labels.unsqueeze(1)
         positive_dist = dist.gather(dim=1, index=labels)
-        mean = positive_dist.clamp_min(0) + 0.5
+        mean = positive_dist.mean().clamp_min(0) + 0.5
 
         loss = positive_dist.std() / mean
 
