@@ -296,6 +296,32 @@ class RingLoss(nn.Module):
         return ring_loss
 
 
+class DistributeLoss(nn.Module):
+    """Distribute of Distance loss.
+
+    """
+
+    def __init__(self):
+        super(DistributeLoss, self).__init__()
+
+    def forward(self, dist, labels):
+        """
+        Args:
+            x: feature matrix with shape (batch_size, feat_dim).
+            labels: ground truth labels with shape (batch_size).
+        """
+        # norms = self.centers.data.norm(p=2, dim=1, keepdim=True).add(1e-14)
+        # self.centers.data = self.centers.data / norms * self.alpha
+
+        if len(labels.shape) == 1:
+            labels = labels.unsqueeze(1)
+        positive_dist = dist.gather(dim=1, index=labels)
+
+        loss = positive_dist.std() / positive_dist.mean()
+
+        return loss ** 2
+
+
 def guassian_kernel(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None):
     '''
     将源域数据和目标域数据转化为核矩阵，即上文中的K

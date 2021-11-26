@@ -36,7 +36,7 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss
+    VarianceLoss, DistributeLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
     GaussianLoss
@@ -186,6 +186,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             loss = args.loss_ratio * loss_xent + loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft']:
             loss = xe_criterion(classfier, label)
+        elif args.loss_type == 'arcdist':
+            loss_cent = ce_criterion(classfier, label)
+            loss_xent = xe_criterion(classfier, label)
+            loss = loss_xent + args.loss_ratio * loss_cent
 
         predicted_labels = output_softmax(classfier_label)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
@@ -294,6 +298,10 @@ def valid_class(valid_loader, model, ce, epoch):
                 loss = args.loss_ratio * loss_xent + loss_cent
             elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
                 loss = xe_criterion(classfier, label)
+            elif args.loss_type == 'arcdist':
+                loss_cent = ce_criterion(classfier, label)
+                loss_xent = xe_criterion(classfier, label)
+                loss = loss_xent + args.loss_ratio * loss_cent
 
             total_loss += float(loss.item())
             # pdb.set_trace()
@@ -459,6 +467,9 @@ def main():
     elif args.loss_type == 'ring':
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0
+    elif args.loss_type == 'arcdist':
+        ce_criterion = DistributeLoss()
+        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
 
     model_para = [{'params': model.parameters()}]
     if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:

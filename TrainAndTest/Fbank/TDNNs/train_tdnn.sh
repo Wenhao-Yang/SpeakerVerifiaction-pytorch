@@ -631,14 +631,14 @@ if [ $stage -le 77 ]; then
   feat_type=klfb
   loss=arcsoft
   encod=STAP
-  embedding_size=1024
+  embedding_size=512
   input_dim=40
   input_norm=Mean
   lr_ratio=0
-  loss_ratio=0.1
+  loss_ratio=0.5
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
-  for loss in arcsoft; do
+  for loss in arcdist; do
     feat=fb${input_dim}
     #_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
