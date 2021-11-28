@@ -150,10 +150,12 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     total_datasize = 0.
     total_loss = 0.
     orth_err = 0
+    other_loss = 0.
 
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
+
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
@@ -177,20 +179,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             loss = xe_criterion(classfier, label)
         elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
             loss_cent = ce_criterion(classfier, label)
-            loss_xent = xe_criterion(feats, label)
+            loss_xent = args.loss_ratio * xe_criterion(feats, label)
+            other_loss += loss_xent
 
-            loss = args.loss_ratio * loss_xent + loss_cent
+            loss = loss_xent + loss_cent
         elif args.loss_type == 'ring':
             loss_cent = ce_criterion(classfier, label)
-            loss_xent = xe_criterion(feats)
-            loss = args.loss_ratio * loss_xent + loss_cent
+            loss_xent = args.loss_ratio * xe_criterion(feats)
+
+            other_loss += loss_xent
+            loss = loss_xent + loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft']:
             loss = xe_criterion(classfier, label)
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
-            loss_cent = ce_criterion(classfier, label)
+            loss_cent = args.loss_ratio * ce_criterion(classfier, label)
             loss_xent = xe_criterion(classfier, label)
-            loss = loss_xent + args.loss_ratio * loss_cent
+
+            other_loss += loss_cent
+            loss = loss_xent + loss_cent
 
         predicted_labels = output_softmax(classfier_label)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
@@ -257,8 +264,14 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                                                                             100. * minibatch_acc)
             pbar.set_description(epoch_str)
 
-    print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
-        correct) / total_datasize, total_loss / len(train_loader)))
+    this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
+        correct) / total_datasize, total_loss / len(train_loader))
+
+    if other_loss > 0:
+        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss/len(train_loader))
+
+    this_epoch_str += '.\33[0m'
+    print(this_epoch_str)
     writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
 
@@ -270,6 +283,7 @@ def valid_class(valid_loader, model, ce, epoch):
     model.eval()
 
     total_loss = 0.
+    other_loss = 0.
     ce_criterion, xe_criterion = ce
     softmax = nn.Softmax(dim=1)
 
@@ -296,15 +310,18 @@ def valid_class(valid_loader, model, ce, epoch):
                 loss = xe_criterion(classfier, label)
             elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
                 loss_cent = ce_criterion(classfier, label)
-                loss_xent = xe_criterion(feats, label)
+                loss_xent = args.loss_ratio * xe_criterion(feats, label)
+                other_loss += float(loss_xent.item())
 
-                loss = args.loss_ratio * loss_xent + loss_cent
+                loss = loss_xent + loss_cent
             elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
                 loss = xe_criterion(classfier, label)
             elif args.loss_type == 'arcdist':
-                loss_cent = ce_criterion(classfier, label)
+                loss_cent = args.loss_ratio * ce_criterion(classfier, label)
                 loss_xent = xe_criterion(classfier, label)
-                loss = loss_xent + args.loss_ratio * loss_cent
+
+                other_loss += float(loss_cent.item())
+                loss = loss_xent + loss_cent
 
             total_loss += float(loss.item())
             # pdb.set_trace()
@@ -320,8 +337,14 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(valid_accuracy,
-                                                                                     valid_loss))
+
+    this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(valid_accuracy, valid_loss)
+
+
+    if other_loss > 0:
+        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss/len(valid_loader))
+    this_epoch_str += '.\33[0m'
+    print(this_epoch_str)
 
     return valid_loss
 
