@@ -312,7 +312,7 @@ if [ $stage -le 70 ]; then
   datasets=vox1
   #  feat=fb24
   feat_type=klfb
-  loss=arcsoft
+  loss=minarcsoft
   encod=STAP
   embedding_size=512
   input_dim=40
@@ -351,7 +351,7 @@ if [ $stage -le 70 ]; then
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/arcsoft{optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_1.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
