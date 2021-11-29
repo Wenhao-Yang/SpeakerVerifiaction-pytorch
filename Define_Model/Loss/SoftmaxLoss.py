@@ -272,7 +272,7 @@ class MinArcSoftmaxLoss(nn.Module):
 
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
-        pdb.set_trace()
+        # pdb.set_trace()
         positive_theta = theta.gather(dim=1, index=label.view(-1, 1))
         center_mean = positive_theta.mean().cpu()
         center_std = positive_theta.std().cpu()
