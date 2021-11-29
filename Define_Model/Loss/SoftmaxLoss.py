@@ -271,8 +271,8 @@ class MinArcSoftmaxLoss(nn.Module):
             lb_view = lb_view.cpu()
 
         positive_theta = theta.gather(dim=1, index=label.view(-1, 1))
-        center_mean = positive_theta.mean()
-        center_std = positive_theta.std()
+        center_mean = positive_theta.mean().cpu()
+        center_std = positive_theta.std().cpu()
 
         delt_theta = -torch.normal(center_mean, center_std, size=costh.size())
         delt_theta = delt_theta.scatter_(1, lb_view.data, self.margin)
