@@ -19,6 +19,7 @@ https://github.com/CoinCheung/pytorch-loss/blob/master/amsoftmax.py
 "Center Loss" is based on https://github.com/KaiyangZhou/pytorch-center-loss/blob/master/center_loss.py
 """
 import math
+import pdb
 
 import torch
 import torch.nn as nn
@@ -269,7 +270,7 @@ class MinArcSoftmaxLoss(nn.Module):
 
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
-
+        pdb.set_trace()
         positive_theta = theta.gather(dim=1, index=label.view(-1, 1))
         center_mean = positive_theta.mean().cpu()
         center_std = positive_theta.std().cpu()
