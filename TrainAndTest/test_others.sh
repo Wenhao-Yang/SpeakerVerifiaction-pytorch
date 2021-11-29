@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300
+stage=93
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1616,9 +1616,9 @@ if [ $stage -le 93 ]; then
   model=LoResNet
   feat=log
   loss=arcsoft
-  encod=None
+  encod=SAP2
   alpha=0
-  datasets=vox2
+  datasets=vox1
   block_type=cbam
   encoder_type=None
   embedding_size=256
@@ -1649,11 +1649,11 @@ if [ $stage -le 93 ]; then
       --margin 0.2 \
       --s 30 \
       --input-length var \
-      --dropout-p 0.1 \
+      --dropout-p 0.25 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/Mean_cbam_None_dp01_alpha0_em256_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/Mean_cbam_None_dp01_alpha0_em256_var/checkpoint_61.pth \
+      --xvector-dir Data/xvector/LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_SAP2_dp25_alpha0_em256_wd5e4_var \
+      --resume Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_SAP2_dp25_alpha0_em256_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
