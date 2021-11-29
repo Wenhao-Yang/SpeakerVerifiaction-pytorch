@@ -434,7 +434,7 @@ def main():
     start_epoch = 0
     if args.save_init and not args.finetune:
         check_path = '{}/checkpoint_{}_{}.pth'.format(args.check_path, start_epoch,
-                                                      time.strftime('%Y_%b_%d_%H:%M ', time.localtime()))
+                                                      time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
         if not os.path.exists(check_path):
             torch.save({'state_dict': model.state_dict()}, check_path)
 

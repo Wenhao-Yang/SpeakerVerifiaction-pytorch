@@ -351,7 +351,7 @@ if [ $stage -le 70 ]; then
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft_sgd_exp/inputMean_STAP_em512_wd5e4_var/checkpoint_50.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
