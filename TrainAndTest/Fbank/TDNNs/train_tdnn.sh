@@ -338,7 +338,7 @@ if [ $stage -le 70 ]; then
       --model ${model} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.1 \
+      --lr 0.0001 \
       --base-lr 0.00000001 \
       --weight-decay 0.0005 \
       --alpha 0 \
