@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=41
 waited=0
 while [ `ps 75486 | wc -l` -eq 2 ]; do
   sleep 60
@@ -235,26 +235,27 @@ if [ $stage -le 40 ]; then
   model=ThinResNet
   resnet_size=34
   datasets=vox1
-  feat=fb64
+  feat_type=klfb
+  feat=fb40
+  embedding_size=256
 #  loss=soft
   encod=STAP
 
   for loss in soft ; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} with ${loss}\033[0m\n"
-    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
-      --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/vox1/pyfb/dev_${feat}/trials_dir \
+    python -W ignore TrainAndTest/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/vox1/egs/pyfb/valid_${feat} \
-      --test-dir ${lstm_dir}/data/vox1/pyfb/test_${feat} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --nj 10 \
-      --epochs 22 \
-      --milestones 8,13,18 \
+      --epochs 50 \
+      --milestones 10,20,30,40 \
       --model ${model} \
       --resnet-size ${resnet_size} \
-      --stride 1 \
+      --stride 2,1 \
       --feat-format kaldi \
-      --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
       --feat-dim 64 \
@@ -265,6 +266,7 @@ if [ $stage -le 40 ]; then
       --kernel-size 5,5 \
       --lr 0.1 \
       --encoder-type ${encod} \
+      --embedding-size ${embedding_size} \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_dp25_fast \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat}_${encod}/${loss}_dp25_fast/checkpoint_22.pth \
       --input-per-spks 384 \
@@ -278,6 +280,74 @@ if [ $stage -le 40 ]; then
   done
 fi
 
+
+if [ $stage -le 41 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=vox1
+  feat_type=klfb
+  model=ThinResNet
+  resnet_size=8
+  encoder_type=SAP2
+  embedding_size=256
+  block_type=cbam
+  kernel=5,5
+  loss=arcsoft
+  alpha=0
+  input_norm=Mean
+  mask_layer=None
+  scheduler=rop
+  optimizer=sgd
+  input_dim=40
+
+
+  for encoder_type in SAP2; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    python TrainAndTest/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
+      --train-trials trials_2w \
+      --shuffle \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
+      --feat-format kaldi \
+      --random-chunk 200 400 \
+      --input-norm ${input_norm} \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 50 \
+      --batch-size 128 \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
+      --lr 0.1 \
+      --base-lr 0.000006 \
+      --mask-layer ${mask_layer} \
+      --milestones 10,20,30,40 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_none1_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_none1_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
+      --kernel-size ${kernel} \
+      --channels 16,32,64,128 \
+      --fast none1 \
+      --stride 2,1 \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 5 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.125 \
+      --gpu-id 0,1 \
+      --extract \
+      --cos-sim \
+      --all-iteraion 0 \
+      --loss-type ${loss}
+  done
+  exit
+fi
 #stage=1000
 if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
@@ -285,6 +355,7 @@ if [ $stage -le 50 ]; then
   resnet_size=34
   datasets=vox2
   feat=fb40
+  feat_type=klfb
 #  loss=soft
   encod=STAP
 
