@@ -361,7 +361,6 @@ if [ $stage -le 70 ]; then
       --margin 0.2 \
       --s 30 \
       --remove-vad \
-      --all-iteraion 96880 \
       --log-interval 10
   done
   exit
