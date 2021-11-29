@@ -657,8 +657,7 @@ def main():
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch,
                             'state_dict': model_state_dict,
-                            'criterion': ce},
-                           check_path)
+                            'criterion': ce}, check_path)
 
                 valid_test(train_extract_loader, model, epoch, xvector_dir)
                 test(model, epoch, writer, xvector_dir)
