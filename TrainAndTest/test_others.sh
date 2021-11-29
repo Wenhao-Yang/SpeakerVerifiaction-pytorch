@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=93
+stage=75
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -621,7 +621,7 @@ if [ $stage -le 75 ]; then
   model=TDNN_v5
   encod=STAP
   dataset=vox1
-  subset=dev
+  subset=test
   test_set=vox1
   input_dim=40
   input_norm=Mean
@@ -663,6 +663,7 @@ if [ $stage -le 75 ]; then
       --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/checkpoint_50.pth \
       --gpu-id 1 \
       --remove-vad \
+      --extract \
       --cos-sim
   done
   exit
