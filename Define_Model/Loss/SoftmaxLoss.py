@@ -165,7 +165,7 @@ class AdditiveMarginLinear(nn.Module):
         x = x.unsqueeze(-1).repeat(1, 1, self.num_classes)
         w = self.W.unsqueeze(0).repeat(x.shape[0], 1, 1)
         # w_norm = torch.div(self.W, w_norm)
-        costh = torch.cosine_similarity(x, w, dim=1)
+        costh = torch.cosine_similarity(x, w, dim=1).clamp_(min=-1., max=1.)
         # costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
 
         return costh
