@@ -2061,7 +2061,7 @@ if [ $stage -le 300 ]; then
       --encoder-type STAP \
       --input-length fix \
       --remove-vad \
-      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_attention/arcsoft/Mean_STAP_em512_vox2_cf_wd5e4_var/checkpoint_50.pth
+      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_attention/arcsoft/Mean_STAP_em512_vox2_cf_wd5e4_var/checkpoint_50.pth \
       --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_attention/arcsoft/Mean_STAP_em512_vox2_cf_wd5e4_var/${test_set}_${subset}_epoch50_fix \
       --frame-shift 300 \
       --gpu-id 0 \
