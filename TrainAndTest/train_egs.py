@@ -91,7 +91,7 @@ writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-extract_kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
+extract_kwargs = {'num_workers': int(args.nj/2), 'pin_memory': False} if args.cuda else {}
 
 if not os.path.exists(args.check_path):
     print('Making checkpath...')
@@ -388,7 +388,7 @@ def test(model, epoch, writer, xvector_dir):
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **extract_kwargs)
 
     # pdb.set_trace()
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
