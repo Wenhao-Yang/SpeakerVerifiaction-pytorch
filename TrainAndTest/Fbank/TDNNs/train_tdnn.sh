@@ -332,13 +332,13 @@ if [ $stage -le 70 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
       --nj 16 \
-      --epochs 50 \
+      --epochs 20 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.0001 \
+      --lr 0.001 \
       --base-lr 0.00000001 \
       --weight-decay 0.0005 \
       --alpha 0 \

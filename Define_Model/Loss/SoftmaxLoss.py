@@ -20,7 +20,7 @@ https://github.com/CoinCheung/pytorch-loss/blob/master/amsoftmax.py
 """
 import math
 import pdb
-
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -279,7 +279,8 @@ class MinArcSoftmaxLoss(nn.Module):
         center_std = positive_theta.std().cpu()
 
         delt_theta = torch.normal(float(center_mean), float(center_std), size=costh.size())
-        delt_theta = delt_theta.scatter_(1, lb_view.data, self.margin)
+        # np.random.uniform(0,1)
+        delt_theta = delt_theta.scatter_(1, lb_view.data, 0)
 
         # pdb.set_trace()
         if costh.is_cuda:
@@ -288,6 +289,7 @@ class MinArcSoftmaxLoss(nn.Module):
         costh_mm = (theta - delt_theta).cos()
 
         delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+
         if costh.is_cuda:
             delt_theta = Variable(delt_theta.cuda())
 
