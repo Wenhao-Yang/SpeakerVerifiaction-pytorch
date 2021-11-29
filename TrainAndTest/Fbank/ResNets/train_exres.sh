@@ -287,10 +287,10 @@ if [ $stage -le 41 ]; then
   datasets=vox1
   feat_type=klfb
   model=ThinResNet
-  resnet_size=8
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=256
-  block_type=cbam
+  block_type=basic
   kernel=5,5
   loss=arcsoft
   alpha=0
@@ -299,7 +299,6 @@ if [ $stage -le 41 ]; then
   scheduler=rop
   optimizer=sgd
   input_dim=40
-
 
   for encoder_type in SAP2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
