@@ -663,7 +663,6 @@ if [ $stage -le 75 ]; then
       --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/checkpoint_50.pth \
       --gpu-id 1 \
       --remove-vad \
-      --extract \
       --cos-sim
   done
   exit
