@@ -293,7 +293,7 @@ class MinArcSoftmaxLoss(nn.Module):
         costh_pm = (theta + delt_theta).cos()
         # print('costh_m max is ', costh_m.max())
         # if self.iteraion < self.all_iteraion:
-        costh_m = (costh_mm + costh_pm) / 2
+        costh_m = (0.1 * costh_mm + costh_pm) / (1 + 0.1)
         # self.iteraion += 1
 
         costh_m_s = self.s * costh_m
