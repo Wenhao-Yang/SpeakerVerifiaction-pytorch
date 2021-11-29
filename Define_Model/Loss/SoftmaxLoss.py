@@ -252,6 +252,52 @@ class ArcSoftmaxLoss(nn.Module):
                                                                                    self.all_iteraion)
 
 
+class MinArcSoftmaxLoss(nn.Module):
+
+    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0):
+        super(MinArcSoftmaxLoss, self).__init__()
+        self.s = s
+        self.margin = margin
+        self.ce = nn.CrossEntropyLoss()
+        self.iteraion = iteraion
+        self.all_iteraion = all_iteraion
+
+    def forward(self, costh, label):
+        lb_view = label.view(-1, 1)
+        theta = costh.acos()
+        # print('theta is ', theta.max())
+
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
+
+        positive_theta = theta.gather(dim=1, index=label)
+        center_mean = positive_theta.mean()
+        center_std = positive_theta.std()
+
+        delt_theta = -torch.normal(center_mean, center_std, size=costh.size())
+        delt_theta = delt_theta.scatter_(1, lb_view.data, self.margin)
+
+        # delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+        # pdb.set_trace()
+        if costh.is_cuda:
+            delt_theta = Variable(delt_theta.cuda())
+
+        costh_m = (theta + delt_theta).cos()
+        # print('costh_m max is ', costh_m.max())
+
+        costh_m_s = self.s * costh_m
+        # print('costh_m_s max is ', costh_m_s.max())
+        loss = self.ce(costh_m_s, label)
+
+        return loss
+
+    def __repr__(self):
+        return "MinArcSoftmaxLoss(margin=%f, s=%d, iteration=%d, all_iteraion=%s)" % (self.margin,
+                                                                                      self.s,
+                                                                                      self.iteraion,
+                                                                                      self.all_iteraion)
+
+
 class CenterLoss(nn.Module):
     """Center loss.
 

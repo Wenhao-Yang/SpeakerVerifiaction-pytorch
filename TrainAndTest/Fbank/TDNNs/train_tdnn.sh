@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=70
 waited=0
 while [ $(ps 22572 | wc -l) -eq 2 ]; do
   sleep 60
@@ -312,13 +312,13 @@ if [ $stage -le 70 ]; then
   datasets=vox1
   #  feat=fb24
   feat_type=klfb
-  loss=arcsoft
+  loss=minarcsoft
   encod=STAP
   embedding_size=512
   input_dim=40
   input_norm=Mean
-  optimizer=adam
-  scheduler=cyclic
+  optimizer=sgd
+  scheduler=rop
 
   for embedding_size in 512; do
     #    feat=combined
@@ -338,7 +338,7 @@ if [ $stage -le 70 ]; then
       --model ${model} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.001 \
+      --lr 0.1 \
       --base-lr 0.00000001 \
       --weight-decay 0.0005 \
       --alpha 0 \

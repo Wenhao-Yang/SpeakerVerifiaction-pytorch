@@ -39,7 +39,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     VarianceLoss, DistributeLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
-    GaussianLoss
+    GaussianLoss, MinArcSoftmaxLoss
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
@@ -189,7 +189,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             other_loss += loss_xent
             loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'arcsoft']:
+        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft']:
             loss = xe_criterion(classfier, label)
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
@@ -314,7 +314,7 @@ def valid_class(valid_loader, model, ce, epoch):
                 other_loss += float(loss_xent.item())
 
                 loss = loss_xent + loss_cent
-            elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
+            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft']:
                 loss = xe_criterion(classfier, label)
             elif args.loss_type == 'arcdist':
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
@@ -488,6 +488,10 @@ def main():
     elif args.loss_type == 'arcsoft':
         ce_criterion = None
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
+    elif args.loss_type == 'minarcsoft':
+        ce_criterion = None
+        xe_criterion = MinArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
+                                         all_iteraion=args.all_iteraion)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
     elif args.loss_type == 'ring':
