@@ -9,6 +9,7 @@ while [ `ps 75486 | wc -l` -eq 2 ]; do
 done
 #stage=10
 
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
 #  for loss in soft asoft ; do
