@@ -651,17 +651,17 @@ class ThinResNet(nn.Module):
             self.encoder_output = self.num_filter[3] * block.expansion * freq_dim
         elif encoder_type == 'SAP2':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            self.encoder = SelfAttentionPooling_v2(input_dim=self.num_filter[3] * block.expansion,
+            self.encoder = SelfAttentionPooling_v2(input_dim=self.num_filter[3] * block.expansion * freq_dim,
                                                    hidden_dim=int(embedding_size / 2))
             self.encoder_output = self.num_filter[3] * block.expansion * freq_dim
         elif encoder_type in ['ASTP', 'SASP']:
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            self.encoder = AttentionStatisticPooling(input_dim=self.num_filter[3] * block.expansion,
+            self.encoder = AttentionStatisticPooling(input_dim=self.num_filter[3] * block.expansion * freq_dim,
                                                      hidden_dim=int(embedding_size / 2))
             self.encoder_output = self.num_filter[3] * 2 * block.expansion * freq_dim
         elif encoder_type in ['ASTP2', 'SASP2']:
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            self.encoder = AttentionStatisticPooling_v2(input_dim=self.num_filter[3] * block.expansion,
+            self.encoder = AttentionStatisticPooling_v2(input_dim=self.num_filter[3] * block.expansion * freq_dim,
                                                         hidden_dim=int(embedding_size / 2))
             self.encoder_output = self.num_filter[3] * 2 * block.expansion * freq_dim
         elif encoder_type == 'STAP':
