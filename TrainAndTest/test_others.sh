@@ -555,7 +555,7 @@ if [ $stage -le 75 ]; then
   model=TDNN_v5
   encod=STAP
   dataset=vox1
-  subset=test
+  subset=dev
   test_set=vox1
   input_dim=40
   input_norm=Mean
@@ -573,7 +573,8 @@ if [ $stage -le 75 ]; then
 
   # Training set: voxceleb 1 40-dimensional log fbanks kaldi epoch 45 where lr=0.0001
   #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
-  #|     vox1-test     |   4.4115%   |   0.1958    |   0.4680    |    0.5846    | 20211130 17:14:14 |
+  #|     vox1-test     |   4.4115%   |   0.1958    |   0.4680    |    0.5846    | 20211130 17:14:14 | arcsoft
+  #|     vox1-test     |   4.7561%   |   0.1878    |   0.4709    |    0.6445    | 20211130 17:18:04 | minarcsoft*0.1+arc
 
   for embedding_size in 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
