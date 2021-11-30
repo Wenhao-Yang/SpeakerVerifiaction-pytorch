@@ -39,7 +39,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     VarianceLoss, DistributeLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss
+    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
@@ -492,6 +492,10 @@ def main():
         ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
                                          all_iteraion=args.all_iteraion)
+    elif args.loss_type == 'minarcsoft2':
+        ce_criterion = None
+        xe_criterion = MinArcSoftmaxLoss_v2(margin=args.margin, s=args.s, iteraion=iteration,
+                                            all_iteraion=args.all_iteraion)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
     elif args.loss_type == 'ring':

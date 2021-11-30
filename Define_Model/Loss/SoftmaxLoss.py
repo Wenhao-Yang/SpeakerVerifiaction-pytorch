@@ -314,13 +314,14 @@ class MinArcSoftmaxLoss(nn.Module):
 
 class MinArcSoftmaxLoss_v2(nn.Module):
 
-    def __init__(self, margin=0.25, s=64, iteraion=0, all_iteraion=0):
+    def __init__(self, margin=0.2, s=30, iteraion=0, all_iteraion=0, scale=0.4):
         super(MinArcSoftmaxLoss_v2, self).__init__()
         self.s = s
         self.margin = margin
         self.ce = nn.CrossEntropyLoss()
         self.iteraion = iteraion
         self.all_iteraion = all_iteraion
+        self.scale = scale
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
@@ -335,7 +336,8 @@ class MinArcSoftmaxLoss_v2(nn.Module):
         center_std = positive_theta.std().cpu()
 
         delt_theta = torch.normal(float(center_mean), float(center_std), size=costh.size())  # .clamp_max(self.margin)
-        delt_theta *= center_mean.cos()
+        delt_theta *= center_mean.cos() ** 4
+        delt_theta *= self.scale
         # np.random.uniform(0,1)
         neg_delt_theta = delt_theta.scatter_(1, lb_view.data, 0)
 
