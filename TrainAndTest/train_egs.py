@@ -561,7 +561,7 @@ def main():
             print('=> no checkpoint found at {}'.format(args.resume))
 
     # Save model config txt
-    with open(osp.join(args.check_path, 'model.%s.conf' % time.strftime('%Y_%b_%d_%H_%M', time.localtime())), 'w') as f:
+    with open(osp.join(args.check_path, 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
         f.write('model: ' + str(model) + '\n')
         f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
