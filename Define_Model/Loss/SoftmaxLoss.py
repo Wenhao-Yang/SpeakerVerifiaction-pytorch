@@ -312,6 +312,58 @@ class MinArcSoftmaxLoss(nn.Module):
                                                                                       self.all_iteraion)
 
 
+class MinArcSoftmaxLoss_v2(nn.Module):
+
+    def __init__(self, margin=0.25, s=64, iteraion=0, all_iteraion=0):
+        super(MinArcSoftmaxLoss_v2, self).__init__()
+        self.s = s
+        self.margin = margin
+        self.ce = nn.CrossEntropyLoss()
+        self.iteraion = iteraion
+        self.all_iteraion = all_iteraion
+
+    def forward(self, costh, label):
+        lb_view = label.view(-1, 1)
+        theta = costh.acos()
+        # print('theta is ', theta.max())
+
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
+        # pdb.set_trace()
+        positive_theta = theta.gather(dim=1, index=label.view(-1, 1)).clamp_min(0.)
+        center_mean = positive_theta.mean().cpu()
+        center_std = positive_theta.std().cpu()
+
+        delt_theta = torch.normal(float(center_mean), float(center_std), size=costh.size())  # .clamp_max(self.margin)
+        delt_theta *= center_mean.cos()
+        # np.random.uniform(0,1)
+        neg_delt_theta = delt_theta.scatter_(1, lb_view.data, 0)
+
+        delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+        delt_theta -= neg_delt_theta
+
+        if costh.is_cuda:
+            delt_theta = Variable(delt_theta.cuda())
+
+        costh_m = (theta + delt_theta).cos()
+        # print('costh_m max is ', costh_m.max())
+        # if self.iteraion < self.all_iteraion:
+        # costh_m = (0.1 * costh_mm + costh_pm) / (1 + 0.1)
+        # self.iteraion += 1
+
+        costh_m_s = self.s * costh_m
+        # print('costh_m_s max is ', costh_m_s.max())
+        loss = self.ce(costh_m_s, label)
+
+        return loss
+
+    def __repr__(self):
+        return "MinArcSoftmaxLoss_v2(margin=%f, s=%d, iteration=%d, all_iteraion=%s)" % (self.margin,
+                                                                                         self.s,
+                                                                                         self.iteraion,
+                                                                                         self.all_iteraion)
+
+
 class CenterLoss(nn.Module):
     """Center loss.
 
