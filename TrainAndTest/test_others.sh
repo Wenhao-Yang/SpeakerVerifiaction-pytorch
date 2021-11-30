@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=75
+stage=201
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1995,12 +1995,73 @@ if [ $stage -le 200 ]; then
       --cos-sim
   done
   exit
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   4.2683%   |   0.2369    |   0.3929    |    0.4767    | 20211119 15:09:05 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+fi
+
+if [ $stage -le 201 ]; then
+  feat_type=klsp
+  model=ThinResNet
+  feat=log
+  loss=arcsoft
+  encod=SAP2
+  alpha=0
+  datasets=vox1
+  testset=vox1
+#  test_subset=
+  block_type=basic
+  encoder_type=None
+  embedding_size=256
+  resnet_size=34
+#  sname=dev #dev_aug_com
+  sname=dev #_aug_com
+  downsample=k5
+#        --downsample ${downsample} \
+
+  for test_subset in test; do
+    echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb40 \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb40/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb40 \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 40 \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --fast none1 \
+      --encoder-type ${encod} \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2,1 \
+      --channels 16,32,64,128 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --time-dim 1 \
+      --avg-size 5 \
+      --input-length var \
+      --dropout-p 0.125 \
+      --xvector-dir Data/xvector/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_basic_none1_SAP2_dp125_alpha0_em256_wd5e4_var/${test_subset}_epoch_50_var \
+      --resume Data/checkpoint/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_basic_none1_SAP2_dp125_alpha0_em256_wd5e4_var/checkpoint_50.pth \
+      --gpu-id 0 \
+      --remove-vad \
+      --cos-sim
+  done
+  exit
 #+--------------+-------------+-------------+-------------+--------------+-------------------+
 #|   Test Set   |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+--------------+-------------+-------------+-------------+--------------+-------------------+
-#|  vox1-test   |   3.2715%   |   0.2473    |   0.3078    |    0.4189    | 20210818 19:07:02 |
 #+--------------+-------------+-------------+-------------+--------------+-------------------+
-#| vox1-test-aug|   2.8367%   |   0.2615    |   0.2735    |    0.4051    | 20210818 19:11:29 |
 #+--------------+-------------+-------------+-------------+--------------+-------------------+
 fi
 
