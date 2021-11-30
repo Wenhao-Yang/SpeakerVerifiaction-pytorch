@@ -189,7 +189,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             other_loss += loss_xent
             loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft']:
+        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2']:
             loss = xe_criterion(classfier, label)
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
@@ -314,7 +314,7 @@ def valid_class(valid_loader, model, ce, epoch):
                 other_loss += float(loss_xent.item())
 
                 loss = loss_xent + loss_cent
-            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft']:
+            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2']:
                 loss = xe_criterion(classfier, label)
             elif args.loss_type == 'arcdist':
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
