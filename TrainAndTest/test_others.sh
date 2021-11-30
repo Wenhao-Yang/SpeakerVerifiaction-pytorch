@@ -39,17 +39,6 @@ if [ $stage -le 5 ]; then
   done
 
 #  for loss in center ; do
-#    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_egs.py \
-#      --train-dir ${lstm_dir}/data/Vox1_spect/dev \
-#      --test-dir ${lstm_dir}/data/Vox1_spect/test \
-#      --nj 12 \
-#      --model ${model} \
-#      --resume Data/checkpoint/LoResNet10/spect_cmvn/${loss}_dp25/checkpoint_36.pth \
-#      --loss-type ${loss} \
-#      --num-valid 2 \
-#      --gpu-id 1
-#  done
 fi
 
 if [ $stage -le 6 ]; then
@@ -58,22 +47,7 @@ if [ $stage -le 6 ]; then
   #  for loss in soft ; do
   for loss in soft; do
     echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-    #    python TrainAndTest/test_egs.py \
-    #      --train-dir ${lstm_dir}/data/Vox1_spect/dev_wcmvn \
-    #      --test-dir ${lstm_dir}/data/Vox1_spect/test_wcmvn \
-    #      --nj 12 \
-    #      --model ${model} \
-    #      --channels 64,128,256,512 \
-    #      --resnet-size 10 \
-    #      --extract \
-    #      --kernel-size 3,3 \
-    #      --embedding-size 128 \
-    #      --resume Data/checkpoint/LoResNet10/spect/soft_dp05/checkpoint_36.pth \
-    #      --xvector-dir Data/xvector/LoResNet10/spect/soft_dp05 \
-    #      --loss-type ${loss} \
-    #      --trials trials.backup \
-    #      --num-valid 0 \
-    #      --gpu-id 0
+
     python TrainAndTest/test_vox1.py \
       --train-dir ${lstm_dir}/data/Vox1_spect/dev_wcmvn \
       --test-dir ${lstm_dir}/data/Vox1_spect/test_wcmvn \
@@ -92,47 +66,7 @@ if [ $stage -le 6 ]; then
       --gpu-id 0
   done
 
-#  model=LoResNet10
-#  for loss in soft ; do
-#    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_egs.py \
-#      --train-dir ${lstm_dir}/data/Vox1_spect/dev_wcmvn \
-#      --test-dir ${lstm_dir}/data/Vox1_spect/test_wcmvn \
-#      --nj 12 \
-#      --model ${model} \
-#      --channels 64,128,256 \
-#      --resnet-size 8 \
-#      --kernel-size 5,5 \
-#      --embedding-size 128 \
-#      --resume Data/checkpoint/LoResNet8/spect/soft_wcmvn/checkpoint_24.pth \
-#      --extract \
-#      --xvector-dir Data/xvector/LoResNet8/spect/soft_wcmvn \
-#      --loss-type ${loss} \
-#      --trials trials.backup \
-#      --num-valid 0 \
-#      --gpu-id 0
-#  done
-
-#  for loss in center ; do
-#    echo -e "\033[31m==> Loss type: ${loss} \033[0m"
-#    python TrainAndTest/test_egs.py \
-#      --train-dir ${lstm_dir}/data/Vox1_spect/dev \
-#      --test-dir ${lstm_dir}/data/Vox1_spect/test \
-#      --nj 12 \
-#      --model ${model} \
-#      --resume Data/checkpoint/LoResNet10/spect_cmvn/${loss}_dp25/checkpoint_36.pth \
-#      --loss-type ${loss} \
-#      --num-valid 2 \
-#      --gpu-id 1
-#  done
 fi
-
-#python TrainAndTest/Spectrogram/train_lores10_kaldi.py \
-#    --check-path Data/checkpoint/LoResNet10/spect/amsoft \
-#    --resume Data/checkpoint/LoResNet10/spect/soft/checkpoint_20.pth \
-#    --loss-type amsoft \
-#    --lr 0.01 \
-#    --epochs 10
 
 # ===============================    ExResNet    ===============================
 
@@ -637,6 +571,10 @@ if [ $stage -le 75 ]; then
   #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
   #|     vox1-test     |   4.9841%   |   0.1783    |   0.5531    |    0.6566    | 20211115 09:03:38 |
 
+  # Training set: voxceleb 1 40-dimensional log fbanks kaldi epoch 45 where lr=0.0001
+  #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #|     vox1-test     |   4.4115%   |   0.1958    |   0.4680    |    0.5846    | 20211130 17:14:14 |
+
   for embedding_size in 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
@@ -659,8 +597,8 @@ if [ $stage -le 75 ]; then
       --s 30 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_45_var \
-      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/checkpoint_45.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/minarcsoft_sgd_rop/inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_70_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/minarcsoft_sgd_rop/inputMean_STAP_em512_wd5e4_var/checkpoint_70.pth \
       --gpu-id 1 \
       --remove-vad \
       --cos-sim
