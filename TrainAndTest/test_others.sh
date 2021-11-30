@@ -2004,7 +2004,7 @@ if [ $stage -le 200 ]; then
 fi
 
 if [ $stage -le 201 ]; then
-  feat_type=klsp
+  feat_type=klfb
   model=ThinResNet
   feat=log
   loss=arcsoft
