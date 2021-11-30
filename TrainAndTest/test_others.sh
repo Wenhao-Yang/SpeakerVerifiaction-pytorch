@@ -598,8 +598,8 @@ if [ $stage -le 75 ]; then
       --s 30 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/minarcsoft_sgd_rop/inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_70_var \
-      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/minarcsoft_sgd_rop/inputMean_STAP_em512_wd5e4_var/checkpoint_70.pth \
+      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_45_var \
+      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/checkpoint_45.pth \
       --gpu-id 1 \
       --remove-vad \
       --cos-sim
