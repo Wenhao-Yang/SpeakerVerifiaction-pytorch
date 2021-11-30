@@ -332,13 +332,13 @@ if [ $stage -le 70 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
       --nj 16 \
-      --epochs 20 \
+      --epochs 50 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.001 \
+      --lr 0.1 \
       --base-lr 0.00000001 \
       --weight-decay 0.0005 \
       --alpha 0 \
@@ -350,8 +350,8 @@ if [ $stage -le 70 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_New_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_New_var/checkpoint_50.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \

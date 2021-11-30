@@ -575,7 +575,9 @@ if [ $stage -le 75 ]; then
   #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
   #|     vox1-test     |   4.4115%   |   0.1958    |   0.4680    |    0.5846    | 20211130 17:14:14 | arcsoft
   #|     vox1-test     |   4.7561%   |   0.1878    |   0.4709    |    0.6445    | 20211130 17:18:04 | minarcsoft*0.1+arc
-  #|     vox1-dev      |   0.1552%   |   0.3450    |   0.0147    |    0.0334    | 20211130 17:35:29 |
+  #|     vox1-dev      |   0.1744%   |   0.3415    |   0.0157    |    0.0271    | 20211130 17:53:52 | arcsoft
+  #|     vox1-dev      |   0.1552%   |   0.3450    |   0.0147    |    0.0334    | 20211130 17:35:29 | minarcsoft*0.1+arc
+  # 20211130 18:08 min seems to be better on dev set
 
 
   for embedding_size in 512; do # 32,128,512; 8,32,128
