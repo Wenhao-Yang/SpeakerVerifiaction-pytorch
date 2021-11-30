@@ -312,7 +312,7 @@ if [ $stage -le 70 ]; then
   datasets=vox1
   #  feat=fb24
   feat_type=klfb
-  loss=minarcsoft
+  loss=minarcsoft2
   encod=STAP
   embedding_size=512
   input_dim=40
