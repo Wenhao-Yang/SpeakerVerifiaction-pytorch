@@ -314,7 +314,7 @@ class MinArcSoftmaxLoss(nn.Module):
 
 class MinArcSoftmaxLoss_v2(nn.Module):
 
-    def __init__(self, margin=0.2, s=30, iteraion=0, all_iteraion=0, scale=0.4):
+    def __init__(self, margin=0.2, s=30, iteraion=0, all_iteraion=0, scale=0.1):
         super(MinArcSoftmaxLoss_v2, self).__init__()
         self.s = s
         self.margin = margin
@@ -336,13 +336,13 @@ class MinArcSoftmaxLoss_v2(nn.Module):
         center_std = positive_theta.std().cpu()
 
         delt_theta = torch.normal(float(center_mean), float(center_std), size=costh.size())  # .clamp_max(self.margin)
-        delt_theta *= center_mean.cos() ** 4
-        delt_theta *= self.scale
+        # delt_theta *= center_mean.cos() ** 4 * self.scale
+
         # np.random.uniform(0,1)
         neg_delt_theta = delt_theta.scatter_(1, lb_view.data, 0)
 
         delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
-        delt_theta -= neg_delt_theta
+        delt_theta -= self.scale * neg_delt_theta
 
         if costh.is_cuda:
             delt_theta = Variable(delt_theta.cuda())
