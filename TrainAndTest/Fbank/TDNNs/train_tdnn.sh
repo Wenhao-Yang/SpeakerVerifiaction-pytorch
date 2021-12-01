@@ -2,7 +2,7 @@
 
 stage=70
 waited=0
-while [ $(ps 22572 | wc -l) -eq 2 ]; do
+while [ $(ps 2438 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -312,7 +312,7 @@ if [ $stage -le 70 ]; then
   datasets=vox1
   #  feat=fb24
   feat_type=klfb
-  loss=minarcsoft2
+  loss=minarcsoft
   encod=STAP
   embedding_size=512
   input_dim=40
