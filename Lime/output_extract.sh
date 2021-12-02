@@ -872,6 +872,7 @@ if [ $stage -le 300 ]; then
       --gpu-id 1 \
       --margin 0.2 \
       --s 30 \
+      --remove-vad \
       --sample-utt 1211
     done
   exit
