@@ -1987,6 +1987,7 @@ if [ $stage -le 201 ]; then
       --kernel-size 5,5 \
       --stride 2,1 \
       --channels 32,64,128,256 \
+      --downsample ${downsample} \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
