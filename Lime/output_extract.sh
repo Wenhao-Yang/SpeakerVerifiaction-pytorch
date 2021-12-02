@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=300
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 15414 | wc -l) -eq 2 ]; do
@@ -824,6 +824,54 @@ if [ $stage -le 202 ]; then
       --margin 0.2 \
       --s 30 \
       --remove-vad \
+      --sample-utt 1211
+    done
+  exit
+fi
+
+if [ $stage -le 300 ]; then
+  model=ThinResNet
+  dataset=vox1
+  train_set=vox1
+  test_set=vox1
+  feat_type=klfb
+  feat=log
+  loss=arcsoft
+  resnet_size=34
+  encoder_type=SAP2
+  embedding_size=256
+  block_type=basic
+  kernel=5,5
+  cam=grad_cam
+  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  for cam in gradient ;do
+    python Lime/cam_extract.py \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --cam ${cam} \
+      --start-epochs 50 \
+      --epochs 50 \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
+      --train-set-name vox1 \
+      --test-set-name vox1 \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
+      --input-norm Mean \
+      --kernel-size ${kernel} \
+      --stride 2,1 \
+      --channels 16,32,64,128 \
+      --encoder-type ${encoder_type} \
+      --block-type ${block_type} \
+      --time-dim 1 \
+      --avg-size 5 \
+      --embedding-size ${embedding_size} \
+      --alpha 0 \
+      --loss-type ${loss} \
+      --dropout-p 0.125 \
+      --check-path Data/checkpoint/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_basic_none1_SAP2_dp125_alpha0_em256_wd5e4_var \
+      --extract-path Data/gradient/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_basic_none1_SAP2_dp125_alpha0_em256_wd5e4_var/epoch_50_var_${cam} \
+      --gpu-id 1 \
+      --margin 0.2 \
+      --s 30 \
       --sample-utt 1211
     done
   exit
