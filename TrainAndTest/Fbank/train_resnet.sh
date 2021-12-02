@@ -290,8 +290,8 @@ if [ $stage -le 41 ]; then
   resnet_size=18
   encoder_type=SAP2
   embedding_size=256
-  block_type=basic_v2
-  downsample=k5
+  block_type=cbam
+  downsample=k3
   kernel=5,5
   loss=arcsoft
   alpha=0
