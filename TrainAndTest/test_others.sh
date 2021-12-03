@@ -1956,13 +1956,13 @@ if [ $stage -le 201 ]; then
   datasets=vox1
   testset=vox1
 #  test_subset=
-  block_type=basic_v2
+  block_type=cbam
   encoder_type=None
   embedding_size=256
-  resnet_size=18
+  resnet_size=34
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
-  downsample=k5
+  downsample=None
 #        --downsample ${downsample} \
 
   for test_subset in test; do
@@ -1986,7 +1986,7 @@ if [ $stage -le 201 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,1 \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --downsample ${downsample} \
       --alpha ${alpha} \
       --margin 0.2 \
@@ -1995,8 +1995,8 @@ if [ $stage -le 201 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.125 \
-      --xvector-dir Data/xvector/ThinResNet18/vox1/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_v2_downk5_none1_SAP2_dp125_alpha0_em256_wd5e4_var/${test_subset}_epoch_50_var \
-      --resume Data/checkpoint/ThinResNet18/vox1/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_v2_downk5_none1_SAP2_dp125_alpha0_em256_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_cbam_downNone_none1_SAP2_dp125_alpha0_em256_wd5e4_var/${test_subset}_epoch_50_var \
+      --resume Data/checkpoint/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_cbam_downNone_none1_SAP2_dp125_alpha0_em256_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --remove-vad \
       --cos-sim
