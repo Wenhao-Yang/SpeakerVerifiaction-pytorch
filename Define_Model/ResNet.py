@@ -189,8 +189,6 @@ class Conv2dReluBn(nn.Module):
 ''' SE-Res2Block.
     Note: residual connection is implemented in the ECAPA_TDNN model, not here.
 '''
-
-
 class SE_Res2Block(nn.Module):
 
     def __init__(self, inplanes, planes, kernel_size, padding, stride=1, dilation=1,
