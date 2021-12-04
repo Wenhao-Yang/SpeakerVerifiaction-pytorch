@@ -360,7 +360,7 @@ if [ $stage -le 42 ]; then
   resnet_size=50
   encoder_type=SAP2
   embedding_size=256
-  block_type=cbam
+  block_type=basic
   downsample=None
   kernel=5,5
   loss=arcsoft
