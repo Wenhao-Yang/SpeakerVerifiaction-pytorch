@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=41
+stage=42
 waited=0
 while [ `ps 75486 | wc -l` -eq 2 ]; do
   sleep 60
@@ -352,6 +352,75 @@ if [ $stage -le 41 ]; then
   exit
 fi
 
+if [ $stage -le 42 ]; then
+  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=vox2
+  feat_type=klfb
+  model=ThinResNet
+  resnet_size=50
+  encoder_type=SAP2
+  embedding_size=256
+  block_type=cbam
+  downsample=None
+  kernel=5,5
+  loss=arcsoft
+  alpha=0
+  input_norm=Mean
+  mask_layer=None
+  scheduler=rop
+  optimizer=sgd
+  input_dim=40
+
+  for encoder_type in SAP2; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    python TrainAndTest/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
+      --train-trials trials_2w \
+      --shuffle \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
+      --feat-format kaldi \
+      --random-chunk 200 400 \
+      --input-norm ${input_norm} \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 60 \
+      --batch-size 128 \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
+      --lr 0.1 \
+      --base-lr 0.000006 \
+      --mask-layer ${mask_layer} \
+      --milestones 10,20,30,40 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_none1_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_none1_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
+      --kernel-size ${kernel} \
+      --downsample ${downsample} \
+      --channels 16,32,64,128 \
+      --fast none1 \
+      --stride 2,1 \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 5 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.125 \
+      --gpu-id 0,1 \
+      --extract \
+      --cos-sim \
+      --all-iteraion 0 \
+      --remove-vad \
+      --loss-type ${loss}
+  done
+  exit
+fi
 
 #stage=1000
 if [ $stage -le 50 ]; then
