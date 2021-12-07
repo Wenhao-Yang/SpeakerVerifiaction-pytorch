@@ -168,7 +168,7 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
     nontarget_size = non_target.size
     # pdb.set_trace()
     target_position = 0
-    steps = max(1, int(target_size / 1e5))
+    steps = max(1, int(target_size / 1e4))
     while target_position + steps < target_size:
         # for target_position in range(target_size):
         nontarget_n = nontarget_size * target_position * 1.0 / target_size
