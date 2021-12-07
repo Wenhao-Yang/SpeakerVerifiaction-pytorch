@@ -265,6 +265,10 @@ if __name__ == "__main__":
     sys.stdout = NewLogger(
         os.path.join(out_dir, 'log', 'egs.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())))
 
+    with open(os.path.join(out_dir, 'idx2spk'), 'w') as f:
+        for i in range(train_dir.num_spks):
+            f.write(str(i)+" "+train_dir.idx_to_spk[i]+'\n')
+
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
     opts = vars(args)
     keys = list(opts.keys())
