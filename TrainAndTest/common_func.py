@@ -32,7 +32,7 @@ from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
-from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6
+from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6, MixTDNN_v5
 from Define_Model.demucs_feature import Demucs
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 import argparse
@@ -88,6 +88,7 @@ __factory = {
     'TDNN_v4': TDNN_v4,
     'TDNN_v5': TDNN_v5,
     'TDNN_v6': TDNN_v6,
+    'MixTDNN_v5': MixTDNN_v5,
     'ETDNN': ETDNN,
     'ETDNN_v4': ETDNN_v4,
     'ETDNN_v5': ETDNN_v5,
