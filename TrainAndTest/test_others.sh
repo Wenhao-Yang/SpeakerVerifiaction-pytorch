@@ -2102,7 +2102,7 @@ if [ $stage -le 300 ]; then
      --context 5,3,3,5 \
      --nj 12 \
      --alpha 0 \
-     --margin 0.15 \
+     --margin 0.2 \
      --s 30 \
      --stride 1 \
      --block-type ${block_type} \
@@ -2115,7 +2115,6 @@ if [ $stage -le 300 ]; then
      --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var${test_set}_dev_epoch50_fix \
      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
      --gpu-id 0 \
-     --extract \
      --cos-sim
  done
 
