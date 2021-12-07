@@ -2086,7 +2086,8 @@ if [ $stage -le 300 ]; then
   # done
        # --verbose 2 \
 
- for s in adve_adve adve_spee dram_reci ente_reci inte_sing live_vlog play_sing sing_vlog adve_dram adve_vlog dram_sing ente_sing inte_spee movi_movi play_spee spee_spee adve_ente dram_spee ente_spee inte_vlog movi_play play_vlog spee_vlog adve_inte dram_dram dram_vlog ente_vlog live_live movi_reci reci_reci vlog_vlog adve_live dram_ente ente_ente inte_inte live_movi movi_sing reci_sing adve_movi dram_inte ente_inte inte_live live_play movi_spee reci_spee adve_play dram_live ente_live inte_movi live_reci movi_vlog reci_vlog adve_reci dram_movi ente_movi inte_play live_sing play_play sing_sing adve_sing dram_play ente_play inte_reci live_spee play_reci sing_spee; do
+ # for s in adve_adve adve_spee dram_reci ente_reci inte_sing live_vlog play_sing sing_vlog adve_dram adve_vlog dram_sing ente_sing inte_spee movi_movi play_spee spee_spee adve_ente dram_spee ente_spee inte_vlog movi_play play_vlog spee_vlog adve_inte dram_dram dram_vlog ente_vlog live_live movi_reci reci_reci vlog_vlog adve_live dram_ente ente_ente inte_inte live_movi movi_sing reci_sing adve_movi dram_inte ente_inte inte_live live_play movi_spee reci_spee adve_play dram_live ente_live inte_movi live_reci movi_vlog reci_vlog adve_reci dram_movi ente_movi inte_play live_sing play_play sing_sing adve_sing dram_play ente_play inte_reci live_spee play_reci sing_spee; do
+ for s in all; do
    python -W ignore TrainAndTest/test_egs.py \
      --model ${model} \
      --resnet-size 14 \
@@ -2114,10 +2115,9 @@ if [ $stage -le 300 ]; then
      --input-length fix \
      --remove-vad \
      --frame-shift 300 \
-     --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var${test_set}_dev_epoch50_fix \
+     --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_dev_epoch50_fix \
      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
      --gpu-id 0 \
-     --extract \
      --cos-sim
  done
 
