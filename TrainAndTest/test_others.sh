@@ -2116,6 +2116,7 @@ if [ $stage -le 300 ]; then
      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
      --gpu-id 0 \
      --extract \
+     --verbose 2 \
      --cos-sim
  done
 
