@@ -463,7 +463,7 @@ def test(test_loader, xvector_dir):
     if args.verbose > 0:
         result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
 
-    eer = '{:.4f}%'.format(eer * 100.)
+    eer = '{:.4f}'.format(eer * 100.)
     threshold = '{:.4f}'.format(eer_threshold)
     mindcf_01 = '{:.4f}'.format(mindcf_01)
     mindcf_001 = '{:.4f}'.format(mindcf_001)
