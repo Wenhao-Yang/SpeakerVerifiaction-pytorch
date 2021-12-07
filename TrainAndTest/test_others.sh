@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=300
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2044,7 +2044,7 @@ if [ $stage -le 300 ]; then
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
 
 
-  for test_set in cnceleb; do # 32,128,512; 8,32,128
+  # for test_set in cnceleb; do # 32,128,512; 8,32,128
 #    --trials trials_${s} \
 #      --score-suffix ${s} \
 #      --extract \
@@ -2053,71 +2053,71 @@ if [ $stage -le 300 ]; then
 
 # --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch50_fix \
   #      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
-    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
-    python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size 14 \
-      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
-      --feat-format kaldi \
-      --input-norm ${input_norm} \
-      --input-dim 40 \
-      --channels 512,512,512,512,1500 \
-      --context 5,3,3,5 \
-      --nj 10 \
-      --alpha 0 \
-      --margin 0.2 \
-      --s 30 \
-      --stride 1 \
-      --block-type ${block_type} \
-      --embedding-size ${embedding_size} \
-      --loss-type ${loss} \
-      --encoder-type STAP \
-      --input-length fix \
-      --remove-vad \
-      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcdist/Mean_STAP_em512_lr1_wd5e4_var/checkpoint_50.pth \
-      --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcdist/Mean_STAP_em512_lr1_wd5e4_var/${test_set}_${subset}_epoch50_fix \
-      --frame-shift 300 \
-      --gpu-id 0 \
-      --cos-sim
-  done
-#  for s in vlog; do
-#    python -W ignore TrainAndTest/test_egs.py \
-#      --model ${model} \
-#      --resnet-size 14 \
-#      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
-#      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w \
-#      --trials subtrials/trials_vlog_${s} \
-#      --score-suffix vl${s} \
-#      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
-#      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
-#      --feat-format kaldi \
-#      --input-norm ${input_norm} \
-#      --input-dim 40 \
-#      --channels 512,512,512,512,1500 \
-#      --context 5,3,3,5 \
-#      --nj 12 \
-#      --alpha 0 \
-#      --margin 0.15 \
-#      --s 30 \
-#      --stride 1 \
-#      --block-type ${block_type} \
-#      --embedding-size ${embedding_size} \
-#      --loss-type ${loss} \
-#      --encoder-type STAP \
-#      --input-length fix \
-#      --remove-vad \
-#      --frame-shift 300 \
-#      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_dev_epoch60_fix \
-#      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
-#      --gpu-id 0 \
-#      --extract \
-#      --cos-sim
-#  done
+  #   echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
+  #   python -W ignore TrainAndTest/test_egs.py \
+  #     --model ${model} \
+  #     --resnet-size 14 \
+  #     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+  #     --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
+  #     --train-trials trials_2w \
+  #     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
+  #     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+  #     --feat-format kaldi \
+  #     --input-norm ${input_norm} \
+  #     --input-dim 40 \
+  #     --channels 512,512,512,512,1500 \
+  #     --context 5,3,3,5 \
+  #     --nj 10 \
+  #     --alpha 0 \
+  #     --margin 0.2 \
+  #     --s 30 \
+  #     --stride 1 \
+  #     --block-type ${block_type} \
+  #     --embedding-size ${embedding_size} \
+  #     --loss-type ${loss} \
+  #     --encoder-type STAP \
+  #     --input-length fix \
+  #     --remove-vad \
+  #     --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcdist/Mean_STAP_em512_lr1_wd5e4_var/checkpoint_50.pth \
+  #     --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcdist/Mean_STAP_em512_lr1_wd5e4_var/${test_set}_${subset}_epoch50_fix \
+  #     --frame-shift 300 \
+  #     --gpu-id 0 \
+  #     --cos-sim
+  # done
+ for s in all; do
+   python -W ignore TrainAndTest/test_egs.py \
+     --model ${model} \
+     --resnet-size 14 \
+     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+     --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
+     --train-trials trials_2w \
+     --trials subtrials/trials_${s} \
+     --score-suffix ${s} \
+     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
+     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
+     --feat-format kaldi \
+     --input-norm ${input_norm} \
+     --input-dim 40 \
+     --channels 512,512,512,512,1500 \
+     --context 5,3,3,5 \
+     --nj 12 \
+     --alpha 0 \
+     --margin 0.15 \
+     --s 30 \
+     --stride 1 \
+     --block-type ${block_type} \
+     --embedding-size ${embedding_size} \
+     --loss-type ${loss} \
+     --encoder-type STAP \
+     --input-length fix \
+     --remove-vad \
+     --frame-shift 300 \
+     --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_dev_epoch60_fix \
+     --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/checkpoint_60.pth \
+     --gpu-id 0 \
+     --extract \
+     --cos-sim
+ done
 
 #  python -W ignore TrainAndTest/test_egs.py \
 #      --model ${model} \
