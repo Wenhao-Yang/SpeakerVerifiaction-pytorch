@@ -1303,8 +1303,8 @@ class MixTDNN_v5(nn.Module):
                               context_size=3, stride=self.stride[2], dilation=3, activation=self.activation)
         self.frame4 = TDlayer(input_dim=self.channels[2], output_dim=self.channels[3],
                               context_size=1, stride=self.stride[0], dilation=1, activation=self.activation)
-        self.frame5 = TimeDelayLayer_v5(input_dim=self.channels[3], output_dim=self.channels[4],
-                                        context_size=1, stride=self.stride[3], dilation=1, activation=self.activation)
+        # self.frame5 = TimeDelayLayer_v5(input_dim=self.channels[3], output_dim=self.channels[4],
+        #                                 context_size=1, stride=self.stride[3], dilation=1, activation=self.activation)
 
         self.drop = nn.Dropout(p=self.dropout_p)
 
@@ -1426,7 +1426,7 @@ class MixTDNN_v5(nn.Module):
         x = self.frame2(x)
         x = self.frame3(x)
         x = self.frame4(x)
-        x = self.frame5(x)
+        # x = self.frame5(x)
 
         if self.dropout_layer:
             x = self.drop(x)
@@ -1465,7 +1465,7 @@ class MixTDNN_v5(nn.Module):
         x = self.frame2(x)
         x = self.frame3(x)
         x = self.frame4(x)
-        x = self.frame5(x)
+        # x = self.frame5(x)
 
         if self.dropout_layer:
             x = self.drop(x)
