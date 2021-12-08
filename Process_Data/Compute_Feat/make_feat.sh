@@ -48,7 +48,8 @@ fi
 #stage=1000
 if [ $stage -le 1 ]; then
 #  dataset=vox2
-  dataset=cnceleb
+  # dataset=cnceleb
+  dataset=aishell2
   #  feat_type=pyfb
   #  dataset=vox1
   feat=klfb
@@ -56,7 +57,7 @@ if [ $stage -le 1 ]; then
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
-  for s in devnoise_fb40; do
+  for s in dev_fb40; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
@@ -475,7 +476,8 @@ if [ $stage -le 30 ]; then
   # dev
   dataset=aishell2
   #  dataset=magic
-  feat=pyfb
+  feat=klfb
+
   filters=40
   feat_name=fb${filters}
 
@@ -505,13 +507,14 @@ fi
 if [ $stage -le 31 ]; then
   # dev
   dataset=aishell2
+  feat_type=klfb
   #  dataset=aidata
   python Process_Data/Compute_Feat/make_egs.py \
     --data-dir ${lstm_dir}/data/${dataset}/spect/dev_log \
     --out-dir ${lstm_dir}/data/${dataset}/egs/spect \
     --feat-type spectrogram \
     --train \
-    --input-per-spks 768 \
+    --input-per-spks 1024 \
     --feat-format kaldi \
     --out-format kaldi_cmp \
     --num-valid 2 \
