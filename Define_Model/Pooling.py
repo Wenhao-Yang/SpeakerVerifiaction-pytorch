@@ -236,7 +236,7 @@ class MaxStatisticPooling(nn.Module):
 
     def __init__(self, input_dim):
         super(MaxStatisticPooling, self).__init__()
-        self.max_pooling = nn.MaxPool1d(kernel_size=5, padding=2, stride=1)
+        self.max_pooling = nn.MaxPool1d(kernel_size=3, padding=1, stride=1)
         self.input_dim = input_dim
 
     def forward(self, x):
