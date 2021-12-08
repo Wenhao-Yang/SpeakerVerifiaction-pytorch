@@ -232,6 +232,32 @@ class StatisticPooling(nn.Module):
         return mean_std
 
 
+class MaxStatisticPooling(nn.Module):
+
+    def __init__(self, input_dim):
+        super(MaxStatisticPooling, self).__init__()
+        self.max_pooling = nn.MaxPool1d(kernel_size=5, padding=2, stride=1)
+        self.input_dim = input_dim
+
+    def forward(self, x):
+        """
+        :param x:   [length,feat_dim] vector
+        :return:   [feat_dim] vector
+        """
+        x_shape = x.shape
+        if len(x.shape) != 3:
+            x = x.reshape(x_shape[0], x_shape[-2], -1)
+
+        assert x.shape[-1] == self.input_dim, print(x.shape[-1])
+        x = self.max_pooling(x.transpose(1,2)).transpose(1,2)
+
+        mean_x = x.mean(dim=1)
+        std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
+        mean_std = torch.cat((mean_x, std_x), 1)
+        return mean_std
+
+
+
 class AdaptiveStdPool2d(nn.Module):
     def __init__(self, output_size):
         super(AdaptiveStdPool2d, self).__init__()

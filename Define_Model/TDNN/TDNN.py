@@ -25,7 +25,7 @@ from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMask
     TimeFreqMaskLayer, AttentionweightLayer_v2
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
-    SelfAttentionPooling
+    SelfAttentionPooling, MaxStatisticPooling
 from Define_Model.ResNet import conv1x1, conv5x5, conv3x3
 from Define_Model.model import get_activation, BasicBlock
 
@@ -444,6 +444,50 @@ class TimeDelayLayer_v6(nn.Module):
 
         return x.transpose(1, 2)
 
+
+class MaxTimeDelayLayer_v5(nn.Module):
+
+    def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
+                 dropout_p=0.0, padding=0, groups=1, activation='relu'):
+        super(MaxTimeDelayLayer_v5, self).__init__()
+        self.context_size = context_size
+        self.stride = stride
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.dilation = dilation
+        self.dropout_p = dropout_p
+        self.padding = padding
+        self.groups = groups
+
+        self.kernel = nn.Conv1d(self.input_dim, self.output_dim, self.context_size, stride=self.stride,
+                                padding=self.padding, dilation=self.dilation, groups=self.groups)
+
+        self.max_kernel = nn.MaxPool1d(kernel_size=3, stride=1, padding=1, dilation=1)
+
+        if activation == 'relu':
+            self.nonlinearity = nn.ReLU(inplace=True)
+        elif activation in ['leakyrelu', 'leaky_relu']:
+            self.nonlinearity = nn.LeakyReLU()
+        elif activation == 'prelu':
+            self.nonlinearity = nn.PReLU()
+
+        self.bn = nn.BatchNorm1d(output_dim)
+
+        # self.drop = nn.Dropout(p=self.dropout_p)
+    def forward(self, x):
+        '''
+        input: size (batch, seq_len, input_features)
+        outpu: size (batch, new_seq_len, output_features)
+        '''
+        # _, _, d = x.shape
+        # assert (d == self.input_dim), 'Input dimension was wrong. Expected ({}), got ({})'.format(
+        #     self.input_dim, d)
+        x = self.kernel(x.transpose(1, 2))
+        x = self.nonlinearity(x)
+        x = self.bn(x)
+        x = self.max_kernel(x)
+
+        return x.transpose(1, 2)
 
 
 class Conv2DLayer(nn.Module):
@@ -941,6 +985,8 @@ class TDNN_v5(nn.Module):
             self.input_dim = feat_dim
         if self.block_type in ['basic', 'none']:
             TDlayer = TimeDelayLayer_v5
+        elif self.block_type in ['max_v5']:
+            TDlayer = MaxTimeDelayLayer_v5
         elif self.block_type == 'basic_v6':
             TDlayer = TimeDelayLayer_v6
         elif self.block_type == 'shuffle':
@@ -968,6 +1014,9 @@ class TDNN_v5(nn.Module):
 
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=self.channels[4])
+            self.encoder_output = self.channels[4] * 2
+        elif encoder_type == 'MSTAP':
+            self.encoder = MaxStatisticPooling(input_dim=self.channels[4])
             self.encoder_output = self.channels[4] * 2
         elif encoder_type in ['ASTP']:
             self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
