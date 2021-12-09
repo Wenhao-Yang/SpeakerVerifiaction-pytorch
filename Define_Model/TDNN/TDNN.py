@@ -985,7 +985,7 @@ class TDNN_v5(nn.Module):
             self.input_dim = feat_dim
         if self.block_type in ['basic', 'none']:
             TDlayer = TimeDelayLayer_v5
-        elif self.block_type in ['max_v5']:
+        elif self.block_type in ['max_v5', 'max']:
             TDlayer = MaxTimeDelayLayer_v5
         elif self.block_type == 'basic_v6':
             TDlayer = TimeDelayLayer_v6

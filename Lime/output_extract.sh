@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-stage=300
+stage=201
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-while [ $(ps 15414 | wc -l) -eq 2 ]; do
+while [ $(ps 12700 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -720,34 +720,34 @@ if [ $stage -le 201 ]; then
 
   echo -e "\n\033[1;4;31m Stage ${stage} Extracting ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
-#    python Lime/cam_extract.py \
-#      --model ${model} \
-#      --resnet-size ${resnet_size} \
-#      --cam ${cam} \
-#      --start-epochs 60 \
-#      --epochs 60 \
-#      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev12_fb40 \
-#      --train-set-name cnce \
-#      --test-set-name cnce \
-#      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
-#      --input-norm Mean \
-#      --input-dim 40 \
-#      --stride 1 \
-#      --channels 512,512,512,512,1500 \
-#      --encoder-type ${encoder_type} \
-#      --block-type ${block_type} \
-#      --embedding-size ${embedding_size} \
-#      --alpha 0 \
-#      --loss-type ${loss} \
-#      --dropout-p 0.0 \
-#      --check-path Data/checkpoint/TDNN_v5/cnceleb/klfb_egs12_baseline/arcsoft/Mean_STAP_em512_wd5e4_var \
-#      --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs12_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_60_var_${cam} \
-#      --gpu-id 1 \
-#      --margin 0.2 \
-#      --s 30 \
-#      --remove-vad \
-#      --sample-utt 2800
-#    done
+     python Lime/cam_extract.py \
+       --model ${model} \
+       --resnet-size ${resnet_size} \
+       --cam ${cam} \
+       --start-epochs 60 \
+       --epochs 60 \
+       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev12_fb40 \
+       --train-set-name cnce \
+       --test-set-name cnce \
+       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
+       --input-norm Mean \
+       --input-dim 40 \
+       --stride 1 \
+       --channels 512,512,512,512,1500 \
+       --encoder-type ${encoder_type} \
+       --block-type ${block_type} \
+       --embedding-size ${embedding_size} \
+       --alpha 0 \
+       --loss-type ${loss} \
+       --dropout-p 0.0 \
+       --check-path Data/checkpoint/TDNN_v5/cnceleb/klfb_egs12_baseline/arcsoft/Mean_STAP_em512_wd5e4_var \
+       --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs12_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_60_var_${cam} \
+       --gpu-id 1 \
+       --margin 0.2 \
+       --s 30 \
+       --remove-vad \
+       --sample-utt 5600
+     # done
 
     python Lime/cam_extract.py \
       --model ${model} \
@@ -775,7 +775,7 @@ if [ $stage -le 201 ]; then
       --margin 0.2 \
       --s 30 \
       --remove-vad \
-      --sample-utt 1000
+      --sample-utt 3200
     done
 
 
