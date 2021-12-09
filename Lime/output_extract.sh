@@ -578,6 +578,7 @@ if [ $stage -le 62 ]; then
     python Lime/fratio_extract.py \
       --extract-frames \
       --file-dir ${lstm_dir}/data/${dataset}/spect/train_power \
+      --set-name {dataset} \
       --out-dir Data/fratio/${dataset}/dev_power \
       --nj 14 \
       --input-per-spks ${numframes} \
@@ -592,6 +593,7 @@ if [ $stage -le 80 ]; then
     echo -e "\033[31m==> num of frames per speaker : ${numframes} \033[0m"
     python Lime/fratio_extract.py \
       --extract-frames \
+      --set-name {dataset} \
       --file-dir ${lstm_dir}/data/${dataset}/spect/dev_power \
       --out-dir Data/fratio/vox1/dev_power \
       --nj 14 \

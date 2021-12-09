@@ -808,13 +808,13 @@ if [ $stage -le 77 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --nj 12 \
       --shuffle \
-      --epochs 50 \
+      --epochs 37 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
       --scheduler rop \
       --weight-decay 0.0005 \
-      --lr 0.1 \
+      --lr 0.01 \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
@@ -824,7 +824,7 @@ if [ $stage -le 77 ]; then
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_33.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_13.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \

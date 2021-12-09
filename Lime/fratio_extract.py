@@ -44,9 +44,10 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # Training settings
-parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
+parser = argparse.ArgumentParser(description='Speaker Recognition: F-ratio')
 # Data options
 parser.add_argument('--file-dir', type=str, help='path to dataset')
+parser.add_argument('--set-name', type=str, help='path to dataset')
 parser.add_argument('--out-dir', type=str, help='path to dataset')
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N',
                     help='acoustic feature dimension')
@@ -160,9 +161,9 @@ def main():
         os.makedirs(args.file_dir)
 
     if args.extract_frames:
-        frames_extract(data_loader, args.out_dir, 'vox1_train')
+        frames_extract(data_loader, args.out_dir, args.set_name)
 
-    fratio_extract(args.out_dir, 'vox1_train')
+    fratio_extract(args.out_dir, args.set_name)
 
 
 if __name__ == '__main__':
