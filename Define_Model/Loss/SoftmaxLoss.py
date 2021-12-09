@@ -175,6 +175,41 @@ class AdditiveMarginLinear(nn.Module):
         return "AdditiveMarginLinear(feat_dim=%f, num_classes=%d)" % (self.feat_dim, self.num_classes)
 
 
+class SubMarginLinear(nn.Module):
+    def __init__(self, feat_dim, num_classes, num_center=3, use_gpu=False):
+        super(SubMarginLinear, self).__init__()
+        self.feat_dim = feat_dim
+        self.num_classes = num_classes
+        self.num_center = num_center
+        self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes, num_center), requires_grad=True)
+        if use_gpu:
+            self.W.cuda()
+        nn.init.xavier_normal(self.W, gain=1)
+
+    def forward(self, x):
+        # assert x.size()[0] == label.size()[0]
+        assert x.size()[1] == self.feat_dim
+
+        # pdb.set_trace()
+        # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
+        # x_norm = torch.div(x, x_norm)
+
+        x_norm = F.normalize(x, dim=1)
+        w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
+        # x = x.unsqueeze(-1).repeat(1, 1, self.num_classes)
+        # w = self.W.unsqueeze(0).repeat(x.shape[0], 1, 1)
+        # # w_norm = torch.div(self.W, w_norm)
+        # costh = torch.cosine_similarity(x, w, dim=1)
+        # costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
+        costh = costh.max(dim=-1)
+
+        return costh  # .clamp(min=-1.0, max=1.)
+
+    def __repr__(self):
+        return "SubMarginLinear(feat_dim=%f, num_classes=%d, num_center=%d)" % (self.feat_dim, self.num_classes, self.num_center)
+
+
 class AMSoftmaxLoss(nn.Module):
     def __init__(self, margin=0.3, s=15, all_iteraion=6000):
         super(AMSoftmaxLoss, self).__init__()
