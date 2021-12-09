@@ -634,6 +634,10 @@ class AttentionweightLayer(nn.Module):
 
         return x * drop_weight
 
+    def __repr__(self):
+
+        return "AttentionweightLayer(input_dim=%s)" % self.input_dim
+
 
 class AttentionweightLayer_v2(nn.Module):
     def __init__(self, input_dim=161, weight='mel'):
@@ -741,9 +745,10 @@ class AttentionweightLayer_v3(nn.Module):
 
 
 class AttentionweightLayer_v0(nn.Module):
-    def __init__(self, input_dim=161, weight='mel', power=False):
+    def __init__(self, input_dim=161, weight='mel', power_weight=False):
         super(AttentionweightLayer_v0, self).__init__()
         self.input_dim = input_dim
+        self.power_weight = power_weight
 
         if weight == 'mel':
             m = np.arange(0, 2840.0230467083188)
@@ -769,13 +774,14 @@ class AttentionweightLayer_v0(nn.Module):
             raise ValueError(weight)
 
         ynew = np.array(ynew)
-        if power:
+        if power_weight:
             ynew = ynew.power(2)
+
         ynew /= ynew.max()
         # self.s = nn.Parameter(torch.tensor(0.5))
         # self.b = nn.Parameter(torch.tensor(0.75))
 
-        # self.drop_p = ynew  # * dropout_p
+        self.drop_p = ynew  # * dropout_p
         # self.activation = nn.Sigmoid()
 
     def forward(self, x):
@@ -786,13 +792,16 @@ class AttentionweightLayer_v0(nn.Module):
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
         else:
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
+        
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
-        # drop_weight = (drop_weight - self.b * drop_weight.mean()) / self.s.clamp(min=0.0625, max=2.0)
-        # drop_weight = self.activation(drop_weight)
-
         return x * drop_weight
+
+    def __repr__(self):
+
+        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, power_weight=%s)" % (self.input_dim, self.weight, str(self.power_weight))
+
 
 class GaussianNoiseLayer(nn.Module):
     def __init__(self, dropout_p=0.01, input_dim=161):
