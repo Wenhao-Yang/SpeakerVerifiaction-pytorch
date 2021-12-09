@@ -234,10 +234,12 @@ class StatisticPooling(nn.Module):
 
 class MaxStatisticPooling(nn.Module):
 
-    def __init__(self, input_dim):
+    def __init__(self, input_dim, kernel_size=5):
         super(MaxStatisticPooling, self).__init__()
-        self.max_pooling = nn.MaxPool1d(kernel_size=3, padding=1, stride=1)
+        self.kernel_size = kernel_size
         self.input_dim = input_dim
+
+        self.max_pooling = nn.MaxPool1d(kernel_size=kernel_size, padding=int((kernel_size-1)/2), stride=1)
 
     def forward(self, x):
         """
@@ -256,6 +258,8 @@ class MaxStatisticPooling(nn.Module):
         mean_std = torch.cat((mean_x, std_x), 1)
         return mean_std
 
+    def __repr__(self): 
+        return "MaxStatisticPooling(input_dim=%f, kernel_size=%d)" % (self.input_dim, self.kernel_size)
 
 
 class AdaptiveStdPool2d(nn.Module):
