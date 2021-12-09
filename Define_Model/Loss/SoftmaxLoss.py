@@ -194,15 +194,16 @@ class SubMarginLinear(nn.Module):
         # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
         # x_norm = torch.div(x, x_norm)
 
-        x_norm = F.normalize(x, dim=1)
-        w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
-        costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
-        # x = x.unsqueeze(-1).repeat(1, 1, self.num_classes)
-        # w = self.W.unsqueeze(0).repeat(x.shape[0], 1, 1)
+#         x_norm = F.normalize(x, dim=1)
+#         w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+#         costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
+        
+        x = x.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, self.num_classes, self.num_center)
+        w = self.W.unsqueeze(0).repeat(x.shape[0], 1, 1, 1)
+        
         # # w_norm = torch.div(self.W, w_norm)
-        # costh = torch.cosine_similarity(x, w, dim=1)
-        # costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
-        costh = costh.max(dim=-1)
+        costh = torch.cosine_similarity(x, w, dim=1)
+        costh = torch.max(costh, dim=-1).values
 
         return costh  # .clamp(min=-1.0, max=1.)
 
