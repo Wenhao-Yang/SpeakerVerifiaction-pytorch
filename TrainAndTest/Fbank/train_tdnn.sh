@@ -808,7 +808,7 @@ if [ $stage -le 77 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --nj 12 \
       --shuffle \
-      --epochs 37 \
+      --epochs 33 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
@@ -824,7 +824,7 @@ if [ $stage -le 77 ]; then
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_13.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_17.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
