@@ -26,7 +26,7 @@ from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear
+from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear
 from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
@@ -112,6 +112,9 @@ def create_model(name, **kwargs):
     if kwargs['loss_type'] in ['asoft', 'amsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                 num_classes=kwargs['num_classes'])
+    elif kwargs['loss_type'] in ['subarc']:
+        model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
+                                           num_center=kwargs['num_center'],)
 
     return model
 
@@ -406,6 +409,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--activation', type=str, default='relu', help='activation functions')
     parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
     parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
+    parser.add_argument('--power-weight', action='store_true', default=False, help='replace batchnorm with instance norm')
     parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
 
     parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
@@ -567,8 +571,10 @@ def args_model(args, train_dir):
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks, 'downsample': args.downsample,
                     'num_classes_b': train_dir.num_doms, 'init_weight': args.init_weight,
+                    'power_weight': args.power_weight,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
+                    'num_center': args.num_center,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}
 
     return model_kwargs
@@ -674,7 +680,7 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
 
     # loss configure
     parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
-    parser.add_argument('--num-center', type=int, default=2, help='the num of source classes')
+    parser.add_argument('--num-center', type=int, default=3, help='the num of source classes')
     parser.add_argument('--source-cls', type=int, default=1951,
                         help='the num of source classes')
 

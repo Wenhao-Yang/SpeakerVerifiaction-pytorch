@@ -189,7 +189,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             other_loss += loss_xent
             loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2']:
+        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc',]:
             loss = xe_criterion(classfier, label)
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
@@ -315,7 +315,7 @@ def valid_class(valid_loader, model, ce, epoch):
                 other_loss += float(loss_xent.item())
 
                 loss = loss_xent + loss_cent
-            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2']:
+            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc']:
                 loss = xe_criterion(classfier, label)
             elif args.loss_type == 'arcdist':
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
@@ -486,7 +486,7 @@ def main():
     elif args.loss_type == 'amsoft':
         ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
-    elif args.loss_type == 'arcsoft':
+    elif args.loss_type in ['arcsoft', 'subarc']:
         ce_criterion = None
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     elif args.loss_type == 'minarcsoft':
