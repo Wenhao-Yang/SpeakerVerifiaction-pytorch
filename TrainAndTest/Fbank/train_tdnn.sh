@@ -838,7 +838,7 @@ if [ $stage -le 77 ]; then
       --loss-ratio ${loss_ratio} \
       --lr-ratio ${lr_ratio} \
       --loss-type ${loss} \
-      --num-centers ${num_centers} \
+      --num-center ${num_centers} \
       --margin 0.2 \
       --s 30 \
       --remove-vad \
