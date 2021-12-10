@@ -49,7 +49,7 @@ fi
 
 
 $train_cmd $logdir/ivector-compute-plda.log \
-    ivector-compute-plda ark:$data_dir/spk2utt "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- | transform-vec $train_feat_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" $train_feat_dir/plda || exit 1;
+    ivector-compute-plda ark:$train_feat_dir/spk2utt "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- | transform-vec $train_feat_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" $train_feat_dir/plda || exit 1;
 
 
 $train_cmd $logdir/ivector-plda-scoring.log \
