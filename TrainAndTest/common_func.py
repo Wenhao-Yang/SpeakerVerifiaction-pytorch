@@ -262,7 +262,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 # pdb.set_trace()
 
                 uid2vectors[a_uid[0]] = out[0]
-                continue
+                break
 
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
