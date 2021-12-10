@@ -2002,6 +2002,7 @@ if [ $stage -le 201 ]; then
       --gpu-id 0 \
       --remove-vad \
       --test \
+      --verbose 2 \
       --cos-sim
   done
   exit

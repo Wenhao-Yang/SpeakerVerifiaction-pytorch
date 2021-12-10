@@ -143,7 +143,7 @@ class AverageMeter(object):
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True,
-                         verbose=False, xvector=False):
+                         verbose=0, xvector=False):
     """
 
     :param extract_loader:
@@ -162,7 +162,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     if not os.path.exists(xvector_dir):
         os.makedirs(xvector_dir)
     # pbar =
-    pbar = tqdm(extract_loader, ncols=100) if verbose else extract_loader
+    pbar = tqdm(extract_loader, ncols=100) if verbose>0 else extract_loader
 
     uid2vectors = {}
     with torch.no_grad():

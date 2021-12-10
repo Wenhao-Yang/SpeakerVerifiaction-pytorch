@@ -611,7 +611,7 @@ if __name__ == '__main__':
 
             # extract(verify_loader, model, args.xvector_dir)
             verification_extract(verify_loader, model, xvector_dir=args.xvector_dir, args.start_epoch, 
-                                 test_input=args.input_length, ark_num=50000, gpu=True, verbose=False, 
+                                 test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose, 
                                  xvector=args.xvector)
 
     if args.test:
