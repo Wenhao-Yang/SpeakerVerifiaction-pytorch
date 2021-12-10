@@ -252,12 +252,14 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 if out.shape[0] != 1:
                     out = out.mean(dim=0, keepdim=True)
-                    
+
                 out = out.data.cpu().float().numpy()
                 # print(out.shape)
 
                 if len(out.shape) == 3:
                     out = out.squeeze(0)
+
+                pdb.set_trace()
 
                 uid2vectors[a_uid[0]] = out[0]
 
