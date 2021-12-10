@@ -29,6 +29,13 @@ lda_dim=200
 #trials=$data_dir/trials
 test_score=$test_feat_dir/scores_$(date "+%Y-%m-%d-%H:%M:%S")
 
+if ! [ -f $train_feat_dir/utt2spk ];then
+    cat $train_feat_dir/xvectors.scp | awk '{print $1}' > $train_feat_dir/utt
+    grep -f $train_feat_dir/utt $data_dir/utt2spk > $train_feat_dir/utt2spk
+
+    Score/utt2spk_to_spk2utt.pl $train_feat_dir/utt2spk > $$train_feat_dir/spk2utt
+fi
+
 $train_cmd $logdir/ivector-mean.log \
     ivector-mean scp:$train_feat_dir/xvectors.scp $test_feat_dir/mean.vec || exit 1;
 
@@ -39,14 +46,6 @@ $train_cmd $logdir/ivector-compute-lda.log \
 # if ! [ -f $data_dir/spk2utt ];then
 #     Score/utt2spk_to_spk2utt.pl $data_dir/utt2spk > $data_dir/spk2utt
 # fi
-
-if ! [ -f $train_feat_dir/utt2spk ];then
-    cat $train_feat_dir/xvectors.scp | awk '{print $1}' > $train_feat_dir/utt
-    grep -f $train_feat_dir/utt $data_dir/utt2spk > $train_feat_dir/utt2spk
-
-    Score/utt2spk_to_spk2utt.pl $train_feat_dir/utt2spk > $$train_feat_dir/spk2utt
-fi
-
 
 $train_cmd $logdir/ivector-compute-plda.log \
     ivector-compute-plda ark:$train_feat_dir/spk2utt "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- | transform-vec $train_feat_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" $train_feat_dir/plda || exit 1;
@@ -76,3 +75,9 @@ echo "minDCF(p-target=0.001): $mindcf2"
 
 
 # ./Score/plda.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60 Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/test_epoch_60_var /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/test/trials
+
+
+# if ! [ -f Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60/utt2spk ];then
+#     echo "hello"
+# fi
+
