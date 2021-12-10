@@ -37,7 +37,7 @@ from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal
-from TrainAndTest.common_func import create_model
+from TrainAndTest.common_func import create_model, verification_extract
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -71,7 +71,11 @@ parser.add_argument('--score-suffix', type=str, default='', help='path to voxcel
 
 parser.add_argument('--test-input', type=str, default='fix', help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
+parser.add_argument('--xvector', action='store_true', default=False, help='need to make mfb file')
+
 parser.add_argument('--extract', action='store_false', default=True, help='need to make mfb file')
+parser.add_argument('--test', action='store_false', default=True, help='need to make mfb file')
+
 parser.add_argument('--num-frames', default=300, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--frame-shift', default=300, type=int, metavar='N', help='acoustic feature dimension')
 
@@ -604,13 +608,19 @@ if __name__ == '__main__':
         if args.extract:
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
-            extract(verify_loader, model, args.xvector_dir)
 
-    file_loader = read_vec_flt
-    test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
-                                   loader=file_loader)
-    test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
-    test(test_loader, xvector_dir=args.xvector_dir)
+            # extract(verify_loader, model, args.xvector_dir)
+            verification_extract(verify_loader, model, xvector_dir=args.xvector_dir, args.start_epoch, 
+                                 test_input=args.input_length, ark_num=50000, gpu=True, verbose=False, 
+                                 xvector=args.xvector)
+
+    if args.test:
+
+        file_loader = read_vec_flt
+        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
+                                       loader=file_loader)
+        test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
+        test(test_loader, xvector_dir=args.xvector_dir)
 
     stop_time = time.time()
     t = float(stop_time - start_time)

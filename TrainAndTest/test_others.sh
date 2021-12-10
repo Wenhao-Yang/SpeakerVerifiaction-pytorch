@@ -1975,6 +1975,7 @@ if [ $stage -le 201 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb40 \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 \
+      --xvector \
       --trials trials_20w \
       --feat-format kaldi \
       --input-norm Mean \
@@ -2000,6 +2001,7 @@ if [ $stage -le 201 ]; then
       --resume Data/checkpoint/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/checkpoint_60.pth \
       --gpu-id 0 \
       --remove-vad \
+      --test \
       --cos-sim
   done
   exit
