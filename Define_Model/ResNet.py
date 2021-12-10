@@ -788,6 +788,42 @@ class ThinResNet(nn.Module):
 
         return logits, x
 
+    def xvector(self, x):
+        # pdb.set_trace()
+        # print(x.shape)
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        if self.maxpool != None:
+            x = self.maxpool(x)
+
+        # print(x.shape)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        # print(x.shape)
+
+        if self.dropout_p > 0:
+            x = self.dropout(x)
+        x = self.avgpool(x)
+        if self.encoder != None:
+            x = self.encoder(x)
+
+        x = x.view(x.size(0), -1)
+        embeddings = self.fc1[0](x)
+
+        return embeddings
+
     # Allow for accessing forward method in a inherited class
     forward = _forward
 
