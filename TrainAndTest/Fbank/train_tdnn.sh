@@ -720,14 +720,14 @@ if [ $stage -le 77 ]; then
 #
 #  done
 
-  embedding_size=512
-  block_type=basic
-  loss=subarc
-  num_centers=3
-  for loss in arcsoft; do
-    feat=fb${input_dim}
-    #_ws25
-    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+  # embedding_size=512
+  # block_type=basic
+  # loss=subarc
+  # num_centers=3
+  # for loss in arcsoft; do
+  #   feat=fb${input_dim}
+  #   #_ws25
+  #   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
 #    python -W ignore TrainAndTest/train_egs.py \
 #      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat} \
@@ -804,47 +804,47 @@ if [ $stage -le 77 ]; then
 #      --remove-vad \
 #      --log-interval 10
 
-    python -W ignore TrainAndTest/train_egs.py \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
-      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-      --nj 12 \
-      --shuffle \
-      --epochs 50 \
-      --patience 3 \
-      --milestones 10,20,30,40 \
-      --model ${model} \
-      --scheduler rop \
-      --weight-decay 0.0005 \
-      --lr 0.1 \
-      --alpha 0 \
-      --feat-format kaldi \
-      --block-type ${block_type} \
-      --embedding-size ${embedding_size} \
-      --batch-size 128 \
-      --random-chunk 200 400 \
-      --input-dim ${input_dim} \
-      --channels 512,512,512,512,1500 \
-      --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var/checkpoint_17.pth \
-      --cos-sim \
-      --dropout-p 0.0 \
-      --veri-pairs 9600 \
-      --gpu-id 0,1 \
-      --num-valid 2 \
-      --loss-ratio ${loss_ratio} \
-      --lr-ratio ${lr_ratio} \
-      --loss-type ${loss} \
-      --num-center ${num_centers} \
-      --margin 0.2 \
-      --s 30 \
-      --remove-vad \
-      --log-interval 10
-  done
-  mask_layer=attention
+    # python -W ignore TrainAndTest/train_egs.py \
+    #   --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+    #   --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+    #   --train-trials trials_2w \
+    #   --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
+    #   --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+    #   --nj 12 \
+    #   --shuffle \
+    #   --epochs 50 \
+    #   --patience 3 \
+    #   --milestones 10,20,30,40 \
+    #   --model ${model} \
+    #   --scheduler rop \
+    #   --weight-decay 0.0005 \
+    #   --lr 0.1 \
+    #   --alpha 0 \
+    #   --feat-format kaldi \
+    #   --block-type ${block_type} \
+    #   --embedding-size ${embedding_size} \
+    #   --batch-size 128 \
+    #   --random-chunk 200 400 \
+    #   --input-dim ${input_dim} \
+    #   --channels 512,512,512,512,1500 \
+    #   --encoder-type ${encod} \
+    #   --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var \
+    #   --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var/checkpoint_17.pth \
+    #   --cos-sim \
+    #   --dropout-p 0.0 \
+    #   --veri-pairs 9600 \
+    #   --gpu-id 0,1 \
+    #   --num-valid 2 \
+    #   --loss-ratio ${loss_ratio} \
+    #   --lr-ratio ${lr_ratio} \
+    #   --loss-type ${loss} \
+    #   --num-center ${num_centers} \
+    #   --margin 0.2 \
+    #   --s 30 \
+    #   --remove-vad \
+    #   --log-interval 10
+  # done
+  mask_layer=attention0
 
   weight=vox2_cf
   loss=arcsoft
