@@ -2050,6 +2050,22 @@ if [ $stage -le 202 ]; then
     trials=${lstm_dir}/data/${test_set}/test/trials
     ./Score/plda.sh $data_path $train_feat_dir $test_feat_dir $trials
   done
+
+# vox1
+# EER: 1.903%
+# minDCF(p-target=0.01): 0.3710
+# minDCF(p-target=0.001): 0.6383
+
+# cnceleb
+# EER: 17.05%
+# minDCF(p-target=0.01): 0.7488
+# minDCF(p-target=0.001): 0.8584
+
+# aishell2
+# EER: 12.17%
+# minDCF(p-target=0.01): 0.8454
+# minDCF(p-target=0.001): 0.9474
+
   exit
 fi
 
