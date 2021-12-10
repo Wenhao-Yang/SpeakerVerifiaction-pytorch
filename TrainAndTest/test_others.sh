@@ -1963,9 +1963,10 @@ if [ $stage -le 201 ]; then
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=None
+  test_subset=test
 #        --downsample ${downsample} \
 
-  for test_subset in dev; do
+  for testset in vox1 cnceleb aishell2 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
