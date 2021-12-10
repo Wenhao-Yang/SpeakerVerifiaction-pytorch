@@ -259,7 +259,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if len(out.shape) == 3:
                     out = out.squeeze(0)
 
-                if len(out.shape)==2 and out.shape[0]==1:
+                if not (len(out.shape)==2 and out.shape[0]==1):
                     print(a_data.shape, a_uid, out.shape)
                     pdb.set_trace()
 
