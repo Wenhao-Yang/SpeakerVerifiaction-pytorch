@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300
+stage=201
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1953,10 +1953,10 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=SAP2
   alpha=0
-  datasets=vox1
+  datasets=vox2
   testset=vox1
 #  test_subset=
-  block_type=cbam
+  block_type=basic
   encoder_type=None
   embedding_size=256
   resnet_size=34
@@ -1986,7 +1986,7 @@ if [ $stage -le 201 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,1 \
-      --channels 16,32,64,128 \
+      --channels 32,64,128,256 \
       --downsample ${downsample} \
       --alpha ${alpha} \
       --margin 0.2 \
@@ -1994,9 +1994,9 @@ if [ $stage -le 201 ]; then
       --time-dim 1 \
       --avg-size 5 \
       --input-length var \
-      --dropout-p 0.125 \
-      --xvector-dir Data/xvector/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_cbam_downNone_none1_SAP2_dp125_alpha0_em256_wd5e4_var/${test_subset}_epoch_50_var \
-      --resume Data/checkpoint/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_cbam_downNone_none1_SAP2_dp125_alpha0_em256_wd5e4_var/checkpoint_50.pth \
+      --dropout-p 0.1 \
+      --xvector-dir Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/${test_subset}_epoch_50_var \
+      --resume Data/checkpoint/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --remove-vad \
       --cos-sim
@@ -2010,9 +2010,12 @@ if [ $stage -le 201 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   4.0403%   |   0.2446    |   0.4034    |    0.5689    | 20211130 16:56:42 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+
 # Arcsoft fb40 thin34_cbam
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   4.0138%   |   0.2442    |   0.4186    |    0.5426    | 20211203 16:16:54 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+
 # Arcsoft fb40 thin18_basic_v2_k5
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   4.1676%   |   0.2354    |   0.3765    |    0.5602    | 20211202 15:09:09 |
