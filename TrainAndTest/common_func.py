@@ -243,11 +243,14 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     print('\ninput shape is ', a_data.shape)
                     raise e
 
-                if len(model_out) == 4:
-                    _, out, _, _ = model_out
-                elif len(model_out) == 2:
-                    _, out = model_out
-                elif len(model_out) == 1:
+                if isinstance(model_out, tuple):
+                    if len(model_out) == 4:
+                        _, out, _, _ = model_out
+                        
+                    elif len(model_out) == 2:
+                        _, out = model_out
+
+                else:
                     out = model_out
 
                 if out.shape[0] != 1:
