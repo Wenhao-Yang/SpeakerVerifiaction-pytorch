@@ -866,7 +866,7 @@ if [ $stage -le 77 ]; then
      --model ${model} \
      --scheduler rop \
      --weight-decay 0.0005 \
-     --lr 0.01 \
+     --lr 0.1 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
@@ -905,7 +905,7 @@ if [ $stage -le 77 ]; then
      --model ${model} \
      --scheduler rop \
      --weight-decay 0.0005 \
-     --lr 0.01 \
+     --lr 0.1 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
