@@ -916,7 +916,7 @@ class TDNN_v5(nn.Module):
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', activation='relu',
                  num_classes_b=0, block_type='basic', first_2d=False, stride=[1],
-                 init_weight='mel', power_weight=Fasle,
+                 init_weight='mel', power_weight=False,
                  mask='None', mask_len=[5, 20], channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
