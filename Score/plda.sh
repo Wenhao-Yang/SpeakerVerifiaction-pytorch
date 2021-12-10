@@ -1,9 +1,9 @@
 #!/bin/bash
 # Yangwenhao 2019-12-16 20:27
 
-"""
-Plda score from Python training checkpoint
-"""
+#
+# Plda score from Python training checkpoint
+# 
 
 if [ $# != 4 ]; then
   echo "Usage: plda.sh <data-path> <train-feat-dir> <test-feat-dir> <trials>"
@@ -63,7 +63,7 @@ eer=`compute-eer <(Score/prepare_for_eer.py $trials $test_score) 2> /dev/null`
 mindcf1=`Score/compute_min_dcf.py --p-target 0.01 $test_score $trials 2> /dev/null`
 mindcf2=`Score/compute_min_dcf.py --p-target 0.001 $test_score $trials 2> /dev/null`
 
-test_result=$test_feat_dir/result_$(date "+%Y-%m-%d-%H:%M:%S")
+test_result=$test_feat_dir/result_plda_$(date "+%Y-%m-%d-%H:%M:%S")
 
 echo "EER: $eer%" >> $test_result
 echo "minDCF(p-target=0.01): $mindcf1" >> $test_result
@@ -72,3 +72,7 @@ echo "minDCF(p-target=0.001): $mindcf2" >> $test_result
 echo "EER: $eer%"
 echo "minDCF(p-target=0.01): $mindcf1"
 echo "minDCF(p-target=0.001): $mindcf2"
+
+
+
+# ./Score/plda.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60 Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/test_epoch_60_var
