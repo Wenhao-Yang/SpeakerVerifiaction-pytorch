@@ -20,7 +20,7 @@ trials=$4
 # model_path=SuResCNN10
 logdir=$test_feat_dir/log
 
-train_cmd="Vector_Score/run.pl --mem 8G"
+train_cmd="Score/run.pl --mem 8G"
 lda_dim=200
 
 # feat_dir=Data/checkpoint/${model}/soft/kaldi_feat
@@ -75,4 +75,4 @@ echo "minDCF(p-target=0.001): $mindcf2"
 
 
 
-# ./Score/plda.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60 Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/test_epoch_60_var
+# ./Score/plda.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60 Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/test_epoch_60_var /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/test/trials
