@@ -1954,7 +1954,7 @@ if [ $stage -le 201 ]; then
   encod=SAP2
   alpha=0
   datasets=vox2
-  testset=aishell2
+  testset=vox1
 #  test_subset=
   block_type=basic
   encoder_type=None
@@ -1965,7 +1965,7 @@ if [ $stage -le 201 ]; then
   downsample=None
 #        --downsample ${downsample} \
 
-  for test_subset in test; do
+  for test_subset in dev; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1975,6 +1975,7 @@ if [ $stage -le 201 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb40 \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 \
+      --trials trials_20w \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 40 \
@@ -1995,7 +1996,7 @@ if [ $stage -le 201 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.1 \
-      --xvector-dir Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/${test_subset}_epoch_60_var \
+      --xvector-dir Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/${testset}_${test_subset}_var \
       --resume Data/checkpoint/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/checkpoint_60.pth \
       --gpu-id 0 \
       --remove-vad \
@@ -2029,7 +2030,8 @@ if [ $stage -le 201 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|   cnceleb-test    |   14.0979   |   0.2445    |   0.6538    |    0.8029    | 20211210 16:10:01 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-
+#|   aishell2-test   |   9.9600    |   0.3146    |   0.7508    |    0.8895    | 20211210 19:20:30 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 fi
 
 
