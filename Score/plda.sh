@@ -37,20 +37,25 @@ if ! [ -f $train_feat_dir/utt2spk ];then
     Score/utt2spk_to_spk2utt.pl ${train_feat_dir}/utt2spk > $train_feat_dir/spk2utt
 fi
 
+if ! [ -f $train_feat_dir/mean.vec ];then
 $train_cmd $logdir/ivector-mean.log \
     ivector-mean scp:$train_feat_dir/xvectors.scp $train_feat_dir/mean.vec || exit 1;
+fi
 
+if ! [ -f $train_feat_dir/transform.mat ];then
 $train_cmd $logdir/ivector-compute-lda.log \
     ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim  "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- |" ark:$data_dir/utt2spk $train_feat_dir/transform.mat || exit 1;
-
+fi
 
 # if ! [ -f $data_dir/spk2utt ];then
 #     Score/utt2spk_to_spk2utt.pl $data_dir/utt2spk > $data_dir/spk2utt
 # fi
 
-$train_cmd $logdir/ivector-compute-plda.log \
-    ivector-compute-plda ark:$train_feat_dir/spk2utt "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- | transform-vec $train_feat_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" $train_feat_dir/plda || exit 1;
 
+if ! [ -f $train_feat_dir/plda ];then
+    $train_cmd $logdir/ivector-compute-plda.log \
+        ivector-compute-plda ark:$train_feat_dir/spk2utt "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- | transform-vec $train_feat_dir/transform.mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" $train_feat_dir/plda || exit 1;
+fi
 
 $train_cmd $logdir/ivector-plda-scoring.log \
     ivector-plda-scoring --normalize-length=true \
@@ -75,7 +80,7 @@ echo "minDCF(p-target=0.001): $mindcf2"
 
 
 
-# ./Score/plda.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/dev Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60 Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/test_epoch_60_var /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/test/trials
+# ./Score/plda.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/dev Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/vox1_dev_var Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/test_epoch_60_var /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/test/trials
 
 
 # if ! [ -f Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60/utt2spk ];then

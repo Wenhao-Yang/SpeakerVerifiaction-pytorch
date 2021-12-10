@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=202
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2036,6 +2036,21 @@ if [ $stage -le 201 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|   aishell2-test   |   9.9600    |   0.3146    |   0.7508    |    0.8895    | 20211210 19:20:30 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+fi
+
+if [ $stage -le 202 ]; then
+  data_path=${lstm_dir}/data/vox1/dev
+  xvector_dir=Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
+  train_feat_dir=${xvector_dir}/vox1_dev_xvector_var
+
+  for test_set in vox1 cnceleb aishell2;do
+    -e "\n\033[1;4;31m Testing in ${test_set}: \033[0m"
+    
+    test_feat_dir=${xvector_dir}/${test_set}_test_xvector_var
+    trials=${lstm_dir}/data/${test_set}/test/trials
+    ./Score/plda.sh $data_path $train_feat_dir $test_feat_dir $trials
+  done
+  exit
 fi
 
 
