@@ -279,8 +279,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 key = uids[i]
                 vec = uid2vectors[key]
                 len_vec = len(vec.tobytes())
-                pdb.set_trace()
-                kaldi_io.write_vec_flt(ark, vec, key=key)
+                try:
+                    kaldi_io.write_vec_flt(ark, vec, key=key)
+                except Exception as e:
+                    pdb.set_trace()
                 # print(ark.tell())
                 scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
     scp.close()
