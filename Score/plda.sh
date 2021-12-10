@@ -30,6 +30,7 @@ lda_dim=200
 test_score=$test_feat_dir/scores_$(date "+%Y-%m-%d-%H:%M:%S")
 
 if ! [ -f $train_feat_dir/utt2spk ];then
+    echo "Creating utt2spk!"
     cat $train_feat_dir/xvectors.scp | awk '{print $1}' > $train_feat_dir/utt
     grep -f $train_feat_dir/utt $data_dir/utt2spk > $train_feat_dir/utt2spk
 
@@ -37,7 +38,7 @@ if ! [ -f $train_feat_dir/utt2spk ];then
 fi
 
 $train_cmd $logdir/ivector-mean.log \
-    ivector-mean scp:$train_feat_dir/xvectors.scp $test_feat_dir/mean.vec || exit 1;
+    ivector-mean scp:$train_feat_dir/xvectors.scp $train_feat_dir/mean.vec || exit 1;
 
 $train_cmd $logdir/ivector-compute-lda.log \
     ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim  "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- |" ark:$data_dir/utt2spk $train_feat_dir/transform.mat || exit 1;
