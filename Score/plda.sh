@@ -27,7 +27,7 @@ lda_dim=200
 # data_dir=Data/dataset/voxceleb1/kaldi_feat/voxceleb1_test
 
 #trials=$data_dir/trials
-test_score=$test_feat_dir/scores_$(date "+%Y-%m-%d-%H:%M:%S")
+test_score=$test_feat_dir/scores_$(date "+%Y-%m-%d-%H-%M-%S")
 
 if ! [ -f $train_feat_dir/utt2spk ];then
     echo "Creating utt2spk!"
@@ -63,7 +63,7 @@ eer=`compute-eer <(Score/prepare_for_eer.py $trials $test_score) 2> /dev/null`
 mindcf1=`Score/compute_min_dcf.py --p-target 0.01 $test_score $trials 2> /dev/null`
 mindcf2=`Score/compute_min_dcf.py --p-target 0.001 $test_score $trials 2> /dev/null`
 
-test_result=$test_feat_dir/result_plda_$(date "+%Y-%m-%d-%H:%M:%S")
+test_result=$test_feat_dir/result_plda_$(date "+%Y.%m.%d.%H-%M-%S")
 
 echo "EER: $eer%" >> $test_result
 echo "minDCF(p-target=0.01): $mindcf1" >> $test_result
@@ -75,7 +75,7 @@ echo "minDCF(p-target=0.001): $mindcf2"
 
 
 
-# ./Score/plda.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60 Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/test_epoch_60_var /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/test/trials
+# ./Score/plda.sh /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/dev Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60 Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/test_epoch_60_var /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/test/trials
 
 
 # if ! [ -f Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/train/epoch_60/utt2spk ];then
