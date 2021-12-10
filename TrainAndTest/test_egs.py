@@ -563,6 +563,9 @@ if __name__ == '__main__':
         # start_epoch = checkpoint['epoch']
 
         checkpoint_state_dict = checkpoint['state_dict']
+        start = checkpoint['epoch'] if 'epoch' in checkpoint else args.start_epoch
+        print('Epoch is : ' + str(start))
+
         if isinstance(checkpoint_state_dict, tuple):
             checkpoint_state_dict = checkpoint_state_dict[0]
         filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
@@ -590,8 +593,7 @@ if __name__ == '__main__':
             model.dropout.p = args.dropout_p
         except:
             pass
-        start = args.start_epoch
-        print('Epoch is : ' + str(start))
+        
         # print(model)
         if args.cuda:
             model.cuda()
@@ -610,7 +612,7 @@ if __name__ == '__main__':
                                                         **kwargs)
 
             # extract(verify_loader, model, args.xvector_dir)
-            verification_extract(verify_loader, model, xvector_dir=args.xvector_dir, args.start_epoch, 
+            verification_extract(verify_loader, model, xvector_dir=args.xvector_dir, epoch=start, 
                                  test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose, 
                                  xvector=args.xvector)
 
