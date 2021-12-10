@@ -749,6 +749,7 @@ class AttentionweightLayer_v0(nn.Module):
         super(AttentionweightLayer_v0, self).__init__()
         self.input_dim = input_dim
         self.power_weight = power_weight
+        self.weight = weight
 
         if weight == 'mel':
             m = np.arange(0, 2840.0230467083188)
@@ -775,7 +776,7 @@ class AttentionweightLayer_v0(nn.Module):
 
         ynew = np.array(ynew)
         if power_weight:
-            ynew = ynew.power(2)
+            ynew = np.power(ynew, 2)
 
         ynew /= ynew.max()
         # self.s = nn.Parameter(torch.tensor(0.5))
