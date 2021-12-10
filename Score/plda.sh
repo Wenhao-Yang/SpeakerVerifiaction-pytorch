@@ -34,7 +34,7 @@ if ! [ -f $train_feat_dir/utt2spk ];then
     cat $train_feat_dir/xvectors.scp | awk '{print $1}' > $train_feat_dir/utt
     grep -f $train_feat_dir/utt $data_dir/utt2spk > $train_feat_dir/utt2spk
 
-    Score/utt2spk_to_spk2utt.pl $train_feat_dir/utt2spk > $$train_feat_dir/spk2utt
+    Score/utt2spk_to_spk2utt.pl ${train_feat_dir}/utt2spk > $train_feat_dir/spk2utt
 fi
 
 $train_cmd $logdir/ivector-mean.log \
