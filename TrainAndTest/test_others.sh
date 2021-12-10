@@ -2044,7 +2044,7 @@ if [ $stage -le 202 ]; then
   train_feat_dir=${xvector_dir}/vox1_dev_xvector_var
 
   for test_set in vox1 cnceleb aishell2;do
-    -e "\n\033[1;4;31m Testing in ${test_set}: \033[0m"
+    echo -e "\n\033[1;4;31m Testing in ${test_set}: \033[0m"
     
     test_feat_dir=${xvector_dir}/${test_set}_test_xvector_var
     trials=${lstm_dir}/data/${test_set}/test/trials
