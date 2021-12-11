@@ -1152,7 +1152,7 @@ if [ $stage -le 81 ]; then
   # datasets=aidata
   datasets=aishell2
 
-  feat=log
+  feat=fb40
   feat_type=klfb
   loss=arcsoft
   encod=STAP
