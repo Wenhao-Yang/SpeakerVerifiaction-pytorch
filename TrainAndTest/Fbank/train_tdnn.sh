@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=81
 waited=0
 while [ $(ps 1330762 | wc -l) -eq 2 ]; do
   sleep 60
@@ -1168,7 +1168,7 @@ if [ $stage -le 81 ]; then
     python -W ignore TrainAndTest/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials_4w \
+      --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --input-norm ${input_norm} \
