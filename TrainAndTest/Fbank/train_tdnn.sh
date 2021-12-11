@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=81
 waited=0
 while [ $(ps 2930118 | wc -l) -eq 2 ]; do
   sleep 60
@@ -1187,8 +1187,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --input-dim 40 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${batch_size}_${encod}_em${embedding_size}_wde4 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${batch_size}_${encod}_em${embedding_size}_wde4/checkpoint_53.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wde4 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wde4/checkpoint_53.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
