@@ -981,7 +981,7 @@ if [ $stage -le 77 ]; then
   #    --s 30 \
   #    --remove-vad \
   #    --log-interval 10
-  # done
+  done
   exit
 fi
 
