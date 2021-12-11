@@ -1172,13 +1172,14 @@ if [ $stage -le 81 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --input-norm ${input_norm} \
+      --random-chunk 200 400 \
       --nj 12 \
       --epochs 50 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
       --optimizer ${optimizer} \
-     --scheduler ${scheduler} \
+      --scheduler ${scheduler} \
       --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
@@ -1189,8 +1190,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --input-dim 40 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4/checkpoint_53.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_53.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
