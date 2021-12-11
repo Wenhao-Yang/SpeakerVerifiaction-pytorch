@@ -1159,6 +1159,8 @@ if [ $stage -le 81 ]; then
   embedding_size=512
   input_norm=Mean
   batch_size=256
+  scheduler=rop
+  optimizer=sgd
 
   for model in TDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
@@ -1169,14 +1171,14 @@ if [ $stage -le 81 ]; then
       --train-trials trials_4w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-      --fix-length \
       --input-norm ${input_norm} \
       --nj 12 \
       --epochs 50 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
-      --scheduler rop \
+      --optimizer ${optimizer} \
+     --scheduler ${scheduler} \
       --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
@@ -1187,8 +1189,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --input-dim 40 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4/checkpoint_53.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4/checkpoint_53.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
