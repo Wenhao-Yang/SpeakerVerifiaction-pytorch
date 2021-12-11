@@ -1163,7 +1163,7 @@ if [ $stage -le 81 ]; then
   for model in TDNN_v5; do
     echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
-    python -W ignore TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_4w \
@@ -1187,8 +1187,8 @@ if [ $stage -le 81 ]; then
       --accu-steps 1 \
       --input-dim 40 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wde4 \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wde4/checkpoint_53.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4 \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4/checkpoint_53.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
