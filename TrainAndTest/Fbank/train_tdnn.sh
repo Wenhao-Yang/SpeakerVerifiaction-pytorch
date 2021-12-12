@@ -907,7 +907,7 @@ if [ $stage -le 77 ]; then
      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
      --nj 12 \
-     --epochs 20 \
+     --epochs 40 \
      --batch-size ${batch_size} \
      --patience 3 \
      --milestones 10,20,30,40 \
@@ -916,7 +916,7 @@ if [ $stage -le 77 ]; then
      --scheduler ${scheduler} \
      --weight-decay 0.0005 \
      --lr 0.1 \
-     --base-lr 0.01 \
+     --base-lr 0.0005 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
@@ -948,7 +948,7 @@ if [ $stage -le 77 ]; then
      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
      --nj 12 \
-     --epochs 20 \
+     --epochs 40 \
      --batch-size ${batch_size} \
      --patience 3 \
      --milestones 10,20,30,40 \
@@ -957,7 +957,7 @@ if [ $stage -le 77 ]; then
      --scheduler ${scheduler} \
      --weight-decay 0.0005 \
      --lr 0.1 \
-     --base-lr 0.01 \
+     --base-lr 0.0005 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
