@@ -895,7 +895,8 @@ if [ $stage -le 77 ]; then
      --margin 0.2 \
      --s 30 \
      --remove-vad \
-     --log-interval 10
+     --log-interval 10 \
+     --test-interval 2
   done
 
   mask_layer=attention0
@@ -939,7 +940,8 @@ if [ $stage -le 77 ]; then
      --margin 0.2 \
      --s 30 \
      --remove-vad \
-     --log-interval 10
+     --log-interval 10 \
+     --test-interval 2
 
     python -W ignore TrainAndTest/train_egs.py \
      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
@@ -981,7 +983,8 @@ if [ $stage -le 77 ]; then
      --margin 0.2 \
      --s 30 \
      --remove-vad \
-     --log-interval 10
+     --log-interval 10 \
+     --test-interval 2
   done
   exit
 fi

@@ -655,7 +655,7 @@ def main():
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
-            if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
+            if (epoch == 1 or epoch != (end - 2)) and (epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
                 model.eval()
                 check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
                 model_state_dict = model.module.state_dict() \

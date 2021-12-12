@@ -537,6 +537,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='random seed (default: 0)')
     parser.add_argument('--log-interval', type=int, default=10, metavar='LI',
                         help='how many batches to wait before logging training status')
+    parser.add_argument('--test-interval', type=int, default=4, metavar='TI',
+                        help='how many batches to wait before logging training status')
 
     parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
                         help='choose the acoustic features type.')
