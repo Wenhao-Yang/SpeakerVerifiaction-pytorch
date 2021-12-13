@@ -2051,20 +2051,15 @@ if [ $stage -le 202 ]; then
     ./Score/plda.sh $data_path $train_feat_dir $test_feat_dir $trials
   done
 
-# vox1
-# EER: 1.903%
-# minDCF(p-target=0.01): 0.3710
-# minDCF(p-target=0.001): 0.6383
+# PLDA ThinResNet34
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   1.903     |    -----    |   0.3710    |    0.6383    | 20211210 15:47:27 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|  cnceleb-test     |   17.05     |    -----    |   0.7488    |    0.8584    | 20211210 15:47:27 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|  aishell2-test    |   12.17     |    -----    |   0.8454    |    0.9474    | 20211210 15:47:27 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
-# cnceleb
-# EER: 17.05%
-# minDCF(p-target=0.01): 0.7488
-# minDCF(p-target=0.001): 0.8584
-
-# aishell2
-# EER: 12.17%
-# minDCF(p-target=0.01): 0.8454
-# minDCF(p-target=0.001): 0.9474
 
   exit
 fi
@@ -2245,4 +2240,55 @@ if [ $stage -le 300 ]; then
 #  for s in vlog; do
 #    wc -l data/cnceleb/dev/subtrials/trials_vlog_${s}
 #  done
+fi
+
+
+if [ $stage -le 400 ]; then
+  feat_type=klfb
+  feat=fb40
+  loss=arcsoft
+  model=TDNN_v5
+  encod=STAP
+  dataset=aishell2
+  
+  test_set=aishell2
+  subset=test
+  input_dim=40
+  input_norm=Mean
+  embedding_size=512
+
+  # Training set: aishell2 40-dimensional log fbanks kaldi  Loss: arcsoft
+  # Cosine Similarity
+  #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+
+
+  for test_set in vox1 cnceleb aishell2; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/valid_${feat} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim ${input_dim} \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encod} \
+      --channels 512,512,512,512,1500 \
+      --stride 1,1,1,1 \
+      --margin 0.2 \
+      --s 30 \
+      --input-length var \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/TDNN_v5/TDNN_v5/aishell2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_50_var \
+      --resume Data/checkpoint/TDNN_v5/aishell2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_var/checkpoint_50.pth \
+      --gpu-id 1 \
+      --remove-vad \
+      --cos-sim
+  done
+  exit
 fi
