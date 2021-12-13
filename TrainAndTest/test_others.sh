@@ -2250,7 +2250,6 @@ if [ $stage -le 400 ]; then
   model=TDNN_v5
   encod=STAP
   dataset=aishell2
-  
   test_set=aishell2
   subset=test
   input_dim=40
@@ -2260,6 +2259,9 @@ if [ $stage -le 400 ]; then
   # Training set: aishell2 40-dimensional log fbanks kaldi  Loss: arcsoft
   # Cosine Similarity
   #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+  #|     vox1-test     |   21.5960   |   0.2504    |   0.8862    |    0.9153    | 20211213 16:16:06 |
+  #|   cnceleb-test    |   25.9654   |   0.2082    |   0.8930    |    0.9493    | 20211213 16:21:13 |
+  #|   aishell2-test   |   1.5800    |   0.2139    |   0.3112    |    0.5945    | 20211213 16:22:51 |
 
 
   for test_set in vox1 cnceleb aishell2; do # 32,128,512; 8,32,128
