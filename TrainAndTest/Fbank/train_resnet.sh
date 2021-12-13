@@ -323,6 +323,8 @@ if [ $stage -le 41 ]; then
   scheduler=mstep
   optimizer=sgd
   input_dim=40
+  batch_size=256
+
 
   for encoder_type in SAP2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
@@ -340,7 +342,7 @@ if [ $stage -le 41 ]; then
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 50 \
-      --batch-size 128 \
+      --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --lr 0.1 \
@@ -388,7 +390,7 @@ if [ $stage -le 41 ]; then
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 50 \
-      --batch-size 128 \
+      --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --lr 0.1 \
