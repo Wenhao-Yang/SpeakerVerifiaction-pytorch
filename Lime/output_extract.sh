@@ -857,7 +857,7 @@ if [ $stage -le 300 ]; then
       --epochs 60 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
       --train-set-name ${train_set} \
-      --test-set-name ${vox1} \
+      --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
       --input-norm Mean \
       --kernel-size ${kernel} \
