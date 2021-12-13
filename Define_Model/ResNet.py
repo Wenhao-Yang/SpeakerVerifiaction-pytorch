@@ -192,12 +192,13 @@ class Conv2dReluBn(nn.Module):
 class SE_Res2Block(nn.Module):
 
     def __init__(self, inplanes, planes, kernel_size, padding, stride=1, dilation=1,
-                 scale=8, reduction_ratio=2):
+                 scale=8, reduction_ratio=2, downsample=None,):
         super(SE_Res2Block, self).__init__()
         self.scale = scale
         self.stride = stride
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.downsample = downsample
         self.conv1 = Conv2dReluBn(inplanes, planes, kernel_size=1, stride=1, padding=0),
         self.conv2 = Res2Conv2dReluBn(planes, kernel_size, stride, padding, dilation, scale=scale),
         self.conv3 = Conv2dReluBn(planes, planes, kernel_size=1, stride=1, padding=0),
@@ -213,6 +214,9 @@ class SE_Res2Block(nn.Module):
         out = self.conv3(out)
 
         out = self.se_layer(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
 
         out += identity
         out = self.relu(out)
@@ -561,6 +565,9 @@ class ThinResNet(nn.Module):
             block = BasicBlock if resnet_size < 50 else Bottleneck
         elif block_type == 'basic_v2':
             block = BasicBlock_v2
+        elif block_type == 'seres2block':
+            block = SE_Res2Block
+
 
         block.expansion = expansion
         # num_filter = [32, 64, 128, 256]
