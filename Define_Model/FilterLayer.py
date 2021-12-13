@@ -605,6 +605,10 @@ class AttentionweightLayer(nn.Module):
             ynew = c.VOX1_CFB40
         elif weight == 'vox2_cf':
             ynew = c.VOX2_CFB40
+        elif weight == 'vox1_rcf':
+            ynew = c.VOX1_RCFB40
+        elif weight == 'vox2_rcf':
+            ynew = c.VOX2_RCFB40
         else:
             raise ValueError(weight)
 
@@ -664,6 +668,10 @@ class AttentionweightLayer_v2(nn.Module):
             ynew = c.VOX1_CFB40
         elif weight == 'vox2_cf':
             ynew = c.VOX2_CFB40
+        elif weight == 'vox1_rcf':
+            ynew = c.VOX1_RCFB40
+        elif weight == 'vox2_rcf':
+            ynew = c.VOX2_RCFB40
         else:
             raise ValueError(weight)
 
