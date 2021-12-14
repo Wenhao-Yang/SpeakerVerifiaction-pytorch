@@ -581,9 +581,11 @@ class DropweightLayer(nn.Module):
 
 
 class AttentionweightLayer(nn.Module):
-    def __init__(self, input_dim=161, weight='mel'):
+    def __init__(self, input_dim=161, weight='mel', power_weight='none'):
         super(AttentionweightLayer, self).__init__()
         self.input_dim = input_dim
+        self.weight = weight
+        self.power_weight = power_weight
 
         if weight == 'mel':
             m = np.arange(0, 2840.0230467083188)
@@ -613,7 +615,15 @@ class AttentionweightLayer(nn.Module):
             raise ValueError(weight)
 
         ynew = np.array(ynew)
-        ynew /= ynew.max()
+
+        if 'power' in power_weight:
+            ynew = np.power(ynew, 2)
+
+        if 'mean' in power_weight:
+            ynew /= ynew.mean()
+        else:
+            ynew /= ynew.max()
+
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
 
@@ -640,7 +650,7 @@ class AttentionweightLayer(nn.Module):
 
     def __repr__(self):
 
-        return "AttentionweightLayer(input_dim=%s)" % self.input_dim
+        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, power_weight=%s)" % (self.input_dim, self.weight, self.power_weight)
 
 
 class AttentionweightLayer_v2(nn.Module):
