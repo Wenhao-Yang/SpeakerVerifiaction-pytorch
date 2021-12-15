@@ -326,7 +326,7 @@ if [ $stage -le 41 ]; then
   batch_size=256
 
 
-  for power_weight in power powermean ; do
+  for power_weight in mean ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     # python TrainAndTest/train_egs.py \
     #   --model ${model} \
