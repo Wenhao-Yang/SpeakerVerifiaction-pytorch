@@ -91,7 +91,7 @@ writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-extract_kwargs = {'num_workers': 0 if args.test_input == 'var' else 4, 
+extract_kwargs = {'num_workers': 0, 
                   'pin_memory': False} if args.cuda else {}
 
 if not os.path.exists(args.check_path):
