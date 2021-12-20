@@ -1411,10 +1411,12 @@ if [ $stage -le 157 ]; then
   model=TDNN_v5
   datasets=cnceleb
   embedding_size=512
+  encod=STAP
   block_type=basic
   loss=subarc
   scheduler=exp
   optimizer=sgd
+  input_dim=40
 
   num_centers=3
   dev_sub=
