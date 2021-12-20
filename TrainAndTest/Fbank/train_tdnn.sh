@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=77
+stage=157
 waited=0
 while [ $(ps 1348898 | wc -l) -eq 2 ]; do
   sleep 60
@@ -220,6 +220,9 @@ if [ $stage -le 40 ]; then
 
   done
 fi
+
+
+# VoxCeleb1
 
 if [ $stage -le 50 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
@@ -508,7 +511,10 @@ if [ $stage -le 74 ]; then
   exit
 fi
 
-if [ $stage -le 75 ]; then
+# VoxCeleb2
+
+
+if [ $stage -le 100 ]; then
   model=TDNN_v5
   datasets=vox2
   #  feat=fb24
@@ -563,7 +569,7 @@ if [ $stage -le 75 ]; then
   exit
 fi
 
-if [ $stage -le 76 ]; then
+if [ $stage -le 101 ]; then
   model=TDNN_v5
   datasets=vox2
   #  feat=fb24
@@ -623,373 +629,7 @@ if [ $stage -le 76 ]; then
   exit
 fi
 
-if [ $stage -le 77 ]; then
-  model=TDNN_v5
-  datasets=cnceleb
-  #  feat=fb24
-#  feat_type=pyfb
-  feat_type=klfb
-  loss=arcsoft
-  encod=STAP
-  embedding_size=512
-  input_dim=40
-  input_norm=Mean
-  lr_ratio=0
-  loss_ratio=1
-  # _lrr${lr_ratio}_lsr${loss_ratio}
-
-#  for loss in arcdist; do
-#    feat=fb${input_dim}
-#    #_ws25
-#    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
-#    python -W ignore TrainAndTest/train_egs.py \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat} \
-#      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat}_valid \
-#      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-#      --nj 12 \
-#      --shuffle \
-#      --epochs 60 \
-#      --patience 3 \
-#      --milestones 10,20,30,40 \
-#      --model ${model} \
-#      --scheduler rop \
-#      --weight-decay 0.0005 \
-#      --lr 0.1 \
-#      --alpha 0 \
-#      --feat-format kaldi \
-#      --embedding-size ${embedding_size} \
-#      --batch-size 128 \
-#      --random-chunk 200 400 \
-#      --input-dim ${input_dim} \
-#      --channels 512,512,512,512,1500 \
-#      --encoder-type ${encod} \
-#      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs12_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-#      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs12_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
-#      --cos-sim \
-#      --dropout-p 0.0 \
-#      --veri-pairs 9600 \
-#      --gpu-id 0,1 \
-#      --num-valid 2 \
-#      --loss-ratio ${loss_ratio} \
-#      --lr-ratio ${lr_ratio} \
-#      --loss-type ${loss} \
-#      --margin 0.2 \
-#      --s 30 \
-#      --remove-vad \
-#      --log-interval 10
-#    python -W ignore TrainAndTest/train_egs.py \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-#      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
-#      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-#      --nj 12 \
-#      --shuffle \
-#      --epochs 29 \
-#      --patience 3 \
-#      --milestones 10,20,30,40 \
-#      --model ${model} \
-#      --scheduler rop \
-#      --weight-decay 0.0005 \
-#      --lr 0.01 \
-#      --alpha 0 \
-#      --feat-format kaldi \
-#      --embedding-size ${embedding_size} \
-#      --batch-size 128 \
-#      --random-chunk 200 400 \
-#      --input-dim ${input_dim} \
-#      --channels 512,512,512,512,1500 \
-#      --encoder-type ${encod} \
-#      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}_wd5e4_var \
-#      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}_wd5e4_var/checkpoint_21.pth \
-#      --cos-sim \
-#      --dropout-p 0.0 \
-#      --veri-pairs 9600 \
-#      --gpu-id 0,1 \
-#      --num-valid 2 \
-#      --loss-ratio ${loss_ratio} \
-#      --lr-ratio ${lr_ratio} \
-#      --loss-type ${loss} \
-#      --margin 0.2 \
-#      --s 30 \
-#      --remove-vad \
-#      --log-interval 10
-#
-#  done
-
-  # embedding_size=512
-  # block_type=basic
-  # loss=subarc
-  # num_centers=3
-  # for loss in arcsoft; do
-  #   feat=fb${input_dim}
-  #   #_ws25
-  #   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
-#    python -W ignore TrainAndTest/train_egs.py \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat} \
-#      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat}_valid \
-#      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-#      --nj 12 \
-#      --shuffle \
-#      --epochs 60 \
-#      --patience 3 \
-#      --milestones 10,20,30,40 \
-#      --model ${model} \
-#      --scheduler rop \
-#      --weight-decay 0.0005 \
-#      --lr 0.1 \
-#      --alpha 0 \
-#      --feat-format kaldi \
-#      --embedding-size ${embedding_size} \
-#      --batch-size 128 \
-#      --random-chunk 200 400 \
-#      --input-dim ${input_dim} \
-#      --channels 512,512,512,512,1500 \
-#      --encoder-type ${encod} \
-#      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs12_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-#      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs12_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
-#      --cos-sim \
-#      --dropout-p 0.0 \
-#      --veri-pairs 9600 \
-#      --gpu-id 0,1 \
-#      --num-valid 2 \
-#      --loss-ratio ${loss_ratio} \
-#      --lr-ratio ${lr_ratio} \
-#      --loss-type ${loss} \
-#      --margin 0.2 \
-#      --s 30 \
-#      --remove-vad \
-#      --log-interval 10
-#    python -W ignore TrainAndTest/train_egs.py \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-#      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
-#      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-#      --nj 12 \
-#      --shuffle \
-#      --epochs 42 \
-#      --patience 3 \
-#      --milestones 10,20,30,40 \
-#      --model ${model} \
-#      --scheduler rop \
-#      --weight-decay 0.0005 \
-#      --lr 0.1 \
-#      --alpha 0 \
-#      --feat-format kaldi \
-#      --embedding-size ${embedding_size} \
-#      --batch-size 128 \
-#      --random-chunk 200 400 \
-#      --input-dim ${input_dim} \
-#      --channels 512,512,512,512,1500 \
-#      --encoder-type ${encod} \
-#      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-#      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_10.pth \
-#      --cos-sim \
-#      --dropout-p 0.0 \
-#      --veri-pairs 9600 \
-#      --gpu-id 0,1 \
-#      --num-valid 2 \
-#      --loss-ratio ${loss_ratio} \
-#      --lr-ratio ${lr_ratio} \
-#      --loss-type ${loss} \
-#      --margin 0.2 \
-#      --s 30 \
-#      --remove-vad \
-#      --log-interval 10
-
-    # python -W ignore TrainAndTest/train_egs.py \
-    #   --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-    #   --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-    #   --train-trials trials_2w \
-    #   --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
-    #   --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-    #   --nj 12 \
-    #   --shuffle \
-    #   --epochs 50 \
-    #   --patience 3 \
-    #   --milestones 10,20,30,40 \
-    #   --model ${model} \
-    #   --scheduler rop \
-    #   --weight-decay 0.0005 \
-    #   --lr 0.1 \
-    #   --alpha 0 \
-    #   --feat-format kaldi \
-    #   --block-type ${block_type} \
-    #   --embedding-size ${embedding_size} \
-    #   --batch-size 128 \
-    #   --random-chunk 200 400 \
-    #   --input-dim ${input_dim} \
-    #   --channels 512,512,512,512,1500 \
-    #   --encoder-type ${encod} \
-    #   --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var \
-    #   --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var/checkpoint_17.pth \
-    #   --cos-sim \
-    #   --dropout-p 0.0 \
-    #   --veri-pairs 9600 \
-    #   --gpu-id 0,1 \
-    #   --num-valid 2 \
-    #   --loss-ratio ${loss_ratio} \
-    #   --lr-ratio ${lr_ratio} \
-    #   --loss-type ${loss} \
-    #   --num-center ${num_centers} \
-    #   --margin 0.2 \
-    #   --s 30 \
-    #   --remove-vad \
-    #   --log-interval 10
-  # done
-  mask_layer=baseline
-
-  weight=vox2_cf
-  loss=arcsoft
-  scheduler=exp
-  optimizer=sgd
-  feat=fb${input_dim}
-  batch_size=256
-
-  for weight in vox2_cf; do
-    #_ws25
-    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
-    python -W ignore TrainAndTest/train_egs.py \
-     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-     --train-trials trials_2w \
-     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
-     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-     --nj 12 \
-     --epochs 50 \
-     --batch-size ${batch_size} \
-     --patience 3 \
-     --milestones 10,20,30,40 \
-     --model ${model} \
-     --optimizer ${optimizer} \
-     --scheduler ${scheduler} \
-     --weight-decay 0.0005 \
-     --lr 0.1 \
-     --base-lr 0.00001 \
-     --alpha 0 \
-     --feat-format kaldi \
-     --embedding-size ${embedding_size} \
-     --random-chunk 200 400 \
-     --input-dim ${input_dim} \
-     --channels 512,512,512,512,1500 \
-     --mask-layer ${mask_layer} \
-     --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_20.pth \
-     --cos-sim \
-     --dropout-p 0.0 \
-     --veri-pairs 9600 \
-     --gpu-id 0,1 \
-     --num-valid 2 \
-     --loss-ratio ${loss_ratio} \
-     --lr-ratio ${lr_ratio} \
-     --loss-type ${loss} \
-     --margin 0.2 \
-     --s 30 \
-     --remove-vad \
-     --log-interval 10 \
-     --test-interval 2
-  done
-
-  mask_layer=attention0
-  for weight in vox2_cf; do
-    python -W ignore TrainAndTest/train_egs.py \
-     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-     --train-trials trials_2w \
-     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
-     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-     --nj 12 \
-     --epochs 50 \
-     --batch-size ${batch_size} \
-     --patience 3 \
-     --milestones 10,20,30,40 \
-     --model ${model} \
-     --optimizer ${optimizer} \
-     --scheduler ${scheduler} \
-     --weight-decay 0.0005 \
-     --lr 0.1 \
-     --base-lr 0.00001 \
-     --alpha 0 \
-     --feat-format kaldi \
-     --embedding-size ${embedding_size} \
-     --random-chunk 200 400 \
-     --input-dim ${input_dim} \
-     --channels 512,512,512,512,1500 \
-     --mask-layer ${mask_layer} \
-     --init-weight ${weight} \
-     --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_20.pth \
-     --cos-sim \
-     --dropout-p 0.0 \
-     --veri-pairs 9600 \
-     --gpu-id 0,1 \
-     --num-valid 2 \
-     --loss-ratio ${loss_ratio} \
-     --lr-ratio ${lr_ratio} \
-     --loss-type ${loss} \
-     --margin 0.2 \
-     --s 30 \
-     --remove-vad \
-     --log-interval 10 \
-     --test-interval 2
-
-    python -W ignore TrainAndTest/train_egs.py \
-     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-     --train-trials trials_2w \
-     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
-     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-     --nj 12 \
-     --epochs 50 \
-     --batch-size ${batch_size} \
-     --patience 3 \
-     --milestones 10,20,30,40 \
-     --model ${model} \
-     --optimizer ${optimizer} \
-     --scheduler ${scheduler} \
-     --weight-decay 0.0005 \
-     --lr 0.1 \
-     --base-lr 0.00001 \
-     --alpha 0 \
-     --feat-format kaldi \
-     --embedding-size ${embedding_size} \
-     --random-chunk 200 400 \
-     --input-dim ${input_dim} \
-     --channels 512,512,512,512,1500 \
-     --mask-layer ${mask_layer} \
-     --init-weight ${weight} \
-     --power-weight \
-     --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_power${weight}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_power${weight}_wd5e4_var/checkpoint_20.pth \
-     --cos-sim \
-     --dropout-p 0.0 \
-     --veri-pairs 9600 \
-     --gpu-id 0,1 \
-     --num-valid 2 \
-     --loss-ratio ${loss_ratio} \
-     --lr-ratio ${lr_ratio} \
-     --loss-type ${loss} \
-     --margin 0.2 \
-     --s 30 \
-     --remove-vad \
-     --log-interval 10 \
-     --test-interval 2
-  done
-  exit
-fi
-
-if [ $stage -le 78 ]; then
+if [ $stage -le 105 ]; then
   model=ECAPA
   datasets=vox2
   #  feat=fb24
@@ -1045,7 +685,7 @@ if [ $stage -le 78 ]; then
   exit
 fi
 
-if [ $stage -le 79 ]; then
+if [ $stage -le 106 ]; then
   model=RET
   datasets=vox2
   feat_type=pyfb
@@ -1101,8 +741,7 @@ if [ $stage -le 79 ]; then
   done
   exit
 fi
-
-if [ $stage -le 80 ]; then
+if [ $stage -le 107 ]; then
   model=TDNN_v5
   datasets=vox2
   feat=fb40
@@ -1151,67 +790,7 @@ if [ $stage -le 80 ]; then
   done
 fi
 
-if [ $stage -le 81 ]; then
-  #  model=TDNN
-  # datasets=aidata
-  datasets=aishell2
-
-  feat=fb40
-  feat_type=klfb
-  loss=arcsoft
-  encod=STAP
-  embedding_size=512
-  input_norm=Mean
-  batch_size=256
-  scheduler=rop
-  optimizer=sgd
-
-  for model in TDNN_v5; do
-    echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
-    python -W ignore TrainAndTest/train_egs.py \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
-      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-      --input-norm ${input_norm} \
-      --random-chunk 200 400 \
-      --nj 12 \
-      --epochs 50 \
-      --patience 3 \
-      --milestones 10,20,30,40 \
-      --model ${model} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
-      --weight-decay 0.0005 \
-      --lr 0.1 \
-      --alpha 0 \
-      --feat-format kaldi \
-      --channels 512,512,512,512,1500 \
-      --embedding-size ${embedding_size} \
-      --batch-size ${batch_size} \
-      --accu-steps 1 \
-      --input-dim 40 \
-      --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_53.pth \
-      --cos-sim \
-      --dropout-p 0.0 \
-      --veri-pairs 9600 \
-      --gpu-id 0,1 \
-      --num-valid 2 \
-      --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
-      --all-iteraion 0 \
-      --remove-vad \
-      --log-interval 10
-  done
-  exit
-fi
-
-if [ $stage -le 82 ]; then
+if [ $stage -le 108 ]; then
   model=DTDNN
   datasets=vox2
   feat=log
@@ -1261,7 +840,7 @@ if [ $stage -le 82 ]; then
   done
 fi
 
-if [ $stage -le 90 ]; then
+if [ $stage -le 109 ]; then
   model=RET
   datasets=vox2
   feat=log
@@ -1374,7 +953,7 @@ if [ $stage -le 90 ]; then
   exit
 fi
 
-if [ $stage -le 91 ]; then
+if [ $stage -le 110 ]; then
   model=RET_v2
   datasets=vox2
   feat=log
@@ -1437,7 +1016,7 @@ if [ $stage -le 91 ]; then
   exit
 fi
 
-if [ $stage -le 92 ]; then
+if [ $stage -le 111 ]; then
   model=RET_v2
   datasets=vox2
   feat=log
@@ -1541,7 +1120,7 @@ if [ $stage -le 92 ]; then
 fi
 
 
-if [ $stage -le 93 ]; then
+if [ $stage -le 112 ]; then
   model=RET_v3
   datasets=vox2
   feat=log
@@ -1605,3 +1184,456 @@ if [ $stage -le 93 ]; then
       --log-interval 10
   done
 fi
+
+
+# CnCeleb
+if [ $stage -le 150 ]; then
+  model=TDNN_v5
+  datasets=cnceleb
+  #  feat=fb24
+#  feat_type=pyfb
+  feat_type=klfb
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_dim=40
+  input_norm=Mean
+  lr_ratio=0
+  loss_ratio=1
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+
+ for loss in arcdist; do
+   feat=fb${input_dim}
+   #_ws25
+   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+   python -W ignore TrainAndTest/train_egs.py \
+     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat} \
+     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+     --train-trials trials_2w \
+     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat}_valid \
+     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+     --nj 12 \
+     --shuffle \
+     --epochs 60 \
+     --patience 3 \
+     --milestones 10,20,30,40 \
+     --model ${model} \
+     --scheduler rop \
+     --weight-decay 0.0005 \
+     --lr 0.1 \
+     --alpha 0 \
+     --feat-format kaldi \
+     --embedding-size ${embedding_size} \
+     --batch-size 128 \
+     --random-chunk 200 400 \
+     --input-dim ${input_dim} \
+     --channels 512,512,512,512,1500 \
+     --encoder-type ${encod} \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs12_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs12_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
+     --cos-sim \
+     --dropout-p 0.0 \
+     --veri-pairs 9600 \
+     --gpu-id 0,1 \
+     --num-valid 2 \
+     --loss-ratio ${loss_ratio} \
+     --lr-ratio ${lr_ratio} \
+     --loss-type ${loss} \
+     --margin 0.2 \
+     --s 30 \
+     --remove-vad \
+     --log-interval 10
+  done
+fi
+
+
+if [ $stage -le 151 ]; then
+
+  model=TDNN_v5
+  datasets=cnceleb
+  feat_type=klfb
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_dim=40
+  input_norm=Mean
+  lr_ratio=0
+  loss_ratio=1
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+
+ for loss in arcdist; do
+   feat=fb${input_dim}
+   python -W ignore TrainAndTest/train_egs.py \
+     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+     --train-trials trials_2w \
+     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
+     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+     --nj 12 \
+     --shuffle \
+     --epochs 29 \
+     --patience 3 \
+     --milestones 10,20,30,40 \
+     --model ${model} \
+     --scheduler rop \
+     --weight-decay 0.0005 \
+     --lr 0.01 \
+     --alpha 0 \
+     --feat-format kaldi \
+     --embedding-size ${embedding_size} \
+     --batch-size 128 \
+     --random-chunk 200 400 \
+     --input-dim ${input_dim} \
+     --channels 512,512,512,512,1500 \
+     --encoder-type ${encod} \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}_wd5e4_var/checkpoint_21.pth \
+     --cos-sim \
+     --dropout-p 0.0 \
+     --veri-pairs 9600 \
+     --gpu-id 0,1 \
+     --num-valid 2 \
+     --loss-ratio ${loss_ratio} \
+     --lr-ratio ${lr_ratio} \
+     --loss-type ${loss} \
+     --margin 0.2 \
+     --s 30 \
+     --remove-vad \
+     --log-interval 10
+ done
+fi
+
+if [ $stage -le 155 ]; then
+  model=TDNN_v5
+  datasets=cnceleb
+  embedding_size=512
+  block_type=basic
+  loss=subarc
+  scheduler=exp
+  optimizer=sgd
+
+  # num_centers=3
+  dev_sub=
+
+  for loss in arcsoft; do
+    feat=fb${input_dim}
+  #   #_ws25
+    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+   python -W ignore TrainAndTest/train_egs.py \
+     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${dev_sub}_${feat} \
+     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+     --train-trials trials_2w \
+     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${dev_sub}_${feat}_valid \
+     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+     --nj 12 \
+     --shuffle \
+     --epochs 60 \
+     --patience 3 \
+     --milestones 10,20,30,40 \
+     --model ${model} \
+     --optimizer ${optimizer} \
+     --scheduler ${scheduler} \
+     --weight-decay 0.0005 \
+     --lr 0.1 \
+     --alpha 0 \
+     --feat-format kaldi \
+     --embedding-size ${embedding_size} \
+     --batch-size 128 \
+     --random-chunk 200 400 \
+     --input-dim ${input_dim} \
+     --channels 512,512,512,512,1500 \
+     --encoder-type ${encod} \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
+     --cos-sim \
+     --dropout-p 0.0 \
+     --veri-pairs 9600 \
+     --gpu-id 0,1 \
+     --num-valid 2 \
+     --loss-ratio ${loss_ratio} \
+     --lr-ratio ${lr_ratio} \
+     --loss-type ${loss} \
+     --margin 0.2 \
+     --s 30 \
+     --remove-vad \
+     --log-interval 10
+  done
+  exit
+fi
+
+
+if [ $stage -le 156 ]; then
+    model=TDNN_v5
+    datasets=cnceleb
+
+   python -W ignore TrainAndTest/train_egs.py \
+     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+     --train-trials trials_2w \
+     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
+     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+     --nj 12 \
+     --shuffle \
+     --epochs 42 \
+     --patience 3 \
+     --milestones 10,20,30,40 \
+     --model ${model} \
+     --scheduler rop \
+     --weight-decay 0.0005 \
+     --lr 0.1 \
+     --alpha 0 \
+     --feat-format kaldi \
+     --embedding-size ${embedding_size} \
+     --batch-size 128 \
+     --random-chunk 200 400 \
+     --input-dim ${input_dim} \
+     --channels 512,512,512,512,1500 \
+     --encoder-type ${encod} \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_10.pth \
+     --cos-sim \
+     --dropout-p 0.0 \
+     --veri-pairs 9600 \
+     --gpu-id 0,1 \
+     --num-valid 2 \
+     --loss-ratio ${loss_ratio} \
+     --lr-ratio ${lr_ratio} \
+     --loss-type ${loss} \
+     --margin 0.2 \
+     --s 30 \
+     --remove-vad \
+     --log-interval 10
+fi
+
+if [ $stage -le 157 ]; then
+  model=TDNN_v5
+  datasets=cnceleb
+  embedding_size=512
+  block_type=basic
+  loss=subarc
+  scheduler=exp
+  optimizer=sgd
+
+  num_centers=3
+  dev_sub=
+  batch_size=256
+
+  for loss in subarc; do
+    feat=fb${input_dim}
+    python -W ignore TrainAndTest/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${dev_sub}_${feat} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${dev_sub}_${feat}_valid \
+      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+      --nj 12 \
+      --shuffle \
+      --epochs 50 \
+      --patience 3 \
+      --milestones 10,20,30,40 \
+      --model ${model} \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
+      --weight-decay 0.0005 \
+      --lr 0.1 \
+      --base-lr 0.00001 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --batch-size ${batch_size} \
+      --random-chunk 200 400 \
+      --input-dim ${input_dim} \
+      --channels 512,512,512,512,1500 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}max_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}max_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var/checkpoint_17.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0,1 \
+      --num-valid 2 \
+      --loss-ratio ${loss_ratio} \
+      --lr-ratio ${lr_ratio} \
+      --loss-type ${loss} \
+      --num-center ${num_centers} \
+      --margin 0.2 \
+      --s 30 \
+      --remove-vad \
+      --log-interval 10
+  done
+  exit
+fi
+
+if [ $stage -le 158 ]; then
+    model=TDNN_v5
+    datasets=cnceleb
+  mask_layer=baseline
+
+  weight=vox2_cf
+  loss=arcsoft
+  scheduler=exp
+  optimizer=sgd
+  feat=fb${input_dim}
+  batch_size=256
+
+  for weight in vox2_cf; do
+    #_ws25
+    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/train_egs.py \
+     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+     --train-trials trials_2w \
+     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
+     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+     --nj 12 \
+     --epochs 50 \
+     --batch-size ${batch_size} \
+     --patience 3 \
+     --milestones 10,20,30,40 \
+     --model ${model} \
+     --optimizer ${optimizer} \
+     --scheduler ${scheduler} \
+     --weight-decay 0.0005 \
+     --lr 0.1 \
+     --base-lr 0.00001 \
+     --alpha 0 \
+     --feat-format kaldi \
+     --embedding-size ${embedding_size} \
+     --random-chunk 200 400 \
+     --input-dim ${input_dim} \
+     --channels 512,512,512,512,1500 \
+     --mask-layer ${mask_layer} \
+     --encoder-type ${encod} \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_20.pth \
+     --cos-sim \
+     --dropout-p 0.0 \
+     --veri-pairs 9600 \
+     --gpu-id 0,1 \
+     --num-valid 2 \
+     --loss-ratio ${loss_ratio} \
+     --lr-ratio ${lr_ratio} \
+     --loss-type ${loss} \
+     --margin 0.2 \
+     --s 30 \
+     --remove-vad \
+     --log-interval 10 \
+     --test-interval 2
+  done
+
+  mask_layer=attention0
+  for weight in vox2_cf; do
+    python -W ignore TrainAndTest/train_egs.py \
+     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+     --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+     --train-trials trials_2w \
+     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
+     --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+     --nj 12 \
+     --epochs 50 \
+     --batch-size ${batch_size} \
+     --patience 3 \
+     --milestones 10,20,30,40 \
+     --model ${model} \
+     --optimizer ${optimizer} \
+     --scheduler ${scheduler} \
+     --weight-decay 0.0005 \
+     --lr 0.1 \
+     --base-lr 0.00001 \
+     --alpha 0 \
+     --feat-format kaldi \
+     --embedding-size ${embedding_size} \
+     --random-chunk 200 400 \
+     --input-dim ${input_dim} \
+     --channels 512,512,512,512,1500 \
+     --mask-layer ${mask_layer} \
+     --init-weight ${weight} \
+     --encoder-type ${encod} \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_20.pth \
+     --cos-sim \
+     --dropout-p 0.0 \
+     --veri-pairs 9600 \
+     --gpu-id 0,1 \
+     --num-valid 2 \
+     --loss-ratio ${loss_ratio} \
+     --lr-ratio ${lr_ratio} \
+     --loss-type ${loss} \
+     --margin 0.2 \
+     --s 30 \
+     --remove-vad \
+     --log-interval 10 \
+     --test-interval 2
+  done
+  exit
+fi
+
+
+# Aishell2
+if [ $stage -le 200 ]; then
+  #  model=TDNN
+  # datasets=aidata
+  datasets=aishell2
+
+  feat=fb40
+  feat_type=klfb
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_norm=Mean
+  batch_size=256
+  scheduler=rop
+  optimizer=sgd
+
+  for model in TDNN_v5; do
+    echo -e "\n\033[1;4;31m Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+    python -W ignore TrainAndTest/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
+      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
+      --input-norm ${input_norm} \
+      --random-chunk 200 400 \
+      --nj 12 \
+      --epochs 50 \
+      --patience 3 \
+      --milestones 10,20,30,40 \
+      --model ${model} \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
+      --weight-decay 0.0005 \
+      --lr 0.1 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --channels 512,512,512,512,1500 \
+      --embedding-size ${embedding_size} \
+      --batch-size ${batch_size} \
+      --accu-steps 1 \
+      --input-dim 40 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_53.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0,1 \
+      --num-valid 2 \
+      --loss-type ${loss} \
+      --margin 0.2 \
+      --s 30 \
+      --all-iteraion 0 \
+      --remove-vad \
+      --log-interval 10
+  done
+  exit
+fi
+
+
+
+
