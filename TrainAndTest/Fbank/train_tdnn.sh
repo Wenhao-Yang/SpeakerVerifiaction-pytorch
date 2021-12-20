@@ -1454,8 +1454,8 @@ if [ $stage -le 157 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}max_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}max_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var/checkpoint_17.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}min_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}min_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var/checkpoint_17.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -1468,7 +1468,8 @@ if [ $stage -le 157 ]; then
       --margin 0.2 \
       --s 30 \
       --remove-vad \
-      --log-interval 10
+      --log-interval 10 \
+      --test-interval 2
   done
   exit
 fi
