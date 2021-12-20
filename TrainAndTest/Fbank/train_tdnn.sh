@@ -1413,6 +1413,7 @@ if [ $stage -le 157 ]; then
   embedding_size=512
   encod=STAP
   block_type=basic
+  input_norm=Mean
   loss=subarc
   scheduler=exp
   optimizer=sgd
