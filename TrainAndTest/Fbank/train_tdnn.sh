@@ -1417,6 +1417,7 @@ if [ $stage -le 157 ]; then
   scheduler=exp
   optimizer=sgd
   input_dim=40
+  lr_ratio=0
 
   num_centers=3
   dev_sub=
