@@ -1419,6 +1419,7 @@ if [ $stage -le 157 ]; then
   input_dim=40
   lr_ratio=0
   loss_ratio=0
+  feat_type=klfb
 
   num_centers=3
   dev_sub=
