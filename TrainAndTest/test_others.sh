@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=400
+stage=200
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1897,12 +1897,12 @@ if [ $stage -le 200 ]; then
   block_type=basic_v2
   encoder_type=None
   embedding_size=256
-  resnet_size=18
+  resnet_size=34
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k5
 
-  for test_subset in test; do
+  for test_subset in test dev; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1932,8 +1932,43 @@ if [ $stage -le 200 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.25 \
-      --xvector-dir Data/xvector/ThinResNet18/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/epoch_50_var \
-      --resume Data/checkpoint/ThinResNet18/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
+      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/checkpoint_50.pth \
+      --gpu-id 0 \
+      --cos-sim
+
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim 161 \
+      --nj 12 \
+      --mask-layer attention \
+      --init-weight vox2 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --fast none1 \
+      --downsample ${downsample} \
+      --encoder-type ${encod} \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2,2 \
+      --channels 16,32,64,128 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --time-dim 1 \
+      --avg-size 5 \
+      --input-length var \
+      --dropout-p 0.125 \
+      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
+      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
@@ -1941,8 +1976,11 @@ if [ $stage -le 200 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-dev      |   1.0300    |   0.2914    |   0.1291    |    0.2308    | 20211221 22:57:16 |
+#|     vox1-dev      |   0.9700    |   0.2949    |   0.1282    |    0.2440    | 20211221 23:07:13 |
 #|     vox1-test     |   4.2683%   |   0.2369    |   0.3929    |    0.4767    | 20211119 15:09:05 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   4.2895    |   0.2371    |   0.4231    |    0.5714    | 20211221 22:43:00 | attention
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 fi
 
