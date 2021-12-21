@@ -1029,7 +1029,7 @@ class TDNN_v5(nn.Module):
             self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
             self.encoder_output = self.channels[4]
         elif encoder_type == 'Ghos_v3':
-            self.encoder = GhostVLAD_v3(num_clusters=self.num_center, gost=1, dim=int(embedding_size / 2))
+            self.encoder = GhostVLAD_v3(num_clusters=self.num_center, gost=1, dim=self.channels[4])
             self.encoder_output = self.channels[4] * 2
         else:
             raise ValueError(encoder_type)
