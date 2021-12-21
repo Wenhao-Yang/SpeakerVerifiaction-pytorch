@@ -916,7 +916,7 @@ class TDNN_v5(nn.Module):
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', activation='relu',
                  num_classes_b=0, block_type='basic', first_2d=False, stride=[1],
-                 init_weight='mel', power_weight=False,
+                 init_weight='mel', power_weight=False, num_center=3,
                  mask='None', mask_len=[5, 20], channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
@@ -932,6 +932,7 @@ class TDNN_v5(nn.Module):
         self.block_type = block_type.lower()
         self.stride = stride
         self.activation = activation
+        self.num_center = num_center
 
         if len(self.stride) == 1:
             while len(self.stride) < 4:
@@ -1028,7 +1029,7 @@ class TDNN_v5(nn.Module):
             self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
             self.encoder_output = self.channels[4]
         elif encoder_type == 'Ghos_v3':
-            self.encoder = GhostVLAD_v3(num_clusters=self.num_classes_b, gost=1, dim=int(embedding_size / 2))
+            self.encoder = GhostVLAD_v3(num_clusters=self.num_center, gost=1, dim=int(embedding_size / 2))
             self.encoder_output = self.channels[4] * 2
         else:
             raise ValueError(encoder_type)
