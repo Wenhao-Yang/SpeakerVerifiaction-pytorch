@@ -1897,12 +1897,12 @@ if [ $stage -le 200 ]; then
   block_type=basic_v2
   encoder_type=None
   embedding_size=256
-  resnet_size=18
+  resnet_size=34
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k5
 
-  for test_subset in dev; do
+  for test_subset in test dev; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1932,8 +1932,8 @@ if [ $stage -le 200 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.25 \
-      --xvector-dir Data/xvector/ThinResNet18/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/${test_subset}_epoch_50_var \
-      --resume Data/checkpoint/ThinResNet18/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/${test_subset}_epoch_50_var \
+      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
 
@@ -1967,8 +1967,8 @@ if [ $stage -le 200 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.125 \
-      --xvector-dir Data/xvector/ThinResNet18/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
-      --resume Data/checkpoint/ThinResNet18/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
+      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
