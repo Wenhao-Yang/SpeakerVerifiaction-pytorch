@@ -1932,8 +1932,8 @@ if [ $stage -le 200 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.25 \
-      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/${test_subset}_epoch_50_var \
-      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
+      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
 
@@ -1976,6 +1976,8 @@ if [ $stage -le 200 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-dev      |   1.0300    |   0.2914    |   0.1291    |    0.2308    | 20211221 22:57:16 |
+#|     vox1-dev      |   0.9700    |   0.2949    |   0.1282    |    0.2440    | 20211221 23:07:13 |
 #|     vox1-test     |   4.2683%   |   0.2369    |   0.3929    |    0.4767    | 20211119 15:09:05 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   4.2895    |   0.2371    |   0.4231    |    0.5714    | 20211221 22:43:00 | attention
