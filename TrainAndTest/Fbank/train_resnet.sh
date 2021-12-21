@@ -399,8 +399,8 @@ if [ $stage -le 41 ]; then
       --init-weight ${weight} \
       --power-weight ${power_weight} \
       --milestones 15,25,35,45 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${weight}${power_weight}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${weight}${power_weight}_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_none1_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}${power_weight}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_none1_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}${power_weight}_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -416,7 +416,7 @@ if [ $stage -le 41 ]; then
       --margin 0.2 \
       --s 30 \
       --weight-decay 0.0005 \
-      --dropout-p 0.1 \
+      --dropout-p 0.125 \
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
