@@ -1411,7 +1411,7 @@ if [ $stage -le 157 ]; then
   model=TDNN_v5
   datasets=cnceleb
   embedding_size=512
-  encod=STAP
+  encod=Ghos_v3
   block_type=basic
   input_norm=Mean
   loss=subarc
@@ -1426,7 +1426,7 @@ if [ $stage -le 157 ]; then
   dev_sub=
   batch_size=256
 
-  for loss in subarc; do
+  for loss in arcsoft ; do
     feat=fb${input_dim}
     python -W ignore TrainAndTest/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${dev_sub}_${feat} \
@@ -1454,8 +1454,9 @@ if [ $stage -le 157 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}min_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}min_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var/checkpoint_17.pth \
+      --num-classes-b ${num_centers} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_center${num_centers}_wd5e4_var/checkpoint_17.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
