@@ -2060,8 +2060,8 @@ if [ $stage -le 201 ]; then
       --xvector-dir Data/xvector/ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var/${testset}_${test_subset}_var \
       --resume Data/checkpoint/ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
+      --extract \
       --remove-vad \
-      --test \
       --verbose 2 \
       --cos-sim
   done
