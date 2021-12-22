@@ -925,8 +925,8 @@ if [ $stage -le 350 ]; then
       --alpha 0 \
       --loss-type ${loss} \
       --dropout-p 0.1 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wde4_var \
-      --extract-path Data/gradient/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wde4_var/epoch_60_var_${cam} \
+      --check-path Data/checkpoint/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var \
+      --extract-path Data/gradient/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/epoch_60_var_${cam} \
       --gpu-id 0 \
       --margin 0.2 \
       --s 30 \
