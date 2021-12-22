@@ -580,8 +580,8 @@ class DropweightLayer(nn.Module):
         else:
             raise ValueError(weight)
 
-        ynew /= ynew.max()
         ynew = np.array(ynew)
+        ynew /= ynew.max()
 
         self.drop_p = ynew * 0.2 + 0.8 - dropout_p
 
