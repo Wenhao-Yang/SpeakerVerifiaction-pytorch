@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=201
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1976,13 +1976,31 @@ if [ $stage -le 200 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+
+# ThinResNet18 klfb40
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-dev      |   1.0300    |   0.2914    |   0.1291    |    0.2308    | 20211221 22:57:16 |
-#|     vox1-dev      |   0.9700    |   0.2949    |   0.1282    |    0.2440    | 20211221 23:07:13 |
 #|     vox1-test     |   4.2683%   |   0.2369    |   0.3929    |    0.4767    | 20211119 15:09:05 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-#|     vox1-test     |   4.2895    |   0.2371    |   0.4231    |    0.5714    | 20211221 22:43:00 | attention
+# attention vox2_rcf
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-dev      |   0.9700    |   0.2949    |   0.1282    |    0.2440    | 20211221 23:07:13 |
+#|     vox1-test     |   4.2895    |   0.2371    |   0.4231    |    0.5714    | 20211221 22:43:00 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+
+# ThinResNet34 klsp
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-dev      |   0.4700    |   0.3264    |   0.0629    |    0.1140    | 20211221 23:30:06 |
+#|     vox1-test     |   3.7116    |   0.2465    |   0.3838    |    0.4681    | 20211221 23:15:57 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+# attention vox2
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-dev      |   0.4600    |   0.3283    |   0.0631    |    0.1092    | 20211221 23:43:06 |
+#|     vox1-test     |   3.5790    |   0.2471    |   0.4012    |    0.5222    | 20211221 23:17:22 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+
 fi
+
 
 if [ $stage -le 201 ]; then
   feat_type=klfb
@@ -2003,8 +2021,10 @@ if [ $stage -le 201 ]; then
   downsample=None
   test_subset=test
 #        --downsample ${downsample} \
+#      --trials trials_20w \
 
-  for testset in vox1 cnceleb aishell2 ; do
+
+  for testset in vox1 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -2014,20 +2034,21 @@ if [ $stage -le 201 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb40 \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 \
-      --xvector \
-      --trials trials_20w \
+      --trials trials \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 40 \
       --nj 12 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
+      --mask-layer attention \
+      --init-weight vox2_rcf \
       --fast none1 \
       --encoder-type ${encod} \
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,1 \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --downsample ${downsample} \
       --alpha ${alpha} \
       --margin 0.2 \
@@ -2036,8 +2057,8 @@ if [ $stage -le 201 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.1 \
-      --xvector-dir Data/xvector/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/${testset}_${test_subset}_xvector_var \
-      --resume Data/checkpoint/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/checkpoint_60.pth \
+      --xvector-dir Data/xvector/ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var/${testset}_${test_subset}_xvector_var \
+      --resume Data/checkpoint/ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --remove-vad \
       --test \
@@ -2049,7 +2070,7 @@ if [ $stage -le 201 ]; then
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
-# Arcsoft fb40 thin34_basic
+# Arcsoft fb40 thin34_basic_none1s
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   4.0403%   |   0.2446    |   0.4034    |    0.5689    | 20211130 16:56:42 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
