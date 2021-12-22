@@ -885,10 +885,11 @@ fi
 if [ $stage -le 350 ]; then
   model=ThinResNet
   # dataset=vox1
-  dataset=cnceleb
+#  dataset=cnceleb
+  dataset=aishell2
 
-  train_set=cnceleb
-  test_set=cnceleb
+  train_set=aishell2
+  test_set=aishell2
   feat_type=klfb
   feat=log
   loss=arcsoft
@@ -930,7 +931,7 @@ if [ $stage -le 350 ]; then
       --margin 0.2 \
       --s 30 \
       --remove-vad \
-      --sample-utt 5600
+      --sample-utt 4000
     done
   exit
 fi
