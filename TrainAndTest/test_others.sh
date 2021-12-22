@@ -2009,7 +2009,7 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=SAP2
   alpha=0
-  datasets=vox2
+  datasets=vox1
   testset=vox1
 #  test_subset=
   block_type=basic
