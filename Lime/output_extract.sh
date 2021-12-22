@@ -915,7 +915,7 @@ if [ $stage -le 350 ]; then
       --input-norm Mean \
       --kernel-size ${kernel} \
       --stride 2,1 \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
       --downsample ${downsample} \
