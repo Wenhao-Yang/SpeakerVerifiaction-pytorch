@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=41
+stage=100
 waited=0
 while [ `ps 1060467 | wc -l` -eq 2 ]; do
   sleep 60
@@ -520,86 +520,39 @@ if [ $stage -le 100 ]; then
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=baseline
+  mask_layer=drop
   weight=vox2_rcf
         # --milestones 15,25,35,45 \
 
   for encoder_type in SAP2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    python TrainAndTest/train_egs.py \
-      --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_fb${input_dim} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
-      --train-trials trials_2w \
-      --shuffle \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_fb${input_dim}_valid \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
-      --feat-format kaldi \
-      --random-chunk 200 400 \
-      --input-norm ${input_norm} \
-      --resnet-size ${resnet_size} \
-      --nj 12 \
-      --epochs 20 \
-      --batch-size ${batch_size} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
-      --lr 0.0001 \
-      --base-lr 0.000006 \
-      --mask-layer ${mask_layer} \
-      --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs12_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs12_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var/checkpoint_60.pth \
-      --kernel-size ${kernel} \
-      --downsample ${downsample} \
-      --channels 32,64,128,256 \
-      --fast none1 \
-      --stride 2,1 \
-      --block-type ${block_type} \
-      --embedding-size ${embedding_size} \
-      --time-dim 1 \
-      --avg-size 5 \
-      --encoder-type ${encoder_type} \
-      --num-valid 2 \
-      --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
-      --weight-decay 0.0001 \
-      --dropout-p 0.1 \
-      --gpu-id 0,1 \
-      --extract \
-      --cos-sim \
-      --all-iteraion 0 \
-      --remove-vad \
-      --loss-type ${loss}
-
     # python TrainAndTest/train_egs.py \
     #   --model ${model} \
-    #   --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
-    #   --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
+    #   --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_fb${input_dim} \
+    #   --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
     #   --train-trials trials_2w \
     #   --shuffle \
-    #   --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
-    #   --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
+    #   --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_fb${input_dim}_valid \
+    #   --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
     #   --feat-format kaldi \
     #   --random-chunk 200 400 \
     #   --input-norm ${input_norm} \
     #   --resnet-size ${resnet_size} \
     #   --nj 12 \
-    #   --epochs 60 \
+    #   --epochs 20 \
     #   --batch-size ${batch_size} \
     #   --optimizer ${optimizer} \
     #   --scheduler ${scheduler} \
-    #   --lr 0.1 \
+    #   --lr 0.0001 \
     #   --base-lr 0.000006 \
     #   --mask-layer ${mask_layer} \
-    #   --init-weight ${weight} \
     #   --milestones 10,20,30,40,50 \
-    #   --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var \
-    #   --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_40.pth \
+    #   --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs12_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var \
+    #   --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs12_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var/checkpoint_60.pth \
     #   --kernel-size ${kernel} \
     #   --downsample ${downsample} \
     #   --channels 32,64,128,256 \
-    #   --fast ${fast} \
+    #   --fast none1 \
     #   --stride 2,1 \
     #   --block-type ${block_type} \
     #   --embedding-size ${embedding_size} \
@@ -610,7 +563,7 @@ if [ $stage -le 100 ]; then
     #   --alpha ${alpha} \
     #   --margin 0.2 \
     #   --s 30 \
-    #   --weight-decay 0.0005 \
+    #   --weight-decay 0.0001 \
     #   --dropout-p 0.1 \
     #   --gpu-id 0,1 \
     #   --extract \
@@ -618,6 +571,53 @@ if [ $stage -le 100 ]; then
     #   --all-iteraion 0 \
     #   --remove-vad \
     #   --loss-type ${loss}
+
+    python TrainAndTest/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
+      --train-trials trials_2w \
+      --shuffle \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
+      --feat-format kaldi \
+      --random-chunk 200 400 \
+      --input-norm ${input_norm} \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 60 \
+      --batch-size ${batch_size} \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
+      --lr 0.1 \
+      --base-lr 0.000006 \
+      --mask-layer ${mask_layer} \
+      --init-weight ${weight} \
+      --milestones 10,20,30,40,50 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_40.pth \
+      --kernel-size ${kernel} \
+      --downsample ${downsample} \
+      --channels 16,32,64,128 \
+      --fast ${fast} \
+      --stride 2,1 \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 5 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --weight-decay 0.0005 \
+      --dropout-p 0 \
+      --gpu-id 0,1 \
+      --extract \
+      --cos-sim \
+      --all-iteraion 0 \
+      --remove-vad \
+      --loss-type ${loss}
   done
   exit
 fi

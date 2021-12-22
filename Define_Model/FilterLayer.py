@@ -546,22 +546,44 @@ class TimeFreqMaskLayer(nn.Module):
 
 
 class DropweightLayer(nn.Module):
-    def __init__(self, dropout_p=0.1, input_dim=161):
+    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161):
         super(DropweightLayer, self).__init__()
         self.input_dim = input_dim
-        m = np.arange(0, 2840.0230467083188)
-        m = 700 * (10 ** (m / 2595.0) - 1)
-        n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-        n = 1 / n
-        x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+        self.weight = weight
+        self.dropout_p = dropout_p
 
-        f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-        ynew = f(xnew)
-        ynew = 1 / ynew  # .max()
+        if weight == 'mel':
+            m = np.arange(0, 2840.0230467083188)
+            m = 700 * (10 ** (m / 2595.0) - 1)
+            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
+            n = 1 / n
+            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+
+            f = interpolate.interp1d(m[1:], n)
+            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+            ynew = f(xnew)
+            ynew = 1 / ynew  # .max()
+        elif weight == 'clean':
+            ynew = c.VOX1_CLEAN
+        elif weight == 'aug':
+            ynew = c.VOX1_AUG
+        elif weight == 'vox2':
+            ynew = c.VOX2_CLEAN
+        elif weight == 'vox1_cf':
+            ynew = c.VOX1_CFB40
+        elif weight == 'vox2_cf':
+            ynew = c.VOX2_CFB40
+        elif weight == 'vox1_rcf':
+            ynew = c.VOX1_RCFB40
+        elif weight == 'vox2_rcf':
+            ynew = c.VOX2_RCFB40
+        else:
+            raise ValueError(weight)
+
         ynew /= ynew.max()
+        ynew = np.array(ynew)
 
-        self.drop_p = ynew * dropout_p
+        self.drop_p = ynew * 0.2 + 0.8 - dropout_p
 
     def forward(self, x):
         if not self.training:
@@ -570,7 +592,7 @@ class DropweightLayer(nn.Module):
             assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
             drop_weight = []
             for i in self.drop_p:
-                drop_weight.append((torch.Tensor(1).uniform_(0, 1) > i).float())
+                drop_weight.append((torch.Tensor(1).uniform_(0, 1) < i).float())
 
             drop_weight = torch.tensor(drop_weight).reshape(1, 1, 1, -1)
 
@@ -578,6 +600,10 @@ class DropweightLayer(nn.Module):
                 drop_weight = drop_weight.cuda()
 
             return x * drop_weight
+
+    def __repr__(self):
+
+        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p==%s)" % (self.input_dim, self.weight, self.dropout_p)
 
 
 class AttentionweightLayer(nn.Module):

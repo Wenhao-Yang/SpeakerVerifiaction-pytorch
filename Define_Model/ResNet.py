@@ -619,6 +619,8 @@ class ThinResNet(nn.Module):
             self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'attention2':
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
+        elif self.mask == 'drop':
+            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=0.1, weight=init_weight)
         else:
             self.mask_layer = None
 
