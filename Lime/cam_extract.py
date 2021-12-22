@@ -105,7 +105,7 @@ parser.add_argument('--transform', type=str, default="None", help='add a transfo
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
-
+parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
                     help='kernel size of conv filters')
 parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
@@ -608,10 +608,11 @@ def main():
                     'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                     'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                     'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
+                    'downsample': args.downsample,
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
-                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,}
+                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
     print('Model options: {}'.format(model_kwargs))
 
