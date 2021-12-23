@@ -2,7 +2,7 @@
 
 stage=100
 waited=0
-while [ `ps 1060467 | wc -l` -eq 2 ]; do
+while [ `ps 1448461 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -522,10 +522,10 @@ if [ $stage -le 100 ]; then
   fast=none1
   mask_layer=drop
   weight=vox2_rcf
-  scale=0.3
+  scale=0.2
         # --milestones 15,25,35,45 \
 
-  for scale in 0.3 0.4 ; do
+  for mask_layer in drop2 drop3 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     # python TrainAndTest/train_egs.py \
     #   --model ${model} \

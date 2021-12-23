@@ -21,7 +21,7 @@ from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
-    RevGradLayer, DropweightLayer, GaussianNoiseLayer, MusanNoiseLayer, AttentionweightLayer, TimeFreqMaskLayer, \
+    RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
@@ -622,6 +622,12 @@ class ThinResNet(nn.Module):
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'drop':
             self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=0.1, 
+                                              weight=init_weight, scale=self.scale)
+        elif self.mask == 'drop2':
+            self.mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=0.1, 
+                                              weight=init_weight, scale=self.scale)
+        elif self.mask == 'drop3':
+            self.mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=0.1, 
                                               weight=init_weight, scale=self.scale)
         else:
             self.mask_layer = None
