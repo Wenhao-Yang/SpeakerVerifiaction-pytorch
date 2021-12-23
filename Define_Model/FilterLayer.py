@@ -546,11 +546,12 @@ class TimeFreqMaskLayer(nn.Module):
 
 
 class DropweightLayer(nn.Module):
-    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161):
+    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2):
         super(DropweightLayer, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
         self.dropout_p = dropout_p
+        self.scale = scale
 
         if weight == 'mel':
             m = np.arange(0, 2840.0230467083188)
@@ -583,7 +584,7 @@ class DropweightLayer(nn.Module):
         ynew = np.array(ynew)
         ynew /= ynew.max()
 
-        self.drop_p = ynew * 0.2 + 0.8 - dropout_p
+        self.drop_p = ynew * self.scale + 1-self.scale - dropout_p
 
     def forward(self, x):
         if not self.training:
@@ -603,7 +604,8 @@ class DropweightLayer(nn.Module):
 
     def __repr__(self):
 
-        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p==%s)" % (self.input_dim, self.weight, self.dropout_p)
+        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight, 
+            self.dropout_p, self.scale)
 
 
 class AttentionweightLayer(nn.Module):

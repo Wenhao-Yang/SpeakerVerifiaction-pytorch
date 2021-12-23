@@ -526,7 +526,7 @@ class ThinResNet(nn.Module):
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
-                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel',
+                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -549,6 +549,7 @@ class ThinResNet(nn.Module):
         self.gain_layer = gain_layer
         self.gain_axis = gain_axis
         self.mask = mask
+        self.scale = scale
 
         self.dilation = 1
         self.fast = str(fast)
@@ -620,7 +621,8 @@ class ThinResNet(nn.Module):
         elif self.mask == 'attention2':
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'drop':
-            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=0.1, weight=init_weight)
+            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=0.1, 
+                                              weight=init_weight, scale=self.scale)
         else:
             self.mask_layer = None
 
