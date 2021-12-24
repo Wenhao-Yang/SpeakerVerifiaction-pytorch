@@ -610,7 +610,7 @@ class DropweightLayer(nn.Module):
 
 class DropweightLayer_v2(nn.Module):
     def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2):
-        super(DropweightLayer, self).__init__()
+        super(DropweightLayer_v2, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
         self.dropout_p = dropout_p
@@ -673,7 +673,7 @@ class DropweightLayer_v2(nn.Module):
 
 class DropweightLayer_v3(nn.Module):
     def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2):
-        super(DropweightLayer, self).__init__()
+        super(DropweightLayer_v3, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
         self.dropout_p = dropout_p
