@@ -658,7 +658,7 @@ class DropweightLayer_v2(nn.Module):
             for i in self.drop_p:
                 drop_weight.append((torch.ones(x.shape[-2]).uniform_(0, 1) < i).float())
 
-            drop_weight = torch.tensor(drop_weight).reshape(1, 1, x.shape[-2], x.shape[-1])
+            drop_weight = torch.stack(drop_weight,dim=0).reshape(1, 1, x.shape[-2], x.shape[-1])
 
             if x.is_cuda:
                 drop_weight = drop_weight.cuda()
@@ -721,7 +721,7 @@ class DropweightLayer_v3(nn.Module):
             for i in self.drop_p:
                 drop_weight.append(torch.nn.functional.dropout(torch.ones(x.shape[-2]), p=i).float())
 
-            drop_weight = torch.tensor(drop_weight).reshape(1, 1, x.shape[-2], x.shape[-1])
+            drop_weight = torch.stack(drop_weight, dim=0).reshape(1, 1, x.shape[-2], x.shape[-1])
 
             if x.is_cuda:
                 drop_weight = drop_weight.cuda()
