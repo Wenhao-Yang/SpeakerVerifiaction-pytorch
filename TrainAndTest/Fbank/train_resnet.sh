@@ -523,17 +523,18 @@ if [ $stage -le 100 ]; then
   mask_layer=baseline
   weight=vox2_rcf
   scale=0.2
+  subset=
         # --milestones 15,25,35,45 \
 
   for mask_layer in baseline ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs.py \
        --model ${model} \
-       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_fb${input_dim} \
+       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
        --shuffle \
-       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_fb${input_dim}_valid \
+       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --random-chunk 200 400 \
@@ -548,8 +549,8 @@ if [ $stage -le 100 ]; then
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs12_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp1584_alpha${alpha}_em${embedding_size}_wd5e4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs12_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp1584_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp1584_alpha${alpha}_em${embedding_size}_wd5e4_var \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp1584_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
