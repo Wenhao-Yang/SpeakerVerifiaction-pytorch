@@ -597,8 +597,8 @@ if [ $stage -le 100 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}_wd5e4_var/checkpoint_40.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}_wd1e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}_wd1e4_var/checkpoint_40.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -613,7 +613,7 @@ if [ $stage -le 100 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0 \
       --gpu-id 0,1 \
       --extract \
