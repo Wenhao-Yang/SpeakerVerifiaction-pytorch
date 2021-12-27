@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=100
 waited=0
 while [ `ps 2815320 | wc -l` -eq 2 ]; do
   sleep 60
@@ -514,15 +514,15 @@ if [ $stage -le 100 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=None
-  scheduler=rop
-  optimizer=sgd
+  scheduler=cyclic
+  optimizer=adam
   input_dim=40
   batch_size=256
   fast=none1
   mask_layer=baseline
   weight=vox2_rcf
   scale=0.2
-  subset=12
+  subset=
         # --milestones 15,25,35,45 \
 
   for mask_layer in baseline ; do
@@ -586,18 +586,18 @@ if [ $stage -le 100 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 30 \
+      --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.0001 \
-      --base-lr 0.000006 \
+      --lr 0.001 \
+      --base-lr 0.00000001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var/checkpoint_60.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -612,7 +612,7 @@ if [ $stage -le 100 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --extract \
@@ -621,7 +621,7 @@ if [ $stage -le 100 ]; then
       --remove-vad \
       --loss-type ${loss}
   done
-  exit
+#  exit
 fi
 
 
@@ -642,8 +642,8 @@ if [ $stage -le 101 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=None
-  scheduler=rop
-  optimizer=sgd
+  scheduler=cyclic
+  optimizer=adam
   input_dim=40
   batch_size=256
   fast=none1
@@ -720,8 +720,8 @@ if [ $stage -le 101 ]; then
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.1 \
-      --base-lr 0.000006 \
+      --lr 0.001 \
+      --base-lr 0.00000001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --scale ${scale} \
