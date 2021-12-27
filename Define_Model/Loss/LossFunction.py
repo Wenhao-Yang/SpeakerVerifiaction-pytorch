@@ -301,8 +301,9 @@ class DistributeLoss(nn.Module):
 
     """
 
-    def __init__(self):
+    def __init__(self, stat_type="mean"):
         super(DistributeLoss, self).__init__()
+        self.stat_type = stat_type
 
     def forward(self, dist, labels):
         """
@@ -316,11 +317,23 @@ class DistributeLoss(nn.Module):
         if len(labels.shape) == 1:
             labels = labels.unsqueeze(1)
         positive_dist = dist.gather(dim=1, index=labels)
-        mean = positive_dist.mean().clamp_min(0) + 0.1
+        mean = positive_dist.mean()  # .clamp_min(0)
 
-        loss = positive_dist.std() / mean
+        if self.stat_type == "stddmean":
+            loss = positive_dist.std() / mean.clamp(min=1e-6)
+            loss = loss ** 2
 
-        return loss ** 2
+        elif self.stat_type == "kurtoses":
+            diffs = positive_dist - mean
+            var = torch.mean(torch.pow(diffs, 2.0))
+            std = torch.pow(var, 0.5)
+            z_scores = diffs / std
+
+            kurtoses = torch.mean(torch.pow(z_scores, 4.0)) - 3.0
+            # skewness = torch.mean(torch.pow(z_scores, 3.0))
+            loss = -kurtoses
+
+        return loss
 
 
 def guassian_kernel(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None):
