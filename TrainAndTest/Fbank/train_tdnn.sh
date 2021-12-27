@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=157
+stage=158
 waited=0
 while [ $(ps 1348898 | wc -l) -eq 2 ]; do
   sleep 60
@@ -1490,7 +1490,7 @@ if [ $stage -le 158 ]; then
 
   # for weight in vox2_cf; do
     #_ws25
-    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+  echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
   #   python -W ignore TrainAndTest/train_egs.py \
   #    --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \

@@ -22,7 +22,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer, AttentionweightLayer, \
-    TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0
+    TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0, DropweightLayer
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
     SelfAttentionPooling, MaxStatisticPooling
