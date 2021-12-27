@@ -650,7 +650,7 @@ if [ $stage -le 101 ]; then
   mask_layer=baseline
 #  weight=vox2_rcf
   scale=0.2
-  subset=12
+  subset=
   stat_type=kurtoses
   loss_ratio=0.5
         # --milestones 15,25,35,45 \
