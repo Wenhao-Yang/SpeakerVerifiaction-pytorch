@@ -1477,8 +1477,8 @@ if [ $stage -le 157 ]; then
 fi
 
 if [ $stage -le 158 ]; then
-    model=TDNN_v5
-    datasets=cnceleb
+  model=TDNN_v5
+  datasets=cnceleb
   mask_layer=drop
 
   weight=vox2_cf
@@ -1488,7 +1488,7 @@ if [ $stage -le 158 ]; then
   feat=fb${input_dim}
   batch_size=256
 
-  for weight in vox2_cf; do
+  # for weight in vox2_cf; do
     #_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
@@ -1577,8 +1577,8 @@ if [ $stage -le 158 ]; then
      --remove-vad \
      --log-interval 10 \
      --test-interval 2
-  done
-  exit
+done
+exit
 fi
 
 
