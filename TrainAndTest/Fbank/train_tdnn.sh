@@ -1484,6 +1484,10 @@ if [ $stage -le 158 ]; then
   block_type=basic
   input_norm=Mean
   mask_layer=drop
+  input_dim=40
+  lr_ratio=0
+  loss_ratio=0
+  feat_type=klfb
 
   weight=vox2_cf
   loss=arcsoft
