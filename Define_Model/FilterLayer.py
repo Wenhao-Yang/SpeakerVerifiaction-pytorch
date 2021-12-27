@@ -595,7 +595,10 @@ class DropweightLayer(nn.Module):
             for i in self.drop_p:
                 drop_weight.append((torch.Tensor(1).uniform_(0, 1) < i).float())
 
-            drop_weight = torch.tensor(drop_weight).reshape(1, 1, 1, -1)
+            if len(x.shape)==4:
+                drop_weight = torch.tensor(drop_weight).reshape(1, 1, 1, -1)
+            else:
+                drop_weight = torch.tensor(drop_weight).reshape(1, 1, -1)
 
             if x.is_cuda:
                 drop_weight = drop_weight.cuda()
