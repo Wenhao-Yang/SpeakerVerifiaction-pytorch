@@ -1479,6 +1479,10 @@ fi
 if [ $stage -le 158 ]; then
   model=TDNN_v5
   datasets=cnceleb
+  embedding_size=512
+  encod=STAP
+  block_type=basic
+  input_norm=Mean
   mask_layer=drop
 
   weight=vox2_cf
@@ -1545,6 +1549,7 @@ if [ $stage -le 158 ]; then
      --nj 12 \
      --epochs 50 \
      --batch-size ${batch_size} \
+     --input-norm ${input_norm} \
      --patience 3 \
      --milestones 10,20,30,40 \
      --model ${model} \
