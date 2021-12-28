@@ -323,6 +323,8 @@ if [ $stage -le 70 ]; then
   optimizer=sgd
   scheduler=rop
   mask_layer=baseline
+
+  weight=vox2_cf
   weight_p=0
   scale=0.2
   batch_size=256
