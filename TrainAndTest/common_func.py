@@ -424,6 +424,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
     parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
     parser.add_argument('--power-weight', type=str, default='none', help='replace batchnorm with instance norm')
+    parser.add_argument('--weight-p', default=0.1, type=float, help='replace batchnorm with instance norm')
     parser.add_argument('--scale', default=0.2, type=float, metavar='FEAT', help='acoustic feature dimension')
 
     parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
@@ -591,7 +592,7 @@ def args_model(args, train_dir):
                     'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks, 'downsample': args.downsample,
                     'num_classes_b': train_dir.num_doms, 'init_weight': args.init_weight,
-                    'power_weight': args.power_weight, 'scale': args.scale,
+                    'power_weight': args.power_weight, 'scale': args.scale, 'weight_p': args.weight_p,
                     'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'num_center': args.num_center,

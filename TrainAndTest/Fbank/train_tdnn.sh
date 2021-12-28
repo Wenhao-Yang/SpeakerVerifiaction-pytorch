@@ -1543,7 +1543,10 @@ if [ $stage -le 158 ]; then
   # done
 
   mask_layer=drop
-  for weight in vox2_cf; do
+  weight_p=0
+  scale=0.2
+  weight=vox2_cf
+  for scale in 0.2 0.3; do
     python -W ignore TrainAndTest/train_egs.py \
      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
@@ -1570,9 +1573,11 @@ if [ $stage -le 158 ]; then
      --channels 512,512,512,512,1500 \
      --mask-layer ${mask_layer} \
      --init-weight ${weight} \
+     --weight-p ${weight_p} \
+     --scale ${scale} \
      --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_20.pth \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}scale${scale}p${weight_p}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}scale${scale}p${weight_p}_wd5e4_var/checkpoint_20.pth \
      --cos-sim \
      --dropout-p 0.0 \
      --veri-pairs 9600 \

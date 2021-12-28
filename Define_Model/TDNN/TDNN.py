@@ -916,7 +916,7 @@ class TDNN_v5(nn.Module):
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', activation='relu',
                  num_classes_b=0, block_type='basic', first_2d=False, stride=[1],
-                 init_weight='mel', power_weight=False, num_center=3, scale=0.2,
+                 init_weight='mel', power_weight=False, num_center=3, scale=0.2, weight_p=0.1,
                  mask='None', mask_len=[5, 20], channels=[512, 512, 512, 512, 1500], **kwargs):
         super(TDNN_v5, self).__init__()
         self.num_classes = num_classes
@@ -934,6 +934,7 @@ class TDNN_v5(nn.Module):
         self.activation = activation
         self.num_center = num_center
         self.scale = scale
+        self.weight_p = weight_p
 
         if len(self.stride) == 1:
             while len(self.stride) < 4:
@@ -984,7 +985,7 @@ class TDNN_v5(nn.Module):
         elif self.mask == 'attention2':
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'drop':
-            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=0.1, 
+            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=self.weight_p,
                                               weight=init_weight, scale=self.scale)
         else:
             self.mask_layer = None
