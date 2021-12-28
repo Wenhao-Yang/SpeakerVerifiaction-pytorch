@@ -652,7 +652,7 @@ if [ $stage -le 101 ]; then
   scale=0.2
   subset=
   stat_type=kurtoses
-  loss_ratio=0.5
+  loss_ratio=0.1
         # --milestones 15,25,35,45 \
 
   for loss in arcdist ; do
