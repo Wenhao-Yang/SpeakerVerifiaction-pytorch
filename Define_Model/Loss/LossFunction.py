@@ -331,7 +331,7 @@ class DistributeLoss(nn.Module):
 
             kurtoses = torch.mean(torch.pow(z_scores, 4.0)) - 3.0
             # skewness = torch.mean(torch.pow(z_scores, 3.0))
-            loss = -kurtoses
+            loss = (-kurtoses).clamp_min(0)
 
         return loss
 
