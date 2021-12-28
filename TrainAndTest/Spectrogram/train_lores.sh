@@ -1630,7 +1630,7 @@ if [ $stage -le 170 ]; then
   feat_type=klsp
   model=LoResNet
   resnet_size=8
-  encoder_type=SAP2
+  encoder_type=AVG
   embedding_size=256
   block_type=cbam
   kernel=5,5
