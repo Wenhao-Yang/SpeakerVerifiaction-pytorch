@@ -648,7 +648,7 @@ if [ $stage -le 101 ]; then
   batch_size=256
   fast=none1
   mask_layer=baseline
-#  weight=vox2_rcf
+  weight=vox2_rcf
   scale=0.2
   subset=
   stat_type=kurtoses
