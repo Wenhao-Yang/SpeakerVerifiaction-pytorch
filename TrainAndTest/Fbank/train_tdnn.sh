@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=158
+stage=70
 waited=0
 while [ $(ps 1348898 | wc -l) -eq 2 ]; do
   sleep 60
@@ -322,6 +322,10 @@ if [ $stage -le 70 ]; then
   input_norm=Mean
   optimizer=sgd
   scheduler=rop
+  mask_layer=baseline
+  weight_p=0
+  scale=0.2
+  batch_size=256
 
   for embedding_size in 512; do
     #    feat=combined
@@ -347,14 +351,58 @@ if [ $stage -le 70 ]; then
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size ${embedding_size} \
-      --batch-size 128 \
+      --batch-size ${batch_size} \
       --accu-steps 1 \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_New_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_${encod}_em${embedding_size}_wd5e4_New_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_batch${batch_size}_{encod}_em${embedding_size}_wd5e4_New_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_New_var/checkpoint_50.pth \
+      --cos-sim \
+      --dropout-p 0.0 \
+      --veri-pairs 9600 \
+      --gpu-id 0,1 \
+      --num-valid 2 \
+      --loss-type ${loss} \
+      --margin 0.2 \
+      --s 30 \
+      --remove-vad \
+      --log-interval 10
+
+    mask_layer=drop
+    python -W ignore TrainAndTest/train_egs.py \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
+      --train-trials trials_2w \
+      --shuffle \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
+      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
+      --nj 16 \
+      --epochs 50 \
+      --patience 3 \
+      --milestones 10,20,30,40 \
+      --model ${model} \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
+      --lr 0.1 \
+      --base-lr 0.00000001 \
+      --weight-decay 0.0005 \
+      --alpha 0 \
+      --feat-format kaldi \
+      --embedding-size ${embedding_size} \
+      --batch-size ${batch_size} \
+      --accu-steps 1 \
+      --random-chunk 200 400 \
+      --mask-layer ${mask_layer} \
+      --init-weight ${weight} \
+      --weight-p ${weight_p} \
+      --scale ${scale} \
+      --input-dim ${input_dim} \
+      --channels 512,512,512,512,1500 \
+      --encoder-type ${encod} \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/input${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}scale${scale}p${weight_p}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/input${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}scale${scale}p${weight_p}_wd5e4_var/checkpoint_50.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -464,9 +512,8 @@ if [ $stage -le 74 ]; then
 #      --log-interval 10
 #  done
   loss=arcsoft
-
+  mask_layer=attention
   for weight in mel clean aug vox2; do
-    mask_layer=attention
 #    weight=clean
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     python -W ignore TrainAndTest/train_egs.py \
@@ -496,8 +543,8 @@ if [ $stage -le 74 ]; then
       --init-weight ${weight} \
       --channels 256,256,256,256,768 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}42_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}42_wd5e4_var/checkpoint_13.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}42_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}/${input_norm}_${encod}_em${embedding_size}_${weight}42_wd5e4_var/checkpoint_13.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
