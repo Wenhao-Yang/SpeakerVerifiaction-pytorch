@@ -75,6 +75,7 @@ parser.add_argument('--xvector', action='store_true', default=False, help='need 
 
 parser.add_argument('--extract', action='store_false', default=True, help='need to make mfb file')
 parser.add_argument('--test', action='store_false', default=True, help='need to make mfb file')
+parser.add_argument('--cluster', default='mean', type=str, help='The optimizer to use (default: Adagrad)')
 
 parser.add_argument('--num-frames', default=300, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--frame-shift', default=300, type=int, metavar='N', help='acoustic feature dimension')
@@ -371,7 +372,7 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
             _, out = model(data)
 
             if vec_shape[1] != 1:
-                out = out.reshape(vec_shape[0], vec_shape[1], out.shape[-1]).mean(dim=1)
+                out = out.reshape(vec_shape[0], -1)  # .mean(dim=1)
 
             # pdb.set_trace()
 
@@ -416,7 +417,20 @@ def test(test_loader, xvector_dir):
     for batch_idx, (data_a, data_p, label) in pbar:
 
         out_a = torch.tensor(data_a)
+        if out_a.shape[-1] != args.embedding_size:
+            out_a = out_a.reshape(-1, args.embedding_size)
+
         out_p = torch.tensor(data_p)
+        if out_p.shape[-1] != args.embedding_size:
+            out_p = out_p.reshape(-1, args.embedding_size)
+
+        if args.cluster == 'mean':
+            out_a = out_a.mean(dim=0, keepdim=True)
+            out_p = out_p.mean(dim=0, keepdim=True)
+        elif args.cluster == 'cross':
+            out_a_first = out_a.shape[0]
+            out_a = out_a.repeat(out_p.shape[0], 1)
+            out_p = out_p.reshape(out_a_first, 1)
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         dists = dists.numpy()

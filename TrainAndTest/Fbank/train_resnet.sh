@@ -642,8 +642,8 @@ if [ $stage -le 101 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=None
-  scheduler=cyclic
-  optimizer=adam
+  scheduler=rop
+  optimizer=sgd
   input_dim=40
   batch_size=256
   fast=none1
