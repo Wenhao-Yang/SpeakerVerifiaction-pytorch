@@ -315,7 +315,7 @@ if [ $stage -le 70 ]; then
   datasets=vox1
   #  feat=fb24
   feat_type=klfb
-  loss=minarcsoft
+  loss=arcsoft
   encod=STAP
   embedding_size=512
   input_dim=40
@@ -359,8 +359,8 @@ if [ $stage -le 70 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_batch${batch_size}_{encod}_em${embedding_size}_wd5e4_New_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_New_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_batch${batch_size}_{encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/input${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
