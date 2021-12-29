@@ -301,9 +301,10 @@ class DistributeLoss(nn.Module):
 
     """
 
-    def __init__(self, stat_type="mean"):
+    def __init__(self, stat_type="mean", margin=0.2):
         super(DistributeLoss, self).__init__()
         self.stat_type = stat_type
+        self.margin = margin
 
     def forward(self, dist, labels):
         """
@@ -316,6 +317,7 @@ class DistributeLoss(nn.Module):
 
         if len(labels.shape) == 1:
             labels = labels.unsqueeze(1)
+
         positive_dist = dist.gather(dim=1, index=labels)
         mean = positive_dist.mean()  # .clamp_min(0)
 
@@ -332,6 +334,9 @@ class DistributeLoss(nn.Module):
             kurtoses = torch.mean(torch.pow(z_scores, 4.0)) - 3.0
             # skewness = torch.mean(torch.pow(z_scores, 3.0))
             loss = (-kurtoses).clamp_min(0)
+        elif self.stat_type == "margin":
+            positive_theta = torch.acos(positive_dist)
+            loss = (positive_theta - self.margin).clamp_min(0).mean()
 
         return loss
 

@@ -651,7 +651,7 @@ if [ $stage -le 101 ]; then
   weight=vox2_rcf
   scale=0.2
   subset=
-  stat_type=kurtoses
+  stat_type=margin
   loss_ratio=1
         # --milestones 15,25,35,45 \
 

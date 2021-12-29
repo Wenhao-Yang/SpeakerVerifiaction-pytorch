@@ -213,7 +213,7 @@ class SubMarginLinear(nn.Module):
 
 
 class AMSoftmaxLoss(nn.Module):
-    def __init__(self, margin=0.3, s=15, all_iteraion=6000):
+    def __init__(self, margin=0.3, s=15, all_iteraion=0):
         super(AMSoftmaxLoss, self).__init__()
         self.s = s
         self.margin = margin
@@ -235,9 +235,9 @@ class AMSoftmaxLoss(nn.Module):
         costh_m = costh - delt_costh
         costh_m_s = self.s * costh_m
 
-        if self.iteraion < 1000:
-            costh_m_s = 0.5 + costh + 0.5 * costh_m_s
-            self.iteraion += 1
+        # if self.iteraion < 1000:
+        #     costh_m_s = 0.5 + costh + 0.5 * costh_m_s
+        #     self.iteraion += 1
 
         loss = self.ce(costh_m_s, label)
 
