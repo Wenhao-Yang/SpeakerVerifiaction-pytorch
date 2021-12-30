@@ -336,9 +336,12 @@ class DistributeLoss(nn.Module):
             loss = (-kurtoses).clamp_min(0)
         elif self.stat_type == "margin":
             positive_theta = torch.acos(positive_dist)
-            loss = (2*positive_theta - self.margin).clamp_min(0).mean()
+            loss = (2 * positive_theta - self.margin).clamp_min(0).mean()
 
         return loss
+
+    def __repr__(self):
+        return "DistributeLoss(margin=%f, stat_type=%s)" % (self.margin, self.stat_type)
 
 
 def guassian_kernel(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None):
