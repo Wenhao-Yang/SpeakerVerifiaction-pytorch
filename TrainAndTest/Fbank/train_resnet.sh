@@ -234,6 +234,7 @@ fi
 if [ $stage -le 40 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
+  testset=vox1
   feat_type=klfb
   model=ThinResNet
   resnet_size=18
@@ -259,11 +260,11 @@ if [ $stage -le 40 ]; then
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
+      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
       --shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
@@ -291,6 +292,7 @@ if [ $stage -le 40 ]; then
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
+      --loss-type ${loss} \
       --margin 0.2 \
       --s 30 \
       --weight-decay 0.0005 \
@@ -299,8 +301,7 @@ if [ $stage -le 40 ]; then
       --extract \
       --cos-sim \
       --all-iteraion 0 \
-      --remove-vad \
-      --loss-type ${loss}
+      --remove-vad
   done
   exit
 fi
