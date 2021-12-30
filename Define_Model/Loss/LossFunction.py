@@ -336,7 +336,7 @@ class DistributeLoss(nn.Module):
             loss = (-kurtoses).clamp_min(0)
         elif self.stat_type == "margin":
             positive_theta = torch.acos(positive_dist)
-            loss = (positive_theta - self.margin).clamp_min(0).mean()
+            loss = (2*positive_theta - self.margin).clamp_min(0).mean()
 
         return loss
 
