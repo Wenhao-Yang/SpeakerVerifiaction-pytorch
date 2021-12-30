@@ -22,7 +22,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer, AttentionweightLayer, \
-    TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0, DropweightLayer
+    TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0, DropweightLayer, DropweightLayer_v2
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
     SelfAttentionPooling, MaxStatisticPooling
@@ -986,6 +986,9 @@ class TDNN_v5(nn.Module):
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'drop':
             self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=self.weight_p,
+                                              weight=init_weight, scale=self.scale)
+        elif self.mask == 'drop_v2':
+            self.mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=self.weight_p,
                                               weight=init_weight, scale=self.scale)
         else:
             self.mask_layer = None
