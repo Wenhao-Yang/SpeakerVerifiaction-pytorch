@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=40
 waited=0
 while [ `ps 1208066 | wc -l` -eq 2 ]; do
   sleep 60
@@ -245,15 +245,16 @@ if [ $stage -le 40 ]; then
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=None
+  mask_layer=baseline
   scheduler=rop
   optimizer=sgd
   input_dim=40
   batch_size=256
+  fast=none1
 
 #  loss=soft
   encoder_type=SAP2
-  for downsample in k1 k3 k5; do
+  for loss in arcsoft amsoft; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -268,7 +269,7 @@ if [ $stage -le 40 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 2 \
+      --epochs 50 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
@@ -276,12 +277,12 @@ if [ $stage -le 40 ]; then
       --base-lr 0.000006 \
       --mask-layer ${mask_layer} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var_test \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var_test/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
-      --fast none1 \
+      --fast ${fast} \
       --stride 2,1 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
