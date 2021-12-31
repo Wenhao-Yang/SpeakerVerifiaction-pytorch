@@ -237,7 +237,7 @@ if [ $stage -le 40 ]; then
   testset=vox1
   feat_type=klfb
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=256
   block_type=basic
