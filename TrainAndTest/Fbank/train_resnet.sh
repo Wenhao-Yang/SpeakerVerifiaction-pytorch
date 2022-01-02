@@ -240,7 +240,7 @@ if [ $stage -le 40 ]; then
   resnet_size=34
   encoder_type=SAP2
   embedding_size=256
-  block_type=basic
+  block_type=cbam
   downsample=k3
   kernel=5,5
   loss=arcsoft
@@ -255,7 +255,7 @@ if [ $stage -le 40 ]; then
 
 #  loss=soft
   encoder_type=SAP2
-  for input_dim in 24; do
+  for input_dim in 24 40; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -304,7 +304,7 @@ if [ $stage -le 40 ]; then
       --remove-vad
   done
 
-    for input_dim in 64; do
+    for input_dim in 64 80; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
