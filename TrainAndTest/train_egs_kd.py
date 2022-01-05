@@ -188,8 +188,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
         soft_teacher_out = F.softmax(t_classfier * args.s / args.temperature, dim=1)
         soft_student_out = F.softmax(classfier * args.s / args.temperature, dim=1)
 
-        loss = (1 - args.distil_weight) * loss
-        teacher_loss = (args.distil_weight * args.temperature * args.temperature) * kd_loss(
+        # loss = (1 - args.distil_weight) * loss
+        teacher_loss = (args.distil_weight / (1 - args.distil_weight) * args.temperature * args.temperature) * kd_loss(
             soft_teacher_out, soft_student_out
         )
 
