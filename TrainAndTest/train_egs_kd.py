@@ -193,7 +193,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             soft_teacher_out, soft_student_out
         )
 
-        pdb.set_trace()
+        # pdb.set_trace()
 
         loss += teacher_loss
 
@@ -258,7 +258,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 epoch_str += ' Another Loss: {:.4f}'.format(loss_xent.float())
 
-            epoch_str += ' Teach Loss: {:.4f}'.format(teacher_loss.float())
+            epoch_str += ' Teach Loss: {:.8f}'.format(teacher_loss.float())
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             100. * minibatch_acc)
             pbar.set_description(epoch_str)
