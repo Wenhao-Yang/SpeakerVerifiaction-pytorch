@@ -15,6 +15,7 @@ from __future__ import print_function
 import os
 import os.path as osp
 # import random
+import pdb
 import shutil
 import sys
 import time
@@ -191,6 +192,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
         teacher_loss = (args.distil_weight * args.temperature * args.temperature) * kd_loss(
             soft_teacher_out, soft_student_out
         )
+
+        pdb.set_trace()
 
         loss += teacher_loss
 
