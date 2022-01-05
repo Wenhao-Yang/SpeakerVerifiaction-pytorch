@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=170
+stage=77
 
 waited=0
 while [ $(ps 17765 | wc -l) -eq 2 ]; do
@@ -1100,7 +1100,7 @@ if [ $stage -le 77 ]; then
   scheduler=rop
   optimizer=sgd
 
-  for encoder_type in SAP2; do
+  for encoder_type in AVG; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \

@@ -19,6 +19,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.nn.parallel.distributed import DistributedDataParallel
+from torch.optim import lr_scheduler
 from tqdm import tqdm
 import Process_Data.constants as c
 
@@ -35,7 +36,8 @@ from Define_Model.TDNN.FTDNN import FTDNN
 from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6, MixTDNN_v5
 from Define_Model.demucs_feature import Demucs
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
-import argparse
+
+import yaml
 
 
 def create_optimizer(parameters, optimizer, **kwargs):
@@ -114,9 +116,32 @@ def create_model(name, **kwargs):
                                                 num_classes=kwargs['num_classes'])
     elif kwargs['loss_type'] in ['subarc']:
         model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
-                                           num_center=kwargs['num_center'],)
+                                           num_center=kwargs['num_center'], )
 
     return model
+
+
+def create_scheduler(optimizer, args, train_dir):
+    milestones = args.milestones.split(',')
+    milestones = [int(x) for x in milestones]
+    milestones.sort()
+
+    if args.scheduler == 'exp':
+        gamma = np.power(args.base_lr / args.lr, 1 / args.epochs) if args.gamma == 0 else args.gamma
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
+    elif args.scheduler == 'rop':
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
+    elif args.scheduler == 'cyclic':
+        cycle_momentum = False if args.optimizer == 'adam' else True
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
+                                          max_lr=args.lr,
+                                          step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
+    else:
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
+
+    return scheduler
 
 
 class AverageMeter(object):
@@ -552,6 +577,13 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--makespec', action='store_true', default=False,
                         help='need to make spectrograms file')
 
+    if 'Knowledge' in description:
+        parser.add_argument('--distil-weight', type=float, default=0.5, help='path to voxceleb1 test dataset')
+        parser.add_argument('--teacher-model-yaml', type=str, required=True, help='path to teacher model')
+        parser.add_argument('--teacher-resume', type=str, required=True, help='path to teacher model')
+        parser.add_argument('--temperature', type=float, default=20, help='path to voxceleb1 test dataset')
+        parser.add_argument('--teacher-model', type=str, default='', help='path to voxceleb1 test dataset')
+
     args = parser.parse_args()
 
     return args
@@ -759,3 +791,16 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
     args = parser.parse_args()
 
     return args
+
+
+def save_model_args(model_dict, save_path):
+    with open(save_path, 'w') as f:
+        yamlText = yaml.dump(model_dict)
+        f.write(yamlText)
+
+
+def load_model_args(model_yaml):
+    with open(model_yaml, 'r') as f:
+        model_args = yaml.load(f, Loader=yaml.FullLoader)
+
+    return model_args
