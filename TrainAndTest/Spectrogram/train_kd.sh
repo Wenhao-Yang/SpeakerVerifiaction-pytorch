@@ -80,7 +80,7 @@ if [ $stage -le 0 ]; then
        --loss-type ${loss} \
        --distil-weight 0.5 \
        --teacher-model-yaml ${teacher_dir}/model.2022.01.05.yaml \
-       --teacher-resume ${teacher_dir}/checkpoint_50.pth \
+       --teacher-resume ${teacher_dir}/checkpoint_40.pth \
        --temperature 20
    done
 
