@@ -434,7 +434,7 @@ def main():
     model = create_model(args.model, **model_kwargs)
     model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     save_model_args(model_kwargs, model_yaml_path)
-    exit(0)
+    # exit(0)
 
     start_epoch = 0
     if args.save_init and not args.finetune:

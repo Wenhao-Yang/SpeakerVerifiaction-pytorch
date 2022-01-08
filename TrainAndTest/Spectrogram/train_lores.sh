@@ -1655,6 +1655,7 @@ if [ $stage -le 170 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
+      --shuffle \
       --epochs 50 \
       --batch-size 128 \
       --optimizer ${optimizer} \
