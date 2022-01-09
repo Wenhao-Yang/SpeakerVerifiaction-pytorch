@@ -1637,9 +1637,11 @@ if [ $stage -le 170 ]; then
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=baseline
+  mask_layer=attention
   scheduler=rop
   optimizer=sgd
+
+  weight=vox2
 
   for encoder_type in AVG; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
@@ -1663,9 +1665,10 @@ if [ $stage -le 170 ]; then
       --lr 0.1 \
       --base-lr 0.000006 \
       --mask-layer ${mask_layer} \
+      --init-weight ${weight} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --channels 64,128,256 \
       --stride 2 \
