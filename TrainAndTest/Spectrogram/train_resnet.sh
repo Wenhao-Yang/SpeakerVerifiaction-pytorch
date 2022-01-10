@@ -350,6 +350,7 @@ if [ $stage -le 50 ]; then
   mask_layer=rvec
   scheduler=rop
   optimizer=sgd
+  fast=none1
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
