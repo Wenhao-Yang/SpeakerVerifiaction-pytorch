@@ -944,6 +944,7 @@ if [ $stage -le 102 ]; then
       --feat-format kaldi \
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
+      --input-dim 40 \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 30 \
