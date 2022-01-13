@@ -454,7 +454,7 @@ def test(test_loader, xvector_dir):
         for l in zip(labels, distances):
             f.write(" ".join([str(i) for i in l]) + '\n')
 
-    pdb.set_trace()
+    # pdb.set_trace()
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 

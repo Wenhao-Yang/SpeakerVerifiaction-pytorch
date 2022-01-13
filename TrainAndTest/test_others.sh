@@ -1767,7 +1767,7 @@ if [ $stage -le 96 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 16,32,64 \
+      --channels 32,64,128 \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
@@ -1775,10 +1775,9 @@ if [ $stage -le 96 ]; then
       --dropout-p 0.125 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var/checkpoint_50.pth \
       --gpu-id 0 \
-      --extract \
       --cos-sim
   done
   exit
@@ -1792,7 +1791,8 @@ fi
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   4.2100%   |   0.2511    |   0.3781    |    0.5214    | 20211004 15:15:00 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-
+#|     vox1-test     |   4.1676    |   0.2556    |   0.3846    |    0.4620    | 20220113 20:28:41 | kd soft
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
 # ===============================    MultiResNet    ===============================
 
