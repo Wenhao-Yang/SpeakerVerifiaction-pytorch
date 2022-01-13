@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=96
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1775,13 +1775,22 @@ if [ $stage -le 96 ]; then
       --dropout-p 0.125 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
   exit
 fi
+
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+
+# chn16
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   4.2100%   |   0.2511    |   0.3781    |    0.5214    | 20211004 15:15:00 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
 
 # ===============================    MultiResNet    ===============================
