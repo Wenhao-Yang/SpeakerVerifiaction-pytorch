@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import pdb
 import sys
 import time
 # Version conflict
@@ -427,6 +428,7 @@ def test(test_loader, xvector_dir):
         if args.cluster == 'mean':
             out_a = out_a.mean(dim=0, keepdim=True)
             out_p = out_p.mean(dim=0, keepdim=True)
+
         elif args.cluster == 'cross':
             out_a_first = out_a.shape[0]
             out_a = out_a.repeat(out_p.shape[0], 1)
@@ -452,6 +454,7 @@ def test(test_loader, xvector_dir):
         for l in zip(labels, distances):
             f.write(" ".join([str(i) for i in l]) + '\n')
 
+    pdb.set_trace()
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
