@@ -571,7 +571,7 @@ if __name__ == '__main__':
         # elif args.loss_type in ['amsoft', 'arcsoft']:
         #     model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
 
-        assert os.path.isfile(args.resume)
+        assert os.path.isfile(args.resume), print(args.resume)
         print('=> loading checkpoint {}'.format(args.resume))
         checkpoint = torch.load(args.resume)
         # start_epoch = checkpoint['epoch']
