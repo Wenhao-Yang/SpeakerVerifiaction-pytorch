@@ -882,7 +882,7 @@ if [ $stage -le 102 ]; then
   weight=one
   scale=0.2
   weight_p=0.1584
-  subset=12
+  subset=
         # --milestones 15,25,35,45 \
 
   for mask_layer in drop ; do
