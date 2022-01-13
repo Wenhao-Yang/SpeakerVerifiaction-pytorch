@@ -418,21 +418,21 @@ def test(test_loader, xvector_dir):
     for batch_idx, (data_a, data_p, label) in pbar:
 
         out_a = torch.tensor(data_a)
-        if out_a.shape[-1] != args.embedding_size:
-            out_a = out_a.reshape(-1, args.embedding_size)
+        # if out_a.shape[-1] != args.embedding_size:
+        #     out_a = out_a.reshape(-1, args.embedding_size)
 
         out_p = torch.tensor(data_p)
-        if out_p.shape[-1] != args.embedding_size:
-            out_p = out_p.reshape(-1, args.embedding_size)
+        # if out_p.shape[-1] != args.embedding_size:
+        #     out_p = out_p.reshape(-1, args.embedding_size)
 
-        if args.cluster == 'mean':
-            out_a = out_a.mean(dim=0, keepdim=True)
-            out_p = out_p.mean(dim=0, keepdim=True)
-
-        elif args.cluster == 'cross':
-            out_a_first = out_a.shape[0]
-            out_a = out_a.repeat(out_p.shape[0], 1)
-            out_p = out_p.reshape(out_a_first, 1)
+        # if args.cluster == 'mean':
+        #     out_a = out_a.mean(dim=0, keepdim=True)
+        #     out_p = out_p.mean(dim=0, keepdim=True)
+        #
+        # elif args.cluster == 'cross':
+        #     out_a_first = out_a.shape[0]
+        #     out_a = out_a.repeat(out_p.shape[0], 1)
+        #     out_p = out_p.reshape(out_a_first, 1)
 
         dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         dists = dists.numpy()
