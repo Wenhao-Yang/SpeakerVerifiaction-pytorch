@@ -1733,7 +1733,7 @@ if [ $stage -le 96 ]; then
   model=LoResNet
   feat=log
   loss=arcsoft
-  encod=None
+  encod=AVG
   alpha=0
   datasets=vox1
   testset=vox1
