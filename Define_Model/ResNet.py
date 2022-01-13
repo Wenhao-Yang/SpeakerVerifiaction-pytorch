@@ -629,6 +629,7 @@ class ThinResNet(nn.Module):
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
                  mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
+                 weight_p=0.1,
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -652,6 +653,7 @@ class ThinResNet(nn.Module):
         self.gain_axis = gain_axis
         self.mask = mask
         self.scale = scale
+        self.weight_p = weight_p
 
         self.dilation = 1
         self.fast = str(fast)
@@ -726,14 +728,14 @@ class ThinResNet(nn.Module):
         elif self.mask == 'attention2':
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'drop':
-            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=0.1, 
+            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=self.weight_p,
                                               weight=init_weight, scale=self.scale)
         elif self.mask == 'drop2':
-            self.mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=0.1, 
-                                              weight=init_weight, scale=self.scale)
+            self.mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=self.weight_p,
+                                                 weight=init_weight, scale=self.scale)
         elif self.mask == 'drop3':
-            self.mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=0.1, 
-                                              weight=init_weight, scale=self.scale)
+            self.mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=self.weight_p,
+                                                 weight=init_weight, scale=self.scale)
         else:
             self.mask_layer = None
 

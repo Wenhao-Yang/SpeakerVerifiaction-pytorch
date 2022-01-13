@@ -578,6 +578,8 @@ class DropweightLayer(nn.Module):
             ynew = c.VOX1_RCFB40
         elif weight == 'vox2_rcf':
             ynew = c.VOX2_RCFB40
+        elif weight == 'one':
+            ynew = np.ones(input_dim)
         else:
             raise ValueError(weight)
 

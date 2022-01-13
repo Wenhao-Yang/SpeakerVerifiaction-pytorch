@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=40
+stage=102
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -879,8 +879,9 @@ if [ $stage -le 102 ]; then
   batch_size=256
   fast=none1
   mask_layer=baseline
-  weight=vox2_rcf
+  weight=one
   scale=0.2
+  weight_p=0.1584
   subset=12
         # --milestones 15,25,35,45 \
 
@@ -949,14 +950,15 @@ if [ $stage -le 102 ]; then
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.0001 \
-      --base-lr 0.000006 \
+      --lr 0.1 \
+      --base-lr 0.00001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --scale ${scale} \
+      --weight-p ${weight_p} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}_wd1e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}_wd1e4_var/checkpoint_60.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}dp${weight_p}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}dp${weight_p}_wd5e4_var/checkpoint_60.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -971,7 +973,7 @@ if [ $stage -le 102 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.0005 \
       --dropout-p 0 \
       --gpu-id 0,1 \
       --extract \
