@@ -27,10 +27,11 @@ if [ $stage -le 0 ]; then
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=kd
+  mask_layer=attention
   scheduler=rop
   optimizer=sgd
   nj=8
+  weight=vox2
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
 
@@ -56,9 +57,10 @@ if [ $stage -le 0 ]; then
        --lr 0.1 \
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
+       --init-weight ${weight} \
        --milestones 10,20,30,40 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var/checkpoint_50.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp20_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn32_var \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp20_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn32_var/checkpoint_50.pth \
        --kernel-size ${kernel} \
        --channels 32,64,128 \
        --stride 2 \
