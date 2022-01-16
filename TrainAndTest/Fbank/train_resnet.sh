@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=101
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -733,7 +733,7 @@ if [ $stage -le 101 ]; then
   model=ThinResNet
   resnet_size=18
   encoder_type=SAP2
-  embedding_size=256
+  embedding_size=512
   block_type=basic
   downsample=k3
   kernel=5,5
