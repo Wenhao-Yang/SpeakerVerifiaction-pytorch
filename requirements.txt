@@ -10,3 +10,9 @@ SoundFile
 speechpy
 tensorboardX
 tqdm
+kaldiio
+librosa
+pyyaml
+lmdb
+pandas
+geomloss
