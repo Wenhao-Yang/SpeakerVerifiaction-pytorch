@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=64
 # voxceleb1
-lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # echo $(awk '{n += $2} END{print n}' <utt2num_frames)
 
@@ -916,10 +916,10 @@ fi
 if [ $stage -le 64 ]; then
   datasets=cnceleb
   feat_type=klfb
-  num_per_spk=512
+  num_per_spk=1024
 
   echo -e "\n\033[1;4;31m Stage ${stage}: Making log fbank egs for ${datasets}\033[0m\n"
-  for s in dev12_fb40 ; do #dev_fb40_ws25
+  for s in dev_fb40 ; do #dev_fb40_ws25
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${datasets}/${feat_type}/${s} \
       --out-dir ${lstm_dir}/data/${datasets}/egs/${feat_type} \
