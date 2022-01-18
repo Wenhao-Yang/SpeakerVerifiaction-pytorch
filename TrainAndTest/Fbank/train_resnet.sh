@@ -9,7 +9,7 @@ while [ `ps 1141965 | wc -l` -eq 2 ]; do
 done
 #stage=10
 
-lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
 #  for loss in soft asoft ; do
@@ -726,7 +726,7 @@ fi
 
 
 if [ $stage -le 101 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+#  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
   testset=cnceleb
   feat_type=klfb
@@ -844,7 +844,7 @@ if [ $stage -le 101 ]; then
       --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0,1 \
+      --gpu-id 2,3 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
