@@ -919,7 +919,7 @@ if [ $stage -le 64 ]; then
   num_per_spk=1024
 
   echo -e "\n\033[1;4;31m Stage ${stage}: Making log fbank egs for ${datasets}\033[0m\n"
-  for s in dev_fb40 ; do #dev_fb40_ws25
+  for s in dev_fb80 ; do #dev_fb40_ws25
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${datasets}/${feat_type}/${s} \
       --out-dir ${lstm_dir}/data/${datasets}/egs/${feat_type} \
