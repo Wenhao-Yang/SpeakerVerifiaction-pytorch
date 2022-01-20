@@ -354,7 +354,7 @@ if [ $stage -le 50 ]; then
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-    for downsample in k5; do
+  for downsample in k5; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -377,8 +377,8 @@ if [ $stage -le 50 ]; then
       --fast ${fast} \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var/checkpoint_25.pth \
       --kernel-size 5,5 \
       --channels 16,32,64,128 \
       --input-dim 161 \
