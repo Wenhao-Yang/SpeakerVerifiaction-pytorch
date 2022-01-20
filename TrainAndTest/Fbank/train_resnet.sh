@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=100
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -604,7 +604,7 @@ if [ $stage -le 100 ]; then
   testset=cnceleb
   feat_type=klfb
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=512
   block_type=basic
@@ -616,7 +616,7 @@ if [ $stage -le 100 ]; then
   mask_layer=baseline
   scheduler=rop
   optimizer=sgd
-  input_dim=40
+  input_dim=80
   batch_size=256
   fast=none1
   mask_layer=baseline
@@ -648,13 +648,13 @@ if [ $stage -le 100 ]; then
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
-       --channels 16,32,64,128 \
+       --channels 32,64,128,256 \
        --fast none1 \
-       --stride 2,1 \
+       --stride 2,2 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
        --time-dim 1 \
@@ -744,7 +744,7 @@ if [ $stage -le 101 ]; then
   mask_layer=None
   scheduler=rop
   optimizer=sgd
-  input_dim=40
+  input_dim=80
   batch_size=256
   fast=none1
   mask_layer=baseline
@@ -826,13 +826,13 @@ if [ $stage -le 101 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_lr${stat_type}${loss_ratio}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_lr${stat_type}${loss_ratio}_wd5e4_var/checkpoint_60.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_lr${stat_type}${loss_ratio}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_lr${stat_type}${loss_ratio}_wd5e4_var/checkpoint_60.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 32,64,128,256 \
       --fast ${fast} \
-      --stride 2,1 \
+      --stride 2,2 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
