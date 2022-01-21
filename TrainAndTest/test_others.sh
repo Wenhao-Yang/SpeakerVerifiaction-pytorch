@@ -2346,7 +2346,7 @@ if [ $stage -le 301 ]; then
  for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
    python -W ignore TrainAndTest/test_egs.py \
      --model ${model} \
-     --resnet-size 14 \
+     --resnet-size ${resnet_size} \
      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
      --train-trials trials_2w \
