@@ -2380,7 +2380,6 @@ if [ $stage -le 301 ]; then
      --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_dev_epoch60_fix \
      --resume Data/checkpoint/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
      --gpu-id 5 \
-     --extract \
      --cos-sim
  done
  exit
