@@ -557,7 +557,7 @@ class KaldiExtractDataset(data.Dataset):
                         uid2feat[uid] = utt_path[-1]
 
         else:
-            print("    trials not exist!")
+            print("    trials not exist, extract xvector for all utterances!")
             uid2feat = {}
             with open(feat_scp, 'r') as u:
                 all_cls = tqdm(u.readlines())
