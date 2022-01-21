@@ -2343,47 +2343,47 @@ if [ $stage -le 301 ]; then
   test_set=cnceleb
   subset=dev
 
-  for s in all; do
-   python -W ignore TrainAndTest/test_egs.py \
-     --model ${model} \
-     --resnet-size ${resnet_size} \
-     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
-     --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-     --train-trials trials_2w \
-     --trials subtrials/trials_${s} \
-     --score-suffix ${s} \
-     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}_valid \
-     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
-     --feat-format kaldi \
-     --input-norm ${input_norm} \
-     --input-dim 80 \
-     --kernel-size ${kernel} \
-     --downsample ${downsample} \
-     --channels 32,64,128,256 \
-     --fast none1 \
-     --stride 2,2 \
-     --time-dim 1 \
-     --avg-size 5 \
-     --nj 12 \
-     --alpha 0 \
-     --margin 0.2 \
-     --s 30 \
-     --stride 1 \
-     --block-type ${block_type} \
-     --embedding-size ${embedding_size} \
-     --time-dim 1 \
-     --avg-size 5 \
-     --encoder-type ${encoder_type} \
-     --input-length fix \
-     --remove-vad \
-     --frame-shift 300 \
-     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_dev_epoch60_fix \
-     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
-     --gpu-id 5 \
-     --loss-type ${loss} \
-     --test \
-     --cos-sim
- done
+#  for s in all; do
+#   python -W ignore TrainAndTest/test_egs.py \
+#     --model ${model} \
+#     --resnet-size ${resnet_size} \
+#     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+#     --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
+#     --train-trials trials_2w \
+#     --trials subtrials/trials_${s} \
+#     --score-suffix ${s} \
+#     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}_valid \
+#     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
+#     --feat-format kaldi \
+#     --input-norm ${input_norm} \
+#     --input-dim 80 \
+#     --kernel-size ${kernel} \
+#     --downsample ${downsample} \
+#     --channels 32,64,128,256 \
+#     --fast none1 \
+#     --stride 2,2 \
+#     --time-dim 1 \
+#     --avg-size 5 \
+#     --nj 12 \
+#     --alpha 0 \
+#     --margin 0.2 \
+#     --s 30 \
+#     --stride 1 \
+#     --block-type ${block_type} \
+#     --embedding-size ${embedding_size} \
+#     --time-dim 1 \
+#     --avg-size 5 \
+#     --encoder-type ${encoder_type} \
+#     --input-length fix \
+#     --remove-vad \
+#     --frame-shift 300 \
+#     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_dev_epoch60_fix \
+#     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
+#     --gpu-id 5 \
+#     --loss-type ${loss} \
+#     --test \
+#     --cos-sim
+# done
 
  for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
    python -W ignore TrainAndTest/test_egs.py \
@@ -2424,7 +2424,8 @@ if [ $stage -le 301 ]; then
      --gpu-id 5 \
      --loss-type ${loss} \
      --extract \
-     --cos-sim
+     --cos-sim \
+     --verbose 0
  done
  exit
 #  for s in vlog; do
