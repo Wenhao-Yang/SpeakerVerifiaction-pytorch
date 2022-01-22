@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=40
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -232,7 +232,7 @@ if [ $stage -le 20 ]; then
 fi
 
 if [ $stage -le 40 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   testset=vox1
   feat_type=klfb
@@ -304,7 +304,7 @@ if [ $stage -le 40 ]; then
 #      --remove-vad
 #  done
 
-  for input_dim in 40; do
+  for input_dim in 24 40 64 80; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -312,7 +312,7 @@ if [ $stage -le 40 ]; then
       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
       --shuffle \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
       --random-chunk 200 400 \
@@ -346,7 +346,7 @@ if [ $stage -le 40 ]; then
       --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0,1 \
+      --gpu-id 0,1,2 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
