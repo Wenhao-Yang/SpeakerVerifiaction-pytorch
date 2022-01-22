@@ -55,7 +55,7 @@ if [ $stage -le 20 ]; then
   fast=none1
   downsample=k5
 
-  for sname in dev dev_aug_com; do
+  for sname in dev_aug_com; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
