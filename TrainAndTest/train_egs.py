@@ -697,7 +697,7 @@ def main():
     stop_time = time.time()
     t = float(stop_time - start_time)
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
-    torch.distributed.des
+    # torch.distributed.des
     exit(0)
 
 
