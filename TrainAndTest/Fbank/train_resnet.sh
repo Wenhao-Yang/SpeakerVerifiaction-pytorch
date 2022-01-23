@@ -318,7 +318,7 @@ if [ $stage -le 40 ]; then
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
-      --nj 12 \
+      --nj 9 \
       --epochs 50 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
