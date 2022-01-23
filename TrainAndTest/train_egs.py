@@ -624,16 +624,16 @@ def main():
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
-            torch.distributed.init_process_group(backend="nccl",
-                                                 init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile',
-                                                 rank=0,
-                                                 world_size=1)
-            # try:
-            #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
-            #                                          world_size=1)
-            # except RuntimeError as r:
-            #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32455', rank=0,
-            #                                          world_size=1)
+            # torch.distributed.init_process_group(backend="nccl",
+            #                                      init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile',
+            #                                      rank=0,
+            #                                      world_size=1)
+            try:
+                torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
+                                                     world_size=1)
+            except RuntimeError as r:
+                torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32455', rank=0,
+                                                     world_size=1)
             # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             model = DistributedDataParallel(model.cuda())
@@ -697,6 +697,7 @@ def main():
     stop_time = time.time()
     t = float(stop_time - start_time)
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
+    torch.distributed.des
     exit(0)
 
 
