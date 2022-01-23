@@ -318,7 +318,7 @@ if [ $stage -le 40 ]; then
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
-      --nj 9 \
+      --nj 8 \
       --epochs 50 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
@@ -346,7 +346,7 @@ if [ $stage -le 40 ]; then
       --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0,1,2 \
+      --gpu-id 0,1 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
