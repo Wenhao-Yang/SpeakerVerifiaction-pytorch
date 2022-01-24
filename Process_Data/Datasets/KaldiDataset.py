@@ -110,7 +110,7 @@ class KaldiTrainDataset(data.Dataset):
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
         uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -317,7 +317,7 @@ class TrainDataset(data.Dataset):
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
         uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -416,9 +416,8 @@ class KaldiTupleDataset(data.Dataset):
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-
         uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -549,7 +548,7 @@ class KaldiExtractDataset(data.Dataset):
 
             uid2feat = {}
             with open(feat_scp, 'r') as u:
-                all_cls = tqdm(u.readlines()) if verbose > 0 else u.readlines()
+                all_cls = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
                 for line in all_cls:
                     utt_path = line.split(' ')
                     uid = utt_path[0]
@@ -561,7 +560,7 @@ class KaldiExtractDataset(data.Dataset):
                 print("    trials not exist, extract xvector for all utterances!")
             uid2feat = {}
             with open(feat_scp, 'r') as u:
-                all_cls = tqdm(u.readlines()) if verbose > 0 else u.readlines()
+                all_cls = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
                 for line in all_cls:
                     utt_path = line.split(' ')
                     uid = utt_path[0]
