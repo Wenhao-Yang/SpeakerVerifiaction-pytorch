@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=60
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -406,4 +406,76 @@ if [ $stage -le 50 ]; then
       --loss-type ${loss}
   done
 
+fi
+
+if [ $stage -le 60 ]; then
+  datasets=vox2
+  testset=vox1
+  model=ThinResNet
+  resnet_size=34
+  encoder_type=SAP2
+  alpha=0
+  block_type=cbam_v2
+  embedding_size=512
+  input_norm=Mean
+  loss=arcsoft
+  feat_type=klsp
+  sname=dev
+
+  mask_layer=rvec
+  scheduler=rop
+  optimizer=sgd
+  fast=none1
+  downsample=k5
+
+  for sname in dev ; do
+    echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
+    python TrainAndTest/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/${sname}/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --resnet-size ${resnet_size} \
+      --nj 12 \
+      --epochs 60 \
+      --random-chunk 200 400 \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
+      --patience 3 \
+      --accu-steps 1 \
+      --lr 0.1 \
+      --milestones 10,20,40,50 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var/checkpoint_10.pth \
+      --channels 32,64,128,256 \
+      --downsample ${downsample} \
+      --input-dim 161 \
+      --fast ${fast} \
+      --block-type ${block_type} \
+      --stride 2 \
+      --batch-size 128 \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 5 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --grad-clip 0 \
+      --s 30 \
+      --lr-ratio 0.01 \
+      --weight-decay 0.0001 \
+      --dropout-p 0.1 \
+      --gpu-id 0,1,3 \
+      --shuffle \
+      --all-iteraion 0 \
+      --extract \
+      --cos-sim \
+      --loss-type ${loss}
+  done
+  exit
 fi
