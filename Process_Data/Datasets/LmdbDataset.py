@@ -440,7 +440,7 @@ class EgsDataset(Dataset):
         doms = set([])
 
         with open(feat_scp, 'r') as u:
-            all_cls_upath = tqdm(u.readlines())
+            all_cls_upath = tqdm(u.readlines(), ncols=100)
             for line in all_cls_upath:
                 try:
                     cls, upath = line.split()
