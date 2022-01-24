@@ -52,8 +52,8 @@ if [ $stage -le 1 ]; then
 #  dataset=aishell2
   #  feat_type=pyfb
   dataset=vox1
-  feat=klfb
-  feat_type=klfb
+  feat=klsp
+  feat_type=klsp
 #        --remove-vad \
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
@@ -71,7 +71,6 @@ if [ $stage -le 1 ]; then
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --remove-vad \
       --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
@@ -84,7 +83,6 @@ if [ $stage -le 1 ]; then
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --remove-vad \
       --out-set ${s}_valid
   done
   exit

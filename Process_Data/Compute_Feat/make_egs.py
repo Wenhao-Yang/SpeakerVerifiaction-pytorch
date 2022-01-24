@@ -319,7 +319,7 @@ if __name__ == "__main__":
 
         random.seed(args.seed)
         random.shuffle(utts)
-        for i in tqdm(utts):
+        for i in tqdm(utts, ncols=100):
             idx_queue.put(i)
 
         num_utt = len(utts)
