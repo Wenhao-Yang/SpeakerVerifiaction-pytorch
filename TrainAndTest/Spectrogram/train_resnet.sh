@@ -440,7 +440,7 @@ if [ $stage -le 60 ]; then
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
-      --nj 12 \
+      --nj 8 \
       --epochs 60 \
       --random-chunk 200 400 \
       --optimizer ${optimizer} \
