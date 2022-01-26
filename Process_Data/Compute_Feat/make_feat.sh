@@ -60,7 +60,7 @@ if [ $stage -le 1 ]; then
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
-  for s in dev_fb64; do
+  for s in dev; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
