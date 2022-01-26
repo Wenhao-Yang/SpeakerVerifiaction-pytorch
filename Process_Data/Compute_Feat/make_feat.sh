@@ -51,9 +51,10 @@ if [ $stage -le 1 ]; then
 #  dataset=cnceleb
 #  dataset=aishell2
   #  feat_type=pyfb
-  dataset=vox1
+  dataset=vox2
   feat=klsp
   feat_type=klsp
+  num_frames=400
 #        --remove-vad \
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
@@ -67,7 +68,7 @@ if [ $stage -le 1 ]; then
       --feat-type ${feat_type} \
       --train \
       --input-per-spks 1024 \
-      --num-frames 600 \
+      --num-frames ${num_frames} \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
@@ -78,7 +79,7 @@ if [ $stage -le 1 ]; then
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
-      --num-frames 600 \
+      --num-frames ${num_frames} \
       --input-per-spks 1024 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
