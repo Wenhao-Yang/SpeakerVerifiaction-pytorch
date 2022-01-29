@@ -39,7 +39,7 @@ if [ $stage -le 20 ]; then
   datasets=vox1
   testset=vox1
   model=ThinResNet
-  resnet_size=34
+  resnet_size=18
   encoder_type=SAP2
   alpha=0
   block_type=cbam_v2
