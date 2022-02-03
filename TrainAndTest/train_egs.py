@@ -629,7 +629,7 @@ def main():
             #                                      rank=0,
             #                                      world_size=1)
             #
-            try:
+            # try:
                 #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
                 #                                          world_size=1)
                 # except RuntimeError as r:
