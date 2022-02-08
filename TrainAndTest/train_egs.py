@@ -127,7 +127,7 @@ if args.feat_format in ['kaldi', 'wav']:
 elif args.feat_format == 'npy':
     file_loader = np.load
 
-torch.multiprocessing.set_sharing_strategy('file_system')
+# torch.multiprocessing.set_sharing_strategy('file_system')
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
                        batch_size=args.batch_size, random_chunk=args.random_chunk)
