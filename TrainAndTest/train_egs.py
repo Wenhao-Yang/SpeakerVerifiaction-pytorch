@@ -675,8 +675,8 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                valid_test(train_extract_loader, model, epoch, xvector_dir)
-                test(model, epoch, writer, xvector_dir)
+                # valid_test(train_extract_loader, model, epoch, xvector_dir)
+                # test(model, epoch, writer, xvector_dir)
                 if epoch != (end - 1):
                     try:
                         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
