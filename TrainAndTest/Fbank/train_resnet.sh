@@ -346,7 +346,7 @@ if [ $stage -le 40 ]; then
       --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0,1 \
+      --gpu-id 2,3 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
