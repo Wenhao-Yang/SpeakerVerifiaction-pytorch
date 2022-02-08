@@ -319,7 +319,7 @@ if [ $stage -le 40 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 8 \
-      --epochs 50 \
+      --epochs 1 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
