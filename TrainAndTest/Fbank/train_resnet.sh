@@ -304,7 +304,7 @@ if [ $stage -le 40 ]; then
 #      --remove-vad
 #  done
 
-  for input_dim in 40 64 80 ; do
+  for input_dim in 64 80 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \

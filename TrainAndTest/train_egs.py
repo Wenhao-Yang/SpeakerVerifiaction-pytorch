@@ -629,12 +629,12 @@ def main():
             #                                      rank=0,
             #                                      world_size=1)
             #
-            # try:
-                #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
-                #                                          world_size=1)
-                # except RuntimeError as r:
-            torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32454', rank=0,
-                                                 world_size=1)
+            try:
+                torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
+                                                     world_size=1)
+            except RuntimeError as r:
+                torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32454', rank=0,
+                                                     world_size=1)
             # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             model = DistributedDataParallel(model.cuda())
