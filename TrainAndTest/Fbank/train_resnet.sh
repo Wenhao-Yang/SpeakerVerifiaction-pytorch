@@ -319,7 +319,7 @@ if [ $stage -le 40 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 8 \
-      --epochs 1 \
+      --epochs 50 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
@@ -333,7 +333,7 @@ if [ $stage -le 40 ]; then
       --downsample ${downsample} \
       --channels 16,32,64,128 \
       --fast ${fast} \
-      --stride 2,2 \
+      --stride 2,1 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
