@@ -333,7 +333,7 @@ if [ $stage -le 40 ]; then
       --downsample ${downsample} \
       --channels 16,32,64,128 \
       --fast ${fast} \
-      --stride 2,1 \
+      --stride 2,2 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
