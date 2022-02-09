@@ -2068,8 +2068,8 @@ if [ $stage -le 201 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.1 \
-      --xvector-dir Data/xvector//ThinResNet34/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/${test_subset}_epoch_60_var \
-      --resume Data/checkpoint/ThinResNet34/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/checkpoint_60.pth \
+      --xvector-dir Data/xvector//ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/${test_subset}_epoch_60_var \
+      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
 
