@@ -2060,7 +2060,7 @@ if [ $stage -le 201 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
@@ -2068,8 +2068,8 @@ if [ $stage -le 201 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.1 \
-      --xvector-dir Data/xvector//ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/${test_subset}_epoch_60_var \
-      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/checkpoint_60.pth \
+      --xvector-dir Data/xvector//ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/${test_subset}_epoch_60_var \
+      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
 
@@ -2117,6 +2117,13 @@ if [ $stage -le 201 ]; then
 # ThinResNet34  chn16
 #|     vox1-test     |   3.1442    |   0.2504    |   0.3185    |    0.3870    | 20220209 17:05:27 | dev
 #|     vox1-test     |   2.6723    |   0.2723    |   0.2847    |    0.4488    | 20220209 17:07:34 | dev_aug
+
+# ThinResNet18  chn32
+#|     vox1-test     |   3.2768    |   0.2429    |   0.3349    |    0.4189    | 20220209 17:24:12 |
+#|     vox1-test     |   2.7413    |   0.2583    |   0.2781    |    0.3520    | 20220209 17:27:02 |
+
+# ThinResNet10  chn32
+|     vox1-test     |   3.0011    |   0.2647    |   0.3277    |    0.3613    | 20220209 18:03:54 |
 
 fi
 
