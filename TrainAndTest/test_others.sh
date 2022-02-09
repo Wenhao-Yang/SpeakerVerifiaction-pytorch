@@ -2060,7 +2060,7 @@ if [ $stage -le 201 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
@@ -2068,8 +2068,8 @@ if [ $stage -le 201 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.1 \
-      --xvector-dir Data/xvector//ThinResNet34/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/${test_subset}_epoch_60_var \
-      --resume Data/checkpoint/ThinResNet34/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/checkpoint_60.pth \
+      --xvector-dir Data/xvector//ThinResNet34/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/${test_subset}_epoch_60_var \
+      --resume Data/checkpoint/ThinResNet34/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
 
@@ -2109,6 +2109,11 @@ if [ $stage -le 201 ]; then
 #      --cos-sim
   done
   exit
+
+#|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+# ThinResNet34 dev chn32
+#|     vox1-test     |   3.0859    |   0.2410    |   0.2972    |    0.3885    | 20220209 17:01:16 |
+
 
 fi
 
