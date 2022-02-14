@@ -2032,13 +2032,13 @@ if [ $stage -le 201 ]; then
   block_type=cbam_v2
 #  encoder_type=None
   embedding_size=256
-  resnet_size=10
+  resnet_size=18
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k5
   test_subset=test
 
-  for sname in dev; do
+  for sname in dev dev_aug_com; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
