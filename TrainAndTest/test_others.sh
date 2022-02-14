@@ -2038,7 +2038,7 @@ if [ $stage -le 201 ]; then
   downsample=k5
   test_subset=test
 
-  for sname in dev_aug_com; do
+  for sname in dev; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -2068,7 +2068,7 @@ if [ $stage -le 201 ]; then
       --avg-size 5 \
       --input-length var \
       --dropout-p 0.1 \
-      --xvector-dir Data/xvector//ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/${test_subset}_epoch_60_var \
+      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/${test_subset}_epoch_60_var \
       --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}/checkpoint_60.pth \
       --gpu-id 0 \
       --cos-sim
@@ -2119,8 +2119,12 @@ if [ $stage -le 201 ]; then
 #|     vox1-test     |   2.6723    |   0.2723    |   0.2847    |    0.4488    | 20220209 17:07:34 | dev_aug
 
 # ThinResNet18  chn32
-#|     vox1-test     |   3.2768    |   0.2429    |   0.3349    |    0.4189    | 20220209 17:24:12 |
-#|     vox1-test     |   2.7413    |   0.2583    |   0.2781    |    0.3520    | 20220209 17:27:02 |
+#|     vox1-test     |   3.2768    |   0.2429    |   0.3349    |    0.4189    | 20220209 17:24:12 | dev
+#|     vox1-test     |   2.7413    |   0.2583    |   0.2781    |    0.3520    | 20220209 17:27:02 | dev_aug
+
+# ThinResNet18  chn32
+#|     vox1-test     |   3.2768    |   0.2429    |   0.3349    |    0.4189    | 20220209 17:24:12 | dev
+#|     vox1-test     |   2.7413    |   0.2583    |   0.2781    |    0.3520    | 20220209 17:27:02 | dev_aug
 
 # ThinResNet10  chn32
 #|     vox1-test     |   3.0011    |   0.2647    |   0.3277    |    0.3613    | 20220209 18:03:54 | dev_aug
