@@ -10,6 +10,7 @@
 @Overview:
 """
 import os
+import pdb
 import random
 
 import kaldi_io
@@ -497,6 +498,7 @@ class EgsDataset(Dataset):
         if len(self.guide_label) > 0:
             _, lpath = self.guide_label[idx]
             guide_label = kaldi_io.read_vec_flt(lpath)
+            pdb.set_trace()
             if self.domain:
                 return feature, label, dom_label, guide_label
             else:
