@@ -143,7 +143,7 @@ valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_
                        label_dir=args.label_dir + '/valid')
 
 
-def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
+def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
 
@@ -546,32 +546,32 @@ def main():
     if args.teacher_model == '':
         args.teacher_model = args.model
 
-    teacher_model = create_model(args.teacher_model, **teacher_model_kwargs)
-    if args.teacher_resume:
-        if os.path.isfile(args.teacher_resume):
-            print('=> loading teacher checkpoint {}'.format(args.teacher_resume))
-            checkpoint = torch.load(args.teacher_resume)
-            # start_epoch = checkpoint['epoch']
-
-            checkpoint_state_dict = checkpoint['state_dict']
-            if isinstance(checkpoint_state_dict, tuple):
-                checkpoint_state_dict = checkpoint_state_dict[0]
-            filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
-
-            # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-            if list(filtered.keys())[0].startswith('module'):
-                new_state_dict = OrderedDict()
-                for k, v in filtered.items():
-                    name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                    new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
-
-                teacher_model.load_state_dict(new_state_dict)
-            else:
-                model_dict = teacher_model.state_dict()
-                model_dict.update(filtered)
-                teacher_model.load_state_dict(model_dict)
-        else:
-            print('=> no checkpoint found at {}'.format(args.resume))
+    # teacher_model = create_model(args.teacher_model, **teacher_model_kwargs)
+    # if args.teacher_resume:
+    #     if os.path.isfile(args.teacher_resume):
+    #         print('=> loading teacher checkpoint {}'.format(args.teacher_resume))
+    #         checkpoint = torch.load(args.teacher_resume)
+    #         # start_epoch = checkpoint['epoch']
+    #
+    #         checkpoint_state_dict = checkpoint['state_dict']
+    #         if isinstance(checkpoint_state_dict, tuple):
+    #             checkpoint_state_dict = checkpoint_state_dict[0]
+    #         filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+    #
+    #         # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+    #         if list(filtered.keys())[0].startswith('module'):
+    #             new_state_dict = OrderedDict()
+    #             for k, v in filtered.items():
+    #                 name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+    #                 new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+    #
+    #             teacher_model.load_state_dict(new_state_dict)
+    #         else:
+    #             model_dict = teacher_model.state_dict()
+    #             model_dict.update(filtered)
+    #             teacher_model.load_state_dict(model_dict)
+    #     else:
+    #         print('=> no checkpoint found at {}'.format(args.resume))
 
     # Save model config txt
     with open(osp.join(args.check_path, 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
@@ -639,12 +639,12 @@ def main():
                                                  world_size=1)
 
             model = DistributedDataParallel(model.cuda())
-            teacher_model = DistributedDataParallel(teacher_model.cuda())
+            # teacher_model = DistributedDataParallel(teacher_model.cuda())
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
 
         else:
             model = model.cuda()
-            teacher_model = teacher_model.cuda()
+            # teacher_model = teacher_model.cuda()
 
         for i in range(len(ce)):
             if ce[i] != None:
@@ -654,7 +654,7 @@ def main():
         except:
             pass
 
-    teacher_model.eval()
+    # teacher_model.eval()
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
@@ -671,7 +671,7 @@ def main():
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler)
+            train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
