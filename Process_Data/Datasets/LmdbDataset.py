@@ -18,6 +18,7 @@ import lmdb
 import numpy as np
 from kaldi_io import read_mat
 from torch.utils.data import Dataset
+import torch
 from tqdm import tqdm
 
 import Process_Data.constants as c
@@ -498,7 +499,8 @@ class EgsDataset(Dataset):
         if len(self.guide_label) > 0:
             _, lpath = self.guide_label[idx]
             guide_label = kaldi_io.read_vec_flt(lpath)
-            pdb.set_trace()
+            guide_label = torch.tensor(guide_label, dtype=torch.float32)
+
             if self.domain:
                 return feature, label, dom_label, guide_label
             else:
