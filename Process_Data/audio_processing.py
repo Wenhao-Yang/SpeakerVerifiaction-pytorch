@@ -810,7 +810,7 @@ class PadCollate3d:
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
         if isinstance(batch[0][2], torch.Tensor):
-            zs = torch.FloatTensor(list(map(lambda x: x[2], batch)))
+            zs = torch.stack(list(map(lambda x: x[2], batch)), dim=0)
         else:
             zs = torch.LongTensor(list(map(lambda x: x[2], batch)))
 
