@@ -497,10 +497,14 @@ class EgsDataset(Dataset):
         if len(self.guide_label) > 0:
             _, lpath = self.guide_label[idx]
             guide_label = kaldi_io.read_vec_flt(lpath)
-
-            return feature, label, dom_label, guide_label if self.domain else feature, label, guide_label
-
-        return feature, label, dom_label if self.domain else feature, label
+            if self.domain:
+                return feature, label, dom_label, guide_label
+            else:
+                return feature, label, guide_label
+        if self.domain:
+            return feature, label, dom_label
+        else:
+            return feature, label
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数
