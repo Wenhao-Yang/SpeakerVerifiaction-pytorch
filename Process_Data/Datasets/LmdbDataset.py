@@ -456,7 +456,7 @@ class EgsDataset(Dataset):
                 doms.add(dom_cls)
                 spks.add(cls)
 
-        label_feat_scp = label_dir + '/feats.scp'
+        label_feat_scp = label_dir + '/feat.scp'
         guide_label = []
         if os.path.exists(label_feat_scp):
             with open(label_feat_scp, 'r') as u:
