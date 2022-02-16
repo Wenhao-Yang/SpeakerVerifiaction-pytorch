@@ -809,7 +809,7 @@ class PadCollate3d:
             xs = xs.contiguous()
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
-        if type(batch[0][2], torch.Tensor):
+        if isinstance(batch[0][2], torch.Tensor):
             zs = torch.FloatTensor(list(map(lambda x: x[2], batch)))
         else:
             zs = torch.LongTensor(list(map(lambda x: x[2], batch)))
