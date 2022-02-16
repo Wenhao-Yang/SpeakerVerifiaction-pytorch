@@ -154,7 +154,7 @@ def extract_smooth_label(train_loader, teacher_model, smooth_label_dir):
     feat_scp = os.path.join(smooth_label_dir, 'feat.scp')
     feat_ark = os.path.join(smooth_label_dir, 'feat.ark')
 
-    writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp), compression_method=1)
+    writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp))#, compression_method=1)
 
     with torch.no_grad():
 
@@ -170,8 +170,10 @@ def extract_smooth_label(train_loader, teacher_model, smooth_label_dir):
 
             smooth_label = classfier.cpu().float().numpy()
             true_label = label.cpu().long().numpy()
+            for x,y in zip(true_label, smooth_label):
+                writer(str(x), y)
 
-            pdb.set_trace()
+            # pdb.set_trace()
             # with torch.no_grad():
             #     t_classfier, t_feats = teacher_model(data)
             # if args.kd_type == 'vanilla':
