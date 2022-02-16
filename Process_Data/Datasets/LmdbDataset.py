@@ -12,6 +12,7 @@
 import os
 import random
 
+import kaldi_io
 import lmdb
 import numpy as np
 from kaldi_io import read_mat
@@ -428,7 +429,7 @@ class LmdbTestDataset(Dataset):
 
 class EgsDataset(Dataset):
     def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
-                 random_chunk=[], batch_size=0):
+                 random_chunk=[], batch_size=0, label_dir=''):
 
         feat_scp = dir + '/feats.scp'
 
@@ -455,10 +456,24 @@ class EgsDataset(Dataset):
                 doms.add(dom_cls)
                 spks.add(cls)
 
+        label_feat_scp = label_dir + '/feats.scp'
+        guide_label = []
+        if os.path.exists(label_feat_scp):
+            with open(label_feat_scp, 'r') as u:
+                all_lb_upath = tqdm(u.readlines())
+                for line in all_lb_upath:
+                    lb, lpath = line.split()
+                    guide_label.append((int(lb), lpath))
+
         print('==> There are {} speakers in Dataset.'.format(len(spks)))
         print('    There are {} egs in Dataset'.format(len(dataset)))
+        if len(guide_label)>0:
+            print('    There are guide labels for egs in Dataset'.format(len(dataset)))
+            assert len(guide_label) == len(dataset)
 
         self.dataset = dataset
+        self.guide_label = guide_label
+
         self.feat_dim = feat_dim
         self.loader = loader
         self.transform = transform
@@ -478,10 +493,14 @@ class EgsDataset(Dataset):
         feature = self.transform(y)
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
-        if self.domain:
-            return feature, label, dom_label
-        else:
-            return feature, label
+
+        if len(self.guide_label) > 0:
+            _, lpath = self.guide_label[idx]
+            guide_label = kaldi_io.read_vec_flt(lpath)
+
+            return feature, label, dom_label, guide_label if self.domain else feature, label, guide_label
+
+        return feature, label, dom_label if self.domain else feature, label
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数

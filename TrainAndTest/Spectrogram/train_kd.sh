@@ -34,10 +34,11 @@ if [ $stage -le 0 ]; then
   weight=vox2
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
+  label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
 
    for encoder_type in AVG ; do
      echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-     python TrainAndTest/train_egs_kd.py \
+     python TrainAndTest/train_egs_kd2.py \
        --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
        --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev/trials_dir \
@@ -59,8 +60,8 @@ if [ $stage -le 0 ]; then
        --mask-layer ${mask_layer} \
        --init-weight ${weight} \
        --milestones 10,20,30,40 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn16_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn16_var/checkpoint_50.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd2_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn16_var \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd2_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn16_var/checkpoint_50.pth \
        --kernel-size ${kernel} \
        --channels 16,32,64 \
        --stride 2 \
@@ -83,6 +84,7 @@ if [ $stage -le 0 ]; then
        --distil-weight 0.5 \
        --teacher-model-yaml ${teacher_dir}/model.2022.01.05.yaml \
        --teacher-resume ${teacher_dir}/checkpoint_40.pth \
+       --label-dir ${label_dir} \
        --temperature 20
    done
 
