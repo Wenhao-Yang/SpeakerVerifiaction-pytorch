@@ -127,7 +127,8 @@ elif args.feat_format == 'npy':
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
-                       batch_size=args.batch_size, random_chunk=args.random_chunk, label_dir=args.label_dir + '/train')
+                       batch_size=args.batch_size, random_chunk=args.random_chunk,
+                       label_dir=args.label_dir + '/train')
 
 train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         transform=transform_V,
