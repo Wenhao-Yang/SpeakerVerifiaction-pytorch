@@ -468,7 +468,7 @@ class EgsDataset(Dataset):
         print('==> There are {} speakers in Dataset.'.format(len(spks)))
         print('    There are {} egs in Dataset'.format(len(dataset)))
         if len(guide_label)>0:
-            print('    There are guide labels for egs in Dataset'.format(len(dataset)))
+            print('    There are {} guide labels for egs in Dataset'.format(len(guide_label)))
             assert len(guide_label) == len(dataset)
 
         self.dataset = dataset
