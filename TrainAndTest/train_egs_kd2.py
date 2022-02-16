@@ -44,7 +44,7 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, \
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
-from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
+from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate3d
 from Process_Data.audio_processing import totensor  # , toMFB, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
     args_parse, args_model, load_model_args
