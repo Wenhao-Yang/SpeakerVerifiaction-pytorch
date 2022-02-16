@@ -611,14 +611,14 @@ def main():
         pad_dim = 2 if args.feat_format == 'kaldi' else 3
 
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size,
-                                                   collate_fn=PadCollate(dim=pad_dim,
+                                                   collate_fn=PadCollate3d(dim=pad_dim,
                                                                          num_batch=int(
                                                                              np.ceil(len(train_dir) / args.batch_size)),
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size),
                                                    shuffle=args.shuffle, **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
-                                                   collate_fn=PadCollate(dim=pad_dim, fix_len=True,
+                                                   collate_fn=PadCollate3d(dim=pad_dim, fix_len=True,
                                                                          min_chunk_size=args.chunk_size,
                                                                          max_chunk_size=args.chunk_size + 1),
                                                    shuffle=False, **kwargs)
