@@ -31,7 +31,7 @@ if [ $stage -le 0 ]; then
   scheduler=rop
   optimizer=sgd
   nj=8
-  weight=vox2
+  weight=clean
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
   label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
