@@ -360,7 +360,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
                                      xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=64, shuffle=False, **kwargs)
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
                                                                   dist_type=('cos' if args.cos_sim else 'l2'),
                                                                   log_interval=args.log_interval,
@@ -618,7 +618,7 @@ def main():
                                                    **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False,
                                                    **kwargs)
-    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=64, shuffle=False,
+    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
                                                        **extract_kwargs)
 
     if args.cuda:
@@ -663,7 +663,7 @@ def main():
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            # train(train_loader, model, ce, optimizer, epoch, scheduler)
+            train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
