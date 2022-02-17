@@ -818,7 +818,7 @@ if [ $stage -le 101 ]; then
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
-      --nj 8 \
+      --nj 6 \
       --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
