@@ -748,8 +748,8 @@ if [ $stage -le 101 ]; then
   batch_size=256
   fast=none1
   mask_layer=baseline
-#  weight=vox2_rcf
-#  scale=0.2
+  weight=vox2_rcf
+  scale=0.2
   subset=
   stat_type=maxmargin
   loss_ratio=1
@@ -817,7 +817,7 @@ if [ $stage -le 101 ]; then
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
-      --nj 12 \
+      --nj 8 \
       --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
