@@ -91,8 +91,7 @@ writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-extract_kwargs = {'num_workers': 0, 
-                  'pin_memory': False} if args.cuda else {}
+extract_kwargs = {'num_workers': 4, 'pin_memory': False} if args.cuda else {}
 
 if not os.path.exists(args.check_path):
     print('Making checkpath...')
@@ -663,7 +662,7 @@ def main():
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
+            # train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
