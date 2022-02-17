@@ -618,7 +618,8 @@ def main():
                                                    **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False,
                                                    **kwargs)
-    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
+    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=64, shuffle=False,
+                                                       **extract_kwargs)
 
     if args.cuda:
         if len(args.gpu_id) > 1:
