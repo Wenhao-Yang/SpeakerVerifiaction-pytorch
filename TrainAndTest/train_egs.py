@@ -506,7 +506,7 @@ def main():
     elif args.loss_type == 'ring':
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0
-    elif args.loss_type == 'arcdist':
+    elif 'arcdist' in args.loss_type:
         ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.margin)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
 
