@@ -114,7 +114,7 @@ def create_model(name, **kwargs):
     if kwargs['loss_type'] in ['asoft', 'amsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                 num_classes=kwargs['num_classes'])
-    elif kwargs['loss_type'] in ['subarc']:
+    elif 'sub' in kwargs['loss_type']:
         model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
                                            num_center=kwargs['num_center'], )
 

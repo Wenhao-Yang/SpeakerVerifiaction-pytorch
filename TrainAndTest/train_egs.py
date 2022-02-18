@@ -191,7 +191,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             loss = loss_xent + loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc',]:
             loss = xe_criterion(classfier, label)
-        elif args.loss_type == 'arcdist':
+        elif 'arcdist' in args.loss_type:
             # pdb.set_trace()
             loss_cent = args.loss_ratio * ce_criterion(classfier, label)
             loss_xent = xe_criterion(classfier, label)
@@ -259,7 +259,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
                 epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
-            if args.loss_type in ['arcdist']:
+            if 'arcdist' in args.loss_type:
                 epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             100. * minibatch_acc)
@@ -317,7 +317,7 @@ def valid_class(valid_loader, model, ce, epoch):
                 loss = loss_xent + loss_cent
             elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc']:
                 loss = xe_criterion(classfier, label)
-            elif args.loss_type == 'arcdist':
+            elif 'arcdist' in args.loss_type:
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
                 loss_xent = xe_criterion(classfier, label)
 
@@ -505,7 +505,7 @@ def main():
     elif args.loss_type == 'ring':
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0
-    elif args.loss_type == 'arcdist':
+    elif 'arcdist' in args.loss_type:
         ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.margin)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
 
