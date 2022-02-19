@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=64
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
@@ -918,7 +918,7 @@ if [ $stage -le 64 ]; then
   num_per_spk=1024
 
   echo -e "\n\033[1;4;31m Stage ${stage}: Making log fbank egs for ${datasets}\033[0m\n"
-  for s in dev_fb80 ; do #dev_fb40_ws25
+  for s in dev12_fb40 ; do #dev_fb40_ws25
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${datasets}/${feat_type}/${s} \
       --out-dir ${lstm_dir}/data/${datasets}/egs/${feat_type} \
@@ -926,7 +926,7 @@ if [ $stage -le 64 ]; then
       --train \
       --domain \
       --input-per-spks ${num_per_spk} \
-      --num-frames 600 \
+      --num-frames 400 \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
@@ -939,7 +939,7 @@ if [ $stage -le 64 ]; then
       --feat-type ${feat_type} \
       --input-per-spks ${num_per_spk} \
       --feat-format kaldi \
-      --num-frames 600 \
+      --num-frames 400 \
       --domain \
       --out-format kaldi_cmp \
       --num-valid 2 \
