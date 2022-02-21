@@ -22,6 +22,7 @@ import traceback
 from multiprocessing import Pool, Manager
 
 import kaldi_io
+import kaldiio
 import numpy as np
 import psutil
 import torch
