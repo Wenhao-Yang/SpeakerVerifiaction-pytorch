@@ -755,7 +755,7 @@ if [ $stage -le 101 ]; then
   loss_ratio=1
         # --milestones 15,25,35,45 \
 
-  for loss in subarcdist ; do
+  for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 #     python TrainAndTest/train_egs.py \
 #       --model ${model} \
@@ -848,12 +848,13 @@ if [ $stage -le 101 ]; then
       --num-center 3 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 1,3 \
+      --gpu-id 0,1 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
       --remove-vad \
       --loss-type ${loss} \
+      --lncl \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
   done
