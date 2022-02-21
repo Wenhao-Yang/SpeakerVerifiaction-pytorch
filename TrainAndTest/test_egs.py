@@ -569,6 +569,7 @@ if __name__ == '__main__':
     start_time = time.time()
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
+
         # if args.loss_type == 'asoft':
         #     model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
         # elif args.loss_type in ['amsoft', 'arcsoft']:

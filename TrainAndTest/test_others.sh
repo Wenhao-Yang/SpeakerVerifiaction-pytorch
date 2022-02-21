@@ -2305,7 +2305,7 @@ if [ $stage -le 203 ]; then
   block_type=cbam
   encoder_type=None
   embedding_size=256
-  resnet_size=34
+  resnet_size=18
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k3
@@ -2356,7 +2356,7 @@ if [ $stage -le 203 ]; then
       --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klfb${input_dim}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
       --remove-vad \
-      --verbose 2 \
+      --verbose 0 \
       --cos-sim
   done
   exit
