@@ -357,7 +357,7 @@ if [ $stage -le 40 ]; then
 #      --cos-sim \
 #      --all-iteraion 0 \
 #      --remove-vad
-  done
+
 
 #  for input_dim in 64 80; do
 #    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
