@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=100
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -616,16 +616,16 @@ if [ $stage -le 100 ]; then
   mask_layer=baseline
   scheduler=rop
   optimizer=sgd
-  input_dim=80
+  input_dim=40
   batch_size=256
   fast=none1
   mask_layer=baseline
   weight=vox2_rcf
   scale=0.2
-  subset=
+  subset=12
         # --milestones 15,25,35,45 \
 
-  for loss in arcsoft ; do
+  for loss in arcsoft arcdist; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs.py \
        --model ${model} \
@@ -666,7 +666,7 @@ if [ $stage -le 100 ]; then
        --s 30 \
        --weight-decay 0.0005 \
        --dropout-p 0.1 \
-       --gpu-id 3,4,5 \
+       --gpu-id 2,3 \
        --extract \
        --cos-sim \
        --all-iteraion 0 \
@@ -721,7 +721,7 @@ if [ $stage -le 100 ]; then
 #      --remove-vad \
 #      --loss-type ${loss}
   done
-#  exit
+#exit
 fi
 
 
