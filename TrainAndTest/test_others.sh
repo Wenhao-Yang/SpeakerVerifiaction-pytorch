@@ -2355,7 +2355,6 @@ if [ $stage -le 203 ]; then
       --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klfb${input_dim}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/${testset}_${test_subset}_var \
       --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klfb${input_dim}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
-      --extract \
       --remove-vad \
       --verbose 2 \
       --cos-sim
