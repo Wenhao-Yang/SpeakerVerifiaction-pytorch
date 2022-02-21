@@ -307,6 +307,7 @@ if __name__ == "__main__":
     mem_data = psutil.virtual_memory()
     free_mem = mem_data.available
     maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.5)
+    maxsize = min(maxsize, 150000)
     print('Maxsize for Queue is %d' % maxsize)
 
     task_queue = manager.Queue(maxsize=maxsize)
