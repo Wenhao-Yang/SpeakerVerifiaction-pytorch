@@ -38,7 +38,7 @@ from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal
-from TrainAndTest.common_func import create_model, verification_extract
+from TrainAndTest.common_func import create_model, verification_extract, load_model_args
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -88,10 +88,9 @@ parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi'
 parser.add_argument('--check-path', default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25',
                     help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--resume',
-                    default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25/checkpoint_10.pth', type=str,
-                    metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--resume', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
+parser.add_argument('--model-yaml', default='', type=str,
+                    help='path to yaml of model for the latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -526,46 +525,50 @@ if __name__ == '__main__':
         print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
-    # instantiate model and initialize weights
-    kernel_size = args.kernel_size.split(',')
-    kernel_size = [int(x) for x in kernel_size]
-    if args.padding == '':
-        padding = [int((x - 1) / 2) for x in kernel_size]
+    if os.path.exists(args.model_yaml):
+        model_kwargs = load_model_args(args.model_yaml)
     else:
-        padding = args.padding.split(',')
-        padding = [int(x) for x in padding]
+        # instantiate model and initialize weights
+        kernel_size = args.kernel_size.split(',')
+        kernel_size = [int(x) for x in kernel_size]
+        if args.padding == '':
+            padding = [int((x - 1) / 2) for x in kernel_size]
+        else:
+            padding = args.padding.split(',')
+            padding = [int(x) for x in padding]
 
-    kernel_size = tuple(kernel_size)
-    padding = tuple(padding)
-    stride = args.stride.split(',')
-    stride = [int(x) for x in stride]
+        kernel_size = tuple(kernel_size)
+        padding = tuple(padding)
+        stride = args.stride.split(',')
+        stride = [int(x) for x in stride]
 
-    channels = args.channels.split(',')
-    channels = [int(x) for x in channels]
-    context = args.context.split(',')
-    context = [int(x) for x in context]
-    dilation = args.dilation.split(',')
-    dilation = [int(x) for x in dilation]
+        channels = args.channels.split(',')
+        channels = [int(x) for x in channels]
+        context = args.context.split(',')
+        context = [int(x) for x in context]
+        dilation = args.dilation.split(',')
+        dilation = [int(x) for x in dilation]
 
-    mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
+        mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
 
-    model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
-                    'dilation': dilation, 'first_2d': args.first_2d,
-                    'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
-                    'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
-                    'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-                    'downsample': args.downsample,
-                    'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                    'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'channels': channels, 'context': context, 'init_weight': args.init_weight,
-                    'alpha': args.alpha, 'dropout_p': args.dropout_p,
-                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
+        model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
+                        'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
+                        'dilation': dilation, 'first_2d': args.first_2d,
+                        'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
+                        'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
+                        'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
+                        'downsample': args.downsample,
+                        'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
+                        'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                        'channels': channels, 'context': context, 'init_weight': args.init_weight,
+                        'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                        'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
     if args.verbose > 1:
         print('Model options: {}'.format(model_kwargs))
         dist_type = 'cos' if args.cos_sim else 'l2'
         print('Testing with %s distance, ' % dist_type)
+
     start_time = time.time()
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
