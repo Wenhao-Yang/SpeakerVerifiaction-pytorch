@@ -225,7 +225,8 @@ transform = ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_v
 if args.feat_format == 'npy':
     file_loader = np.load
 elif args.feat_format in ['kaldi', 'klfb']:
-    file_loader = kaldi_io.read_mat
+    # file_loader = kaldi_io.read_mat
+    file_loader = kaldiio.load_mat
 
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,

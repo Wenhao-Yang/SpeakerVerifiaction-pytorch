@@ -686,7 +686,7 @@ class ScriptVerifyDataset(data.Dataset):
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
-                 segment_len=c.N_SAMPLES, verbose=1):
+                 segment_len=c.N_SAMPLES, verbose=1, min_frames=50):
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
@@ -709,13 +709,18 @@ class ScriptTrainDataset(data.Dataset):
                 for l in f.readlines():
                     uid, num_frames = l.split()
                     num_frames = int(num_frames)
-                    total_frames += num_frames
-                    this_numofseg = int(np.ceil(float(num_frames) / segment_len))
 
-                    for i in range(this_numofseg):
-                        end = min((i + 1) * segment_len, num_frames)
-                        start = min(end - segment_len, 0)
-                        base_utts.append((uid, start, end))
+                    if num_frames >= min_frames:
+                        total_frames += num_frames
+                        this_numofseg = int(np.ceil(float(num_frames) / segment_len))
+
+                        for i in range(this_numofseg):
+                            end = min((i + 1) * segment_len, num_frames)
+                            start = min(end - segment_len, 0)
+                            base_utts.append((uid, start, end))
+                    else:
+                        invalid_uid.append(uid)
+
             if verbose > 0:
                 print('    There are {} basic segments.'.format(len(base_utts)))
 
