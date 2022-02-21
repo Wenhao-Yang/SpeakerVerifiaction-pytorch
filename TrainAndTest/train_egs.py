@@ -203,7 +203,11 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
         if args.lncl:
-            predict_loss = ce_criterion(classfier, predicted_one_labels)
+            if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc']:
+                predict_loss = xe_criterion(classfier, predicted_one_labels)
+            else:
+                predict_loss = ce_criterion(classfier, predicted_one_labels)
+
             alpha_t = args.alpha_t * (epoch / args.epochs) ** 2
             loss = (1 - alpha_t) * loss + alpha_t * predict_loss
 
