@@ -2302,7 +2302,7 @@ if [ $stage -le 203 ]; then
   datasets=vox1
   testset=vox1
 #  test_subset=
-  block_type=basic
+  block_type=cbam
   encoder_type=None
   embedding_size=256
   resnet_size=34
