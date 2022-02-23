@@ -2305,7 +2305,7 @@ if [ $stage -le 203 ]; then
   block_type=cbam
   encoder_type=None
   embedding_size=256
-  resnet_size=18
+  resnet_size=10
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k3
