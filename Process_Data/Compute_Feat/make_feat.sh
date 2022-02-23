@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=64
+stage=1
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
@@ -51,7 +51,7 @@ if [ $stage -le 1 ]; then
 #  dataset=cnceleb
 #  dataset=aishell2
   #  feat_type=pyfb
-  dataset=vox2
+  dataset=vox1
   feat=klsp
   feat_type=klsp
   num_frames=400
