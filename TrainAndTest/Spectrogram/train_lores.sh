@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=170
+stage=78
 
 waited=0
 while [ $(ps 17765 | wc -l) -eq 2 ]; do
@@ -1205,8 +1205,12 @@ if [ $stage -le 78 ]; then
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=gau_noise
-  for mask_layer in None; do
+#  mask_layer=gau_noise
+
+  scheduler=rop
+  optimizer=sgd
+
+  for mask_layer in baseline ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -1220,17 +1224,18 @@ if [ $stage -le 78 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 50 \
-      --scheduler rop \
+      --epochs 40 \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
       --patience 2 \
       --accu-steps 1 \
       --lr 0.1 \
       --mask-layer ${mask_layer} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
-      --channels 16,32,64 \
+      --channels 64,128,256 \
       --stride 2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
@@ -1245,7 +1250,7 @@ if [ $stage -le 78 ]; then
       --m 3 \
       --loss-ratio 0.01 \
       --weight-decay 0.0005 \
-      --dropout-p 0.125 \
+      --dropout-p 0.25 \
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
@@ -1258,7 +1263,7 @@ fi
 
 #stage=10000
 if [ $stage -le 79 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   feat_type=klsp
   model=LoResNet
