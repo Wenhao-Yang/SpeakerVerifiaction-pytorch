@@ -9,6 +9,9 @@ while [ $(ps 17765 | wc -l) -eq 2 ]; do
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
 done
 
+lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
+
+
 #stage=1
 if [ $stage -le 0 ]; then
   for loss in soft; do # 32,128,512; 8,32,128
@@ -1193,12 +1196,11 @@ fi
 
 
 if [ $stage -le 78 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   feat_type=klsp
   model=LoResNet
   resnet_size=8
-  encoder_type=None
+  encoder_type=AVG
   embedding_size=256
   block_type=cbam
   kernel=5,5
