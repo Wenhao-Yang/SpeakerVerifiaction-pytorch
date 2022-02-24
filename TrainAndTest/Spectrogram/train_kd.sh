@@ -52,8 +52,8 @@ if [ $stage -le 0 ]; then
        --resnet-size ${resnet_size} \
        --nj ${nj} \
        --shuffle \
-       --epochs 40 \
-       --patience 2 \
+       --epochs 50 \
+       --patience 3 \
        --batch-size 128 \
        --optimizer ${optimizer} \
        --scheduler ${scheduler} \
