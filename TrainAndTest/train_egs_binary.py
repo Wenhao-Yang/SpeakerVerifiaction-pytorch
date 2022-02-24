@@ -121,7 +121,7 @@ parser.add_argument('--vad', action='store_true', default=False, help='vad layer
 parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
 
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
-parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
 
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
@@ -148,6 +148,7 @@ parser.add_argument('--feat-dim', default=161, type=int, metavar='FEAT',
                     help='acoustic feature dimension')
 parser.add_argument('--remove-vad', action='store_true', default=False,
                     help='using Cosine similarity')
+parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
 parser.add_argument('--alpha', default=12, type=float, metavar='FEAT',
                     help='acoustic feature dimension')
