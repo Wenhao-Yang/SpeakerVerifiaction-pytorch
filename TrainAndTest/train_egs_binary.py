@@ -79,7 +79,7 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
 parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
-parser.add_argument('--speech-dom', default=9, type=int, help='set domain in dataset')
+parser.add_argument('--speech-dom', default='4,7,9,10', type=str, help='set domain in dataset')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 parser.add_argument('--shuffle', action='store_false', default=True, help='need to shuffle egs')
@@ -121,7 +121,7 @@ parser.add_argument('--vad', action='store_true', default=False, help='vad layer
 parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
 
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
-parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
 
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
@@ -132,6 +132,8 @@ parser.add_argument('--transform', type=str, default="None", help='add a transfo
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
+
 parser.add_argument('--first-2d', action='store_true', default=False,
                     help='replace first tdnn layer with conv2d layers')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
@@ -146,6 +148,7 @@ parser.add_argument('--feat-dim', default=161, type=int, metavar='FEAT',
                     help='acoustic feature dimension')
 parser.add_argument('--remove-vad', action='store_true', default=False,
                     help='using Cosine similarity')
+parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
 
 parser.add_argument('--alpha', default=12, type=float, metavar='FEAT',
                     help='acoustic feature dimension')
@@ -175,8 +178,10 @@ parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
 parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fix'],
                     help='batchnorm with instance norm')
 # loss configure
-parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft'],
+parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft', 'arcsoft'],
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--submean', action='store_true', default=False,
+                    help='substract center for speaker embeddings')
 parser.add_argument('--finetune', action='store_true', default=False,
                     help='using Cosine similarity')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
@@ -202,6 +207,7 @@ parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
                     help='random seed (default: 0)')
 
 parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.125)')
+parser.add_argument('--base-lr', type=float, default=1e-8, metavar='LR', help='learning rate (default: 0.125)')
 parser.add_argument('--lr-decay', default=0, type=float, metavar='LRD',
                     help='learning rate decay ratio (default: 1e-4')
 parser.add_argument('--weight-decay', default=5e-4, type=float,
@@ -404,13 +410,13 @@ def main():
     if args.loss_type == 'soft':
         xe_criterion = None
     elif args.loss_type == 'asoft':
-        xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
+        ce_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
-        xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+        ce_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'amsoft':
-        xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+        ce_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'arcsoft':
-        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
+        ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
 
     xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.94, 0.06]))
     # dom_params = list(map(id, model.classifier_dom.parameters()))
@@ -598,13 +604,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
 
+    speech_dom = args.speech_dom.split(',')
+    speech_dom = [int(x) for x in speech_dom]
+
     for batch_idx, (data, label_a, label_b) in pbar:
 
         if args.cuda:
             data = data.cuda()
 
         data, label_a = Variable(data), Variable(label_a)
-        label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
+
+        if len(speech_dom) == 1:
+            label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
+        else:
+            multi_b = torch.ones_like(label_b)
+            for s in speech_dom:
+                multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
+
+            label_b = multi_b
+
         label_b = Variable(label_b)
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
@@ -612,7 +630,12 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         _, spk_embeddings = xvector_model(data)
 
         # Training the discriminator
-        domain_embeddings = spk_embeddings.detach()
+        if args.submean:
+            domain_embeddings = spk_embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
+            domain_embeddings = domain_embeddings.detach()
+        else:
+            domain_embeddings = spk_embeddings.detach()
+
         for i in range(steps):
             dom_logits = classifier_dom(domain_embeddings)
             dom_loss = xe_criterion(dom_logits, true_labels_b)
