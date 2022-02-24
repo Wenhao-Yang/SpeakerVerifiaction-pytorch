@@ -368,6 +368,7 @@ def main():
 
     print('Model options: {}'.format(xvector_kwargs))
     xvector_model = create_model(args.model, **xvector_kwargs)
+    xvector_model.classifier = None
 
     if args.loss_type == 'soft':
         classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)
@@ -493,9 +494,9 @@ def main():
             # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             # model = DistributedDataParallel(model.cuda())
-            xvector_model = DistributedDataParallel(xvector_model.cuda())#, find_unused_parameters=True)
-            classifier_spk = DistributedDataParallel(classifier_spk.cuda())#, find_unused_parameters=True)
-            classifier_dom = DistributedDataParallel(classifier_dom.cuda())#, find_unused_parameters=True)
+            xvector_model = DistributedDataParallel(xvector_model.cuda(), find_unused_parameters=True)
+            classifier_spk = DistributedDataParallel(classifier_spk.cuda(), find_unused_parameters=True)
+            classifier_dom = DistributedDataParallel(classifier_dom.cuda(), find_unused_parameters=True)
 
         else:
             xvector_model = xvector_model.cuda()
