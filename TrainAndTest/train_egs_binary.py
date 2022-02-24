@@ -79,7 +79,7 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
 parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
-parser.add_argument('--speech-dom', default=9, type=int, help='set domain in dataset')
+parser.add_argument('--speech-dom', default='9', type=str, help='set domain in dataset')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 parser.add_argument('--shuffle', action='store_false', default=True, help='need to shuffle egs')
@@ -177,10 +177,13 @@ parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fi
 # loss configure
 parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft'],
                     help='path to voxceleb1 test dataset')
+parser.add_argument('--submean', action='store_true', default=False,
+                    help='substract center for speaker embeddings')
 parser.add_argument('--finetune', action='store_true', default=False,
                     help='using Cosine similarity')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
+
 parser.add_argument('--dom-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
 parser.add_argument('--sim-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
@@ -284,7 +287,7 @@ elif args.test_input == 'fix':
     ])
 
 # pdb.set_trace()
-torch.multiprocessing.set_sharing_strategy('file_system')
+# torch.multiprocessing.set_sharing_strategy('file_system')
 
 if args.feat_format == 'kaldi':
     file_loader = read_mat
@@ -404,15 +407,15 @@ def main():
     if args.loss_type == 'soft':
         xe_criterion = None
     elif args.loss_type == 'asoft':
-        xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
+        ce_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
-        xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+        ce_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'amsoft':
-        xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+        ce_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'arcsoft':
-        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
+        ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
 
-    xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.94, 0.06]))
+    xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.94, 0.06]))  # label weight for speech & other domain
     # dom_params = list(map(id, model.classifier_dom.parameters()))
     # rest_params = list(map(id, model.xvectors.parameters()))
     # rest_params = filter(lambda p: id(p) not in dom_params, model.parameters())
@@ -570,6 +573,7 @@ def main():
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     exit(0)
 
+
 def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     # switch to evaluate mode
     xvector_model, classifier_spk, classifier_dom = model
@@ -598,13 +602,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
 
+    speech_dom = args.speech_dom.split(',')
+    speech_dom = [int(x) for x in speech_dom]
+
     for batch_idx, (data, label_a, label_b) in pbar:
 
         if args.cuda:
             data = data.cuda()
 
         data, label_a = Variable(data), Variable(label_a)
-        label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
+
+        if len(speech_dom) == 1:
+            label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
+        else:
+            multi_b = torch.ones_like(label_b)
+            for s in speech_dom:
+                multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
+
+            label_b = multi_b
+
         label_b = Variable(label_b)
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
@@ -612,7 +628,12 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         _, spk_embeddings = xvector_model(data)
 
         # Training the discriminator
-        domain_embeddings = spk_embeddings.detach()
+        if args.submean:
+            domain_embeddings = spk_embeddings - classifier_spk.W.transpose(0, 1)[label_a]
+            domain_embeddings = domain_embeddings.detach()
+        else:
+            domain_embeddings = spk_embeddings.detach()
+
         for i in range(steps):
             dom_logits = classifier_dom(domain_embeddings)
             dom_loss = xe_criterion(dom_logits, true_labels_b)
