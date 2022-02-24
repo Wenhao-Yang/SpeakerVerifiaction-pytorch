@@ -635,7 +635,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
         # Training the discriminator
         if args.submean:
-            domain_embeddings = spk_embeddings - classifier_spk.W.transpose(0, 1)[label_a]
+            domain_embeddings = spk_embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
             domain_embeddings = domain_embeddings.detach()
         else:
             domain_embeddings = spk_embeddings.detach()
