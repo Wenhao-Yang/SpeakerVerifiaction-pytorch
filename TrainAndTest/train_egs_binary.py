@@ -175,7 +175,7 @@ parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
 parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fix'],
                     help='batchnorm with instance norm')
 # loss configure
-parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft'],
+parser.add_argument('--loss-type', type=str, default='soft', choices=['soft', 'asoft', 'center', 'amsoft', 'arcsoft'],
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--submean', action='store_true', default=False,
                     help='substract center for speaker embeddings')
