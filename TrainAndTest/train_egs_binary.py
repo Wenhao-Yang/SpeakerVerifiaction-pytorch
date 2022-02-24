@@ -132,6 +132,8 @@ parser.add_argument('--transform', type=str, default="None", help='add a transfo
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
+
 parser.add_argument('--first-2d', action='store_true', default=False,
                     help='replace first tdnn layer with conv2d layers')
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
@@ -205,6 +207,8 @@ parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
                     help='random seed (default: 0)')
 
 parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.125)')
+parser.add_argument('--base-lr', type=float, default=1e-8, metavar='LR', help='learning rate (default: 0.125)')
+
 parser.add_argument('--lr-decay', default=0, type=float, metavar='LRD',
                     help='learning rate decay ratio (default: 1e-4')
 parser.add_argument('--weight-decay', default=5e-4, type=float,
