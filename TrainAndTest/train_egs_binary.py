@@ -186,7 +186,6 @@ parser.add_argument('--finetune', action='store_true', default=False,
                     help='using Cosine similarity')
 parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
-
 parser.add_argument('--dom-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
                     help='the ratio softmax loss - triplet loss (default: 2.0')
 parser.add_argument('--sim-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
@@ -209,7 +208,6 @@ parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
 
 parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.125)')
 parser.add_argument('--base-lr', type=float, default=1e-8, metavar='LR', help='learning rate (default: 0.125)')
-
 parser.add_argument('--lr-decay', default=0, type=float, metavar='LRD',
                     help='learning rate decay ratio (default: 1e-4')
 parser.add_argument('--weight-decay', default=5e-4, type=float,
@@ -370,6 +368,7 @@ def main():
 
     print('Model options: {}'.format(xvector_kwargs))
     xvector_model = create_model(args.model, **xvector_kwargs)
+    xvector_model.classifier = None
 
     if args.loss_type == 'soft':
         classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)

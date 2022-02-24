@@ -908,7 +908,10 @@ class ThinResNet(nn.Module):
         if self.alpha:
             x = self.l2_norm(x)
 
-        logits = self.classifier(x)
+        if self.classifier == None:
+            logits = ""
+        else:
+            logits = self.classifier(x)
 
         return logits, x
 
