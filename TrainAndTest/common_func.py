@@ -582,9 +582,11 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='need to make spectrograms file')
 
     if 'Knowledge' in description:
+        parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
         parser.add_argument('--distil-weight', type=float, default=0.5, help='path to voxceleb1 test dataset')
         parser.add_argument('--teacher-model-yaml', type=str, required=True, help='path to teacher model')
         parser.add_argument('--teacher-resume', type=str, required=True, help='path to teacher model')
+        parser.add_argument('--label-dir', type=str, default='', help='path to teacher model')
         parser.add_argument('--temperature', type=float, default=20, help='path to voxceleb1 test dataset')
         parser.add_argument('--teacher-model', type=str, default='', help='path to voxceleb1 test dataset')
 

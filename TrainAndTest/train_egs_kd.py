@@ -149,6 +149,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
     correct = 0.
     total_datasize = 0.
     total_loss = 0.
+    total_teacher_loss = 0.
     orth_err = 0
 
     ce_criterion, xe_criterion = ce
@@ -193,6 +194,10 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             soft_teacher_out, soft_student_out
         )
 
+        if args.kd_type == 'em_l2':
+            teacher_loss += kd_loss(feats, t_feats)
+
+        total_teacher_loss += float(teacher_loss.item())
         # pdb.set_trace()
 
         loss += teacher_loss
@@ -264,10 +269,17 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             pbar.set_description(epoch_str)
             # break
 
-    print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}.\33[0m'.format(epoch, 100 * float(
-        correct) / total_datasize, total_loss / len(train_loader)))
+    print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}, Teacher loss: {:.8f}.\33[0m'.format(epoch,
+                                                                                                                100 * float(
+                                                                                                                    correct) / total_datasize,
+                                                                                                                total_loss / len(
+                                                                                                                    train_loader),
+                                                                                                                total_teacher_loss / len(
+                                                                                                                    train_loader)))
+
     writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
+    writer.add_scalar('Train/Teacher_Loss', total_teacher_loss / len(train_loader), epoch)
 
     # torch.cuda.empty_cache()
 
