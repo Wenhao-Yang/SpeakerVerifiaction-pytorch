@@ -266,6 +266,7 @@ if [ $stage -le 70 ]; then
        --dropout-p 0.1 \
        --gpu-id 2,3 \
        --extract \
+       --domain \
        --cos-sim \
        --all-iteraion 0 \
        --remove-vad \
