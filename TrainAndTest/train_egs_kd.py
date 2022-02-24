@@ -124,7 +124,7 @@ if args.feat_format in ['kaldi', 'wav']:
 elif args.feat_format == 'npy':
     file_loader = np.load
 
-torch.multiprocessing.set_sharing_strategy('file_system')
+# torch.multiprocessing.set_sharing_strategy('file_system')
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
                        batch_size=args.batch_size, random_chunk=args.random_chunk)
@@ -630,11 +630,15 @@ def main():
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
-            torch.distributed.init_process_group(backend="nccl",
-                                                 init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile2',
-                                                 rank=0,
-                                                 world_size=1)
 
+            try:
+                torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32459', rank=0,
+                                                     world_size=1)
+            except RuntimeError as r:
+                torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32458', rank=0,
+                                                     world_size=1)
+            # if args.gain
+            # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             model = DistributedDataParallel(model.cuda())
             teacher_model = DistributedDataParallel(teacher_model.cuda())
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
