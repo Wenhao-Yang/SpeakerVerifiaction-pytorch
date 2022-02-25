@@ -312,6 +312,10 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
 
 extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
 
+# easy domain index
+speech_dom = args.speech_dom.split(',')
+speech_dom = [int(x) for x in speech_dom]
+
 
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
@@ -608,9 +612,6 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
 
-    speech_dom = args.speech_dom.split(',')
-    speech_dom = [int(x) for x in speech_dom]
-
     for batch_idx, (data, label_a, label_b) in pbar:
 
         if args.cuda:
@@ -763,11 +764,26 @@ def valid_class(valid_loader, model, ce, epoch):
     with torch.no_grad():
         for batch_idx, (data, label_a, label_b) in enumerate(valid_loader):
             data = data.cuda()
-            label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
+
+            if len(speech_dom) == 1:
+                label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
+            else:
+                multi_b = torch.ones_like(label_b)
+                for s in speech_dom:
+                    multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
+
+                label_b = multi_b
+            # label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
 
             _, embeddings = xvector_model(data)
+
+            if args.submean:
+                domain_embeddings = embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
+            else:
+                domain_embeddings = embeddings
+
             out_a = classifier_spk(embeddings)
-            out_b = classifier_dom(embeddings)
+            out_b = classifier_dom(domain_embeddings)
 
             predicted_labels_a = out_a
             predicted_labels_b = out_b
