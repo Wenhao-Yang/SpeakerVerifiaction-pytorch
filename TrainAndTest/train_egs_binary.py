@@ -721,21 +721,21 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
                                                                                total_loss_a / (batch_idx + 1),
                                                                                total_loss_b / (batch_idx + 1))
             # print_desc += 'SimLoss: {:.4f}'.format(total_loss_c / (batch_idx + 1))
-            print_desc += ' Accuracy[ Spk: {:.4f}%, Dom: {:.4f}%]'.format(100. * minibatch_acc_a,
-                                                                          100. * minibatch_acc_b)
+            print_desc += ' Accuracy[ Spk: {: >8.4f}%, Dom: {: >8.4f}%]'.format(100. * minibatch_acc_a,
+                                                                                100. * minibatch_acc_b)
             pbar.set_description(print_desc)
 
-    print('\nEpoch {:>2d}: \33[91mAvg loss: {:.4f} Spk Loss: {:.4f} Dom Loss: {:.4f} '.format(epoch,
-                                                                                              total_loss / len(
-                                                                                                  train_loader),
-                                                                                              total_loss_a / len(
-                                                                                                  train_loader),
-                                                                                              total_loss_b / len(
-                                                                                                  train_loader)),
+    print('\nEpoch {:>2d}: \33[91mTrain loss: {:.4f} Spk: {:.4f} Domain: {:.4f}, '.format(epoch,
+                                                                                          total_loss / len(
+                                                                                              train_loader),
+                                                                                          total_loss_a / len(
+                                                                                              train_loader),
+                                                                                          total_loss_b / len(
+                                                                                              train_loader)),
           end='')
 
-    print('Spk Accuracy:{:.4f}%, Dom Accuracy:{:.4f}%.\33[0m'.format(100 * correct_a / total_datasize,
-                                                                     100 * correct_b / total_datasize, ))
+    print('Accuracy Spk: {:.4f}% Domain: {:.4f}%.\33[0m'.format(100 * correct_a / total_datasize,
+                                                                100 * correct_b / total_datasize, ))
 
     writer.add_scalar('Train/Spk_Accuracy', correct_a / total_datasize, epoch)
     writer.add_scalar('Train/Dom_Accuracy', correct_b / total_datasize, epoch)
@@ -821,9 +821,10 @@ def valid_class(valid_loader, model, ce, epoch):
     valid_loss = spk_loss + args.dom_ratio * dis_loss
 
     torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Loss: Spk {:.6f} Domain {:.6f}.\33[0m'.format(spk_valid_accuracy,
-                                                                                                     dom_valid_accuracy,
-                                                                                                     spk_loss, dis_loss))
+    print(
+        '          \33[91mValid Loss: {:.4f} Spk: {:.4f} Domain: {:.4f}, Accuracy Spk: {:.4f}% Domain: {:.4f}%.\33[0m'.format(
+            valid_loss, spk_loss, dis_loss,
+            spk_valid_accuracy, dom_valid_accuracy))
 
     return valid_loss
 

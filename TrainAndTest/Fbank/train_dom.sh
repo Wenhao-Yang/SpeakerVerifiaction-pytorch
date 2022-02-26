@@ -219,7 +219,7 @@ if [ $stage -le 70 ]; then
   mask_layer=advbinary
   weight=vox2_rcf
   scale=0.2
-  subset=
+  subset=12
   stat_type=maxmargin
 #  _${stat_type}
         # --milestones 15,25,35,45 \
