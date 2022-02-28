@@ -1239,6 +1239,7 @@ if [ $stage -le 78 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --random-chunk 200 400 \
+      --input-dim 161 \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
