@@ -1208,12 +1208,14 @@ if [ $stage -le 78 ]; then
   alpha=0
   input_norm=Mean
 #  mask_layer=gau_noise
-  mask_layer=baseline
+#  mask_layer=baseline
+  mask_layer=attention
+  weight=clean
 
   scheduler=rop
   optimizer=sgd
 
-  for chn in 64 32 16 ; do
+  for chn in 32 16 ; do
     if [ $chn -eq 64 ];then
       channels=64,128,256
       dp=0.25
@@ -1248,8 +1250,8 @@ if [ $stage -le 78 ]; then
       --lr 0.1 \
       --mask-layer ${mask_layer} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_${weight}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_${weight}_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --channels ${channels} \
       --stride 2 \
@@ -1267,7 +1269,7 @@ if [ $stage -le 78 ]; then
       --loss-ratio 0.01 \
       --weight-decay 0.0005 \
       --dropout-p ${dp} \
-      --gpu-id 0,1 \
+      --gpu-id 2,3 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
