@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=97
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1801,6 +1801,79 @@ fi
 #|     vox1-test     |   3.6161    |   0.2559    |   0.3371    |    0.4334    | 20220113 20:31:33 | kd soft
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
+
+if [ $stage -le 97 ]; then
+  feat_type=klsp
+  model=LoResNet
+  feat=log
+  loss=arcsoft
+  encod=AVG
+  alpha=0
+  datasets=vox1
+  testset=vox1
+#  test_subset=
+  block_type=cbam
+  encoder_type=AVG
+  embedding_size=256
+  resnet_size=8
+#  sname=dev #dev_aug_com
+  sname=dev #_aug_com
+  test_subset=test
+  input_norm=Mean
+  mask_layer=baseline
+
+  scheduler=rop
+  optimizer=sgd
+
+#  for weight in None ; do
+  for chn in 64 32 16 ; do
+    if [ $chn -eq 64 ];then
+      channels=64,128,256
+      dp=0.25
+      dp_str=25
+    elif [ $chn -eq 32 ];then
+      channels=32,64,128
+      dp=0.2
+      dp_str=20
+    elif [ $chn -eq 16 ];then
+      channels=16,32,64
+      dp=0.125
+      dp_str=125
+    fi
+    echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim 161 \
+      --nj 12 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encoder_type} \
+      --block-type ${block_type} \
+      --kernel-size 5,5 \
+      --stride 2,2 \
+      --channels ${channels} \
+      --alpha ${alpha} \
+      --margin 0.2 \
+      --s 30 \
+      --input-length var \
+      --dropout-p ${dp} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var/checkpoint_50.pth \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  exit
+fi
 # ===============================    MultiResNet    ===============================
 
 if [ $stage -le 100 ]; then
