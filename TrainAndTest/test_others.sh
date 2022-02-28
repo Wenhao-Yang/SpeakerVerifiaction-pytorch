@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=203
+stage=96
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1746,6 +1746,8 @@ if [ $stage -le 96 ]; then
   sname=dev #_aug_com
   test_subset=test
   input_norm=Mean
+  mask_layer=baseline
+
 
   for weight in vox2 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -1790,8 +1792,8 @@ if [ $stage -le 96 ]; then
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim 161 \
-      --mask-layer attention \
-      --init-weight vox2 \
+      --mask-layer ${mask_layer} \
+      --init-weight ${weight} \
       --nj 12 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
@@ -1799,7 +1801,7 @@ if [ $stage -le 96 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 32,64,128 \
+      --channels 16,32,64 \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
@@ -1807,10 +1809,12 @@ if [ $stage -le 96 ]; then
       --dropout-p 0.125 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn32_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn32_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var_em_l2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var_em_l2/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
+
+#    _${weight}
   done
   exit
 fi
