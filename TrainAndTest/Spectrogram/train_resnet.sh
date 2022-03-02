@@ -100,7 +100,7 @@ if [ $stage -le 20 ]; then
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --shuffle \
-      --all-iteraion 10 \
+      --all-iteraion 100 \
       --extract \
       --cos-sim \
       --loss-type ${loss}
