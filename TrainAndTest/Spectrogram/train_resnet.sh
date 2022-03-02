@@ -45,7 +45,7 @@ if [ $stage -le 20 ]; then
   block_type=cbam_v2
   embedding_size=256
   input_norm=Mean
-  loss=arcsoft
+  loss=soft
   feat_type=klsp
   sname=dev
 
