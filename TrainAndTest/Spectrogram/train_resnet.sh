@@ -102,9 +102,10 @@ if [ $stage -le 20 ]; then
       --shuffle \
       --all-iteraion 0 \
       --extract \
-      --grad-clip 5 \
+      --seed 123 \
       --cos-sim \
       --loss-type ${loss}
+#      --grad-clip 5 \
 
 #    python TrainAndTest/train_egs.py \
 #      --model ${model} \
