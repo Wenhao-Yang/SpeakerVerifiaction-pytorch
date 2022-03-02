@@ -241,7 +241,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             this_lr = args.lr
             for param_group in optimizer.param_groups:
                 this_lr = min(param_group['lr'], this_lr)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), this_lr * args.grad_clip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
         # optimizer.step()
         if args.scheduler == 'cyclic':
