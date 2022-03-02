@@ -45,7 +45,7 @@ if [ $stage -le 20 ]; then
   block_type=cbam_v2
   embedding_size=256
   input_norm=Mean
-  loss=soft
+  loss=arcsoft
   feat_type=klsp
   sname=dev
 
@@ -100,7 +100,7 @@ if [ $stage -le 20 ]; then
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --shuffle \
-      --all-iteraion 500 \
+      --all-iteraion 1000 \
       --extract \
       --seed 123 \
       --cos-sim \
