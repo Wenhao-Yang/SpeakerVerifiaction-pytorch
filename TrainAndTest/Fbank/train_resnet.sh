@@ -606,7 +606,7 @@ if [ $stage -le 100 ]; then
   model=ThinResNet
   resnet_size=34
   encoder_type=SAP2
-  embedding_size=512
+  embedding_size=256
   block_type=basic
   downsample=k3
   kernel=5,5
@@ -622,11 +622,12 @@ if [ $stage -le 100 ]; then
   mask_layer=baseline
   weight=vox2_rcf
   scale=0.2
-  subset=12
+  subset=
   stat_type=maxmargin
         # --milestones 15,25,35,45 \
+#        _${stat_type}
 
-  for loss in arcdist; do
+  for loss in arcsoft; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs.py \
        --model ${model} \
@@ -649,13 +650,13 @@ if [ $stage -le 100 ]; then
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp20_alpha${alpha}_em${embedding_size}_chn32_wd5e4_var \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp20_alpha${alpha}_em${embedding_size}_chn32_wd5e4_var/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 32,64,128,256 \
-       --fast none1 \
-       --stride 2,2 \
+       --fast ${fast} \
+       --stride 2,1 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
        --time-dim 1 \
@@ -666,8 +667,8 @@ if [ $stage -le 100 ]; then
        --margin 0.2 \
        --s 30 \
        --weight-decay 0.0005 \
-       --dropout-p 0.1 \
-       --gpu-id 2,3 \
+       --dropout-p 0.2 \
+       --gpu-id 0,1 \
        --extract \
        --cos-sim \
        --all-iteraion 0 \
