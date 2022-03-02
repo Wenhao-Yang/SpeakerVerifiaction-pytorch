@@ -102,7 +102,6 @@ if [ $stage -le 20 ]; then
       --shuffle \
       --all-iteraion 1000 \
       --extract \
-      --seed 123 \
       --cos-sim \
       --loss-type ${loss}
 #      --grad-clip 5 \
