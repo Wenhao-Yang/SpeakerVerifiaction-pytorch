@@ -39,7 +39,7 @@ if [ $stage -le 20 ]; then
   datasets=vox1
   testset=vox1
   model=ThinResNet
-  resnet_size=10
+  resnet_size=34
   encoder_type=SAP2
   alpha=0
   block_type=cbam_v2
@@ -56,7 +56,7 @@ if [ $stage -le 20 ]; then
   downsample=k5
   sname=dev
 
-  for sname in dev ; do
+  for sname in dev_aug_com ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -77,9 +77,9 @@ if [ $stage -le 20 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn64_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var_${sname} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn64_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var_${sname}/checkpoint_10.pth \
-      --channels 64,128,256,512 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var_${sname} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var_${sname}/checkpoint_10.pth \
+      --channels 32,64,128,256 \
       --downsample ${downsample} \
       --input-dim 161 \
       --fast ${fast} \
