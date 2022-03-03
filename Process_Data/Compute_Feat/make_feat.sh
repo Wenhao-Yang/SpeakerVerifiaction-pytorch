@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=64
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
@@ -56,6 +56,7 @@ if [ $stage -le 1 ]; then
   feat_type=klfb
   num_frames=600
 #        --remove-vad \
+#--domain \
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
@@ -920,7 +921,7 @@ if [ $stage -le 64 ]; then
   num_per_spk=1024
 
   echo -e "\n\033[1;4;31m Stage ${stage}: Making log fbank egs for ${datasets}\033[0m\n"
-  for s in dev12_fb40 ; do #dev_fb40_ws25
+  for s in dev_1p9_fb40 ; do #dev_fb40_ws25
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${datasets}/${feat_type}/${s} \
       --out-dir ${lstm_dir}/data/${datasets}/egs/${feat_type} \
