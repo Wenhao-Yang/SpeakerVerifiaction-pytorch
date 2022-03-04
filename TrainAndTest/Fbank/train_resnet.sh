@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=50
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -597,6 +597,83 @@ if [ $stage -le 42 ]; then
   done
   exit
 fi
+
+if [ $stage -le 50 ]; then
+#  lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
+  datasets=vox1
+  testset=vox1
+  feat_type=klfb
+  model=LoResNet
+  resnet_size=8
+#  encoder_type=SAP2
+  embedding_size=256
+  block_type=cbam
+  downsample=None
+  kernel=5,5
+  loss=arcsoft
+  alpha=0
+  input_norm=Mean
+  mask_layer=baseline
+  scheduler=rop
+  optimizer=sgd
+  input_dim=80
+  batch_size=128
+  fast=none1
+
+#  loss=soft
+  encoder_type=AVG
+
+  for input_dim in 80 ; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    python TrainAndTest/train_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
+      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
+      --train-trials trials_2w \
+      --shuffle \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
+      --feat-format kaldi \
+      --random-chunk 200 400 \
+      --input-norm ${input_norm} \
+      --resnet-size ${resnet_size} \
+      --nj 8 \
+      --epochs 50 \
+      --batch-size ${batch_size} \
+      --optimizer ${optimizer} \
+      --scheduler ${scheduler} \
+      --lr 0.1 \
+      --base-lr 0.000006 \
+      --mask-layer ${mask_layer} \
+      --milestones 10,20,30,40 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
+      --kernel-size ${kernel} \
+      --downsample ${downsample} \
+      --channels 64,128,256 \
+      --fast ${fast} \
+      --stride 2,1 \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --loss-type ${loss} \
+      --margin 0.2 \
+      --s 30 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.25 \
+      --gpu-id 2,3 \
+      --extract \
+      --cos-sim \
+      --all-iteraion 0 \
+      --remove-vad
+  done
+  exit
+fi
+
 
 if [ $stage -le 100 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
