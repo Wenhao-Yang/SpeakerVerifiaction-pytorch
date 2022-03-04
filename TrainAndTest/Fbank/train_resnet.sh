@@ -652,7 +652,7 @@ if [ $stage -le 50 ]; then
       --downsample ${downsample} \
       --channels 64,128,256 \
       --fast ${fast} \
-      --stride 2,1 \
+      --stride 2,2 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
