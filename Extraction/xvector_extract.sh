@@ -352,7 +352,7 @@ if [ $stage -le 100 ]; then
   checkpoint_dir=Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var
   xvector_dir=Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var
 
-  model_yaml= #${checkpoint_dir}/model.2022.01.14.yaml
+  model_yaml=${checkpoint_dir}/model.2022.01.14.yaml
   resume=${checkpoint_dir}/checkpoint_60.pth
 
   echo -e "\n\033[1;4;31m Stage ${stage}: Extracting ${model} in ${test_set} with ${loss} \033[0m\n"
