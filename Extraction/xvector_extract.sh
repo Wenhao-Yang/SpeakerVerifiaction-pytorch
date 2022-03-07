@@ -385,7 +385,7 @@ if [ $stage -le 100 ]; then
       --s 30 \
       --remove-vad \
       --frame-shift 300 \
-      --xvector-dir ${xvector_dir}/${test_set}_${subset}_var \
+      --xvector-dir ${xvector_dir}/${testset}_${subset}_var \
       --check-yaml ${model_yaml} \
       --resume ${resume} \
       --gpu-id 0 \
