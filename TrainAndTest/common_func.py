@@ -14,6 +14,7 @@ import os
 import pdb
 
 import kaldi_io
+import kaldiio
 import numpy as np
 import torch
 import torch.nn as nn
@@ -167,7 +168,8 @@ class AverageMeter(object):
 
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
-def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True,
+def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
+                         ark_num=50000, gpu=True, mean_vector=True,
                          verbose=0, xvector=False):
     """
 
@@ -236,7 +238,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         out = out.squeeze(0)
 
                     for i, uid in enumerate(uid_lst):
-                        uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+                        if mean_vector:
+                            uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+                        else:
+                            uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 
                     data = torch.tensor([])
                     num_seg_tensor = [0]
@@ -287,35 +292,39 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if len(out.shape) == 3:
                     out = out.squeeze(0)
 
-                if not (len(out.shape)==2 and out.shape[0]==1):
+                if not (len(out.shape) == 2 and out.shape[0] == 1):
                     print(a_data.shape, a_uid, out.shape)
                     pdb.set_trace()
 
                 uid2vectors[a_uid[0]] = out[0]
 
-
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
     scp_file = xvector_dir + '/xvectors.scp'
-    scp = open(scp_file, 'w')
+    ark_file = xvector_dir + '/xvectors.ark'
+    # scp = open(scp_file, 'w')
 
     # write scp and ark file
     # pdb.set_trace()
-    for set_id in range(int(np.ceil(len(uids) / ark_num))):
-        ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
-        with open(ark_file, 'wb') as ark:
-            ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
-            for i in ranges:
-                key = uids[i]
-                vec = uid2vectors[key]
-                len_vec = len(vec.tobytes())
-                try:
-                    kaldi_io.write_vec_flt(ark, vec, key=key)
-                except Exception as e:
-                    pdb.set_trace()
-                # print(ark.tell())
-                scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
-    scp.close()
+    writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
+    for uid in uids:
+        writer(str(uid), uid2vectors[uid])
+
+    # for set_id in range(int(np.ceil(len(uids) / ark_num))):
+    #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
+    #     with open(ark_file, 'wb') as ark:
+    #         ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
+    #         for i in ranges:
+    #             key = uids[i]
+    #             vec = uid2vectors[key]
+    #             len_vec = len(vec.tobytes())
+    #             try:
+    #                 kaldi_io.write_vec_flt(ark, vec, key=key)
+    #             except Exception as e:
+    #                 pdb.set_trace()
+    #             # print(ark.tell())
+    #             scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
+    # scp.close()
     # print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
@@ -395,8 +404,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     # Data options
     parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
-    parser.add_argument('--train-test-dir', type=str, required=True, help='path to dataset')
-    parser.add_argument('--valid-dir', type=str, required=True, help='path to dataset')
+    parser.add_argument('--train-test-dir', type=str, help='path to dataset')
+    parser.add_argument('--valid-dir', type=str, help='path to dataset')
     parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
     parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
     parser.add_argument('--exp', action='store_true', default=False, help='exp power spectogram')
@@ -410,6 +419,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='batchnorm with instance norm')
     parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
     parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
+    parser.add_argument('--frame-shift', type=int, default=300, metavar='CHUNK')
 
     parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
     parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
@@ -420,6 +430,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='number of jobs to make feats (default: 10)')
 
     parser.add_argument('--check-path', help='folder to output model checkpoints')
+    parser.add_argument('--check-yaml', type=str, help='path to model yaml')
+
     parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
     parser.add_argument('--resume', metavar='PATH', help='path to latest checkpoint (default: none)')
 
@@ -518,6 +530,9 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='using Cosine similarity')
     parser.add_argument('--lr-ratio', type=float, default=0.0, metavar='LOSSRATIO',
                         help='the ratio softmax loss - triplet loss (default: 2.0')
+    parser.add_argument('--alpha-t', type=float, default=1.0, help='the ratio for LNCL')
+    parser.add_argument('--lncl', action='store_true', default=False, help='Label Noise Correct Loss')
+
     parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                         help='the ratio softmax loss - triplet loss (default: 2.0')
 
@@ -526,7 +541,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='the margin value for the angualr softmax loss function (default: 3.0')
     parser.add_argument('--s', type=float, default=15, metavar='S',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
-    parser.add_argument('--stat-type', type=str, default='stddmean',
+    parser.add_argument('--stat-type', type=str, default='maxmargin',
                         help='path to voxceleb1 test dataset')
 
     # args for a-softmax
@@ -576,6 +591,15 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='need to make mfb file')
     parser.add_argument('--makespec', action='store_true', default=False,
                         help='need to make spectrograms file')
+
+    # Testing options
+    parser.add_argument('--mean-vector', action='store_false', default=True,
+                        help='mean the vectors while extracting')
+    parser.add_argument('--xvector', action='store_true', default=False,
+                        help='mean the vectors while extracting')
+
+    if 'Extraction' in description:
+        parser.add_argument('--train-extract-dir', type=str, help='path to dev dataset')
 
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
@@ -644,9 +668,7 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
 
     parser.add_argument('--valid-dir-a', type=str, help='path to dataset')
     parser.add_argument('--valid-dir-b', type=str, help='path to dataset')
-    parser.add_argument('--test-dir', type=str,
-                        default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_power',
-                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
     parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
 
     parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
