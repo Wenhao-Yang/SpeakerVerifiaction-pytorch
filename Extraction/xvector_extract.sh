@@ -357,12 +357,12 @@ if [ $stage -le 100 ]; then
 
   echo -e "\n\033[1;4;31m Stage ${stage}: Extracting ${model} in ${test_set} with ${loss} \033[0m\n"
 
-  for subset in test; do # 32,128,512; 8,32,128
+  for test_subset in test; do # 32,128,512; 8,32,128
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev${subset}_fb${input_dim} \
-      --train-extract-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev${subset}_fb${input_dim} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_fb${input_dim} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
+      --train-extract-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev${subset}_fb${input_dim} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_fb${input_dim} \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim ${input_dim} \
@@ -385,7 +385,7 @@ if [ $stage -le 100 ]; then
       --s 30 \
       --remove-vad \
       --frame-shift 300 \
-      --xvector-dir ${xvector_dir}/${testset}_${subset}_var \
+      --xvector-dir ${xvector_dir}/${testset}_${test_subset}_var \
       --check-yaml ${model_yaml} \
       --resume ${resume} \
       --gpu-id 0 \
