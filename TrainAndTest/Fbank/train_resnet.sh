@@ -621,7 +621,7 @@ if [ $stage -le 100 ]; then
   input_norm=Mean
   mask_layer=baseline
   scheduler=rop
-  optimizer=samsgd
+  optimizer=sam
   input_dim=40
   batch_size=256
   fast=none1
