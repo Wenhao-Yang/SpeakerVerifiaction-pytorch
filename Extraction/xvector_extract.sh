@@ -362,7 +362,7 @@ if [ $stage -le 100 ]; then
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
       --train-extract-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev${subset}_fb${input_dim} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_fb${input_dim} \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
       --feat-format kaldi \
       --input-norm Mean \
       --input-dim ${input_dim} \
