@@ -179,7 +179,7 @@ def main():
     if args.train_dir != '':
         train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, filer_loader=file_loader,
                                                 transform=transform_V,
-                                                extract_trials=False)
+                                                extract_trials=False, verbose=args.verbose)
         train_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=args.batch_size, shuffle=False,
                                                    **kwargs)
         # Extract Train set vectors
@@ -193,7 +193,7 @@ def main():
 
     assert args.test_dir != ''
     test_dir = KaldiExtractDataset(dir=args.test_dir, filer_loader=file_loader, transform=transform_V,
-                                   extract_trials=False)
+                                   extract_trials=False, verbose=args.verbose)
     test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     # Extract test set vectors
