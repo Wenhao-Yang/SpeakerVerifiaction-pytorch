@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=40
+stage=100
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -612,7 +612,7 @@ if [ $stage -le 100 ]; then
   model=ThinResNet
   resnet_size=18
   encoder_type=SAP2
-  embedding_size=512
+  embedding_size=256
   block_type=basic
   downsample=k3
   kernel=5,5
@@ -621,7 +621,7 @@ if [ $stage -le 100 ]; then
   input_norm=Mean
   mask_layer=baseline
   scheduler=rop
-  optimizer=sgd
+  optimizer=samsgd
   input_dim=40
   batch_size=256
   fast=none1
