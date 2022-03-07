@@ -331,7 +331,7 @@ if [ $stage -le 100 ]; then
   model=ThinResNet
   resnet_size=18
   encoder_type=SAP2
-  embedding_size=512
+  embedding_size=256
   block_type=basic
   downsample=k3
   kernel=5,5
