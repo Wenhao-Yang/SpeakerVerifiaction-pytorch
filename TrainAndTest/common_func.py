@@ -591,6 +591,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='need to make mfb file')
     parser.add_argument('--makespec', action='store_true', default=False,
                         help='need to make spectrograms file')
+    parser.add_argument('--verbose', type=int, default=0, help='log level')
 
     # Testing options
     parser.add_argument('--mean-vector', action='store_false', default=True,
