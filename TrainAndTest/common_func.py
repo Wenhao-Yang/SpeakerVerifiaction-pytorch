@@ -25,7 +25,7 @@ from tqdm import tqdm
 import Process_Data.constants as c
 
 from Define_Model.CNN import AlexNet
-from Define_Model.Optimizer import SAMSGD
+from Define_Model.Optimizer import SAMSGD, SAM
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
 from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear
@@ -72,6 +72,12 @@ def create_optimizer(parameters, optimizer, **kwargs):
                      momentum=kwargs['momentum'],
                      dampening=kwargs['dampening'],
                      weight_decay=kwargs['weight_decay'])
+    elif optimizer == 'sam':
+        opt = SAM(parameters,
+                  lr=kwargs['lr'],
+                  momentum=kwargs['momentum'],
+                  dampening=kwargs['dampening'],
+                  weight_decay=kwargs['weight_decay'])
 
     return opt
 
