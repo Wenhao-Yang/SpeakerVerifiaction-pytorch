@@ -342,7 +342,7 @@ if [ $stage -le 100 ]; then
   scheduler=rop
   optimizer=sgd
   input_dim=40
-  batch_size=256
+  batch_size=1
   fast=none1
   mask_layer=baseline
   weight=vox2_rcf
@@ -367,6 +367,7 @@ if [ $stage -le 100 ]; then
       --input-norm Mean \
       --input-dim ${input_dim} \
       --nj 12 \
+      --batch-size ${batch_size} \
       --input-norm ${input_norm} \
       --mask-layer ${mask_layer} \
       --resnet-size ${resnet_size} \
