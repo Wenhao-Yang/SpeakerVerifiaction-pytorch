@@ -115,7 +115,8 @@ def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
 
     # print the experiment configuration
-    print('\nCurrent time is\33[91m {}\33[0m.'.format(str(time.asctime())))
+    if args.verbose > 0:
+        print('\nCurrent time is\33[91m {}\33[0m.'.format(str(time.asctime())))
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()
@@ -124,8 +125,9 @@ def main():
     for k in keys:
         options.append("\'%s\': \'%s\'" % (str(k), str(opts[k])))
 
-    print('Parsed options: \n{ %s }' % (', '.join(options)))
-    print('Number of Speakers in training set: {}\n'.format(train_dir.num_spks))
+    if args.verbose > 1:
+        print('Parsed options: \n{ %s }' % (', '.join(options)))
+        print('Number of Speakers in training set: {}\n'.format(train_dir.num_spks))
 
     if os.path.exists(args.check_yaml):
         model_kwargs = load_model_args(args.check_yaml)
@@ -135,7 +137,8 @@ def main():
     keys = list(model_kwargs.keys())
     keys.sort()
     model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
-    print('Model options: \n{ %s }' % (', '.join(model_options)))
+    if args.verbose > 1:
+        print('Model options: \n{ %s }' % (', '.join(model_options)))
 
     model = create_model(args.model, **model_kwargs)
 
@@ -143,7 +146,8 @@ def main():
     # resume = args.ckp_dir + '/checkpoint_{}.pth'.format(args.epoch)
     assert os.path.isfile(args.resume), print('=> no checkpoint found at {}'.format(args.resume))
 
-    print('=> loading checkpoint {}'.format(args.resume))
+    if args.verbose > 0:
+        print('=> loading checkpoint {}'.format(args.resume))
     checkpoint = torch.load(args.resume)
     epoch = checkpoint['epoch']
 
@@ -201,9 +205,9 @@ def main():
     # copy wav.scp and utt2spk ...
     extracted_set.append('test')
 
-    if len(extracted_set) > 0:
+    if len(extracted_set) > 0 and args.verbose > 0:
         print('Extract x-vector completed for %s in %s!\n' % (
-        ','.join(extracted_set), args.xvector_dir + '/%s' % vec_type))
+            ','.join(extracted_set), args.xvector_dir + '/%s' % vec_type))
 
 
 if __name__ == '__main__':

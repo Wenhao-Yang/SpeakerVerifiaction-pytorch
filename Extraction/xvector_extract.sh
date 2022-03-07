@@ -391,6 +391,7 @@ if [ $stage -le 100 ]; then
       --resume ${resume} \
       --gpu-id 0 \
       --remove-vad \
+      --verbose 3 \
       --test-input fix \
       --cos-sim
   done
