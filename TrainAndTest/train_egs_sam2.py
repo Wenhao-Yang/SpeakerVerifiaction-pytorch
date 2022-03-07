@@ -203,7 +203,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         classfier, feats = model(data)
         # cos_theta, phi_theta = classfier
-        # classfier_label = classfier
+        classfier_label = classfier
         # print('max logit is ', classfier_label.max())
         if args.loss_type == 'soft':
             loss = ce_criterion(classfier, label)
