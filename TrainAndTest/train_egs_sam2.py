@@ -299,16 +299,16 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                                                                             100. * minibatch_acc)
             pbar.set_description(epoch_str)
 
-    # this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
-    #     correct) / total_datasize, total_loss / len(train_loader))
-    #
-    # if other_loss > 0:
-    #     this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(train_loader))
-    #
-    # this_epoch_str += '.\33[0m'
-    # print(this_epoch_str)
-    # writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
-    # writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
+    this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
+        correct) / total_datasize, total_loss / len(train_loader))
+
+    if other_loss > 0:
+        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(train_loader))
+
+    this_epoch_str += '.\33[0m'
+    print(this_epoch_str)
+    writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
+    writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
 
     torch.cuda.empty_cache()
 

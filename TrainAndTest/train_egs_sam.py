@@ -201,6 +201,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
                 # other_loss += loss_cent
                 loss = loss_xent + loss_cent
+
             loss.requires_grad_()
             loss.backward()
             return loss
