@@ -622,8 +622,21 @@ if [ $stage -le 50 ]; then
 
 #  loss=soft
   encoder_type=AVG
-
-  for input_dim in 80 ; do
+  for chn in 32 16 ; do
+    if [ $chn -eq 64 ];then
+      channels=64,128,256
+      dp=0.25
+      dp_str=25
+    elif [ $chn -eq 32 ];then
+      channels=32,64,128
+      dp=0.2
+      dp_str=20
+    elif [ $chn -eq 16 ];then
+      channels=16,32,64
+      dp=0.125
+      dp_str=125
+    fi
+#  for input_dim in 80 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -646,11 +659,11 @@ if [ $stage -le 50 ]; then
       --base-lr 0.000006 \
       --mask-layer ${mask_layer} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_dp25_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
-      --channels 64,128,256 \
+      --channels ${channels} \
       --fast ${fast} \
       --stride 2,2 \
       --block-type ${block_type} \
@@ -664,7 +677,7 @@ if [ $stage -le 50 ]; then
       --margin 0.2 \
       --s 30 \
       --weight-decay 0.0005 \
-      --dropout-p 0.25 \
+      --dropout-p ${dp} \
       --gpu-id 2,3 \
       --extract \
       --cos-sim \
