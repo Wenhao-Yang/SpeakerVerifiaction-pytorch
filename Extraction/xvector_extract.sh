@@ -358,7 +358,6 @@ if [ $stage -le 100 ]; then
   echo -e "\n\033[1;4;31m Stage ${stage}: Extracting ${model} in ${test_set} with ${loss} \033[0m\n"
 
   for subset in test; do # 32,128,512; 8,32,128
-    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev${subset}_fb${input_dim} \
