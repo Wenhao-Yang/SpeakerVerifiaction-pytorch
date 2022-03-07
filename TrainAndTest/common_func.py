@@ -14,6 +14,7 @@ import os
 import pdb
 
 import kaldi_io
+import kaldiio
 import numpy as np
 import torch
 import torch.nn as nn
@@ -167,7 +168,8 @@ class AverageMeter(object):
 
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
-def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix', ark_num=50000, gpu=True,
+def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
+                         ark_num=50000, gpu=True, mean_vector=True,
                          verbose=0, xvector=False):
     """
 
@@ -236,7 +238,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         out = out.squeeze(0)
 
                     for i, uid in enumerate(uid_lst):
-                        uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+                        if mean_vector:
+                            uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+                        else:
+                            uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 
                     data = torch.tensor([])
                     num_seg_tensor = [0]
@@ -287,35 +292,39 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if len(out.shape) == 3:
                     out = out.squeeze(0)
 
-                if not (len(out.shape)==2 and out.shape[0]==1):
+                if not (len(out.shape) == 2 and out.shape[0] == 1):
                     print(a_data.shape, a_uid, out.shape)
                     pdb.set_trace()
 
                 uid2vectors[a_uid[0]] = out[0]
 
-
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
     scp_file = xvector_dir + '/xvectors.scp'
-    scp = open(scp_file, 'w')
+    ark_file = xvector_dir + '/xvectors.ark'
+    # scp = open(scp_file, 'w')
 
     # write scp and ark file
     # pdb.set_trace()
-    for set_id in range(int(np.ceil(len(uids) / ark_num))):
-        ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
-        with open(ark_file, 'wb') as ark:
-            ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
-            for i in ranges:
-                key = uids[i]
-                vec = uid2vectors[key]
-                len_vec = len(vec.tobytes())
-                try:
-                    kaldi_io.write_vec_flt(ark, vec, key=key)
-                except Exception as e:
-                    pdb.set_trace()
-                # print(ark.tell())
-                scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
-    scp.close()
+    writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
+    for uid in uids:
+        writer(str(uid), uid2vectors[uid])
+
+    # for set_id in range(int(np.ceil(len(uids) / ark_num))):
+    #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
+    #     with open(ark_file, 'wb') as ark:
+    #         ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
+    #         for i in ranges:
+    #             key = uids[i]
+    #             vec = uid2vectors[key]
+    #             len_vec = len(vec.tobytes())
+    #             try:
+    #                 kaldi_io.write_vec_flt(ark, vec, key=key)
+    #             except Exception as e:
+    #                 pdb.set_trace()
+    #             # print(ark.tell())
+    #             scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
+    # scp.close()
     # print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 

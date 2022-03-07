@@ -348,7 +348,8 @@ def main():
         # extract(train_loader, model, dataset='train', extract_path=args.extract_path + '/x_vector')
         train_xvector_dir = args.xvector_dir + '/%s/epoch_%d/train' % (vec_type, epoch)
         verification_extract(train_loader, model, train_xvector_dir, epoch=epoch, test_input=args.test_input,
-                             verbose=True, xvector=args.xvector)
+                             mean_vector=args.mean_vector,
+                             verbose=args.verbose, xvector=args.xvector)
         # copy wav.scp and utt2spk ...
         extracted_set.append('train')
 
@@ -361,7 +362,8 @@ def main():
     test_xvector_dir = args.xvector_dir + '/%s/epoch_%d/test' % (vec_type, epoch)
     # extract(test_loader, model, set_id='test', extract_path=args.extract_path + '/x_vector')
     verification_extract(test_loader, model, test_xvector_dir, epoch=epoch, test_input=args.test_input,
-                         verbose=True, xvector=args.xvector)
+                         mean_vector=args.mean_vector,
+                         verbose=args.verbose, xvector=args.xvector)
     # copy wav.scp and utt2spk ...
     extracted_set.append('test')
 
