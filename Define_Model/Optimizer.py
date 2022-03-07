@@ -49,7 +49,7 @@ class SAMSGD(SGD):
         self.param_groups[0]["rho"] = rho
 
     @torch.no_grad()
-    def step(self, closure) -> torch.Tensor:
+    def step(self, closure=None) -> torch.Tensor:
         """
         Args:
             closure: A closure that reevaluates the model and returns the loss.

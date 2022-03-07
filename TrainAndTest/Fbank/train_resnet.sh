@@ -727,7 +727,7 @@ if [ $stage -le 100 ]; then
 #      --remove-vad \
 #      --loss-type ${loss}
   done
-#  exit
+  exit
 fi
 
 
