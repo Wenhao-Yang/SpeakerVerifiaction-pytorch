@@ -55,9 +55,14 @@ class SAMSGD(SGD):
             closure: A closure that reevaluates the model and returns the loss.
         Returns: the loss value evaluated on the original point
         """
+        loss = None
         if closure is not None:
             with torch.enable_grad():
-                loss = closure().detach()
+                loss = closure()
+
+        # if closure is not None:
+        #     with torch.enable_grad():
+        #         loss = closure().detach()
 
         for group in self.param_groups:
             grads = []
