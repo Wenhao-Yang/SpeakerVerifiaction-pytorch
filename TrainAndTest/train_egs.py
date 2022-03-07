@@ -168,103 +168,114 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         data, label = Variable(data), Variable(label)
 
-        classfier, feats = model(data)
-        # cos_theta, phi_theta = classfier
-        classfier_label = classfier
-        # print('max logit is ', classfier_label.max())
-
-        if args.loss_type == 'soft':
-            loss = ce_criterion(classfier, label)
-        elif args.loss_type == 'asoft':
-            classfier_label, _ = classfier
+        def closure():
+            optimizer.zero_grad()
+            classfier, feats = model(data)
             loss = xe_criterion(classfier, label)
-        elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = args.loss_ratio * xe_criterion(feats, label)
-            other_loss += loss_xent
+            loss.backward()
+            return loss
 
-            loss = loss_xent + loss_cent
-        elif args.loss_type == 'ring':
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = args.loss_ratio * xe_criterion(feats)
+        if args.optimizer == 'samsgd':
+            optimizer.step(closure)
+        else:
+            classfier, feats = model(data)
+            # cos_theta, phi_theta = classfier
+            classfier_label = classfier
+            # print('max logit is ', classfier_label.max())
 
-            other_loss += loss_xent
-            loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc',]:
-            loss = xe_criterion(classfier, label)
-        elif args.loss_type == 'arcdist':
-            # pdb.set_trace()
-            loss_cent = args.loss_ratio * ce_criterion(classfier, label)
-            loss_xent = xe_criterion(classfier, label)
+            if args.loss_type == 'soft':
+                loss = ce_criterion(classfier, label)
+            elif args.loss_type == 'asoft':
+                classfier_label, _ = classfier
+                loss = xe_criterion(classfier, label)
+            elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
+                loss_cent = ce_criterion(classfier, label)
+                loss_xent = args.loss_ratio * xe_criterion(feats, label)
+                other_loss += loss_xent
 
-            other_loss += loss_cent
-            loss = loss_xent + loss_cent
+                loss = loss_xent + loss_cent
+            elif args.loss_type == 'ring':
+                loss_cent = ce_criterion(classfier, label)
+                loss_xent = args.loss_ratio * xe_criterion(feats)
 
-        predicted_labels = output_softmax(classfier_label)
-        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
-        minibatch_acc = minibatch_correct / len(predicted_one_labels)
-        correct += minibatch_correct
+                other_loss += loss_xent
+                loss = loss_xent + loss_cent
+            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
+                loss = xe_criterion(classfier, label)
+            elif args.loss_type == 'arcdist':
+                # pdb.set_trace()
+                loss_cent = args.loss_ratio * ce_criterion(classfier, label)
+                loss_xent = xe_criterion(classfier, label)
 
-        total_datasize += len(predicted_one_labels)
-        total_loss += float(loss.item())
-        writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
+                other_loss += loss_cent
+                loss = loss_xent + loss_cent
 
-        if np.isnan(loss.item()):
-            raise ValueError('Loss value is NaN!')
+            predicted_labels = output_softmax(classfier_label)
+            predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+            minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
+            minibatch_acc = minibatch_correct / len(predicted_one_labels)
+            correct += minibatch_correct
 
-        # compute gradient and update weights
-        loss.backward()
+            total_datasize += len(predicted_one_labels)
+            total_loss += float(loss.item())
+            writer.add_scalar('Train/All_Loss', float(loss.item()),
+                              int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
-        if ((batch_idx + 1) % args.accu_steps) == 0:
-            # optimizer the net
-            optimizer.step()  # update parameters of net
-            optimizer.zero_grad()  # reset gradient
+            if np.isnan(loss.item()):
+                raise ValueError('Loss value is NaN!')
 
-            if args.model == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
-                if isinstance(model, DistributedDataParallel):
-                    model.module.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
-                    orth_err += model.module.get_orth_errors()
-                else:
-                    model.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
-                    orth_err += model.get_orth_errors()
+            # compute gradient and update weights
+            loss.backward()
 
-        # optimizer.zero_grad()
-        # loss.backward()
+            if args.grad_clip > 0:
+                this_lr = args.lr
+                for param_group in optimizer.param_groups:
+                    this_lr = min(param_group['lr'], this_lr)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
-        if args.loss_ratio != 0:
-            if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
-                for param in xe_criterion.parameters():
-                    param.grad.data *= (1. / args.loss_ratio)
+            if ((batch_idx + 1) % args.accu_steps) == 0:
+                # optimizer the net
+                optimizer.step()  # update parameters of net
+                optimizer.zero_grad()  # reset gradient
 
-        if args.grad_clip > 0:
-            this_lr = args.lr
-            for param_group in optimizer.param_groups:
-                this_lr = min(param_group['lr'], this_lr)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
+                if args.model == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
+                    if isinstance(model, DistributedDataParallel):
+                        model.module.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
+                        orth_err += model.module.get_orth_errors()
+                    else:
+                        model.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
+                        orth_err += model.get_orth_errors()
 
-        # optimizer.step()
-        if args.scheduler == 'cyclic':
-            scheduler.step()
+            # optimizer.zero_grad()
+            # loss.backward()
 
-        if (batch_idx + 1) % args.log_interval == 0:
-            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
-                                                                          len(train_loader.dataset),
-                                                                          100. * batch_idx / len(train_loader))
+            if args.loss_ratio != 0:
+                if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+                    for param in xe_criterion.parameters():
+                        param.grad.data *= (1. / args.loss_ratio)
 
-            if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
-                epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
+            # optimizer.step()
+            if args.scheduler == 'cyclic':
+                scheduler.step()
 
-            if orth_err > 0:
-                epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
+            if (batch_idx + 1) % args.log_interval == 0:
+                epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
+                                                                              len(train_loader.dataset),
+                                                                              100. * batch_idx / len(train_loader))
 
-            if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
-            if args.loss_type in ['arcdist']:
-                epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
-            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                            100. * minibatch_acc)
-            pbar.set_description(epoch_str)
+                if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
+                    epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
+
+                if orth_err > 0:
+                    epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
+
+                if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
+                    epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+                if args.loss_type in ['arcdist']:
+                    epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+                epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
+                                                                                100. * minibatch_acc)
+                pbar.set_description(epoch_str)
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
