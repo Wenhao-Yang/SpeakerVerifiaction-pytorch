@@ -549,7 +549,7 @@ class KaldiExtractDataset(data.Dataset):
 
             uid2feat = {}
             with open(feat_scp, 'r') as u:
-                all_cls = tqdm(u.readlines()) if verbose > 0 else u.readlines()
+                all_cls = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
                 for line in all_cls:
                     utt_path = line.split(' ')
                     uid = utt_path[0]
