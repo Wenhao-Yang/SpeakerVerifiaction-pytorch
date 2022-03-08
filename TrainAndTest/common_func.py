@@ -120,6 +120,7 @@ def create_model(name, **kwargs):
 
     if kwargs['loss_type'] in ['asoft', 'amsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
+                                                normalize=kwargs['normalize'],
                                                 num_classes=kwargs['num_classes'])
     elif 'sub' in kwargs['loss_type']:
         model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
@@ -499,6 +500,9 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='manual epoch number (useful on restarts)')
 
     parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--normalize', action='store_false', default=True,
+                        help='normalize vectors in final layer')
+
     parser.add_argument('--ring', default=12, type=float, metavar='RING', help='acoustic feature dimension')
 
     parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
@@ -738,7 +742,7 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
     parser.add_argument('--accu-steps', default=1, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
 
-    parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--alpha', default=1, type=float, metavar='FEAT', help='acoustic feature dimension')
     parser.add_argument('--ring', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
     parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
     parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')

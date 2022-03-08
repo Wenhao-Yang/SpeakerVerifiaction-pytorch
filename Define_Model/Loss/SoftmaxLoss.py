@@ -143,10 +143,11 @@ class AngleSoftmaxLoss(nn.Module):
 
 
 class AdditiveMarginLinear(nn.Module):
-    def __init__(self, feat_dim, num_classes, use_gpu=False):
+    def __init__(self, feat_dim, num_classes, normalize=True, use_gpu=False):
         super(AdditiveMarginLinear, self).__init__()
         self.feat_dim = feat_dim
         self.num_classes = num_classes
+        self.normalize = normalize
         self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes), requires_grad=True)
         if use_gpu:
             self.W.cuda()
@@ -159,8 +160,10 @@ class AdditiveMarginLinear(nn.Module):
         # pdb.set_trace()
         # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
         # x_norm = torch.div(x, x_norm)
-
-        x_norm = F.normalize(x, dim=1)
+        if self.normalize:
+            x_norm = F.normalize(x, dim=1)
+        else:
+            x_norm = x
         w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
         costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
         # x = x.unsqueeze(-1).repeat(1, 1, self.num_classes)
@@ -172,7 +175,8 @@ class AdditiveMarginLinear(nn.Module):
         return costh  # .clamp(min=-1.0, max=1.)
 
     def __repr__(self):
-        return "AdditiveMarginLinear(feat_dim=%f, num_classes=%d)" % (self.feat_dim, self.num_classes)
+        return "AdditiveMarginLinear(feat_dim=%f, num_classes=%d, normalize=%s)" % (
+        self.feat_dim, self.num_classes, str(self.normalize))
 
 
 class SubMarginLinear(nn.Module):
