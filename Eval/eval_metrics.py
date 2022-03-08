@@ -352,6 +352,7 @@ def plot_DET_curve(pf_max=0.3):
 
 
 def save_det(save_path, score_files=[], names=[], pf_max=0.3):
+    alpha = 0.5 if len(score_files) > 1 else 0
     if len(score_files) > 0 and len(score_files) == len(names):
         det_plt = plot_DET_curve(pf_max=pf_max)
 
@@ -364,16 +365,23 @@ def save_det(save_path, score_files=[], names=[], pf_max=0.3):
                         score, label = line.split()
                         try:
                             s = float(score)
-                            l = int(label)
+
+                            if label in ['True', 'False']:
+                                l = 1 if label == 'True' else 0
+                            else:
+                                l = int(label)
                         except:
-                            l = int(score)
+                            if score in ['True', 'False']:
+                                l = 1 if score == 'True' else 0
+                            else:
+                                l = int(score)
                             s = float(label)
                         scores.append(s)
                         labels.append(l)
 
                 fnrs, fprs, _ = ComputeErrorRates(scores, labels)
                 x, y = norm.ppf(fnrs), norm.ppf(fprs)
-                det_plt.plot(x, y, label=names[i], color=cValue_1[i])
+                det_plt.plot(x, y, label=names[i], color=cValue_1[i], alpha=alpha)
 
         det_plt.legend(loc='upper right', fontsize=18)
         det_plt.savefig(save_path + "/det.png")

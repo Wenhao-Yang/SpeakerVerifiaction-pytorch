@@ -24,8 +24,8 @@ fi
 
 
 if [ $stage -le 10 ]; then
-  python Eval/plt_det.py --score-name cnceleb \
-    --score-file Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/test/epoch_60/scores \
+  python Eval/plt_det.py --score-name arcdist,arcsoft \
+    --score-file Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/test/epoch_60/scores,Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/test/epoch_60/scores \
     --save-path Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/test/epoch_60 \
-    --pf-max 0.15
+    --pf-max 0.75
 fi
