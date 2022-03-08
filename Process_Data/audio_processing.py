@@ -706,7 +706,7 @@ class PadCollate:
 
             print('==> Generating %d different random length...' % (len(batch_len)))
 
-            # self.batch_len = np.array(batch_len)
+            self.batch_len = batch_len
             print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
 
     def pad_collate(self, batch):
