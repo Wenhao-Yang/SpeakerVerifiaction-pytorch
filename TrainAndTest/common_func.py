@@ -339,7 +339,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     # switch to evaluate mode
     labels, distances = [], []
-    # dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
+    dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
 
     # pbar = tqdm(enumerate(test_loader))
     with torch.no_grad():
@@ -348,16 +348,20 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
             data_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
             # dists = dist_fn.forward(data_a, data_p).cpu().numpy()
 
-            if dist_type == 'cos':
-                out_a = torch.nn.functional.normalize(data_a, dim=1)
-                out_p = torch.nn.functional.normalize(data_p, dim=1)
+            if len(data_a) == 2:
+                dists = dist_fn(data_a, data_p)
+
+            elif dist_type == 'cos':
+                out_a = torch.nn.functional.normalize(data_a, dim=-1)
+                out_p = torch.nn.functional.normalize(data_p, dim=-1)
 
                 dists = torch.matmul(out_a, out_p.transpose(-2, -1))
             else:
-                dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
+                if len(data_a) == 3:
+                    dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
-            print(dists.shape)
-            pdb.set_trace()
+            # print(dists.shape)
+            # pdb.set_trace()
             if len(dists.shape) == 3:
                 dists = dists.mean(dim=-1).mean(dim=-1)
 
