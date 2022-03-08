@@ -365,6 +365,8 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
                 dists = dists.mean(dim=-1).mean(dim=-1)
 
             dists = dists.detach().cpu().numpy()
+            pdb.set_trace()
+            print(dists.shape)
 
             distances.append(dists)
             labels.append(label.numpy())
