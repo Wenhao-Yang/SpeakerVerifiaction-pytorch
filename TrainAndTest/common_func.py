@@ -357,8 +357,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
 
                 dists = torch.matmul(out_a, out_p.transpose(-2, -1))
             else:
-                if len(data_a) == 3:
-                    dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
+                dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
             # print(dists.shape)
             # pdb.set_trace()

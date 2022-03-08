@@ -160,7 +160,13 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
         else:
             non_target.append(distance)
 
-    new_distances = np.array(new_distances).astype(np.float)
+    try:
+        new_distances = np.array(new_distances).astype(np.float)
+
+    except Exception as e:
+        print(new_distances)
+        raise Exception(e)
+
     target = np.sort(target).astype(np.float)
     non_target = np.sort(non_target).astype(np.float)
 
