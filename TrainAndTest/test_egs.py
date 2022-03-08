@@ -21,6 +21,7 @@ import warnings
 from collections import OrderedDict
 
 import kaldi_io
+import kaldiio
 import numpy as np
 import psutil
 import torch
@@ -432,8 +433,18 @@ def test(test_loader, xvector_dir):
         #     out_a_first = out_a.shape[0]
         #     out_a = out_a.repeat(out_p.shape[0], 1)
         #     out_p = out_p.reshape(out_a_first, 1)
+        if args.cos_sim:
+            out_a = torch.nn.functional.normalize(out_a, dim=1)
+            out_p = torch.nn.functional.normalize(out_p, dim=1)
 
-        dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
+            dists = torch.matmul(out_a, out_p.transpose(-2, -1))
+        else:
+            dists = (out_a[:, :, None] - out_p[:]).norm(p=2, dim=-1)
+
+        if len(dists.shape) == 3:
+            dists = dists.mean(dim=-1).mean(dim=-1)
+
+        # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         dists = dists.numpy()
 
         distances.append(dists)
@@ -638,11 +649,13 @@ if __name__ == '__main__':
                                  xvector=args.xvector)
 
     if args.test:
-
-        file_loader = read_vec_flt
+        file_loader = kaldiio.load_mat
         test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
                                        loader=file_loader)
-        test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
+
+        test_loader = torch.utils.data.DataLoader(test_dir,
+                                                  batch_size=args.test_batch_size * 64 if args.test_batch_size > 1 else 1,
+                                                  shuffle=False, **kwargs)
         test(test_loader, xvector_dir=args.xvector_dir)
 
     stop_time = time.time()
