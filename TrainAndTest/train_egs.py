@@ -606,7 +606,8 @@ def main():
                                                                          num_batch=int(
                                                                              np.ceil(len(train_dir) / args.batch_size)),
                                                                          min_chunk_size=min_chunk_size,
-                                                                         max_chunk_size=max_chunk_size),
+                                                                         max_chunk_size=max_chunk_size,
+                                                                         chisquare=args.chisquare),
                                                    shuffle=args.shuffle, **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,

@@ -631,7 +631,7 @@ if [ $stage -le 100 ]; then
   subset=
         # --milestones 15,25,35,45 \
 
-  for loss in amsoft ; do
+  for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs.py \
        --model ${model} \
@@ -643,6 +643,7 @@ if [ $stage -le 100 ]; then
        --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --random-chunk 200 400 \
+       --chisquare \
        --input-norm ${input_norm} \
        --resnet-size ${resnet_size} \
        --nj 12 \
@@ -654,8 +655,8 @@ if [ $stage -le 100 ]; then
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_chisquarevar \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_chisquarevar/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \

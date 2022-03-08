@@ -29,3 +29,20 @@ if [ $stage -le 10 ]; then
     --save-path Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/test/epoch_60 \
     --pf-max 0.75
 fi
+
+org_data=/home/storage/yangwenhao/dataset/CN-Celeb/data/
+out_data=
+
+line_sy=/
+line_st=-
+
+cat miss_wavs | \
+  while read line; do
+
+    path=${line/"$line_sy"/"$out_data"}
+    new_name=${line/"$org_data"/"$out_data"}
+    new_name=${new_name/"${line_sy}"/"${line_st}"}
+
+    mv ${path} dev_miss_wav/$new_name
+
+done

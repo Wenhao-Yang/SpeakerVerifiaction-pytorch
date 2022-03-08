@@ -443,6 +443,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fix'],
                         help='batchnorm with instance norm')
     parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
+    parser.add_argument('--chisquare', action='store_true', default=False,
+                        help='need to add chi(min_len) into chunksize')
     parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
     parser.add_argument('--frame-shift', type=int, default=300, metavar='CHUNK')
 
