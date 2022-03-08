@@ -676,7 +676,6 @@ if [ $stage -le 100 ]; then
        --gpu-id 0,1 \
        --extract \
        --cos-sim \
-       --mean-vector \
        --all-iteraion 0 \
        --remove-vad \
        --loss-type ${loss}
