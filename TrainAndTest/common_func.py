@@ -12,6 +12,7 @@
 import argparse
 import os
 import pdb
+import time
 
 import kaldi_io
 import kaldiio
@@ -371,9 +372,13 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
     # this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
-    with open('%s/scores' % xvector_dir, 'w') as f:
-        for d, l in zip(distances, labels):
-            f.write(str(d) + ' ' + str(l) + '\n')
+    time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
+    with open('%s/scores.%s' % (xvector_dir, time_stamp), 'w') as f:
+        for l in zip(labels, distances):
+            f.write(" ".join([str(i) for i in l]) + '\n')
+
+        # for d, l in zip(distances, labels):
+        #     f.write(str(d) + ' ' + int(l) + '\n')
 
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
                                                       cos=True if dist_type == 'cos' else False,
