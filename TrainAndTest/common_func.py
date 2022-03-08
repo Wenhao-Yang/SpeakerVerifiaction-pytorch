@@ -348,7 +348,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
             data_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
             # dists = dist_fn.forward(data_a, data_p).cpu().numpy()
 
-            if len(data_a) == 2:
+            if len(data_a.shape) == 2:
                 dists = dist_fn(data_a, data_p)
 
             elif dist_type == 'cos':
