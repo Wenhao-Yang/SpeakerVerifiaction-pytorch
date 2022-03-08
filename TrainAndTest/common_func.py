@@ -663,7 +663,8 @@ def args_model(args, train_dir):
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks, 'downsample': args.downsample,
                     'num_classes_b': train_dir.num_doms, 'init_weight': args.init_weight,
                     'power_weight': args.power_weight, 'scale': args.scale, 'weight_p': args.weight_p,
-                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                    'channels': channels, 'alpha': args.alpha, 'normalize': args.normalize,
+                    'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'num_center': args.num_center,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}
