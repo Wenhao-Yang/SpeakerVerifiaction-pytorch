@@ -4,6 +4,7 @@ For l2 distacne: when the distance is less than the theshold, it should be true;
 For cosine distance: when the distance is greater than the theshold, it's true.
 """
 import os
+import pdb
 from operator import itemgetter
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -159,7 +160,7 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
             target.append(distance)
         else:
             non_target.append(distance)
-
+    pdb.set_trace()
     try:
         new_distances = np.array(new_distances).astype(np.float)
 
