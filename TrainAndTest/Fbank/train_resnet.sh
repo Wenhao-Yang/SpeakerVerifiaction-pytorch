@@ -643,6 +643,7 @@ if [ $stage -le 100 ]; then
        --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --random-chunk 200 400 \
+       --chunk-size 200 \
        --chisquare \
        --input-norm ${input_norm} \
        --resnet-size ${resnet_size} \
