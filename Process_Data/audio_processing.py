@@ -701,7 +701,7 @@ class PadCollate:
             batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1)
 
             if chisquare:
-                chi_len = np.random.chisquare(min_chunk_size, max_chunk_size - min_chunk_size).astype(np.int32)
+                chi_len = np.random.chisquare(min_chunk_size, 2 * (max_chunk_size - min_chunk_size)).astype(np.int32)
                 batch_len = np.concatenate((chi_len, batch_len))
 
             print('==> Generating %d different random length...' % (len(batch_len)))

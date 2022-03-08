@@ -356,6 +356,8 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
             else:
                 dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
+            print(dists.shape)
+            pdb.set_trace()
             if len(dists.shape) == 3:
                 dists = dists.mean(dim=-1).mean(dim=-1)
 
