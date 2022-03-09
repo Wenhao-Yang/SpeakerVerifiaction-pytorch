@@ -2661,6 +2661,7 @@ if [ $stage -le 301 ]; then
        --frame-shift 200 \
        --num-frames 200 \
        --gpu-id 0 \
+       --verbose 2 \
        --cos-sim
    done
        # --verbose 2 \
