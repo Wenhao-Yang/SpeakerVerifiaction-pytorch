@@ -230,6 +230,8 @@ parser.add_argument('--verbose', type=int, default=0, choices=[0, 1, 2],
                     help='how many batches to wait before logging training status')
 parser.add_argument('--normalize', action='store_false', default=True,
                     help='normalize vectors in final layer')
+parser.add_argument('--mean-vector', action='store_false', default=True, help='mean for embeddings while extracting')
+
 args = parser.parse_args()
 
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
@@ -346,82 +348,6 @@ def valid(valid_loader, model):
     torch.cuda.empty_cache()
 
 
-def extract(test_loader, model, xvector_dir, ark_num=50000):
-    model.eval()
-
-    if not os.path.exists(xvector_dir):
-        os.makedirs(xvector_dir)
-        if args.verbose > 0:
-            print('Creating xvector path: %s' % xvector_dir)
-
-    pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
-    vectors = []
-    uids = []
-    with torch.no_grad():
-        for batch_idx, (data, uid) in pbar:
-            # print(model.conv1.weight)
-            # print(data)
-            # raise ValueError('Conv1')
-            vec_shape = data.shape
-            # pdb.set_trace()
-            if vec_shape[1] != 1:
-                # print(data.shape)
-                data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-
-            if args.cuda:
-                data = data.cuda()
-            # compute output
-            _, out = model(data)
-
-            if vec_shape[1] != 1:
-                out = out.reshape(vec_shape[0], -1)  # .mean(dim=1)
-
-            # pdb.set_trace()
-
-            vectors.append(out.squeeze().data.cpu().numpy())
-            uids.append(uid[0])
-
-            del data, out
-            if args.verbose > 0 and batch_idx % args.log_interval == 0:
-                pbar.set_description('Extracting: [{}/{} ({:.0f}%)]'.format(
-                    batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-
-    assert len(uids) == len(vectors)
-    if args.verbose > 0:
-        print('There are %d vectors' % len(uids))
-
-    scp_file = xvector_dir + '/xvectors.scp'
-    ark_file = xvector_dir + '/xvectors.ark'
-    # scp = open(scp_file, 'w')
-
-    # write scp and ark file
-    # pdb.set_trace()
-    writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
-    for i in range(len(uids)):
-        writer(str(uids[i]), vectors[i])
-
-    # scp_file = xvector_dir + '/xvectors.scp'
-    # scp = open(scp_file, 'w')
-    #
-    # # write scp and ark file
-    # # pdb.set_trace()
-    # for set_id in range(int(np.ceil(len(uids) / ark_num))):
-    #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
-    #     with open(ark_file, 'wb') as ark:
-    #         ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
-    #         for i in ranges:
-    #             vec = vectors[i]
-    #             len_vec = len(vec.tobytes())
-    #             key = uids[i]
-    #             kaldi_io.write_vec_flt(ark, vec, key=key)
-    #             # print(ark.tell())
-    #             scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
-    # scp.close()
-    if args.verbose > 0:
-        print('There are %d vectors. Saving to %s' % (len(uids), xvector_dir))
-    torch.cuda.empty_cache()
-
-
 def test(test_loader, xvector_dir):
     # switch to evaluate mode
     labels, distances = [], []
@@ -468,7 +394,7 @@ def test(test_loader, xvector_dir):
             d_batch.append(float(dists[0]))
             l_batch.append(label[0])
 
-            if len(l_batch) >= 64 or len(test_loader.dataset) == (batch_idx + 1):
+            if len(l_batch) >= 128 or len(test_loader.dataset) == (batch_idx + 1):
                 distances.append(d_batch)
                 labels.append(l_batch)
 
@@ -614,11 +540,6 @@ if __name__ == '__main__':
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
 
-        # if args.loss_type == 'asoft':
-        #     model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
-        # elif args.loss_type in ['amsoft', 'arcsoft']:
-        #     model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
-
         assert os.path.isfile(args.resume), print(args.resume)
         print('=> loading checkpoint {}'.format(args.resume))
         checkpoint = torch.load(args.resume)
@@ -674,8 +595,9 @@ if __name__ == '__main__':
                                                         **kwargs)
 
             # extract(verify_loader, model, args.xvector_dir)
-            verification_extract(verify_loader, model, xvector_dir=args.xvector_dir, epoch=start, 
-                                 test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose, 
+            verification_extract(verify_loader, model, xvector_dir=args.xvector_dir, epoch=start,
+                                 test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
+                                 mean_vector=args.mean_vector,
                                  xvector=args.xvector)
 
     if args.test:

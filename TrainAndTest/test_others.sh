@@ -2664,6 +2664,7 @@ if [ $stage -le 301 ]; then
        --gpu-id 0 \
        --verbose 2 \
        --extract \
+       --mean-vector \
        --cos-sim
    done
        # --verbose 2 \
