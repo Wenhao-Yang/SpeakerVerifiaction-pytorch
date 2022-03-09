@@ -226,6 +226,12 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # compute gradient and update weights
         loss.backward()
 
+        if args.grad_clip > 0:
+            this_lr = args.lr
+            for param_group in optimizer.param_groups:
+                this_lr = min(param_group['lr'], this_lr)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), this_lr * args.grad_clip)
+
         if ((batch_idx + 1) % args.accu_steps) == 0:
             # optimizer the net
             optimizer.step()  # update parameters of net
@@ -246,12 +252,6 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 for param in xe_criterion.parameters():
                     param.grad.data *= (1. / args.loss_ratio)
-
-        if args.grad_clip > 0:
-            this_lr = args.lr
-            for param_group in optimizer.param_groups:
-                this_lr = min(param_group['lr'], this_lr)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), this_lr * args.grad_clip)
 
         # optimizer.step()
         if args.scheduler == 'cyclic':
@@ -617,7 +617,8 @@ def main():
                                                                          num_batch=int(
                                                                              np.ceil(len(train_dir) / args.batch_size)),
                                                                          min_chunk_size=min_chunk_size,
-                                                                         max_chunk_size=max_chunk_size),
+                                                                         max_chunk_size=max_chunk_size,
+                                                                         chisquare=args.chisquare),
                                                    shuffle=args.shuffle, **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,

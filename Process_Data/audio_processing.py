@@ -679,7 +679,7 @@ class PadCollate:
     """
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
-                 num_batch=0, split=False,
+                 num_batch=0, split=False, chisquare=False,
                  fix_len=False):
         """
         args:
@@ -692,16 +692,21 @@ class PadCollate:
         self.fix_len = fix_len
         self.normlize = normlize
         self.split = split
+        self.chisquare = chisquare
 
         if self.fix_len:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
         else:
             assert num_batch > 0
-            batch_len = np.arange(self.min_chunk_size, self.max_chunk_size+1)
+            batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1)
+
+            if chisquare:
+                chi_len = np.random.chisquare(min_chunk_size, 2 * (max_chunk_size - min_chunk_size)).astype(np.int32)
+                batch_len = np.concatenate((chi_len, batch_len))
 
             print('==> Generating %d different random length...' % (len(batch_len)))
 
-            self.batch_len = np.array(batch_len)
+            self.batch_len = batch_len
             print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
 
     def pad_collate(self, batch):
@@ -809,7 +814,10 @@ class PadCollate3d:
             xs = xs.contiguous()
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
-        zs = torch.LongTensor(list(map(lambda x: x[2], batch)))
+        if isinstance(batch[0][2], torch.Tensor):
+            zs = torch.stack(list(map(lambda x: x[2], batch)), dim=0)
+        else:
+            zs = torch.LongTensor(list(map(lambda x: x[2], batch)))
 
         # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
         # pad_batch = list(map_batch)

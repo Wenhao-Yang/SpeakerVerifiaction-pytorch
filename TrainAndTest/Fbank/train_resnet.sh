@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=100
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -694,9 +694,9 @@ if [ $stage -le 100 ]; then
   testset=cnceleb
   feat_type=klfb
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
-  embedding_size=256
+  embedding_size=512
   block_type=basic
   downsample=k3
   kernel=5,5
@@ -706,7 +706,7 @@ if [ $stage -le 100 ]; then
   mask_layer=baseline
   scheduler=rop
   optimizer=sgd
-  input_dim=40
+  input_dim=80
   batch_size=256
   fast=none1
   mask_layer=baseline
@@ -721,53 +721,6 @@ if [ $stage -le 100 ]; then
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
        --model ${model} \
-       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_1p9_fb${input_dim} \
-       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
-       --train-trials trials_2w \
-       --shuffle \
-       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_1p9_fb${input_dim}_valid \
-       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
-       --feat-format kaldi \
-       --random-chunk 200 400 \
-       --input-norm ${input_norm} \
-       --resnet-size ${resnet_size} \
-       --nj 12 \
-       --epochs 60 \
-       --batch-size ${batch_size} \
-       --optimizer ${optimizer} \
-       --scheduler ${scheduler} \
-       --lr 0.1 \
-       --base-lr 0.000006 \
-       --mask-layer ${mask_layer} \
-       --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}1p9_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}1p9_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
-       --kernel-size ${kernel} \
-       --downsample ${downsample} \
-       --channels 16,32,64,128 \
-       --fast ${fast} \
-       --stride 2,1 \
-       --block-type ${block_type} \
-       --embedding-size ${embedding_size} \
-       --time-dim 1 \
-       --avg-size 5 \
-       --encoder-type ${encoder_type} \
-       --num-valid 2 \
-       --alpha ${alpha} \
-       --margin 0.2 \
-       --s 30 \
-       --weight-decay 0.0005 \
-       --dropout-p 0.1 \
-       --gpu-id 0,1 \
-       --extract \
-       --cos-sim \
-       --all-iteraion 0 \
-       --remove-vad \
-       --stat-type ${stat_type} \
-       --loss-type ${loss}
-
-         python TrainAndTest/train_egs.py \
-       --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
@@ -776,10 +729,13 @@ if [ $stage -le 100 ]; then
        --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --random-chunk 200 400 \
+       --chunk-size 200 \
+       --patience 4 \
+       --chisquare \
        --input-norm ${input_norm} \
        --resnet-size ${resnet_size} \
        --nj 12 \
-       --epochs 60 \
+       --epochs 100 \
        --batch-size ${batch_size} \
        --optimizer ${optimizer} \
        --scheduler ${scheduler} \
@@ -805,13 +761,60 @@ if [ $stage -le 100 ]; then
        --s 30 \
        --weight-decay 0.0005 \
        --dropout-p 0.1 \
-       --gpu-id 0,1 \
+       --gpu-id 0,1,2,3 \
        --extract \
        --cos-sim \
        --all-iteraion 0 \
        --remove-vad \
        --stat-type ${stat_type} \
        --loss-type ${loss}
+
+#         python TrainAndTest/train_egs.py \
+#       --model ${model} \
+#       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
+#       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
+#       --train-trials trials_2w \
+#       --shuffle \
+#       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
+#       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
+#       --feat-format kaldi \
+#       --random-chunk 200 400 \
+#       --input-norm ${input_norm} \
+#       --resnet-size ${resnet_size} \
+#       --nj 12 \
+#       --epochs 60 \
+#       --batch-size ${batch_size} \
+#       --optimizer ${optimizer} \
+#       --scheduler ${scheduler} \
+#       --lr 0.1 \
+#       --base-lr 0.000006 \
+#       --mask-layer ${mask_layer} \
+#       --milestones 10,20,30,40,50 \
+#       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
+#       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
+#       --kernel-size ${kernel} \
+#       --downsample ${downsample} \
+#       --channels 16,32,64,128 \
+#       --fast ${fast} \
+#       --stride 2,1 \
+#       --block-type ${block_type} \
+#       --embedding-size ${embedding_size} \
+#       --time-dim 1 \
+#       --avg-size 5 \
+#       --encoder-type ${encoder_type} \
+#       --num-valid 2 \
+#       --alpha ${alpha} \
+#       --margin 0.2 \
+#       --s 30 \
+#       --weight-decay 0.0005 \
+#       --dropout-p 0.1 \
+#       --gpu-id 0,1 \
+#       --extract \
+#       --cos-sim \
+#       --all-iteraion 0 \
+#       --remove-vad \
+#       --stat-type ${stat_type} \
+#       --loss-type ${loss}
 #_chn32
 #    python TrainAndTest/train_egs.py \
 #      --model ${model} \
@@ -861,7 +864,7 @@ if [ $stage -le 100 ]; then
 #      --remove-vad \
 #      --loss-type ${loss}
   done
-#exit
+exit
 fi
 
 

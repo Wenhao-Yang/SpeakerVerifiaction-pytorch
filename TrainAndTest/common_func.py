@@ -418,7 +418,10 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fix'],
                         help='batchnorm with instance norm')
     parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
+    parser.add_argument('--chisquare', action='store_true', default=False,
+                        help='need to add chi(min_len) into chunksize')
     parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
+    parser.add_argument('--frame-shift', type=int, default=300, metavar='CHUNK')
 
     parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
     parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
@@ -589,6 +592,17 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='need to make mfb file')
     parser.add_argument('--makespec', action='store_true', default=False,
                         help='need to make spectrograms file')
+    parser.add_argument('--verbose', type=int, default=0, help='log level')
+
+    # Testing options
+    parser.add_argument('--mean-vector', action='store_false', default=True,
+                        help='mean the vectors while extracting')
+    parser.add_argument('--xvector', action='store_true', default=False,
+                        help='mean the vectors while extracting')
+
+    if 'Extraction' in description:
+        parser.add_argument('--train-extract-dir', type=str, help='path to dev dataset')
+        parser.add_argument('--xvector-dir', type=str, help='path to dev dataset')
 
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
