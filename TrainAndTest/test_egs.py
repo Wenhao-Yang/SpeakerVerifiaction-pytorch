@@ -427,11 +427,8 @@ def test(test_loader, xvector_dir):
     pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
     for batch_idx, (data_a, data_p, label) in pbar:
 
-        out_a = torch.tensor(data_a)
-        # if out_a.shape[-1] != args.embedding_size:
-        #     out_a = out_a.reshape(-1, args.embedding_size)
-
-        out_p = torch.tensor(data_p)
+        data_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
+        data_p = torch.tensor(data_p).cuda()  # .view(-
         # if out_p.shape[-1] != args.embedding_size:
         #     out_p = out_p.reshape(-1, args.embedding_size)
 
