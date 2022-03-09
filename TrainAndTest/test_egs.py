@@ -460,7 +460,6 @@ def test(test_loader, xvector_dir):
 
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         # dists = dists.numpy()
-        del data_a, data_p
 
         distances.append(dists)
         labels.append(label.numpy())
@@ -468,6 +467,8 @@ def test(test_loader, xvector_dir):
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
             pbar.set_description('Test: [{}/{} ({:.0f}%)]'.format(
                 batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+
+        del data_a, data_p
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
