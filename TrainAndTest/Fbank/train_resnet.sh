@@ -717,7 +717,7 @@ if [ $stage -le 100 ]; then
         # --milestones 15,25,35,45 \
 #        _${stat_type}
 
-  for loss in arcsoft; do
+  for block_type in basic cbam; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
        --model ${model} \
