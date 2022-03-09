@@ -277,7 +277,8 @@ if args.mvnorm:
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':
-    file_loader = kaldiio.load_mat
+    # file_loader = kaldiio.load_mat
+    file_loader = read_mat
     torch.multiprocessing.set_sharing_strategy('file_system')
 elif args.feat_format == 'npy':
     file_loader = np.load
@@ -452,6 +453,7 @@ def test(test_loader, xvector_dir):
         # print(dists.shape)
         # pdb.set_trace()
         dists = l2_dist(data_a, data_p)
+
         if len(dists.shape) == 3:
             dists = dists.mean(dim=-1).mean(dim=-1)
         elif len(dists.shape) == 2:
@@ -669,12 +671,13 @@ if __name__ == '__main__':
                                  xvector=args.xvector)
 
     if args.test:
-        file_loader = kaldiio.load_mat
+        # file_loader = kaldiio.load_mat
+        file_loader = read_vec_flt
         test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
                                        loader=file_loader)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
-                                                  batch_size=args.test_batch_size * 64 if args.test_batch_size > 1 else 1,
+                                                  batch_size=args.test_batch_size * 64,
                                                   shuffle=False, **kwargs)
         test(test_loader, xvector_dir=args.xvector_dir)
 
