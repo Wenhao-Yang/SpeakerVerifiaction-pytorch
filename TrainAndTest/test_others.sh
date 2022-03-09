@@ -2663,6 +2663,7 @@ if [ $stage -le 301 ]; then
        --num-frames 200 \
        --gpu-id 0 \
        --verbose 2 \
+       --extract \
        --cos-sim
    done
        # --verbose 2 \

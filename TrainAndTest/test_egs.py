@@ -466,7 +466,7 @@ def test(test_loader, xvector_dir):
         distances.append(dists)
         # print(label.shape)
         labels.append(label)
-        print(len(labels))
+        # print(len(labels))
         # continue
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
             pbar.set_description('Test: [{}/{} ({:.0f}%)]'.format(
