@@ -372,8 +372,8 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
             # compute output
             _, out = model(data)
 
-            # if vec_shape[1] != 1:
-            #     out = out.reshape(vec_shape[0], -1)  # .mean(dim=1)
+            if vec_shape[1] != 1:
+                out = out.reshape(vec_shape[0], -1)  # .mean(dim=1)
 
             # pdb.set_trace()
 
@@ -427,8 +427,8 @@ def test(test_loader, xvector_dir):
     pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
     for batch_idx, (data_a, data_p, label) in pbar:
 
-        data_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
-        data_p = torch.tensor(data_p).cuda()  # .view(-
+        data_a = torch.tensor(data_a)  # .cuda()  # .view(-1, 4, embedding_size)
+        data_p = torch.tensor(data_p)  # .cuda()  # .view(-
 
         # if out_p.shape[-1] != args.embedding_size:
         #     out_p = out_p.reshape(-1, args.embedding_size)
@@ -457,8 +457,8 @@ def test(test_loader, xvector_dir):
         elif len(dists.shape) == 2:
             dists = dists.mean(dim=-1)
 
-        dists = dists.float().cpu().numpy()
-
+        # dists = dists.float().cpu().numpy()
+        dists = dists.numpy()
         label = label.numpy()
         # continue
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
