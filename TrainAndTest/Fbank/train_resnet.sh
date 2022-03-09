@@ -610,7 +610,7 @@ if [ $stage -le 100 ]; then
   testset=cnceleb
   feat_type=klfb
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=256
   block_type=basic
