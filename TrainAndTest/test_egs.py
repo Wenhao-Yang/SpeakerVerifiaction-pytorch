@@ -471,6 +471,7 @@ def test(test_loader, xvector_dir):
         # print(label.shape)
         labels.append(label)
 
+        continue
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
             pbar.set_description('Test: [{}/{} ({:.0f}%)]'.format(
                 batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
