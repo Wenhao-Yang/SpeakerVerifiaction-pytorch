@@ -2602,7 +2602,8 @@ if [ $stage -le 301 ]; then
   embedding_size=512
   train_set=cnceleb
   test_set=cnceleb
-  subset=dev
+  dev_subset=dev
+  test_subset=test
 
   resnet_size=18
   encoder_type=SAP2
@@ -2631,10 +2632,10 @@ if [ $stage -le 301 ]; then
      python -W ignore TrainAndTest/test_egs.py \
        --model ${model} \
        --resnet-size ${resnet_size} \
-       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
+       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
-       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
+       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
        --feat-format kaldi \
        --input-norm ${input_norm} \
