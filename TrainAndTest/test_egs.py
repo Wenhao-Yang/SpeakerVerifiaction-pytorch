@@ -607,7 +607,7 @@ if __name__ == '__main__':
                                        loader=file_loader)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
-                                                  batch_size=args.test_batch_size * 64 if args.test_batch_size > 1 else 1,
+                                                  batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
                                                   shuffle=False, **kwargs)
         test(test_loader, xvector_dir=args.xvector_dir)
 
