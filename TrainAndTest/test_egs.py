@@ -464,8 +464,10 @@ def test(test_loader, xvector_dir):
         # continue
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         # dists = dists.numpy()
-
-        distances.append(list(dists))
+        mem_data = psutil.virtual_memory()
+        free_mem = mem_data.available
+        print(free_mem)
+        distances.append(dists)
         # print(label.shape)
         labels.append(label)
         print(len(labels))
