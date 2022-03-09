@@ -467,6 +467,7 @@ def test(test_loader, xvector_dir):
         # dists = dists.numpy()
 
         distances.append(dists)
+        continue
         labels.append(label.numpy())
 
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
