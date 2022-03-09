@@ -636,19 +636,20 @@ if [ $stage -le 100 ]; then
      python TrainAndTest/train_egs.py \
        --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
-       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
+       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
        --shuffle \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
-       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
+       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --random-chunk 200 400 \
        --chunk-size 200 \
+       --patience 4 \
        --chisquare \
        --input-norm ${input_norm} \
        --resnet-size ${resnet_size} \
        --nj 12 \
-       --epochs 80 \
+       --epochs 100 \
        --batch-size ${batch_size} \
        --optimizer ${optimizer} \
        --scheduler ${scheduler} \
