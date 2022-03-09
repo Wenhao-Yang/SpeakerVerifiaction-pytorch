@@ -251,7 +251,7 @@ kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 sys.stdout = NewLogger(os.path.join(os.path.dirname(args.resume), 'test.log'))
 
 
-l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(dim=-1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
 
 if args.input_length == 'var':
     transform = transforms.Compose([
@@ -445,10 +445,10 @@ def test(test_loader, xvector_dir):
             dists = l2_dist(data_a, data_p)
 
         elif args.cos_sim:
-            out_a = torch.nn.functional.normalize(data_a, dim=-1)
-            out_p = torch.nn.functional.normalize(data_p, dim=-1)
+            out_a = out_a.repeat_interleave(out_p[1], dim=1)
+            out_p = out_p.repeat_interleave(out_a[1], dim=1)
 
-            dists = torch.matmul(out_a, out_p.transpose(-2, -1))
+            dists = l2_dist(out_a, out_p)
         else:
             dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
