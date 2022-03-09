@@ -372,8 +372,8 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
             # compute output
             _, out = model(data)
 
-            if vec_shape[1] != 1:
-                out = out.reshape(vec_shape[0], -1)  # .mean(dim=1)
+            # if vec_shape[1] != 1:
+            #     out = out.reshape(vec_shape[0], -1)  # .mean(dim=1)
 
             # pdb.set_trace()
 
@@ -446,7 +446,6 @@ def test(test_loader, xvector_dir):
             data_a = data_a.repeat_interleave(data_p.shape[1], dim=1)
             data_p = data_p.repeat_interleave(data_a_dim1, dim=1)
         #
-        #
         # else:
         # dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
@@ -464,14 +463,11 @@ def test(test_loader, xvector_dir):
         # continue
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         # dists = dists.numpy()
-        mem_data = psutil.virtual_memory()
-        free_mem = mem_data.available
-        print(free_mem)
         distances.append(dists)
         # print(label.shape)
         labels.append(label)
         print(len(labels))
-        continue
+        # continue
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
             pbar.set_description('Test: [{}/{} ({:.0f}%)]'.format(
                 batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
