@@ -277,7 +277,7 @@ if args.mvnorm:
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':
-    file_loader = read_mat
+    file_loader = kaldiio.load_mat
     torch.multiprocessing.set_sharing_strategy('file_system')
 elif args.feat_format == 'npy':
     file_loader = np.load
@@ -369,7 +369,6 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
 
             if args.cuda:
                 data = data.cuda()
-
             # compute output
             _, out = model(data)
 
@@ -391,22 +390,32 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
         print('There are %d vectors' % len(uids))
 
     scp_file = xvector_dir + '/xvectors.scp'
-    scp = open(scp_file, 'w')
+    ark_file = xvector_dir + '/xvectors.ark'
+    # scp = open(scp_file, 'w')
 
     # write scp and ark file
     # pdb.set_trace()
-    for set_id in range(int(np.ceil(len(uids) / ark_num))):
-        ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
-        with open(ark_file, 'wb') as ark:
-            ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
-            for i in ranges:
-                vec = vectors[i]
-                len_vec = len(vec.tobytes())
-                key = uids[i]
-                kaldi_io.write_vec_flt(ark, vec, key=key)
-                # print(ark.tell())
-                scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
-    scp.close()
+    writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
+    for i in range(len(uids)):
+        writer(str(uids[i]), vectors[i])
+
+    # scp_file = xvector_dir + '/xvectors.scp'
+    # scp = open(scp_file, 'w')
+    #
+    # # write scp and ark file
+    # # pdb.set_trace()
+    # for set_id in range(int(np.ceil(len(uids) / ark_num))):
+    #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
+    #     with open(ark_file, 'wb') as ark:
+    #         ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
+    #         for i in ranges:
+    #             vec = vectors[i]
+    #             len_vec = len(vec.tobytes())
+    #             key = uids[i]
+    #             kaldi_io.write_vec_flt(ark, vec, key=key)
+    #             # print(ark.tell())
+    #             scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
+    # scp.close()
     if args.verbose > 0:
         print('There are %d vectors. Saving to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
@@ -434,16 +443,23 @@ def test(test_loader, xvector_dir):
         #     out_a_first = out_a.shape[0]
         #     out_a = out_a.repeat(out_p.shape[0], 1)
         #     out_p = out_p.reshape(out_a_first, 1)
-        if args.cos_sim:
-            out_a = torch.nn.functional.normalize(out_a, dim=1)
-            out_p = torch.nn.functional.normalize(out_p, dim=1)
+        if len(data_a.shape) == 2:
+            dists = l2_dist(data_a, data_p)
+
+        elif args.cos_sim:
+            out_a = torch.nn.functional.normalize(data_a, dim=-1)
+            out_p = torch.nn.functional.normalize(data_p, dim=-1)
 
             dists = torch.matmul(out_a, out_p.transpose(-2, -1))
         else:
-            dists = (out_a[:, :, None] - out_p[:]).norm(p=2, dim=-1)
+            dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
-        if len(dists.shape) == 3:
-            dists = dists.mean(dim=-1).mean(dim=-1)
+        # print(dists.shape)
+        # pdb.set_trace()
+        while len(dists.shape) > 1:
+            dists = dists.mean(dim=-1)
+
+        dists = dists.detach().cpu().numpy()
 
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         dists = dists.numpy()
