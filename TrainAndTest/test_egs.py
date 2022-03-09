@@ -462,7 +462,7 @@ def test(test_loader, xvector_dir):
         dists = dists.detach().cpu().numpy()
 
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        dists = dists.numpy()
+        # dists = dists.numpy()
 
         distances.append(dists)
         labels.append(label.numpy())
