@@ -441,20 +441,18 @@ def test(test_loader, xvector_dir):
         #     out_a_first = out_a.shape[0]
         #     out_a = out_a.repeat(out_p.shape[0], 1)
         #     out_p = out_p.reshape(out_a_first, 1)
-        if len(data_a.shape) == 2:
-            dists = l2_dist(data_a, data_p)
-
-        elif args.cos_sim:
-            out_a = out_a.repeat_interleave(out_p[1], dim=1)
-            out_p = out_p.repeat_interleave(out_a[1], dim=1)
-
-            dists = l2_dist(out_a, out_p)
-        else:
-            dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
+        if len(data_a.shape) == 3:
+            data_a_dim1 = data_a.shape[1]
+            data_a = data_a.repeat_interleave(data_p.shape[1], dim=1)
+            data_p = data_p.repeat_interleave(data_a_dim1, dim=1)
+        #
+        #
+        # else:
+        # dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
         # print(dists.shape)
         # pdb.set_trace()
-
+        dists = l2_dist(data_a, data_p)
         if len(dists.shape) == 3:
             dists = dists.mean(dim=-1).mean(dim=-1)
         elif len(dists.shape) == 2:
