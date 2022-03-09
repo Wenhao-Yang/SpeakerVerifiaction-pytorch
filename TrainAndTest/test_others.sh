@@ -2651,6 +2651,7 @@ if [ $stage -le 301 ]; then
        --avg-size 5 \
        --encoder-type ${encoder_type} \
        --alpha 0 \
+       --loss-type ${loss}
        --margin 0.2 \
        --s 30 \
        --input-length fix \
