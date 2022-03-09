@@ -454,10 +454,13 @@ def test(test_loader, xvector_dir):
 
         # print(dists.shape)
         # pdb.set_trace()
-        continue
-        while len(dists.shape) > 1:
+
+        if len(dists.shape) == 3:
+            dists = dists.mean(dim=-1).mean(dim=-1)
+        elif len(dists.shape) == 2:
             dists = dists.mean(dim=-1)
 
+        continue
         dists = dists.float().detach().cpu().numpy()
 
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
