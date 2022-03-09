@@ -460,15 +460,16 @@ def test(test_loader, xvector_dir):
         elif len(dists.shape) == 2:
             dists = dists.mean(dim=-1)
 
-
         dists = dists.float().cpu().numpy()
+
+        label = label.numpy()
         # continue
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         # dists = dists.numpy()
 
         distances.append(dists)
-        print(label.shape)
-        labels.append(label.numpy())
+        # print(label.shape)
+        labels.append(label)
 
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
             pbar.set_description('Test: [{}/{} ({:.0f}%)]'.format(
