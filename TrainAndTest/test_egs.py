@@ -228,7 +228,8 @@ parser.add_argument('--valid', action='store_true', default=False,
                     help='need to make spectrograms file')
 parser.add_argument('--verbose', type=int, default=0, choices=[0, 1, 2],
                     help='how many batches to wait before logging training status')
-
+parser.add_argument('--normalize', action='store_false', default=True,
+                    help='normalize vectors in final layer')
 args = parser.parse_args()
 
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
