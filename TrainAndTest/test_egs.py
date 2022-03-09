@@ -465,7 +465,7 @@ def test(test_loader, xvector_dir):
         label = label.numpy()
 
         if len(dists.shape) == 1:
-            d_batch.append(dists[0])
+            d_batch.append(float(dists[0]))
             l_batch.append(label[0])
 
             if len(l_batch) >= 64 or len(test_loader.dataset) == (batch_idx + 1):
