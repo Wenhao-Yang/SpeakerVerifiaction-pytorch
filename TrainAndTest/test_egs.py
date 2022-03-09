@@ -461,13 +461,13 @@ def test(test_loader, xvector_dir):
             dists = dists.mean(dim=-1)
 
 
-        dists = dists.float().detach().cpu().numpy()
+        dists = dists.float().cpu().numpy()
         # continue
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         # dists = dists.numpy()
 
         distances.append(dists)
-        continue
+        print(label.shape)
         labels.append(label.numpy())
 
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
