@@ -2632,11 +2632,11 @@ if [ $stage -le 301 ]; then
      python -W ignore TrainAndTest/test_egs.py \
        --model ${model} \
        --resnet-size ${resnet_size} \
-       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
-       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
+       --train-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
+       --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
-       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
-       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
+       --valid-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
+       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_${feat} \
        --feat-format kaldi \
        --input-norm ${input_norm} \
        --input-dim ${input_dim} \
@@ -2656,7 +2656,7 @@ if [ $stage -le 301 ]; then
        --input-length fix \
        --remove-vad \
        --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_chimv_var/checkpoint_80.pth \
-       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_chimv_var/${test_set}_${subset}_fix \
+       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_chimv_var/${test_set}_${test_subset}_fix \
        --frame-shift 200 \
        --num-frames 200 \
        --gpu-id 0 \
