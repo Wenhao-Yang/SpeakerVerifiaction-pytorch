@@ -569,7 +569,7 @@ if __name__ == '__main__':
                         'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                         'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                         'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-                        'downsample': args.downsample,
+                        'downsample': args.downsample, 'normalize': args.normalize,
                         'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                         'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
                         'channels': channels, 'context': context, 'init_weight': args.init_weight,
