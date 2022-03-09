@@ -2638,6 +2638,7 @@ if [ $stage -le 301 ]; then
        --valid-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_${feat} \
        --feat-format kaldi \
+       --nj 8 \
        --input-norm ${input_norm} \
        --input-dim ${input_dim} \
        --kernel-size ${kernel} \
