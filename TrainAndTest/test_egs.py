@@ -456,7 +456,7 @@ def test(test_loader, xvector_dir):
         while len(dists.shape) > 1:
             dists = dists.mean(dim=-1)
 
-        dists = dists.detach().cpu().numpy()
+        dists = dists.float().detach().cpu().numpy()
 
         # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
         # dists = dists.numpy()
