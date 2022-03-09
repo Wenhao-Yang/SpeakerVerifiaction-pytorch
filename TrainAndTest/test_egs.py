@@ -452,7 +452,7 @@ def test(test_loader, xvector_dir):
             dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
         # print(dists.shape)
-        # pdb.set_trace()
+        pdb.set_trace()
         while len(dists.shape) > 1:
             dists = dists.mean(dim=-1)
 
