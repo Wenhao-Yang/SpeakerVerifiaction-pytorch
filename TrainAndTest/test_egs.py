@@ -601,8 +601,8 @@ if __name__ == '__main__':
                                  xvector=args.xvector)
 
     if args.test:
-        # file_loader = kaldiio.load_mat
-        file_loader = read_vec_flt
+        file_loader = kaldiio.load_mat
+        # file_loader = read_vec_flt
         test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
                                        loader=file_loader)
 
