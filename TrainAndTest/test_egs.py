@@ -466,7 +466,7 @@ def test(test_loader, xvector_dir):
 
         if len(dists.shape) == 1:
             d_batch.append(dists[0])
-            l_batch.appppend(label[0])
+            l_batch.append(label[0])
 
             if len(l_batch) >= 64 or len(test_loader.dataset) == (batch_idx + 1):
                 distances.append(d_batch)
