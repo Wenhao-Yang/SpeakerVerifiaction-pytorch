@@ -429,6 +429,7 @@ def test(test_loader, xvector_dir):
 
         data_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
         data_p = torch.tensor(data_p).cuda()  # .view(-
+        continue
         # if out_p.shape[-1] != args.embedding_size:
         #     out_p = out_p.reshape(-1, args.embedding_size)
 
