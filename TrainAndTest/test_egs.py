@@ -425,6 +425,8 @@ def extract(test_loader, model, xvector_dir, ark_num=50000):
 def test(test_loader, xvector_dir):
     # switch to evaluate mode
     labels, distances = [], []
+    l_batch = []
+    d_batch = []
     pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
     for batch_idx, (data_a, data_p, label) in pbar:
 
@@ -459,17 +461,23 @@ def test(test_loader, xvector_dir):
         elif len(dists.shape) == 2:
             dists = dists.mean(dim=-1)
 
-        # dists = dists.float().cpu().numpy()
         dists = dists.numpy()
         label = label.numpy()
-        # continue
-        # dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
-        # dists = dists.numpy()
-        distances.append(dists)
-        # print(label.shape)
-        labels.append(label)
-        # print(len(labels))
-        # continue
+
+        if len(dists.shape) == 1:
+            d_batch.append(dists[0])
+            l_batch.appppend(label[0])
+
+            if len(l_batch) >= 64 or len(test_loader.dataset) == (batch_idx + 1):
+                distances.append(d_batch)
+                labels.append(l_batch)
+
+                l_batch = []
+                d_batch = []
+        else:
+            distances.append(dists)
+            labels.append(label)
+
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
             pbar.set_description('Test: [{}/{} ({:.0f}%)]'.format(
                 batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
@@ -677,7 +685,7 @@ if __name__ == '__main__':
                                        loader=file_loader)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
-                                                  batch_size=args.test_batch_size * 64,
+                                                  batch_size=args.test_batch_size * 64 if args.test_batch_size > 1 else 1,
                                                   shuffle=False, **kwargs)
         test(test_loader, xvector_dir=args.xvector_dir)
 
