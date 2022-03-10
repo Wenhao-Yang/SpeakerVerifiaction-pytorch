@@ -2635,6 +2635,7 @@ if [ $stage -le 301 ]; then
        --train-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
+       --trials trials \
        --valid-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_${feat} \
        --feat-format kaldi \
@@ -2657,13 +2658,12 @@ if [ $stage -le 301 ]; then
        --s 30 \
        --input-length fix \
        --remove-vad \
-       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_chimv_var/checkpoint_80.pth \
-       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_chimv_var/${test_set}_${test_subset}_fix \
-       --frame-shift 200 \
-       --num-frames 200 \
+       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/checkpoint_60.pth \
+       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/${test_set}_${test_subset}_fix \
+       --frame-shift 300 \
+       --num-frames 300 \
        --gpu-id 0 \
        --verbose 2 \
-       --mean-vector \
        --cos-sim
    done
        # --verbose 2 \
