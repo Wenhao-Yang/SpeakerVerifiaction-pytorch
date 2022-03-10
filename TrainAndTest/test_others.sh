@@ -2599,7 +2599,7 @@ if [ $stage -le 301 ]; then
   input_norm=Mean
   loss=arcsoft
   model=ThinResNet
-  embedding_size=512
+  embedding_size=256
   train_set=cnceleb
   test_set=cnceleb
   dev_subset=dev
@@ -2624,7 +2624,7 @@ if [ $stage -le 301 ]; then
 #      --extract \
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
-  for trials in trialsmin4.0 trialsmax4.0 ; do
+  for trials in trialsmax4.0 ; do
 
 # --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch50_fix \
   #      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
@@ -2658,8 +2658,8 @@ if [ $stage -le 301 ]; then
        --s 30 \
        --input-length fix \
        --remove-vad \
-       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/${loss}_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
-       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/${loss}_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${test_subset}_fix \
+       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/${loss}_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
+       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/${loss}_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em${embedding_size}_wd5e4_var/${test_set}_${test_subset}_fix \
        --frame-shift 300 \
        --num-frames 300 \
        --gpu-id 0 \
@@ -2672,17 +2672,18 @@ if [ $stage -le 301 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-#|   cnceleb-test    |   13.5153   |   0.1367    |   0.6380    |    0.7348    | 20220310 15:07:10 | em256
+#|   cnceleb-test    |   13.5153   |   0.1367    |   0.6380    |    0.7348    | 20220310 15:07:10 | em256 arcsoft
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-#|   cnceleb-test    |   13.5597   |   0.1398    |   0.6392    |    0.7374    | 20220310 15:52:57 | em512
+#|   cnceleb-test    |   13.5597   |   0.1398    |   0.6392    |    0.7374    | 20220310 15:52:57 | em512 arcsoft
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|   cnceleb-test    |   11.9840   |   0.3172    |   0.6557    |    0.7721    | 20220310 15:27:22 | em512 arcdist
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
 # trials eval min 4s
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-#|   cnceleb-test    |   10.5546   |   0.1633    |   0.5209    |    0.6148    | 20220310 15:12:26 | em256
+#|   cnceleb-test    |   10.5546   |   0.1633    |   0.5209    |    0.6148    | 20220310 15:12:26 | em256 arcsoft
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|   cnceleb-test    |   10.4203   |   0.1684    |   0.5187    |    0.6150    | 20220310 15:58:32 | em512 arcsoft
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|   cnceleb-test    |   9.3050    |   0.3394    |   0.5346    |    0.6477    | 20220310 15:32:27 | em512 arcdist
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
@@ -2690,6 +2691,7 @@ if [ $stage -le 301 ]; then
 # trials eval max 4s
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|   cnceleb-test    |   16.5088   |   0.1181    |   0.7600    |    0.8670    | 20220310 16:01:33 | em512 arcsoft
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|   cnceleb-test    |   14.6505   |   0.3004    |   0.7877    |    0.9076    | 20220310 15:42:10 | em512 arcdist
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
