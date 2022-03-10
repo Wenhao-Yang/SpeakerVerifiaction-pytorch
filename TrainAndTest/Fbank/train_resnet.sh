@@ -765,6 +765,7 @@ if [ $stage -le 100 ]; then
        --cos-sim \
        --all-iteraion 0 \
        --remove-vad \
+       --grad-clip 5 \
        --stat-type ${stat_type} \
        --loss-type ${loss}
 
