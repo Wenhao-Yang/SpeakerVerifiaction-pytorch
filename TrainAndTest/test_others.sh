@@ -2607,11 +2607,11 @@ if [ $stage -le 301 ]; then
 
   resnet_size=18
   encoder_type=SAP2
-  embedding_size=256
+  embedding_size=512
   block_type=basic
   downsample=k3
   kernel=5,5
-  loss=arcsoft
+  loss=arcdist
   alpha=0
   input_norm=Mean
   mask_layer=baseline
@@ -2635,7 +2635,7 @@ if [ $stage -le 301 ]; then
        --train-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
-       --trials trials4.0 \
+       --trials trials \
        --valid-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_${feat} \
        --feat-format kaldi \
@@ -2658,13 +2658,12 @@ if [ $stage -le 301 ]; then
        --s 30 \
        --input-length fix \
        --remove-vad \
-       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/checkpoint_60.pth \
-       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/${test_set}_${test_subset}_fix \
+       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/checkpoint_60.pth \
+       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/${test_set}_${test_subset}_fix \
        --frame-shift 300 \
        --num-frames 300 \
        --gpu-id 0 \
        --verbose 2 \
-       --extract \
        --cos-sim
    done
 
@@ -2673,6 +2672,10 @@ if [ $stage -le 301 ]; then
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|   cnceleb-test    |   13.5153   |   0.1367    |   0.6380    |    0.7348    | 20220310 15:07:10 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+
+# trials eval > 4s
+#|   cnceleb-test    |   10.5546   |   0.1633    |   0.5209    |    0.6148    | 20220310 15:12:26 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
        # --verbose 2 \
 #              --extract \
