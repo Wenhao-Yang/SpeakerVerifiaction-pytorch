@@ -2658,8 +2658,8 @@ if [ $stage -le 301 ]; then
        --s 30 \
        --input-length fix \
        --remove-vad \
-       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/checkpoint_60.pth \
-       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/${test_set}_${test_subset}_fix \
+       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/${loss}_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/checkpoint_60.pth \
+       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/${loss}_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/${test_set}_${test_subset}_fix \
        --frame-shift 300 \
        --num-frames 300 \
        --gpu-id 0 \
