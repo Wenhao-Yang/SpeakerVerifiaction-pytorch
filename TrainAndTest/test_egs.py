@@ -410,7 +410,7 @@ def test(test_loader, xvector_dir):
 
         del data_a, data_p
 
-    pdb.set_trace()
+    # pdb.set_trace()
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
 
