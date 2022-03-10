@@ -2624,7 +2624,7 @@ if [ $stage -le 301 ]; then
 #      --extract \
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
-  for s in advertisement ; do
+  for trials in trialsmin4.0 trialsmax4.0 ; do
 
 # --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch50_fix \
   #      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
@@ -2635,7 +2635,7 @@ if [ $stage -le 301 ]; then
        --train-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
-       --trials trials \
+       --trials ${trials} \
        --valid-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_${feat} \
        --feat-format kaldi \
@@ -2664,6 +2664,7 @@ if [ $stage -le 301 ]; then
        --num-frames 300 \
        --gpu-id 0 \
        --verbose 2 \
+       --extract \
        --cos-sim
    done
 
