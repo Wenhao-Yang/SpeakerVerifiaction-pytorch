@@ -410,6 +410,7 @@ def test(test_loader, xvector_dir):
 
         del data_a, data_p
 
+    pdb.set_trace()
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
 
@@ -435,7 +436,7 @@ def test(test_loader, xvector_dir):
         test_set_name = '-'.join((test_set_name, args.score_suffix[:4]))
 
     result_str = ''
-    pdb.set_trace()
+
     if args.verbose > 0:
         result_str += '\nFor %s_distance, %d pairs:' % (dist_type, len(labels))
     result_str += '\n\33[91m'
