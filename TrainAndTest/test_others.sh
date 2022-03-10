@@ -2635,7 +2635,7 @@ if [ $stage -le 301 ]; then
        --train-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
-       --trials trials4.0 \
+       --trials trialsmax4.0 \
        --valid-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_${feat} \
        --feat-format kaldi \
@@ -2677,9 +2677,11 @@ if [ $stage -le 301 ]; then
 #|   cnceleb-test    |   11.9840   |   0.3172    |   0.6557    |    0.7721    | 20220310 15:27:22 | arcdist
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
-# trials eval > 4s
+# trials eval min 4s
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|   cnceleb-test    |   10.5546   |   0.1633    |   0.5209    |    0.6148    | 20220310 15:12:26 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|   cnceleb-test    |   9.3050    |   0.3394    |   0.5346    |    0.6477    | 20220310 15:32:27 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
 
