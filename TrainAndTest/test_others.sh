@@ -2635,7 +2635,7 @@ if [ $stage -le 301 ]; then
        --train-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
-       --trials trials \
+       --trials trials4.0 \
        --valid-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_${feat} \
        --feat-format kaldi \
@@ -2667,6 +2667,13 @@ if [ $stage -le 301 ]; then
        --extract \
        --cos-sim
    done
+
+# official trials
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|   cnceleb-test    |   13.5153   |   0.1367    |   0.6380    |    0.7348    | 20220310 15:07:10 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
        # --verbose 2 \
 #              --extract \
 
