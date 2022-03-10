@@ -700,7 +700,7 @@ if [ $stage -le 100 ]; then
   block_type=basic
   downsample=k3
   kernel=5,5
-  loss=arcsoft
+
   alpha=0
   input_norm=Mean
   mask_layer=baseline
@@ -713,6 +713,7 @@ if [ $stage -le 100 ]; then
   weight=vox2_rcf
   scale=0.2
   subset=
+  loss=arcdist
   stat_type=maxmargin
         # --milestones 15,25,35,45 \
 #        _${stat_type}
