@@ -390,7 +390,7 @@ def test(test_loader, xvector_dir):
         dists = dists.numpy()
         label = label.numpy()
 
-        if len(dists.shape) == 1:
+        if len(dists) == 1:
             d_batch.append(float(dists[0]))
             l_batch.append(label[0])
 
