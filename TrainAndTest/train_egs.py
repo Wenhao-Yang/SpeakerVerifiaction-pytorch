@@ -601,7 +601,7 @@ def main():
         max_chunk_size = int(args.random_chunk[1])
         pad_dim = 2 if args.feat_format == 'kaldi' else 3
 
-        if args.noise_padding != '':
+        if args.noise_padding_dir != '':
             noise_padding_dir = EgsDataset(dir=args.noise_padding_dir,
                                            feat_dim=args.input_dim, loader=file_loader, transform=transform)
         else:
