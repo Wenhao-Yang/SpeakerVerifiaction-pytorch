@@ -730,16 +730,16 @@ class PadCollate:
             # print(noise_features.shape)
             noise_features_len = noise_features.shape[1]
 
-            noise_len = int(np.random.uniform(1, int(frame_len * 0.5)))
-            if noise_len < noise_features_len:
-                start = np.random.randint(low=0, high=noise_features_len - noise_len)
-                noise_features = noise_features[:, start:(start + noise_len)]
-            else:
-                noise_len = noise_features_len
+            noise_len = np.random.randint(0, int(frame_len * 0.5))
+            if noise_len > 0:
+                if noise_len < noise_features_len:
+                    start = np.random.randint(low=0, high=noise_features_len - noise_len)
+                    noise_features = noise_features[:, start:(start + noise_len)]
+                else:
+                    noise_len = noise_features_len
 
-            noise_features = noise_features.unsqueeze(0).repeat(len(batch), 1, 1, 1)
-
-            frame_len -= noise_len
+                noise_features = noise_features.unsqueeze(0).repeat(len(batch), 1, 1, 1)
+                frame_len -= noise_len
         else:
             noise_len = 0
 
