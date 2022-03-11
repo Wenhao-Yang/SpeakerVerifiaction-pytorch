@@ -245,7 +245,7 @@ class Res2Conv2dReluBn(nn.Module):
     in_channels == out_channels == channels
     '''
 
-    def __init__(self, channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=False, scale=4):
+    def __init__(self, channels, kernel_size=1, padding=0, dilation=1, stride=1, bias=False, scale=4):
         super().__init__()
         assert channels % scale == 0, "{} % {} != 0".format(channels, scale)
         self.scale = scale
