@@ -451,8 +451,10 @@ class EgsDataset(Dataset):
                 except ValueError as v:
                     cls, dom_cls, upath = line.split()
                     dom_cls = int(dom_cls)
-
-                cls = int(cls)
+                try:
+                    cls = int(cls)
+                except ValueError as v:
+                    pass
 
                 dataset.append((cls, dom_cls, upath))
                 doms.add(dom_cls)
