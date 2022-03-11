@@ -762,7 +762,7 @@ class PadCollate:
             start = np.random.randint(low=0, high=xs.shape[-2])
             # print(noise_features.shape)
             # print(xs.shape)
-            noise_features = noise_features[:, :, :, :xs.shape[-1]]
+            noise_features = noise_features[:, :, :, -xs.shape[-1]:]
             xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
