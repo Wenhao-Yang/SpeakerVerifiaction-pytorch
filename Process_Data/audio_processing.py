@@ -727,6 +727,7 @@ class PadCollate:
 
         if self.noise_padding is not None:
             noise_features = self.noise_padding.__getrandomitem__()
+            print(noise_features.shape)
             noise_features_len = noise_features.shape[1]
 
             noise_len = int(np.random.uniform(1, int(frame_len * 0.5)))
@@ -735,8 +736,8 @@ class PadCollate:
                 noise_features = noise_features[:, start:noise_len]
             else:
                 noise_len = noise_features_len
-                noise_features = noise_features.unsqueeze(0).repeat(len(batch), 1, 1, 1)
 
+            noise_features = noise_features.unsqueeze(0).repeat(len(batch), 1, 1, 1)
             frame_len -= noise_len
         else:
             noise_len = 0

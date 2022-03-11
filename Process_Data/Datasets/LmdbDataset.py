@@ -431,7 +431,7 @@ class LmdbTestDataset(Dataset):
 
 class EgsDataset(Dataset):
     def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
-                 random_chunk=[], batch_size=0, label_dir=''):
+                 random_chunk=[], batch_size=0, label_dir='', verbose=1):
 
         feat_scp = dir + '/feats.scp'
 
@@ -443,7 +443,9 @@ class EgsDataset(Dataset):
         doms = set([])
 
         with open(feat_scp, 'r') as u:
-            all_cls_upath = tqdm(u.readlines())
+
+            all_cls_upath = tqdm(u.readlines()) if verbose > 0 else u.readlines()
+
             for line in all_cls_upath:
                 try:
                     cls, upath = line.split()
@@ -468,11 +470,12 @@ class EgsDataset(Dataset):
                 for line in all_lb_upath:
                     lb, lpath = line.split()
                     guide_label.append((int(lb), lpath))
-
-        print('==> There are {} speakers in Dataset.'.format(len(spks)))
-        print('    There are {} egs in Dataset'.format(len(dataset)))
-        if len(guide_label)>0:
-            print('    There are {} guide labels for egs in Dataset'.format(len(guide_label)))
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(spks)))
+            print('    There are {} egs in Dataset'.format(len(dataset)))
+        if len(guide_label) > 0:
+            if verbose > 0:
+                print('    There are {} guide labels for egs in Dataset'.format(len(guide_label)))
             assert len(guide_label) == len(dataset)
 
         self.dataset = dataset
