@@ -22,6 +22,7 @@ import time
 import warnings
 from collections import OrderedDict
 
+import kaldiio
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -603,7 +604,7 @@ def main():
 
         if args.noise_padding_dir != '':
             noise_padding_dir = EgsDataset(dir=args.noise_padding_dir,
-                                           feat_dim=args.input_dim, loader=file_loader,
+                                           feat_dim=args.input_dim, loader=kaldiio.load_mat,
                                            transform=transform, verbose=0)
         else:
             noise_padding_dir = None
