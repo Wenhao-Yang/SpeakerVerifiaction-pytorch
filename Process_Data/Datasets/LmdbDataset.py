@@ -516,7 +516,7 @@ class EgsDataset(Dataset):
         # time_s = time.time()
         # print('Starting loading...')
         idx = np.random.randint(low=0, high=self.__len__())
-        label, upath = self.dataset[idx]
+        label, dom_label, upath = self.dataset[idx]
 
         y = self.loader(upath)
         feature = self.transform(y)
