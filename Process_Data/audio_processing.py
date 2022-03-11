@@ -758,6 +758,8 @@ class PadCollate:
 
         if noise_len > 0:
             start = np.random.randint(low=0, high=xs.shape[-2])
+            print(noise_features.shape)
+            print(xs.shape)
             xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
