@@ -601,13 +601,20 @@ def main():
         max_chunk_size = int(args.random_chunk[1])
         pad_dim = 2 if args.feat_format == 'kaldi' else 3
 
+        if args.noise_padding != '':
+            noise_padding_dir = EgsDataset(dir=args.noise_padding_dir,
+                                           feat_dim=args.input_dim, loader=file_loader, transform=transform)
+        else:
+            noise_padding_dir = None
+
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size,
                                                    collate_fn=PadCollate(dim=pad_dim,
                                                                          num_batch=int(
                                                                              np.ceil(len(train_dir) / args.batch_size)),
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size,
-                                                                         chisquare=args.chisquare),
+                                                                         chisquare=args.chisquare,
+                                                                         noise_padding=noise_padding_dir),
                                                    shuffle=args.shuffle, **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,

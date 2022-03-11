@@ -510,5 +510,16 @@ class EgsDataset(Dataset):
         else:
             return feature, label
 
+    def __getrandomitem__(self):
+        # time_s = time.time()
+        # print('Starting loading...')
+        idx = np.random.randint(low=0, high=self.__len__())
+        label, upath = self.dataset[idx]
+
+        y = self.loader(upath)
+        feature = self.transform(y)
+
+        return feature
+
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数

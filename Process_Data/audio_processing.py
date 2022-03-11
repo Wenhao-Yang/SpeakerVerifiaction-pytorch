@@ -679,7 +679,7 @@ class PadCollate:
     """
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
-                 num_batch=0, split=False, chisquare=False,
+                 num_batch=0, split=False, chisquare=False, noise_padding=None,
                  fix_len=False):
         """
         args:
@@ -693,6 +693,7 @@ class PadCollate:
         self.normlize = normlize
         self.split = split
         self.chisquare = chisquare
+        self.noise_padding = noise_padding
 
         if self.fix_len:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
@@ -724,6 +725,22 @@ class PadCollate:
             # frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
             frame_len = random.choice(self.batch_len)
 
+        if self.noise_padding is not None:
+            noise_features = self.noise_padding.__getrandomitem__()
+            noise_features_len = noise_features.shape[1]
+
+            noise_len = int(np.random.uniform(1, int(frame_len * 0.5)))
+            if noise_len < noise_features_len:
+                start = np.random.randint(low=0, high=noise_features_len - noise_len)
+                noise_features = noise_features[:, start:noise_len]
+            else:
+                noise_len = noise_features_len
+                noise_features = noise_features.unsqueeze(0).repeat(len(batch), 1, 1, 1)
+
+            frame_len -= noise_len
+        else:
+            noise_len = 0
+
         # pad according to max_len
         # print()
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
@@ -738,6 +755,10 @@ class PadCollate:
         else:
             # print(frame_len, xs.shape[-2])
             xs = xs.contiguous()
+
+        if noise_len > 0:
+            start = np.random.randint(low=0, high=xs.shape[-2])
+            xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
 
