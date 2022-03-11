@@ -644,8 +644,7 @@ if [ $stage -le 100 ]; then
        --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --random-chunk 200 400 \
-       --patience 0 \
-       --chisquare \
+       --patience 3 \
        --input-norm ${input_norm} \
        --resnet-size ${resnet_size} \
        --nj 12 \
