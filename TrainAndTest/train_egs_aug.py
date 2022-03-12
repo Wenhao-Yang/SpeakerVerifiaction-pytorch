@@ -165,17 +165,18 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         if args.cuda:
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
-            label = torch.cat((label, label), dim=0)
+            # label = torch.cat((label, label), dim=0)
             label = label.cuda()
             data = data.cuda()
             data_a = data_a.cuda()
 
         data, label = Variable(data), Variable(label)
         data_a = Variable(data_a)
+        with torch.no_grad():
+            classfier_a, feats_a = model(data)
+            feats_a = feats_a.detach()
 
-        classfier, feats = model(data)
-        classfier_a, feats_a = model(data_a)
-        classfier = torch.cat((classfier,classfier_a), dim=0)
+        classfier, feats = model(data_a)
         classfier_label = classfier
         # print('max logit is ', classfier_label.max())
 
