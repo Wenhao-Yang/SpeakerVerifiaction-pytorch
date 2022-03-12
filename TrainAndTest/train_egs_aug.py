@@ -176,7 +176,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         classfier, feats = model(data)
         classfier_a, feats_a = model(data_a)
         classfier = torch.cat((classfier,classfier_a), dim=0)
-
+        classfier_label = classfier
         # print('max logit is ', classfier_label.max())
 
         if args.loss_type == 'soft':
