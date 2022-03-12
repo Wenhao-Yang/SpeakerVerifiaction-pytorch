@@ -175,7 +175,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         classfier, feats = model(data)
         classfier_a, feats_a = model(data_a)
-        classfier_label = torch.cat((classfier,classfier_a), dim=0)
+        classfier = torch.cat((classfier,classfier_a), dim=0)
 
         # print('max logit is ', classfier_label.max())
 
@@ -197,7 +197,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             other_loss += loss_xent
             loss = loss_xent + loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
-            print(classfier.shape, label.shape)
+            # print(classfier.shape, label.shape)
             loss = xe_criterion(classfier, label)
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
