@@ -342,8 +342,8 @@ class DistributeLoss(nn.Module):
             loss = (2 * positive_theta - self.margin).clamp_min(0).sum()
         elif self.stat_type == "maxmargin":
             positive_theta = torch.acos(positive_dist)
-            loss = (2 * positive_theta - self.margin).clamp_min(0).max()
-
+            # loss = (2 * positive_theta - self.margin).clamp_min(0).max()
+            loss = (positive_theta - self.margin).clamp_min(0).max()
         return loss
 
     def __repr__(self):
