@@ -900,7 +900,7 @@ class ThinResNet(nn.Module):
                 )
 
         layers = []
-        layers.append(block(self.inplanes, planes, , stride=stride, downsample=downsample))
+        layers.append(block(self.inplanes, planes, stride=stride, downsample=downsample))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
             layers.append(block(self.inplanes, planes))
