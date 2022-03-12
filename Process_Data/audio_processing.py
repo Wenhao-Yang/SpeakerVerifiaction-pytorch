@@ -680,7 +680,7 @@ class PadCollate:
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
                  num_batch=0, split=False, chisquare=False, noise_padding=None,
-                 fix_len=False):
+                 fix_len=False, augment=False):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
@@ -694,6 +694,7 @@ class PadCollate:
         self.split = split
         self.chisquare = chisquare
         self.noise_padding = noise_padding
+        self.augment = augment
 
         if self.fix_len:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
@@ -763,7 +764,10 @@ class PadCollate:
             # print(noise_features.shape)
             # print(xs.shape)
             noise_features = noise_features[:, :, :, -xs.shape[-1]:]
-            xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
+            if self.augment:
+                xs = (xs, torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2))
+            else:
+                xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
 
