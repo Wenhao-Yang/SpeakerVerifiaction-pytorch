@@ -301,9 +301,9 @@ class SE_Res2Block(nn.Module):
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.downsample = downsample
-        self.conv1 = Conv2dReluBn(inplanes, planes, kernel_size=1, stride=1, padding=0),
-        self.conv2 = Res2Conv2dReluBn(planes, kernel_size, padding, dilation, stride=1, scale=scale),
-        self.conv3 = Conv2dReluBn(planes, planes, kernel_size=1, stride=1, padding=0),
+        self.conv1 = Conv2dReluBn(inplanes, planes, kernel_size=1, stride=1, padding=0)
+        self.conv2 = Res2Conv2dReluBn(planes, kernel_size, padding, dilation, stride=1, scale=scale)
+        self.conv3 = Conv2dReluBn(planes, planes, kernel_size=1, stride=1, padding=0)
 
         # Squeeze-and-Excitation
         self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
