@@ -293,7 +293,7 @@ class Conv2dReluBn(nn.Module):
 '''
 class SE_Res2Block(nn.Module):
 
-    def __init__(self, inplanes, planes, kernel_size=3, padding, stride=1, dilation=1,
+    def __init__(self, inplanes, planes, kernel_size=3, padding=1, stride=1, dilation=1,
                  scale=8, reduction_ratio=2, downsample=None, **kwargs):
         super(SE_Res2Block, self).__init__()
         self.scale = scale
