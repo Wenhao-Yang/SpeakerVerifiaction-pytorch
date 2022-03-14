@@ -51,15 +51,18 @@ if [ $stage -le 1 ]; then
 #  dataset=cnceleb
 #  dataset=aishell2
   #  feat_type=pyfb
-    dataset=vox1
-  feat=klfb
-  feat_type=klfb
+  dataset=vox1
+  feat=klsp
+  feat_type=klsp
+
+#  feat=klfb
+#  feat_type=klfb
 #        --remove-vad \
 
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
-  for s in dev_fb80; do
+  for s in dev_female dev_male ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
@@ -71,7 +74,6 @@ if [ $stage -le 1 ]; then
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --remove-vad \
       --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
@@ -84,7 +86,6 @@ if [ $stage -le 1 ]; then
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --remove-vad \
       --out-set ${s}_valid
   done
   exit
