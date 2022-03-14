@@ -1212,7 +1212,7 @@ if [ $stage -le 78 ]; then
   optimizer=sgd
 
   for subset in female male ; do
-    chn=64
+    chn=32
     if [ $chn -eq 64 ];then
       channels=64,128,256
       dp=0.25
