@@ -8,6 +8,7 @@ while [ $(ps 17765 | wc -l) -eq 2 ]; do
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
 done
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 #stage=1
 if [ $stage -le 0 ]; then
