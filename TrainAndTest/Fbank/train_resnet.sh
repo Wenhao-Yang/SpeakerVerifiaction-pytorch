@@ -694,7 +694,7 @@ if [ $stage -le 100 ]; then
   testset=cnceleb
   feat_type=klfb
   model=ThinResNet
-  resnet_size=50
+  resnet_size=101
   encoder_type=SAP2
   embedding_size=512
   block_type=se2block
@@ -738,7 +738,7 @@ if [ $stage -le 100 ]; then
        --batch-size ${batch_size} \
        --optimizer ${optimizer} \
        --scheduler ${scheduler} \
-       --lr 0.0001 \
+       --lr 0.1 \
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
