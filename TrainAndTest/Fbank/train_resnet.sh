@@ -694,7 +694,7 @@ if [ $stage -le 100 ]; then
   testset=cnceleb
   feat_type=klfb
   model=ThinResNet
-  resnet_size=101
+  resnet_size=50
   encoder_type=SAP2
   embedding_size=512
   block_type=se2block
@@ -742,8 +742,8 @@ if [ $stage -le 100 ]; then
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}1p9_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}1p9_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}1p9_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e5_var \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}1p9_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e5_var/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
@@ -758,7 +758,7 @@ if [ $stage -le 100 ]; then
        --alpha ${alpha} \
        --margin 0.2 \
        --s 30 \
-       --weight-decay 0.0001 \
+       --weight-decay 0.00005 \
        --dropout-p 0.1 \
        --gpu-id 0,1 \
        --extract \
