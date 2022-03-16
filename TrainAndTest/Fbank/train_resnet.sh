@@ -738,7 +738,7 @@ if [ $stage -le 100 ]; then
        --batch-size ${batch_size} \
        --optimizer ${optimizer} \
        --scheduler ${scheduler} \
-       --lr 0.1 \
+       --lr 0.001 \
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
