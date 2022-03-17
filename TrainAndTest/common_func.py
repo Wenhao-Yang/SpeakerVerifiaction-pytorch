@@ -641,6 +641,12 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--train-extract-dir', type=str, help='path to dev dataset')
         parser.add_argument('--xvector-dir', type=str, help='path to dev dataset')
 
+    if 'Gradient' in description:
+        parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+        parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+        parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
+        parser.add_argument('--extract-path', help='folder to output model grads, etc')
+
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
         parser.add_argument('--distil-weight', type=float, default=0.5, help='path to voxceleb1 test dataset')
