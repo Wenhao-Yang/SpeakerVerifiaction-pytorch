@@ -433,8 +433,8 @@ if [ $stage -le 24 ]; then
       --resnet-size ${resnet_size} \
       --batch-size 1 \
       --test-input var \
-      --start-epochs 40 \
-      --epochs 40 \
+      --start-epochs 50 \
+      --epochs 50 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${subsets} \
       --train-set-name ${train_set} \
       --test-set-name ${train_set} \

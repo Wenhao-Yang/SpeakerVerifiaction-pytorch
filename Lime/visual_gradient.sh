@@ -179,10 +179,12 @@ fi
 if [ $stage -le 111 ]; then
   # vox1 Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_${s}_var/epoch_40_var_40/epoch_40 \
   # Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var/epoch_40_var2/epoch_40
-  for s in dev ;do
+  # Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var/epoch_40_var2/epoch_40
+
+  for s in female male  ;do
     python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var/epoch_40_var2/epoch_40 \
-      --feat-dim 161 \
+      --extract-path  \
+      --feat-dim 161 Data/gradient/LoResNet8/vox1/klsp_egs${s}_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var/epoch_50_var/epoch_50 \
       --acoustic-feature spectrogram
   done
   exit
