@@ -642,6 +642,7 @@ if [ $stage -le 100 ]; then
       --alpha 0 \
       --loss-type ${loss} \
       --dropout-p 0.1 \
+      --test-input var \
       --check-path Data/checkpoint/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var \
       --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_61_var_${cam} \
       --gpu-id 1 \

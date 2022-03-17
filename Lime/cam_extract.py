@@ -185,11 +185,11 @@ if args.cuda:
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
 
-if args.input_length == 'var':
+if args.test_input == 'var':
     transform = transforms.Compose([
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
-elif args.input_length == 'fix':
+elif args.test_input == 'fix':
     transform = transforms.Compose([
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
