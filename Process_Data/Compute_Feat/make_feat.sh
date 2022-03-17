@@ -51,7 +51,7 @@ if [ $stage -le 1 ]; then
   dataset=cnceleb
 #  dataset=aishell2
   #  feat_type=pyfb
-  dataset=vox1
+#  dataset=vox1
   feat=klfb
   feat_type=klfb
 
