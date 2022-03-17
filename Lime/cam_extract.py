@@ -58,6 +58,116 @@ warnings.filterwarnings("ignore")
 # Training settings
 args = args_parse('PyTorch Speaker Recognition: Gradient')
 
+# parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: Class Activation Mapping')
+# # Data options
+# parser.add_argument('--train-dir', type=str, help='path to dataset')
+# parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
+# parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+# parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+# parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
+# parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
+# parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
+# parser.add_argument('--check-path', help='folder to output model checkpoints')
+# parser.add_argument('--extract-path', help='folder to output model grads, etc')
+#
+# parser.add_argument('--start-epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
+# parser.add_argument('--epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
+#
+# # Data options
+# parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
+# parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
+#
+# parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
+# parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
+#                     help='choose the acoustic features type.')
+# parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
+# parser.add_argument('--mvnorm', action='store_true', default=False,
+#                     help='using Cosine similarity')
+# # Model options
+# parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
+# parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
+# parser.add_argument('--cam-layers',
+#                     default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
+#                     type=list, metavar='CAML', help='The channels of convs layers)')
+# parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
+#
+# parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
+# parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
+# parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
+# parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
+# parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
+#
+# parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
+# parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
+# parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
+# parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
+# parser.add_argument('--encoder-type', type=str, help='path to voxceleb1 test dataset')
+# parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
+#
+# parser.add_argument('--channels', default='64,128,256', type=str,
+#                     metavar='CHA', help='The channels of convs layers)')
+# parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
+# parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
+# parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
+#                     help='kernel size of conv filters')
+# parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
+# parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
+# parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
+# parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
+#
+# parser.add_argument('--normalize', action='store_false', default=True,
+#                     help='normalize vectors in final layer')
+# parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
+# parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
+#                     help='input batch size for testing (default: 64)')
+#
+# # args for additive margin-softmax
+# parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
+#                     help='the margin value for the angualr softmax loss function (default: 3.0')
+# parser.add_argument('--s', type=float, default=15, metavar='S',
+#                     help='the margin value for the angualr softmax loss function (default: 3.0')
+# # args for a-softmax
+# parser.add_argument('--m', type=int, default=3, metavar='M',
+#                     help='the margin value for the angualr softmax loss function (default: 3.0')
+# parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
+#                     help='random seed (default: 0)')
+# parser.add_argument('--lambda-max', type=float, default=0.05, metavar='S',
+#                     help='random seed (default: 0)')
+#
+# parser.add_argument('--alpha', default=0, type=float,
+#                     metavar='l2 length', help='acoustic feature dimension')
+# parser.add_argument('--cos-sim', action='store_true', default=True, help='using Cosine similarity')
+# parser.add_argument('--embedding-size', type=int, metavar='ES', help='Dimensionality of the embedding')
+#
+# parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
+# parser.add_argument('--batch-size', type=int, default=1, metavar='BS',
+#                     help='input batch size for training (default: 128)')
+# parser.add_argument('--test-batch-size', type=int, default=1, metavar='BST',
+#                     help='input batch size for testing (default: 64)')
+# parser.add_argument('--input-per-spks', type=int, default=192, metavar='IPFT',
+#                     help='input sample per file for testing (default: 8)')
+# parser.add_argument('--test-input-per-file', type=int, default=1, metavar='IPFT',
+#                     help='input sample per file for testing (default: 8)')
+#
+# # Device options
+# parser.add_argument('--no-cuda', action='store_true', default=False,
+#                     help='enables CUDA training')
+# parser.add_argument('--gpu-id', default='1', type=str,
+#                     help='id(s) for CUDA_VISIBLE_DEVICES')
+# parser.add_argument('--seed', type=int, default=123456, metavar='S',
+#                     help='random seed (default: 0)')
+# parser.add_argument('--log-interval', type=int, default=1, metavar='LI',
+#                     help='how many batches to wait before logging training status')
+#
+# parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
+#                     help='choose the acoustic features type.')
+# parser.add_argument('--makemfb', action='store_true', default=False,
+#                     help='need to make mfb file')
+# parser.add_argument('--makespec', action='store_true', default=False,
+#                     help='need to make spectrograms file')
+#
+# args = parser.parse_args()
+
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id

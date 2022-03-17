@@ -646,6 +646,12 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
         parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
         parser.add_argument('--extract-path', help='folder to output model grads, etc')
+        parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
+        parser.add_argument('--cam-layers',
+                            default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
+                            type=list, metavar='CAML', help='The channels of convs layers)')
+        parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
+                            help='number of epochs to train (default: 10)')
 
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
