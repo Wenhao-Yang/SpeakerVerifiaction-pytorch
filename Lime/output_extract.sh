@@ -673,6 +673,7 @@ if [ $stage -le 101 ]; then
       --model ${model} \
       --resnet-size ${resnet_size} \
       --cam ${cam} \
+      --batch-size 1 \
       --start-epochs 50 \
       --epochs 50 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
