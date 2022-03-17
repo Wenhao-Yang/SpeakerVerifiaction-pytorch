@@ -591,7 +591,7 @@ def main():
     print('Parsed options: {}'.format(vars(args)))
 
     # instantiate model and initialize weights
-    if os.path.exists(args.check_yaml):
+    if args.check_yaml != None and os.path.exists(args.check_yaml):
         model_kwargs = load_model_args(args.check_yaml)
     else:
         model_kwargs = args_model(args, train_dir)
