@@ -891,9 +891,9 @@ if [ $stage -le 102 ]; then
   batch_size=256
   fast=none1
   mask_layer=baseline
-  weight=one
+  weight=vox2_rcf
   scale=0.5
-  weight_p=0.1584
+  weight_p=0.1
   subset=
         # --milestones 15,25,35,45 \
 
