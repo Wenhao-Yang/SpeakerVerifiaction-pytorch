@@ -427,36 +427,37 @@ if [ $stage -le 24 ]; then
   block_type=cbam
   kernel=5,5
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
-
-  python Lime/cam_extract.py \
-    --model ${model} \
-    --resnet-size ${resnet_size} \
-    --batch-size 1 \
-    --test-input var \
-    --start-epochs 40 \
-    --epochs 40 \
-    --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_female \
-    --train-set-name ${train_set} \
-    --test-set-name ${train_set} \
-    --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
-    --input-norm Mean \
-    --kernel-size ${kernel} \
-    --stride 2 \
-    --channels 32,64,128 \
-    --encoder-type ${encoder_type} \
-    --block-type ${block_type} \
-    --time-dim 1 \
-    --avg-size 4 \
-    --embedding-size ${embedding_size} \
-    --alpha 0 \
-    --loss-type ${loss} \
-    --dropout-p 0.2 \
-    --check-path Data/checkpoint/LoResNet8/vox1/klsp_egsfemale_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var \
-    --extract-path Data/gradient/LoResNet8/vox1/klsp_egsfemale_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var/epoch_50_var \
-    --gpu-id 1 \
-    --margin 0.2 \
-    --s 30 \
-    --sample-utt 2422 #1211
+  for subsets in female male ; do
+    python Lime/cam_extract.py \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --batch-size 1 \
+      --test-input var \
+      --start-epochs 40 \
+      --epochs 40 \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${subsets} \
+      --train-set-name ${train_set} \
+      --test-set-name ${train_set} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+      --input-norm Mean \
+      --kernel-size ${kernel} \
+      --stride 2 \
+      --channels 32,64,128 \
+      --encoder-type ${encoder_type} \
+      --block-type ${block_type} \
+      --time-dim 1 \
+      --avg-size 4 \
+      --embedding-size ${embedding_size} \
+      --alpha 0 \
+      --loss-type ${loss} \
+      --dropout-p 0.2 \
+      --check-path Data/checkpoint/LoResNet8/vox1/klsp_egs${subsets}_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var \
+      --extract-path Data/gradient/LoResNet8/vox1/klsp_egs${subsets}_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var/epoch_50_var \
+      --gpu-id 1 \
+      --margin 0.2 \
+      --s 30 \
+      --sample-utt 2422 #1211
+    done
   exit
 fi
 
