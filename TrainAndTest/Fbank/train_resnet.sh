@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=102
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -892,7 +892,7 @@ if [ $stage -le 102 ]; then
   fast=none1
   mask_layer=baseline
   weight=one
-  scale=0.2
+  scale=0.5
   weight_p=0.1584
   subset=
         # --milestones 15,25,35,45 \
@@ -959,11 +959,11 @@ if [ $stage -le 102 ]; then
       --input-dim 40 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 30 \
+      --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.001 \
+      --lr 0.1 \
       --base-lr 0.00001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
