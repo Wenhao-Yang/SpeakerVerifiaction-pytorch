@@ -500,7 +500,6 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--scale', default=0.2, type=float, metavar='FEAT', help='acoustic feature dimension')
 
     parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
-
     parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
 
     parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')

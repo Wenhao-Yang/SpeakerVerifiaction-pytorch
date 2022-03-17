@@ -592,7 +592,7 @@ def main():
 
     # instantiate model and initialize weights
     if os.path.exists(args.model_yaml):
-        model_kwargs = load_model_args(args.model_yaml)
+        model_kwargs = load_model_args(args.check_yaml)
     else:
         model_kwargs = args_model(args, train_dir)
 
