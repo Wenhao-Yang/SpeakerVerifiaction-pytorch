@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=23
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
@@ -353,9 +353,11 @@ if [ $stage -le 23 ]; then
   kernel=5,5
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
 
-  python Lime/output_extract.py \
+  python Lime/cam_extract.py \
     --model ${model} \
     --resnet-size ${resnet_size} \
+    --batch-size 1 \
+    --test-input var \
     --start-epochs 40 \
     --epochs 40 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
@@ -375,39 +377,39 @@ if [ $stage -le 23 ]; then
     --loss-type ${loss} \
     --dropout-p 0.25 \
     --check-path Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var \
-    --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var/epoch_40_var_40 \
+    --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var/epoch_40_var2 \
     --gpu-id 1 \
     --margin 0.2 \
     --s 30 \
-    --sample-utt 1211
+    --sample-utt 2422 #1211
 
-  python Lime/output_extract.py \
-    --model ${model} \
-    --resnet-size ${resnet_size} \
-    --start-epochs 40 \
-    --epochs 40 \
-    --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
-    --train-set-name ${train_set} \
-    --test-set-name ${train_set} \
-    --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
-    --input-norm Mean \
-    --kernel-size ${kernel} \
-    --stride 2 \
-    --channels 64,128,256 \
-    --encoder-type ${encoder_type} \
-    --block-type ${block_type} \
-    --time-dim 1 \
-    --avg-size 4 \
-    --embedding-size ${embedding_size} \
-    --alpha 0 \
-    --loss-type ${loss} \
-    --dropout-p 0.25 \
-    --check-path Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_aug_com_var \
-    --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_aug_com_var/epoch_40_var_40 \
-    --gpu-id 1 \
-    --margin 0.2 \
-    --s 30 \
-    --sample-utt 1211
+#  python Lime/output_extract.py \
+#    --model ${model} \
+#    --resnet-size ${resnet_size} \
+#    --start-epochs 40 \
+#    --epochs 40 \
+#    --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+#    --train-set-name ${train_set} \
+#    --test-set-name ${train_set} \
+#    --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+#    --input-norm Mean \
+#    --kernel-size ${kernel} \
+#    --stride 2 \
+#    --channels 64,128,256 \
+#    --encoder-type ${encoder_type} \
+#    --block-type ${block_type} \
+#    --time-dim 1 \
+#    --avg-size 4 \
+#    --embedding-size ${embedding_size} \
+#    --alpha 0 \
+#    --loss-type ${loss} \
+#    --dropout-p 0.25 \
+#    --check-path Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_aug_com_var \
+#    --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_aug_com_var/epoch_40_var_40 \
+#    --gpu-id 1 \
+#    --margin 0.2 \
+#    --s 30 \
+#    --sample-utt 1211
   exit
 fi
 
@@ -674,6 +676,7 @@ if [ $stage -le 101 ]; then
       --resnet-size ${resnet_size} \
       --cam ${cam} \
       --batch-size 1 \
+      --test-input var \
       --start-epochs 50 \
       --epochs 50 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
@@ -692,7 +695,6 @@ if [ $stage -le 101 ]; then
       --alpha 0 \
       --loss-type ${loss} \
       --dropout-p 0.25 \
-      --test-input var \
       --check-path Data/checkpoint/LoResNet8/cnceleb/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp25_alpha0_em256_wd5e4_var \
       --extract-path Data/gradient/LoResNet8/cnceleb/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp25_alpha0_em256_wd5e4_var/epoch_50_var_${cam} \
       --gpu-id 1 \
