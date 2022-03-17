@@ -183,8 +183,8 @@ if [ $stage -le 111 ]; then
 
   for s in female male  ;do
     python Lime/Plot/visual_gradient.py \
-      --extract-path  \
-      --feat-dim 161 Data/gradient/LoResNet8/vox1/klsp_egs${s}_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var/epoch_50_var/epoch_50 \
+      --extract-path Data/gradient/LoResNet8/vox1/klsp_egs${s}_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var/epoch_50_var/epoch_50 \
+      --feat-dim 161 \
       --acoustic-feature spectrogram
   done
   exit
