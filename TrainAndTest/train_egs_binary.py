@@ -594,7 +594,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
     spk_optimizer, dom_optimizer = optimizer
     spk_scheduler, dom_scheduler = scheduler
-    lambda_ = min(2. / (1 + np.exp(-10. * (epoch-2) / args.epochs)) - 1., 0)
+    # lambda_ = min(2. / (1 + np.exp(-10. * (epoch-2) / args.epochs)) - 1., 0)
+    lambda_ = 1. / (1 + np.exp(-10. * (epoch) / args.epochs))
     # model.grl.set_lambda(lambda_)
 
     correct_a = 0.
