@@ -26,8 +26,8 @@ test_roots = sys.argv[3]
 trials_path = sys.argv[4]
 
 # print('Current path: ' + os.getcwd())
-print("Enroll Dirs are: " + '; '.join(enroll_roots))
-print("Test Dirs are: " + '; '.join(test_roots))
+print("Enroll Dirs is: " + enroll_roots)
+print("Test Dirs is: " + test_roots)
 
 enroll_roots = pathlib.Path(enroll_roots)
 test_roots = pathlib.Path(test_roots)
@@ -50,7 +50,7 @@ test_utt2spk_dict = {}
 numofutts = 0
 
 for w in test_wavs:
-    sid, _ = str(w).split('/')[-1].split('-')  # 'enroll/id00884-enroll.wav'
+    sid, _, _, _ = str(w).split('/')[-1].split('-')  # 'enroll/id00884-enroll.wav'
     if sid in test_dict:
         test_dict[sid].append(str(w))
     else:
