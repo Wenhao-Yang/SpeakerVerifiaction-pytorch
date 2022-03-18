@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-stage=70
+stage=157
 waited=0
-while [ $(ps 3338562 | wc -l) -eq 2 ]; do
+while [ $(ps 733240 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -1367,14 +1367,14 @@ if [ $stage -le 155 ]; then
   embedding_size=512
   block_type=basic
   loss=subarc
-  scheduler=exp
+  scheduler=rop
   optimizer=sgd
 
   # num_centers=3
   dev_sub=
 
   for loss in arcsoft; do
-    feat=fb${input_dim}
+    feat=fb${input_dim}_cut
   #   #_ws25
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
@@ -1402,8 +1402,8 @@ if [ $stage -le 155 ]; then
      --input-dim ${input_dim} \
      --channels 512,512,512,512,1500 \
      --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}cut_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}cut_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
      --cos-sim \
      --dropout-p 0.0 \
      --veri-pairs 9600 \
@@ -1474,7 +1474,7 @@ if [ $stage -le 157 ]; then
   loss=arcsoft
   scheduler=rop
   optimizer=sgd
-  input_dim=40
+  input_dim=24
   lr_ratio=0
   loss_ratio=0
   feat_type=klfb
@@ -1486,7 +1486,7 @@ if [ $stage -le 157 ]; then
   # _center${num_centers}
 
   for loss in arcsoft ; do
-    feat=fb${input_dim}
+    feat=fb${input_dim}_cut
     python -W ignore TrainAndTest/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${dev_sub}_${feat} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
@@ -1513,8 +1513,8 @@ if [ $stage -le 157 ]; then
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_17.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}cut_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}cut_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_17.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -1530,7 +1530,7 @@ if [ $stage -le 157 ]; then
       --log-interval 10 \
       --test-interval 2
   done
-  # exit
+   exit
 fi
 
 if [ $stage -le 158 ]; then
