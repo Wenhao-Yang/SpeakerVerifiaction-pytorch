@@ -638,17 +638,18 @@ if [ $stage -le 62 ]; then
 fi
 
 if [ $stage -le 80 ]; then
-  dataset=vox1
+  dataset=cnceleb
   numframes=20000
   feat_type=klsp
 
-  for sets in female male ; do
+  for sets in all ; do
+    # _${sets}
     echo -e "\033[31m==> num of frames per speaker : ${numframes} \033[0m"
     python Lime/fratio_extract.py \
       --extract-frames \
       --set-name {dataset} \
-      --file-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${sets} \
-      --out-dir Data/fratio/${dataset}/${feat_type}/dev_${sets} \
+      --file-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --out-dir Data/fratio/${dataset}/${feat_type}/dev \
       --nj 12 \
       --input-per-spks ${numframes} \
       --extract-frames \
