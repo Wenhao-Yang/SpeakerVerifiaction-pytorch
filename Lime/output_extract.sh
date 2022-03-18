@@ -638,8 +638,8 @@ if [ $stage -le 62 ]; then
 fi
 
 if [ $stage -le 80 ]; then
-  dataset=cnceleb
-  numframes=20000
+  dataset=vox1
+  numframes=10000
   feat_type=klsp
 
   for sets in all ; do
