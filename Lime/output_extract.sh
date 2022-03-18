@@ -647,7 +647,7 @@ if [ $stage -le 80 ]; then
     echo -e "\033[31m==> num of frames per speaker : ${numframes} \033[0m"
     python Lime/fratio_extract.py \
       --extract-frames \
-      --set-name {dataset} \
+      --set-name ${dataset} \
       --file-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --out-dir Data/fratio/${dataset}/${feat_type}/dev \
       --nj 12 \
