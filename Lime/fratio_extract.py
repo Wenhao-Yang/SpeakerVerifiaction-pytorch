@@ -25,7 +25,7 @@ from tqdm import tqdm
 
 from Process_Data.Subband.f_ratio import fratio
 from Process_Data.Subband.fratio_dataset import SpeakerDataset
-from Process_Data.audio_processing import ConcateVarInput, mvnormal
+from Process_Data.audio_processing import ConcateVarInput, mvnormal, ConcateOrgInput
 
 # Version conflict
 
@@ -97,16 +97,21 @@ if args.cuda:
 # Define visulaize SummaryWriter instance
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 
-transform = transforms.Compose([
-    ConcateVarInput(remove_vad=args.remove_vad),
-])
+if args.input_length == 'fix':
+    transform = transforms.Compose([
+        ConcateVarInput(remove_vad=args.remove_vad),
+    ])
+else:
+    transform = transforms.Compose([
+        ConcateOrgInput(remove_vad=args.remove_vad),
+    ])
 
 if args.mvnorm:
     transform.transforms.append(mvnormal())
 
 file_loader = read_mat
 data_dir = SpeakerDataset(dir=args.file_dir, samples_per_speaker=args.input_per_spks,
-                               loader=file_loader, transform=transform, return_uid=True)
+                          loader=file_loader, transform=transform, return_uid=True)
 
 if args.sample_spk > 0:
     speakers = list(range(len(data_dir)))
@@ -130,6 +135,7 @@ def frames_extract(train_loader, file_dir, set_name):
 
     filename = file_dir + '/%s_%d.npy' % (set_name, args.input_per_spks)
     input_data = np.array(input_data)
+
     if not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
     print('Saving arrays to %s' % str(input_data.shape))
