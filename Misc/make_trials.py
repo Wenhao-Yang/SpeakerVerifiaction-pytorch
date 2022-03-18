@@ -8,6 +8,14 @@
 @File: make_trials.py
 @Time: 2022/3/18 21:52
 @Overview:
+
+python Misc/make_trials.py <num of pairs> <#enroll dir> <#test dir> <trials path:>
+
+        <#num of pairs:>   150000
+        <#enroll dir:  >   /home/yangwenhao/storage/dataset/CN-Celeb/eval/enroll>
+        <#test dir:    >   /home/yangwenhao/storage/dataset/CN-Celeb/eval/test>
+        <#trials path: >   Misc/trials.cnc>
+
 """
 # import os
 import pathlib
