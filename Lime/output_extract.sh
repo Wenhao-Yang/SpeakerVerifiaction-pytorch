@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=24
+stage=80
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
@@ -639,18 +639,23 @@ fi
 
 if [ $stage -le 80 ]; then
   dataset=vox1
-  for numframes in 15000; do
+  numframes=20000
+  feat_type=klsp
+
+  for sets in female male ; do
     echo -e "\033[31m==> num of frames per speaker : ${numframes} \033[0m"
     python Lime/fratio_extract.py \
       --extract-frames \
       --set-name {dataset} \
-      --file-dir ${lstm_dir}/data/${dataset}/spect/dev_power \
-      --out-dir Data/fratio/vox1/dev_power \
-      --nj 14 \
+      --file-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${sets} \
+      --out-dir Data/fratio/${dataset}/${feat_type}/dev_${sets} \
+      --nj 12 \
       --input-per-spks ${numframes} \
       --extract-frames \
       --feat-dim 161
   done
+
+  exit
 fi
 
 
