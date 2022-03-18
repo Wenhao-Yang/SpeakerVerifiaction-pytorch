@@ -76,7 +76,7 @@ with open(trials_path, 'w') as f:
         this_spk_pairs = 0
         if sid in test_dict:
             for uid in test_dict[sid]:
-                positive_pairs.add(' '.join((enroll_spks[sid], uid, 'target\n')))
+                positive_pairs.add(' '.join((enroll_dict[sid], uid, 'target\n')))
                 this_spk_pairs += 1
                 if this_spk_pairs > 0.5 * repeats:
                     break
@@ -92,7 +92,7 @@ with open(trials_path, 'w') as f:
                 continue
             else:
                 for uid in test_dict[ne_sid]:
-                    negative_pairs.add(' '.join((enroll_spks[sid], uid, 'nontarget\n')))
+                    negative_pairs.add(' '.join((enroll_dict[sid], uid, 'nontarget\n')))
                     i += 1
                     if i > negative_per_spk:
                         break
