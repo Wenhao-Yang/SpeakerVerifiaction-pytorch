@@ -1018,6 +1018,8 @@ if [ $stage -le 350 ]; then
       --model ${model} \
       --resnet-size ${resnet_size} \
       --cam ${cam} \
+      --batch-size 1 \
+      --test-input var \
       --start-epochs 60 \
       --epochs 60 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
