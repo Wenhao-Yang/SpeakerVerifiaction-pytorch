@@ -216,7 +216,7 @@ if [ $stage -le 70 ]; then
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=advbinary
+  mask_layer=binary
   weight=vox2_rcf
   scale=0.2
   subset=
@@ -225,7 +225,7 @@ if [ $stage -le 70 ]; then
 #  _${stat_type}
         # --milestones 15,25,35,45 \
 
-  for dom_ratio in 2 4 ; do
+  for dom_ratio in 1 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs_binary.py \
        --model ${model} \
