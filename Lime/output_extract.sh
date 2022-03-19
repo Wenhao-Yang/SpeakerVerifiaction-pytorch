@@ -1046,8 +1046,7 @@ if [ $stage -le 350 ]; then
       --gpu-id 0 \
       --margin 0.2 \
       --s 30 \
-      --remove-vad \
-      --sample-utt 4000
+      --sample-utt 2500
     done
   exit
 fi
