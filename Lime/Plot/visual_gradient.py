@@ -59,7 +59,7 @@ def main():
         valid_lst = list(dir_path.glob('*valid*bin'))
         test_lst = list(dir_path.glob('*test*bin'))
 
-        print(' Train set extracting:')
+        print(' Train set save to pickle:')
         time_data = []
 
         num_utt = 0
@@ -82,6 +82,7 @@ def main():
         train_time_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
         train_time_var = np.zeros((args.feat_dim))
 
+        print(' Train set mean gradient:')
         num_utt = 0
         for t in train_lst:
             p = str(t)
