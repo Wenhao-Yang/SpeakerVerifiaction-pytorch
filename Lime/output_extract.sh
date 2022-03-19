@@ -1009,6 +1009,7 @@ if [ $stage -le 350 ]; then
   kernel=5,5
   cam=gradient
   downsample=k5
+  fast=none1
   mask_layer=rvec
 #  _fb40
 
@@ -1030,6 +1031,7 @@ if [ $stage -le 350 ]; then
       --kernel-size ${kernel} \
       --stride 2 \
       --channels 16,32,64,128 \
+      --fast ${fast} \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
       --downsample ${downsample} \
