@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
         global_mean = []
         with open(args.spk2utt, 'r') as f:
-            for l in tqdm(f.readlines()):
+            for l in tqdm(f.readlines(), ncols=100):
                 spk_utts = l.split()
                 for uid in spk_utts[1:]:
 

@@ -43,6 +43,7 @@ fi
 
 
 if ! [ -s $transform_mat ];then
+  echo "Computing lda transform matrix ..."
   python Score/Plda/compute_lda.py --total-covariance-factor=0.0 \
     --lda-dim $lda_dim  \
     --spk2utt $data_dir/spk2utt \
@@ -53,14 +54,16 @@ fi
 
 
 if ! [ -s $plda_model ];then
-    python Score/Plda/compute_plda.py --spk2utt $train_feat_dir/spk2utt \
-      --ivector-scp $train_feat_dir/xvectors.scp \
-      --mean-vec $train_feat_dir/mean.vec \
-      --transform-vec $transform_mat \
-      --plda-file $plda_model
+  echo "Computing plda stats ..."
+  python Score/Plda/compute_plda.py --spk2utt $train_feat_dir/spk2utt \
+    --ivector-scp $train_feat_dir/xvectors.scp \
+    --mean-vec $train_feat_dir/mean.vec \
+    --transform-vec $transform_mat \
+    --plda-file $plda_model
 fi
 
 if ! [ -s $test_score ];then
+  echo "Scoring with plda ..."
   python Score/Plda/plda_scoring.py --normalize-length \
     --train-vec-scp $test_feat_dir/xvectors.scp \
     --test-vec-scp $test_feat_dir/xvectors.scp \
