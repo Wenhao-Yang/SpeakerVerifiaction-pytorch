@@ -70,7 +70,7 @@ if ! [ -s $test_score ];then
     --score $test_score
 fi
 
-if ! [ -s $test_score ];then
+if [ -s $test_score ];then
 
   eer=`compute-eer <(Score/prepare_for_eer.py $trials $test_score) 2> /dev/null`
   mindcf1=`Score/compute_min_dcf.py --p-target 0.01 $test_score $trials 2> /dev/null`
