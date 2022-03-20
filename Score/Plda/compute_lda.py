@@ -82,9 +82,10 @@ if __name__ == '__main__':
             spk2utt[spk] = spk_utts[1:]
 
             for utt in spk_utts[1:]:
+                pdb.set_trace()
                 try:
                     vec_path = utt2vec_path[utt]
-                    pdb.set_trace()
+
                     # this_vec = vec_loader(os.path.join('Score/data', vec_path))
 
                     this_vec = vec_loader(vec_path)
