@@ -113,7 +113,8 @@ if __name__ == '__main__':
     if args.subtract_global_mean:
         global_mean = SubtractGlobalMean(utt2vec)
         for utt in utt2vec:
-            utt2vec[utt] -= global_mean
+            previous_vec = utt2vec[utt]
+            utt2vec[utt] = previous_vec - global_mean
 
     mean = ComputeAndSubtractMean(utt2vec)
     # print("mean vector is ", str(mean))
