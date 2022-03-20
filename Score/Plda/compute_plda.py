@@ -66,8 +66,8 @@ if __name__ == '__main__':
             utt2vec[uid] = vec_path
             # spks[spk_utts[0]] = spk_utts[1:]
             if vec_dim == -1:
-                vec_dim = vec_loader(os.path.join('Score/data', vec_path)).shape[-1] #Todo: change the dir
-                # vec_dim = vec_loader(vec_path).shape[-1]  # Todo: change the dir
+                # vec_dim = vec_loader(os.path.join('Score/data', vec_path)).shape[-1] #Todo: change the dir
+                vec_dim = vec_loader(vec_path).shape[-1]  # Todo: change the dir
 
 
     spks = {}
