@@ -38,7 +38,7 @@ fi
 if ! [ -f $train_feat_dir/transform.mat ];then
   python Score/Plda/compute_lda.py --total-covariance-factor=0.0 \
     --lda-dim $lda_dim  \
-    --spk2utt $data_dir/utt2spk \
+    --spk2utt $data_dir/spk2utt \
     --ivector-scp $train_feat_dir/xvectors.scp \
     --subtract-global-mean \
     --lda-mat $train_feat_dir/transform.mat
