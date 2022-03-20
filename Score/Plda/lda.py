@@ -96,8 +96,8 @@ def SubtractGlobalMean(utt2ivector):
         mean += 1.0 / num_ivectors * utt2ivector[utt]  # .astype(np.float32)
 
     print("Norm of iVector mean was ", np.sqrt(np.square(mean).sum()))
-    for utt in utt2ivector:
-        utt2ivector[utt] -= mean
+    # for utt in utt2ivector:
+    #     utt2ivector[utt] -= mean
 
     return mean
 

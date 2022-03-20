@@ -111,7 +111,9 @@ if __name__ == '__main__':
 
     # 计算ivector的均值
     if args.subtract_global_mean:
-        SubtractGlobalMean(utt2vec)
+        global_mean = SubtractGlobalMean(utt2vec)
+        for utt in utt2vec:
+            utt2vec[utt] -= global_mean
 
     mean = ComputeAndSubtractMean(utt2vec)
     # print("mean vector is ", str(mean))
