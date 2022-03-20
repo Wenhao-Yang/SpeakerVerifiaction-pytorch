@@ -34,7 +34,7 @@ fi
 
 if ! [ -f $train_feat_dir/spk2utt ];then
     Score/utt2spk_to_spk2utt.pl ${train_feat_dir}/utt2spk > $train_feat_dir/spk2utt
-    num_spks=`wc -l $train_feat_dir/spk2utt`
+    num_spks=`wc -l $train_feat_dir/spk2utt | awk '{print $1}'`
     echo "There are ${num_spks} speakers in train set!"
 fi
 
@@ -53,6 +53,7 @@ fi
 if ! [ -f $train_feat_dir/plda ];then
     python Score/Plda/compute_plda.py --spk2utt $train_feat_dir/spk2utt \
       --ivector-scp $train_feat_dir/xvectors.scp \
+      --mean-vec $train_feat_dir/mean.vec \
       --transform-vec $train_feat_dir/transform.mat \
       --plda-file $train_feat_dir/plda
 fi

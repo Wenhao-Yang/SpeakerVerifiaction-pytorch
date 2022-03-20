@@ -29,7 +29,7 @@ parser.add_argument('--ivector-scp', type=str, required=True, help='path to ivec
 parser.add_argument('--num-em-iters', type=int, default=10, help='path to ivector.scp')
 parser.add_argument('--plda-file', type=str, required=True, help='path to plda directory')
 parser.add_argument('--subtract-global-mean', action='store_false', default=True, help='path to plda directory')
-parser.add_argument('--mean-vec', type=str, default='', help='path to plda directory')
+parser.add_argument('--mean-vec', type=str, required=True, default='', help='path to plda directory')
 parser.add_argument('--transform-vec', type=str, default='', help='path to plda directory')
 parser.add_argument('--normalize-length', action='store_false', default=True, help='path to plda directory')
 parser.add_argument('--scaleup', action='store_false', default=True, help='path to plda directory')
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
 
     spks = {}
-    pdb.set_trace()
+    # pdb.set_trace()
     if args.subtract_global_mean:
         if args.mean_vec != "" and os.path.exists(args.mean_vec):
             with open(args.mean_vec, 'rb') as f:
