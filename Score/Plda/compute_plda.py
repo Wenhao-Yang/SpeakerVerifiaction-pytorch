@@ -12,6 +12,7 @@
 
 import argparse
 import os
+import pdb
 
 import kaldi_io
 import numpy as np
@@ -92,6 +93,7 @@ if __name__ == '__main__':
                 for l in pbar:
                     spk_utts = l.split()
                     for uid in spk_utts[1:]:
+                        pdb.set_trace()
                         try:
                             # vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
                             vec_path = utt2vec[uid]  # Todo: change the dir
