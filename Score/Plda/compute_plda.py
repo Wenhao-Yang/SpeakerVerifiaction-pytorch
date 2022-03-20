@@ -101,6 +101,7 @@ if __name__ == '__main__':
                             global_mean.append(this_vec)
                         except Exception as e:
                             pass
+            assert len(global_mean) > 0, print('the number of ivectors is zero?')
             global_mean = np.array(global_mean).mean(axis=0)
 
             assert args.mean_vec != "", print("mean vector path should be assigned!")
