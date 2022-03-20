@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 os.makedirs(os.path.dirname(args.mean_vec))
             with open(args.mean_vec, 'wb') as f:
                 write_vec_binary(f, global_mean)
-                print("Saving mean vector to: " % args.mean_vec)
+                print("Saving mean vector to: %s " % args.mean_vec)
 
     transform_vec = None
     if os.path.exists(args.transform_vec):
