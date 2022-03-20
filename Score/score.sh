@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# author: yangwenhao
+# contact: 874681044@qq.com
+# file: plda_score.sh
+# time: 2022/3/20 14:05
+# Description:
+
 stage=10
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
