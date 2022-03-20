@@ -68,6 +68,8 @@ if __name__ == '__main__':
                 utt2vec_path[uid] = vec_path
             except:
                 continue
+    if len(utt2vec_path) == 0:
+        raise Exception('Empty ivector!')
 
     utt2vec = {}
     spk2utt = {}
