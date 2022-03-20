@@ -13,6 +13,7 @@ import argparse
 import os
 
 import kaldi_io
+import kaldiio
 import numpy as np
 
 from Score.Plda.lda import ComputeAndSubtractMean, ComputeLdaTransform, SubtractGlobalMean
@@ -46,7 +47,8 @@ if __name__ == '__main__':
     covariance_floor = args.covariance_floor
 
     if args.vector_format == 'kaldi':
-        vec_loader = kaldi_io.read_vec_flt
+        # vec_loader = kaldi_io.read_vec_flt
+        vec_loader = kaldiio.load_mat
     elif args.vector_format == 'npy':
         vec_loader = np.load
     else:
