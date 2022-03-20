@@ -167,7 +167,7 @@ if __name__ == '__main__':
 
             num_train_ivectors += 1
 
-    assert num_train_ivectors == 0, print("No enrollment iVectors present.")
+    assert num_train_ivectors > 0, print("No enrollment iVectors present.")
     if args.vec_normalize_length:
         avg_ratio = tot_ratio / num_train_ivectors
         ratio_stddev = np.sqrt(tot_ratio2 / num_train_ivectors - avg_ratio * avg_ratio)
