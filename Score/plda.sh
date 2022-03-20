@@ -6,22 +6,23 @@
 # 
 
 if [ $# != 4 ]; then
-  echo "Usage: plda.sh <data-path> <train-feat-dir> <test-feat-dir> <trials>"
+  echo "Usage: plda.sh <lda-dim> <data-path> <train-feat-dir> <test-feat-dir> <trials>"
   echo "e.g.: plda.sh data/train exp/train exp/test data/test/trials"
   echo "This script helps create srp to resample wav in wav.scp"
   exit 1
 fi
 
-data_dir=$1
-train_feat_dir=$2
-test_feat_dir=$3
-trials=$4
+lda_dim=$1
+data_dir=$2
+train_feat_dir=$3
+test_feat_dir=$4
+trials=$5
 # out_dir=$5
 # model_path=SuResCNN10
 logdir=$test_feat_dir/log
 
 train_cmd="Score/run.pl --mem 8G"
-lda_dim=200
+#lda_dim=200
 
 # feat_dir=Data/checkpoint/${model}/soft/kaldi_feat
 # data_dir=Data/dataset/voxceleb1/kaldi_feat/voxceleb1_test
