@@ -34,6 +34,7 @@ parser.add_argument('--transform-vec', type=str, default='', help='path to plda 
 parser.add_argument('--normalize-length', action='store_false', default=True, help='path to plda directory')
 parser.add_argument('--scaleup', action='store_false', default=True, help='path to plda directory')
 parser.add_argument('--vector-format', type=str, default='kaldi', help='path to plda directory')
+parser.add_argument('--verbose', type=int, default=0, help='log level')
 
 args = parser.parse_args()
 
@@ -70,38 +71,24 @@ if __name__ == '__main__':
                 # vec_dim = vec_loader(os.path.join('Score/data', vec_path)).shape[-1] #Todo: change the dir
                 vec_dim = vec_loader(vec_path).shape[-1]  # Todo: change the dir
 
-
     spks = {}
     # pdb.set_trace()
     if args.subtract_global_mean:
-        if args.mean_vec != "" and os.path.exists(args.mean_vec):
+        assert args.mean_vec != ""
 
-            with open(args.mean_vec, 'rb') as f:
-                try:
-                    global_mean = _read_vec_flt_binary(f)
-                except UnknownVectorHeader as u:
-                    mean_vec = []
-                    vec_str = f.readline()
-                    for v in vec_str.split():
-                        try:
-                            mean_vec.append(float(v))
-                        except:
-                            pass
-                    global_mean = np.array(mean_vec)
-        else:
-            global_mean = []
-            with open(args.spk2utt, 'r') as f:
-                for l in tqdm(f.readlines()):
-                    spk_utts = l.split()
-                    for uid in spk_utts[1:]:
+        global_mean = []
+        with open(args.spk2utt, 'r') as f:
+            for l in tqdm(f.readlines()):
+                spk_utts = l.split()
+                for uid in spk_utts[1:]:
 
-                        try:
-                            # vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
-                            vec_path = utt2vec[uid]  # Todo: change the dir
-                            this_vec = vec_loader(vec_path)
-                            global_mean.append(this_vec)
-                        except Exception as e:
-                            pass
+                    try:
+                        # vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
+                        vec_path = utt2vec[uid]  # Todo: change the dir
+                        this_vec = vec_loader(vec_path)
+                        global_mean.append(this_vec)
+                    except Exception as e:
+                        pass
             assert len(global_mean) > 0, print('the number of ivectors is zero?')
             global_mean = np.array(global_mean).mean(axis=0)
 
@@ -110,7 +97,8 @@ if __name__ == '__main__':
                 os.makedirs(os.path.dirname(args.mean_vec))
             with open(args.mean_vec, 'wb') as f:
                 write_vec_binary(f, global_mean)
-                print("Saving mean vector to: %s " % args.mean_vec)
+                if args.verbose > 1:
+                    print("Saving mean vector to: %s " % args.mean_vec)
 
     transform_vec = None
     if os.path.exists(args.transform_vec):
@@ -120,7 +108,9 @@ if __name__ == '__main__':
                 if transform_vec.shape[-1] != vec_dim:
                     transform_vec = transform_vec[:, :vec_dim]
                     vec_dim = transform_vec.shape[0]
-                print("Transformed dim will be %d" % vec_dim)
+
+                if args.verbose > 1:
+                    print("Transformed dim will be %d" % vec_dim)
         except Exception as e:
             print("Skippinng transform ... Transform vector loading error: \n%s" % str(e))
 
@@ -169,6 +159,7 @@ if __name__ == '__main__':
                 plda_stats.AddSamples(weight, ivector_mat)
                 # spks[spk_utts[0]] = spk_utts[1:]
                 num_spk_done += 1
+
         if len(spk_err) > 0:
             print("Not producing output for speaker: \n %s \nsince no utterances had iVectors" % spk_err)
 
@@ -181,14 +172,18 @@ if __name__ == '__main__':
     if args.normalize_length:
         avg_ratio = tot_ratio / num_utt_done
         ratio_stddev = np.sqrt(tot_ratio2 / num_utt_done - avg_ratio * avg_ratio)
-        print("Average ratio of iVector to expected length was ", avg_ratio, ", standard deviation was ", ratio_stddev)
+        if args.verbose > 1:
+            print("Average ratio of iVector to expected length was ", avg_ratio, ", standard deviation was ",
+                  ratio_stddev)
 
     plda_stats.sort()  # spk信息类按照egs排序
     plda_estimator = PldaEstimator(plda_stats)  # 使用统计量类new一个训练估计参数的类
     plda = PLDA()
     plda_estimator.Estimate(plda_config, plda)
     plda.Write(args.plda_file)
-    print('Writing plda model files in: %s' % args.plda_file)
+
+    if args.verbose > 0:
+        print('Writing plda model files in: %s' % args.plda_file)
 
     # WriteKaldiObject(plda, args.plda_dir, binary)
     # return num_spk_done!=0 &, 1

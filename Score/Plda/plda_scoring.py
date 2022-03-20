@@ -39,6 +39,7 @@ parser.add_argument('--vec-normalize-length', action='store_true', default=True,
 parser.add_argument('--scaleup', action='store_false', default=True, help='path to plda directory')
 parser.add_argument('--normalize-length', action='store_true', default=True, help='log power spectogram')
 parser.add_argument('--simple-length-norm', action='store_true', default=False, help='path to plda directory')
+parser.add_argument('--verbose', type=int, default=0, help='log level')
 
 args = parser.parse_args()
 
@@ -114,7 +115,8 @@ if __name__ == '__main__':
         except Exception as e:
             print("Skippinng transform ... Transform vector loading error: \n%s" % str(e))
 
-    print('Reading train iVectors:')
+    if args.verbose > 1:
+        print('Reading train iVectors:')
     tot_ratio = 0.0
     tot_ratio2 = 0.0
 
@@ -165,18 +167,20 @@ if __name__ == '__main__':
 
             num_train_ivectors += 1
 
-    if (num_train_ivectors == 0):
-        print("No training iVectors present.")
+    assert num_train_ivectors == 0, print("No enrollment iVectors present.")
     if args.vec_normalize_length:
         avg_ratio = tot_ratio / num_train_ivectors
         ratio_stddev = np.sqrt(tot_ratio2 / num_train_ivectors - avg_ratio * avg_ratio)
-        print("Average ratio of train iVector to expected length was ", avg_ratio, ", standard deviation was ",
-              ratio_stddev)
+        if args.verbose > 1:
+            print("Average ratio of train iVector to expected length was ", avg_ratio, ", standard deviation was ",
+                  ratio_stddev)
 
-    print("Average renormalization scale on %d training iVectors was %.4f" % (
-        num_train_ivectors, tot_train_renorm_scale / num_train_ivectors))
+    if args.verbose > 1:
+        print("Average renormalization scale on %d training iVectors was %.4f" % (
+            num_train_ivectors, tot_train_renorm_scale / num_train_ivectors))
 
-    print('Reading test iVectors:')
+    if args.verbose > 1:
+        print('Reading test iVectors:')
     tot_ratio = 0.0
     tot_ratio2 = 0.0
 
@@ -223,19 +227,21 @@ if __name__ == '__main__':
 
             num_test_ivectors += 1
 
-    if (num_test_ivectors == 0):
-        print("No testing iVectors present.")
+    assert num_test_ivectors == 0, print("No testing iVectors present.")
+
     if args.vec_normalize_length:
         avg_ratio = tot_ratio / num_test_ivectors
         ratio_stddev = np.sqrt(tot_ratio2 / num_test_ivectors - avg_ratio * avg_ratio)
-        print("Average ratio of test iVector to expected length was ", avg_ratio, ", standard deviation was ",
-              ratio_stddev)
-
-    print("Average renormalization scale on %d testing iVectors was %.4f" % (
-        num_test_ivectors, tot_test_renorm_scale / num_test_ivectors))
+        if args.verbose > 1:
+            print("Average ratio of test iVector to expected length was ", avg_ratio, ", standard deviation was ",
+                  ratio_stddev)
+    if args.verbose > 1:
+        print("Average renormalization scale on %d testing iVectors was %.4f" % (
+            num_test_ivectors, tot_test_renorm_scale / num_test_ivectors))
 
     if not os.path.exists(os.path.dirname(args.score)):
-        print("Making score dir...")
+        if args.verbose > 1:
+            print("Making score dir...")
         os.makedirs(os.path.dirname(args.score))
 
     score_sum = 0.0
@@ -279,7 +285,8 @@ if __name__ == '__main__':
         variance = scatter - mean * mean
         stddev = np.sqrt(variance)
 
-        print("Mean score was %.4f, standard deviation was %.4f" % (mean, stddev))
+        if args.verbose > 1:
+            print("Mean score was %.4f, standard deviation was %.4f" % (mean, stddev))
 
     print("Processed %d trials, %d had errors." % (num_trials_done, num_trials_err))
 

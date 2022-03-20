@@ -34,6 +34,7 @@ parser.add_argument('--vector-format', type=str, default='kaldi', help='path to 
 parser.add_argument('--lda-dim', type=int, default=100, help='path to spk2utt')
 parser.add_argument('--total-covariance-factor', type=float, default=0.0, help='path to spk2utt')
 parser.add_argument('--covariance-floor', type=float, default=1e-6, help='path to spk2utt')
+parser.add_argument('--verbose', type=int, default=0, help='log level')
 
 args = parser.parse_args()
 
@@ -69,8 +70,7 @@ if __name__ == '__main__':
                 utt2vec_path[uid] = vec_path
             except:
                 continue
-    if len(utt2vec_path) == 0:
-        raise Exception('Empty ivector!')
+    assert len(utt2vec_path) == 0, print('Empty ivector!')
 
     utt2vec = {}
     spk2utt = {}
@@ -102,12 +102,14 @@ if __name__ == '__main__':
                 except Exception as e:
                     num_err += 1
 
-    print("Read %d utterances, %d with errors." % (num_done, num_err))
+    if args.verbose > 1:
+        print("Read %d utterances, %d with errors." % (num_done, num_err))
 
     if num_done == 0:
         raise Exception("Did not read any utterances.")
     else:
-        print("Computing within-class covariance.")
+        if args.verbose > 1:
+            print("Computing within-class covariance.")
 
     # 计算ivector的均值
     if args.subtract_global_mean:
@@ -118,7 +120,8 @@ if __name__ == '__main__':
 
     mean = ComputeAndSubtractMean(utt2vec)
     # print("mean vector is ", str(mean))
-    print("2-norm of iVector mean is %f " % np.linalg.norm(mean))
+    if args.verbose > 1:
+        print("2-norm of iVector mean is %f " % np.linalg.norm(mean))
 
     # LDA matrix without the offset term.
     # 初始化linear_part
@@ -133,17 +136,20 @@ if __name__ == '__main__':
     # 把offset加到lda_mat
     lda_mat = np.concatenate((linear_part, offset), axis=1)  # add mean-offset to transform
 
-    print("2-norm of transformed iVector mean is ", np.sqrt(np.power(offset, 2.0).sum()))
+    if args.verbose > 1:
+        print("2-norm of transformed iVector mean is ", np.sqrt(np.power(offset, 2.0).sum()))
     lda_file = args.lda_mat
     if not os.path.exists(os.path.dirname(lda_file)):
-        print('Making parent dir for lda files.')
+        if args.verbose > 1:
+            print('Making parent dir for lda files.')
         os.makedirs(os.path.dirname(lda_file))
 
     # print("LDA matrix: ", lda_mat)
     with open(lda_file, 'wb') as f:
         write_mat_binary(f, lda_mat)
 
-    print("Wrote LDA transform mat to ", lda_file)
+    if args.verbose > 0:
+        print("Wrote LDA transform mat to ", lda_file)
 
 """
 ivector-compute-lda --total-covariance-factor=0.0 --dim=100 \
