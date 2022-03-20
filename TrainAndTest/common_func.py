@@ -881,4 +881,7 @@ def load_model_args(model_yaml):
     with open(model_yaml, 'r') as f:
         model_args = yaml.load(f, Loader=yaml.FullLoader)
 
+    if 'normalize' not in model_args:
+        model_args['normalize'] = True
+
     return model_args

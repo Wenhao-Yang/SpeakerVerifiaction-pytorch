@@ -135,6 +135,7 @@ def main():
         model_kwargs = args_model(args, train_dir)
 
     keys = list(model_kwargs.keys())
+
     keys.sort()
     model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
     if args.verbose > 1:
