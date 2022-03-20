@@ -107,7 +107,7 @@ if __name__ == '__main__':
             if not os.path.exists(os.path.dirname(args.mean_vec)):
                 os.makedirs(os.path.dirname(args.mean_vec))
             with open(args.mean_vec, 'wb') as f:
-                write_vec_binary(global_mean)
+                write_vec_binary(f, global_mean)
                 print("Saving mean vector to: " % args.mean_vec)
 
     transform_vec = None
@@ -133,8 +133,8 @@ if __name__ == '__main__':
             this_vecs = []
             for uid in spk_utts[1:]:
                 try:
-                    vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
-                    # vec_path = utt2vec[uid]  # Todo: change the dir
+                    # vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
+                    vec_path = utt2vec[uid]  # Todo: change the dir
                     this_vec = vec_loader(vec_path)
                     this_vecs.append(this_vec)
                     num_utt_done += 1
