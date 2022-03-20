@@ -81,7 +81,9 @@ if __name__ == '__main__':
             for utt in spk_utts[1:]:
                 try:
                     vec_path = utt2vec_path[utt]
-                    this_vec = vec_loader(os.path.join('Score/data', vec_path))
+                    # this_vec = vec_loader(os.path.join('Score/data', vec_path))
+
+                    this_vec = vec_loader(vec_path)
                     utt2vec[utt] = this_vec
                     if dim == 0:
                         # vec_dim = vec_loader(os.path.join('Score/data', vec_path)).shape[-1] #Todo: change the dir
