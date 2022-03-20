@@ -30,7 +30,9 @@ if ! [ -f $train_feat_dir/utt2spk ];then
     echo "Creating utt2spk!"
     cat $train_feat_dir/xvectors.scp | awk '{print $1}' > $train_feat_dir/utt
     grep -f $train_feat_dir/utt $data_dir/utt2spk > $train_feat_dir/utt2spk
+fi
 
+if ! [ -f $train_feat_dir/spk2utt ];then
     Score/utt2spk_to_spk2utt.pl ${train_feat_dir}/utt2spk > $train_feat_dir/spk2utt
     num_spks=`wc -l $train_feat_dir/spk2utt`
     echo "There are ${num_spks} speakers in train set!"
