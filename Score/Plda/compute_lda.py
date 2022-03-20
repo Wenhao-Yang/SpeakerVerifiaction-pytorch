@@ -11,6 +11,7 @@
 """
 import argparse
 import os
+import pdb
 
 import kaldi_io
 import kaldiio
@@ -83,6 +84,7 @@ if __name__ == '__main__':
             for utt in spk_utts[1:]:
                 try:
                     vec_path = utt2vec_path[utt]
+                    pdb.set_trace()
                     # this_vec = vec_loader(os.path.join('Score/data', vec_path))
 
                     this_vec = vec_loader(vec_path)
