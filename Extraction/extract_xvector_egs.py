@@ -176,7 +176,7 @@ def main():
     extracted_set = []
 
     vec_type = 'xvectors_a' if args.xvector else 'xvectors_b'
-    if args.train_dir != '':
+    if args.train_extract_dir != '':
         train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, filer_loader=file_loader,
                                                 transform=transform_V,
                                                 extract_trials=False, verbose=args.verbose)
