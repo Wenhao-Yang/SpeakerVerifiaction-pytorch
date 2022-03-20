@@ -121,7 +121,7 @@ if __name__ == '__main__':
     with open(args.train_vec_scp, 'r') as f:
         for l in f.readlines():
             spk, ivector_path = l.split()
-            ivector_path = os.path.join('Score/data', ivector_path)
+            # ivector_path = os.path.join('Score/data', ivector_path)
             ivector = vec_loader(ivector_path)
 
             # for spk, ivector in kaldi_io.read_vec_flt_scp(args.train_vec_scp):
