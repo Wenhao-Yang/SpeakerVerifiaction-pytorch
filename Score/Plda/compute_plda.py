@@ -72,6 +72,7 @@ if __name__ == '__main__':
 
 
     spks = {}
+    pdb.set_trace()
     if args.subtract_global_mean:
         if args.mean_vec != "" and os.path.exists(args.mean_vec):
             with open(args.mean_vec, 'rb') as f:
@@ -89,11 +90,10 @@ if __name__ == '__main__':
         else:
             global_mean = []
             with open(args.spk2utt, 'r') as f:
-                pbar = tqdm(f.readlines())
-                for l in pbar:
+                for l in tqdm(f.readlines()):
                     spk_utts = l.split()
                     for uid in spk_utts[1:]:
-                        pdb.set_trace()
+
                         try:
                             # vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
                             vec_path = utt2vec[uid]  # Todo: change the dir
