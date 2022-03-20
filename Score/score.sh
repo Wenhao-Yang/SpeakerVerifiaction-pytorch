@@ -36,7 +36,7 @@ if [ $stage -le 10 ]; then
   data_dir=${lstm_dir}/cnceleb/klfb/dev_fb40
   trials=${lstm_dir}/cnceleb/klfb/test_fb40/trials
 
-  lda_dim=150
+  lda_dim=400
 
   ./Score/plda_score.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
 
