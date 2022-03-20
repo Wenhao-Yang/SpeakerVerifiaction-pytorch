@@ -22,9 +22,12 @@ trials=$5
 # model_path=SuResCNN10
 logdir=$test_feat_dir/log
 
+transform_mat=$train_feat_dir/transform_dim${lda_dim}.mat
+plda_model=$train_feat_dir/plda_${lda_dim}
+
 #train_cmd="Score/run.pl --mem 8G"
 
-test_score=$test_feat_dir/scores_$(date "+%Y-%m-%d-%H-%M-%S")
+test_score=$test_feat_dir/scores_${lda_dim}_$(date "+%Y-%m-%d-%H-%M-%S")
 
 if ! [ -s $train_feat_dir/utt2spk ];then
     echo "Creating utt2spk!"
@@ -39,14 +42,13 @@ if ! [ -s $train_feat_dir/spk2utt ];then
 fi
 
 
-if ! [ -s $train_feat_dir/transform.mat ];then
+if ! [ -s $transform_mat ];then
   python Score/Plda/compute_lda.py --total-covariance-factor=0.0 \
     --lda-dim $lda_dim  \
     --spk2utt $data_dir/spk2utt \
     --ivector-scp $train_feat_dir/xvectors.scp \
     --subtract-global-mean \
-    --lda-mat $train_feat_dir/transform.mat
-
+    --lda-mat $transform_mat
 fi
 
 
@@ -54,8 +56,8 @@ if ! [ -s $train_feat_dir/plda ];then
     python Score/Plda/compute_plda.py --spk2utt $train_feat_dir/spk2utt \
       --ivector-scp $train_feat_dir/xvectors.scp \
       --mean-vec $train_feat_dir/mean.vec \
-      --transform-vec $train_feat_dir/transform.mat \
-      --plda-file $train_feat_dir/plda
+      --transform-vec $transform_mat \
+      --plda-file $plda_model
 fi
 
 if ! [ -s $test_score ];then
@@ -63,8 +65,8 @@ if ! [ -s $test_score ];then
     --train-vec-scp $test_feat_dir/xvectors.scp \
     --test-vec-scp $test_feat_dir/xvectors.scp \
     --trials $trials \
-    --plda-file $train_feat_dir/plda \
-    --transform-vec $train_feat_dir/transform.mat \
+    --plda-file $plda_model \
+    --transform-vec $transform_mat \
     --score $test_score
 fi
 
@@ -74,7 +76,7 @@ if ! [ -s $test_score ];then
   mindcf1=`Score/compute_min_dcf.py --p-target 0.01 $test_score $trials 2> /dev/null`
   mindcf2=`Score/compute_min_dcf.py --p-target 0.001 $test_score $trials 2> /dev/null`
 
-  test_result=$test_feat_dir/result_plda_$(date "+%Y.%m.%d.%H-%M-%S")
+  test_result=$test_feat_dir/result_plda_${lda_dim}_$(date "+%Y.%m.%d.%H-%M-%S")
 
   echo "EER: $eer%" >> $test_result
   echo "minDCF(p-target=0.01) : $mindcf1" >> $test_result
