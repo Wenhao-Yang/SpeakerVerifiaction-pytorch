@@ -437,7 +437,6 @@ if [ $stage -le 101 ]; then
   for test_subset in test; do # 32,128,512; 8,32,128
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
-      --mean-vector \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
       --train-extract-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev${subset}_fb${input_dim} \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
