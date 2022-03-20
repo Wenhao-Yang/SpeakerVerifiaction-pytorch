@@ -8,7 +8,7 @@
 
 stage=10
 
-lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification/data
 
 if [ $stage -le 0 ]; then
   trials=$voxceleb1_trials
