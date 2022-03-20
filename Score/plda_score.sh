@@ -6,7 +6,7 @@
 # time: 2022/3/20 14:05
 # Description: 
 
-if [ $# != 4 ]; then
+if [ $# != 5 ]; then
   echo "Usage: plda.sh <lda-dim> <data-path> <train-feat-dir> <test-feat-dir> <trials>"
   echo "e.g.: plda.sh data/train exp/train exp/test data/test/trials"
   echo "This script helps create srp to resample wav in wav.scp"
