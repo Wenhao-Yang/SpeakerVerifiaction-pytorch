@@ -227,7 +227,7 @@ if __name__ == '__main__':
 
             num_test_ivectors += 1
 
-    assert num_test_ivectors == 0, print("No testing iVectors present.")
+    assert num_test_ivectors > 0, print("No testing iVectors present.")
 
     if args.vec_normalize_length:
         avg_ratio = tot_ratio / num_test_ivectors
