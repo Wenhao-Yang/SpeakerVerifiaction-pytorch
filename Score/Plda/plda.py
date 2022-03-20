@@ -546,7 +546,7 @@ class PldaEstimator(object):
         # KALDI_LOG << "Trace of between-class variance is " << between_var_.Trace();
 
     def Estimate(self, config, plda, verbose=1):
-        pbar = tqdm(range(config.num_em_iters))
+        pbar = tqdm(range(config.num_em_iters), ncols=100)
         for i in pbar:
             if verbose > 1:
                 pbar.set_description("Plda estimation iteration {:>2d} of {} ".format(i, config.num_em_iters))
