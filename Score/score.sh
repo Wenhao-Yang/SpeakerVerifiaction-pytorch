@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=10
+
+lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+
 if [ $stage -le 0 ]; then
   trials=$voxceleb1_trials
   scores=exp/scores_voxceleb1_test
@@ -12,9 +15,23 @@ if [ $stage -le 0 ]; then
   echo "minDCF(p-target=0.001): $mindcf2"
 fi
 
-if [ $stage -le 10 ]; then
+if [ $stage -le 5 ]; then
   python compute_mean.py
   python compute_lda.py
   python compute_plda.py
   python plda_scoring.py
+fi
+
+
+if [ $stage -le 10 ]; then
+  xvector_dir=Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/cnceleb_test_var/xvectors_b/epoch_60
+  train_vec_dir=${xvector_dir}/train
+  test_vec_dir=${xvector_dir}/test
+  data_dir=${lstm_dir}/cnceleb/klfb/dev_fb40
+  trials=${lstm_dir}/cnceleb/klfb/test_fb40/trials
+
+  lda_dim=200
+
+  ./Score/plda_score.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
+
 fi

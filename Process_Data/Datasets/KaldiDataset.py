@@ -560,7 +560,7 @@ class KaldiExtractDataset(data.Dataset):
             print("    trials not exist!")
             uid2feat = {}
             with open(feat_scp, 'r') as u:
-                all_cls = tqdm(u.readlines())
+                all_cls = tqdm(u.readlines(), ncols=100)
                 for line in all_cls:
                     utt_path = line.split(' ')
                     uid = utt_path[0]

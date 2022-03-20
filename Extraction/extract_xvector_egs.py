@@ -104,7 +104,7 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 
 # pdb.set_trace()
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.feat_dim, loader=file_loader,
-                       transform=transform_V,
+                       transform=transform_V, verbose=args.verbose,
                        batch_size=args.batch_size, random_chunk=args.random_chunk)
 
 
