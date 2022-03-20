@@ -82,7 +82,7 @@ if __name__ == '__main__':
             spk2utt[spk] = spk_utts[1:]
 
             for utt in spk_utts[1:]:
-                pdb.set_trace()
+                # pdb.set_trace()
                 try:
                     vec_path = utt2vec_path[utt]
 
