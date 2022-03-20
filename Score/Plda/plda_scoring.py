@@ -155,7 +155,7 @@ if __name__ == '__main__':
                 num_examples = 1
 
             # print(num_examples)
-            print(np.linalg.norm(ivector))
+            # print(np.linalg.norm(ivector))
             transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
             # print(transformed_ivector.shape)
 
@@ -183,10 +183,10 @@ if __name__ == '__main__':
     with open(args.test_vec_scp, 'r') as f:
         for l in f.readlines():
             uid, ivector_path = l.split()
-            ivector_path = os.path.join('Score/data', ivector_path)
+            # ivector_path = os.path.join('Score/data', ivector_path)
             ivector = vec_loader(ivector_path)
-            if uid == 'id10280-v0Q-VyO4TjI-00001':
-                print(ivector)
+            # if uid == 'id10280-v0Q-VyO4TjI-00001':
+            #     print(ivector)
             # for uid, ivector in kaldi_io.read_vec_flt_scp(args.test_vec_scp):
             # train_vec[spk] = ivector
             if uid in test_ivectors:
