@@ -16,6 +16,7 @@ import kaldi_io
 import numpy as np
 from kaldi_io import UnknownVectorHeader
 from kaldi_io.kaldi_io import _read_vec_flt_binary
+from tqdm import tqdm
 
 from Score.Plda.plda import PLDA, PldaConfig
 
@@ -133,7 +134,7 @@ if __name__ == '__main__':
                 if transform_vec.shape[1] != len(ivector):
                     transform_vec = transform_vec[:, :len(ivector)]
                 ivector = np.matmul(transform_vec, ivector)
-                print(np.linalg.norm(ivector))
+                # print(np.linalg.norm(ivector))
 
             if args.vec_normalize_length:
                 norm = np.linalg.norm(ivector)
@@ -199,7 +200,7 @@ if __name__ == '__main__':
                 if transform_vec.shape[1] != len(ivector):
                     transform_vec = transform_vec[:, :transform_vec]
                 ivector = np.matmul(transform_vec, ivector)
-                print(np.linalg.norm(ivector))
+                # print(np.linalg.norm(ivector))
 
             if args.vec_normalize_length:
                 norm = np.linalg.norm(ivector)
@@ -211,10 +212,10 @@ if __name__ == '__main__':
                 tot_ratio += ratio.sum()
                 tot_ratio2 += (ratio * ratio).sum()
 
-            if uid == 'id10280-v0Q-VyO4TjI-00001':
-                print(ivector)
+            # if uid == 'id10280-v0Q-VyO4TjI-00001':
+            #     print(ivector)
 
-            print(np.linalg.norm(ivector))
+            # print(np.linalg.norm(ivector))
             transformed_ivector, normalization_factor = plda.TransformIvector(plda_config, ivector, num_examples)
 
             tot_test_renorm_scale += normalization_factor
@@ -244,7 +245,7 @@ if __name__ == '__main__':
         raise FileExistsError(args.trials)
     else:
         with open(args.trials, 'r') as f, open(args.score, 'w') as s:
-            for l in f.readlines():
+            for l in tqdm(f.readlines(), ncols=100):
                 key1, key2, _ = l.split()
 
                 if key1 not in train_ivectors:
