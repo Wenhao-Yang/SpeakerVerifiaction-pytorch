@@ -52,7 +52,7 @@ if ! [ -s $transform_mat ];then
 fi
 
 
-if ! [ -s $train_feat_dir/plda ];then
+if ! [ -s $plda_model ];then
     python Score/Plda/compute_plda.py --spk2utt $train_feat_dir/spk2utt \
       --ivector-scp $train_feat_dir/xvectors.scp \
       --mean-vec $train_feat_dir/mean.vec \

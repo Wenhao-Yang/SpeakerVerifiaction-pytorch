@@ -85,7 +85,7 @@ def ComputeAndSubtractMean(utt2ivector):
     return mean
 
 
-def SubtractGlobalMean(utt2ivector):
+def SubtractGlobalMean(utt2ivector, verbose=1):
     keys = list(utt2ivector.keys())
     dim = utt2ivector[keys[0]].shape
 
@@ -95,7 +95,8 @@ def SubtractGlobalMean(utt2ivector):
     for utt in utt2ivector:
         mean += 1.0 / num_ivectors * utt2ivector[utt]  # .astype(np.float32)
 
-    print("Norm of iVector mean was ", np.sqrt(np.square(mean).sum()))
+    if verbose > 1:
+        print("Norm of iVector mean was ", np.sqrt(np.square(mean).sum()))
     # for utt in utt2ivector:
     #     utt2ivector[utt] -= mean
 
@@ -104,7 +105,7 @@ def SubtractGlobalMean(utt2ivector):
 
 # LDA变换
 def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
-                        covariance_floor, lda_out):
+                        covariance_floor, lda_out, verbose=1):
     assert (len(utt2ivector) > 0);
     # lda后的维度
     lda_dim = lda_out.shape[0]
@@ -125,7 +126,8 @@ def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
         utts_of_this_spk = [utt2ivector[utt] for utt in uttlist]
         stats.AccStats(np.array(utts_of_this_spk))
 
-    print("Stats have ", stats.Info())
+    if verbose > 1:
+        print("Stats have ", stats.Info())
     assert (not stats.Empty())
     assert (not stats.SingularTotCovar()), print("Too little data for iVector dimension.")
 
@@ -168,10 +170,11 @@ def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
     s = s[s_idx]
     U = U.transpose()[s_idx].transpose()
 
-    print("Singular values of between-class covariance after projecting " \
-          "with interpolated [total/within] covariance with a weight of ",
-          total_covariance_factor,
-          " on the total covariance, are: \n", s)
+    if verbose > 1:
+        print("Singular values of between-class covariance after projecting " \
+              "with interpolated [total/within] covariance with a weight of ",
+              total_covariance_factor,
+              " on the total covariance, are: \n", s)
 
     # U^T is the transform that will diagonalize the between-class covariance.
     #  U_part is just the part of U that corresponds to the kept dimensions.
@@ -182,7 +185,7 @@ def ComputeLdaTransform(utt2ivector, spk2utt, total_covariance_factor,
     return np.matmul(U_part.T, T)
 
 
-def ComputeNormalizingTransform(covar, floor):
+def ComputeNormalizingTransform(covar, floor, verbose=1):
     # 计算方差的特征值
     s, U = np.linalg.eig(covar)
     # print("Before sorted U is ", U)
@@ -198,7 +201,7 @@ def ComputeNormalizingTransform(covar, floor):
     floor = np.double(floor)
     num_floored = ApplyFloor(s, floor)
 
-    if (num_floored > 0):
+    if (num_floored > 0) and verbose > 1:
         print("Floored ", num_floored, " eigenvalues of covariance to ", floor)
 
     # Next two lines computes projection proj, such that
