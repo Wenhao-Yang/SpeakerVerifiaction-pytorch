@@ -75,6 +75,7 @@ if __name__ == '__main__':
     # pdb.set_trace()
     if args.subtract_global_mean:
         if args.mean_vec != "" and os.path.exists(args.mean_vec):
+
             with open(args.mean_vec, 'rb') as f:
                 try:
                     global_mean = _read_vec_flt_binary(f)
