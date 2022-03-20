@@ -77,10 +77,10 @@ if ! [ -s $test_score ];then
   test_result=$test_feat_dir/result_plda_$(date "+%Y.%m.%d.%H-%M-%S")
 
   echo "EER: $eer%" >> $test_result
-  echo "minDCF(p-target=0.01): $mindcf1" >> $test_result
+  echo "minDCF(p-target=0.01) : $mindcf1" >> $test_result
   echo "minDCF(p-target=0.001): $mindcf2" >> $test_result
 
   echo "EER: $eer%"
-  echo "minDCF(p-target=0.01): $mindcf1"
+  echo "minDCF(p-target=0.01) : $mindcf1"
   echo "minDCF(p-target=0.001): $mindcf2"
 fi
