@@ -93,8 +93,8 @@ if __name__ == '__main__':
                     spk_utts = l.split()
                     for uid in spk_utts[1:]:
                         try:
-                            vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
-                            # vec_path = utt2vec[uid]  # Todo: change the dir
+                            # vec_path = os.path.join('Score/data', utt2vec[uid]) #Todo: change the dir
+                            vec_path = utt2vec[uid]  # Todo: change the dir
                             this_vec = vec_loader(vec_path)
                             global_mean.append(this_vec)
                         except Exception as e:
