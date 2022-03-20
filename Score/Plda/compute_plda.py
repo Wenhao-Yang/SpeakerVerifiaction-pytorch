@@ -142,6 +142,7 @@ if __name__ == '__main__':
                     num_utt_err += 1
 
             ivector_mat = np.array(this_vecs)
+            pdb.set_trace()
             if args.subtract_global_mean:
                 ivector_mat -= global_mean
 
