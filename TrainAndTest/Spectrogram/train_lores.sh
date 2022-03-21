@@ -1240,7 +1240,7 @@ if [ $stage -le 78 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 60 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 2 \

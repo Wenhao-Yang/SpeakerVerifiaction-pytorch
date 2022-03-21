@@ -39,7 +39,7 @@ if [ $stage -le 20 ]; then
   datasets=vox1
   testset=vox1
   model=ThinResNet
-  resnet_size=34
+  resnet_size=18
   encoder_type=SAP2
   alpha=0
   block_type=cbam_v2
@@ -55,15 +55,16 @@ if [ $stage -le 20 ]; then
   fast=none1
   downsample=k5
   sname=dev
+  subset=
 
-  for sname in dev_aug_com ; do
+  for subset in female male ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
-      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/${sname}/trials_dir \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_${subset} \
+      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/${sname}_${subset}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_${subset}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
       --feat-format kaldi \
       --input-norm ${input_norm} \
@@ -77,9 +78,9 @@ if [ $stage -le 20 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var_${sname} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var_${sname}/checkpoint_10.pth \
-      --channels 32,64,128,256 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var/checkpoint_10.pth \
+      --channels 16,32,64,128 \
       --downsample ${downsample} \
       --input-dim 161 \
       --fast ${fast} \
@@ -96,11 +97,11 @@ if [ $stage -le 20 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --shuffle \
-      --all-iteraion 1000 \
+      --all-iteraion 0 \
       --extract \
       --cos-sim \
       --loss-type ${loss}
