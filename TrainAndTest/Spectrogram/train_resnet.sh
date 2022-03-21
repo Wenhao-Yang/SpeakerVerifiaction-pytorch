@@ -70,7 +70,7 @@ if [ $stage -le 20 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 60 \
+      --epochs 50 \
       --random-chunk 200 400 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
