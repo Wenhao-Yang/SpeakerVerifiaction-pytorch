@@ -447,7 +447,10 @@ def main():
     elif args.loss_type == 'arcsoft':
         ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, smooth_ratio=args.smooth_ratio)
 
-    xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.94, 0.06]))
+    if args.binary_domain:
+        xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.8, 0.2]))
+    else:
+        xe_criterion = nn.CrossEntropyLoss()
     # dom_params = list(map(id, model.classifier_dom.parameters()))
     # rest_params = list(map(id, model.xvectors.parameters()))
     # rest_params = filter(lambda p: id(p) not in dom_params, model.parameters())
