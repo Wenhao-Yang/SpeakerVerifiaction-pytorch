@@ -35,7 +35,7 @@ from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss
 from Define_Model.Loss.SoftmaxLoss import ArcSoftmaxLoss
-from Define_Model.Pooling import SelfAttentionPooling, SqueezePooling
+from Define_Model.Pooling import SelfAttentionPooling, SqueezePooling, SelfAttentionPooling_v2
 from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
@@ -375,7 +375,14 @@ def main():
     if args.loss_type == 'soft':
         classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)
     elif args.loss_type in ['arcsoft', 'amsoft']:
-        classifier_spk = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
+        classifier_spk = nn.Sequential(
+            nn.AdaptiveAvgPool2d((None, args.avg_size)),
+            SqueezePooling(),
+            SelfAttentionPooling_v2(input_dim=channels[-1] * args.avg_size, hidden_dim=int(args.embedding_size / 2)),
+            nn.Linear(int(args.avg_size * channels[-1]), args.embedding_size),
+            nn.BatchNorm1d(args.embedding_size),
+            AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks),
+        )
 
     classifier_dom = nn.Sequential(
         RevGradLayer(),
