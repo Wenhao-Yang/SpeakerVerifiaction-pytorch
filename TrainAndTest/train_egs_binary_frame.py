@@ -650,7 +650,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
             domain_embeddings = spk_embeddings.detach()
 
         for i in range(steps):
-            pdb.set_trace()
+            # pdb.set_trace()
             dom_logits = classifier_dom(domain_embeddings)
             dom_loss = xe_criterion(dom_logits, true_labels_b)
 
