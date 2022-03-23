@@ -16,6 +16,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class SqueezePooling(nn.Module):
+    def __init__(self):
+        super(SqueezePooling, self).__init__()
+
+    def forward(self, x):
+        x = x.view(x.size(0), -1)
+
+        return x  # * freq_weight
+
+
 class SelfVadPooling(nn.Module):
     def __init__(self, input_dim, input_length=300):
         super(SelfVadPooling, self).__init__()

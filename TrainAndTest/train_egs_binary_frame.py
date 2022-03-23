@@ -292,7 +292,7 @@ elif args.test_input == 'fix':
     ])
 
 # pdb.set_trace()
-torch.multiprocessing.set_sharing_strategy('file_system')
+# torch.multiprocessing.set_sharing_strategy('file_system')
 
 if args.feat_format == 'kaldi':
     file_loader = read_mat
@@ -313,6 +313,10 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         trials_file=args.train_trials)
 
 extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, filer_loader=file_loader)
+
+# easy domain index
+speech_dom = args.speech_dom.split(',')
+speech_dom = [int(x) for x in speech_dom]
 
 
 def main():
@@ -498,11 +502,12 @@ def main():
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
-            torch.distributed.init_process_group(backend="nccl",
-                                                 # init_method='tcp://localhost:23456',
-                                                 init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
-                                                 rank=0,
-                                                 world_size=1)
+            try:
+                torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32466', rank=0,
+                                                     world_size=1)
+            except RuntimeError as r:
+                torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32464', rank=0,
+                                                     world_size=1)
             # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             # model = DistributedDataParallel(model.cuda())
@@ -600,7 +605,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
     spk_optimizer, dom_optimizer = optimizer
     spk_scheduler, dom_scheduler = scheduler
-    lambda_ = min(2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1., 0)
+    lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1
     # model.grl.set_lambda(lambda_)
 
     correct_a = 0.
@@ -617,9 +622,6 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
-
-    speech_dom = args.speech_dom.split(',')
-    speech_dom = [int(x) for x in speech_dom]
 
     for batch_idx, (data, label_a, label_b) in pbar:
 
@@ -644,11 +646,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         feature_map, spk_embeddings = xvector_model(data, feature_map=True)
 
         # Training the discriminator
-        if args.submean:
-            # domain_embeddings = spk_embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
-            domain_embeddings = feature_map.detach()
-        else:
-            domain_embeddings = feature_map.detach()
+        domain_embeddings = feature_map.detach()
 
         for i in range(steps):
             # pdb.set_trace()
@@ -731,22 +729,22 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
                                                                                total_loss_a / (batch_idx + 1),
                                                                                total_loss_b / (batch_idx + 1))
             # print_desc += 'SimLoss: {:.4f}'.format(total_loss_c / (batch_idx + 1))
-            print_desc += ' Accuracy[ Spk: {:.4f}%, Dom: {:.4f}%]'.format(100. * minibatch_acc_a,
-                                                                          100. * minibatch_acc_b)
+            print_desc += ' Accuracy[ Spk: {: >8.4f}%, Dom: {: >8.4f}%]'.format(100. * minibatch_acc_a,
+                                                                                100. * minibatch_acc_b)
             pbar.set_description(print_desc)
             break
 
-    print('\nEpoch {:>2d}: \33[91mAvg loss: {:.4f} Spk Loss: {:.4f} Dom Loss: {:.4f} '.format(epoch,
-                                                                                              total_loss / len(
-                                                                                                  train_loader),
-                                                                                              total_loss_a / len(
-                                                                                                  train_loader),
-                                                                                              total_loss_b / len(
-                                                                                                  train_loader)),
+    print('\nEpoch {:>2d}: \33[91mTrain loss: {:.4f} Spk: {:.4f} Domain: {:.4f}, '.format(epoch,
+                                                                                          total_loss / len(
+                                                                                              train_loader),
+                                                                                          total_loss_a / len(
+                                                                                              train_loader),
+                                                                                          total_loss_b / len(
+                                                                                              train_loader)),
           end='')
 
-    print('Spk Accuracy:{:.4f}%, Dom Accuracy:{:.4f}%.\33[0m'.format(100 * correct_a / total_datasize,
-                                                                     100 * correct_b / total_datasize, ))
+    print('Accuracy Spk: {:.4f}% Domain: {:.4f}%.\33[0m'.format(100 * correct_a / total_datasize,
+                                                                100 * correct_b / total_datasize, ))
 
     writer.add_scalar('Train/Spk_Accuracy', correct_a / total_datasize, epoch)
     writer.add_scalar('Train/Dom_Accuracy', correct_b / total_datasize, epoch)
@@ -775,7 +773,16 @@ def valid_class(valid_loader, model, ce, epoch):
     with torch.no_grad():
         for batch_idx, (data, label_a, label_b) in enumerate(valid_loader):
             data = data.cuda()
-            label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
+
+            if len(speech_dom) == 1:
+                label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
+            else:
+                multi_b = torch.ones_like(label_b)
+                for s in speech_dom:
+                    multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
+
+                label_b = multi_b
+            # label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
 
             feature_map, embeddings = xvector_model(data, feature_map=True)
             out_a = classifier_spk(embeddings)
@@ -817,10 +824,10 @@ def valid_class(valid_loader, model, ce, epoch):
     valid_loss = spk_loss + args.dom_ratio * dis_loss
 
     torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: Spk {:.4f}% Dom {:.4f}%, Loss: Spk {:.6f} Domain {:.6f}.\33[0m'.format(
-        spk_valid_accuracy,
-        dom_valid_accuracy,
-        spk_loss, dis_loss))
+    print(
+        '          \33[91mValid Loss: {:.4f} Spk: {:.4f} Domain: {:.4f}, Accuracy Spk: {:.4f}% Domain: {:.4f}%.\33[0m'.format(
+            valid_loss, spk_loss, dis_loss,
+            spk_valid_accuracy, dom_valid_accuracy))
 
     return valid_loss
 
