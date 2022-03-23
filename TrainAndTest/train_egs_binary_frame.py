@@ -732,7 +732,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
             print_desc += ' Accuracy[ Spk: {: >8.4f}%, Dom: {: >8.4f}%]'.format(100. * minibatch_acc_a,
                                                                                 100. * minibatch_acc_b)
             pbar.set_description(print_desc)
-            break
+            # break
 
     print('\nEpoch {:>2d}: \33[91mTrain loss: {:.4f} Spk: {:.4f} Domain: {:.4f}, '.format(epoch,
                                                                                           total_loss / len(
