@@ -79,6 +79,8 @@ parser.add_argument('--trials', type=str, default='trials', help='path to voxcel
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
+parser.add_argument('--binary-domain', action='store_true', default=False, help='set domain in dataset')
+
 parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
 parser.add_argument('--speech-dom', default='4,7,9,10', type=str, help='set domain in dataset')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
@@ -389,14 +391,22 @@ def main():
         # )
         classifier_spk = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
 
+    if args.binary_domain:
+        num_doms = train_dir.num_doms
+    else:
+        num_doms = 2
+
+    # nn.AdaptiveAvgPool2d((1, args.avg_size)),
+
     classifier_dom = nn.Sequential(
         RevGradLayer(),
-        nn.AdaptiveAvgPool2d((1, args.avg_size)),
+        nn.AdaptiveAvgPool2d((None, args.avg_size)),
+        SelfAttentionPooling_v2(input_dim=channels[-1] * args.avg_size, hidden_dim=int(args.embedding_size / 2)),
         SqueezePooling(),
         nn.Linear(int(args.avg_size * channels[-1]), args.embedding_size),
         nn.ReLU(inplace=True),
         nn.BatchNorm1d(args.embedding_size),
-        nn.Linear(args.embedding_size, 2),
+        nn.Linear(args.embedding_size, num_doms),
     )
 
     start_epoch = 0
@@ -630,14 +640,15 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
         data, label_a = Variable(data), Variable(label_a)
 
-        if len(speech_dom) == 1:
-            label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
-        else:
-            multi_b = torch.ones_like(label_b)
-            for s in speech_dom:
-                multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
+        if args.binary_domain:
+            if len(speech_dom) == 1:
+                label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
+            else:
+                multi_b = torch.ones_like(label_b)
+                for s in speech_dom:
+                    multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
 
-            label_b = multi_b
+                label_b = multi_b
 
         label_b = Variable(label_b)
         true_labels_a = label_a.cuda()
@@ -774,14 +785,15 @@ def valid_class(valid_loader, model, ce, epoch):
         for batch_idx, (data, label_a, label_b) in enumerate(valid_loader):
             data = data.cuda()
 
-            if len(speech_dom) == 1:
-                label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
-            else:
-                multi_b = torch.ones_like(label_b)
-                for s in speech_dom:
-                    multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
+            if args.binary_domain:
+                if len(speech_dom) == 1:
+                    label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
+                else:
+                    multi_b = torch.ones_like(label_b)
+                    for s in speech_dom:
+                        multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
 
-                label_b = multi_b
+                    label_b = multi_b
             # label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
 
             feature_map, embeddings = xvector_model(data, feature_map=True)
