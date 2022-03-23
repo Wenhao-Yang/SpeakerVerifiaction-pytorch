@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=70
+stage=71
 
 waited=0
 while [ $(ps 113458 | wc -l) -eq 2 ]; do
@@ -324,7 +324,7 @@ if [ $stage -le 70 ]; then
 #exit
 fi
 
-if [ $stage -le 70 ]; then
+if [ $stage -le 71 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
   testset=cnceleb
