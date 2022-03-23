@@ -661,7 +661,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
         # Training the Generator
         spk_logits = classifier_spk(spk_embeddings)
-        dom_logits = classifier_dom(spk_embeddings)
+        dom_logits = classifier_dom(feature_map)
 
         spk_loss = ce_criterion(spk_logits, true_labels_a)  # if xe_criterion == None else xe_criterion(spk_logits,
         # true_labels_a)
