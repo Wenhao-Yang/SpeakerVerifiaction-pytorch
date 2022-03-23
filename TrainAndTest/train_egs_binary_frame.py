@@ -806,7 +806,6 @@ def valid_class(valid_loader, model, ce, epoch):
             spk_loss += float(loss_a.item())
             dis_loss += float(loss_b.item())
 
-            break
 
     spk_valid_accuracy = 100. * correct_a / total_datasize
     dom_valid_accuracy = 100. * correct_b / total_datasize
