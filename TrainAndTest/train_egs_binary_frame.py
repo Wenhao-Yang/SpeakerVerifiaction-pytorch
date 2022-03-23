@@ -743,6 +743,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
                                                                                               total_loss_b / len(
                                                                                                   train_loader)),
           end='')
+            break
 
     print('Spk Accuracy:{:.4f}%, Dom Accuracy:{:.4f}%.\33[0m'.format(100 * correct_a / total_datasize,
                                                                      100 * correct_b / total_datasize, ))
@@ -804,6 +805,8 @@ def valid_class(valid_loader, model, ce, epoch):
             total_datasize += len(predicted_one_labels_a)
             spk_loss += float(loss_a.item())
             dis_loss += float(loss_b.item())
+
+            break
 
     spk_valid_accuracy = 100. * correct_a / total_datasize
     dom_valid_accuracy = 100. * correct_b / total_datasize
