@@ -908,7 +908,7 @@ class ThinResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward(self, x):
+    def _forward(self, x, feature_map=False):
         # pdb.set_trace()
         # print(x.shape)
         if self.filter_layer != None:
@@ -935,6 +935,10 @@ class ThinResNet(nn.Module):
 
         if self.dropout_p > 0:
             x = self.dropout(x)
+
+        if feature_map:
+            embeddings = x
+
         x = self.avgpool(x)
         if self.encoder != None:
             x = self.encoder(x)
@@ -945,12 +949,12 @@ class ThinResNet(nn.Module):
         if self.alpha:
             x = self.l2_norm(x)
 
-        if self.classifier == None:
-            logits = ""
-        else:
-            logits = self.classifier(x)
+        if not feature_map:
+            embeddings = x
 
-        return logits, x
+        logits = "" if self.classifier == None else self.classifier(x)
+
+        return logits, embeddings
 
     def xvector(self, x):
         # pdb.set_trace()
