@@ -381,7 +381,7 @@ def main():
         RevGradLayer(),
         nn.AdaptiveAvgPool2d((1, args.avg_size)),
         SqueezePooling(),
-        nn.Linear(args.embedding_size, args.embedding_size),
+        nn.Linear(int(args.avg_size * channels[-1]), args.embedding_size),
         nn.ReLU(inplace=True),
         nn.BatchNorm1d(args.embedding_size),
         nn.Linear(args.embedding_size, 2),
