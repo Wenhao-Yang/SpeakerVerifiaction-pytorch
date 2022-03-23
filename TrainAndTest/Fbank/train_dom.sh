@@ -399,7 +399,6 @@ if [ $stage -le 71 ]; then
        --cos-sim \
        --all-iteraion 0 \
        --remove-vad \
-       --submean \
        --loss-type ${loss}
 
 #    python TrainAndTest/train_egs.py \
