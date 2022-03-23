@@ -393,7 +393,7 @@ def main():
         # )
         classifier_spk = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
 
-    if args.binary_domain:
+    if not args.binary_domain:
         num_doms = train_dir.num_doms
     else:
         num_doms = 2
