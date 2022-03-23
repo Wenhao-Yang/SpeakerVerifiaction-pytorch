@@ -377,8 +377,8 @@ def main():
     elif args.loss_type in ['arcsoft', 'amsoft']:
         classifier_spk = nn.Sequential(
             nn.AdaptiveAvgPool2d((None, args.avg_size)),
-            SqueezePooling(),
             SelfAttentionPooling_v2(input_dim=channels[-1] * args.avg_size, hidden_dim=int(args.embedding_size / 2)),
+            SqueezePooling(),
             nn.Linear(int(args.avg_size * channels[-1]), args.embedding_size),
             nn.BatchNorm1d(args.embedding_size),
             AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks),
