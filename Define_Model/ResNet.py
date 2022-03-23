@@ -949,8 +949,8 @@ class ThinResNet(nn.Module):
         if self.alpha:
             x = self.l2_norm(x)
 
-        if not feature_map:
-            embeddings = x
+        if feature_map:
+            return embeddings, x
 
         logits = "" if self.classifier == None else self.classifier(x)
 

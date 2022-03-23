@@ -375,14 +375,15 @@ def main():
     if args.loss_type == 'soft':
         classifier_spk = nn.Linear(args.embedding_size, train_dir.num_spks)
     elif args.loss_type in ['arcsoft', 'amsoft']:
-        classifier_spk = nn.Sequential(
-            nn.AdaptiveAvgPool2d((None, args.avg_size)),
-            SelfAttentionPooling_v2(input_dim=channels[-1] * args.avg_size, hidden_dim=int(args.embedding_size / 2)),
-            SqueezePooling(),
-            nn.Linear(int(args.avg_size * channels[-1]), args.embedding_size),
-            nn.BatchNorm1d(args.embedding_size),
-            AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks),
-        )
+        # classifier_spk = nn.Sequential(
+        #     nn.AdaptiveAvgPool2d((None, args.avg_size)),
+        #     SelfAttentionPooling_v2(input_dim=channels[-1] * args.avg_size, hidden_dim=int(args.embedding_size / 2)),
+        #     SqueezePooling(),
+        #     nn.Linear(int(args.avg_size * channels[-1]), args.embedding_size),
+        #     nn.BatchNorm1d(args.embedding_size),
+        #     AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks),
+        # )
+        classifier_spk = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
 
     classifier_dom = nn.Sequential(
         RevGradLayer(),
@@ -640,14 +641,14 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         true_labels_a = label_a.cuda()
         true_labels_b = label_b.cuda()
 
-        _, spk_embeddings = xvector_model(data, feature_map=True)
+        feature_map, spk_embeddings = xvector_model(data, feature_map=True)
 
         # Training the discriminator
         if args.submean:
-            domain_embeddings = spk_embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
-            domain_embeddings = domain_embeddings.detach()
+            # domain_embeddings = spk_embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
+            domain_embeddings = feature_map.detach()
         else:
-            domain_embeddings = spk_embeddings.detach()
+            domain_embeddings = feature_map.detach()
 
         for i in range(steps):
             # pdb.set_trace()
@@ -775,9 +776,9 @@ def valid_class(valid_loader, model, ce, epoch):
             data = data.cuda()
             label_b = torch.where(label_b == args.speech_dom, torch.tensor([0]), torch.tensor([1])).long()
 
-            _, embeddings = xvector_model(data)
+            feature_map, embeddings = xvector_model(data, feature_map=True)
             out_a = classifier_spk(embeddings)
-            out_b = classifier_dom(embeddings)
+            out_b = classifier_dom(feature_map)
 
             predicted_labels_a = out_a
             predicted_labels_b = out_b
