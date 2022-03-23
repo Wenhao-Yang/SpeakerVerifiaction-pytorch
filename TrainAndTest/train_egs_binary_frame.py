@@ -130,7 +130,8 @@ parser.add_argument('--mask-len', type=int, default=20, help='maximum length of 
 parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
-
+parser.add_argument('--normalize', action='store_false', default=True,
+                    help='normalize vectors in final layer')
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
 parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
@@ -362,7 +363,7 @@ def main():
                       'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
                       'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                       'resnet_size': args.resnet_size, 'num_classes': 0,
-                      'num_classes_b': train_dir.num_doms,
+                      'num_classes_b': train_dir.num_doms, 'normalize': args.normalize,
                       'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
                       'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                       'iteraion': 0, 'all_iteraion': args.all_iteraion}
