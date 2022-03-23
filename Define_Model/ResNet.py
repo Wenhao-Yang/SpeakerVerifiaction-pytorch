@@ -956,7 +956,7 @@ class ThinResNet(nn.Module):
 
         logits = "" if self.classifier == None else self.classifier(x)
 
-        return logits, embeddings
+        return logits, x
 
     def xvector(self, x):
         # pdb.set_trace()
