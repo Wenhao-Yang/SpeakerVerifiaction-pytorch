@@ -991,7 +991,7 @@ if [ $stage -le 101 ]; then
       --num-center 3 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0,1 \
+      --gpu-id 2,4 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
@@ -1001,6 +1001,7 @@ if [ $stage -le 101 ]; then
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
   done
+  # --lncl
   exit
 fi
 
