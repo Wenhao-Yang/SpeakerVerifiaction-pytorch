@@ -533,6 +533,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     parser.add_argument('--alpha-t', type=float, default=1.0, help='the ratio for LNCL')
     parser.add_argument('--lncl', action='store_true', default=False, help='Label Noise Correct Loss')
+    parser.add_argument('--smooth-ratio', type=float, default=0,
+                        help='the margin value for the angualr softmax loss function (default: 3.0')
 
     parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                         help='the ratio softmax loss - triplet loss (default: 2.0')

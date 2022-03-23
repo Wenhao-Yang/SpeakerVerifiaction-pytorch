@@ -199,6 +199,8 @@ parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
                     help='the margin value for the angualr softmax loss function (default: 3.0')
 parser.add_argument('--s', type=float, default=15, metavar='S',
                     help='the margin value for the angualr softmax loss function (default: 3.0')
+parser.add_argument('--smooth-ratio', type=float, default=0,
+                    help='the margin value for the angualr softmax loss function (default: 3.0')
 
 # args for a-softmax
 parser.add_argument('--all-iteraion', type=int, default=0, metavar='M',
@@ -443,7 +445,7 @@ def main():
     elif args.loss_type == 'amsoft':
         ce_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'arcsoft':
-        ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
+        ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, smooth_ratio=args.smooth_ratio)
 
     xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.94, 0.06]))
     # dom_params = list(map(id, model.classifier_dom.parameters()))

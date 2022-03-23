@@ -28,13 +28,16 @@ from torch.autograd import Variable
 
 __all__ = ["AngleLinear", "AngleSoftmaxLoss"]
 
-class AngleLinear(nn.Module):#定义最后一层
-    def __init__(self, in_features, out_features, m=3, phiflag=True):#输入特征维度，输出特征维度，margin超参数
+from Define_Model.Loss.LossFunction import LabelSmoothing
+
+
+class AngleLinear(nn.Module):  # 定义最后一层
+    def __init__(self, in_features, out_features, m=3, phiflag=True):  # 输入特征维度，输出特征维度，margin超参数
         super(AngleLinear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = nn.Parameter(torch.Tensor(in_features, out_features))#本层权重
-        self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)#初始化权重，在第一维度上做normalize
+        self.weight = nn.Parameter(torch.Tensor(in_features, out_features))  # 本层权重
+        self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)  # 初始化权重，在第一维度上做normalize
         self.m = m
         self.phiflag = phiflag
 
@@ -249,13 +252,15 @@ class AMSoftmaxLoss(nn.Module):
 
 class ArcSoftmaxLoss(nn.Module):
 
-    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0):
+    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0, smooth_ratio=0):
         super(ArcSoftmaxLoss, self).__init__()
         self.s = s
         self.margin = margin
-        self.ce = nn.CrossEntropyLoss()
+
+        self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss()
         self.iteraion = iteraion
         self.all_iteraion = all_iteraion
+        self.smooth_ratio = smooth_ratio
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
@@ -287,10 +292,11 @@ class ArcSoftmaxLoss(nn.Module):
         return loss
 
     def __repr__(self):
-        return "ArcSoftmaxLoss(margin=%f, s=%d, iteration=%d, all_iteraion=%s)" % (self.margin,
-                                                                                   self.s,
-                                                                                   self.iteraion,
-                                                                                   self.all_iteraion)
+        return "ArcSoftmaxLoss(margin=%f, s=%d, iteration=%d, all_iteraion=%s, smooth_ratio=%s)" % (self.margin,
+                                                                                                    self.s,
+                                                                                                    self.iteraion,
+                                                                                                    self.all_iteraion,
+                                                                                                    self.smooth_ratio)
 
 
 class MinArcSoftmaxLoss(nn.Module):

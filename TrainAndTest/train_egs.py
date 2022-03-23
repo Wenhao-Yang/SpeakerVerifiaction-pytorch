@@ -502,7 +502,8 @@ def main():
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
         ce_criterion = None
-        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
+        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
+                                      all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio)
     elif args.loss_type == 'minarcsoft':
         ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
