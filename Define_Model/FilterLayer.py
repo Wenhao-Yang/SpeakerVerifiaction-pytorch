@@ -423,7 +423,7 @@ class MeanStd_Norm(nn.Module):
         self.dim = dim
 
     def forward(self, x):
-        return (x - torch.mean(x, dim=self.dim, keepdim=True)) / x.std()
+        return (x - torch.mean(x, dim=self.dim, keepdim=True)) / torch.std(x, dim=self.dim, keepdim=True)
 
     def __repr__(self):
         return "MeanStd_Norm(mean_dim=%d, std_dim=all)" % self.dim
