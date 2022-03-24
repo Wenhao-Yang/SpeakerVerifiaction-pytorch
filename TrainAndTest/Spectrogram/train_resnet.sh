@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=50
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -336,11 +336,11 @@ fi
 if [ $stage -le 50 ]; then
   datasets=vox2
   model=ThinResNet
-  resnet_size=34
+  resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=cbam_v2
-  embedding_size=256
+  block_type=se2block
+  embedding_size=512
   input_norm=Mean
   loss=arcsoft
   feat_type=klsp
@@ -371,16 +371,16 @@ if [ $stage -le 50 ]; then
       --resnet-size ${resnet_size} \
       --downsample ${downsample} \
       --nj 12 \
-      --epochs 60 \
+      --epochs 80 \
       --patience 3 \
       --accu-steps 1 \
       --fast ${fast} \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde5_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde5_var/checkpoint_25.pth \
       --kernel-size 5,5 \
-      --channels 16,32,64,128 \
+      --channels 32,64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
       --red-ratio 8 \
@@ -396,16 +396,16 @@ if [ $stage -le 50 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.00001 \
       --dropout-p 0.1 \
-      --gpu-id 0,1 \
+      --gpu-id 3,4 \
       --all-iteraion 0 \
       --extract \
       --shuffle \
       --cos-sim \
       --loss-type ${loss}
   done
-
+exit
 fi
 
 if [ $stage -le 60 ]; then
