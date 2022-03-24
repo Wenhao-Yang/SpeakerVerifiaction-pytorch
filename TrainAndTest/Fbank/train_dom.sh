@@ -349,7 +349,7 @@ if [ $stage -le 71 ]; then
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=biframe
+  mask_layer=frame
   weight=vox2_rcf
   scale=0.2
   subset=
@@ -404,7 +404,6 @@ if [ $stage -le 71 ]; then
        --gpu-id 0,1 \
        --extract \
        --domain \
-       --binary-domain \
        --dom-ratio ${dom_ratio} \
        --cos-sim \
        --all-iteraion 0 \
