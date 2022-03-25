@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=102
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -1098,7 +1098,7 @@ if [ $stage -le 102 ]; then
       --input-dim 40 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 30 \
+      --epochs 50 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
