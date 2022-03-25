@@ -3,7 +3,7 @@
 stage=79
 
 waited=0
-while [ $(ps 17765 | wc -l) -eq 2 ]; do
+while [ $(ps 901030 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -1295,6 +1295,21 @@ if [ $stage -le 79 ]; then
   scheduler=rop
 #  mask_layer=gau_noise
   mask_layer=attention
+  chn=32
+  if [ $chn -eq 64 ];then
+    channels=64,128,256
+    dp=0.25
+    dp_str=25
+  elif [ $chn -eq 32 ];then
+    channels=32,64,128
+    dp=0.2
+    dp_str=20
+  elif [ $chn -eq 16 ];then
+    channels=16,32,64
+    dp=0.125
+    dp_str=125
+  fi
+
   for weight in rand one ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
@@ -1320,10 +1335,10 @@ if [ $stage -le 79 ]; then
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
-      --channels 16,32,64 \
+      --channels ${channels} \
       --stride 2 \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
@@ -1338,7 +1353,7 @@ if [ $stage -le 79 ]; then
       --m 3 \
       --loss-ratio 0.01 \
       --weight-decay 0.0005 \
-      --dropout-p 0.125 \
+      --dropout-p ${dp} \
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
