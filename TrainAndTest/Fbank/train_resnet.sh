@@ -1014,7 +1014,7 @@ if [ $stage -le 102 ]; then
   model=ThinResNet
   resnet_size=18
   encoder_type=SAP2
-  embedding_size=256
+  embedding_size=512
   block_type=basic
   downsample=k3
   kernel=5,5
@@ -1027,14 +1027,16 @@ if [ $stage -le 102 ]; then
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=baseline
+  mask_layer=both
   weight=one
   scale=0.2
   weight_p=0.1584
   subset=
+  mask_len=5,5
+  stat_type=maxmargin
         # --milestones 15,25,35,45 \
 
-  for mask_layer in drop ; do
+  for loss in arcsoft arcdist ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 #     python TrainAndTest/train_egs.py \
 #       --model ${model} \
@@ -1081,7 +1083,7 @@ if [ $stage -le 102 ]; then
 #       --all-iteraion 0 \
 #       --remove-vad \
 #       --loss-type ${loss}
-
+#${weight}_scale${scale}dp${weight_p}
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
@@ -1100,15 +1102,16 @@ if [ $stage -le 102 ]; then
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.001 \
-      --base-lr 0.00001 \
+      --lr 0.1 \
+      --base-lr 0.000001 \
       --mask-layer ${mask_layer} \
+      --mask-len ${mask_len} \
       --init-weight ${weight} \
       --scale ${scale} \
       --weight-p ${weight_p} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}dp${weight_p}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}dp${weight_p}_wd5e4_var/checkpoint_30.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_30.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -1124,12 +1127,13 @@ if [ $stage -le 102 ]; then
       --margin 0.2 \
       --s 30 \
       --weight-decay 0.0005 \
-      --dropout-p 0 \
-      --gpu-id 0,1 \
+      --dropout-p 0.1 \
+      --gpu-id 2,3 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
       --remove-vad \
+      --stat-type ${stat_type} \
       --loss-type ${loss}
   done
   exit
