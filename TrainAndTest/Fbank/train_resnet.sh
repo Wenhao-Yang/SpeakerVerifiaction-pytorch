@@ -1007,7 +1007,7 @@ fi
 
 
 if [ $stage -le 102 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
   datasets=cnceleb
   testset=cnceleb
   feat_type=klfb
