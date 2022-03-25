@@ -877,27 +877,28 @@ if [ $stage -le 102 ]; then
   model=ThinResNet
   resnet_size=18
   encoder_type=SAP2
-  embedding_size=256
+  embedding_size=512
   block_type=basic
   downsample=k3
   kernel=5,5
-  loss=arcsoft
+  loss=arcdist
   alpha=0
-  input_norm=Mstd
+  input_norm=Mean
   mask_layer=None
   scheduler=rop
   optimizer=sgd
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=baseline
+  mask_layer=both
   weight=vox2_rcf
   scale=0.5
   weight_p=0.1
   subset=
+  stat_type=maxmargin
         # --milestones 15,25,35,45 \
 
-  for mask_layer in baseline ; do
+  for mask_layer in both ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs.py \
        --model ${model} \
@@ -919,9 +920,10 @@ if [ $stage -le 102 ]; then
        --lr 0.1 \
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
+       --mask-len 5,5 \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
@@ -943,6 +945,7 @@ if [ $stage -le 102 ]; then
        --cos-sim \
        --all-iteraion 0 \
        --remove-vad \
+       --stat-type ${stat_type} \
        --loss-type ${loss}
 
 #    python TrainAndTest/train_egs.py \
