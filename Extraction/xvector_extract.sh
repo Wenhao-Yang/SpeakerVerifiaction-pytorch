@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=81
+stage=101
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -544,6 +544,7 @@ if [ $stage -le 101 ]; then
       --gpu-id 0 \
       --remove-vad \
       --verbose 3 \
+      --xvector \
       --test-input fix \
       --cos-sim
   done
