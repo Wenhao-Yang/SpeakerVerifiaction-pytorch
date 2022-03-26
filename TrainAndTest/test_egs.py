@@ -520,7 +520,7 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
     random.shuffle(train_scps)
 
     if args.n_train_snts < len(train_scps):
-        train_scps = train_scps[:train_scps]
+        train_scps = train_scps[:args.n_train_snts]
 
     for (uid, vpath) in train_scps:
         train_vectors.append(file_loader(vpath))
