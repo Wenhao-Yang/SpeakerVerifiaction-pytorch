@@ -528,7 +528,9 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
     train_vectors = torch.tensor(train_vectors)
 
     with open(test_xvectors_scp, 'r') as f:
-        for l in f.readlines():
+        pbar = tqdm(f.readlines(), ncols=100) if args.verbose > 0 else f.readlines()
+
+        for l in pbar:
             uid, vpath = l.split()
 
             test_vector = torch.tensor(file_loader(vpath))
