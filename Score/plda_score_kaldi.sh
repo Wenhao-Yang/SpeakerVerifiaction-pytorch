@@ -46,7 +46,7 @@ fi
 if [ $stage -le 10 ]; then
   # Compute the mean vector for centering the evaluation xvectors.
   $train_cmd $logdir/compute_mean.log \
-    ivector-mean scp:$train_feat_dir/xvector.scp \
+    ivector-mean scp:$train_feat_dir/xvectors.scp \
     $train_feat_dir/mean.vec || exit 1;
 fi
 
@@ -56,7 +56,7 @@ if ! [ -s $transform_mat ];then
 
   $train_cmd $logdir/lda.log \
     ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
-    "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvector.scp ark:- |" \
+    "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- |" \
     ark:$train_feat_dir/utt2spk $transform_mat || exit 1;
 fi
 
@@ -66,7 +66,7 @@ if ! [ -s $plda_model ];then
   # subtract global mean and do lda transform before PLDA classification
   $train_cmd $logdir/plda.log \
     ivector-compute-plda ark:$train_feat_dir/spk2utt \
-    "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvector.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
+    "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
     $plda_model || exit 1;
 fi
 
@@ -75,8 +75,8 @@ if ! [ -s $test_score ];then
   $train_cmd $logdir/test_scoring.log \
     ivector-plda-scoring --normalize-length=true \
     "ivector-copy-plda --smoothing=0.0 $plda_model - |" \
-    "ark:ivector-subtract-global-mean $train_feat_dir/mean.vec scp:$test_feat_dir/xvector.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-    "ark:ivector-subtract-global-mean $train_feat_dir/mean.vec scp:$test_feat_dir/xvector.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+    "ark:ivector-subtract-global-mean $train_feat_dir/mean.vec scp:$test_feat_dir/xvectors.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+    "ark:ivector-subtract-global-mean $train_feat_dir/mean.vec scp:$test_feat_dir/xvectors.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
     "cat '$trials' | cut -d\  --fields=1,2 |" $test_score || exit 1;
 fi
 
