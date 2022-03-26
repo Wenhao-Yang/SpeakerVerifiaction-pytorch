@@ -766,7 +766,7 @@ class AttentionweightLayer(nn.Module):
         elif weight == 'rand':
             ynew = np.random.uniform(size=input_dim)
         elif weight == 'one':
-            ynew = np.ones(size=input_dim)
+            ynew = np.ones(input_dim)
             # ynew = c.VOX1_AUG
         elif weight == 'vox2':
             ynew = c.VOX2_CLEAN
