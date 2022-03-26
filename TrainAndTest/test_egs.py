@@ -64,7 +64,7 @@ except AttributeError:
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition TEST')
 # Data options
 parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
-parser.add_argument('--train-extract-dir', type=str, required=True, help='path to dataset')
+parser.add_argument('--train-extract-dir', type=str, default='', help='path to dataset')
 parser.add_argument('--train-test-dir', type=str, help='path to dataset')
 parser.add_argument('--valid-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')

@@ -2633,6 +2633,7 @@ if [ $stage -le 301 ]; then
        --model ${model} \
        --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
+       --train-extract-dir ${lstm_dir}/data/${train_set}/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
        --trials ${trials} \
