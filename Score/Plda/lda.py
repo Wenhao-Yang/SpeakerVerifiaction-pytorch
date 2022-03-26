@@ -203,7 +203,7 @@ def ComputeNormalizingTransform(covar, floor, verbose=1):
     pdb.set_trace()
     floor = np.float(floor)
     num_floored = ApplyFloor(s, floor)
-
+    # Todo: something may went wrong there.
     if (num_floored > 0) and verbose > 1:
         print("Floored ", num_floored, " eigenvalues of covariance to ", floor)
 
