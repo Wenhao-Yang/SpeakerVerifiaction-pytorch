@@ -248,7 +248,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         else:
                             out_part = model_out
 
-                    out = out.data.cpu().float().numpy()
+                    out = out_part.data.cpu().float().numpy()
                     # print(out.shape)
                     if len(out.shape) == 3:
                         out = out.squeeze(0)
