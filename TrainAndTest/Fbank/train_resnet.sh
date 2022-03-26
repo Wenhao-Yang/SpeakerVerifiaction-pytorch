@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=102
+stage=101
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -893,12 +893,12 @@ if [ $stage -le 101 ]; then
   mask_layer=baseline
   weight=vox2_rcf
   scale=0.2
-  subset=
+  subset=1p9
   stat_type=maxmargin
   loss_ratio=1
         # --milestones 15,25,35,45 \
 
-  for loss in arcsoft ; do
+  for loss in arcdist arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 #     python TrainAndTest/train_egs.py \
 #       --model ${model} \
@@ -972,8 +972,8 @@ if [ $stage -le 101 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_labsmth_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_labsmth_wd5e4_var/checkpoint_60.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_lr${stat_type}${loss_ratio}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_lr${stat_type}${loss_ratio}_wd5e4_var/checkpoint_60.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -997,7 +997,6 @@ if [ $stage -le 101 ]; then
       --all-iteraion 0 \
       --remove-vad \
       --loss-type ${loss} \
-      --smooth-ratio 0.1 \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
   done
@@ -1024,7 +1023,7 @@ if [ $stage -le 102 ]; then
   mask_layer=None
   scheduler=rop
   optimizer=sgd
-  input_dim=40
+  input_dim=80
   batch_size=256
   fast=none1
   mask_layer=both
@@ -1032,7 +1031,7 @@ if [ $stage -le 102 ]; then
   scale=0.2
   weight_p=0.1584
   subset=
-  mask_len=5,5
+  mask_len=5,10
   stat_type=maxmargin
         # --milestones 15,25,35,45 \
 
@@ -1116,7 +1115,7 @@ if [ $stage -le 102 ]; then
       --downsample ${downsample} \
       --channels 16,32,64,128 \
       --fast ${fast} \
-      --stride 2,1 \
+      --stride 2 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
@@ -1133,6 +1132,7 @@ if [ $stage -le 102 ]; then
       --cos-sim \
       --all-iteraion 0 \
       --remove-vad \
+      --loss-ratio 1 \
       --stat-type ${stat_type} \
       --loss-type ${loss}
   done
