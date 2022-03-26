@@ -404,8 +404,16 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
         label = label.numpy()
 
         if test_cohort_scores != None:
-            mean_e_c, std_e_c = [test_cohort_scores[uid] for uid in uid_a]
-            mean_t_c, std_t_c = [test_cohort_scores[uid] for uid in uid_b]
+            enroll_mean_std = np.array([test_cohort_scores[uid] for uid in uid_a])
+
+            mean_e_c = enroll_mean_std[:, 0]
+            std_e_c = enroll_mean_std[:, 1]
+
+            test_mean_std = np.array([test_cohort_scores[uid] for uid in uid_b])
+
+            mean_t_c = test_mean_std[:, 0]
+            std_t_c = test_mean_std[:, 1]
+            # [test_cohort_scores[uid] for uid in uid_b]
 
             if args.score_norm == "z-norm":
                 dists = (dists - mean_e_c) / std_e_c
