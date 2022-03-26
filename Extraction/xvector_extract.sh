@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=81
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -357,11 +357,11 @@ if [ $stage -le 81 ]; then
   resume=${checkpoint_dir}/checkpoint_50.pth
 
   echo -e "\n\033[1;4;31m Stage ${stage}: Extracting ${model} in ${test_set} with ${loss} \033[0m\n"
+#        --mean-vector \
 
   for test_subset in test; do # 32,128,512; 8,32,128
     python -W ignore Extraction/extract_xvector_egs.py \
       --model ${model} \
-      --mean-vector \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
       --train-extract-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev${subset}_fb${input_dim} \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
@@ -394,7 +394,8 @@ if [ $stage -le 81 ]; then
       --test-input fix \
       --cos-sim
   done
-  exit
+  stage=101
+#  exit
 fi
 
 
@@ -538,7 +539,7 @@ if [ $stage -le 101 ]; then
       --s 30 \
       --remove-vad \
       --frame-shift 300 \
-      --xvector-dir ${xvector_dir}/${testset}_${test_subset}_var \
+      --xvector-dir ${xvector_dir}/${testset}_${test_subset}_fix \
       --check-yaml ${model_yaml} \
       --resume ${resume} \
       --gpu-id 0 \
