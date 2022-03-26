@@ -531,7 +531,7 @@ class KaldiExtractDataset(data.Dataset):
         feat_scp = dir + '/feats.scp'
         trials = dir + '/%s' % trials_file
 
-        if os.path.exists(trials) and extract_trials:
+        if os.path.isfile(trials) and extract_trials:
             assert os.path.exists(feat_scp), feat_scp
 
             trials_utts = set()
