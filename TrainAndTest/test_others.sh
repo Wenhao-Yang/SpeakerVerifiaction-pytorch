@@ -2665,7 +2665,6 @@ if [ $stage -le 301 ]; then
        --score-norm s-norm \
        --gpu-id 0 \
        --verbose 2 \
-       --extract \
        --cos-sim
    done
 
