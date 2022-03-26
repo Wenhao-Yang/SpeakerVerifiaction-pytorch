@@ -526,7 +526,7 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
         train_vectors.append(file_loader(vpath))
 
     train_vectors = torch.tensor(train_vectors).cuda()
-    train_vectors = train_vectors / train_vectors.norm(p=2, dim=1)
+    train_vectors = train_vectors / train_vectors.norm(p=2, dim=1).unsqueeze(1)
 
     with open(test_xvectors_scp, 'r') as f:
         pbar = tqdm(f.readlines(), ncols=100) if args.verbose > 0 else f.readlines()
