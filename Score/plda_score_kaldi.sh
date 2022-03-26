@@ -43,7 +43,7 @@ if ! [ -s $train_feat_dir/spk2utt ];then
 fi
 
 
-if [ $stage -le 10 ]; then
+if ! [ -s $train_feat_dir/mean.vec ]; then
   # Compute the mean vector for centering the evaluation xvectors.
   $train_cmd $logdir/compute_mean.log \
     ivector-mean scp:$train_feat_dir/xvectors.scp \
