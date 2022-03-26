@@ -9,6 +9,8 @@
 @Time: 2020/12/30 09:48
 @Overview:
 """
+import pdb
+
 import numpy as np
 
 from Score.Plda.plda import ApplyFloor
@@ -198,7 +200,8 @@ def ComputeNormalizingTransform(covar, floor, verbose=1):
     # 取值大于某一floor的特征值
     # Floor eigenvalues to a small positive value.
     floor *= s[0]  # Floor relative to the largest eigenvalue
-    floor = np.double(floor)
+    pdb.set_trace()
+    floor = np.float(floor)
     num_floored = ApplyFloor(s, floor)
 
     if (num_floored > 0) and verbose > 1:
