@@ -11,6 +11,8 @@
 """
 from __future__ import print_function
 
+import random
+
 import argparse
 import os
 import pdb
@@ -231,6 +233,12 @@ parser.add_argument('--verbose', type=int, default=0, choices=[0, 1, 2],
 parser.add_argument('--normalize', action='store_false', default=True,
                     help='normalize vectors in final layer')
 parser.add_argument('--mean-vector', action='store_false', default=True, help='mean for embeddings while extracting')
+parser.add_argument('--score-norm', type=str, default='', help='score normalization')
+
+parser.add_argument('--n-train-snts', type=int, default=100000,
+                    help='how many batches to wait before logging training status')
+parser.add_argument('--cohort-size', type=int, default=50000,
+                    help='how many batches to wait before logging training status')
 
 args = parser.parse_args()
 
@@ -279,8 +287,8 @@ if args.mvnorm:
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':
-    # file_loader = kaldiio.load_mat
-    file_loader = read_mat
+    file_loader = kaldiio.load_mat
+    # file_loader = read_mat
     torch.multiprocessing.set_sharing_strategy('file_system')
 elif args.feat_format == 'npy':
     file_loader = np.load
@@ -290,6 +298,9 @@ if not args.valid:
 
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
+
+train_extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
+                                        verbose=args.verbose, trials_file='')
 
 verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
                                   verbose=args.verbose)
@@ -348,13 +359,13 @@ def valid(valid_loader, model):
     torch.cuda.empty_cache()
 
 
-def test(test_loader, xvector_dir):
+def test(test_loader, xvector_dir, test_cohort_scores=None):
     # switch to evaluate mode
     labels, distances = [], []
     l_batch = []
     d_batch = []
     pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
-    for batch_idx, (data_a, data_p, label) in pbar:
+    for batch_idx, (data_a, data_p, label, uid_a, uid_b) in pbar:
 
         data_a = torch.tensor(data_a)  # .cuda()  # .view(-1, 4, embedding_size)
         data_p = torch.tensor(data_p)  # .cuda()  # .view(-
@@ -390,6 +401,19 @@ def test(test_loader, xvector_dir):
         dists = dists.numpy()
         label = label.numpy()
 
+        if test_cohort_scores != None:
+            mean_e_c, std_e_c = [test_cohort_scores[uid] for uid in uid_a]
+            mean_t_c, std_t_c = [test_cohort_scores[uid] for uid in uid_b]
+
+            if args.score_norm == "z-norm":
+                dists = (dists - mean_e_c) / std_e_c
+            elif args.score_norm == "t-norm":
+                dists = (dists - mean_t_c) / std_t_c
+            elif args.score_norm == "s-norm":
+                score_e = (dists - mean_e_c) / std_e_c
+                score_t = (dists - mean_t_c) / std_t_c
+                dists = 0.5 * (score_e + score_t)
+
         if len(dists) == 1:
             d_batch.append(float(dists[0]))
             l_batch.append(label[0])
@@ -416,7 +440,7 @@ def test(test_loader, xvector_dir):
 
     time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime()) if args.score_suffix == '' else args.score_suffix
 
-    score_file = os.path.join(xvector_dir, 'score.' + time_stamp)
+    score_file = os.path.join(xvector_dir, '%sscore.' % args.score_norm + time_stamp)
     with open(score_file, 'w') as f:
         for l in zip(labels, distances):
             f.write(" ".join([str(i) for i in l]) + '\n')
@@ -470,9 +494,53 @@ def test(test_loader, xvector_dir):
 
     print(result_str)
 
-    result_file = os.path.join(xvector_dir, 'result.' + time_stamp)
+    result_file = os.path.join(xvector_dir, '%sresult.' % args.score_norm + time_stamp)
     with open(result_file, 'w') as f:
         f.write(result_str)
+
+
+def cohort(train_xvectors_dir, test_xvectors_dir):
+    train_xvectors_scp = os.path.join(train_xvectors_dir, 'xvectors.scp')
+    test_xvectors_scp = os.path.join(test_xvectors_dir, 'xvectors.scp')
+
+    assert os.path.exists(train_xvectors_scp)
+    assert os.path.exists(test_xvectors_scp)
+
+    train_stats = {}
+
+    train_vectors = []
+    train_scps = []
+    with open(train_xvectors_scp, 'r') as f:
+        for l in f.readlines():
+            uid, vpath = l.split()
+            train_scps.append((uid, vpath))
+
+    random.shuffle(train_scps)
+
+    if args.n_train_snts > len(train_scps):
+        train_scps = train_scps[:train_scps]
+
+    for (uid, vpath) in train_scps:
+        train_vectors.append(file_loader(vpath))
+
+    train_vectors = torch.tensor(train_vectors)
+
+    with open(test_xvectors_scp, 'r') as f:
+        for l in f.readlines():
+            uid, vpath = l.split()
+
+            test_vector = torch.tensor(file_loader(vpath))
+            test_vector = test_vector.repeat(train_vectors.shape[0], 1)
+
+            scores = l2_dist(test_vector, train_vectors)
+            scores = torch.topk(scores, k=args.cohort_size, dim=0)[0]
+
+            mean_t_c = torch.mean(scores, dim=0)
+            std_t_c = torch.std(scores, dim=0)
+
+            train_stats[uid] = [mean_t_c, std_t_c]
+
+    return train_stats
 
 
 if __name__ == '__main__':
@@ -573,11 +641,6 @@ if __name__ == '__main__':
         model_dict.update(filtered)
         model.load_state_dict(model_dict)
         # model.dropout.p = args.dropout_p
-        #
-        try:
-            model.dropout.p = args.dropout_p
-        except:
-            pass
         
         # print(model)
         if args.cuda:
@@ -593,11 +656,22 @@ if __name__ == '__main__':
         print('Memery Usage: %.4f GB' % (psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
 
         if args.extract:
+
+            if args.score_norm != '':
+                train_xvector_dir = os.path.join(args.xvector_dir, 'train')
+                train_verify_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=args.test_batch_size,
+                                                                  shuffle=False, **kwargs)
+                verification_extract(train_verify_loader, model, xvector_dir=train_xvector_dir, epoch=start,
+                                     test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
+                                     mean_vector=args.mean_vector,
+                                     xvector=args.xvector)
+
+            test_xvector_dir = os.path.join(args.xvector_dir, 'test')
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
 
             # extract(verify_loader, model, args.xvector_dir)
-            verification_extract(verify_loader, model, xvector_dir=args.xvector_dir, epoch=start,
+            verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
                                  test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
                                  mean_vector=args.mean_vector,
                                  xvector=args.xvector)
@@ -606,12 +680,15 @@ if __name__ == '__main__':
         file_loader = kaldiio.load_mat
         # file_loader = read_vec_flt
         test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
-                                       loader=file_loader)
+                                       loader=file_loader, return_uid=args.return_uid)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
                                                   batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
                                                   shuffle=False, **kwargs)
-        test(test_loader, xvector_dir=args.xvector_dir)
+
+        train_stats = cohort(train_xvector_dir, test_xvector_dir) if args.score_norm != '' else None
+
+        test(test_loader, xvector_dir=args.xvector_dir, test_cohort_scores=train_stats)
 
     stop_time = time.time()
     t = float(stop_time - start_time)
