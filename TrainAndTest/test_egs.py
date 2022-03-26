@@ -612,6 +612,9 @@ if __name__ == '__main__':
         print('Testing with %s distance, ' % dist_type)
 
     start_time = time.time()
+    test_xvector_dir = os.path.join(args.xvector_dir, 'test')
+    train_xvector_dir = os.path.join(args.xvector_dir, 'train')
+
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
 
@@ -659,11 +662,9 @@ if __name__ == '__main__':
 
         del train_dir  # , valid_dir
         print('Memery Usage: %.4f GB' % (psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
-        test_xvector_dir = os.path.join(args.xvector_dir, 'test')
 
         if args.extract:
             if args.score_norm != '':
-                train_xvector_dir = os.path.join(args.xvector_dir, 'train')
                 train_verify_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=args.test_batch_size,
                                                                   shuffle=False, **kwargs)
                 verification_extract(train_verify_loader, model, xvector_dir=train_xvector_dir, epoch=start,
