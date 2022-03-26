@@ -87,9 +87,9 @@ if [ -s $test_score ];then
   mindcf1=`Score/compute_min_dcf.py --p-target 0.01 $test_score $trials 2> /dev/null`
   mindcf2=`Score/compute_min_dcf.py --p-target 0.001 $test_score $trials 2> /dev/null`
 
-  test_result=$test_feat_dir/result_plda_${lda_dim}_$(date "+%Y.%m.%d.%H-%M-%S")
+  test_result=$test_feat_dir/result_plda_${lda_dim} #_$(date "+%Y.%m.%d.%H-%M-%S")
 
-  echo "EER: $eer%" >> $test_result
+  echo -e "\n$(date "+%Y.%m.%d.%H-%M-%S"):\nEER: $eer%" >> $test_result
   echo "minDCF(p-target=0.01) : $mindcf1" >> $test_result
   echo "minDCF(p-target=0.001): $mindcf2" >> $test_result
 
