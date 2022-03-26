@@ -2,7 +2,7 @@
 
 # author: yangwenhao
 # contact: 874681044@qq.com
-# file: plda_score.sh
+# file: plda_score_python.sh
 # time: 2022/3/20 14:05
 # Description:
 
@@ -38,7 +38,7 @@ if [ $stage -le 10 ]; then
 
   lda_dim=200
 
-  ./Score/plda_score.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
+  ./Score/plda_score_python.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
   exit
 fi
 
@@ -51,6 +51,6 @@ if [ $stage -le 20 ]; then
 
   lda_dim=200
 
-  ./Score/plda_score.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
+  ./Score/plda_score_kaldi.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
 
 fi

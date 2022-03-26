@@ -2,7 +2,7 @@
 
 # author: yangwenhao
 # contact: 874681044@qq.com
-# file: plda_score.sh
+# file: plda_score_python.sh
 # time: 2022/3/20 14:05
 # Description: 
 
@@ -25,9 +25,10 @@ logdir=$test_feat_dir/log
 transform_mat=$train_feat_dir/transform_dim${lda_dim}.mat
 plda_model=$train_feat_dir/plda_${lda_dim}
 
-#train_cmd="Score/run.pl --mem 8G"
+train_cmd="Score/run.pl --mem 8G"
 
 test_score=$test_feat_dir/scores_${lda_dim}_$(date "+%Y-%m-%d-%H-%M-%S")
+
 
 if ! [ -s $train_feat_dir/utt2spk ];then
     echo "Creating utt2spk!"
@@ -42,35 +43,41 @@ if ! [ -s $train_feat_dir/spk2utt ];then
 fi
 
 
-if ! [ -s $transform_mat ];then
-  echo "Computing LDA transform matrix ..."
-  python Score/Plda/compute_lda.py --total-covariance-factor=0.0 \
-    --lda-dim $lda_dim  \
-    --spk2utt $data_dir/spk2utt \
-    --ivector-scp $train_feat_dir/xvectors.scp \
-    --subtract-global-mean \
-    --lda-mat $transform_mat
+if [ $stage -le 10 ]; then
+  # Compute the mean vector for centering the evaluation xvectors.
+  $train_cmd $logdir/compute_mean.log \
+    ivector-mean scp:$train_feat_dir/xvector.scp \
+    $train_feat_dir/mean.vec || exit 1;
 fi
 
+  # This script uses LDA to decrease the dimensionality prior to PLDA.
+if ! [ -s $transform_mat ];then
+  echo "Computing LDA transform matrix ..."
+
+  $train_cmd $logdir/lda.log \
+    ivector-compute-lda --total-covariance-factor=0.0 --dim=$lda_dim \
+    "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvector.scp ark:- |" \
+    ark:$train_feat_dir/utt2spk $transform_mat || exit 1;
+fi
 
 if ! [ -s $plda_model ];then
   echo "Computing PLDA stats ..."
-  python Score/Plda/compute_plda.py --spk2utt $train_feat_dir/spk2utt \
-    --ivector-scp $train_feat_dir/xvectors.scp \
-    --mean-vec $train_feat_dir/mean.vec \
-    --transform-vec $transform_mat \
-    --plda-file $plda_model
+  # Train the PLDA model.
+  # subtract global mean and do lda transform before PLDA classification
+  $train_cmd $logdir/plda.log \
+    ivector-compute-plda ark:$train_feat_dir/spk2utt \
+    "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvector.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
+    $plda_model || exit 1;
 fi
 
 if ! [ -s $test_score ];then
   echo "Scoring with PLDA ..."
-  python Score/Plda/plda_scoring.py --normalize-length \
-    --train-vec-scp $test_feat_dir/xvectors.scp \
-    --test-vec-scp $test_feat_dir/xvectors.scp \
-    --trials $trials \
-    --plda-file $plda_model \
-    --transform-vec $transform_mat \
-    --score $test_score
+  $train_cmd $logdir/test_scoring.log \
+    ivector-plda-scoring --normalize-length=true \
+    "ivector-copy-plda --smoothing=0.0 $plda_model - |" \
+    "ark:ivector-subtract-global-mean $train_feat_dir/mean.vec scp:$test_feat_dir/xvector.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+    "ark:ivector-subtract-global-mean $train_feat_dir/mean.vec scp:$test_feat_dir/xvector.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+    "cat '$trials' | cut -d\  --fields=1,2 |" $test_score || exit 1;
 fi
 
 if [ -s $test_score ];then
