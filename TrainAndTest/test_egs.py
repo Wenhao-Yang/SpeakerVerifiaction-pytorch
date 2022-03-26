@@ -64,6 +64,7 @@ except AttributeError:
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition TEST')
 # Data options
 parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
+parser.add_argument('--train-extract-dir', type=str, required=True, help='path to dataset')
 parser.add_argument('--train-test-dir', type=str, help='path to dataset')
 parser.add_argument('--valid-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
@@ -299,8 +300,9 @@ if not args.valid:
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
 
-train_extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
-                                        verbose=args.verbose, trials_file='')
+if os.path.isdir(args.train_extract_dir):
+    train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, filer_loader=file_loader,
+                                            verbose=args.verbose, trials_file='')
 
 verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
                                   verbose=args.verbose)
