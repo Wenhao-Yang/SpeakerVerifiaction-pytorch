@@ -11,6 +11,8 @@
 """
 from __future__ import print_function
 
+import pickle
+
 import random
 
 import argparse
@@ -560,6 +562,11 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
 
             train_stats[uid] = [mean_t_c, std_t_c]
 
+    with open(test_xvectors_dir + '/cohort.pickle', 'wb') as f:
+        pickle.dump(train_stats, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle.dump(train_stats, test_xvectors_dir)
+
     return train_stats
 
 
@@ -707,7 +714,13 @@ if __name__ == '__main__':
                                                   batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
                                                   shuffle=False, **kwargs)
 
-        train_stats = cohort(train_xvector_dir, test_xvector_dir) if args.score_norm != '' else None
+        train_stats_pickle = os.path.join(test_xvector_dir, 'cohort.pickle')
+
+        if os.path.isfile(train_stats_pickle):
+            with open(args.extract_path + '/freq.data.pickle', 'rb') as f:
+                train_stats = pickle.load(f)
+        else:
+            train_stats = cohort(train_xvector_dir, test_xvector_dir) if args.score_norm != '' else None
 
         test(test_loader, xvector_dir=args.xvector_dir, test_cohort_scores=train_stats)
 
