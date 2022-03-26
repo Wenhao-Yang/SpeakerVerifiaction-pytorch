@@ -29,6 +29,7 @@ train_cmd="Score/run.pl --mem 8G"
 
 test_score=$test_feat_dir/scores_${lda_dim}_$(date "+%Y-%m-%d-%H-%M-%S")
 
+stage=0
 
 if ! [ -s $train_feat_dir/utt2spk ];then
     echo "Creating utt2spk!"
@@ -42,8 +43,8 @@ if ! [ -s $train_feat_dir/spk2utt ];then
     echo "There are ${num_spks} speakers in train set!"
 fi
 
-
-if ! [ -s $train_feat_dir/mean.vec ]; then
+if [ $stage -le 0 ]; then
+#if ! [ -s $train_feat_dir/mean.vec ]; then
   # Compute the mean vector for centering the evaluation xvectors.
   $train_cmd $logdir/compute_mean.log \
     ivector-mean scp:$train_feat_dir/xvectors.scp \
