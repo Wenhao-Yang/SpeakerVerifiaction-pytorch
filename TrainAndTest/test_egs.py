@@ -238,7 +238,7 @@ parser.add_argument('--score-norm', type=str, default='', help='score normalizat
 parser.add_argument('--n-train-snts', type=int, default=100000,
                     help='how many batches to wait before logging training status')
 parser.add_argument('--cohort-size', type=int, default=50000,
-                    help='how many batches to wait before logging training status')
+                    help='how many imposters to include in cohort')
 
 args = parser.parse_args()
 
@@ -533,7 +533,10 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
             test_vector = test_vector.repeat(train_vectors.shape[0], 1)
 
             scores = l2_dist(test_vector, train_vectors)
-            scores = torch.topk(scores, k=args.cohort_size, dim=0)[0]
+            if args.cos_sim:
+                scores = torch.topk(scores, k=args.cohort_size, dim=0)[0]
+            else:
+                scores = -torch.topk(-scores, k=args.cohort_size, dim=0)[0]
 
             mean_t_c = torch.mean(scores, dim=0)
             std_t_c = torch.std(scores, dim=0)
