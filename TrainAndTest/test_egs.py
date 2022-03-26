@@ -684,7 +684,7 @@ if __name__ == '__main__':
         # file_loader = read_vec_flt
         return_uid = True if args.score_norm != '' else False
         test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
-                                       loader=file_loader, return_uid=args.return_uid)
+                                       loader=file_loader, return_uid=return_uid)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
                                                   batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
