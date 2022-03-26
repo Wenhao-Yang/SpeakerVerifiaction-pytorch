@@ -30,7 +30,7 @@ fi
 
 
 if [ $stage -le 10 ]; then
-  xvector_dir=Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/cnceleb_test_var/xvectors_a/epoch_60
+  xvector_dir=Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_lrmaxmargin1_wd5e4_var/cnceleb_test_var/xvectors_b/epoch_60
   train_vec_dir=${xvector_dir}/train
   test_vec_dir=${xvector_dir}/test
   data_dir=${lstm_dir}/cnceleb/klfb/dev_fb40
