@@ -6,7 +6,7 @@
 # time: 2022/3/20 14:05
 # Description:
 
-stage=20
+stage=10
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification/data
 
@@ -38,7 +38,7 @@ if [ $stage -le 10 ]; then
 
   lda_dim=200
 
-  ./Score/plda_score_python.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
+  ./Score/plda_score_kaldi.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
   exit
 fi
 

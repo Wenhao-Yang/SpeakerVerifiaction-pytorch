@@ -394,8 +394,8 @@ if [ $stage -le 81 ]; then
       --test-input fix \
       --cos-sim
   done
-  stage=101
-#  exit
+#  stage=101
+  exit
 fi
 
 

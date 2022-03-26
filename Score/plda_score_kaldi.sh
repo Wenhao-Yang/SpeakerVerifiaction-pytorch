@@ -77,7 +77,7 @@ if ! [ -s $test_score ];then
     "ivector-copy-plda --smoothing=0.0 $plda_model - |" \
     "ark:ivector-subtract-global-mean $train_feat_dir/mean.vec scp:$test_feat_dir/xvectors.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
     "ark:ivector-subtract-global-mean $train_feat_dir/mean.vec scp:$test_feat_dir/xvectors.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-    "cat $trials | cut -d\  --fields=1,2 |" $test_score || exit 1;
+    "cat '$trials' | cut -d\  --fields=1,2 |" $test_score || exit 1;
 fi
 
 if [ -s $test_score ];then
