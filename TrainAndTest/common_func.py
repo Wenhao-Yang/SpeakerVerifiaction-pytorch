@@ -224,10 +224,14 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                             data_part = data[i:(i + batch_size)]
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
                             model_out = model.xvector(data_part) if xvector else model(data_part)
-                            try:
-                                _, out_part, _, _ = model_out
-                            except:
-                                _, out_part = model_out
+                            if isinstance(model_out, tuple):
+                                try:
+                                    _, out_part, _, _ = model_out
+                                except:
+                                    _, out_part = model_out
+                            else:
+                                out_part = model_out
+
                             out.append(out_part)
                             i += batch_size
                         out = torch.cat(out, dim=0)
@@ -235,10 +239,14 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                         data = data.cuda() if next(model.parameters()).is_cuda else data
                         model_out = model.xvector(data) if xvector else model(data)
-                        try:
-                            _, out, _, _ = model_out
-                        except:
-                            _, out = model_out
+
+                        if isinstance(model_out, tuple):
+                            try:
+                                _, out_part, _, _ = model_out
+                            except:
+                                _, out_part = model_out
+                        else:
+                            out_part = model_out
 
                     out = out.data.cpu().float().numpy()
                     # print(out.shape)
