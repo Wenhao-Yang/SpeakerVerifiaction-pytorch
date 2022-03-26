@@ -242,13 +242,13 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                         if isinstance(model_out, tuple):
                             try:
-                                _, out_part, _, _ = model_out
+                                _, out, _, _ = model_out
                             except:
-                                _, out_part = model_out
+                                _, out = model_out
                         else:
-                            out_part = model_out
+                            out = model_out
 
-                    out = out_part.data.cpu().float().numpy()
+                    out = out.data.cpu().float().numpy()
                     # print(out.shape)
                     if len(out.shape) == 3:
                         out = out.squeeze(0)
