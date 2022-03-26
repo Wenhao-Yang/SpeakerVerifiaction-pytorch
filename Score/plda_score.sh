@@ -43,7 +43,7 @@ fi
 
 
 if ! [ -s $transform_mat ];then
-  echo "Computing lda transform matrix ..."
+  echo "Computing LDA transform matrix ..."
   python Score/Plda/compute_lda.py --total-covariance-factor=0.0 \
     --lda-dim $lda_dim  \
     --spk2utt $data_dir/spk2utt \
@@ -54,7 +54,7 @@ fi
 
 
 if ! [ -s $plda_model ];then
-  echo "Computing plda stats ..."
+  echo "Computing PLDA stats ..."
   python Score/Plda/compute_plda.py --spk2utt $train_feat_dir/spk2utt \
     --ivector-scp $train_feat_dir/xvectors.scp \
     --mean-vec $train_feat_dir/mean.vec \
@@ -63,7 +63,7 @@ if ! [ -s $plda_model ];then
 fi
 
 if ! [ -s $test_score ];then
-  echo "Scoring with plda ..."
+  echo "Scoring with PLDA ..."
   python Score/Plda/plda_scoring.py --normalize-length \
     --train-vec-scp $test_feat_dir/xvectors.scp \
     --test-vec-scp $test_feat_dir/xvectors.scp \
@@ -74,7 +74,7 @@ if ! [ -s $test_score ];then
 fi
 
 if [ -s $test_score ];then
-
+  echo "Computing EER minDCF ..."
   eer=`compute-eer <(Score/prepare_for_eer.py $trials $test_score) 2> /dev/null`
   mindcf1=`Score/compute_min_dcf.py --p-target 0.01 $test_score $trials 2> /dev/null`
   mindcf2=`Score/compute_min_dcf.py --p-target 0.001 $test_score $trials 2> /dev/null`
