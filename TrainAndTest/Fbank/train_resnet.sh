@@ -951,11 +951,11 @@ if [ $stage -le 101 ]; then
 #${input_dim}
     python TrainAndTest/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${subset}_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
       --shuffle \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${subset}_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
       --random-chunk 200 400 \
