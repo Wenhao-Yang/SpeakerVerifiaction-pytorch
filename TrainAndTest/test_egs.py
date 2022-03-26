@@ -238,7 +238,7 @@ parser.add_argument('--score-norm', type=str, default='', help='score normalizat
 
 parser.add_argument('--n-train-snts', type=int, default=100000,
                     help='how many batches to wait before logging training status')
-parser.add_argument('--cohort-size', type=int, default=5000,
+parser.add_argument('--cohort-size', type=int, default=50000,
                     help='how many imposters to include in cohort')
 
 args = parser.parse_args()
