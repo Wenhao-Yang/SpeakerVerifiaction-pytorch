@@ -526,6 +526,7 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
         train_vectors.append(file_loader(vpath))
 
     train_vectors = torch.tensor(train_vectors).cuda()
+    train_vectors = train_vectors / train_vectors.norm(p=2, dim=1)
 
     with open(test_xvectors_scp, 'r') as f:
         pbar = tqdm(f.readlines(), ncols=100) if args.verbose > 0 else f.readlines()
@@ -534,12 +535,13 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
             uid, vpath = l.split()
 
             test_vector = torch.tensor(file_loader(vpath))
-            test_vector = test_vector.repeat(train_vectors.shape[0], 1).cuda()
-
-            scores = l2_dist(test_vector, train_vectors)
+            pdb.set_trace()
             if args.cos_sim:
+                test_vector = test_vector.repeat(train_vectors.shape[0], 1).cuda()
                 scores = torch.topk(scores, k=args.cohort_size, dim=0)[0]
             else:
+                test_vector = test_vector.repeat(train_vectors.shape[0], 1).cuda()
+                scores = l2_dist(test_vector, train_vectors)
                 scores = -torch.topk(-scores, k=args.cohort_size, dim=0)[0]
 
             mean_t_c = torch.mean(scores, dim=0).cpu()
