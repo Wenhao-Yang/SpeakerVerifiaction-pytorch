@@ -2611,7 +2611,7 @@ if [ $stage -le 301 ]; then
   block_type=basic
   downsample=k3
   kernel=5,5
-  loss=arcsoft
+  loss=arcdist
   alpha=0
   input_norm=Mean
   mask_layer=baseline
