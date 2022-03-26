@@ -684,7 +684,7 @@ if __name__ == '__main__':
         file_loader = kaldiio.load_mat
         # file_loader = read_vec_flt
         return_uid = True if args.score_norm != '' else False
-        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
+        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=test_xvector_dir,
                                        loader=file_loader, return_uid=return_uid)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
