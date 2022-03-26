@@ -140,7 +140,7 @@ class AttentiveStatsPool(nn.Module):
 #                  num_classes_b=0, block_type='basic',
 #                  mask='None', mask_len=20, channels=[512, 512, 512, 512, 1500], **kwargs
 class ECAPA_TDNN(nn.Module):
-    def __init__(self, num_classes, embedding_size=512, input_dim=80, input_norm='',
+    def __init__(self, num_classes, embedding_size=192, input_dim=80, input_norm='',
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP',
                  num_classes_b=0, block_type='basic', alpha=0.,
@@ -215,7 +215,12 @@ class ECAPA_TDNN(nn.Module):
         out = self.bn0(self.pooling(out))
         embeddings = self.bn1(self.fc1(out))
 
-        logits = self.classifier(embeddings)
+        if self.classifier == None:
+            logits = ""
+        else:
+            logits = self.classifier(embeddings)
+
+        # logits = self.classifier(embeddings)
 
         return logits, embeddings
 
