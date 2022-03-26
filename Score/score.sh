@@ -6,7 +6,7 @@
 # time: 2022/3/20 14:05
 # Description:
 
-stage=10
+stage=20
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification/data
 

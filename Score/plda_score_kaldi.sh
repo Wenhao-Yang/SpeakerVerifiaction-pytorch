@@ -92,7 +92,7 @@ if [ -s $test_score ];then
   echo "minDCF(p-target=0.01) : $mindcf1" >> $test_result
   echo "minDCF(p-target=0.001): $mindcf2" >> $test_result
 
-  echo "EER: $eer%"
+  echo -e "\nEER: $eer%"
   echo "minDCF(p-target=0.01) : $mindcf1"
   echo "minDCF(p-target=0.001): $mindcf2"
 fi
