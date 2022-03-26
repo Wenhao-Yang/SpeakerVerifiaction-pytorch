@@ -6,7 +6,7 @@
 # time: 2022/3/20 14:05
 # Description:
 
-stage=10
+stage=20
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification/data
 
@@ -37,6 +37,19 @@ if [ $stage -le 10 ]; then
   trials=${lstm_dir}/cnceleb/klfb/test_fb40/trials
 
   lda_dim=400
+
+  ./Score/plda_score.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
+
+fi
+
+if [ $stage -le 20 ]; then
+  xvector_dir=Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_STAP_em512_wd5e4_var/cnceleb_test_var/xvectors_a/epoch_50
+  train_vec_dir=${xvector_dir}/train
+  test_vec_dir=${xvector_dir}/test
+  data_dir=${lstm_dir}/cnceleb/klfb/dev_fb40
+  trials=${lstm_dir}/cnceleb/klfb/test_fb40/trials
+
+  lda_dim=200
 
   ./Score/plda_score.sh ${lda_dim} ${data_dir} ${train_vec_dir} ${test_vec_dir} ${trials}
 
