@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=81
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -317,6 +317,81 @@ if [ $stage -le 80 ]; then
       --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em512_wd5e4_var/checkpoint_40.pth \
       --gpu-id 0 \
       --remove-vad \
+      --cos-sim
+  done
+  exit
+fi
+
+if [ $stage -le 81 ]; then
+
+  datasets=cnceleb
+  testset=cnceleb
+  feat_type=klfb
+  model=TDNN_v5
+  resnet_size=18
+  encoder_type=STAP
+  embedding_size=512
+  block_type=basic
+  downsample=k3
+  kernel=5,5
+  loss=arcsoft
+  alpha=0
+  input_norm=Mean
+  mask_layer=baseline
+  scheduler=rop
+  optimizer=sgd
+  input_dim=40
+  batch_size=1
+  fast=none1
+  mask_layer=baseline
+  weight=vox2_rcf
+  scale=0.2
+  subset=
+  channels=512,512,512,512,1500
+
+  checkpoint_data=Data/checkpoint
+  checkpoint_dir=${checkpoint_data}/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_STAP_em512_wd5e4_var
+  xvector_dir=Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_STAP_em512_wd5e4_var
+
+  model_yaml=${checkpoint_dir}/model.2022.01.14.yaml
+  resume=${checkpoint_dir}/checkpoint_50.pth
+
+  echo -e "\n\033[1;4;31m Stage ${stage}: Extracting ${model} in ${test_set} with ${loss} \033[0m\n"
+
+  for test_subset in test; do # 32,128,512; 8,32,128
+    python -W ignore Extraction/extract_xvector_egs.py \
+      --model ${model} \
+      --mean-vector \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
+      --train-extract-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev${subset}_fb${input_dim} \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
+      --feat-format kaldi \
+      --input-norm Mean \
+      --input-dim ${input_dim} \
+      --nj 12 \
+      --batch-size ${batch_size} \
+      --input-norm ${input_norm} \
+      --mask-layer ${mask_layer} \
+      --resnet-size ${resnet_size} \
+      --channels ${channels} \
+      --fast ${fast} \
+      --stride 1 \
+      --block-type ${block_type} \
+      --embedding-size ${embedding_size} \
+      --encoder-type ${encoder_type} \
+      --loss-type ${loss} \
+      --margin 0.2 \
+      --s 30 \
+      --remove-vad \
+      --frame-shift 300 \
+      --xvector-dir ${xvector_dir}/${testset}_${test_subset}_var \
+      --check-yaml ${model_yaml} \
+      --resume ${resume} \
+      --gpu-id 0 \
+      --remove-vad \
+      --verbose 3 \
+      --xvector \
+      --test-input fix \
       --cos-sim
   done
   exit
