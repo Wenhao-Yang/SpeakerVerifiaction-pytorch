@@ -659,9 +659,9 @@ if __name__ == '__main__':
 
         del train_dir  # , valid_dir
         print('Memery Usage: %.4f GB' % (psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
+        test_xvector_dir = os.path.join(args.xvector_dir, 'test')
 
         if args.extract:
-
             if args.score_norm != '':
                 train_xvector_dir = os.path.join(args.xvector_dir, 'train')
                 train_verify_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=args.test_batch_size,
@@ -671,7 +671,6 @@ if __name__ == '__main__':
                                      mean_vector=args.mean_vector,
                                      xvector=args.xvector)
 
-            test_xvector_dir = os.path.join(args.xvector_dir, 'test')
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
 
