@@ -1732,6 +1732,10 @@ if [ $stage -le 95 ]; then
   exit
 fi
 
+#|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+#|  vox1-test-rand   |   4.1994    |   0.2521    |   0.3782    |    0.5004    | 20220327 20:06:46 |   chn16
+
+
 
 
 if [ $stage -le 96 ]; then
