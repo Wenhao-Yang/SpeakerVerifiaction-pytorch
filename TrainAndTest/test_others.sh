@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=95
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1689,8 +1689,9 @@ if [ $stage -le 95 ]; then
   sname=dev #_aug_com
   test_subset=test
   input_norm=Mean
+  mask_layer=attention
 
-  for weight in mel clean aug vox2 ; do
+  for weight in rand ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1706,7 +1707,7 @@ if [ $stage -le 95 ]; then
       --nj 12 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
-      --mask-layer attention \
+      --mask-layer ${mask_layer} \
       --score-suffix ${weight} \
       --init-weight ${weight} \
       --encoder-type ${encod} \
@@ -1721,13 +1722,17 @@ if [ $stage -le 95 ]; then
       --dropout-p 0.125 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var/checkpoint_50.pth \
+      --model-yaml Data/checkpoint/LoResNet8/vox1/klsp_egs_attention/arcsoft_sgd_rop/Mean_cbam_None_dp125_alpha0_em256_rand_chn16_wd5e4_var/model.2022.03.25.yaml \
       --gpu-id 0 \
       --cos-sim
   done
   exit
 fi
+
+
+
 if [ $stage -le 96 ]; then
   feat_type=klsp
   model=LoResNet
