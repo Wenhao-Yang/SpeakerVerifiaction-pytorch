@@ -369,7 +369,12 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     l_batch = []
     d_batch = []
     pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
-    for batch_idx, (data_a, data_p, label, uid_a, uid_b) in pbar:
+    for batch_idx, this_batch in pbar:
+        if test_cohort_scores != None:
+
+            data_a, data_p, label, uid_a, uid_b = this_batch
+        else:
+            data_a, data_p, label = this_batch
 
         data_a = torch.tensor(data_a)  # .cuda()  # .view(-1, 4, embedding_size)
         data_p = torch.tensor(data_p)  # .cuda()  # .view(-
