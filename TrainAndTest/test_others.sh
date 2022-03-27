@@ -1714,19 +1714,19 @@ if [ $stage -le 95 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 16,32,64 \
+      --channels 32,64,128 \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
       --input-length var \
-      --dropout-p 0.125 \
+      --dropout-p 0.2 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}_chn16_wd5e4_var/checkpoint_50.pth \
-      --model-yaml Data/checkpoint/LoResNet8/vox1/klsp_egs_attention/arcsoft_sgd_rop/Mean_cbam_None_dp125_alpha0_em256_rand_chn16_wd5e4_var/model.2022.03.25.yaml \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_${weight}_chn32_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_${weight}_chn32_wd5e4_var/checkpoint_50.pth \
+      --model-yaml Data/checkpoint/LoResNet8/vox1/klsp_egs_attention/arcsoft_sgd_rop/Mean_cbam_None_dp20_alpha0_em256_rand_chn16_wd5e4_var/model.2022.03.26.yaml \
       --gpu-id 0 \
-      --extract \
+      --verbose 3 \
       --cos-sim
   done
   exit
