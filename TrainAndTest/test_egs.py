@@ -421,7 +421,7 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
                 dists = (dists - mean_e_c) / std_e_c
             elif args.score_norm == "t-norm":
                 dists = (dists - mean_t_c) / std_t_c
-            elif args.score_norm == "s-norm":
+            elif args.score_norm in ["s-norm", "as-norm"]:
                 score_e = (dists - mean_e_c) / std_e_c
                 score_t = (dists - mean_t_c) / std_t_c
                 dists = 0.5 * (score_e + score_t)
@@ -551,11 +551,14 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
                 test_vector = test_vector.cuda()
                 scores = torch.matmul(train_vectors, test_vector / test_vector.norm(p=2))
 
-                scores = torch.topk(scores, k=args.cohort_size, dim=0)[0]
+                if args.score_norm == "as-norm":
+                    scores = torch.topk(scores, k=args.cohort_size, dim=0)[0]
             else:
                 test_vector = test_vector.repeat(train_vectors.shape[0], 1).cuda()
                 scores = l2_dist(test_vector, train_vectors)
-                scores = -torch.topk(-scores, k=args.cohort_size, dim=0)[0]
+
+                if args.score_norm == "as-norm":
+                    scores = -torch.topk(-scores, k=args.cohort_size, dim=0)[0]
 
             mean_t_c = torch.mean(scores, dim=0).cpu()
             std_t_c = torch.std(scores, dim=0).cpu()
