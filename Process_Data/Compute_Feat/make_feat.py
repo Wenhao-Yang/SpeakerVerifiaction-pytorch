@@ -48,7 +48,7 @@ parser.add_argument('--filter-type', type=str, default='mel', help='number of jo
 parser.add_argument('--filters', type=int, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--multi-weight', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--numcep', type=int, default=24, help='number of cepstrum bin to make feats (default: 24)')
-parser.add_argument('--windowsize', type=float, default=0.02, choices=[0.02, 0.025],
+parser.add_argument('--windowsize', type=float, default=0.02, choices=[0.02, 0.025, 0.0625, 0.125],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--stride', type=float, default=0.01, help='number of jobs to make feats (default: 10)')
 
