@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=20
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
@@ -250,27 +250,30 @@ if [ $stage -le 10 ]; then
 fi
 
 # ==================================================   timit   ==================================================
-if [ $stage -eq 20 ]; then
-  for name in train test; do
-    python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
-      --nj 12 \
-      --out-set ${name}_log \
-      --log-scale \
-      --feat-type spectrogram \
-      --nfft 320 \
-      --windowsize 0.02
+if [ $stage -le 20 ]; then
+  dataset=timit
+  #  feat=fb40
+  feat=hst
+  feat_type=$feat
+  filters=20
 
+  #        --filters ${filters} \
+  #      --log-scale \
+
+  echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} for ${dataset}\033[0m\n"
+  for s in train test ; do
     python Process_Data/Compute_Feat/make_feat.py \
-      --data-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/${name} \
-      --out-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect \
-      --nj 12 \
-      --out-set ${name}_power \
-      --feat-type spectrogram \
-      --nfft 320 \
-      --windowsize 0.02
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
+      --out-dir ${lstm_dir}/data/${dataset}/${feat_type} \
+      --out-set ${s}_c${filters} \
+      --filters ${filters} \
+      --feat-type feat_type \
+      --feat-format kaldi_cmp \
+      --windowsize 0.128 \
+      --stride 0.1 \
+      --nj 12
   done
+  exit
 fi
 
 if [ $stage -le 21 ]; then

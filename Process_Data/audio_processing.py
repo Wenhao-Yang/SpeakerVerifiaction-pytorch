@@ -17,6 +17,7 @@ from scipy.signal import butter, sosfilt
 from speechpy.feature import mfe
 from speechpy.processing import cmvn, cmvnw
 
+from Misc.HST.short_SHT import short_SHT
 from Process_Data import constants as c
 from Process_Data.Compute_Feat.compute_vad import ComputeVadEnergy
 from Process_Data.xfcc.common import local_fbank, local_mfcc
@@ -366,6 +367,36 @@ def Make_MFCC(filename,
     if duration:
         return feats, len(audio) / sample_rate
 
+    # np.save(filename.replace('.wav', '.npy'), frames_features)
+    return feats
+
+
+def Make_HST(filename, winlen=0.125, winstep=0.1, numcep=20, duration=False):
+    '''
+
+    :param filename:
+    :param winlen:
+    :param winstep: per of Components
+    :param numcep: num of Components
+    :return:
+    '''
+    if not os.path.exists(filename):
+        raise ValueError('wav file does not exist.')
+
+    # sample_rate, audio = wavfile.read(filename)
+    audio, sample_rate = sf.read(filename, dtype='int16')
+    # audio, sample_rate = librosa.load(filename, sr=None)
+    # audio = audio.flatten()
+    if not len(audio) > 0:
+        raise ValueError('wav file is empty?')
+
+    insf_all, inse_all, s_list, t = short_SHT(audio, fs=sample_rate,
+                                              win=int(winlen * sample_rate),
+                                              a=winstep, s=numcep)
+
+    feats = np.stack((insf_all, inse_all)).transpose((2, 1, 0)).reshape(-1, int(numcep * 2))
+    if duration:
+        return feats, len(audio) / sample_rate
     # np.save(filename.replace('.wav', '.npy'), frames_features)
     return feats
 

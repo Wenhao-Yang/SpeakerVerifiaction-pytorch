@@ -25,7 +25,7 @@ import numpy as np
 from kaldiio import WriteHelper
 
 from Process_Data.audio_augment.common import RunCommand
-from Process_Data.audio_processing import Make_Fbank, Make_Spect, Make_MFCC
+from Process_Data.audio_processing import Make_Fbank, Make_Spect, Make_MFCC, Make_HST
 from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
@@ -37,7 +37,7 @@ parser.add_argument('--out-dir', type=str, required=True, help='number of jobs t
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--feat-format', type=str, required=True, choices=['kaldi', 'npy', 'kaldi_cmp'],
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
+parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc', 'hst'],
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
@@ -135,6 +135,9 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                             feat, duration = Make_MFCC(filename=temp_wav, numcep=args.numcep, nfilt=args.filters,
                                                        lowfreq=args.lowfreq, normalize=args.normalize, duration=True,
                                                        use_energy=args.energy)
+                        elif args.feat_type == 'hst':
+                            feat, duration = Make_HST(filename=temp_wav, winlen=args.windowsize, winstep=args.stride,
+                                                      numcep=args.filters, duration=True)
 
                         os.remove(temp_wav)
 
@@ -157,6 +160,10 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                             feat, duration = Make_MFCC(filename=pair[1], numcep=args.numcep, nfilt=args.filters,
                                                        lowfreq=args.lowfreq,
                                                        normalize=args.normalize, duration=True, use_energy=args.energy)
+                        elif args.feat_type == 'hst':
+                            feat, duration = Make_HST(filename=pair[1], winlen=args.windowsize, winstep=args.stride,
+                                                      numcep=args.filters, duration=True)
+
                         # feat = np.load(pair[1]).astype(np.float32)
 
                     feat = feat.astype(np.float32)
