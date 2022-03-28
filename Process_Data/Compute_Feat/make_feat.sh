@@ -269,7 +269,7 @@ if [ $stage -le 20 ]; then
       --filters ${filters} \
       --feat-type feat_type \
       --feat-format kaldi_cmp \
-      --windowsize 0.128 \
+      --windowsize 0.125 \
       --stride 0.1 \
       --nj 12
   done

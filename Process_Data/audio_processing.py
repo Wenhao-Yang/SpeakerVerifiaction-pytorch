@@ -396,7 +396,7 @@ def Make_HST(filename, winlen=0.125, winstep=0.1, numcep=20, duration=False):
 
     feats = np.stack((insf_all, inse_all)).transpose((2, 1, 0)).reshape(-1, int(numcep * 2))
     if duration:
-        return feats, len(audio) / sample_rate
+        return (feats, s_list), len(audio) / sample_rate
     # np.save(filename.replace('.wav', '.npy'), frames_features)
     return feats
 
