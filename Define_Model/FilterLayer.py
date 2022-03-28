@@ -796,7 +796,10 @@ class AttentionweightLayer(nn.Module):
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
 
-        self.drop_p = ynew  # * dropout_p
+        train_weight = True if weight in ['randt'] else False
+        self.drop_p = nn.Parameter(torch.tensor(ynew), requires_grad=train_weight)
+        # self.drop_p = ynew  # * dropout_p
+
         # self.activation = nn.Tanh()
         # self.activation = nn.Softmax(dim=-1)
         self.activation = nn.Sigmoid()
@@ -805,12 +808,15 @@ class AttentionweightLayer(nn.Module):
 
         assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
 
-        if len(x.shape)==4:
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
+        if len(x.shape) == 4:
+            # drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
+            drop_weight = self.drop_p.reshape(1, 1, 1, -1).float()
         else:
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
-        if x.is_cuda:
-            drop_weight = drop_weight.cuda()
+            # drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
+            drop_weight = self.drop_p.reshape(1, 1, -1).float()
+
+        # if x.is_cuda:
+        #     drop_weight = drop_weight.cuda()
 
         drop_weight = self.w * drop_weight + self.b
         drop_weight = self.activation(drop_weight)

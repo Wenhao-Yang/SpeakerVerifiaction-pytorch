@@ -1295,7 +1295,7 @@ if [ $stage -le 79 ]; then
   scheduler=rop
 #  mask_layer=gau_noise
   mask_layer=attention
-  chn=32
+  chn=16
   if [ $chn -eq 64 ];then
     channels=64,128,256
     dp=0.25
@@ -1310,7 +1310,7 @@ if [ $stage -le 79 ]; then
     dp_str=125
   fi
 
-  for weight in rand ; do
+  for weight in randt ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
