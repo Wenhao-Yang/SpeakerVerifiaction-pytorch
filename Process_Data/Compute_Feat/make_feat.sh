@@ -267,7 +267,7 @@ if [ $stage -le 20 ]; then
       --out-dir ${lstm_dir}/data/${dataset}/${feat_type} \
       --out-set ${s}_c${filters} \
       --filters ${filters} \
-      --feat-type feat_type \
+      --feat-type ${feat_type} \
       --feat-format kaldi_cmp \
       --windowsize 0.0625 \
       --stride 0.1 \
