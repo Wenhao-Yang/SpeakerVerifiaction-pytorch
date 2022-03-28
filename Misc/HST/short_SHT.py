@@ -105,15 +105,15 @@ def SHT(x,fs,a=0.1, isPlot = False):
             
     insf, inse = hht(St2,fs)
     
-    if isPlot:
-        num = len(insf)
-        for i2 in range(num):
+#     if isPlot:
+#         num = len(insf)
+#         for i2 in range(num):
 
-            insf_draw = insf[i2,:]
-            inse_draw = inse[i2,:]/10
-            plt.scatter(t, insf_draw, marker='o', s =inse_draw, c=inse_draw, cmap='coolwarm')
-            plt.ylim(0,4000)
-            plt.xlim(0,t_end)
+#             insf_draw = insf[i2,:]
+#             inse_draw = inse[i2,:]/10
+#             plt.scatter(t, insf_draw, marker='o', s =inse_draw, c=inse_draw, cmap='coolwarm')
+#             plt.ylim(0,4000)
+#             plt.xlim(0,t_end)
     
     return St2, insf, inse
 
@@ -157,6 +157,7 @@ def short_SHT(x, fs, win, a = 0.1, s=50, isPlot = False):
                 inse_draw = inse_all[i3,win * i2 : win * (i2 + 1)]/100+0.0000001
                 t_short = t[win * i2 : win * (i2 + 1)]
                 plt.scatter(t_short, insf_draw, marker='o', s =inse_draw, c=inse_draw, cmap='coolwarm')
+        
         plt.ylim(0,4000)
         plt.xlim(0,t_end)       
                 
