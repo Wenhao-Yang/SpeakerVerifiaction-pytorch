@@ -1503,7 +1503,7 @@ if [ $stage -le 157 ]; then
       --model ${model} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --lr 0.1 \
       --base-lr 0.00001 \
       --alpha 0 \
@@ -1516,8 +1516,8 @@ if [ $stage -le 157 ]; then
       --activation ${activation} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_${activation}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_${activation}_wd5e4_var/checkpoint_17.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_${activation}_wde4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_${activation}_wde4_var/checkpoint_17.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
