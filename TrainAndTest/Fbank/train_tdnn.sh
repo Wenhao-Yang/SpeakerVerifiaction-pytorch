@@ -1366,12 +1366,13 @@ if [ $stage -le 155 ]; then
   datasets=cnceleb
   embedding_size=512
   block_type=basic
-  loss=subarc
-  scheduler=exp
+  loss=arcsoft
+  scheduler=rop
   optimizer=sgd
+  activation=leakyrelu
 
   # num_centers=3
-  dev_sub=
+  dev_sub=12
 
   for loss in arcsoft; do
     feat=fb${input_dim}
@@ -1400,10 +1401,11 @@ if [ $stage -le 155 ]; then
      --batch-size 128 \
      --random-chunk 200 400 \
      --input-dim ${input_dim} \
+     --activation ${activation} \
      --channels 512,512,512,512,1500 \
      --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_${activation}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_${activation}_wd5e4_var/checkpoint_40.pth \
      --cos-sim \
      --dropout-p 0.0 \
      --veri-pairs 9600 \
