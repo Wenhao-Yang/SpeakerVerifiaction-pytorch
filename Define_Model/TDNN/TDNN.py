@@ -25,7 +25,7 @@ from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMask
     TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0, DropweightLayer, DropweightLayer_v2
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
-    SelfAttentionPooling, MaxStatisticPooling
+    SelfAttentionPooling, MaxStatisticPooling, AttentionStatisticPooling_v2, SelfAttentionPooling_v2
 from Define_Model.ResNet import conv1x1, conv5x5, conv3x3
 from Define_Model.model import get_activation, BasicBlock
 
@@ -1033,8 +1033,14 @@ class TDNN_v5(nn.Module):
         elif encoder_type in ['ASTP']:
             self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
             self.encoder_output = self.channels[4] * 2
+        elif encoder_type in ['ASTP2', 'SASP2']:
+            self.encoder = AttentionStatisticPooling_v2(input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
+            self.encoder_output = self.channels[4] * 2
         elif encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
+            self.encoder_output = self.channels[4]
+        elif encoder_type == 'SAP2':
+            self.encoder = SelfAttentionPooling_v2(input_dim=self.channels[4], hidden_dim=self.channels[4])
             self.encoder_output = self.channels[4]
         elif encoder_type == 'Ghos_v3':
             self.encoder = GhostVLAD_v3(num_clusters=self.num_center, gost=1, dim=self.channels[4])

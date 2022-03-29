@@ -1468,25 +1468,27 @@ if [ $stage -le 157 ]; then
   model=TDNN_v5
   datasets=cnceleb
   embedding_size=512
-  encod=STAP
+  encod=SASP2
   block_type=basic
   input_norm=Mean
   loss=arcsoft
   scheduler=rop
   optimizer=sgd
-  input_dim=24
+  input_dim=40
   lr_ratio=0
   loss_ratio=0
   feat_type=klfb
 
   num_centers=3
-  dev_sub=
-  batch_size=256
+  dev_sub=12
+  batch_size=128
   mask_layer=baseline
+
+  activation=leakyrelu
   # _center${num_centers}
 
   for loss in arcsoft ; do
-    feat=fb${input_dim}_cut
+    feat=fb${input_dim}
     python -W ignore TrainAndTest/train_egs.py \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${dev_sub}_${feat} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
@@ -1495,7 +1497,7 @@ if [ $stage -le 157 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --nj 12 \
       --shuffle \
-      --epochs 50 \
+      --epochs 60 \
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
@@ -1511,10 +1513,11 @@ if [ $stage -le 157 ]; then
       --batch-size ${batch_size} \
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
+      --activation ${activation} \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encod} \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}cut_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_wd5e4_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}cut_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_17.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_${activation}_wd5e4_var \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${dev_sub}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encod}_em${embedding_size}_${activation}_wd5e4_var/checkpoint_17.pth \
       --cos-sim \
       --dropout-p 0.0 \
       --veri-pairs 9600 \
@@ -1527,10 +1530,9 @@ if [ $stage -le 157 ]; then
       --margin 0.2 \
       --s 30 \
       --remove-vad \
-      --log-interval 10 \
-      --test-interval 2
+      --log-interval 10
   done
-   exit
+  exit
 fi
 
 if [ $stage -le 158 ]; then
