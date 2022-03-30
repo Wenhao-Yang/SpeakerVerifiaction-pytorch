@@ -290,6 +290,7 @@ if [ $stage -le 21 ]; then
 #  feat_type=klfb
   num_frames=6000
   input_per_spks=256
+  nj=8
 #        --remove-vad \
 #--domain \
 
@@ -300,7 +301,7 @@ if [ $stage -le 21 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 12 \
+      --nj ${nj} \
       --feat-type ${feat_type} \
       --train \
       --domain \
@@ -314,7 +315,7 @@ if [ $stage -le 21 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 12 \
+      --nj ${nj} \
       --domain \
       --feat-type ${feat_type} \
       --num-frames ${num_frames} \
