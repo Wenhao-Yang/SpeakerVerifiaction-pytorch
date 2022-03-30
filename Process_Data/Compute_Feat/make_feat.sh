@@ -288,7 +288,7 @@ if [ $stage -le 21 ]; then
 
 #  feat=klfb
 #  feat_type=klfb
-  num_frames=6000
+  num_frames=64000
   input_per_spks=256
   nj=8
 #        --remove-vad \
