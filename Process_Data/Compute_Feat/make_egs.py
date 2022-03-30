@@ -56,7 +56,8 @@ parser.add_argument('--out-format', type=str, choices=['kaldi', 'npy', 'kaldi_cm
 parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--feat-type', type=str, default='fbank', choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'klfb', 'klsp'],
+parser.add_argument('--feat-type', type=str, default='fbank',
+                    choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'klfb', 'klsp', 'hst'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
 
