@@ -329,7 +329,7 @@ class SincConv_fast(nn.Module):
 
         return F.conv1d(waveforms, self.filters, stride=self.stride,
                         padding=self.padding, dilation=self.dilation,
-                        bias=None, groups=1)
+                        bias=None, groups=1).abs()
 
 
 class grl_func(torch.autograd.Function):
