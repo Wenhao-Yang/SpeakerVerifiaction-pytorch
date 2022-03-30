@@ -304,7 +304,6 @@ if [ $stage -le 21 ]; then
       --nj ${nj} \
       --feat-type ${feat_type} \
       --train \
-      --domain \
       --input-per-spks ${input_per_spks} \
       --num-frames ${num_frames} \
       --feat-format kaldi \
@@ -316,7 +315,6 @@ if [ $stage -le 21 ]; then
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj ${nj} \
-      --domain \
       --feat-type ${feat_type} \
       --num-frames ${num_frames} \
       --input-per-spks ${input_per_spks} \
