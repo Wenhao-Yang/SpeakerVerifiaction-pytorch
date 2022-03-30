@@ -22,7 +22,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer, AttentionweightLayer, \
-    TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0, DropweightLayer, DropweightLayer_v2
+    TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0, DropweightLayer, DropweightLayer_v2, Sinc2Down, \
+    Sinc2Conv, Wav2Conv
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
     SelfAttentionPooling, MaxStatisticPooling
@@ -956,6 +957,12 @@ class TDNN_v5(nn.Module):
             self.filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
         elif self.filter == 'Avg':
             self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
+        elif self.filter == 'sinc':
+            self.filter_layer = Sinc2Conv(input_dim=input_dim, out_dim=feat_dim)
+        elif self.filter == 'wav2spk':
+            self.filter_layer = Wav2Conv(out_dim=feat_dim)
+        elif self.filter == 'sinc2down':
+            self.filter_layer = Sinc2Down(input_dim, out_dim=feat_dim, fs=sr)
         else:
             self.filter_layer = None
 

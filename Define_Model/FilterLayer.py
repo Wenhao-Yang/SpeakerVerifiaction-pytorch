@@ -1325,6 +1325,64 @@ class Sinc2Conv(nn.Module):
     #           Train EER: 2.0071%, Threshold: 0.2855, mindcf-0.01: 0.2954, mindcf-0.001: 0.5138.
     #           Test  ERR: 7.1262%, Threshold: 0.2042, mindcf-0.01: 0.6215, mindcf-0.001: 0.8115.
 
+
+class Sinc2Down(nn.Module):
+    def __init__(self, input_dim, out_dim=60, fs=16000):
+        super(Sinc2Down, self).__init__()
+        self.fs = fs
+        self.current_input = input_dim
+        self.out_dim = out_dim
+
+        # conv_layers = [(80, 251, 1), (60, 5, 1), (out_dim, 5, 1)]
+        self.conv_layers = nn.ModuleList()
+        self.conv_layer1 = nn.Sequential(
+            nn.Conv1d(in_channels=input_dim, out_channels=80, kernel_size=251, stride=6),
+            # SincConv_fast(80, 251, self.fs, stride=6),
+            nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
+            nn.InstanceNorm1d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
+            nn.LeakyReLU(),
+        )
+
+        self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
+        self.conv_layer2 = nn.Sequential(
+            nn.Conv1d(in_channels=80, out_channels=60, kernel_size=5, stride=1),
+            nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
+            nn.InstanceNorm1d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
+            nn.LeakyReLU(),
+        )
+
+        self.current_input = int((self.current_input - 5 + 1) / 3)
+        self.conv_layer3 = nn.Sequential(
+            nn.Conv1d(in_channels=60, out_channels=self.out_dim, kernel_size=5, stride=1),
+            nn.MaxPool1d(kernel_size=3),
+            nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            nn.LeakyReLU(),
+        )
+
+        # self.conv_layer4 = nn.Sequential(
+        #     nn.Conv1d(in_channels=128, out_channels=self.out_dim, kernel_size=5, stride=2),
+        #     nn.AvgPool1d(kernel_size=3),  # nn.MaxPool1d(kernel_size=3),
+        #     nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+        #     nn.LeakyReLU(),
+        # )
+
+        self.current_output = int((self.current_input - 5 + 1) / 3)
+
+    def forward(self, x):
+        # BxT -> BxCxT
+        if len(x.shape) == 2:
+            x = x.unsqueeze(1)
+        elif len(x.shape) == 4:
+            x = x.squeeze(1)
+
+        x = self.conv_layer1(x)
+        x = self.conv_layer2(x)
+        x = self.conv_layer3(x)
+        # x = self.conv_layer4(x)
+
+        return x.transpose(1, 2)
+
+
 # https://github.com/pytorch/fairseq/blob/c47a9b2eef0f41b0564c8daf52cb82ea97fc6548/fairseq/models/wav2vec/wav2vec.py#L367
 class Wav2Conv(nn.Module):
     def __init__(self, out_dim=512, log_compression=True):
