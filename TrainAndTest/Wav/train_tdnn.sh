@@ -13,7 +13,7 @@ if [ $stage -le 0 ]; then
   datasets=timit
   model=TDNN_v5
   feat_type=hst
-  feat=log
+  feat=c20
   block_type=basic
   input_norm=Mean
   dropout_p=0
@@ -36,10 +36,10 @@ if [ $stage -le 0 ]; then
     echo -e "\n\033[1;4;31m Stage${stage} :Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_${feat} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/train_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --batch-size 128 \
       --input-norm ${input_norm} \
