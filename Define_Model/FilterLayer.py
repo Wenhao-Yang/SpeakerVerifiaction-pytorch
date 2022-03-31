@@ -1375,6 +1375,7 @@ class Sinc2Down(nn.Module):
             x = x.unsqueeze(1)
         elif len(x.shape) == 4:
             x = x.squeeze(1)
+        print(x.shape)
         if x.shape[2] == self.input_dim:
             x = x.transpose(1, 2)
 
