@@ -30,7 +30,7 @@ if [ $stage -le 0 ]; then
   scheduler=rop
   optimizer=sgd
 
-  lr_ratio=1
+  lr_ratio=0.1
 
   for filter in sinc2down; do
     echo -e "\n\033[1;4;31m Stage${stage} :Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
