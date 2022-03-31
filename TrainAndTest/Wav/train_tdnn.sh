@@ -26,7 +26,7 @@ if [ $stage -le 0 ]; then
   block_type=None
   filter=fBPLayer
   feat_dim=40
-  loss=arcsoft
+  loss=soft
   scheduler=rop
   optimizer=sgd
 
