@@ -49,6 +49,7 @@ if [ $stage -le 0 ]; then
       --epochs 40 \
       --lr 0.1 \
       --input-dim 40 \
+      --random-chunk 32000 64000 \
       --feat-dim ${feat_dim} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
