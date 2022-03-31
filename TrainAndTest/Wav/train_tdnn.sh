@@ -48,6 +48,7 @@ if [ $stage -le 0 ]; then
       --nj 10 \
       --epochs 40 \
       --lr 0.1 \
+      --input-dim 40 \
       --feat-dim ${feat_dim} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
