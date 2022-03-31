@@ -536,7 +536,7 @@ def main():
         model_para = [{'params': rest_params},
                       {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
-    if args.filter in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer']:
+    if args.filter in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
         filter_params = list(map(id, model.filter_layer.parameters()))
         rest_params = filter(lambda p: id(p) not in filter_params, model_para[0]['params'])
         init_wd = args.filter_wd if args.filter_wd > 0 else args.weight_decay

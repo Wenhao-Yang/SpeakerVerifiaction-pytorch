@@ -71,6 +71,7 @@ if [ $stage -le 0 ]; then
       --s 30 \
       --m 3 \
       --lr-ratio ${lr_ratio} \
+      --filter-wd 0.001 \
       --weight-decay 0.0005 \
       --dropout-p ${dropout_p} \
       --gpu-id 0,3 \
