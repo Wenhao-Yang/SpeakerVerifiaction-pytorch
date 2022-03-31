@@ -1330,6 +1330,7 @@ class Sinc2Down(nn.Module):
     def __init__(self, input_dim, out_dim=60, fs=16000):
         super(Sinc2Down, self).__init__()
         self.fs = fs
+        self.input_dim = input_dim
         self.current_input = input_dim
         self.out_dim = out_dim
 
@@ -1374,6 +1375,8 @@ class Sinc2Down(nn.Module):
             x = x.unsqueeze(1)
         elif len(x.shape) == 4:
             x = x.squeeze(1)
+        if x.shape[2] == self.input_dim:
+            x = x.transpose(1, 2)
 
         x = self.conv_layer1(x)
         x = self.conv_layer2(x)
