@@ -623,8 +623,8 @@ def main():
                                                    shuffle=args.shuffle, **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,
-                                                                         min_chunk_size=args.chunk_size,
-                                                                         max_chunk_size=args.chunk_size + 1),
+                                                                         min_chunk_size=min_chunk_size,
+                                                                         max_chunk_size=max_chunk_size),
                                                    shuffle=False, **kwargs)
     else:
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=args.shuffle,
