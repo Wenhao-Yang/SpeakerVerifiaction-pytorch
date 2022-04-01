@@ -581,6 +581,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                         help='the ratio softmax loss - triplet loss (default: 2.0')
+    parser.add_argument('--loss-lambda', action='store_true', default=False,
+                        help='using Cosine similarity')
 
     # args for additive margin-softmax
     parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',

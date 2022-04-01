@@ -157,6 +157,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
+    lambda_ = min(2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1., 0)
 
     # start_time = time.time()
     # pdb.set_trace()
@@ -196,6 +197,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
             loss_cent = args.loss_ratio * ce_criterion(classfier, label)
+            if args.loss_lambda:
+                loss_cent = loss_cent * lambda_
+
             loss_xent = xe_criterion(classfier, label)
 
             other_loss += loss_cent

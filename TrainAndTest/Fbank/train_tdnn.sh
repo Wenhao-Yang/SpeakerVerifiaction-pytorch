@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=157
+stage=151
 waited=0
 while [ $(ps 733240 | wc -l) -eq 2 ]; do
   sleep 60
@@ -1317,6 +1317,11 @@ if [ $stage -le 151 ]; then
   input_norm=Mean
   lr_ratio=0
   loss_ratio=1
+  stat_type=margin1
+
+  scheduler=rop
+  optimizer=sgd
+#  --stat-type ${stat_type} \
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
  for loss in arcdist; do
@@ -1333,9 +1338,10 @@ if [ $stage -le 151 ]; then
      --patience 3 \
      --milestones 10,20,30,40 \
      --model ${model} \
-     --scheduler rop \
+     --optimizer ${optimizer} \
+     --scheduler ${scheduler} \
      --weight-decay 0.0005 \
-     --lr 0.01 \
+     --lr 0.1 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
@@ -1344,21 +1350,24 @@ if [ $stage -le 151 ]; then
      --input-dim ${input_dim} \
      --channels 512,512,512,512,1500 \
      --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}_wd5e4_var/checkpoint_21.pth \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda_${stat_type}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda_${stat_type}_wd5e4_var/checkpoint_21.pth \
      --cos-sim \
      --dropout-p 0.0 \
      --veri-pairs 9600 \
      --gpu-id 0,1 \
      --num-valid 2 \
      --loss-ratio ${loss_ratio} \
+     --loss-lambda \
      --lr-ratio ${lr_ratio} \
      --loss-type ${loss} \
+     --stat-type ${stat_type} \
      --margin 0.2 \
      --s 30 \
      --remove-vad \
      --log-interval 10
  done
+ exit
 fi
 
 if [ $stage -le 155 ]; then
