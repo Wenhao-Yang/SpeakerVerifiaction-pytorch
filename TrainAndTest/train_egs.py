@@ -295,6 +295,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
     correct = 0.
     total_datasize = 0.
+    lambda_ = min(2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1., 0)
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
@@ -324,6 +325,9 @@ def valid_class(valid_loader, model, ce, epoch):
                 loss = xe_criterion(classfier, label)
             elif args.loss_type == 'arcdist':
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
+                if args.loss_lambda:
+                    loss_cent = loss_cent * lambda_
+
                 loss_xent = xe_criterion(classfier, label)
 
                 other_loss += float(loss_cent.item())
