@@ -1316,7 +1316,7 @@ if [ $stage -le 151 ]; then
   input_dim=40
   input_norm=Mean
   lr_ratio=0
-  loss_ratio=1
+  loss_ratio=10
   stat_type=margin1
 
   scheduler=rop
