@@ -1351,8 +1351,8 @@ if [ $stage -le 151 ]; then
      --input-dim ${input_dim} \
      --channels 512,512,512,512,1500 \
      --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda_${stat_type}m${m}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda_${stat_type}m${m}_wd5e4_var/checkpoint_21.pth \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda2_${stat_type}m${m}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda2_${stat_type}m${m}_wd5e4_var/checkpoint_21.pth \
      --cos-sim \
      --dropout-p 0.0 \
      --veri-pairs 9600 \
