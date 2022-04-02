@@ -1262,6 +1262,7 @@ if [ $stage -le 150 ]; then
   scheduler=cyclic
   optimizer=adam
   stat_type=margin1
+  m=1.0
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
