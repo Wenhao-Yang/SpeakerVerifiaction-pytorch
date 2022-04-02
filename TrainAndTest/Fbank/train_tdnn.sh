@@ -1274,7 +1274,7 @@ if [ $stage -le 150 ]; then
      loss_str=
    fi
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
+#    kernprof -l -v TrainAndTest/train_egs.py \
    python -W ignore TrainAndTest/train_egs.py \
      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_${feat} \
      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
