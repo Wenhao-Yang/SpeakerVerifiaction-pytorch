@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=70
+stage=150
 waited=0
 while [ $(ps 3338562 | wc -l) -eq 2 ]; do
   sleep 60
@@ -1319,6 +1319,7 @@ if [ $stage -le 150 ]; then
      --stat-type $stat_type \
      --log-interval 10
   done
+  exit
 fi
 
 
