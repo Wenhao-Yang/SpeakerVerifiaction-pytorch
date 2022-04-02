@@ -807,7 +807,7 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
                         help='the margin value for the angualr softmax loss function (default: 3.0')
 
     # args for a-softmax
-    parser.add_argument('--m', type=int, default=3, metavar='M',
+    parser.add_argument('--m', type=float, metavar='M',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
     parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
                         help='random seed (default: 0)')
