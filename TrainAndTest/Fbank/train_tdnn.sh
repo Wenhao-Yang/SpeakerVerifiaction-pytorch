@@ -1257,18 +1257,29 @@ if [ $stage -le 150 ]; then
   input_norm=Mean
   lr_ratio=0
   loss_ratio=1
+  subset=
+  activation=leakyrelu
+  scheduler=cyclic
+  optimizer=adam
+  stat_type=margin
+
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for loss in arcdist; do
+ for loss in arcsoft arcdist; do
    feat=fb${input_dim}
    #_ws25
+   if [ "$loss" == "arcdist" ]; then
+     loss_str=_lossr${loss_ratio}_${stat_type}${m}
+   elif [ "$loss" == "arcsoft" ]; then
+     loss_str=
+   fi
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
    python -W ignore TrainAndTest/train_egs.py \
-     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat} \
+     --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_${feat} \
      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
      --train-trials trials_2w \
-     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev12_${feat}_valid \
+     --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_${feat}_valid \
      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
      --nj 12 \
      --shuffle \
@@ -1276,30 +1287,35 @@ if [ $stage -le 150 ]; then
      --patience 3 \
      --milestones 10,20,30,40 \
      --model ${model} \
-     --scheduler rop \
+     --optimizer ${optimizer} \
+     --scheduler ${scheduler} \
      --weight-decay 0.0005 \
-     --lr 0.1 \
+     --lr 0.001 \
+     --base-lr 0.00000001 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
      --batch-size 128 \
      --random-chunk 200 400 \
      --input-dim ${input_dim} \
+     --activation ${activation} \
      --channels 512,512,512,512,1500 \
      --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs12_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs12_baseline/${loss}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_40.pth \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs${subset}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}${loss_str}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs${subset}_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}${loss_str}_wd5e4_var/checkpoint_40.pth \
      --cos-sim \
      --dropout-p 0.0 \
      --veri-pairs 9600 \
-     --gpu-id 0,1 \
+     --gpu-id 2 \
      --num-valid 2 \
      --loss-ratio ${loss_ratio} \
      --lr-ratio ${lr_ratio} \
      --loss-type ${loss} \
      --margin 0.2 \
+     --m ${m} \
      --s 30 \
      --remove-vad \
+     --stat-type $stat_type \
      --log-interval 10
   done
 fi
@@ -1333,7 +1349,8 @@ if [ $stage -le 151 ]; then
      --patience 3 \
      --milestones 10,20,30,40 \
      --model ${model} \
-     --scheduler rop \
+     --optimizer ${optimizer} \
+     --scheduler ${scheduler} \
      --weight-decay 0.0005 \
      --lr 0.01 \
      --alpha 0 \
