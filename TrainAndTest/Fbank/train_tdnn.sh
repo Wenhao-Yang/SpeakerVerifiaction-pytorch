@@ -1321,6 +1321,7 @@ if [ $stage -le 151 ]; then
 
   scheduler=cyclic
   optimizer=adam
+  m=1
 #  --stat-type ${stat_type} \
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
@@ -1350,8 +1351,8 @@ if [ $stage -le 151 ]; then
      --input-dim ${input_dim} \
      --channels 512,512,512,512,1500 \
      --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda_${stat_type}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda_${stat_type}_wd5e4_var/checkpoint_21.pth \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda_${stat_type}m${m}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda_${stat_type}m${m}_wd5e4_var/checkpoint_21.pth \
      --cos-sim \
      --dropout-p 0.0 \
      --veri-pairs 9600 \
@@ -1364,6 +1365,7 @@ if [ $stage -le 151 ]; then
      --stat-type ${stat_type} \
      --margin 0.2 \
      --s 30 \
+     --m ${m} \
      --remove-vad \
      --log-interval 10
  done

@@ -516,7 +516,7 @@ def main():
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0
     elif 'arcdist' in args.loss_type:
-        ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.margin)
+        ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.m)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
 
     model_para = [{'params': model.parameters()}]
