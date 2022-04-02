@@ -12,6 +12,7 @@
 import argparse
 import os
 import pdb
+import time
 
 import kaldi_io
 import kaldiio
@@ -216,10 +217,13 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                             data_part = data[i:(i + batch_size)]
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
                             model_out = model.xvector(data_part) if xvector else model(data_part)
-                            try:
-                                _, out_part, _, _ = model_out
-                            except:
-                                _, out_part = model_out
+                            if isinstance(model_out, tuple):
+                                try:
+                                    _, out_part, _, _ = model_out
+                                except:
+                                    _, out_part = model_out
+                            else:
+                                out_part = model_out
                             out.append(out_part)
                             i += batch_size
                         out = torch.cat(out, dim=0)
@@ -227,10 +231,13 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                         data = data.cuda() if next(model.parameters()).is_cuda else data
                         model_out = model.xvector(data) if xvector else model(data)
-                        try:
-                            _, out, _, _ = model_out
-                        except:
-                            _, out = model_out
+                        if isinstance(model_out, tuple):
+                            try:
+                                _, out, _, _ = model_out
+                            except:
+                                _, out = model_out
+                        else:
+                            out = model_out
 
                     out = out.data.cpu().float().numpy()
                     # print(out.shape)
@@ -351,9 +358,10 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
     # this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
-    with open('%s/scores' % xvector_dir, 'w') as f:
-        for d, l in zip(distances, labels):
-            f.write(str(d) + ' ' + str(l) + '\n')
+    time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
+    with open('%s/scores.%s' % (xvector_dir, time_stamp), 'w') as f:
+        for l in zip(labels, distances):
+            f.write(" ".join([str(i) for i in l]) + '\n')
 
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
                                                       cos=True if dist_type == 'cos' else False,
@@ -432,6 +440,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='number of jobs to make feats (default: 10)')
 
     parser.add_argument('--check-path', help='folder to output model checkpoints')
+    parser.add_argument('--check-yaml', type=str, help='path to model yaml')
+
     parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
     parser.add_argument('--resume', metavar='PATH', help='path to latest checkpoint (default: none)')
 
@@ -530,7 +540,6 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='using Cosine similarity')
     parser.add_argument('--lr-ratio', type=float, default=0.0, metavar='LOSSRATIO',
                         help='the ratio softmax loss - triplet loss (default: 2.0')
-
     parser.add_argument('--alpha-t', type=float, default=1.0, help='the ratio for LNCL')
     parser.add_argument('--lncl', action='store_true', default=False, help='Label Noise Correct Loss')
     parser.add_argument('--smooth-ratio', type=float, default=0,
@@ -538,6 +547,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     parser.add_argument('--loss-ratio', type=float, default=0.1, metavar='LOSSRATIO',
                         help='the ratio softmax loss - triplet loss (default: 2.0')
+    parser.add_argument('--loss-lambda', action='store_true', default=False,
+                        help='using Cosine similarity')
 
     # args for additive margin-softmax
     parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
@@ -605,6 +616,20 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     if 'Extraction' in description:
         parser.add_argument('--train-extract-dir', type=str, help='path to dev dataset')
         parser.add_argument('--xvector-dir', type=str, help='path to dev dataset')
+
+    if 'Gradient' in description:
+        parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+        parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+        parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
+        parser.add_argument('--extract-path', help='folder to output model grads, etc')
+        parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
+        parser.add_argument('--cam-layers',
+                            default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
+                            type=list, metavar='CAML', help='The channels of convs layers)')
+        parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
+                            help='number of epochs to train (default: 10)')
+        parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
+        parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
 
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')

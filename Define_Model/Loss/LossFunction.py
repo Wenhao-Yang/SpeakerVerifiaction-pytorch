@@ -337,6 +337,9 @@ class DistributeLoss(nn.Module):
         elif self.stat_type == "margin":
             positive_theta = torch.acos(positive_dist)
             loss = (2 * positive_theta - self.margin).clamp_min(0).mean()
+        elif self.stat_type == "margin1":
+            positive_theta = torch.acos(positive_dist)
+            loss = (positive_theta - self.margin).clamp_min(0).mean()
         elif self.stat_type == "marginsum":
             positive_theta = torch.acos(positive_dist)
             loss = (2 * positive_theta - self.margin).clamp_min(0).sum()

@@ -1261,7 +1261,7 @@ if [ $stage -le 150 ]; then
   activation=leakyrelu
   scheduler=cyclic
   optimizer=adam
-  stat_type=margin
+  stat_type=margin1
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
@@ -1269,7 +1269,7 @@ if [ $stage -le 150 ]; then
    feat=fb${input_dim}
    #_ws25
    if [ "$loss" == "arcdist" ]; then
-     loss_str=_lossr${loss_ratio}_${stat_type}${m}
+     loss_str=_lossr${loss_ratio}_${stat_type}${m}_lambda
    elif [ "$loss" == "arcsoft" ]; then
      loss_str=
    fi
@@ -1310,6 +1310,7 @@ if [ $stage -le 150 ]; then
      --num-valid 2 \
      --loss-ratio ${loss_ratio} \
      --lr-ratio ${lr_ratio} \
+     --loss-lambda \
      --loss-type ${loss} \
      --margin 0.2 \
      --m ${m} \
