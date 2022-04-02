@@ -1256,7 +1256,7 @@ if [ $stage -le 150 ]; then
   input_dim=40
   input_norm=Mean
   lr_ratio=0
-  loss_ratio=1
+  loss_ratio=10
   subset=
   activation=leakyrelu
   scheduler=cyclic
