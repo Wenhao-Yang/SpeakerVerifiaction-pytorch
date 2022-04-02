@@ -155,7 +155,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
-    lambda_ = (epoch / args.epochs) ** 4
+    lambda_ = (epoch / args.epochs) ** 2
 
     # start_time = time.time()
     # pdb.set_trace()
@@ -305,7 +305,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
     correct = 0.
     total_datasize = 0.
-    lambda_ = (epoch / args.epochs) ** 4
+    lambda_ = (epoch / args.epochs) ** 2
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):

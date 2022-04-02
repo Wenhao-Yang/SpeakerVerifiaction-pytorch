@@ -1250,7 +1250,7 @@ if [ $stage -le 150 ]; then
   #  feat=fb24
 #  feat_type=pyfb
   feat_type=klfb
-  loss=arcsoft
+  loss=arcdist
   encod=STAP
   embedding_size=512
   input_dim=40
@@ -1266,7 +1266,7 @@ if [ $stage -le 150 ]; then
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for loss in arcsoft arcdist; do
+ for stat_type in margin1 margin1sum; do
    feat=fb${input_dim}
    #_ws25
    if [ "$loss" == "arcdist" ]; then
