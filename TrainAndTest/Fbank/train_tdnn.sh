@@ -1317,7 +1317,7 @@ if [ $stage -le 151 ]; then
   input_norm=Mean
   lr_ratio=0
   loss_ratio=10
-  stat_type=margin1
+  stat_type=margin1sum
 
   scheduler=cyclic
   optimizer=adam
@@ -1335,7 +1335,7 @@ if [ $stage -le 151 ]; then
      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
      --nj 12 \
      --shuffle \
-     --epochs 29 \
+     --epochs 40 \
      --patience 3 \
      --milestones 10,20,30,40 \
      --model ${model} \
