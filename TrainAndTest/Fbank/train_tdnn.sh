@@ -1319,8 +1319,8 @@ if [ $stage -le 151 ]; then
   loss_ratio=10
   stat_type=margin1
 
-  scheduler=rop
-  optimizer=sgd
+  scheduler=cyclic
+  optimizer=adam
 #  --stat-type ${stat_type} \
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
@@ -1341,7 +1341,7 @@ if [ $stage -le 151 ]; then
      --optimizer ${optimizer} \
      --scheduler ${scheduler} \
      --weight-decay 0.0005 \
-     --lr 0.1 \
+     --lr 0.001 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
