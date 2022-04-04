@@ -1319,13 +1319,13 @@ if [ $stage -le 151 ]; then
   loss_ratio=10
   stat_type=margin1sum
 
-  scheduler=cyclic
-  optimizer=adam
+  scheduler=rop
+  optimizer=sgd
   m=1
 #  --stat-type ${stat_type} \
   # _lrr${lr_ratio}_lsr${loss_ratio}
-
- for loss in arcdist; do
+#  lr${loss_ratio}lambda2_${stat_type}m${m}
+ for loss in amsoft; do
    feat=fb${input_dim}
    python -W ignore TrainAndTest/train_egs.py \
      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat} \
@@ -1335,14 +1335,14 @@ if [ $stage -le 151 ]; then
      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
      --nj 12 \
      --shuffle \
-     --epochs 40 \
+     --epochs 50 \
      --patience 3 \
      --milestones 10,20,30,40 \
      --model ${model} \
      --optimizer ${optimizer} \
      --scheduler ${scheduler} \
      --weight-decay 0.0005 \
-     --lr 0.001 \
+     --lr 0.1 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
@@ -1351,8 +1351,8 @@ if [ $stage -le 151 ]; then
      --input-dim ${input_dim} \
      --channels 512,512,512,512,1500 \
      --encoder-type ${encod} \
-     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda2_${stat_type}m${m}_wd5e4_var \
-     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_lr${loss_ratio}lambda2_${stat_type}m${m}_wd5e4_var/checkpoint_21.pth \
+     --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var \
+     --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_21.pth \
      --cos-sim \
      --dropout-p 0.0 \
      --veri-pairs 9600 \
@@ -1363,7 +1363,7 @@ if [ $stage -le 151 ]; then
      --lr-ratio ${lr_ratio} \
      --loss-type ${loss} \
      --stat-type ${stat_type} \
-     --margin 0.2 \
+     --margin 0.1 \
      --s 30 \
      --m ${m} \
      --remove-vad \
