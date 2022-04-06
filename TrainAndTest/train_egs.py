@@ -496,7 +496,7 @@ def main():
     elif args.loss_type == 'mulcenter':
         xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
                                        num_center=args.num_center)
-    elif args.loss_type == 'amsoft':
+    elif args.loss_type in ['amsoft', 'subam']:
         ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
