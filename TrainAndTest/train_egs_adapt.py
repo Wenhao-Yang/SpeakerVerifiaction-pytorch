@@ -633,6 +633,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         source_spk_idx = torch.where(true_labels_b == 0)
         target_spk_idx = torch.where(true_labels_b == 1)
 
+        pdb.set_trace()
+
         if len(source_spk_idx) > 1 and len(target_spk_idx) > 1:
             source_spk_embeddings = spk_embeddings[source_spk_idx]
             target_spk_embeddings = spk_embeddings[target_spk_idx]
@@ -755,14 +757,13 @@ def valid_class(valid_loader, model, ce, epoch):
 
             _, embeddings = xvector_model(data)
 
-            if args.submean:
-                domain_embeddings = embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
-            else:
-                domain_embeddings = embeddings
+            # if args.submean:
+            #     domain_embeddings = embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
+            # else:
+            #     domain_embeddings = embeddings
 
             out_a = classifier_spk(embeddings)
             # out_b = classifier_dom(domain_embeddings)
-
             predicted_labels_a = out_a
             # predicted_labels_b = out_b
 
