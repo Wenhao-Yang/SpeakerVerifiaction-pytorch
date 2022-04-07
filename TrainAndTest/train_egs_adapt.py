@@ -630,10 +630,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         spk_loss = ce_criterion(spk_logits, true_labels_a)  # if xe_criterion == None else xe_criterion(spk_logits,
         # true_labels_a)
 
-        source_spk_idx = torch.where(true_labels_b == 0)
-        target_spk_idx = torch.where(true_labels_b == 1)
+        source_spk_idx = torch.where(true_labels_b == 0)[0]
+        target_spk_idx = torch.where(true_labels_b == 1)[0]
 
-        pdb.set_trace()
+        # pdb.set_trace()
 
         if len(source_spk_idx) > 1 and len(target_spk_idx) > 1:
             source_spk_embeddings = spk_embeddings[source_spk_idx]
@@ -772,8 +772,8 @@ def valid_class(valid_loader, model, ce, epoch):
 
             loss_a = ce_criterion(out_a, true_labels_a)
 
-            source_spk_idx = torch.where(true_labels_b == 0)
-            target_spk_idx = torch.where(true_labels_b == 1)
+            source_spk_idx = torch.where(true_labels_b == 0)[0]
+            target_spk_idx = torch.where(true_labels_b == 1)[0]
             if len(source_spk_idx) > 0 and len(target_spk_idx):
                 source_spk_embeddings = embeddings[source_spk_idx]
                 target_spk_embeddings = embeddings[target_spk_idx]
