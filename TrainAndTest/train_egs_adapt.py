@@ -5,8 +5,8 @@
 @Author: yangwenhao
 @Contact: 874681044@qq.com
 @Software: PyCharm
-@File: train_lores10_kaldi.py
-@Time: 2020/4/4 11:14 AM
+@File: train_egs_adapt.py
+@Time: 2022/4/7 13:27
 @Overview:
 """
 from __future__ import print_function
@@ -379,20 +379,11 @@ def main():
     elif args.loss_type in ['arcsoft', 'amsoft']:
         classifier_spk = AdditiveMarginLinear(feat_dim=args.embedding_size, num_classes=train_dir.num_spks)
 
-    classifier_dom = nn.Sequential(
-        RevGradLayer(),
-        nn.Linear(args.embedding_size, args.embedding_size),
-        nn.ReLU(inplace=True),
-        nn.BatchNorm1d(args.embedding_size),
-        nn.Linear(args.embedding_size, 2),
-    )
-
     start_epoch = 0
     if args.save_init and not args.finetune:
         check_path = '{}/checkpoint_{}.pth'.format(args.check_path, start_epoch)
         torch.save({"xvector": xvector_model.state_dict(),
-                    "spk_classifier": classifier_spk.state_dict(),
-                    "dom_classifier": classifier_dom.state_dict()}, check_path)
+                    "spk_classifier": classifier_spk.state_dict()}, check_path)
 
     if args.resume:
         if os.path.isfile(args.resume):
@@ -422,10 +413,9 @@ def main():
         ce_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'arcsoft':
         ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
-    elif args.loss_type == 'mmd':
-        xe_criterion = MMD_Loss()
 
-    xe_criterion = nn.CrossEntropyLoss()
+    xe_criterion = MMD_Loss()
+    # nn.CrossEntropyLoss()
     # xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.94, 0.06]))  # label weight for speech & other domain
     # dom_params = list(map(id, model.classifier_dom.parameters()))
     # rest_params = list(map(id, model.xvectors.parameters()))
@@ -433,7 +423,7 @@ def main():
 
     spk_optimizer = create_optimizer([{'params': xvector_model.parameters()},
                                       {'params': classifier_spk.parameters()}], args.optimizer, **opt_kwargs)
-    dom_optimizer = create_optimizer(classifier_dom.parameters(), args.optimizer, **opt_kwargs)
+    # dom_optimizer = create_optimizer(classifier_dom.parameters(), args.optimizer, **opt_kwargs)
 
     # if args.loss_type == 'center':
     #     optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
@@ -451,14 +441,14 @@ def main():
 
     if args.scheduler == 'exp':
         spk_scheduler = ExponentialLR(spk_optimizer, gamma=args.gamma)
-        dom_scheduler = ExponentialLR(dom_optimizer, gamma=args.gamma)
+        # dom_scheduler = ExponentialLR(dom_optimizer, gamma=args.gamma)
     else:
         milestones = args.milestones.split(',')
         milestones = [int(x) for x in milestones]
         milestones.sort()
 
         spk_scheduler = MultiStepLR(spk_optimizer, milestones=milestones, gamma=0.1)
-        dom_scheduler = MultiStepLR(dom_optimizer, milestones=milestones, gamma=0.1)
+        # dom_scheduler = MultiStepLR(dom_optimizer, milestones=milestones, gamma=0.1)
 
     start = args.start_epoch + start_epoch
     print('Start epoch is : ' + str(start))
@@ -504,12 +494,12 @@ def main():
             # model = DistributedDataParallel(model.cuda())
             xvector_model = DistributedDataParallel(xvector_model.cuda(), find_unused_parameters=True)
             classifier_spk = DistributedDataParallel(classifier_spk.cuda(), find_unused_parameters=True)
-            classifier_dom = DistributedDataParallel(classifier_dom.cuda(), find_unused_parameters=True)
+            # classifier_dom = DistributedDataParallel(classifier_dom.cuda(), find_unused_parameters=True)
 
         else:
             xvector_model = xvector_model.cuda()
             classifier_spk = classifier_spk.cuda()
-            classifier_dom = classifier_dom.cuda()
+            # classifier_dom = classifier_dom.cuda()
 
         for i in range(len(ce)):
             if ce[i] != None:
@@ -530,12 +520,12 @@ def main():
         for param_group in spk_optimizer.param_groups:
             spk_lr_string += '{:.8f} '.format(param_group['lr'])
 
-        dom_lr_string = 'Domain \'{}\' learning rate is '.format(args.optimizer)
-        for param_group in dom_optimizer.param_groups:
-            dom_lr_string += '{:.8f} '.format(param_group['lr'])
-        print('%s %s \33[0m' % (spk_lr_string, dom_lr_string))
-        optimizer = (spk_optimizer, dom_optimizer)
-        scheduler = (spk_scheduler, dom_scheduler)
+        # dom_lr_string = 'Domain \'{}\' learning rate is '.format(args.optimizer)
+        # for param_group in dom_optimizer.param_groups:
+        #     dom_lr_string += '{:.8f} '.format(param_group['lr'])
+        print('%s \33[0m' % (spk_lr_string))
+        optimizer = spk_optimizer
+        scheduler = spk_scheduler
 
         train(train_loader, model, ce, optimizer, epoch, scheduler, steps)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
@@ -544,19 +534,18 @@ def main():
             xvector_model, classifier_spk, classifier_dom = model
             xvector_model.eval()
             classifier_spk.eval()
-            classifier_dom.eval()
+            # classifier_dom.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             model_state_dict = xvector_model.module.state_dict() \
-                                   if isinstance(xvector_model, DistributedDataParallel) else xvector_model.state_dict()
+                if isinstance(xvector_model, DistributedDataParallel) else xvector_model.state_dict()
             classifier_spk_dict = classifier_spk.module.state_dict() \
                 if isinstance(classifier_spk, DistributedDataParallel) else classifier_spk.state_dict()
-            classifier_dom_dict = classifier_dom.module.state_dict() \
-                if isinstance(classifier_dom, DistributedDataParallel) else classifier_dom.state_dict()
+            # classifier_dom_dict = classifier_dom.module.state_dict() \
+            #     if isinstance(classifier_dom, DistributedDataParallel) else classifier_dom.state_dict()
 
             torch.save({'epoch': epoch,
                         'state_dict': model_state_dict,
                         'spk_classifier': classifier_spk_dict,
-                        'dom_classifier': classifier_dom_dict,
                         'criterion': ce},
                        check_path)
 
@@ -576,7 +565,6 @@ def main():
         # else:
         #     scheduler.step()
         spk_scheduler.step()
-        dom_scheduler.step()
 
         # exit(1)
 
@@ -595,7 +583,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     classifier_dom.train()
 
     spk_optimizer, dom_optimizer = optimizer
-    spk_scheduler, dom_scheduler = scheduler
+    # spk_scheduler, dom_scheduler = scheduler
     # lambda_ = min(2. / (1 + np.exp(-10. * (epoch-2) / args.epochs)) - 1., 0)
     lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1
     # model.grl.set_lambda(lambda_)
@@ -637,34 +625,20 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
         _, spk_embeddings = xvector_model(data)
 
-        # Training the discriminator
-        if args.submean:
-            domain_embeddings = torch.nn.functional.normalize(spk_embeddings, dim=1) - \
-                                torch.nn.functional.normalize(classifier_spk.module.W.transpose(0, 1)[label_a], dim=1)
-            domain_embeddings = domain_embeddings.detach()
-        else:
-            domain_embeddings = spk_embeddings.detach()
-
-        for i in range(steps):
-            dom_logits = classifier_dom(domain_embeddings)
-            dom_loss = xe_criterion(dom_logits, true_labels_b)
-
-            dom_loss.backward()
-            dom_optimizer.step()
-            dom_optimizer.zero_grad()
-
-        # Training the Generator
         spk_logits = classifier_spk(spk_embeddings)
-        dom_logits = classifier_dom(spk_embeddings)
+        spk_loss = ce_criterion(spk_logits, true_labels_a)  # if xe_criterion == None else xe_criterion(spk_logits,
+        # true_labels_a)
+        source_spk_idx = torch.where(true_labels_b == 0)
+        target_spk_idx = torch.where(true_labels_b == 1)
+        source_spk_embeddings = spk_embeddings[source_spk_idx]
+        target_spk_embeddings = spk_embeddings[target_spk_idx]
 
-        spk_loss = ce_criterion(spk_logits, true_labels_a) #if xe_criterion == None else xe_criterion(spk_logits,
-                                                                                                     #true_labels_a)
-        loss = spk_loss + args.dom_ratio * xe_criterion(dom_logits, true_labels_b) * lambda_
+        loss = spk_loss + args.dom_ratio * xe_criterion(source_spk_embeddings, target_spk_embeddings) * lambda_
         loss.backward()
 
         spk_optimizer.step()
         spk_optimizer.zero_grad()
-        dom_optimizer.zero_grad()
+        # dom_optimizer.zero_grad()
 
         # speech_labels_b = torch.LongTensor(torch.ones_like(label_b) * args.speech_dom)
         # speech_labels_b = speech_labels_b.cuda()
@@ -691,15 +665,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         minibatch_acc_a = minibatch_correct_a / len(predicted_one_labels_a)
         correct_a += minibatch_correct_a
 
-        predicted_labels_b = output_softmax(dom_logits)
-        predicted_one_labels_b = torch.max(predicted_labels_b, dim=1)[1]
-        minibatch_correct_b = float((predicted_one_labels_b.cuda() == true_labels_b.cuda()).sum().item())
-        minibatch_acc_b = minibatch_correct_b / len(predicted_one_labels_b)
-        correct_b += minibatch_correct_b
-
         total_datasize += len(predicted_one_labels_a)
         total_loss_a += float(spk_loss.item())
-        total_loss_b += float(dom_loss.item())
         # total_loss_c += float(spk_dom_sim_loss.item()) if args.sim_ratio else 0.
         total_loss += float(loss.item())
 
@@ -721,28 +688,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
                                                                              len(train_loader),
                                                                              100. * batch_idx / len(train_loader))
 
-            print_desc += ' Loss[ Gen: {:.4f} Spk: {:.4f} Dom: {:.4f}]'.format(total_loss / (batch_idx + 1),
+            print_desc += ' Loss[ Gen: {:.4f} Spk: {:.4f} MMD: {:.4f}]'.format(total_loss / (batch_idx + 1),
                                                                                total_loss_a / (batch_idx + 1),
                                                                                total_loss_b / (batch_idx + 1))
             # print_desc += 'SimLoss: {:.4f}'.format(total_loss_c / (batch_idx + 1))
-            print_desc += ' Accuracy[ Spk: {: >8.4f}%, Dom: {: >8.4f}%]'.format(100. * minibatch_acc_a,
-                                                                                100. * minibatch_acc_b)
+            print_desc += ' Accuracy[ Spk: {: >8.4f}%]'.format(100. * minibatch_acc_a)
             pbar.set_description(print_desc)
 
-    print('\nEpoch {:>2d}: \33[91mTrain loss: {:.4f} Spk: {:.4f} Domain: {:.4f}, '.format(epoch,
-                                                                                          total_loss / len(
-                                                                                              train_loader),
-                                                                                          total_loss_a / len(
-                                                                                              train_loader),
-                                                                                          total_loss_b / len(
-                                                                                              train_loader)),
+    print('\nEpoch {:>2d}: \33[91mTrain loss: {:.4f} Spk: {:.4f} MMD: {:.4f}, '.format(epoch,
+                                                                                       total_loss / len(
+                                                                                           train_loader),
+                                                                                       total_loss_a / len(
+                                                                                           train_loader),
+                                                                                       total_loss_b / len(
+                                                                                           train_loader)),
           end='')
 
-    print('Accuracy Spk: {:.4f}% Domain: {:.4f}%.\33[0m'.format(100 * correct_a / total_datasize,
-                                                                100 * correct_b / total_datasize, ))
+    print('Accuracy Spk: {:.4f}%.\33[0m'.format(100 * correct_a / total_datasize))
 
     writer.add_scalar('Train/Spk_Accuracy', correct_a / total_datasize, epoch)
-    writer.add_scalar('Train/Dom_Accuracy', correct_b / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
 
     torch.cuda.empty_cache()
@@ -787,16 +751,22 @@ def valid_class(valid_loader, model, ce, epoch):
                 domain_embeddings = embeddings
 
             out_a = classifier_spk(embeddings)
-            out_b = classifier_dom(domain_embeddings)
+            # out_b = classifier_dom(domain_embeddings)
 
             predicted_labels_a = out_a
-            predicted_labels_b = out_b
+            # predicted_labels_b = out_b
 
             true_labels_a = label_a.cuda()
             true_labels_b = label_b.cuda()
 
             loss_a = ce_criterion(out_a, true_labels_a)
-            loss_b = xe_criterion(out_b, true_labels_b)
+
+            source_spk_idx = torch.where(true_labels_b == 0)
+            target_spk_idx = torch.where(true_labels_b == 1)
+            source_spk_embeddings = embeddings[source_spk_idx]
+            target_spk_embeddings = embeddings[target_spk_idx]
+
+            loss_b = xe_criterion(source_spk_embeddings, target_spk_embeddings)
 
             # pdb.set_trace()
             predicted_one_labels_a = softmax(predicted_labels_a)
@@ -805,20 +775,20 @@ def valid_class(valid_loader, model, ce, epoch):
             batch_correct_a = (predicted_one_labels_a.cuda() == true_labels_a.cuda()).sum().item()
             correct_a += batch_correct_a
 
-            predicted_one_labels_b = softmax(predicted_labels_b)
-            predicted_one_labels_b = torch.max(predicted_one_labels_b, dim=1)[1]
-            batch_correct_b = (predicted_one_labels_b.cuda() == true_labels_b.cuda()).sum().item()
-            correct_b += batch_correct_b
+            # predicted_one_labels_b = softmax(predicted_labels_b)
+            # predicted_one_labels_b = torch.max(predicted_one_labels_b, dim=1)[1]
+            # batch_correct_b = (predicted_one_labels_b.cuda() == true_labels_b.cuda()).sum().item()
+            # correct_b += batch_correct_b
 
             total_datasize += len(predicted_one_labels_a)
             spk_loss += float(loss_a.item())
             dis_loss += float(loss_b.item())
 
     spk_valid_accuracy = 100. * correct_a / total_datasize
-    dom_valid_accuracy = 100. * correct_b / total_datasize
+    # dom_valid_accuracy = 100. * correct_b / total_datasize
 
     writer.add_scalar('Train/Spk_Valid_Accuracy', spk_valid_accuracy, epoch)
-    writer.add_scalar('Train/Dom_Valid_Accuracy', dom_valid_accuracy, epoch)
+    # writer.add_scalar('Train/Dom_Valid_Accuracy', dom_valid_accuracy, epoch)
 
     spk_loss /= len(valid_loader)
     dis_loss /= len(valid_loader)
@@ -826,9 +796,9 @@ def valid_class(valid_loader, model, ce, epoch):
 
     torch.cuda.empty_cache()
     print(
-        '          \33[91mValid Loss: {:.4f} Spk: {:.4f} Domain: {:.4f}, Accuracy Spk: {:.4f}% Domain: {:.4f}%.\33[0m'.format(
+        '          \33[91mValid Loss: {:.4f} Spk: {:.4f} MMD: {:.4f}, Accuracy Spk: {:.4f}% .\33[0m'.format(
             valid_loss, spk_loss, dis_loss,
-            spk_valid_accuracy, dom_valid_accuracy))
+            spk_valid_accuracy))
 
     return valid_loss
 
@@ -837,7 +807,6 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     # switch to evaluate mode
     xvector_model, classifier_spk, classifier_dom = model
     xvector_model.eval()
-
 
     this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
     verification_extract(train_extract_loader, xvector_model, this_xvector_dir, epoch, test_input=args.test_input)
@@ -890,6 +859,7 @@ def test(model, epoch, writer, xvector_dir):
     writer.add_scalar('Test/Threshold', eer_threshold, epoch)
     writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
+
 
 if __name__ == '__main__':
     main()

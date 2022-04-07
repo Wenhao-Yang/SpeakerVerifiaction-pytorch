@@ -36,7 +36,7 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss, DistributeLoss
+    VarianceLoss, DistributeLoss, MMD_Loss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
@@ -522,6 +522,8 @@ def main():
                                             all_iteraion=args.all_iteraion)
     elif args.loss_type == 'wasse':
         xe_criterion = Wasserstein_Loss(source_cls=args.source_cls)
+    elif args.loss_type == 'mmd':
+        xe_criterion = MMD_Loss()
     elif args.loss_type == 'ring':
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0

@@ -398,17 +398,20 @@ class MMD_Loss(nn.Module):
         self.fix_sigma = fix_sigma
 
     def forward(self, source, target):
-        batch_size = int(source.size()[0])
+        batch_size_s = int(source.size()[0])
+        batch_size_t = int(target.size()[0])
+
         kernels = guassian_kernel(source, target,
                                   kernel_mul=self.kernel_mul,
                                   kernel_num=self.kernel_num,
                                   fix_sigma=self.fix_sigma)
 
-        XX = kernels[:batch_size, :batch_size]
-        YY = kernels[batch_size:, batch_size:]
-        XY = kernels[:batch_size, batch_size:]
-        YX = kernels[batch_size:, :batch_size]
-        loss = torch.mean(XX + YY - XY - YX)
+        XX = kernels[:batch_size_s, :batch_size_s].mean()
+        YY = kernels[batch_size_t:, batch_size_t:].mean()
+        XY = kernels[:batch_size_s, batch_size_t:].mean()
+        YX = kernels[batch_size_t:, :batch_size_s].mean()
+
+        loss = torch.sum(XX + YY - XY - YX)
         return loss
 
 
