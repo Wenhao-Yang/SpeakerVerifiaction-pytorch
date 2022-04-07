@@ -674,6 +674,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
         total_datasize += len(predicted_one_labels_a)
         total_loss_a += float(spk_loss.item())
+        total_loss_b += float(mmd_loss.item())
         # total_loss_c += float(spk_dom_sim_loss.item()) if args.sim_ratio else 0.
         total_loss += float(loss.item())
 
