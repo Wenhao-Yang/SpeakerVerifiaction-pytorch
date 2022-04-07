@@ -79,7 +79,7 @@ parser.add_argument('--train-trials', type=str, default='trials', help='path to 
 
 parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
 parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
-parser.add_argument('--speech-dom', default='4,7,9,10', type=str, help='set domain in dataset')
+parser.add_argument('--speech-dom', default='3,4,7,9,10', type=str, help='set domain in dataset')
 parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
 parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
 parser.add_argument('--shuffle', action='store_false', default=True, help='need to shuffle egs')
@@ -635,8 +635,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         if len(source_spk_idx) > 1 and len(target_spk_idx) > 1:
             source_spk_embeddings = spk_embeddings[source_spk_idx]
             target_spk_embeddings = spk_embeddings[target_spk_idx]
-            mmd_loss = args.dom_ratio * xe_criterion(source_spk_embeddings, target_spk_embeddings) * lambda_
-            loss = loss + mmd_loss
+            mmd_loss = xe_criterion(source_spk_embeddings, target_spk_embeddings)
+            loss = loss + args.dom_ratio * mmd_loss * lambda_
         else:
             mmd_loss = torch.tensor([0.])
             loss = spk_loss
