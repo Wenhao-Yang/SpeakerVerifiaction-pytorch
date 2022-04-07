@@ -773,7 +773,7 @@ if [ $stage -le 101 ]; then
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
     if [ "$loss" == "arcdist" ]; then
-      loss_str=_lr${stat_type}${loss_ratio}
+      loss_str=_${stat_type}lr${loss_ratio}
     else
       loss_str=
     fi
