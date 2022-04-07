@@ -639,7 +639,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
             source_spk_embeddings = spk_embeddings[source_spk_idx]
             target_spk_embeddings = spk_embeddings[target_spk_idx]
             mmd_loss = xe_criterion(source_spk_embeddings, target_spk_embeddings)
-            loss = loss + args.dom_ratio * mmd_loss * lambda_
+            loss = spk_loss + args.dom_ratio * mmd_loss * lambda_
         else:
             skip_mmd += 1
             mmd_loss = torch.tensor([0.])
