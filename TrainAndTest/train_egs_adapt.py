@@ -582,7 +582,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     classifier_spk.train()
     # classifier_dom.train()
 
-    spk_optimizer, dom_optimizer = optimizer
+    spk_optimizer = optimizer
     # spk_scheduler, dom_scheduler = scheduler
     # lambda_ = min(2. / (1 + np.exp(-10. * (epoch-2) / args.epochs)) - 1., 0)
     lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1
