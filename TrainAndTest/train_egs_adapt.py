@@ -769,10 +769,13 @@ def valid_class(valid_loader, model, ce, epoch):
 
             source_spk_idx = torch.where(true_labels_b == 0)
             target_spk_idx = torch.where(true_labels_b == 1)
-            source_spk_embeddings = embeddings[source_spk_idx]
-            target_spk_embeddings = embeddings[target_spk_idx]
+            if len(source_spk_idx) > 0 and len(target_spk_idx):
+                source_spk_embeddings = embeddings[source_spk_idx]
+                target_spk_embeddings = embeddings[target_spk_idx]
 
-            loss_b = xe_criterion(source_spk_embeddings, target_spk_embeddings)
+                loss_b = xe_criterion(source_spk_embeddings, target_spk_embeddings)
+            else:
+                loss_b = 0
 
             # pdb.set_trace()
             predicted_one_labels_a = softmax(predicted_labels_a)
