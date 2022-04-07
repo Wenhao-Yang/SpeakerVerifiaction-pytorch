@@ -626,7 +626,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         _, spk_embeddings = xvector_model(data)
 
         spk_logits = classifier_spk(spk_embeddings)
-        loss = ce_criterion(spk_logits, true_labels_a)  # if xe_criterion == None else xe_criterion(spk_logits,
+        spk_loss = ce_criterion(spk_logits, true_labels_a)  # if xe_criterion == None else xe_criterion(spk_logits,
         # true_labels_a)
 
         source_spk_idx = torch.where(true_labels_b == 0)
@@ -637,6 +637,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
             target_spk_embeddings = spk_embeddings[target_spk_idx]
             mmd_loss = args.dom_ratio * xe_criterion(source_spk_embeddings, target_spk_embeddings) * lambda_
             loss = loss + mmd_loss
+        else:
+            loss = spk_loss
 
         loss.backward()
 
