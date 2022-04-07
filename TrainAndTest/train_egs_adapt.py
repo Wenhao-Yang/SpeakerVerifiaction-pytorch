@@ -847,7 +847,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
 
 def test(model, epoch, writer, xvector_dir):
-    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model, classifier_spk = model
     xvector_model.eval()
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
