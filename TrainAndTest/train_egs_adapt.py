@@ -602,6 +602,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
+    skip_mmd = 0
 
     for batch_idx, (data, label_a, label_b) in pbar:
 
@@ -638,6 +639,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
             mmd_loss = xe_criterion(source_spk_embeddings, target_spk_embeddings)
             loss = loss + args.dom_ratio * mmd_loss * lambda_
         else:
+            skip_mmd += 1
             mmd_loss = torch.tensor([0.])
             loss = spk_loss
 
@@ -708,9 +710,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
                                                                                            train_loader),
                                                                                        total_loss_a / len(
                                                                                            train_loader),
-                                                                                       total_loss_b / len(
-                                                                                           train_loader)),
-          end='')
+                                                                                       total_loss_b / (len(
+                                                                                           train_loader) - skip_mmd),
+                                                                                       end='')
 
     print('Accuracy Spk: {:.4f}%.\33[0m'.format(100 * correct_a / total_datasize))
 
