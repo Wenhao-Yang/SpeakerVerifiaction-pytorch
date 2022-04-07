@@ -766,6 +766,7 @@ if [ $stage -le 101 ]; then
   stat_type=maxmargin
   loss_ratio=1
   margin=0.2
+  m=0.2
 #  --num-center 3 \
         # --milestones 15,25,35,45 \
 
@@ -773,7 +774,7 @@ if [ $stage -le 101 ]; then
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
     if [ "$loss" == "arcdist" ]; then
-      loss_str=_${stat_type}lr${loss_ratio}
+      loss_str=_${stat_type}lr${loss_ratio}m${m}
     else
       loss_str=
     fi
@@ -816,6 +817,7 @@ if [ $stage -le 101 ]; then
       --num-valid 2 \
       --alpha ${alpha} \
       --margin ${margin} \
+      --m ${m} \
       --s 30 \
       --weight-decay 0.0001 \
       --dropout-p 0.1 \
