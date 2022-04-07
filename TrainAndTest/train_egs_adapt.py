@@ -711,8 +711,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
                                                                                        total_loss_a / len(
                                                                                            train_loader),
                                                                                        total_loss_b / (len(
-                                                                                           train_loader) - skip_mmd),
-                                                                                       end='')
+                                                                                           train_loader) - skip_mmd)),
+          end='')
 
     print('Accuracy Spk: {:.4f}%.\33[0m'.format(100 * correct_a / total_datasize))
 
