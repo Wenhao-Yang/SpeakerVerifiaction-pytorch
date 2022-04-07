@@ -509,7 +509,7 @@ def main():
         except:
             pass
 
-    model = (xvector_model, classifier_spk, classifier_dom)
+    model = (xvector_model, classifier_spk)
     xvector_dir = args.check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
@@ -576,11 +576,11 @@ def main():
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     # switch to evaluate mode
-    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model, classifier_spk = model
 
     xvector_model.train()
     classifier_spk.train()
-    classifier_dom.train()
+    # classifier_dom.train()
 
     spk_optimizer, dom_optimizer = optimizer
     # spk_scheduler, dom_scheduler = scheduler
@@ -718,10 +718,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
 def valid_class(valid_loader, model, ce, epoch):
     # switch to evaluate mode
-    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model, classifier_spk = model
     xvector_model.eval()
     classifier_spk.eval()
-    classifier_dom.eval()
+    # classifier_dom.eval()
 
     spk_loss = 0.
     dis_loss = 0.
@@ -809,7 +809,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
 def valid_test(train_extract_loader, model, epoch, xvector_dir):
     # switch to evaluate mode
-    xvector_model, classifier_spk, classifier_dom = model
+    xvector_model, classifier_spk = model
     xvector_model.eval()
 
     this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
