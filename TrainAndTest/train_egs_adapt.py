@@ -531,7 +531,7 @@ def main():
         valid_loss = valid_class(valid_loader, model, ce, epoch)
 
         if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
-            xvector_model, classifier_spk, classifier_dom = model
+            xvector_model, classifier_spk = model
             xvector_model.eval()
             classifier_spk.eval()
             # classifier_dom.eval()
@@ -638,6 +638,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
             mmd_loss = args.dom_ratio * xe_criterion(source_spk_embeddings, target_spk_embeddings) * lambda_
             loss = loss + mmd_loss
         else:
+            mmd_loss = torch.tensor([0.])
             loss = spk_loss
 
         loss.backward()
@@ -775,7 +776,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
                 loss_b = xe_criterion(source_spk_embeddings, target_spk_embeddings)
             else:
-                loss_b = 0
+                loss_b = torch.tensor([0.])
 
             # pdb.set_trace()
             predicted_one_labels_a = softmax(predicted_labels_a)
