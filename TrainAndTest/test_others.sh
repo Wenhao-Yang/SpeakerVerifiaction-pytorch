@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=95
+stage=301
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2612,7 +2612,7 @@ if [ $stage -le 301 ]; then
   embedding_size=256
   train_set=cnceleb
   test_set=cnceleb
-  dev_subset=dev
+  dev_subset=dev12
   test_subset=test
 
   resnet_size=18
@@ -2669,12 +2669,12 @@ if [ $stage -le 301 ]; then
        --s 30 \
        --input-length fix \
        --remove-vad \
-       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/${loss}_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em${embedding_size}_lrmaxmargin1_wd5e4_var/checkpoint_60.pth \
-       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/${loss}_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em${embedding_size}_lrmaxmargin1_wd5e4_var/${test_set}_${test_subset}_fix_norm \
+       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs12_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_maxmarginlr1m0.2_wde4_var/checkpoint_60.pth \
+       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs12_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_maxmarginlr1m0.2_wde4_var/${test_set}_${test_subset}_fix_norm \
        --frame-shift 300 \
        --num-frames 300 \
        --score-norm s-norm \
-       --gpu-id 0 \
+       --gpu-id 1 \
        --extract \
        --verbose 2 \
        --cos-sim
