@@ -570,7 +570,7 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
 
             train_stats[uid] = [mean_t_c, std_t_c]
 
-    with open(test_xvectors_dir + '/cohort.pickle', 'wb') as f:
+    with open(test_xvectors_dir + '/cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size), 'wb') as f:
         pickle.dump(train_stats, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # pickle.dump(train_stats, test_xvectors_dir)
@@ -722,7 +722,8 @@ if __name__ == '__main__':
                                                   batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
                                                   shuffle=False, **kwargs)
 
-        train_stats_pickle = os.path.join(test_xvector_dir, 'cohort.pickle')
+        train_stats_pickle = os.path.join(test_xvector_dir,
+                                          'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
 
         if os.path.isfile(train_stats_pickle):
             with open(train_stats_pickle, 'rb') as f:
