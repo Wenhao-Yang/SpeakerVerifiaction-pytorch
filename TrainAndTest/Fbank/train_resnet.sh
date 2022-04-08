@@ -893,12 +893,12 @@ if [ $stage -le 101 ]; then
   mask_layer=baseline
   weight=vox2_rcf
   scale=0.2
-  subset=1p9
+  subset=
   stat_type=maxmargin
   loss_ratio=1
         # --milestones 15,25,35,45 \
 
-  for loss in arcdist arcsoft ; do
+  for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 #     python TrainAndTest/train_egs.py \
 #       --model ${model} \
@@ -949,6 +949,12 @@ if [ $stage -le 101 ]; then
 #_lr${stat_type}${loss_ratio}
 #_lr${stat_type}${loss_ratio}
 #${input_dim}
+    if [ "$loss" == "arcdist" ];then
+      loss_str=_${stat_type}lr${loss_ratio}
+    else
+      loss_str=
+    fi
+
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${subset}_fb${input_dim} \
@@ -972,8 +978,8 @@ if [ $stage -le 101 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_lr${stat_type}${loss_ratio}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_lr${stat_type}${loss_ratio}_wd5e4_var/checkpoint_60.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_lncl2_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_lncl2_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var/checkpoint_60.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -991,12 +997,13 @@ if [ $stage -le 101 ]; then
       --num-center 3 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 2,3 \
+      --gpu-id 0,1 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
       --remove-vad \
       --loss-type ${loss} \
+      --lncl \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
   done

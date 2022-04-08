@@ -213,8 +213,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 predict_loss = ce_criterion(classfier, predicted_one_labels)
 
             alpha_t = np.clip(args.alpha_t * (epoch / args.epochs) ** 2, a_min=0, a_max=1)
+            mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
 
-            loss = (1 - alpha_t) * loss + alpha_t * predict_loss
+            loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-np.log(mp))
 
         minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
