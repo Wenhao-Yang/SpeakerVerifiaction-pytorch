@@ -780,7 +780,11 @@ class ScriptTrainDataset(data.Dataset):
         uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
         with open(feat_scp, 'r') as f:
             for line in f.readlines():
-                uid, feat_offset = line.split()
+                uid_feat = line.split()
+                if len(uid_feat) == 2:
+                    uid, feat_offset = uid_feat
+                else:
+                    uid, _, feat_offset = uid_feat
                 if uid in invalid_uid:
                     continue
                 uid2feat[uid] = feat_offset
