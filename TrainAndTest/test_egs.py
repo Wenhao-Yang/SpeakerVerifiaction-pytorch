@@ -725,7 +725,7 @@ if __name__ == '__main__':
         train_stats_pickle = os.path.join(test_xvector_dir, 'cohort.pickle')
 
         if os.path.isfile(train_stats_pickle):
-            with open(args.extract_path + '/freq.data.pickle', 'rb') as f:
+            with open(train_stats_pickle, 'rb') as f:
                 train_stats = pickle.load(f)
         else:
             train_stats = cohort(train_xvector_dir, test_xvector_dir) if args.score_norm != '' else None
