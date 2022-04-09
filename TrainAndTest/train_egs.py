@@ -284,8 +284,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
 
-    if other_loss > 0:
-        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss/len(train_loader))
+    if other_loss != 0:
+        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(train_loader))
 
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
@@ -361,9 +361,8 @@ def valid_class(valid_loader, model, ce, epoch):
 
     this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(valid_accuracy, valid_loss)
 
-
-    if other_loss > 0:
-        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss/len(valid_loader))
+    if other_loss != 0:
+        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(valid_loader))
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
 
