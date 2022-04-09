@@ -960,7 +960,7 @@ if [ $stage -le 101 ]; then
       --num-center 3 \
       --weight-decay 0.0001 \
       --dropout-p 0.1 \
-      --gpu-id 0,1 \
+      --gpu-id 2,3 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
