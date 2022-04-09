@@ -792,16 +792,16 @@ if [ $stage -le 101 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 60 \
+      --epochs 40 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.1 \
+      --lr 0.001 \
       --base-lr 0.00000001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --scale ${scale} \
-      --milestones 10,20,30,40,50 \
+      --milestones 10,20,30,40,50,60,70,80 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wde4_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wde4_var/checkpoint_60.pth \
       --kernel-size ${kernel} \
