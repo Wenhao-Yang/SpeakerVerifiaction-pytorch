@@ -899,7 +899,7 @@ if [ $stage -le 101 ]; then
   chn=16
         # --milestones 15,25,35,45 \
 
-  for stat_type in maxmargin mindcf ; do
+  for stat_type in mindcf ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
     if [ "$loss" == "arcdist" ];then
