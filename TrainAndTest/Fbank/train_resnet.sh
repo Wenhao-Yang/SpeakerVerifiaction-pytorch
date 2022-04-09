@@ -955,6 +955,7 @@ if [ $stage -le 101 ]; then
       --num-valid 2 \
       --alpha ${alpha} \
       --margin 0.2 \
+      --m 0.2 \
       --s 30 \
       --num-center 3 \
       --weight-decay 0.0001 \
