@@ -301,10 +301,11 @@ class DistributeLoss(nn.Module):
 
     """
 
-    def __init__(self, stat_type="mean", margin=0.2):
+    def __init__(self, stat_type="mean", margin=0.2, p_target=0.1):
         super(DistributeLoss, self).__init__()
         self.stat_type = stat_type
         self.margin = margin
+        self.p_target = p_target
 
     def forward(self, dist, labels):
         """
@@ -319,6 +320,12 @@ class DistributeLoss(nn.Module):
             labels = labels.unsqueeze(1)
 
         positive_dist = dist.gather(dim=1, index=labels)
+
+        negative_label = torch.arange(dist.shape[1]).reshape(1, -1).repeat(positive_dist.shape[0], 1)
+        negative_label = negative_label.scatter(1, labels, -1)
+        negative_label = torch.where(negative_label != -1)[1].reshape(positive_dist.shape[0], -1)
+        negative_dist = dist.gather(dim=1, index=negative_label)
+
         mean = positive_dist.mean()  # .clamp_min(0)
 
         if self.stat_type == "stddmean":
@@ -350,10 +357,18 @@ class DistributeLoss(nn.Module):
             positive_theta = torch.acos(positive_dist)
             # loss = (2 * positive_theta - self.margin).clamp_min(0).max()
             loss = (positive_theta - self.margin).clamp_min(0).max()
+        elif self.stat_type == "mindcf":
+            positive_theta = torch.acos(positive_dist)
+            negative_theta = torch.acos(negative_dist)
+
+            loss = self.p_target * (positive_theta - self.margin).clamp_min(0).max() + (1 - self.p_target) * (
+                    self.margin - negative_theta).clamp_min(0).max()
+
         return loss
 
     def __repr__(self):
-        return "DistributeLoss(margin=%f, stat_type=%s)" % (self.margin, self.stat_type)
+        return "DistributeLoss(margin=%f, stat_type=%s, self.p_target=%s)" % (
+            self.margin, self.stat_type, self.p_target)
 
 
 def guassian_kernel(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None):
