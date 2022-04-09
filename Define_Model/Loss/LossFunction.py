@@ -324,6 +324,9 @@ class DistributeLoss(nn.Module):
         negative_label = torch.arange(dist.shape[1]).reshape(1, -1).repeat(positive_dist.shape[0], 1)
         negative_label = negative_label.scatter(1, labels, -1)
         negative_label = torch.where(negative_label != -1)[1].reshape(positive_dist.shape[0], -1)
+
+        if dist.is_cuda:
+            negative_label = negative_label.cuda()
         negative_dist = dist.gather(dim=1, index=negative_label)
 
         mean = positive_dist.mean()  # .clamp_min(0)
