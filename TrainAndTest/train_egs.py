@@ -207,6 +207,18 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         predicted_labels = output_softmax(classfier_label)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+
+        if args.lncl:
+            if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
+                predict_loss = xe_criterion(classfier, predicted_one_labels)
+            else:
+                predict_loss = ce_criterion(classfier, predicted_one_labels)
+
+            alpha_t = np.clip(args.alpha_t * (epoch / args.epochs) ** 2, a_min=0, a_max=1)
+            mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
+
+            loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
+
         minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
         correct += minibatch_correct
@@ -273,8 +285,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
 
-    if other_loss > 0:
-        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss/len(train_loader))
+    if other_loss != 0:
+        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(train_loader))
 
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
@@ -351,9 +363,8 @@ def valid_class(valid_loader, model, ce, epoch):
 
     this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(valid_accuracy, valid_loss)
 
-
-    if other_loss > 0:
-        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss/len(valid_loader))
+    if other_loss != 0:
+        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(valid_loader))
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
 
