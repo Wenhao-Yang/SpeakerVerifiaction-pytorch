@@ -361,12 +361,17 @@ class DistributeLoss(nn.Module):
             positive_theta = torch.acos(positive_dist)
             # loss = (2 * positive_theta - self.margin).clamp_min(0).max()
             loss = (positive_theta - self.margin).clamp_min(0).max()
+        elif self.stat_type == "maxnegative":
+            negative_theta = torch.acos(negative_dist)
+            # loss = (2 * positive_theta - self.margin).clamp_min(0).max()
+            loss = (0.5 * np.pi - negative_theta - self.margin).clamp_min(0).max()
+
         elif self.stat_type == "mindcf":
             positive_theta = torch.acos(positive_dist)
             negative_theta = torch.acos(negative_dist)
 
             loss = self.p_target * positive_theta.clamp_min(self.margin).max() + (
-                        self.p_target - 1) * negative_theta.clamp_max(np.pi - self.margin).min()
+                    self.p_target - 1) * negative_theta.clamp_max(0.5 * np.pi - self.margin).min()
 
         return loss
 
