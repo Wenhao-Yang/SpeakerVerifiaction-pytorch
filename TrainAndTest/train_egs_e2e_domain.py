@@ -182,7 +182,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         feats = feats.reshape(int(data_shape[0] / (args.enroll_utts + 1)), args.enroll_utts + 1, -1)
 
         end2end_loss, prec = ce_criterion(feats)
-        print(prec)
+        # print(prec)
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
         # print('max logit is ', classfier_label.max())
@@ -293,7 +293,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if args.loss_type in ['arcdist']:
                 epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
 
-            epoch_str += ' E2E Loss: {:.4f} E2E Accuracy: {:.4f}%'.format(end2end_loss.float(), prec)
+            epoch_str += ' E2E Loss: {:.4f} E2E Accuracy: {:.4f}%'.format(end2end_loss.float(), prec.float())
 
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             100. * minibatch_acc)
