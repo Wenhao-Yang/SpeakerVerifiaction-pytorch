@@ -182,6 +182,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         feats = feats.reshape(int(data_shape[0] / (args.enroll_utts + 1)), args.enroll_utts + 1, -1)
 
         end2end_loss, prec = ce_criterion(feats)
+        print(prec)
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
         # print('max logit is ', classfier_label.max())
