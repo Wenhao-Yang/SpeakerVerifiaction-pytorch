@@ -413,6 +413,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     # Data options
     parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
     parser.add_argument('--train-test-dir', type=str, required=True, help='path to dataset')
+    parser.add_argument('--noise-padding-dir', type=str, default='', help='path to dataset')
+
     parser.add_argument('--valid-dir', type=str, required=True, help='path to dataset')
     parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
     parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
@@ -558,6 +560,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='the margin value for the angualr softmax loss function (default: 3.0')
     parser.add_argument('--stat-type', type=str, default='maxmargin',
                         help='path to voxceleb1 test dataset')
+    parser.add_argument('--enroll-utts', type=int, default=5, metavar='M',
+                        help='the margin value for the angualr softmax loss function (default: 3.0')
 
     # args for a-softmax
     parser.add_argument('--all-iteraion', type=int, default=0, metavar='M',
