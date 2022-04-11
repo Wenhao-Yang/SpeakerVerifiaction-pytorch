@@ -2,6 +2,7 @@
 # encoding: utf-8
 import os
 import pathlib
+import pdb
 import traceback
 import random
 import librosa
@@ -804,6 +805,7 @@ class PadCollate:
             else:
                 xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
+        pdb.set_trace()
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
 
         # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
