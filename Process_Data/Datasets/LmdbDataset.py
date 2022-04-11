@@ -586,6 +586,7 @@ class CrossEgsDataset(Dataset):
                     rand_enroll_utt = random.choice(this_spks_utts)
                     if rand_enroll_utt not in test_utt:
                         enroll_utts.add(rand_enroll_utt)
+
             else:
                 this_spk_doms = list(this_dom2utt.keys())
                 test_dom = random.choice(this_spk_doms)
@@ -595,7 +596,7 @@ class CrossEgsDataset(Dataset):
                     enroll_dom = random.choice(this_spk_doms)
 
                 test_utt.append(random.choice(this_dom2utt[test_dom]))
-
+                print(len(this_dom2utt[enroll_dom]))
                 while len(enroll_utts) < self.enroll_utt:
                     enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
 
