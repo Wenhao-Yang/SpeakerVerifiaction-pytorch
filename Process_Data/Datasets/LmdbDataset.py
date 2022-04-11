@@ -539,7 +539,7 @@ class CrossEgsDataset(Dataset):
         if not os.path.exists(feat_scp):
             raise FileExistsError(feat_scp)
 
-        dataset = []
+        dataset_len = 0
         spks = set([])
         doms = set([])
         cls2dom2utt = {}
@@ -560,6 +560,7 @@ class CrossEgsDataset(Dataset):
                 except ValueError as v:
                     pass
 
+                dataset_len += 1
                 # dataset.append((cls, dom_cls, upath))
                 doms.add(dom_cls)
                 spks.add(cls)
@@ -569,24 +570,25 @@ class CrossEgsDataset(Dataset):
 
                 cls2dom2utt[cls][dom_cls].append(upath)
 
-        label_feat_scp = label_dir + '/feat.scp'
-        guide_label = []
-        if os.path.exists(label_feat_scp):
-            with open(label_feat_scp, 'r') as u:
-                all_lb_upath = tqdm(u.readlines())
-                for line in all_lb_upath:
-                    lb, lpath = line.split()
-                    guide_label.append((int(lb), lpath))
-        if verbose > 0:
-            print('==> There are {} speakers in Dataset.'.format(len(spks)))
-            print('    There are {} egs in Dataset'.format(len(dataset)))
-        if len(guide_label) > 0:
-            if verbose > 0:
-                print('    There are {} guide labels for egs in Dataset'.format(len(guide_label)))
-            assert len(guide_label) == len(dataset)
+        # label_feat_scp = label_dir + '/feat.scp'
+        # guide_label = []
+        # if os.path.exists(label_feat_scp):
+        #     with open(label_feat_scp, 'r') as u:
+        #         all_lb_upath = tqdm(u.readlines())
+        #         for line in all_lb_upath:
+        #             lb, lpath = line.split()
+        #             guide_label.append((int(lb), lpath))
+        # if verbose > 0:
+        #     print('==> There are {} speakers in Dataset.'.format(len(spks)))
+        #     print('    There are {} egs in Dataset'.format(len(dataset)))
+        # if len(guide_label) > 0:
+        #     if verbose > 0:
+        #         print('    There are {} guide labels for egs in Dataset'.format(len(guide_label)))
+        #     assert len(guide_label) == len(dataset)
 
         self.dataset = cls2dom2utt
-        self.guide_label = guide_label
+        self.dataset_len = dataset_len
+        # self.guide_label = guide_label
 
         self.feat_dim = feat_dim
         self.enroll_utt = enroll_utt
@@ -643,8 +645,11 @@ class CrossEgsDataset(Dataset):
             features.append(torch.stack(utts_feat, dim=0))
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
+        # 24, 6, 1, time, feat_dim
+        features = torch.stack(features, dim=0).squeeze()
+        feat_shape = features.shape
 
-        return torch.stack(features, dim=0), torch.LongTensor(label)
+        return features.reshape(feat_shape[0] * feat_shape[1], feat_shape[2], feat_shape[3]), torch.LongTensor(label)
 
     def __getrandomitem__(self):
         # time_s = time.time()
@@ -658,4 +663,4 @@ class CrossEgsDataset(Dataset):
         return feature
 
     def __len__(self):
-        return len(self.dataset)  # 返回一个epoch的采样数
+        return self.dataset_len  # 返回一个epoch的采样数
