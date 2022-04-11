@@ -179,7 +179,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         data_shape = data.shape
 
         classfier, feats = model(data)
-        feats = feats.reshape(int(data_shape / (args.enroll_utts + 1)), args.enroll_utts + 1, -1)
+        feats = feats.reshape(int(data_shape[0] / (args.enroll_utts + 1)), args.enroll_utts + 1, -1)
 
         end2end_loss, prec = ce_criterion(feats)
         # cos_theta, phi_theta = classfier
