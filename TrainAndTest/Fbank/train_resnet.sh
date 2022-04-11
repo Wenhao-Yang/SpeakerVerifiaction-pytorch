@@ -874,7 +874,7 @@ if [ $stage -le 101 ]; then
   testset=cnceleb
   feat_type=klfb
   model=ThinResNet
-  resnet_size=34
+  resnet_size=18
   encoder_type=SAP2
   embedding_size=512
   block_type=basic
@@ -899,7 +899,7 @@ if [ $stage -le 101 ]; then
   chn=16
         # --milestones 15,25,35,45 \
 
-  for stat_type in maxnegative ; do
+  for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
     if [ "$loss" == "arcdist" ];then
@@ -917,7 +917,7 @@ if [ $stage -le 101 ]; then
     fi
 
 #    ${loss_str}
-    python TrainAndTest/train_egs.py \
+    python TrainAndTest/train_egs_e2e_domain.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
@@ -940,8 +940,8 @@ if [ $stage -le 101 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wde4_var/checkpoint_60.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/e2e_${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/e2e_${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var/checkpoint_60.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels ${channels} \
@@ -958,7 +958,7 @@ if [ $stage -le 101 ]; then
       --m 0.2 \
       --s 30 \
       --num-center 3 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 2,3 \
       --extract \
