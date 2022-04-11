@@ -580,12 +580,23 @@ class CrossEgsDataset(Dataset):
 
             if len(this_dom2utt) == 1:
                 this_spks_utts = this_dom2utt[list(this_dom2utt.keys())[0]]
+                if len(this_spks_utts) == 1:
+                    continue
                 test_utt.append(random.choice(this_spks_utts))
 
-                while len(enroll_utts) < self.enroll_utt:
-                    rand_enroll_utt = random.choice(this_spks_utts)
-                    if rand_enroll_utt not in test_utt:
-                        enroll_utts.add(rand_enroll_utt)
+                if len(this_spks_utts) - 1 > self.enroll_utt:
+                    while len(enroll_utts) < self.enroll_utt:
+                        rand_enroll_utt = random.choice(this_spks_utts)
+                        if rand_enroll_utt not in test_utt:
+                            enroll_utts.add(rand_enroll_utt)
+                else:
+                    for i in this_spks_utts:
+                        if i not in test_utt:
+                            enroll_utts.add(i)
+
+                    enroll_utts = list(enroll_utts)
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.extend([random.choice(enroll_utts)])
 
             else:
                 this_spk_doms = list(this_dom2utt.keys())
@@ -596,9 +607,17 @@ class CrossEgsDataset(Dataset):
                     enroll_dom = random.choice(this_spk_doms)
 
                 test_utt.append(random.choice(this_dom2utt[test_dom]))
-                print(len(this_dom2utt[enroll_dom]))
-                while len(enroll_utts) < self.enroll_utt:
-                    enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
+
+                if len(this_dom2utt[enroll_dom]) > self.enroll_utt:
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
+                else:
+                    for i in this_dom2utt[enroll_dom]:
+                        enroll_utts.add(i)
+
+                    enroll_utts = list(enroll_utts)
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.extend([random.choice(enroll_utts)])
 
             utts_feat = [self.transform(self.loader(upath)) for upath in test_utt]
             utts_feat.extend([self.transform(self.loader(upath)) for upath in enroll_utts])
