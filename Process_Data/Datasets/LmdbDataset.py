@@ -568,7 +568,7 @@ class CrossEgsDataset(Dataset):
 
         while len(batch_spks) < self.batch_spks:
             batch_spks.add(random.choice(self.spks))
-        print(batch_spks)
+        print(list(batch_spks)[-1])
         features = []
         label = []
         for spk_idx in batch_spks:
@@ -605,7 +605,7 @@ class CrossEgsDataset(Dataset):
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
         # 24, 6, 1, time, feat_dim
-        print(batch_spks)
+        print(list(batch_spks)[-1])
         features = torch.stack(features, dim=0).squeeze()
         feat_shape = features.shape
 
