@@ -604,6 +604,7 @@ class CrossEgsDataset(Dataset):
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
         # 24, 6, 1, time, feat_dim
+        print(batch_spks)
         features = torch.stack(features, dim=0).squeeze()
         feat_shape = features.shape
 
