@@ -565,9 +565,10 @@ class CrossEgsDataset(Dataset):
         # print('Starting loading...')
 
         batch_spks = set([])
+
         while len(batch_spks) < self.batch_spks:
             batch_spks.add(random.choice(self.spks))
-
+        print(batch_spks)
         features = []
         label = []
         for spk_idx in batch_spks:
