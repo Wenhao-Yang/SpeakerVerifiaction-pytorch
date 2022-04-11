@@ -888,7 +888,7 @@ if [ $stage -le 101 ]; then
   scheduler=rop
   optimizer=sgd
   input_dim=40
-  batch_size=144
+  batch_size=384
   fast=none1
   mask_layer=baseline
   weight=vox2_rcf
