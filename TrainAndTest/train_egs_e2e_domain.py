@@ -217,6 +217,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             other_loss += loss_cent
             loss = loss_xent + loss_cent
 
+        other_loss += float(end2end_loss.item())
         loss = end2end_loss + loss
 
         predicted_labels = output_softmax(classfier_label)
@@ -289,12 +290,13 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
-            if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+            if other_loss != 0:
+                epoch_str += ' Other Loss: {:.4f}'.format(other_loss / (batch_idx + 1))
+
             if args.loss_type in ['arcdist']:
                 epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
 
-            epoch_str += ' E2E Loss: {:.4f} E2E Accuracy: {:.4f}%'.format(end2end_loss.float(), float(prec))
+            epoch_str += ' E2E Accuracy: {:.4f}%'.format(float(prec))
 
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             100. * minibatch_acc)
