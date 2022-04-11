@@ -710,8 +710,8 @@ class PadCollate:
     """
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
-                 num_batch=0, split=False, chisquare=False,
-                 fix_len=False):
+                 num_batch=0, split=False, chisquare=False, noise_padding=None,
+                 fix_len=False, augment=False):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
@@ -724,6 +724,8 @@ class PadCollate:
         self.normlize = normlize
         self.split = split
         self.chisquare = chisquare
+        self.noise_padding = noise_padding
+        self.augment = augment
 
         if self.fix_len:
             self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
@@ -755,6 +757,28 @@ class PadCollate:
             # frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
             frame_len = random.choice(self.batch_len)
 
+        if self.noise_padding is not None:
+            noise_features = self.noise_padding.__getrandomitem__()
+            # print(noise_features.shape)
+            noise_features_len = noise_features.shape[1]
+
+            # noise_len = np.random.randint(0, int(frame_len * 0.25))
+            if self.augment:
+                noise_len = np.random.randint(int(frame_len * 0.1), int(frame_len * 0.4))
+            else:
+                noise_len = np.random.randint(0, int(frame_len * 0.25))
+
+            if noise_len > 0:
+                if noise_len < noise_features_len:
+                    start = np.random.randint(low=0, high=noise_features_len - noise_len)
+                    noise_features = noise_features[:, start:(start + noise_len)]
+                else:
+                    noise_len = noise_features_len
+
+                noise_features = noise_features.unsqueeze(0).repeat(len(batch), 1, 1, 1)
+                frame_len -= noise_len
+        else:
+            noise_len = 0
         # pad according to max_len
         # print()
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
@@ -769,6 +793,16 @@ class PadCollate:
         else:
             # print(frame_len, xs.shape[-2])
             xs = xs.contiguous()
+
+        if noise_len > 0:
+            start = np.random.randint(low=0, high=xs.shape[-2])
+            # print(noise_features.shape)
+            # print(xs.shape)
+            noise_features = noise_features[:, :, :, -xs.shape[-1]:]
+            if self.augment:
+                xs = (xs, torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2))
+            else:
+                xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
 
