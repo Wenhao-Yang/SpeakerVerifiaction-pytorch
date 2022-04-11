@@ -528,3 +528,134 @@ class EgsDataset(Dataset):
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数
+
+
+class CrossEgsDataset(Dataset):
+    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
+                 random_chunk=[], batch_size=144, enroll_utt=5, label_dir='', verbose=1):
+
+        feat_scp = dir + '/feats.scp'
+
+        if not os.path.exists(feat_scp):
+            raise FileExistsError(feat_scp)
+
+        dataset = []
+        spks = set([])
+        doms = set([])
+        cls2dom2utt = {}
+
+        with open(feat_scp, 'r') as u:
+
+            all_cls_upath = tqdm(u.readlines()) if verbose > 0 else u.readlines()
+
+            for line in all_cls_upath:
+                try:
+                    cls, upath = line.split()
+                    dom_cls = -1
+                except ValueError as v:
+                    cls, dom_cls, upath = line.split()
+                    dom_cls = int(dom_cls)
+                try:
+                    cls = int(cls)
+                except ValueError as v:
+                    pass
+
+                # dataset.append((cls, dom_cls, upath))
+                doms.add(dom_cls)
+                spks.add(cls)
+
+                cls2dom2utt.setdefault(cls, {})
+                cls2dom2utt[cls].setdefault(dom_cls, [])
+
+                cls2dom2utt[cls][dom_cls].append(upath)
+
+        label_feat_scp = label_dir + '/feat.scp'
+        guide_label = []
+        if os.path.exists(label_feat_scp):
+            with open(label_feat_scp, 'r') as u:
+                all_lb_upath = tqdm(u.readlines())
+                for line in all_lb_upath:
+                    lb, lpath = line.split()
+                    guide_label.append((int(lb), lpath))
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(spks)))
+            print('    There are {} egs in Dataset'.format(len(dataset)))
+        if len(guide_label) > 0:
+            if verbose > 0:
+                print('    There are {} guide labels for egs in Dataset'.format(len(guide_label)))
+            assert len(guide_label) == len(dataset)
+
+        self.dataset = cls2dom2utt
+        self.guide_label = guide_label
+
+        self.feat_dim = feat_dim
+        self.enroll_utt = enroll_utt
+        self.loader = loader
+        self.transform = transform
+        self.spks = spks
+        self.num_spks = len(spks)
+        self.num_doms = len(doms)
+        self.domain = domain
+        self.chunk_size = []
+        self.batch_size = batch_size
+        self.batch_spks = int(batch_size / (enroll_utt + 1))
+
+    def __getitem__(self, idx):
+        # time_s = time.time()
+        # print('Starting loading...')
+
+        batch_spks = set([])
+        while len(batch_spks) < self.batch_spks:
+            random.choice(self.spks)
+
+        features = []
+        label = []
+        for spk_idx in batch_spks:
+            label.extend([spk_idx] * (self.enroll_utt + 1))
+            this_dom2utt = self.dataset[spk_idx].copy()
+
+            test_utt = []
+            enroll_utts = set([])
+
+            if len(this_dom2utt) == 1:
+                this_spks_utts = this_dom2utt[list(this_dom2utt.keys())[0]]
+                test_utt.append(random.choice(this_spks_utts))
+
+                while len(enroll_utts) < self.enroll_utt:
+                    rand_enroll_utt = random.choice(this_spks_utts)
+                    if rand_enroll_utt not in test_utt:
+                        enroll_utts.add(rand_enroll_utt)
+            else:
+                this_spk_doms = list(this_dom2utt.keys())
+                test_dom = random.choice(this_spk_doms)
+                enroll_dom = random.choice(this_spk_doms)
+
+                while enroll_dom == test_dom:
+                    enroll_dom = random.choice(this_spk_doms)
+
+                test_utt.append(random.choice(this_dom2utt[test_dom]))
+
+                while len(enroll_utts) < self.enroll_utt:
+                    enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
+
+            utts_feat = [self.transform(self.loader(upath)) for upath in test_utt]
+            utts_feat.extend([self.transform(self.loader(upath)) for upath in enroll_utts])
+            features.append(torch.stack(utts_feat, dim=0))
+        # time_e = time.time()
+        # print('Using %d for loading egs' % (time_e - time_s))
+
+        return torch.stack(features, dim=0), torch.LongTensor(label)
+
+    def __getrandomitem__(self):
+        # time_s = time.time()
+        # print('Starting loading...')
+        idx = np.random.randint(low=0, high=self.__len__())
+        label, dom_label, upath = self.dataset[idx]
+
+        y = self.loader(upath)
+        feature = self.transform(y)
+
+        return feature
+
+    def __len__(self):
+        return len(self.dataset)  # 返回一个epoch的采样数
