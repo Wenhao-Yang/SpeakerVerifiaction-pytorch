@@ -805,8 +805,11 @@ class PadCollate:
             else:
                 xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
-        pdb.set_trace()
-        ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
+        # pdb.set_trace()
+        if len(batch[0][1]) > 1:
+            ys = torch.LongTensor(batch[0][1])
+        else:
+            ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
 
         # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
         # pad_batch = list(map_batch)
