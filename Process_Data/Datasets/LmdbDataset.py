@@ -592,7 +592,7 @@ class CrossEgsDataset(Dataset):
         self.enroll_utt = enroll_utt
         self.loader = loader
         self.transform = transform
-        self.spks = spks
+        self.spks = list(spks)
         self.num_spks = len(spks)
         self.num_doms = len(doms)
         self.domain = domain
