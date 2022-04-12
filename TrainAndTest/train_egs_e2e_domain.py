@@ -531,7 +531,7 @@ def main():
         ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
-        ce_criterion = AngleProtoLoss(init_w=args.s, init_b=-args.s * args.margin)
+        ce_criterion = AngleProtoLoss()  # init_w=args.s, init_b=-args.s * args.margin)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     elif args.loss_type == 'minarcsoft':
         ce_criterion = None
