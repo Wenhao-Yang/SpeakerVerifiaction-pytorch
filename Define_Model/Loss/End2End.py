@@ -24,8 +24,8 @@ class AngleProtoLoss(nn.Module):
 
     def __init__(self, init_w=10.0, init_b=-5.0):
         super(AngleProtoLoss, self).__init__()
-        self.w = nn.Parameter(torch.tensor(init_w))
-        self.b = nn.Parameter(torch.tensor(init_b))
+        self.w = init_w  # nn.Parameter(torch.tensor(init_w))
+        self.b = init_b  # nn.Parameter(torch.tensor(init_b))
         self.criterion = torch.nn.CrossEntropyLoss()
 
         print('Initialised AngleProto')

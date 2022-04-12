@@ -895,7 +895,7 @@ if [ $stage -le 101 ]; then
   scale=0.2
   subset=
   stat_type=maxmargin
-  loss_ratio=1
+  loss_ratio=5
   chn=16
         # --milestones 15,25,35,45 \
 
@@ -951,6 +951,7 @@ if [ $stage -le 101 ]; then
       --embedding-size ${embedding_size} \
       --time-dim 1 \
       --avg-size 5 \
+      --enroll-utts 2 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \

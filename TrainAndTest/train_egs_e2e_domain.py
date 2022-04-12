@@ -205,7 +205,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             other_loss += loss_xent
             loss = loss_xent + loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
-            loss = xe_criterion(classfier, label)
+            loss = xe_criterion(classfier, label) + args.loss_ratio * end2end_loss
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
             loss_cent = args.loss_ratio * ce_criterion(classfier, label)
@@ -218,7 +218,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             loss = loss_xent + loss_cent
 
         other_loss += float(end2end_loss.item())
-        loss = end2end_loss + loss
+        # loss = end2end_loss + loss
 
         predicted_labels = output_softmax(classfier_label)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
