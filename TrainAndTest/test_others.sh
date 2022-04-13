@@ -2551,6 +2551,7 @@ if [ $stage -le 301 ]; then
      --gpu-id 3 \
      --loss-type ${loss} \
      --extract \
+     --verbose 2 \
      --cos-sim
  done
 
