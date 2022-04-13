@@ -2550,7 +2550,7 @@ if [ $stage -le 301 ]; then
      --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
      --gpu-id 3 \
      --loss-type ${loss} \
-     --test \
+     --extract \
      --cos-sim
  done
 
