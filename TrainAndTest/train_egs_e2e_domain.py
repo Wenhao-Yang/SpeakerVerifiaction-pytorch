@@ -609,6 +609,7 @@ def main():
                 spk_centers = torch.nn.functional.normalize(spk_centers, dim=0)
                 spk_sim_matrix = torch.matmul(spk_centers.transpose(0, 1), spk_centers)
                 most_sim_spk = torch.argsort(spk_sim_matrix, dim=1)[:, -args.most_sim_spk]
+                print(most_sim_spk.shape)
                 train_dir.__setclssim__(most_sim_spk)
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
