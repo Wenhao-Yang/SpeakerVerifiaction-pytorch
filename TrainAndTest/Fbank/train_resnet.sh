@@ -885,8 +885,8 @@ if [ $stage -le 101 ]; then
   alpha=0
   input_norm=Mean
 #  mask_layer=None
-  scheduler=rop
-  optimizer=sgd
+  scheduler=cyclic
+  optimizer=adam
   input_dim=40
   batch_size=384
   fast=none1
@@ -922,7 +922,6 @@ if [ $stage -le 101 ]; then
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
-      --shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
@@ -930,11 +929,11 @@ if [ $stage -le 101 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 0 \
-      --epochs 60 \
+      --epochs 30 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.001 \
+      --lr 0.0001 \
       --base-lr 0.00000001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
