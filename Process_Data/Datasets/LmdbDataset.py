@@ -490,7 +490,8 @@ class EgsDataset(Dataset):
 
 class CrossEgsDataset(Dataset):
     def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
-                 random_chunk=[], batch_size=144, enroll_utt=5, label_dir='', verbose=1):
+                 random_chunk=[], batch_size=144, enroll_utt=5,
+                 label_dir='', verbose=1):
 
         feat_scp = dir + '/feats.scp'
 
@@ -559,15 +560,26 @@ class CrossEgsDataset(Dataset):
         self.chunk_size = []
         self.batch_size = batch_size
         self.batch_spks = int(batch_size / (enroll_utt + 1))
+        # self.sim_matrix = None
+        self.most_sim_spk = None
 
     def __getitem__(self, idx):
         # time_s = time.time()
         # print('Starting loading...')
-
         batch_spks = set([])
+        if self.sim_matrix == None:
+            while len(batch_spks) < self.batch_spks:
+                batch_spks.add(random.choice(self.spks))
+        else:
+            # spk_idx = idx % self.num_spks
+            i = 0
+            while len(batch_spks) < self.batch_spks:
+                spk_idx = (idx + i) % self.num_spks
+                for spk in self.most_sim_spk[spk_idx]:
+                    batch_spks.add(spk)
+                i += 1
 
-        while len(batch_spks) < self.batch_spks:
-            batch_spks.add(random.choice(self.spks))
+        batch_spks = list(batch_spks)[:self.batch_spks]
         # print(list(batch_spks)[-1])
         features = []
         label = []
@@ -641,6 +653,10 @@ class CrossEgsDataset(Dataset):
         feature = self.transform(y)
 
         return feature
+
+    def __setclssim__(self, most_sim_spk):
+        assert len(most_sim_spk) == self.num_spks
+        self.most_sim_spk = most_sim_spk
 
     def __len__(self):
         return int(self.dataset_len * 2 / self.batch_size)  # 返回一个epoch的采样数

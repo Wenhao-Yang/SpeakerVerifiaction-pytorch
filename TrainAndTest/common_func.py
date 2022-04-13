@@ -562,6 +562,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='path to voxceleb1 test dataset')
     parser.add_argument('--enroll-utts', type=int, default=5, metavar='M',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
+    parser.add_argument('--most-sim-spk', type=int, default=8, metavar='M',
+                        help='the margin value for the angualr softmax loss function (default: 3.0')
 
     # args for a-softmax
     parser.add_argument('--all-iteraion', type=int, default=0, metavar='M',
