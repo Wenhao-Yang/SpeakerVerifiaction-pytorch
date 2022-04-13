@@ -2561,7 +2561,8 @@ if [ $stage -le 301 ]; then
 # +-------------------+-------------+-------------+-------------+--------------+-------------------+
 # |     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 # +-------------------+-------------+-------------+-------------+--------------+-------------------+
-# |   cnceleb-test2   |   15.1695   |   0.1361    |   0.6795    |    0.8206    | 20220413 22:01:21 |
+# |   cnceleb-test2   |   15.1695   |   0.1361    |   0.6795    |    0.8206    | 20220413 22:01:21 | 18 trained by dev1
+# |   cnceleb-test2   |   2.1231    |   0.2031    |   0.0924    |    0.1497    | 20220413 22:37:30 | 34 trained by dev1 & 2
 
 
 # for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
