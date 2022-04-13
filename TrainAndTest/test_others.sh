@@ -2490,7 +2490,7 @@ if [ $stage -le 301 ]; then
   loss=arcsoft
 
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=512
   block_type=basic
@@ -2506,9 +2506,10 @@ if [ $stage -le 301 ]; then
 
   train_set=cnceleb
   test_set=cnceleb
+  train_subset=12
 #  subset=dev
   subset=test2
-  epoch=50
+  epoch=60
 
 
 #       --trials subtrials/trials_${s} \
@@ -2519,10 +2520,10 @@ if [ $stage -le 301 ]; then
    python -W ignore TrainAndTest/test_egs.py \
      --model ${model} \
      --resnet-size ${resnet_size} \
-     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
+     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat} \
      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
      --train-trials trials_2w \
-     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}_valid \
+     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat}_valid \
      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
      --feat-format kaldi \
      --input-norm ${input_norm} \
@@ -2546,14 +2547,21 @@ if [ $stage -le 301 ]; then
      --input-length fix \
      --remove-vad \
      --frame-shift 300 \
-     --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${subset}_epoch${epoch}_fix \
-     --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
+     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${subset}_epoch${epoch}_fix \
+     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
      --gpu-id 3 \
      --loss-type ${loss} \
-     --extract \
      --verbose 2 \
      --cos-sim
  done
+
+ # ThinResNet 18 dev 1
+
+# +-------------------+-------------+-------------+-------------+--------------+-------------------+
+# |     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+# +-------------------+-------------+-------------+-------------+--------------+-------------------+
+# |   cnceleb-test2   |   15.1695   |   0.1361    |   0.6795    |    0.8206    | 20220413 22:01:21 |
+
 
 # for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
 #   python -W ignore TrainAndTest/test_egs.py \
