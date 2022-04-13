@@ -10,7 +10,8 @@
 @Overview: Train the resnet 10 with asoftmax.
 """
 from __future__ import print_function
-
+import pickle
+import random
 import argparse
 import os
 import pdb
@@ -21,6 +22,8 @@ import warnings
 from collections import OrderedDict
 
 import kaldi_io
+import kaldiio
+
 import numpy as np
 import psutil
 import torch
@@ -38,7 +41,7 @@ from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal
-from TrainAndTest.common_func import create_model, verification_extract
+from TrainAndTest.common_func import create_model, verification_extract, load_model_args
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -61,6 +64,7 @@ except AttributeError:
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition TEST')
 # Data options
 parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
+parser.add_argument('--train-extract-dir', type=str, default='', help='path to dataset')
 parser.add_argument('--train-test-dir', type=str, help='path to dataset')
 parser.add_argument('--valid-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
@@ -85,13 +89,11 @@ parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of j
 parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--check-path', default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25',
-                    help='folder to output model checkpoints')
+parser.add_argument('--check-path', help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-parser.add_argument('--resume',
-                    default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25/checkpoint_10.pth', type=str,
-                    metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
+parser.add_argument('--resume', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
+parser.add_argument('--model-yaml', default='', type=str,
+                    help='path to yaml of model for the latest checkpoint (default: none)')
 
 parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -228,6 +230,15 @@ parser.add_argument('--valid', action='store_true', default=False,
                     help='need to make spectrograms file')
 parser.add_argument('--verbose', type=int, default=0, choices=[0, 1, 2],
                     help='how many batches to wait before logging training status')
+parser.add_argument('--normalize', action='store_false', default=True,
+                    help='normalize vectors in final layer')
+parser.add_argument('--mean-vector', action='store_false', default=True, help='mean for embeddings while extracting')
+parser.add_argument('--score-norm', type=str, default='', help='score normalization')
+
+parser.add_argument('--n-train-snts', type=int, default=100000,
+                    help='how many batches to wait before logging training status')
+parser.add_argument('--cohort-size', type=int, default=50000,
+                    help='how many imposters to include in cohort')
 
 args = parser.parse_args()
 
@@ -276,7 +287,8 @@ if args.mvnorm:
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':
-    file_loader = read_mat
+    # file_loader = read_mat
+    file_loader = kaldiio.load_mat
     torch.multiprocessing.set_sharing_strategy('file_system')
 elif args.feat_format == 'npy':
     file_loader = np.load
@@ -286,6 +298,10 @@ if not args.valid:
 
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
+
+if os.path.isdir(args.train_extract_dir):
+    train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, filer_loader=file_loader,
+                                            verbose=args.verbose, trials_file='')
 
 verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
                                   verbose=args.verbose)
@@ -344,84 +360,22 @@ def valid(valid_loader, model):
     torch.cuda.empty_cache()
 
 
-def extract(test_loader, model, xvector_dir, ark_num=50000):
-    model.eval()
-
-    if not os.path.exists(xvector_dir):
-        os.makedirs(xvector_dir)
-        if args.verbose > 0:
-            print('Creating xvector path: %s' % xvector_dir)
-
-    pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
-    vectors = []
-    uids = []
-    with torch.no_grad():
-        for batch_idx, (data, uid) in pbar:
-            # print(model.conv1.weight)
-            # print(data)
-            # raise ValueError('Conv1')
-            vec_shape = data.shape
-            # pdb.set_trace()
-            if vec_shape[1] != 1:
-                # print(data.shape)
-                data = data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-
-            if args.cuda:
-                data = data.cuda()
-
-            # compute output
-            _, out = model(data)
-
-            if vec_shape[1] != 1:
-                out = out.reshape(vec_shape[0], -1)  # .mean(dim=1)
-
-            # pdb.set_trace()
-
-            vectors.append(out.squeeze().data.cpu().numpy())
-            uids.append(uid[0])
-
-            del data, out
-            if args.verbose > 0 and batch_idx % args.log_interval == 0:
-                pbar.set_description('Extracting: [{}/{} ({:.0f}%)]'.format(
-                    batch_idx, len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-
-    assert len(uids) == len(vectors)
-    if args.verbose > 0:
-        print('There are %d vectors' % len(uids))
-
-    scp_file = xvector_dir + '/xvectors.scp'
-    scp = open(scp_file, 'w')
-
-    # write scp and ark file
-    # pdb.set_trace()
-    for set_id in range(int(np.ceil(len(uids) / ark_num))):
-        ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
-        with open(ark_file, 'wb') as ark:
-            ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
-            for i in ranges:
-                vec = vectors[i]
-                len_vec = len(vec.tobytes())
-                key = uids[i]
-                kaldi_io.write_vec_flt(ark, vec, key=key)
-                # print(ark.tell())
-                scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
-    scp.close()
-    if args.verbose > 0:
-        print('There are %d vectors. Saving to %s' % (len(uids), xvector_dir))
-    torch.cuda.empty_cache()
-
-
-def test(test_loader, xvector_dir):
+def test(test_loader, xvector_dir, test_cohort_scores=None):
     # switch to evaluate mode
     labels, distances = [], []
+    l_batch = []
+    d_batch = []
     pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
-    for batch_idx, (data_a, data_p, label) in pbar:
+    for batch_idx, this_batch in pbar:
+        if test_cohort_scores != None:
 
-        out_a = torch.tensor(data_a)
-        # if out_a.shape[-1] != args.embedding_size:
-        #     out_a = out_a.reshape(-1, args.embedding_size)
+            data_a, data_p, label, uid_a, uid_b = this_batch
+        else:
+            data_a, data_p, label = this_batch
 
-        out_p = torch.tensor(data_p)
+        data_a = torch.tensor(data_a)  # .cuda()  # .view(-1, 4, embedding_size)
+        data_p = torch.tensor(data_p)  # .cuda()  # .view(-
+
         # if out_p.shape[-1] != args.embedding_size:
         #     out_p = out_p.reshape(-1, args.embedding_size)
 
@@ -433,16 +387,66 @@ def test(test_loader, xvector_dir):
         #     out_a_first = out_a.shape[0]
         #     out_a = out_a.repeat(out_p.shape[0], 1)
         #     out_p = out_p.reshape(out_a_first, 1)
+        if len(data_a.shape) == 3:
+            data_a_dim1 = data_a.shape[1]
+            data_a = data_a.repeat_interleave(data_p.shape[1], dim=1)
+            data_p = data_p.repeat_interleave(data_a_dim1, dim=1)
+        #
+        # else:
+        # dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
 
-        dists = l2_dist.forward(out_a, out_p)  # torch.sqrt(torch.sum((out_a - out_p) ** 2, 1))  # euclidean distance
+        # print(dists.shape)
+        # pdb.set_trace()
+        dists = l2_dist(data_a, data_p)
+
+        if len(dists.shape) == 3:
+            dists = dists.mean(dim=-1).mean(dim=-1)
+        elif len(dists.shape) == 2:
+            dists = dists.mean(dim=-1)
+
         dists = dists.numpy()
+        label = label.numpy()
 
-        distances.append(dists)
-        labels.append(label.numpy())
+        if test_cohort_scores != None:
+            enroll_mean_std = np.array([test_cohort_scores[uid] for uid in uid_a])
+
+            mean_e_c = enroll_mean_std[:, 0]
+            std_e_c = enroll_mean_std[:, 1]
+
+            test_mean_std = np.array([test_cohort_scores[uid] for uid in uid_b])
+
+            mean_t_c = test_mean_std[:, 0]
+            std_t_c = test_mean_std[:, 1]
+            # [test_cohort_scores[uid] for uid in uid_b]
+
+            if args.score_norm == "z-norm":
+                dists = (dists - mean_e_c) / std_e_c
+            elif args.score_norm == "t-norm":
+                dists = (dists - mean_t_c) / std_t_c
+            elif args.score_norm in ["s-norm", "as-norm"]:
+                score_e = (dists - mean_e_c) / std_e_c
+                score_t = (dists - mean_t_c) / std_t_c
+                dists = 0.5 * (score_e + score_t)
+
+        if len(dists) == 1:
+            d_batch.append(float(dists[0]))
+            l_batch.append(label[0])
+
+            if len(l_batch) >= 128 or len(test_loader.dataset) == (batch_idx + 1):
+                distances.append(d_batch)
+                labels.append(l_batch)
+
+                l_batch = []
+                d_batch = []
+        else:
+            distances.append(dists)
+            labels.append(label)
 
         if args.verbose > 0 and batch_idx % args.log_interval == 0:
             pbar.set_description('Test: [{}/{} ({:.0f}%)]'.format(
                 batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+
+        del data_a, data_p
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
@@ -502,9 +506,72 @@ def test(test_loader, xvector_dir):
 
     print(result_str)
 
-    result_file = os.path.join(xvector_dir, 'result.' + time_stamp)
+    result_file = os.path.join(xvector_dir, '%sresult.' % args.score_norm + time_stamp)
+    # result_file = os.path.join(xvector_dir, 'result.' + time_stamp)
     with open(result_file, 'w') as f:
         f.write(result_str)
+
+
+def cohort(train_xvectors_dir, test_xvectors_dir):
+    train_xvectors_scp = os.path.join(train_xvectors_dir, 'xvectors.scp')
+    test_xvectors_scp = os.path.join(test_xvectors_dir, 'xvectors.scp')
+
+    assert os.path.exists(train_xvectors_scp)
+    assert os.path.exists(test_xvectors_scp)
+
+    train_stats = {}
+
+    train_vectors = []
+    train_scps = []
+    with open(train_xvectors_scp, 'r') as f:
+        for l in f.readlines():
+            uid, vpath = l.split()
+            train_scps.append((uid, vpath))
+
+    random.shuffle(train_scps)
+
+    if args.n_train_snts < len(train_scps):
+        train_scps = train_scps[:args.n_train_snts]
+
+    for (uid, vpath) in train_scps:
+        train_vectors.append(file_loader(vpath))
+
+    train_vectors = torch.tensor(train_vectors).cuda()
+    if args.cos_sim:
+        train_vectors = train_vectors / train_vectors.norm(p=2, dim=1).unsqueeze(1)
+
+    with open(test_xvectors_scp, 'r') as f:
+        pbar = tqdm(f.readlines(), ncols=100) if args.verbose > 0 else f.readlines()
+
+        for l in pbar:
+            uid, vpath = l.split()
+
+            test_vector = torch.tensor(file_loader(vpath))
+            # pdb.set_trace()
+            if args.cos_sim:
+                test_vector = test_vector.cuda()
+                scores = torch.matmul(train_vectors, test_vector / test_vector.norm(p=2))
+
+                if args.score_norm == "as-norm":
+                    scores = torch.topk(scores, k=args.cohort_size, dim=0)[0]
+            else:
+                test_vector = test_vector.repeat(train_vectors.shape[0], 1).cuda()
+                scores = l2_dist(test_vector, train_vectors)
+
+                if args.score_norm == "as-norm":
+                    scores = -torch.topk(-scores, k=args.cohort_size, dim=0)[0]
+
+            mean_t_c = torch.mean(scores, dim=0).cpu()
+            std_t_c = torch.std(scores, dim=0).cpu()
+
+            train_stats[uid] = [mean_t_c, std_t_c]
+
+    with open(test_xvectors_dir + '/cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size), 'wb') as f:
+        pickle.dump(train_stats, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # pickle.dump(train_stats, test_xvectors_dir)
+
+    return train_stats
 
 
 if __name__ == '__main__':
@@ -526,47 +593,54 @@ if __name__ == '__main__':
         print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
-    # instantiate model and initialize weights
-    kernel_size = args.kernel_size.split(',')
-    kernel_size = [int(x) for x in kernel_size]
-    if args.padding == '':
-        padding = [int((x - 1) / 2) for x in kernel_size]
+    if os.path.exists(args.model_yaml):
+        model_kwargs = load_model_args(args.model_yaml)
     else:
-        padding = args.padding.split(',')
-        padding = [int(x) for x in padding]
+        # instantiate model and initialize weights
+        kernel_size = args.kernel_size.split(',')
+        kernel_size = [int(x) for x in kernel_size]
+        if args.padding == '':
+            padding = [int((x - 1) / 2) for x in kernel_size]
+        else:
+            padding = args.padding.split(',')
+            padding = [int(x) for x in padding]
 
-    kernel_size = tuple(kernel_size)
-    padding = tuple(padding)
-    stride = args.stride.split(',')
-    stride = [int(x) for x in stride]
+        kernel_size = tuple(kernel_size)
+        padding = tuple(padding)
+        stride = args.stride.split(',')
+        stride = [int(x) for x in stride]
 
-    channels = args.channels.split(',')
-    channels = [int(x) for x in channels]
-    context = args.context.split(',')
-    context = [int(x) for x in context]
-    dilation = args.dilation.split(',')
-    dilation = [int(x) for x in dilation]
+        channels = args.channels.split(',')
+        channels = [int(x) for x in channels]
+        context = args.context.split(',')
+        context = [int(x) for x in context]
+        dilation = args.dilation.split(',')
+        dilation = [int(x) for x in dilation]
 
-    mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
+        mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
 
-    model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
-                    'dilation': dilation, 'first_2d': args.first_2d,
-                    'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
-                    'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
-                    'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-                    'downsample': args.downsample,
-                    'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                    'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'channels': channels, 'context': context, 'init_weight': args.init_weight,
-                    'alpha': args.alpha, 'dropout_p': args.dropout_p,
-                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
+        model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
+                        'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
+                        'dilation': dilation, 'first_2d': args.first_2d,
+                        'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
+                        'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
+                        'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
+                        'downsample': args.downsample, 'normalize': args.normalize,
+                        'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
+                        'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+                        'channels': channels, 'context': context, 'init_weight': args.init_weight,
+                        'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                        'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
     if args.verbose > 1:
         print('Model options: {}'.format(model_kwargs))
         dist_type = 'cos' if args.cos_sim else 'l2'
         print('Testing with %s distance, ' % dist_type)
+
     start_time = time.time()
+    test_xvector_dir = os.path.join(args.xvector_dir, 'test')
+    train_xvector_dir = os.path.join(args.xvector_dir, 'train')
+
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
         # if args.loss_type == 'asoft':
@@ -625,21 +699,45 @@ if __name__ == '__main__':
         print('Memery Usage: %.4f GB' % (psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
 
         if args.extract:
+            if args.score_norm != '':
+                train_verify_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=args.test_batch_size,
+                                                                  shuffle=False, **kwargs)
+                verification_extract(train_verify_loader, model, xvector_dir=train_xvector_dir, epoch=start,
+                                     test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
+                                     mean_vector=args.mean_vector,
+                                     xvector=args.xvector)
+
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
 
             # extract(verify_loader, model, args.xvector_dir)
-            verification_extract(verify_loader, model, xvector_dir=args.xvector_dir, epoch=start, 
-                                 test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose, 
+            verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
+                                 test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
+                                 mean_vector=args.mean_vector,
                                  xvector=args.xvector)
 
     if args.test:
 
-        file_loader = read_vec_flt
-        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=args.xvector_dir,
-                                       loader=file_loader)
-        test_loader = torch.utils.data.DataLoader(test_dir, batch_size=args.test_batch_size * 64, shuffle=False, **kwargs)
-        test(test_loader, xvector_dir=args.xvector_dir)
+        file_loader = kaldiio.load_mat
+        # file_loader = read_vec_flt
+        return_uid = True if args.score_norm != '' else False
+        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=test_xvector_dir,
+                                       loader=file_loader, return_uid=return_uid)
+
+        test_loader = torch.utils.data.DataLoader(test_dir,
+                                                  batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
+                                                  shuffle=False, **kwargs)
+
+        train_stats_pickle = os.path.join(test_xvector_dir,
+                                          'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
+
+        if os.path.isfile(train_stats_pickle):
+            with open(train_stats_pickle, 'rb') as f:
+                train_stats = pickle.load(f)
+        else:
+            train_stats = cohort(train_xvector_dir, test_xvector_dir) if args.score_norm != '' else None
+
+        test(test_loader, xvector_dir=args.xvector_dir, test_cohort_scores=train_stats)
 
     stop_time = time.time()
     t = float(stop_time - start_time)
