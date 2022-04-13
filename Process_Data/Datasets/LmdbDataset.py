@@ -567,7 +567,7 @@ class CrossEgsDataset(Dataset):
         # time_s = time.time()
         # print('Starting loading...')
         batch_spks = set([])
-        if self.sim_matrix == None:
+        if self.most_sim_spk == None:
             while len(batch_spks) < self.batch_spks:
                 batch_spks.add(random.choice(self.spks))
         else:
