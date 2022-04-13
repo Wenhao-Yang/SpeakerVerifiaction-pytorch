@@ -575,8 +575,9 @@ class CrossEgsDataset(Dataset):
             i = 0
             while len(batch_spks) < self.batch_spks:
                 spk_idx = (idx + i) % self.num_spks
+                print(self.most_sim_spk[spk_idx])
                 for spk in self.most_sim_spk[spk_idx]:
-                    batch_spks.add(spk)
+                    batch_spks.add(int(spk))
                 i += 1
 
         batch_spks = list(batch_spks)[:self.batch_spks]
