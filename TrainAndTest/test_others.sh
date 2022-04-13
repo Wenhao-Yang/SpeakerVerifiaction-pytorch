@@ -2529,7 +2529,7 @@ if [ $stage -le 301 ]; then
      --input-dim ${input_dim} \
      --kernel-size ${kernel} \
      --downsample ${downsample} \
-     --channels 32,64,128,256 \
+     --channels 16,32,64,128 \
      --fast none1 \
      --stride 2,1 \
      --time-dim 1 \
