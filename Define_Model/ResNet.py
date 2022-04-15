@@ -805,7 +805,7 @@ class ThinResNet(nn.Module):
             encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
         else:
             self.avgpool = None
-            encode_input_dim = int(input_dim / self.conv1.kernel_size[1] / 4 / last_stride * self.num_filter[
+            encode_input_dim = int(input_dim / self.conv1.stride[1] / 4 / last_stride * self.num_filter[
                 3] * block.expansion)
 
         if encoder_type == 'SAP':
