@@ -514,7 +514,7 @@ def main():
     elif args.loss_type in ['arcsoft', 'subarc']:
         ce_criterion = None
         if args.class_weight == 'cnc1':
-            class_weight = torch.tensor(C.CNC1_WEIGHT)
+            class_weight = torch.tensor(C.CNC1_WEIGHT) * args.max_cls_weight + 1 - args.max_cls_weight
             if len(class_weight) != train_dir.num_spks:
                 class_weight = None
         else:
