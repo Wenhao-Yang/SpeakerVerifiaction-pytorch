@@ -26,15 +26,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+from Define_Model.Loss.LossFunction import LabelSmoothing
+
 __all__ = ["AngleLinear", "AngleSoftmaxLoss"]
 
-class AngleLinear(nn.Module):#定义最后一层
-    def __init__(self, in_features, out_features, m=3, phiflag=True):#输入特征维度，输出特征维度，margin超参数
+
+class AngleLinear(nn.Module):  # 定义最后一层
+    def __init__(self, in_features, out_features, m=3, phiflag=True):  # 输入特征维度，输出特征维度，margin超参数
         super(AngleLinear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = nn.Parameter(torch.Tensor(in_features, out_features))#本层权重
-        self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)#初始化权重，在第一维度上做normalize
+        self.weight = nn.Parameter(torch.Tensor(in_features, out_features))  # 本层权重
+        self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)  # 初始化权重，在第一维度上做normalize
         self.m = m
         self.phiflag = phiflag
 
@@ -254,13 +257,16 @@ class AMSoftmaxLoss(nn.Module):
 
 class ArcSoftmaxLoss(nn.Module):
 
-    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0):
+    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0,
+                 smooth_ratio=0, class_weight=None):
         super(ArcSoftmaxLoss, self).__init__()
         self.s = s
         self.margin = margin
-        self.ce = nn.CrossEntropyLoss()
+
+        self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss(weight=class_weight)
         self.iteraion = iteraion
         self.all_iteraion = all_iteraion
+        self.smooth_ratio = smooth_ratio
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
