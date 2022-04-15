@@ -794,7 +794,7 @@ class ThinResNet(nn.Module):
         self.layer3 = self._make_layer(block, self.num_filter[2], layers[2], stride=2)
 
         last_stride = 1 if self.fast in ['avp1', 'mxp1', 'none1'] else 2
-        self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=2)
+        self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=last_stride)
 
         self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
         self.dropout = nn.Dropout(self.dropout_p)
