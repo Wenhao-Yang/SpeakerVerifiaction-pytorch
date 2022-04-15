@@ -417,6 +417,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     parser.add_argument('--valid-dir', type=str, required=True, help='path to dataset')
     parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
+    parser.add_argument('--class-weight', type=str, default='', help='path to voxceleb1 test dataset')
     parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
     parser.add_argument('--exp', action='store_true', default=False, help='exp power spectogram')
 

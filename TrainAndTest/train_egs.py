@@ -43,6 +43,7 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, Additiv
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
+import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
@@ -510,8 +511,15 @@ def main():
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
         ce_criterion = None
+        if args.class_weight == 'cnc1':
+            class_weight = torch.tensor(C.CNC1_WEIGHT)
+            if len(class_weight) != train_dir.num_spks:
+                class_weight = None
+        else:
+            class_weight = None
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
-                                      all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio)
+                                      all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio,
+                                      class_weight=class_weight)
     elif args.loss_type == 'minarcsoft':
         ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,

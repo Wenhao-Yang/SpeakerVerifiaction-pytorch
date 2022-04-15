@@ -252,12 +252,12 @@ class AMSoftmaxLoss(nn.Module):
 
 class ArcSoftmaxLoss(nn.Module):
 
-    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0, smooth_ratio=0):
+    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0, smooth_ratio=0, class_weight=None):
         super(ArcSoftmaxLoss, self).__init__()
         self.s = s
         self.margin = margin
 
-        self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss()
+        self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss(weight=class_weight)
         self.iteraion = iteraion
         self.all_iteraion = all_iteraion
         self.smooth_ratio = smooth_ratio
