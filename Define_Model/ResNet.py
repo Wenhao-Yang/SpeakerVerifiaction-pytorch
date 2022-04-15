@@ -802,11 +802,11 @@ class ThinResNet(nn.Module):
         # 300 is the length of features
         if freq_dim > 0:
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            encode_input_dim = freq_dim * self.num_filter[3] * block.expansion
+            encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
         else:
             self.avgpool = None
-            encode_input_dim = input_dim / self.conv1.kernel_size[1] / 4 / last_stride * self.num_filter[
-                3] * block.expansion
+            encode_input_dim = int(input_dim / self.conv1.kernel_size[1] / 4 / last_stride * self.num_filter[
+                3] * block.expansion)
 
         if encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
