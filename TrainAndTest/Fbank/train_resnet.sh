@@ -767,7 +767,7 @@ if [ $stage -le 101 ]; then
   loss_ratio=1
   margin=0.2
   m=0.2
-  class_weight=cnc1
+  class_weight=
   max_cls_weight=0.8
 #  --num-center 3 \
         # --milestones 15,25,35,45 \
@@ -781,6 +781,11 @@ if [ $stage -le 101 ]; then
       loss_str=
     fi
 
+    if [ "$class_weight" != "cnc1" ]; then
+      cls_str=_${class_weight}${max_cls_weight}
+    else
+      cls_str=
+    fi
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
@@ -806,8 +811,8 @@ if [ $stage -le 101 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50,60,70,80 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_${class_weight}${max_cls_weight}_wd5e4_var2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_${class_weight}${max_cls_weight}_wd5e4_var2/checkpoint_60.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_wd5e4_var2 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_wd5e4_var2/checkpoint_60.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -832,7 +837,6 @@ if [ $stage -le 101 ]; then
       --loss-type ${loss} \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
-
 #            --lncl \
   done
   exit
