@@ -12,6 +12,7 @@
 
 from __future__ import print_function
 
+import itertools
 import os
 import os.path as osp
 import pdb
@@ -683,7 +684,7 @@ def main():
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2), shuffle=False,
                                                    **kwargs)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
-
+    meta_loader = itertools.cycle(meta_loader)
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
