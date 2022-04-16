@@ -838,7 +838,7 @@ class CrossMetaEgsDataset(Dataset):
                     cls2dom2utt[cls][dom_cls].append(upath)
 
         self.dataset = cls2dom2utt
-        self.dataset_len = dataset_len
+        self.dataset_len = dataset_len / batch_size
         # self.guide_label = guide_label
 
         self.feat_dim = feat_dim
