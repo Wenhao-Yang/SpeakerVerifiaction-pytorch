@@ -771,6 +771,7 @@ if [ $stage -le 101 ]; then
   max_cls_weight=0.8
 #  --num-center 3 \
         # --milestones 15,25,35,45 \
+#        --class-weight ${class_weight} \
 
   for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
@@ -789,7 +790,6 @@ if [ $stage -le 101 ]; then
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
-      --class-weight ${class_weight} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
       --shuffle \
