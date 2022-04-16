@@ -138,12 +138,12 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 #                        batch_size=args.batch_size, random_chunk=args.random_chunk)
 
 train_dir = CrossEgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader,
-                            transform=transform, enroll_utt=args.enroll_utt,
+                            transform=transform, enroll_utt=args.enroll_utts,
                             batch_size=args.batch_size, random_chunk=args.random_chunk,
                             num_meta_spks=args.num_meta_spks)
 
 meta_dir = CrossMetaEgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader,
-                               spks=train_dir.meta_spks, enroll_utt=args.enroll_utt,
+                               spks=train_dir.meta_spks, enroll_utt=args.enroll_utts,
                                transform=transform, batch_size=args.batch_size, random_chunk=args.random_chunk)
 
 train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
