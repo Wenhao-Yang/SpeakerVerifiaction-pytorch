@@ -189,8 +189,8 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             # 1. Update meta model on training data
             _, meta_train_outputs = meta_model(data)
             ce_criterion.criterion.reduction = 'none'
-
-            meta_train_loss = ce_criterion(meta_train_outputs, )
+            meta_train_outputs.reshape(int(data_shape / (args.enroll_utts + 1)), args.enroll_utts + 1, -1)
+            meta_train_loss = ce_criterion(meta_train_outputs)
             eps = torch.zeros(meta_train_loss.size(), requires_grad=True).cuda()
             meta_train_loss = torch.sum(eps * meta_train_loss)
             meta_opt.step(meta_train_loss)
