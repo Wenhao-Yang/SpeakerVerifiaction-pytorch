@@ -831,7 +831,7 @@ class CrossMetaEgsDataset(Dataset):
                     dataset_len += 1
                     # dataset.append((cls, dom_cls, upath))
                     doms.add(dom_cls)
-                    spks.add(cls)
+                    # spks.add(cls)
 
                     cls2dom2utt.setdefault(cls, {})
                     cls2dom2utt[cls].setdefault(dom_cls, [])
