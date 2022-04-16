@@ -99,6 +99,7 @@ if [ $stage -le 0 ]; then
       --time-dim 1 \
       --avg-size 5 \
       --enroll-utts 2 \
+      --num-meta-spks 40 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
