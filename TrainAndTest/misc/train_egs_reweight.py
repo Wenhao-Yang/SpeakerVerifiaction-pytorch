@@ -202,7 +202,8 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
 
             meta_val_outputs = meta_model(meta_inputs)
             ce_criterion.criterion.reduction = 'mean'
-            meta_val_loss = ce_criterion(meta_val_outputs)
+            meta_val_loss = ce_criterion(meta_val_outputs.reshape(int(data_shape[0] / (args.enroll_utts + 1)),
+                                                                  args.enroll_utts + 1, -1))
             eps_grads = torch.autograd.grad(meta_val_loss, eps)[0].detach()
 
         # 3. Compute weights for current training batch
