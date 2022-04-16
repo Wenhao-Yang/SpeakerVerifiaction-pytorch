@@ -782,7 +782,7 @@ if [ $stage -le 101 ]; then
       loss_str=
     fi
 
-    if [ "$class_weight" != "cnc1" ]; then
+    if [ "$class_weight" == "cnc1" ]; then
       cls_str=_${class_weight}${max_cls_weight}
     else
       cls_str=
