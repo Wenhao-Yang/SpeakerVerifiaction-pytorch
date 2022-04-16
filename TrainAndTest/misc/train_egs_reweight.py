@@ -155,7 +155,7 @@ extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
                                   trials_file=args.trials, filer_loader=file_loader)
 
 valid_dir = CrossEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
-                            enroll_utt=args.enroll_utt, batch_size=args.batch_size, random_chunk=args.random_chunk,
+                            enroll_utt=args.enroll_utts, batch_size=args.batch_size, random_chunk=args.random_chunk,
                             )
 
 
