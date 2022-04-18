@@ -418,6 +418,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--valid-dir', type=str, required=True, help='path to dataset')
     parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
     parser.add_argument('--class-weight', type=str, default='', help='path to voxceleb1 test dataset')
+    parser.add_argument('--max-cls-weight', default=0.8, type=float, help='replace batchnorm with instance norm')
+
     parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
     parser.add_argument('--exp', action='store_true', default=False, help='exp power spectogram')
 
@@ -563,6 +565,9 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='path to voxceleb1 test dataset')
     parser.add_argument('--enroll-utts', type=int, default=5, metavar='M',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
+    parser.add_argument('--num-meta-spks', type=int, default=40, metavar='M',
+                        help='the margin value for the angualr softmax loss function (default: 3.0')
+    # num_meta_spks
     parser.add_argument('--most-sim-spk', type=int, default=8, metavar='M',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
 
