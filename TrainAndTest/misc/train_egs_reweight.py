@@ -645,7 +645,7 @@ def main():
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
-    ce = [ce_criterion, xe_criterion]
+    ce = [ce_criterion.cuda(), xe_criterion]
 
     start = args.start_epoch + start_epoch
     print('Start epoch is : ' + str(start))
