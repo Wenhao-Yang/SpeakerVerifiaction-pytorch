@@ -795,7 +795,7 @@ class CrossValidEgsDataset(Dataset):
         return feature
 
     def __len__(self):
-        return 1  # 返回一个epoch的采样数
+        return self.dataset_len  # 返回一个epoch的采样数
 
 
 class CrossMetaEgsDataset(Dataset):
