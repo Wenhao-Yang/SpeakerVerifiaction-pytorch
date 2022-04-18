@@ -194,13 +194,14 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             meta_train_outputs = meta_train_outputs.reshape(int(data_shape[0] / (args.enroll_utts + 1)),
                                                             args.enroll_utts + 1, -1)
             meta_train_loss, _ = ce_criterion(meta_train_outputs)
+            print(meta_train_loss)
+
             eps = torch.zeros(meta_train_loss.size(), requires_grad=True).cuda()
             meta_train_loss = torch.sum(eps * meta_train_loss)
             meta_opt.step(meta_train_loss)
 
             # 2. Compute grads of eps on meta validation data
             meta_inputs, meta_labels = next(meta_loader)
-
             meta_inputs, meta_labels = meta_inputs.cuda(), meta_labels.cuda()
 
             meta_val_outputs = meta_model(meta_inputs)
