@@ -627,6 +627,8 @@ def main():
     milestones = args.milestones.split(',')
     milestones = [int(x) for x in milestones]
     milestones.sort()
+
+    model.classifier = None
     if args.scheduler == 'exp':
         gamma = np.power(args.base_lr / args.lr, 1 / args.epochs) if args.gamma == 0 else args.gamma
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
