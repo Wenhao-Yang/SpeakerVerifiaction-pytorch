@@ -855,7 +855,7 @@ class CrossMetaEgsDataset(Dataset):
         self.domain = domain
         self.chunk_size = []
         self.batch_size = batch_size
-        self.batch_spks = int(batch_size / (enroll_utt + 1))
+        self.batch_spks = min(int(batch_size / (enroll_utt + 1)), len(spks))
 
     def __getitem__(self, idx):
         # time_s = time.time()
