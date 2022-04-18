@@ -324,7 +324,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
         if (batch_idx + 1) % args.log_interval == 0:
             epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
                                                                           len(train_loader.dataset),
-                                                                          100. * batch_idx / len(train_loader))
+                                                                          100. * batch_idx / len(train_loader.dataset))
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
