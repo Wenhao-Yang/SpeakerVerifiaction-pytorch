@@ -211,7 +211,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             meta_val_loss, _ = ce_criterion(meta_val_outputs.reshape(int(data_shape[0] / (args.enroll_utts + 1)),
                                                                      args.enroll_utts + 1, -1))
             # print(meta_val_loss)
-            eps_grads = torch.autograd.grad(meta_val_loss, eps)[0].detach()
+            eps_grads = torch.autograd.grad(meta_val_loss, eps, allow_unused=True)[0].detach()
 
         # 3. Compute weights for current training batch
         w_tilde = torch.clamp(-eps_grads, min=0)
@@ -628,7 +628,7 @@ def main():
     milestones = [int(x) for x in milestones]
     milestones.sort()
 
-    model.classifier = None
+    # model.classifier = None
     if args.scheduler == 'exp':
         gamma = np.power(args.base_lr / args.lr, 1 / args.epochs) if args.gamma == 0 else args.gamma
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
