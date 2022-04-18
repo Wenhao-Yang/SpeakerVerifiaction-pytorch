@@ -185,6 +185,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
 
         data, label = Variable(data), Variable(label)
         data_shape = data.shape
+        print(data_shape)
 
         with higher.innerloop_ctx(model, optimizer) as (meta_model, meta_opt):
             # 1. Update meta model on training data
