@@ -186,7 +186,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
         # data, label = Variable(data), Variable(label)
         data_shape = data.shape
         # print(data_shape)
-        optimizer.zero_grad()
+        # optimizer.zero_grad()
         with higher.innerloop_ctx(model, optimizer) as (meta_model, meta_opt):
             # 1. Update meta model on training data
             _, meta_train_outputs = meta_model(data)
@@ -210,7 +210,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             meta_val_loss, _ = ce_criterion(
                 meta_val_outputs.reshape(int(meta_inputs.shape[0] / (args.enroll_utts + 1)), args.enroll_utts + 1, -1))
             # print(meta_val_loss)
-            pdb.set_trace()
+            # pdb.set_trace()
             eps_grads = torch.autograd.grad(meta_val_loss, eps, allow_unused=True)[0].detach()
 
         # 3. Compute weights for current training batch
