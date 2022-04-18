@@ -183,10 +183,10 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             label = label.cuda()
             data = data.cuda()
 
-        data, label = Variable(data), Variable(label)
+        # data, label = Variable(data), Variable(label)
         data_shape = data.shape
         # print(data_shape)
-
+        optimizer.zero_grad()
         with higher.innerloop_ctx(model, optimizer) as (meta_model, meta_opt):
             # 1. Update meta model on training data
             _, meta_train_outputs = meta_model(data)
@@ -195,7 +195,6 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
                                                             args.enroll_utts + 1, -1)
             meta_train_loss, _ = ce_criterion(meta_train_outputs)
             # print(meta_train_loss)
-
 
             eps = torch.zeros(meta_train_loss.size(), requires_grad=True).cuda()
             meta_train_loss = torch.sum(eps * meta_train_loss)
