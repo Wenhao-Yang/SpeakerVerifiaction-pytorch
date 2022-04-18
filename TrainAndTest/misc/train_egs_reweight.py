@@ -195,6 +195,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
                                                             args.enroll_utts + 1, -1)
             meta_train_loss, _ = ce_criterion(meta_train_outputs)
             print(meta_train_loss)
+            pdb.set_trace()
 
             eps = torch.zeros(meta_train_loss.size(), requires_grad=True).cuda()
             meta_train_loss = torch.sum(eps * meta_train_loss)
