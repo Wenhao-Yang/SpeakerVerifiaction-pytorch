@@ -204,7 +204,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             meta_inputs, meta_labels = next(meta_loader)
             meta_inputs, meta_labels = meta_inputs.cuda(), meta_labels.cuda()
 
-            meta_val_outputs = meta_model(meta_inputs)
+            _, meta_val_outputs = meta_model(meta_inputs)
             ce_criterion.criterion.reduction = 'mean'
             meta_val_loss, _ = ce_criterion(meta_val_outputs.reshape(int(data_shape[0] / (args.enroll_utts + 1)),
                                                                      args.enroll_utts + 1, -1))
