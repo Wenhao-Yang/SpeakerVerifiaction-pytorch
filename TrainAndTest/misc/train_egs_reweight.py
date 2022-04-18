@@ -204,7 +204,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             # 2. Compute grads of eps on meta validation data
             meta_inputs, meta_labels = next(meta_loader)
             meta_inputs = meta_inputs.transpose(0, 1)
-            meta_inputs, meta_labels = meta_inputs.cuda(), meta_labels.cuda()
+            meta_inputs, meta_labels = meta_inputs.cuda(non_blocking=True), meta_labels.cuda(non_blocking=True)
 
             _, meta_val_outputs = meta_model(meta_inputs)
             ce_criterion.criterion.reduction = 'mean'
