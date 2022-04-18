@@ -195,7 +195,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
                                                             args.enroll_utts + 1, -1)
             meta_train_loss, _ = ce_criterion(meta_train_outputs)
             # print(meta_train_loss)
-            pdb.set_trace()
+
 
             eps = torch.zeros(meta_train_loss.size(), requires_grad=True).cuda()
             meta_train_loss = torch.sum(eps * meta_train_loss)
@@ -208,9 +208,10 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
 
             _, meta_val_outputs = meta_model(meta_inputs)
             ce_criterion.criterion.reduction = 'mean'
-            meta_val_loss, _ = ce_criterion(meta_val_outputs.reshape(int(data_shape[0] / (args.enroll_utts + 1)),
+            meta_val_loss, _ = ce_criterion(meta_val_outputs.reshape(int(meta_inputs.shape[0] / (args.enroll_utts + 1)),
                                                                      args.enroll_utts + 1, -1))
             # print(meta_val_loss)
+            pdb.set_trace()
             eps_grads = torch.autograd.grad(meta_val_loss, eps, allow_unused=True)[0].detach()
 
         # 3. Compute weights for current training batch
