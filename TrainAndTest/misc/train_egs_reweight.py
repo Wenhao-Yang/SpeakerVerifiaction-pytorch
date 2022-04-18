@@ -197,7 +197,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             # print(meta_train_loss)
 
 
-            eps = Variable(torch.zeros(meta_train_loss.size(), requires_grad=True).cuda())
+            eps = torch.zeros(meta_train_loss.size(), requires_grad=True).cuda()
             meta_train_loss = torch.sum(eps * meta_train_loss)
             meta_opt.step(meta_train_loss)
 
