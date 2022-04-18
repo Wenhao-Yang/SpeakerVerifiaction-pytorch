@@ -278,7 +278,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
         #     loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
 
         # minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
-        minibatch_acc = prec
+        minibatch_acc = float(prec)
         correct += prec * len(feats)
 
         total_datasize += len(feats)
