@@ -859,13 +859,13 @@ class CrossMetaEgsDataset(Dataset):
 
     def __getitem__(self, idx):
         # time_s = time.time()
-        print('Starting loading...')
+        # print('Starting loading...')
 
         batch_spks = set([])
         while len(batch_spks) < self.batch_spks:
             batch_spks.add(random.choice(self.spks))
 
-        print('Batch spks: ', self.batch_spks)
+        # print('Batch spks: ', self.batch_spks)
         features = []
         label = []
         for spk_idx in batch_spks:
@@ -904,7 +904,7 @@ class CrossMetaEgsDataset(Dataset):
         # 24, 6, 1, time, feat_dim
         features = torch.stack(features, dim=0).squeeze()
         feat_shape = features.shape
-        print('Feat_shape: ', feat_shape)
+        # print('Feat_shape: ', feat_shape)
 
         return features.reshape(feat_shape[0] * feat_shape[1], feat_shape[2], feat_shape[3]), torch.LongTensor(label)
 
