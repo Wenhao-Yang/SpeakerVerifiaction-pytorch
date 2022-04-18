@@ -601,13 +601,13 @@ class CrossEgsDataset(Dataset):
 
     def __getitem__(self, idx):
         # time_s = time.time()
-        print('Starting loading...')
+        # print('Starting loading...')
 
         batch_spks = set([])
         while len(batch_spks) < self.batch_spks:
             batch_spks.add(random.choice(self.spks))
 
-        print('Batch_spks: ', self.batch_spks)
+        # print('Batch_spks: ', self.batch_spks)
         features = []
         label = []
         for spk_idx in batch_spks:
@@ -646,7 +646,7 @@ class CrossEgsDataset(Dataset):
         # 24, 6, 1, time, feat_dim
         features = torch.stack(features, dim=0).squeeze()
         feat_shape = features.shape
-        print('Features shape: ', feat_shape)
+        # print('Features shape: ', feat_shape)
 
         return features.reshape(feat_shape[0] * feat_shape[1], feat_shape[2], feat_shape[3]), torch.LongTensor(label)
 
@@ -732,7 +732,7 @@ class CrossValidEgsDataset(Dataset):
         self.domain = domain
         self.chunk_size = []
         self.batch_size = batch_size
-        self.batch_spks = int(batch_size / (enroll_utt + 1))
+        self.batch_spks = len(spks)
 
     def __getitem__(self, idx):
         # time_s = time.time()
@@ -795,7 +795,7 @@ class CrossValidEgsDataset(Dataset):
         return feature
 
     def __len__(self):
-        return self.dataset_len  # 返回一个epoch的采样数
+        return 1  # 返回一个epoch的采样数
 
 
 class CrossMetaEgsDataset(Dataset):
