@@ -340,7 +340,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             epoch_str += ' E2E Loss: {:.4f}'.format(end2end_loss.float())
 
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                            100. * minibatch_acc)
+                                                                            minibatch_acc)
             pbar.set_description(epoch_str)
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
