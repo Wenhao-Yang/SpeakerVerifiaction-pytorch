@@ -146,7 +146,7 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
 extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
                                   trials_file=args.trials, filer_loader=file_loader)
 
-valid_dir = CrossValidEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim,
+valid_dir = CrossValidEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, enroll_utt=1,
                                  batch_size=args.batch_size, loader=file_loader, transform=transform)
 
 
@@ -297,7 +297,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             epoch_str += ' E2E Loss: {:.4f}'.format(float(end2end_loss.item()))
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1), minibatch_acc)
             pbar.set_description(epoch_str)
-            # break
+            break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))

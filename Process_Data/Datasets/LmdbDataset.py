@@ -794,8 +794,19 @@ class CrossValidEgsDataset(Dataset):
 
                 test_utt.append(random.choice(this_dom2utt[test_dom]))
 
-                while len(enroll_utts) < self.enroll_utt:
-                    enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
+                this_spks_utts = this_dom2utt[enroll_dom]
+                if len(this_spks_utts) >= self.enroll_utt:
+
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.add(random.choice())
+                else:
+                    for i in this_spks_utts:
+                        if i not in test_utt:
+                            enroll_utts.add(i)
+
+                    enroll_utts = list(enroll_utts)
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.extend([random.choice(enroll_utts)])
 
             utts_feat = [self.transform(self.loader(upath)) for upath in test_utt]
             utts_feat.extend([self.transform(self.loader(upath)) for upath in enroll_utts])
