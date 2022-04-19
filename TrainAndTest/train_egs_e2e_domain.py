@@ -557,6 +557,7 @@ def main():
         # ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.m)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     else:
+        model.classifier = None
         xe_criterion = None
 
     model_para = [{'params': model.parameters()}]
