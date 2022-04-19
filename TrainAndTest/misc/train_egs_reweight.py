@@ -414,7 +414,7 @@ def valid_class(valid_loader, model, ce, epoch):
             #
             #     other_loss += float(loss_cent.item())
             #     loss = loss_xent + loss_cent
-            pdb.set_trace()
+            # pdb.set_trace()
             total_loss += float(loss.item())
             # pdb.set_trace()
 
