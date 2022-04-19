@@ -279,7 +279,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
 
         # minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = float(prec)
-        correct += minibatch_acc * len(feats)
+        correct += int(minibatch_acc * len(feats) / 100)
 
         total_datasize += len(feats)
         total_loss += float(loss.item())
