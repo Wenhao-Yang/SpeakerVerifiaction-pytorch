@@ -374,6 +374,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
+            data = data.transpose(0, 1)
             data = data.cuda()
             label = label.cuda()
 
