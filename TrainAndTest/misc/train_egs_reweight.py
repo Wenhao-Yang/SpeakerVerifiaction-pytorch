@@ -322,7 +322,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             scheduler.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
-            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
+            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx,
                                                                           len(train_loader.dataset),
                                                                           100. * batch_idx / len(train_loader.dataset))
 
