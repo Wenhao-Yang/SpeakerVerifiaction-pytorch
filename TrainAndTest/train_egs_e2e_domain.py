@@ -45,7 +45,7 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, Additiv
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset, CrossValidEgsDataset
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
@@ -146,7 +146,9 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
 extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
                                   trials_file=args.trials, filer_loader=file_loader)
 
-valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
+# valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
+valid_dir = CrossValidEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim,
+                                 batch_size=args.batch_size, loader=file_loader, transform=transform)
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
