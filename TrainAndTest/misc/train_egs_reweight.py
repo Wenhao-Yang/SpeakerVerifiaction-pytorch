@@ -380,7 +380,7 @@ def valid_class(valid_loader, model, ce, epoch):
             data_shape = data.shape
             # compute output
             out, feats = model(data)
-            feats = feats.reshape(int(data_shape / 2), 2, -1)
+            feats = feats.reshape(int(data_shape[0] / 2), 2, -1)
 
             loss, prec = ce_criterion(feats)
 
