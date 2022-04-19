@@ -966,6 +966,7 @@ if [ $stage -le 101 ]; then
       --all-iteraion 0 \
       --remove-vad \
       --e2e-loss-type ${loss} \
+       --loss-type None \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
   done
