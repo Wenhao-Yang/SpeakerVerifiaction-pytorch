@@ -341,7 +341,7 @@ def valid_class(valid_loader, model, ce, epoch):
             feats = feats.reshape(int(data_shape[0] / 2), 2, -1)
             end2end_loss, prec = ce_criterion(feats)
 
-            if args.loss_ratio > 0:
+            if args.loss_ratio > 0 and xe_criterion != None:
                 if args.loss_type == 'soft':
                     supervised_loss = xe_criterion(classfier, label)
                 elif args.loss_type == 'asoft':
@@ -371,7 +371,7 @@ def valid_class(valid_loader, model, ce, epoch):
             total_loss += float(loss.item())
             # pdb.set_trace()
 
-            batch_correct = prec * len(feats) / 100
+            batch_correct = float(prec) * len(feats) / 100
             correct += batch_correct
             total_datasize += len(feats)
 
