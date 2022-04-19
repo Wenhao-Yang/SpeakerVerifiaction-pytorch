@@ -895,7 +895,7 @@ if [ $stage -le 101 ]; then
   scale=0.2
   subset=
   stat_type=maxmargin
-  loss_ratio=5
+  loss_ratio=0
   chn=16
         # --milestones 15,25,35,45 \
 
@@ -940,7 +940,7 @@ if [ $stage -le 101 ]; then
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/e2e_${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var_hpm \
-      --resume Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
+      --resume Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_90.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels ${channels} \

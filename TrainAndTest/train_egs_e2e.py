@@ -326,7 +326,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
-    output_softmax = nn.Softmax(dim=1)
+    # output_softmax = nn.Softmax(dim=1)
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
@@ -344,7 +344,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         feats = feats.reshape(data_shape[0], data_shape[1], -1)
 
-        loss, prec1 = xe_criterion(feats)
+        loss, prec1 = ce_criterion(feats)
 
         if args.loss_type == 'soft':
             loss_cent = ce_criterion(classfier, label)
@@ -645,6 +645,7 @@ def main():
             print('=> no checkpoint found at {}'.format(args.resume))
 
     ce_criterion = nn.CrossEntropyLoss()
+
     if args.loss_type == 'soft':
         xe_criterion = None
     elif args.loss_type == 'asoft':

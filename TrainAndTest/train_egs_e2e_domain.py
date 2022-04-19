@@ -45,7 +45,7 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, Additiv
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset, CrossValidEgsDataset
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
@@ -69,7 +69,7 @@ except AttributeError:
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 # Training settings
-args = args_parse('PyTorch Speaker Recognition: Classification')
+args = args_parse('PyTorch Speaker Recognition: End2End')
 
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
@@ -146,7 +146,11 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
 extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
                                   trials_file=args.trials, filer_loader=file_loader)
 
-valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
+valid_dir = CrossValidEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim,
+                                 batch_size=args.batch_size, loader=file_loader, transform=transform)
+
+
+# valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
@@ -188,58 +192,52 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # print('max logit is ', classfier_label.max())
 
         if args.loss_type == 'soft':
-            loss = ce_criterion(classfier, label)
+            supervised_loss = xe_criterion(classfier, label)
         elif args.loss_type == 'asoft':
             classfier_label, _ = classfier
-            loss = xe_criterion(classfier, label)
+            supervised_loss = xe_criterion(classfier, label)
         elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = args.loss_ratio * xe_criterion(feats, label)
-            other_loss += loss_xent
-
-            loss = loss_xent + loss_cent
+            supervised_loss = args.loss_ratio * xe_criterion(feats, label)
         elif args.loss_type == 'ring':
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = args.loss_ratio * xe_criterion(feats)
-
-            other_loss += loss_xent
-            loss = loss_xent + loss_cent
+            # loss_cent = ce_criterion(classfier, label)
+            supervised_loss = xe_criterion(feats)
+            # other_loss += loss_xent
+            # loss = loss_xent + loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
-            loss = 1 / (args.loss_ratio + 1) * xe_criterion(classfier, label) + args.loss_ratio / (
-                        args.loss_ratio + 1) * end2end_loss
+            supervised_loss = xe_criterion(classfier, label)
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
-            loss_cent = args.loss_ratio * ce_criterion(classfier, label)
-            if args.loss_lambda:
-                loss_cent = loss_cent * lambda_
+            supervised_loss = xe_criterion(classfier, label)
+        else:
+            supervised_loss = 0
 
-            loss_xent = xe_criterion(classfier, label)
+        if args.loss_lambda:
+            supervised_loss = supervised_loss * lambda_
 
-            other_loss += loss_cent
-            loss = loss_xent + loss_cent
+        loss = 1 / (args.loss_ratio + 1) * end2end_loss + args.loss_ratio / (args.loss_ratio + 1) * supervised_loss
 
-        other_loss += float(end2end_loss.item())
+        other_loss += float(supervised_loss)
         # loss = end2end_loss + loss
 
-        predicted_labels = output_softmax(classfier_label)
-        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+        # predicted_labels = output_softmax(classfier_label)
+        # predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
-        if args.lncl:
-            if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
-                predict_loss = xe_criterion(classfier, predicted_one_labels)
-            else:
-                predict_loss = ce_criterion(classfier, predicted_one_labels)
+        # if args.lncl:
+        #     if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
+        #         predict_loss = xe_criterion(classfier, predicted_one_labels)
+        #     else:
+        #         predict_loss = ce_criterion(classfier, predicted_one_labels)
+        #
+        #     alpha_t = np.clip(args.alpha_t * (epoch / args.epochs) ** 2, a_min=0, a_max=1)
+        #     mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
+        #
+        #     loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
 
-            alpha_t = np.clip(args.alpha_t * (epoch / args.epochs) ** 2, a_min=0, a_max=1)
-            mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
-
-            loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
-
-        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
-        minibatch_acc = minibatch_correct / len(predicted_one_labels)
+        minibatch_correct = prec * len(feats)
+        minibatch_acc = prec
         correct += minibatch_correct
 
-        total_datasize += len(predicted_one_labels)
+        total_datasize += len(feats)
         total_loss += float(loss.item())
         writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
@@ -294,14 +292,15 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if other_loss != 0:
                 epoch_str += ' Other Loss: {:.4f}'.format(other_loss / (batch_idx + 1))
 
-            if args.loss_type in ['arcdist']:
-                epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+            # if args.loss_type in ['arcdist']:
+            #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
 
             epoch_str += ' E2E Accuracy: {:.4f}%'.format(float(prec))
 
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             100. * minibatch_acc)
             pbar.set_description(epoch_str)
+            break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
