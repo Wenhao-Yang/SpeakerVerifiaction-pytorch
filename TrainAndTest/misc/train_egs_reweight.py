@@ -421,12 +421,13 @@ def valid_class(valid_loader, model, ce, epoch):
             correct += prec * len(feats) / 100
             total_datasize += len(feats)
 
-    valid_loss = total_loss / len(valid_loader.dataset)
+    valid_loss = total_loss / len(valid_loader)
     valid_accuracy = 100. * correct / total_datasize
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
 
+    pdb.set_trace()
     this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(valid_accuracy, valid_loss)
 
     if other_loss != 0:
