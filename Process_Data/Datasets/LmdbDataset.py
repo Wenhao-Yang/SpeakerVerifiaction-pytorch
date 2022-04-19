@@ -755,6 +755,8 @@ class CrossValidEgsDataset(Dataset):
             if len(this_dom2utt) == 1:
                 print('Enroll dom == 1')
                 this_spks_utts = this_dom2utt[list(this_dom2utt.keys())[0]]
+                if len(this_spks_utts) == 1:
+                    continue
                 test_utt.append(random.choice(this_spks_utts))
 
                 while len(enroll_utts) < self.enroll_utt:
