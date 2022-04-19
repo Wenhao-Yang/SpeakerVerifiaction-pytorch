@@ -188,7 +188,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         end2end_loss, prec = ce_criterion(feats)
         # print(prec)
         # cos_theta, phi_theta = classfier
-        classfier_label = classfier
+        # classfier_label = classfier
         # print('max logit is ', classfier_label.max())
         if args.loss_ratio > 0 and xe_criterion != None:
             if args.loss_type == 'soft':
