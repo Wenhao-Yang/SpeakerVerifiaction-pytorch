@@ -418,7 +418,7 @@ def valid_class(valid_loader, model, ce, epoch):
             total_loss += float(loss.item())
             # pdb.set_trace()
 
-            correct += prec * len(feats) / 100
+            correct += float(prec * len(feats) / 100)
             total_datasize += len(feats)
 
     valid_loss = total_loss / len(valid_loader)
