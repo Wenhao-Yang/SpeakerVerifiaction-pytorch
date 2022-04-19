@@ -48,7 +48,7 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, Additiv
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset, CrossMetaEgsDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset, CrossMetaEgsDataset, CrossValidEgsDataset
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
@@ -155,9 +155,9 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
 extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
                                   trials_file=args.trials, filer_loader=file_loader)
 
-valid_dir = CrossEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
-                            enroll_utt=1, batch_size=args.batch_size, random_chunk=args.random_chunk,
-                            )
+valid_dir = CrossValidEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
+                                 enroll_utt=1, batch_size=args.batch_size, random_chunk=args.random_chunk,
+                                 )
 
 
 def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
@@ -279,7 +279,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
 
         # minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = float(prec)
-        correct += prec * len(feats)
+        correct += minibatch_acc * len(feats)
 
         total_datasize += len(feats)
         total_loss += float(loss.item())
@@ -342,6 +342,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             minibatch_acc)
             pbar.set_description(epoch_str)
+            break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
