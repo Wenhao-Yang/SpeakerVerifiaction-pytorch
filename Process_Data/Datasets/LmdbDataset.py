@@ -753,20 +753,24 @@ class CrossValidEgsDataset(Dataset):
             enroll_utts = set([])
 
             if len(this_dom2utt) == 1:
+                print('Enroll dom == 1')
                 this_spks_utts = this_dom2utt[list(this_dom2utt.keys())[0]]
                 test_utt.append(random.choice(this_spks_utts))
 
                 while len(enroll_utts) < self.enroll_utt:
+                    print('Enroll utts: ', enroll_utts)
                     rand_enroll_utt = random.choice(this_spks_utts)
                     if rand_enroll_utt not in test_utt:
                         enroll_utts.add(rand_enroll_utt)
             else:
+                print('Enroll dom > 1')
                 this_spk_doms = list(this_dom2utt.keys())
                 test_dom = random.choice(this_spk_doms)
                 enroll_dom = random.choice(this_spk_doms)
 
                 while enroll_dom == test_dom:
                     enroll_dom = random.choice(this_spk_doms)
+                print('Enroll dom: ', enroll_dom)
 
                 test_utt.append(random.choice(this_dom2utt[test_dom]))
 
