@@ -43,7 +43,7 @@ if [ $stage -le 0 ]; then
   scale=0.2
   subset=
   stat_type=maxmargin
-  loss_ratio=5
+  loss_ratio=0
   chn=16
         # --milestones 15,25,35,45 \
 
