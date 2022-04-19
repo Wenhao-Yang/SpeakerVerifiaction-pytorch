@@ -365,7 +365,7 @@ def valid_class(valid_loader, model, ce, epoch):
     total_loss = 0.
     other_loss = 0.
     ce_criterion, xe_criterion = ce
-    softmax = nn.Softmax(dim=1)
+    # softmax = nn.Softmax(dim=1)
 
     correct = 0.
     total_datasize = 0.
@@ -417,10 +417,10 @@ def valid_class(valid_loader, model, ce, epoch):
             total_loss += float(loss.item())
             # pdb.set_trace()
 
-            correct += prec * len(feats)
+            correct += prec * len(feats) / 100
             total_datasize += len(len(feats))
 
-    valid_loss = total_loss / len(valid_loader)
+    valid_loss = total_loss / len(valid_loader.dataset)
     valid_accuracy = 100. * correct / total_datasize
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
