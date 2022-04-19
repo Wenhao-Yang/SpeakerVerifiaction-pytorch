@@ -37,7 +37,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-from Define_Model.Loss.End2End import AngleProtoLoss
+from Define_Model.Loss.End2End import AngleProtoLoss, GE2ELoss, ProtoLoss
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss, DistributeLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
@@ -190,24 +190,24 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
         # print('max logit is ', classfier_label.max())
-
-        if args.loss_type == 'soft':
-            supervised_loss = xe_criterion(classfier, label)
-        elif args.loss_type == 'asoft':
-            classfier_label, _ = classfier
-            supervised_loss = xe_criterion(classfier, label)
-        elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
-            supervised_loss = args.loss_ratio * xe_criterion(feats, label)
-        elif args.loss_type == 'ring':
-            # loss_cent = ce_criterion(classfier, label)
-            supervised_loss = xe_criterion(feats)
-            # other_loss += loss_xent
-            # loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
-            supervised_loss = xe_criterion(classfier, label)
-        elif args.loss_type == 'arcdist':
-            # pdb.set_trace()
-            supervised_loss = xe_criterion(classfier, label)
+        if args.loss_ratio > 0:
+            if args.loss_type == 'soft':
+                supervised_loss = xe_criterion(classfier, label)
+            elif args.loss_type == 'asoft':
+                classfier_label, _ = classfier
+                supervised_loss = xe_criterion(classfier, label)
+            elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
+                supervised_loss = args.loss_ratio * xe_criterion(feats, label)
+            elif args.loss_type == 'ring':
+                # loss_cent = ce_criterion(classfier, label)
+                supervised_loss = xe_criterion(feats)
+                # other_loss += loss_xent
+                # loss = loss_xent + loss_cent
+            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
+                supervised_loss = xe_criterion(classfier, label)
+            elif args.loss_type == 'arcdist':
+                # pdb.set_trace()
+                supervised_loss = xe_criterion(classfier, label)
         else:
             supervised_loss = 0
 
@@ -323,7 +323,7 @@ def valid_class(valid_loader, model, ce, epoch):
     total_loss = 0.
     other_loss = 0.
     ce_criterion, xe_criterion = ce
-    softmax = nn.Softmax(dim=1)
+    # softmax = nn.Softmax(dim=1)
 
     correct = 0.
     total_datasize = 0.
@@ -332,48 +332,51 @@ def valid_class(valid_loader, model, ce, epoch):
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
+
+            data = data.transpose(0, 1)
+
             data = data.cuda()
             label = label.cuda()
-
+            data_shape = data.shape
             # compute output
-            out, feats = model(data)
-            if args.loss_type == 'asoft':
-                predicted_labels, _ = out
+            classfier, feats = model(data)
+
+            feats = feats.reshape(int(data_shape[0] / 2), 2, -1)
+            end2end_loss, prec = ce_criterion(feats)
+
+            if args.loss_ratio > 0:
+                if args.loss_type == 'soft':
+                    supervised_loss = xe_criterion(classfier, label)
+                elif args.loss_type == 'asoft':
+                    classfier_label, _ = classfier
+                    supervised_loss = xe_criterion(classfier, label)
+                elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
+                    supervised_loss = args.loss_ratio * xe_criterion(feats, label)
+                elif args.loss_type == 'ring':
+                    # loss_cent = ce_criterion(classfier, label)
+                    supervised_loss = xe_criterion(feats)
+                    # other_loss += loss_xent
+                    # loss = loss_xent + loss_cent
+                elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
+                    supervised_loss = xe_criterion(classfier, label)
+                elif args.loss_type == 'arcdist':
+                    # pdb.set_trace()
+                    supervised_loss = xe_criterion(classfier, label)
             else:
-                predicted_labels = out
+                supervised_loss = 0
 
-            classfier = predicted_labels
-            if args.loss_type == 'soft':
-                loss = ce_criterion(classfier, label)
-            elif args.loss_type == 'asoft':
-                classfier_label, _ = classfier
-                loss = xe_criterion(classfier, label)
-            elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
-                loss_cent = ce_criterion(classfier, label)
-                loss_xent = args.loss_ratio * xe_criterion(feats, label)
-                other_loss += float(loss_xent.item())
+            if args.loss_lambda:
+                supervised_loss = supervised_loss * lambda_
 
-                loss = loss_xent + loss_cent
-            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
-                loss = xe_criterion(classfier, label)
-            elif args.loss_type == 'arcdist':
-                loss_cent = args.loss_ratio * ce_criterion(classfier, label)
-                if args.loss_lambda:
-                    loss_cent = loss_cent * lambda_
+            loss = 1 / (args.loss_ratio + 1) * end2end_loss + args.loss_ratio / (args.loss_ratio + 1) * supervised_loss
 
-                loss_xent = xe_criterion(classfier, label)
-
-                other_loss += float(loss_cent.item())
-                loss = loss_xent + loss_cent
-
+            other_loss += float(supervised_loss)
             total_loss += float(loss.item())
             # pdb.set_trace()
-            predicted_one_labels = softmax(predicted_labels)
-            predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
 
-            batch_correct = (predicted_one_labels.cuda() == label).sum().item()
+            batch_correct = prec * len(feats) / 100
             correct += batch_correct
-            total_datasize += len(predicted_one_labels)
+            total_datasize += len(feats)
 
     valid_loss = total_loss / len(valid_loader)
     valid_accuracy = 100. * correct / total_datasize
@@ -510,11 +513,16 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
 
-    ce_criterion = nn.CrossEntropyLoss()
+    if args.e2e_loss_type == 'e2e':
+        ce_criterion = GE2ELoss()
+    elif args.e2e_loss_type == 'proto':
+        ce_criterion = ProtoLoss()
+    elif args.e2e_loss_type in ['angleproto']:
+        ce_criterion = AngleProtoLoss()
+
     if args.loss_type == 'soft':
-        xe_criterion = None
+        xe_criterion = nn.CrossEntropyLoss()
     elif args.loss_type == 'asoft':
-        ce_criterion = None
         xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
         xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
@@ -528,17 +536,16 @@ def main():
         xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
                                        num_center=args.num_center)
     elif args.loss_type in ['amsoft', 'subam']:
-        ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
-        ce_criterion = AngleProtoLoss(init_w=args.s)  # init_w=args.s, init_b=-args.s * args.margin)
+        # ce_criterion = AngleProtoLoss(init_w=args.s)  # init_w=args.s, init_b=-args.s * args.margin)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     elif args.loss_type == 'minarcsoft':
-        ce_criterion = None
+        # ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
                                          all_iteraion=args.all_iteraion)
     elif args.loss_type == 'minarcsoft2':
-        ce_criterion = None
+        # ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss_v2(margin=args.margin, s=args.s, iteraion=iteration,
                                             all_iteraion=args.all_iteraion)
     elif args.loss_type == 'wasse':
@@ -547,8 +554,10 @@ def main():
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0
     elif 'arcdist' in args.loss_type:
-        ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.m)
+        # ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.m)
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
+    else:
+        xe_criterion = None
 
     model_para = [{'params': model.parameters()}]
     if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
@@ -616,7 +625,7 @@ def main():
     # Save model config txt
     with open(osp.join(args.check_path, 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
         f.write('model: ' + str(model) + '\n')
-        f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
+        f.write('End2End: ' + str(ce_criterion) + '\n')
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
         f.write('Optimizer: ' + str(optimizer) + '\n')
 
@@ -666,7 +675,7 @@ def main():
                                                                          chisquare=args.chisquare,
                                                                          noise_padding=noise_padding_dir),
                                                    shuffle=args.shuffle, **kwargs)
-        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
+        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=1,
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                          min_chunk_size=args.chunk_size,
                                                                          max_chunk_size=args.chunk_size + 1),

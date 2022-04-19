@@ -899,7 +899,7 @@ if [ $stage -le 101 ]; then
   chn=16
         # --milestones 15,25,35,45 \
 
-  for loss in arcsoft ; do
+  for loss in angleproto ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
     if [ "$loss" == "arcdist" ];then
@@ -939,7 +939,7 @@ if [ $stage -le 101 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/e2e_${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var_hpm \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/e2e_${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var \
       --resume Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_90.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
@@ -960,16 +960,18 @@ if [ $stage -le 101 ]; then
       --num-center 3 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 2,3 \
+      --gpu-id 0,1 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
       --remove-vad \
-      --loss-type ${loss} \
+      --e2e-loss-type ${loss} \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
   done
   # --lncl
+#        --loss-type  \
+
   exit
 fi
 
