@@ -933,8 +933,8 @@ if [ $stage -le 101 ]; then
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.0001 \
-      --base-lr 0.00000001 \
+      --lr 0.1 \
+      --base-lr 0.00001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --scale ${scale} \
