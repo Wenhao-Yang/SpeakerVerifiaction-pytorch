@@ -278,10 +278,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             scheduler.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
-            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx,
-                                                                          len(train_loader.dataset),
-                                                                          100. * batch_idx / len(
-                                                                              train_loader.dataset))
+            epoch_str = 'Train Epoch {}: [{:8d} ({:3.0f}%)]'.format(epoch, len(train_loader),
+                                                                    100. * batch_idx / len(
+                                                                        train_loader.dataset))
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
@@ -295,8 +294,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             # if args.loss_type in ['arcdist']:
             #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
 
-            # epoch_str += ' E2E Accuracy: {:.4f}%'.format(float(prec))
-
+            epoch_str += ' E2E Loss: {:.4f}%'.format(float(end2end_loss.item()))
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1), minibatch_acc)
             pbar.set_description(epoch_str)
             # break
