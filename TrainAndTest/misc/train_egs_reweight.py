@@ -427,7 +427,7 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
 
-    pdb.set_trace()
+    # pdb.set_trace()
     this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(valid_accuracy, valid_loss)
 
     if other_loss != 0:
