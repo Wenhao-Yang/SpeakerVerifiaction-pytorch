@@ -323,8 +323,8 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
 
         if (batch_idx + 1) % args.log_interval == 0:
             epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx,
-                                                                          len(train_loader.dataset),
-                                                                          100. * batch_idx / len(train_loader.dataset))
+                                                                          len(train_loader),
+                                                                          100. * batch_idx / len(train_loader))
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
@@ -419,7 +419,7 @@ def valid_class(valid_loader, model, ce, epoch):
             # pdb.set_trace()
 
             correct += prec * len(feats) / 100
-            total_datasize += len(len(feats))
+            total_datasize += len(feats)
 
     valid_loss = total_loss / len(valid_loader.dataset)
     valid_accuracy = 100. * correct / total_datasize
