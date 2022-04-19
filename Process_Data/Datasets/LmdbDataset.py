@@ -798,7 +798,7 @@ class CrossValidEgsDataset(Dataset):
                 if len(this_spks_utts) >= self.enroll_utt:
 
                     while len(enroll_utts) < self.enroll_utt:
-                        enroll_utts.add(random.choice())
+                        enroll_utts.add(random.choice(this_spks_utts))
                 else:
                     for i in this_spks_utts:
                         if i not in test_utt:
