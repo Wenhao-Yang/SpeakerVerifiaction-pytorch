@@ -383,7 +383,7 @@ def valid_class(valid_loader, model, ce, epoch):
             out, feats = model(data)
             feats = feats.reshape(int(data_shape[0] / 2), 2, -1)
 
-            ce_criterion.criterion.reduction = 'Mean'
+            ce_criterion.criterion.reduction = 'mean'
             loss, prec = ce_criterion(feats)
 
             # if args.loss_type == 'asoft':
