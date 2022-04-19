@@ -682,7 +682,7 @@ def main():
                                                                         chisquare=args.chisquare,
                                                                         noise_padding=noise_padding_dir),
                                                   shuffle=args.shuffle, **kwargs)
-        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(args.batch_size / 2),
+        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=1,
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                          min_chunk_size=args.chunk_size,
                                                                          max_chunk_size=args.chunk_size + 1),
