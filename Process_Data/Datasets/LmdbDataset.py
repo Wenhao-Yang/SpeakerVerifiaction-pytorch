@@ -759,6 +759,7 @@ class CrossValidEgsDataset(Dataset):
 
                 while len(enroll_utts) < self.enroll_utt:
                     print('Enroll utts: ', enroll_utts)
+                    print(this_spks_utts)
                     rand_enroll_utt = random.choice(this_spks_utts)
                     if rand_enroll_utt not in test_utt:
                         enroll_utts.add(rand_enroll_utt)
