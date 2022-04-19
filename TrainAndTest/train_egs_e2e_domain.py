@@ -233,7 +233,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         #
         #     loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
 
-        minibatch_correct = float(prec * len(feats))
+        minibatch_correct = float(prec * len(feats) / 100)
         minibatch_acc = float(prec)
         correct += minibatch_correct
 
