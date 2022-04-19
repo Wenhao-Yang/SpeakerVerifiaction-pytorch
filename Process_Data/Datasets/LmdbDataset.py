@@ -742,7 +742,7 @@ class CrossValidEgsDataset(Dataset):
         self.domain = domain
         self.chunk_size = []
         self.batch_size = batch_size
-        self.batch_spks = len(spks)
+        self.batch_spks = min(int(batch_size / (enroll_utt + 1)), len(spks))
 
     def __getitem__(self, idx):
         # time_s = time.time()
@@ -764,12 +764,26 @@ class CrossValidEgsDataset(Dataset):
 
             if len(this_dom2utt) == 1:
                 this_spks_utts = this_dom2utt[list(this_dom2utt.keys())[0]]
+
+                if len(this_spks_utts) == 1:
+                    continue
+
                 test_utt.append(random.choice(this_spks_utts))
 
-                while len(enroll_utts) < self.enroll_utt:
-                    rand_enroll_utt = random.choice(this_spks_utts)
-                    if rand_enroll_utt not in test_utt:
-                        enroll_utts.add(rand_enroll_utt)
+                if len(this_spks_utts) - 1 >= self.enroll_utt:
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_uid = random.choice(this_spks_utts)
+                        if enroll_uid not in test_utt:
+                            enroll_utts.add(enroll_uid)
+                else:
+                    for i in this_spks_utts:
+                        if i not in test_utt:
+                            enroll_utts.add(i)
+
+                    enroll_utts = list(enroll_utts)
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.extend([random.choice(enroll_utts)])
+
             else:
                 this_spk_doms = list(this_dom2utt.keys())
                 test_dom = random.choice(this_spk_doms)
