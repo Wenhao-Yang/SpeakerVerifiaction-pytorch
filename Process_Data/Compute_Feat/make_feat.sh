@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=21
+stage=20
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
@@ -273,7 +273,7 @@ if [ $stage -le 20 ]; then
       --stride 0.1 \
       --nj 12
   done
-  exit
+#  exit
 fi
 
 if [ $stage -le 21 ]; then
