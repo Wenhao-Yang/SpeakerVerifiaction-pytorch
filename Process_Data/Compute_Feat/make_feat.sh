@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=21
+stage=20
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
@@ -291,6 +291,7 @@ if [ $stage -le 21 ]; then
   num_frames=64000
   input_per_spks=256
   nj=8
+  downsample=5
 #        --remove-vad \
 #--domain \
 
@@ -298,18 +299,19 @@ if [ $stage -le 21 ]; then
   #  for s in dev_log dev_aug_1m_log ; do
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
   for s in train_c20 ; do
-#    python Process_Data/Compute_Feat/make_egs.py \
-#      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
-#      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-#      --nj ${nj} \
-#      --feat-type ${feat_type} \
-#      --train \
-#      --input-per-spks ${input_per_spks} \
-#      --num-frames ${num_frames} \
-#      --feat-format kaldi \
-#      --out-format kaldi_cmp \
-#      --num-valid 2 \
-#      --out-set ${s}
+    python Process_Data/Compute_Feat/make_egs.py \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
+      --nj ${nj} \
+      --feat-type ${feat_type} \
+      --train \
+      --input-per-spks ${input_per_spks} \
+      --num-frames ${num_frames} \
+      --feat-format kaldi \
+      --out-format kaldi_cmp \
+      --downsample ${downsample} \
+      --num-valid 2 \
+      --out-set ${s}_down5
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
@@ -319,6 +321,7 @@ if [ $stage -le 21 ]; then
       --num-frames ${num_frames} \
       --input-per-spks ${input_per_spks} \
       --feat-format kaldi \
+      --downsample ${downsample} \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --out-set ${s}_valid

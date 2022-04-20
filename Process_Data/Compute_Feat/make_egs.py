@@ -28,12 +28,13 @@ import psutil
 import torch
 from kaldiio import WriteHelper
 from tqdm import tqdm
+import torchvision.transforms as transforms
 
 from Process_Data.Datasets.KaldiDataset import ScriptValidDataset, ScriptTrainDataset
 from Process_Data.Datasets.KaldiDataset import AugTrainDataset, AugValidDataset
 
 from Process_Data.audio_augment.common import RunCommand
-from Process_Data.audio_processing import ConcateNumInput
+from Process_Data.audio_processing import ConcateNumInput, DownSample
 from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
@@ -55,7 +56,7 @@ parser.add_argument('--out-format', type=str, choices=['kaldi', 'npy', 'kaldi_cm
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
-
+parser.add_argument('--downsample', type=int, default=1, metavar='D')
 parser.add_argument('--feat-type', type=str, default='fbank',
                     choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'klfb', 'klsp', 'hst'],
                     help='number of jobs to make feats (default: 10)')
@@ -222,7 +223,12 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     assert os.path.exists(new_feat_scp)
 
 
-transform = ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_vad)
+transform = transforms.Compose([
+    ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_vad),
+])
+
+if args.downsample > 1:
+    transform.transforms.append(DownSample(downsample=args.downsample))
 
 if args.feat_format == 'npy':
     file_loader = np.load

@@ -546,6 +546,42 @@ class ConcateInput(object):
         return torch.tensor(network_inputs.squeeze())
 
 
+class DownSample(object):
+    """Rescales the input PIL.Image to the given 'size'.
+    If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
+    If 'size' is a number, it will indicate the size of the smaller edge.
+    For example, if height > width, then image will be
+    rescaled to (size * height / width, size)
+    size: size of the exactly size or the smaller edge
+    interpolation: Default: PIL.Image.BILINEAR
+    """
+
+    def __init__(self, downsample=2):
+        super(DownSample, self).__init__()
+        self.downsample = downsample
+
+    def __call__(self, input):
+        """
+        Args:
+            pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
+
+        Returns:
+            Tensor: Converted image.
+        """
+        input_length = input.shape[-2]
+        start = np.random.randint(self.downsample)
+        idxs = np.arange(start=start, stop=input_length, step=self.downsample)
+
+        if len(input.shape) == 2:
+            input = input[idxs, :]
+        elif len(input.shape) == 3:
+            input = input[:, idxs, :]
+        elif len(input.shape) == 4:
+            input = input[:, :, idxs, :]
+
+        return input
+
+
 class ConcateNumInput(object):
     """Rescales the input PIL.Image to the given 'size'.
     If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
