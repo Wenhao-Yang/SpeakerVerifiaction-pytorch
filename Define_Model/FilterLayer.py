@@ -1381,9 +1381,9 @@ class Sinc2Down(nn.Module):
             x = x.transpose(1, 2)
 
         x = self.conv_layer1(x)
-        # x = self.conv_layer2(x)
-        # x = self.conv_layer3(x)
-        # x = self.conv_layer4(x)
+        x = self.conv_layer2(x)
+        x = self.conv_layer3(x)
+        x = self.conv_layer4(x)
 
         return x.transpose(1, 2)
 

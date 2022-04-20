@@ -168,7 +168,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
-        pdb.set_trace()
+        # pdb.set_trace()
         classfier, feats = model(data)
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
