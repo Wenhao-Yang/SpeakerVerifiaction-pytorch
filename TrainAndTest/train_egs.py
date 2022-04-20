@@ -315,6 +315,7 @@ def valid_class(valid_loader, model, ce, epoch):
             label = label.cuda()
 
             # compute output
+            pdb.set_trace()
             out, feats = model(data)
             if args.loss_type == 'asoft':
                 predicted_labels, _ = out
@@ -694,7 +695,7 @@ def main():
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
+            # train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
