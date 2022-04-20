@@ -74,7 +74,7 @@ if [ $stage -le 0 ]; then
       --filter-wd 0.001 \
       --weight-decay 0.0005 \
       --dropout-p ${dropout_p} \
-      --gpu-id 0,1 \
+      --gpu-id 0 \
       --cos-sim \
       --extract \
       --all-iteraion 0 \
