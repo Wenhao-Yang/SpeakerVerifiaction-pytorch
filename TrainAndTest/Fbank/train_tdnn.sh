@@ -1250,7 +1250,7 @@ if [ $stage -le 150 ]; then
   #  feat=fb24
 #  feat_type=pyfb
   feat_type=klfb
-  loss=arcdist
+  loss=arcsoft
   encod=STAP
   embedding_size=512
   input_dim=40
@@ -1261,12 +1261,12 @@ if [ $stage -le 150 ]; then
   activation=leakyrelu
   scheduler=cyclic
   optimizer=adam
-  stat_type=margin1
+  stat_type=margin1 #margin1sum
   m=1.0
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for stat_type in margin1 margin1sum; do
+ for stat_type in margin1 ; do
    feat=fb${input_dim}
    #_ws25
    if [ "$loss" == "arcdist" ]; then
@@ -1276,7 +1276,7 @@ if [ $stage -le 150 ]; then
    fi
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 #    kernprof -l -v TrainAndTest/train_egs.py \
-   python -W ignore TrainAndTest/train_egs.py \
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py \
      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_${feat} \
      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
      --train-trials trials_2w \

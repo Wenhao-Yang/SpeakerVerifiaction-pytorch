@@ -625,6 +625,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='mean the vectors while extracting')
     parser.add_argument('--xvector', action='store_true', default=False,
                         help='mean the vectors while extracting')
+    parser.add_argument('--local_rank', default=-1, type=int,
+                        help='node rank for distributed training')
 
     if 'Extraction' in description:
         parser.add_argument('--train-extract-dir', type=str, help='path to dev dataset')
