@@ -1337,32 +1337,32 @@ class Sinc2Down(nn.Module):
         # conv_layers = [(80, 251, 1), (60, 5, 1), (out_dim, 5, 1)]
         self.conv_layers = nn.ModuleList()
         self.conv_layer1 = nn.Sequential(
-            nn.Conv1d(in_channels=input_dim, out_channels=80, kernel_size=31, stride=2),
+            nn.Conv1d(in_channels=input_dim, out_channels=80, kernel_size=31, stride=4),
             # SincConv_fast(80, 251, self.fs, stride=6),
-            nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
+            # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
             nn.InstanceNorm1d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
             nn.LeakyReLU(),
         )
 
-        self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
+        # self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
         self.conv_layer2 = nn.Sequential(
-            nn.Conv1d(in_channels=80, out_channels=60, kernel_size=5, stride=1),
-            nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
+            nn.Conv1d(in_channels=80, out_channels=60, kernel_size=5, stride=2),
+            # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
             nn.InstanceNorm1d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
             nn.LeakyReLU(),
         )
-
-        self.current_input = int((self.current_input - 5 + 1) / 3)
+        #
+        # self.current_input = int((self.current_input - 5 + 1) / 3)
         self.conv_layer3 = nn.Sequential(
-            nn.Conv1d(in_channels=60, out_channels=60, kernel_size=5, stride=1),
-            nn.MaxPool1d(kernel_size=3),
+            nn.Conv1d(in_channels=60, out_channels=60, kernel_size=5, stride=2),
+            # nn.MaxPool1d(kernel_size=3),
             nn.InstanceNorm1d(60),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
             nn.LeakyReLU(),
         )
-
+        #
         self.conv_layer4 = nn.Sequential(
-            nn.Conv1d(in_channels=60, out_channels=self.out_dim, kernel_size=5, stride=1),
-            nn.AvgPool1d(kernel_size=3),  # nn.MaxPool1d(kernel_size=3),
+            nn.Conv1d(in_channels=60, out_channels=self.out_dim, kernel_size=5, stride=2),
+            # nn.AvgPool1d(kernel_size=3),  # nn.MaxPool1d(kernel_size=3),
             nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
             nn.LeakyReLU(),
         )
@@ -1381,9 +1381,9 @@ class Sinc2Down(nn.Module):
             x = x.transpose(1, 2)
 
         x = self.conv_layer1(x)
-        x = self.conv_layer2(x)
-        x = self.conv_layer3(x)
-        x = self.conv_layer4(x)
+        # x = self.conv_layer2(x)
+        # x = self.conv_layer3(x)
+        # x = self.conv_layer4(x)
 
         return x.transpose(1, 2)
 
