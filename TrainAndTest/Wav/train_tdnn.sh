@@ -36,7 +36,7 @@ if [ $stage -le 0 ]; then
     echo -e "\n\033[1;4;31m Stage${stage} :Training ${model} in vox1 with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_${feat} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_${feat}_down5 \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/train_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_${feat}_valid \
@@ -49,7 +49,7 @@ if [ $stage -le 0 ]; then
       --epochs 40 \
       --lr 0.1 \
       --input-dim 40 \
-      --random-chunk 32000 64000 \
+      --random-chunk 640 1280 \
       --feat-dim ${feat_dim} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
