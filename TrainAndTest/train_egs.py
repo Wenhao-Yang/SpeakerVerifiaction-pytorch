@@ -315,7 +315,7 @@ def valid_class(valid_loader, model, ce, epoch):
             label = label.cuda()
 
             # compute output
-            pdb.set_trace()
+            # pdb.set_trace()
             out, feats = model(data)
             if args.loss_type == 'asoft':
                 predicted_labels, _ = out

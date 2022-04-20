@@ -50,6 +50,7 @@ if [ $stage -le 0 ]; then
       --lr 0.1 \
       --input-dim 40 \
       --random-chunk 6400 12800 \
+      --chunk-size 9600 \
       --feat-dim ${feat_dim} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
