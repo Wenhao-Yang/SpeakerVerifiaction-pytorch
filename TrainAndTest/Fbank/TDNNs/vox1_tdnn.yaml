@@ -63,8 +63,11 @@ embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
   channels: [ 512, 512, 512, 512, 1500 ]
   encoder_type: 'STAP'
   embedding_size: !ref <embedding_size>
-  num_classes: 192
+  num_classes: 797
   activation: leakyrelu
+  classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
+    feat_dim: !ref <embedding_size>
+    num_classes: 797
 
 model: TDNN_v5
 kernel_size:
