@@ -684,7 +684,8 @@ def main():
                                                                                      'batch_size'])),
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size,
-                                                                         chisquare=config_args['chisquare']),
+                                                                         chisquare=False if 'chisquare' not in config_args else
+                                                                         config_args['chisquare']),
                                                    shuffle=config_args['shuffle'], sampler=train_sampler, **kwargs)
 
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),

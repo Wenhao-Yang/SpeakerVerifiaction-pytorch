@@ -92,7 +92,7 @@ check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_base
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
-gpu_id: 2
+gpu_id: 0,1
 
 
 log_interval: 10
