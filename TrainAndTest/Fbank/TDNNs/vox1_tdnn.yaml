@@ -22,6 +22,8 @@ valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<fea
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/test_<feat>
 train_trials: trials
+input_norm: Mean
+
 test_input: fix
 log_scale: False
 random_chunk: [ 200, 400 ]
@@ -55,8 +57,17 @@ base_lr: 0.00000001
 cos_sim: True
 
 ### model Setttings
+# embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
+#    input_size: !ref <n_mels>
+#    input_norm: !ref <input_norm>
+#    channels: [512, 512, 512, 512, 1500]
+#    encoder_type: 'STAP'
+#    kernel_sizes: [5, 3, 3, 3, 1]
+#    dilations: [1, 2, 3, 4, 1]
+#    embedding_size: !ref <embedding_size>
+#    lin_neurons: 192
+
 model: TDNN_v5
-input_norm: Mean
 alpha: 0
 embedding_size: 512
 batch_size: 128
@@ -71,9 +82,9 @@ lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
 margin: 0.2
-#m: 0.2
+# m: 0.2
 s: 30
-#stat_type: margin1
+# stat_type: margin1
 
 # Checkpoints
 loss_str: ''
