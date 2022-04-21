@@ -703,35 +703,35 @@ def main():
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
                                                        **extract_kwargs)
 
-    if config_args['cuda']:
-        if len(config_args['gpu_id']) > 1:
-            print("Continue with gpu: %s ..." % str(args.local_rank))
-            # torch.distributed.init_process_group(backend="nccl",
-            #                                      init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile',
-            #                                      rank=0,
-            #                                      world_size=1)
-            #
-            # try:
-            #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
-            #                                          world_size=1)
-            # except RuntimeError as r:
-            #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32454', rank=0,
-            #                                          world_size=1)
-            # if args.gain
-            # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
-            model = DistributedDataParallel(model.cuda(), device_ids=[args.local_rank])
+    # if config_args['cuda']:
+    if len(config_args['gpu_id']) > 1:
+        print("Continue with gpu: %s ..." % str(args.local_rank))
+        # torch.distributed.init_process_group(backend="nccl",
+        #                                      init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile',
+        #                                      rank=0,
+        #                                      world_size=1)
+        #
+        # try:
+        #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
+        #                                          world_size=1)
+        # except RuntimeError as r:
+        #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32454', rank=0,
+        #                                          world_size=1)
+        # if args.gain
+        # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
+        model = DistributedDataParallel(model.cuda(), device_ids=[args.local_rank])
 
 
-        else:
-            model = model.cuda()
+    else:
+        model = model.cuda()
 
-        for i in range(len(ce)):
-            if ce[i] != None:
-                ce[i] = ce[i].cuda()
-        try:
-            print('Dropout is {}.'.format(model.dropout_p))
-        except:
-            pass
+    for i in range(len(ce)):
+        if ce[i] != None:
+            ce[i] = ce[i].cuda()
+    try:
+        print('Dropout is {}.'.format(model.dropout_p))
+    except:
+        pass
 
     xvector_dir = config_args['check_path']
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
