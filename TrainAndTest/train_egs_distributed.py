@@ -460,7 +460,7 @@ def test(extract_loader, model, epoch, writer, xvector_dir):
 
     # pdb.set_trace()
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
-                                                                  dist_type=('cos' if config_args['cos_sim'] else 'l2'),
+                                                                  dist_type='cos' if config_args['cos_sim'] else 'l2',
                                                                   log_interval=config_args['log_interval'],
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
@@ -772,7 +772,7 @@ def main():
                     lr_string += '{:.10f} '.format(param_group['lr'])
                 print('%s \33[0m' % lr_string)
 
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
+            # train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (
@@ -785,7 +785,7 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                valid_test(train_extract_loader, model, epoch, xvector_dir)
+                # valid_test(train_extract_loader, model, epoch, xvector_dir)
                 test(extract_loader, model, epoch, writer, xvector_dir)
                 if epoch != (end - 1):
                     try:
