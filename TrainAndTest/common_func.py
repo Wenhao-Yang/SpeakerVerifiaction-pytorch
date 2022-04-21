@@ -192,7 +192,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # pbar =
     pbar = tqdm(extract_loader, ncols=100) if verbose>0 else extract_loader
 
-    uid2vectors = {}
+    uid2vectors = []
     with torch.no_grad():
         if test_input == 'fix':
             data = torch.tensor([])
@@ -245,10 +245,16 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         out = out.squeeze(0)
 
                     for i, uid in enumerate(uid_lst):
+                        # if mean_vector:
+                        #     uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+                        # else:
+                        #     uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
                         if mean_vector:
-                            uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
                         else:
-                            uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+
+                        uid2vectors.append((uid, uid_vec))
 
                     data = torch.tensor([])
                     num_seg_tensor = [0]
@@ -305,7 +311,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 uid2vectors[a_uid[0]] = out[0]
 
-    uids = list(uid2vectors.keys())
+    # uids = list(uid2vectors.keys())
+
     # print('There are %d vectors' % len(uids))
     scp_file = xvector_dir + '/xvectors.scp'
     ark_file = xvector_dir + '/xvectors.ark'
@@ -314,9 +321,15 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # write scp and ark file
     # pdb.set_trace()
     if torch.distributed.get_rank() == 0:
+        all_uid2vectors = []
+        torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
+        print(len(all_uid2vectors))
         writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
-        for uid in uids:
-            writer(str(uid), uid2vectors[uid])
+        # for uid in uids:
+        #     writer(str(uid), uid2vectors[uid])
+
+        for uid, uid_vec in uid2vectors:
+            writer(str(uid), uid_vec)
 
     # for set_id in range(int(np.ceil(len(uids) / ark_num))):
     #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
