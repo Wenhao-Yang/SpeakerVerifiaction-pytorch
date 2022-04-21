@@ -355,6 +355,12 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
         # if batch_idx % log_interval == 0:
         #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
         #         epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+    all_labels = []
+    all_distances = []
+    torch.distributed.all_gather_object(all_labels, labels)
+    torch.distributed.all_gather_object(all_distances, distances)
+
+    print(len(all_labels), all_distances)
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
