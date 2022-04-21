@@ -720,10 +720,10 @@ def main():
                                                                          verbose=1 if torch.distributed.get_rank() == 0 else 0),
                                                    shuffle=False, sampler=valid_sampler, **kwargs)
 
-        # extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
+        extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
         # sampler = extract_sampler,
         extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
-                                                     **extract_kwargs)
+                                                     sampler=extract_sampler, **extract_kwargs)
 
 
     else:
