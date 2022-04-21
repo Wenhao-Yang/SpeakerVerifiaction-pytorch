@@ -396,7 +396,23 @@ def valid_class(valid_loader, model, ce, epoch):
             correct += batch_correct
             total_datasize += len(predicted_one_labels)
 
-    valid_loss = total_loss / len(valid_loader)
+    total_batch = len(valid_loader)
+    all_total_loss = [None for _ in range(torch.distributed.get_world_size())]
+    all_correct = [None for _ in range(torch.distributed.get_world_size())]
+    all_total_batch = [None for _ in range(torch.distributed.get_world_size())]
+    all_total_datasize = [None for _ in range(torch.distributed.get_world_size())]
+
+    torch.distributed.all_gather_object(all_total_loss, total_loss)
+    torch.distributed.all_gather_object(all_correct, correct)
+    torch.distributed.all_gather_object(all_total_batch, total_batch)
+    torch.distributed.all_gather_object(all_total_datasize, total_datasize)
+
+    total_loss = np.sum(all_total_loss)
+    correct = np.sum(all_correct)
+    total_batch = np.sum(total_batch)
+    total_datasize = np.sum(total_datasize)
+
+    valid_loss = total_loss / total_batch
     valid_accuracy = 100. * correct / total_datasize
 
     if torch.distributed.get_rank() == 0:
@@ -408,6 +424,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
         if other_loss != 0:
             this_epoch_str += ' {} Loss: {:6f}'.format(config_args['loss_type'], other_loss / len(valid_loader))
+
         this_epoch_str += '.\33[0m'
         print(this_epoch_str)
 
@@ -784,7 +801,7 @@ def main():
                     lr_string += '{:.10f} '.format(param_group['lr'])
                 print('%s \33[0m' % lr_string)
 
-            # train(train_loader, model, ce, optimizer, epoch, scheduler)
+            train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (
@@ -797,7 +814,7 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                # valid_test(train_extract_loader, model, epoch, xvector_dir)
+                valid_test(train_extract_loader, model, epoch, xvector_dir)
                 test(extract_loader, model, epoch, writer, xvector_dir)
                 if epoch != (end - 1) and torch.distributed.get_rank() == 0:
                     try:
