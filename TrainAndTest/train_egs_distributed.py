@@ -227,7 +227,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         elif 'arcdist' in config_args['loss_type']:
             # pdb.set_trace()
             loss_cent = config_args['loss_ratio'] * ce_criterion(classfier, label)
-            if config_args['loss_lambda']:
+            if 'loss_lambda' in config_args and config_args['loss_lambda']:
                 loss_cent = loss_cent * lambda_
 
             loss_xent = xe_criterion(classfier, label)
@@ -238,7 +238,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         predicted_labels = output_softmax(classfier_label)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
-        if config_args['lncl']:
+        if 'lncl' in config_args and config_args['lncl']:
             if config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
                 predict_loss = xe_criterion(classfier, predicted_one_labels)
             else:
@@ -263,7 +263,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # compute gradient and update weights
         loss.backward()
 
-        if config_args['grad_clip'] > 0:
+        if 'grad_clip' in config_args and config_args['grad_clip'] > 0:
             this_lr = config_args['lr']
             for param_group in optimizer.param_groups:
                 this_lr = min(param_group['lr'], this_lr)
@@ -372,7 +372,7 @@ def valid_class(valid_loader, model, ce, epoch):
                 loss = xe_criterion(classfier, label)
             elif 'arcdist' in config_args['loss_type']:
                 loss_cent = config_args['loss_ratio'] * ce_criterion(classfier, label)
-                if config_args['loss_lambda']:
+                if 'loss_lambda' in config_args:
                     loss_cent = loss_cent * lambda_
 
                 loss_xent = xe_criterion(classfier, label)
