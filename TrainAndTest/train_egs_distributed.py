@@ -411,8 +411,8 @@ def valid_class(valid_loader, model, ce, epoch):
 
     total_loss = np.sum(all_total_loss)
     correct = np.sum(all_correct)
-    total_batch = np.sum(total_batch)
-    total_datasize = np.sum(total_datasize)
+    total_batch = np.sum(all_total_batch)
+    total_datasize = np.sum(all_total_datasize)
 
     valid_loss = total_loss / total_batch
     valid_accuracy = 100. * correct / total_datasize
