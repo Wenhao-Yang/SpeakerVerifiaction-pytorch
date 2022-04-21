@@ -319,7 +319,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # scp = open(scp_file, 'w')
 
     # write scp and ark file
-    # pdb.set_trace()
+    pdb.set_trace()
     if torch.distributed.get_rank() == 0:
         all_uid2vectors = []
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
