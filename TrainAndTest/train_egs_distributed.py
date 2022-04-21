@@ -647,9 +647,7 @@ def main():
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
         f.write('Optimizer: ' + str(optimizer) + '\n')
 
-    milestones = config_args['milestones'].split(',')
-    milestones = [int(x) for x in milestones]
-    milestones.sort()
+    milestones = config_args['milestones']
     if config_args['scheduler'] == 'exp':
         gamma = np.power(config_args['base_lr'] / config_args['lr'],
                          1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
