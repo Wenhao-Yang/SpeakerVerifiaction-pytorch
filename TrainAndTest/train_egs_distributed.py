@@ -29,6 +29,7 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torchvision.transforms as transforms
+from hyperpyyaml import load_hyperpyyaml
 from kaldi_io import read_mat, read_vec_flt
 from kaldiio import load_mat
 from tensorboardX import SummaryWriter
@@ -105,8 +106,9 @@ torch.cuda.set_device(args.local_rank)
 
 # load train config file
 # args.train_config
-with open(args.train_config, 'r') as f:
-    config_args = yaml.load(f, Loader=yaml.FullLoader)
+# with open(args.train_config, 'r') as f:
+# config_args = yaml.load(f, Loader=yaml.FullLoader)
+config_args = load_hyperpyyaml(args.train_config)
 
 # create logger
 # Define visulaize SummaryWriter instance
