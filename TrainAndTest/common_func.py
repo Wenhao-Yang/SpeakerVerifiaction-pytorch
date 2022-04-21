@@ -336,7 +336,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         for uid, uid_vec in uid2vectors:
             writer(str(uid), uid_vec)
 
-    torch.distributed.monitored_barrier(wait_all_ranks=True)
+    torch.distributed.barrier()
+    # torch.distributed.monitored_barrier(wait_all_ranks=True)
     # if torch.distributed.get_rank() != 1:
     #     torch.distributed.monitored_barrier()
 
