@@ -58,7 +58,7 @@ cos_sim: True
 
 ## model Setttings
 embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
-  input_size: !ref <input_dim>
+  input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   channels: [ 512, 512, 512, 512, 1500 ]
   encoder_type: 'STAP'
