@@ -22,6 +22,7 @@ valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<fea
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/test_<feat>
 test_input: fix
+log_scale: False
 chunk_size: 300
 frame_shift: 300
 extract: True
