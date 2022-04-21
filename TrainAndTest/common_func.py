@@ -321,8 +321,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # write scp and ark file
     # pdb.set_trace()
     # if torch.distributed.get_rank() == 0:
-    all_uid2vectors = [None for _ in range(num_utts)]
-    pdb.set_trace()
+    all_uid2vectors = [None for _ in range(torch.distributed.get_world_size())]
+    # pdb.set_trace()
     torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
 
     print("uid2vectors size is :", len(uid2vectors))
