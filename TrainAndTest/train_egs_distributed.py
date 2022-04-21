@@ -817,7 +817,7 @@ def main():
                             'criterion': ce}, check_path)
 
                 valid_test(train_extract_loader, model, epoch, xvector_dir)
-                test(extract_loader, model, epoch, writer, xvector_dir)
+                test(extract_loader, model, epoch, xvector_dir)
                 if epoch != (end - 1) and torch.distributed.get_rank() == 0:
                     try:
                         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
