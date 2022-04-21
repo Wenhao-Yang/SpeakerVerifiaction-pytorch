@@ -332,7 +332,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         # for uid in uids:
         #     writer(str(uid), uid2vectors[uid])
         uid2vectors = np.concatenate(all_uid2vectors)
-        print(len(uid2vectors))
+        print('uid2vectors:', len(uid2vectors))
         for uid, uid_vec in uid2vectors:
             writer(str(uid), uid_vec)
 
