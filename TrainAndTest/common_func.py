@@ -313,9 +313,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
     # write scp and ark file
     # pdb.set_trace()
-    writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
-    for uid in uids:
-        writer(str(uid), uid2vectors[uid])
+    if torch.distributed.get_rank() == 0:
+        writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
+        for uid in uids:
+            writer(str(uid), uid2vectors[uid])
 
     # for set_id in range(int(np.ceil(len(uids) / ark_num))):
     #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
