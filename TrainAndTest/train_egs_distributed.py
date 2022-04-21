@@ -498,7 +498,7 @@ def main():
 
     # Load checkpoint
     iteration = 0  # if args.resume else 0
-    if config_args['finetune'] and config_args['resume']:
+    if 'resume' in config_args:
         if os.path.isfile(config_args['resume']):
             print('=> loading checkpoint {}'.format(config_args['resume']))
             checkpoint = torch.load(config_args['resume'])
