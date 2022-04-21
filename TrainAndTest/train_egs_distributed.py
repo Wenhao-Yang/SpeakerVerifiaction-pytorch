@@ -607,7 +607,7 @@ def main():
 
     optimizer = create_optimizer(model_para, config_args['optimizer'], **opt_kwargs)
 
-    if not config_args['finetune'] and config_args['resume']:
+    if 'resume' in config_args:
         if os.path.isfile(config_args['resume']):
             print('=> loading checkpoint {}'.format(config_args['resume']))
             checkpoint = torch.load(config_args['resume'])
