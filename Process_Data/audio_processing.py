@@ -748,7 +748,7 @@ class PadCollate:
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
                  num_batch=0, split=False, chisquare=False, noise_padding=None,
-                 fix_len=False, augment=False):
+                 fix_len=False, augment=False, verbose=1):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
@@ -774,10 +774,10 @@ class PadCollate:
                 chi_len = np.random.chisquare(min_chunk_size, 2 * (max_chunk_size - min_chunk_size)).astype(np.int32)
                 batch_len = np.concatenate((chi_len, batch_len))
 
-            print('==> Generating %d different random length...' % (len(batch_len)))
-
             self.batch_len = batch_len
-            print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
+            if verbose > 0:
+                print('==> Generating %d different random length...' % (len(batch_len)))
+                print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
 
     def pad_collate(self, batch):
         """

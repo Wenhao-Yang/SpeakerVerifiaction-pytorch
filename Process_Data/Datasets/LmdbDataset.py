@@ -455,9 +455,9 @@ class EgsDataset(Dataset):
                 dataset.append((cls, dom_cls, upath))
                 doms.add(dom_cls)
                 spks.add(cls)
-
-        print('==> There are {} speakers in Dataset.'.format(len(spks)))
-        print('    There are {} egs in Dataset'.format(len(dataset)))
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(spks)))
+            print('    There are {} egs in Dataset'.format(len(dataset)))
 
         self.dataset = dataset
         self.feat_dim = feat_dim

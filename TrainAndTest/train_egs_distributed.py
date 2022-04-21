@@ -173,7 +173,8 @@ extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transfo
 
 
 valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
-                       transform=transform, verbose=1 if torch.distributed.get_rank() == 0 else 0)
+                       transform=transform,
+                       verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
@@ -628,7 +629,8 @@ def main():
 
     if 'resume' in config_args:
         if os.path.isfile(config_args['resume']):
-            print('=> loading checkpoint {}'.format(config_args['resume']))
+            if torch.distributed.get_rank() == 0:
+                print('=> loading checkpoint {}'.format(config_args['resume']))
             checkpoint = torch.load(config_args['resume'])
             start_epoch = checkpoint['epoch']
 
@@ -652,7 +654,8 @@ def main():
                 model.load_state_dict(model_dict)
             # model.dropout.p = args.dropout_p
         else:
-            print('=> no checkpoint found at {}'.format(config_args['resume']))
+            if torch.distributed.get_rank() == 0:
+                print('=> no checkpoint found at {}'.format(config_args['resume']))
 
     # Save model config txt
     if torch.distributed.get_rank() == 0:
@@ -684,7 +687,8 @@ def main():
     ce = [ce_criterion, xe_criterion]
 
     start = 1 + start_epoch
-    print('Start epoch is : ' + str(start))
+    if torch.distributed.get_rank() == 0:
+        print('Start epoch is : ' + str(start))
     # start = 0
     end = start + config_args['epochs']
 
@@ -703,14 +707,16 @@ def main():
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size,
                                                                          chisquare=False if 'chisquare' not in config_args else
-                                                                         config_args['chisquare']),
+                                                                         config_args['chisquare'],
+                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0),
                                                    shuffle=config_args['shuffle'], sampler=train_sampler, **kwargs)
 
         valid_sampler = torch.utils.data.distributed.DistributedSampler(valid_dir)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                          min_chunk_size=min_chunk_size,
-                                                                         max_chunk_size=max_chunk_size),
+                                                                         max_chunk_size=max_chunk_size,
+                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0),
                                                    shuffle=False, sampler=valid_sampler, **kwargs)
 
         extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
