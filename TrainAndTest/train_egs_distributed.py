@@ -665,7 +665,7 @@ def main():
 
     ce = [ce_criterion, xe_criterion]
 
-    start = config_args['start_epoch'] + start_epoch
+    start = 1 + start_epoch
     print('Start epoch is : ' + str(start))
     # start = 0
     end = start + config_args['epochs']
