@@ -450,7 +450,7 @@ def test(extract_loader, model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
     verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=config_args['test_input'],
-                         verbose=1)
+                         verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
     verify_dir = ScriptVerifyDataset(dir=config_args['test_dir'], trials_file=config_args['trials'],
                                      xvectors_dir=this_xvector_dir,
