@@ -448,20 +448,19 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
 def test(extract_loader, model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
-
-    verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=config_args['test_input'])
-
-    verify_dir = ScriptVerifyDataset(dir=config_args['test_dir'], trials_file=config_args['trials'],
-                                     xvectors_dir=this_xvector_dir,
-                                     loader=read_vec_flt)
-
-    # verify_sampler = torch.utils.data.distributed.DistributedSampler(verify_dir)
-    # sampler = verify_sampler,
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False,
-                                                **extract_kwargs)
-
-    # pdb.set_trace()
     if torch.distributed.get_rank() == 0:
+        verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=config_args['test_input'])
+
+        verify_dir = ScriptVerifyDataset(dir=config_args['test_dir'], trials_file=config_args['trials'],
+                                         xvectors_dir=this_xvector_dir,
+                                         loader=read_vec_flt)
+
+        # verify_sampler = torch.utils.data.distributed.DistributedSampler(verify_dir)
+        # sampler = verify_sampler,
+        verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False,
+                                                    **extract_kwargs)
+
+        # pdb.set_trace()
         eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
                                                                       dist_type='cos' if config_args[
                                                                           'cos_sim'] else 'l2',
@@ -469,6 +468,7 @@ def test(extract_loader, model, epoch, writer, xvector_dir):
                                                                       xvector_dir=this_xvector_dir,
                                                                       epoch=epoch)
 
+        # if torch.distributed.get_rank() == 0:
         print(
             '          \33[91mTest  ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
                 100. * eer, eer_threshold, mindcf_01, mindcf_001))
