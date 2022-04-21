@@ -603,7 +603,10 @@ class ScriptVerifyDataset(data.Dataset):
         uid2feat = {}
         with open(feat_scp, 'r') as f:
             for line in f.readlines():
-                uid, feat_offset = line.split()
+                try:
+                    uid, feat_offset = line.split()
+                except Exception as e:
+                    pdb.set_trace()
                 uid2feat[uid] = feat_offset
 
         utts = set(uid2feat.keys())
