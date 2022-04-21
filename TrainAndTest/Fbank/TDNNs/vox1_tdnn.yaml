@@ -12,6 +12,7 @@ datasets: cnceleb
 feat_type: klfb
 loss: arcsoft
 input_dim: 40
+feat: !ref fb<input_dim>
 subset:
 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>
