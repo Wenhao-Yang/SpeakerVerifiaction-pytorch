@@ -388,20 +388,20 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     # all_distances = []
     # torch.distributed.all_gather_object(all_labels, labels)
     # torch.distributed.all_gather_object(all_distances, distances)
+    all_labels = [None for _ in range(torch.distributed.get_world_size())]
+    all_distances = [None for _ in range(torch.distributed.get_world_size())]
+
+    torch.distributed.all_gather_object(
+        all_labels,
+        labels,
+    )
+    torch.distributed.all_gather_object(
+        all_distances,
+        distances,
+    )
 
     # print(len(all_labels), all_distances)
     if torch.distributed.get_rank() == 0:
-        all_labels = [None for _ in range(torch.distributed.get_world_size())]
-        all_distances = [None for _ in range(torch.distributed.get_world_size())]
-
-        torch.distributed.all_gather_object(
-            all_labels,
-            labels,
-        )
-        torch.distributed.all_gather_object(
-            all_distances,
-            distances,
-        )
 
         # all_uid2vectors = [None for _ in range(torch.distributed.get_world_size())]
         # pdb.set_trace()
@@ -426,6 +426,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
                                                           re_thre=True)
         mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
     else:
+        del all_distances, all_labels
         eer, eer_threshold, mindcf_01, mindcf_001 = 0,0,0,0
 
     torch.distributed.barrier()
