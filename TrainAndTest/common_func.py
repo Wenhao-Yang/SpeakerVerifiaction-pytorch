@@ -254,7 +254,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         else:
                             uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 
-                        uid2vectors.append((uid, uid_vec))
+                        uid2vectors.append((uid, uid_vec.numpy()))
 
                     data = torch.tensor([])
                     num_seg_tensor = [0]
@@ -331,6 +331,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         # for uid in uids:
         #     writer(str(uid), uid2vectors[uid])
         uid2vectors = np.concatenate(all_uid2vectors)
+        print(len(uid2vectors))
         for uid, uid_vec in uid2vectors:
             writer(str(uid), uid_vec)
 
