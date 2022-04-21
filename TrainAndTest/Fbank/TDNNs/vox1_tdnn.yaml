@@ -21,8 +21,10 @@ train_trials: trials_2w
 valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_valid
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/test_<feat>
+train_trials: trials
 test_input: fix
 log_scale: False
+random_chunk: [ 200, 400 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
@@ -59,7 +61,6 @@ alpha: 0
 embedding_size: 512
 batch_size: 128
 dropout_p: 0.0
-random_chunk: [ 200, 400 ]
 activation: leakyrelu
 channels: 512,512,512,512,1500
 encoder_type: STAP
