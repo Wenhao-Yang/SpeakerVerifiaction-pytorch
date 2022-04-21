@@ -65,9 +65,10 @@ embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
   embedding_size: !ref <embedding_size>
   num_classes: 797
   activation: leakyrelu
-  classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
-    feat_dim: !ref <embedding_size>
-    num_classes: 797
+
+classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
+  feat_dim: !ref <embedding_size>
+  num_classes: 797
 
 model: TDNN_v5
 kernel_size:
