@@ -325,8 +325,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # print(all_uid2vectors[-1])
     all_uid2vectors = [None for _ in range(torch.distributed.get_world_size())]
     torch.distributed.all_gather_object(
-        uid2vectors,
         all_uid2vectors if torch.distributed.get_rank() == 0 else None,
+        uid2vectors,
     )
     if torch.distributed.get_rank() == 0:
 
