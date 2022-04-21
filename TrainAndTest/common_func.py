@@ -330,7 +330,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
         # for uid in uids:
         #     writer(str(uid), uid2vectors[uid])
-        uid2vectors = torch.cat(all_uid2vectors)
+        uid2vectors = np.concatenate(all_uid2vectors)
         for uid, uid_vec in uid2vectors:
             writer(str(uid), uid_vec)
 
