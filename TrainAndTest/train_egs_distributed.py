@@ -490,7 +490,7 @@ def main():
     # exit(0)
 
     start_epoch = 0
-    if config_args['save_init'] and not config_args['finetune']:
+    if 'finetune' not in config_args or not config_args['finetune']:
         check_path = '{}/checkpoint_{}_{}.pth'.format(config_args['check_path'], start_epoch,
                                                       time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
         if not os.path.exists(check_path):
