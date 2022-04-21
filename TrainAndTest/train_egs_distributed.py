@@ -259,7 +259,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         total_datasize += len(predicted_one_labels)
         total_loss += float(loss.item())
-        writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
+        if torch.distributed.get_rank() == 0:
+            writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
             raise ValueError('Loss value is NaN!')
