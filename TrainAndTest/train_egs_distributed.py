@@ -498,7 +498,7 @@ def main():
 
     # Load checkpoint
     iteration = 0  # if args.resume else 0
-    if 'resume' in config_args:
+    if 'fintune' in config_args:
         if os.path.isfile(config_args['resume']):
             print('=> loading checkpoint {}'.format(config_args['resume']))
             checkpoint = torch.load(config_args['resume'])
@@ -636,7 +636,8 @@ def main():
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
     # Save model config txt
-    with open(osp.join(config_args['check_path'], 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
+    with open(os.path.join(config_args['check_path'],
+                           'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
               'w') as f:
         f.write('model: ' + str(model) + '\n')
         f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
