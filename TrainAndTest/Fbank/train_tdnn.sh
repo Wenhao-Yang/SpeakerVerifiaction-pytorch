@@ -1737,5 +1737,35 @@ if [ $stage -le 200 ]; then
 fi
 
 
+if [ $stage -le 300 ]; then
+  model=TDNN_v5
+  datasets=cnceleb
+  #  feat=fb24
+#  feat_type=pyfb
+  feat_type=klfb
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_dim=40
+  input_norm=Mean
+  lr_ratio=0
+  loss_ratio=10
+  subset=
+  activation=leakyrelu
+  scheduler=cyclic
+  optimizer=adam
+  stat_type=margin1 #margin1sum
+  m=1.0
+
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+
+ for stat_type in margin1 ; do
+   feat=fb${input_dim}
+
+   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py
+  done
+  exit
+fi
 
 

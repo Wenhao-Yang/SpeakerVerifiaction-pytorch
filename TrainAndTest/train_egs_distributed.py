@@ -77,7 +77,8 @@ parser = argparse.ArgumentParser(description='PyTorch ( Distributed ) Speaker Re
 parser.add_argument('--local_rank', default=-1, type=int,
                     help='node rank for distributed training')
 
-parser.add_argument('--train-config', default='',
+parser.add_argument('--train-config',
+                    default='TrainAndTest/Fbank/TDNNs/vox1_tdnn.yaml',
                     type=str,
                     help='node rank for distributed training')
 

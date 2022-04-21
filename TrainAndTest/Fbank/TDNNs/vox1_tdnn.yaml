@@ -7,21 +7,13 @@
 
 data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 
-#datasets
+## Dataset
 datasets: cnceleb
-#  feat=fb24
-#  feat_type=pyfb
 feat_type: klfb
 loss: arcsoft
 input_dim: 40
-input_norm: Mean
-lr_ratio: 0
-loss_ratio: 10
 subset:
-stat_type: margin1 #margin1sum
-m: 1.0
 
-## Dataset 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>
 train_test_dir: <data_root_dir>/data/${datasets}/${feat_type}/dev_${feat}/trials_dir
 train_trials: trials_2w
@@ -47,28 +39,30 @@ cos_sim: True
 
 # model Setttings
 model: TDNN_v5
+input_norm: Mean
 alpha: 0
 embedding_size: 512
 batch_size: 128
-random_chunk: [ 200,400 ]
+dropout_p: 0.0
+random_chunk: [ 200, 400 ]
 activation: leakyrelu
 channels: 512,512,512,512,1500
 encoder_type: STAP
 
 # loss
-loss_ratio: ${loss_ratio}
-lr_ratio: ${lr_ratio}
+loss_ratio: 1
+lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
 margin: 0.2
 #m: 0.2
 s: 30
-stat_type: margin1
+#stat_type: margin1
 
 # Checkpoints
 check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encod>_em<embedding_size><loss_str>_wd5e4_var
 resume: !ref <check_path>/checkpoint_40.pth
-dropout_p: 0.0
+
 veri_pairs: 9600
 gpu_id: 2
 
