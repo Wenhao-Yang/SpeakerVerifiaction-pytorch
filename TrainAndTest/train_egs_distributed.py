@@ -170,6 +170,10 @@ train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
 extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transform_V,
                                   trials_file=config_args['trials'], filer_loader=file_loader)
 
+extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
+extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
+                                             sampler=extract_sampler, **extract_kwargs)
+
 valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                        transform=transform)
 
@@ -446,13 +450,15 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 def test(model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
-    extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
     verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=config_args['test_input'])
 
     verify_dir = ScriptVerifyDataset(dir=config_args['test_dir'], trials_file=config_args['trials'],
                                      xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **extract_kwargs)
+    verify_sampler = torch.utils.data.distributed.DistributedSampler(verify_dir)
+
+    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False,
+                                                sampler=verify_sampler, **extract_kwargs)
 
     # pdb.set_trace()
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
@@ -699,11 +705,14 @@ def main():
                                                                          config_args['chisquare']),
                                                    shuffle=config_args['shuffle'], sampler=train_sampler, **kwargs)
 
+        valid_sampler = torch.utils.data.distributed.DistributedSampler(valid_dir)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size),
-                                                   shuffle=False, **kwargs)
+                                                   shuffle=False, sampler=valid_sampler, **kwargs)
+
+
     else:
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
                                                    shuffle=config_args['shuffle'],
@@ -711,8 +720,9 @@ def main():
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
                                                    shuffle=False,
                                                    **kwargs)
+    train_extract_sampler = torch.utils.data.distributed.DistributedSampler(train_extract_dir)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
-                                                       **extract_kwargs)
+                                                       sampler=train_extract_sampler, **extract_kwargs)
 
     # if config_args['cuda']:
     if len(config_args['gpu_id']) > 1:
@@ -792,7 +802,8 @@ def main():
     writer.close()
     stop_time = time.time()
     t = float(stop_time - start_time)
-    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
+    if torch.distributed.get_rank() == 0:
+        print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     # torch.distributed.des
     exit(0)
 
