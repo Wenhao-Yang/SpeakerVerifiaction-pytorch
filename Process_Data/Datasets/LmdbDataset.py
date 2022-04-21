@@ -429,7 +429,7 @@ class LmdbTestDataset(Dataset):
 
 class EgsDataset(Dataset):
     def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
-                 random_chunk=[], batch_size=0):
+                 random_chunk=[], batch_size=0, verbose=1):
 
         feat_scp = dir + '/feats.scp'
 
@@ -441,7 +441,7 @@ class EgsDataset(Dataset):
         doms = set([])
 
         with open(feat_scp, 'r') as u:
-            all_cls_upath = tqdm(u.readlines(), ncols=100)
+            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
             for line in all_cls_upath:
                 try:
                     cls, upath = line.split()

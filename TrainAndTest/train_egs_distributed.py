@@ -160,7 +160,8 @@ elif config_args['feat_format'] == 'npy':
 
 train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                        transform=transform,
-                       batch_size=config_args['batch_size'], random_chunk=config_args['random_chunk'])
+                       batch_size=config_args['batch_size'], random_chunk=config_args['random_chunk'],
+                       verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
 train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
                                         transform=transform_V,
@@ -170,12 +171,9 @@ train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
 extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transform_V,
                                   trials_file=config_args['trials'], filer_loader=file_loader)
 
-extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
-extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
-                                             sampler=extract_sampler, **extract_kwargs)
 
 valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
-                       transform=transform)
+                       transform=transform, verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
@@ -298,27 +296,27 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         if config_args['scheduler'] == 'cyclic':
             scheduler.step()
 
-        if torch.distributed.get_rank() == 0:
-            if (batch_idx + 1) % config_args['log_interval'] == 0:
-                epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
-                                                                              len(train_loader.dataset),
-                                                                              100. * batch_idx / len(train_loader))
+        # if torch.distributed.get_rank() == 0:
+        if (batch_idx + 1) % config_args['log_interval'] == 0:
+            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
+                                                                          len(train_loader.dataset),
+                                                                          100. * batch_idx / len(train_loader))
 
-                if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
-                        config_args['random_chunk'][
-                            1]:
-                    epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
+            if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
+                    config_args['random_chunk'][
+                        1]:
+                epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
 
-                if orth_err > 0:
-                    epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
+            if orth_err > 0:
+                epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
-                if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                    epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
-                if 'arcdist' in config_args['loss_type']:
-                    epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
-                epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                                100. * minibatch_acc)
-                pbar.set_description(epoch_str)
+            if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
+                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+            if 'arcdist' in config_args['loss_type']:
+                epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
+                                                                            100. * minibatch_acc)
+            pbar.set_description(epoch_str)
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
@@ -447,7 +445,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     torch.cuda.empty_cache()
 
 
-def test(model, epoch, writer, xvector_dir):
+def test(extract_loader, model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
     verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=config_args['test_input'])
@@ -712,6 +710,10 @@ def main():
                                                                          max_chunk_size=max_chunk_size),
                                                    shuffle=False, sampler=valid_sampler, **kwargs)
 
+        extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
+        extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
+                                                     sampler=extract_sampler, **extract_kwargs)
+
 
     else:
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
@@ -720,6 +722,9 @@ def main():
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
                                                    shuffle=False,
                                                    **kwargs)
+        extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
+                                                     **extract_kwargs)
+
     train_extract_sampler = torch.utils.data.distributed.DistributedSampler(train_extract_dir)
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
                                                        sampler=train_extract_sampler, **extract_kwargs)
@@ -781,7 +786,7 @@ def main():
                             'criterion': ce}, check_path)
 
                 valid_test(train_extract_loader, model, epoch, xvector_dir)
-                test(model, epoch, writer, xvector_dir)
+                test(extract_loader, model, epoch, writer, xvector_dir)
                 if epoch != (end - 1):
                     try:
                         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
