@@ -112,9 +112,10 @@ with open(args.train_config, 'r') as f:
 
 # create logger
 # Define visulaize SummaryWriter instance
-writer = SummaryWriter(logdir=config_args['check_path'], filename_suffix='SV')
-sys.stdout = NewLogger(
-    os.path.join(config_args['check_path'], 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
+if torch.distributed.get_rank() == 0:
+    writer = SummaryWriter(logdir=config_args['check_path'], filename_suffix='SV')
+    sys.stdout = NewLogger(
+        os.path.join(config_args['check_path'], 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': config_args['nj'], 'pin_memory': False}  # if args.cuda else {}
 extract_kwargs = {'num_workers': 4, 'pin_memory': False}  # if args.cuda else {}
