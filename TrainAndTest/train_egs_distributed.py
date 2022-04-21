@@ -584,7 +584,7 @@ def main():
         assert config_args['lr_ratio'] > 0
         model_para.append({'params': xe_criterion.parameters(), 'lr': config_args['lr'] * config_args['lr_ratio']})
 
-    if config_args['finetune'] or config_args['second_wd'] > 0:
+    if 'second_wd' in config_args and config_args['config_args'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:
         classifier_params = list(map(id, model.classifier.parameters()))
         rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
@@ -594,15 +594,16 @@ def main():
         model_para = [{'params': rest_params},
                       {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
-    if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
-        filter_params = list(map(id, model.filter_layer.parameters()))
-        rest_params = filter(lambda p: id(p) not in filter_params, model_para[0]['params'])
-        init_wd = config_args['filter_wd'] if args.filter_wd > 0 else config_args['weight_decay']
-        init_lr = config_args['lr'] * config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
-        print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
-        model_para[0]['params'] = rest_params
-        model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
-                           'weight_decay': init_wd})
+    if 'filter' in config_args:
+        if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
+            filter_params = list(map(id, model.filter_layer.parameters()))
+            rest_params = filter(lambda p: id(p) not in filter_params, model_para[0]['params'])
+            init_wd = config_args['filter_wd'] if args.filter_wd > 0 else config_args['weight_decay']
+            init_lr = config_args['lr'] * config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
+            print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
+            model_para[0]['params'] = rest_params
+            model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
+                               'weight_decay': init_wd})
 
     optimizer = create_optimizer(model_para, config_args['optimizer'], **opt_kwargs)
 
