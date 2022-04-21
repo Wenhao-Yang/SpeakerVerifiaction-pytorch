@@ -186,9 +186,9 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     :return:
     """
     model.eval()
-
-    if not os.path.exists(xvector_dir):
-        os.makedirs(xvector_dir)
+    if torch.distributed.get_rank() == 0:
+        if not os.path.exists(xvector_dir):
+            os.makedirs(xvector_dir)
     # pbar =
     pbar = tqdm(extract_loader, ncols=100) if verbose>0 else extract_loader
 
