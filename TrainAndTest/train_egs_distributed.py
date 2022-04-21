@@ -476,17 +476,17 @@ def main():
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     # instantiate model and initialize weights
-    model_kwargs = args_model(args, train_dir)
-
-    keys = list(model_kwargs.keys())
-    keys.sort()
-    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
-    print('Model options: \n{ %s }' % (', '.join(model_options)))
+    # model_kwargs = args_model(args, train_dir)
+    # keys = list(model_kwargs.keys())
+    # keys.sort()
+    # model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    # print('Model options: \n{ %s }' % (', '.join(model_options)))
     print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
+    # model = create_model(config_args['model'], **model_kwargs)
+    model = config_args['embedding_model']
 
-    model = create_model(config_args['model'], **model_kwargs)
-    model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
-    save_model_args(model_kwargs, model_yaml_path)
+    # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
+    # save_model_args(model_kwargs, model_yaml_path)
     # exit(0)
 
     start_epoch = 0

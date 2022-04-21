@@ -52,22 +52,22 @@ momentum: 0.9
 patience: 3
 milestones: 10,20,30,40
 scheduler: rop
-lr: 0.001
-base_lr: 0.00000001
+lr: 0.1
+base_lr: 0.00001
 cos_sim: True
 
-### model Setttings
-# embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
-#    input_size: !ref <n_mels>
-#    input_norm: !ref <input_norm>
-#    channels: [512, 512, 512, 512, 1500]
-#    encoder_type: 'STAP'
-#    kernel_sizes: [5, 3, 3, 3, 1]
-#    dilations: [1, 2, 3, 4, 1]
-#    embedding_size: !ref <embedding_size>
-#    lin_neurons: 192
+## model Setttings
+embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
+  input_size: !ref <input_dim>
+  input_norm: !ref <input_norm>
+  channels: [ 512, 512, 512, 512, 1500 ]
+  encoder_type: 'STAP'
+  embedding_size: !ref <embedding_size>
+  num_classes: 192
+  activation: leakyrelu
 
 model: TDNN_v5
+kernel_size:
 alpha: 0
 embedding_size: 512
 batch_size: 128
