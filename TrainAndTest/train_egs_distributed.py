@@ -9,12 +9,10 @@
 @Time: 2022/4/20 16:21
 @Overview:
 """
-# !/usr/bin/env python
-# encoding: utf-8
-import argparse
-import yaml
 from __future__ import print_function
 
+import argparse
+import yaml
 import os
 import os.path as osp
 import pdb
