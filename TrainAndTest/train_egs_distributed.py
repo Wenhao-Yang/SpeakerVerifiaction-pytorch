@@ -454,9 +454,10 @@ def test(extract_loader, model, epoch, writer, xvector_dir):
                                      xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
 
-    verify_sampler = torch.utils.data.distributed.DistributedSampler(verify_dir)
+    # verify_sampler = torch.utils.data.distributed.DistributedSampler(verify_dir)
+    # sampler = verify_sampler,
     verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False,
-                                                sampler=verify_sampler, **extract_kwargs)
+                                                **extract_kwargs)
 
     # pdb.set_trace()
     if torch.distributed.get_rank() == 0:
