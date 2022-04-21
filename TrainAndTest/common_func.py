@@ -319,11 +319,11 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # scp = open(scp_file, 'w')
 
     # write scp and ark file
-    pdb.set_trace()
+    # pdb.set_trace()
     if torch.distributed.get_rank() == 0:
-        all_uid2vectors = []
+        all_uid2vectors = [None for _ in range(torch.distributed.get_world_size())]
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
-        print(len(all_uid2vectors))
+        print("all_uid2vectors size is :", len(all_uid2vectors))
         writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
         # for uid in uids:
         #     writer(str(uid), uid2vectors[uid])
