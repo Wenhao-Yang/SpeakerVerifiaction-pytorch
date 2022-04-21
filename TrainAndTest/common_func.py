@@ -171,7 +171,7 @@ class AverageMeter(object):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
                          ark_num=50000, gpu=True, mean_vector=True,
-                         verbose=0, xvector=False):
+                         verbose=0, xvector=False, num_utts=50000):
     """
 
     :param extract_loader:
@@ -321,7 +321,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # write scp and ark file
     # pdb.set_trace()
     if torch.distributed.get_rank() == 0:
-        all_uid2vectors = [None for _ in range(len(extract_loader))]
+        all_uid2vectors = [None for _ in range(num_utts)]
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
         print("all_uid2vectors size is :", len(all_uid2vectors))
         print(all_uid2vectors)
