@@ -192,7 +192,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
-        if config_args['cuda']:
+        if torch.cuda.is_available():
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
             label = label.cuda()
@@ -343,8 +343,10 @@ def valid_class(valid_loader, model, ce, epoch):
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
-            data = data.cuda()
-            label = label.cuda()
+
+            if torch.cuda.is_available():
+                data = data.cuda()
+                label = label.cuda()
 
             # compute output
             # pdb.set_trace()
