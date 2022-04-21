@@ -106,9 +106,9 @@ torch.cuda.set_device(args.local_rank)
 
 # load train config file
 # args.train_config
-# with open(args.train_config, 'r') as f:
-# config_args = yaml.load(f, Loader=yaml.FullLoader)
-config_args = load_hyperpyyaml(args.train_config)
+with open(args.train_config, 'r') as f:
+    # config_args = yaml.load(f, Loader=yaml.FullLoader)
+    config_args = load_hyperpyyaml(f)
 
 # create logger
 # Define visulaize SummaryWriter instance
