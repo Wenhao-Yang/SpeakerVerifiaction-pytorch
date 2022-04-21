@@ -35,6 +35,8 @@ epochs: 60
 optimizer: sgd
 lr_decay: 0
 weight_decay: 0.0005
+dampening: 0
+momentum: 0.9
 
 
 # Scheduler
