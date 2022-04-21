@@ -324,7 +324,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # print("uid2vectors size is :", len(uid2vectors))
     # print(all_uid2vectors[-1])
     if torch.distributed.get_rank() == 0:
-        torch.distributed.monitored_barrier(wait_all_ranks=True)
+
         all_uid2vectors = [None for _ in range(torch.distributed.get_world_size())]
         pdb.set_trace()
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
@@ -336,6 +336,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         for uid, uid_vec in uid2vectors:
             writer(str(uid), uid_vec)
 
+    torch.distributed.monitored_barrier(wait_all_ranks=True)
     # if torch.distributed.get_rank() != 1:
     #     torch.distributed.monitored_barrier()
 
