@@ -469,12 +469,10 @@ def main():
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
     # opts = vars(config_args)
-    keys = list(config_args.keys())
-    keys.sort()
-
-    options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
-
-    print('Parsed options: \n{ %s }' % (', '.join(options)))
+    # keys = list(config_args.keys())
+    # keys.sort()
+    # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
+    # print('Parsed options: \n{ %s }' % (', '.join(options)))
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     # instantiate model and initialize weights
