@@ -323,6 +323,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     if torch.distributed.get_rank() == 0:
         all_uid2vectors = [None for _ in range(num_utts)]
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
+        pdb.set_trace()
         print("all_uid2vectors size is :", len(all_uid2vectors))
         print(all_uid2vectors)
         writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
@@ -369,10 +370,10 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
         # if batch_idx % log_interval == 0:
         #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
         #         epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-    all_labels = []
-    all_distances = []
-    torch.distributed.all_gather_object(all_labels, labels)
-    torch.distributed.all_gather_object(all_distances, distances)
+    # all_labels = []
+    # all_distances = []
+    # torch.distributed.all_gather_object(all_labels, labels)
+    # torch.distributed.all_gather_object(all_distances, distances)
 
     print(len(all_labels), all_distances)
 
