@@ -481,7 +481,7 @@ def main():
     # keys.sort()
     # model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
     # print('Model options: \n{ %s }' % (', '.join(model_options)))
-    print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
+    print('Testing with %s distance, ' % ('cos' if config_args['cos_sim'] else 'l2'))
     # model = create_model(config_args['model'], **model_kwargs)
     model = config_args['embedding_model']
 
