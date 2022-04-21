@@ -375,7 +375,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     # torch.distributed.all_gather_object(all_labels, labels)
     # torch.distributed.all_gather_object(all_distances, distances)
 
-    print(len(all_labels), all_distances)
+    # print(len(all_labels), all_distances)
 
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
