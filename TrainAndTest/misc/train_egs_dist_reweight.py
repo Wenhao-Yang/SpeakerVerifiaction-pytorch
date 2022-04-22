@@ -181,25 +181,28 @@ elif config_args['feat_format'] == 'npy':
 #                        transform=transform,
 #                        verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
-train_dir = CrossEgsDataset(dir=args['train_dir'], feat_dim=args['input_dim'], loader=file_loader,
-                            transform=transform, enroll_utt=args['enroll_utts'],
-                            batch_size=args['batch_size'], random_chunk=args['random_chunk'],
-                            num_meta_spks=args['num_meta_spks'])
+train_dir = CrossEgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
+                            transform=transform, enroll_utt=config_args['enroll_utts'],
+                            batch_size=config_args['batch_size'], random_chunk=config_args['random_chunk'],
+                            num_meta_spks=config_args['num_meta_spks'])
 
-meta_dir = CrossMetaEgsDataset(dir=args['train_dir'], feat_dim=args['input_dim'], loader=file_loader,
-                               spks=train_dir.meta_spks, enroll_utt=args['enroll_utts'],
-                               transform=transform, batch_size=args['batch_size'], random_chunk=args['random_chunk'])
+meta_dir = CrossMetaEgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
+                               spks=train_dir.meta_spks, enroll_utt=config_args['enroll_utts'],
+                               transform=transform, batch_size=config_args['batch_size'],
+                               random_chunk=config_args['random_chunk'])
 
-train_extract_dir = KaldiExtractDataset(dir=args['train_test_dir'],
+train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
                                         transform=transform_V,
                                         filer_loader=file_loader,
-                                        trials_file=args['train_trials'])
+                                        trials_file=config_args['train_trials'])
 
-extract_dir = KaldiExtractDataset(dir=args['test_dir'], transform=transform_V,
-                                  trials_file=args['trials'], filer_loader=file_loader)
+extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transform_V,
+                                  trials_file=config_args['trials'], filer_loader=file_loader)
 
-valid_dir = CrossEgsDataset(dir=args['valid_dir'], feat_dim=args['input_dim'], loader=file_loader, transform=transform,
-                            enroll_utt=1, batch_size=args['batch_size'], random_chunk=args['random_chunk'],
+valid_dir = CrossEgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
+                            transform=transform,
+                            enroll_utt=1, batch_size=config_args['batch_size'],
+                            random_chunk=config_args['random_chunk'],
                             )
 
 
