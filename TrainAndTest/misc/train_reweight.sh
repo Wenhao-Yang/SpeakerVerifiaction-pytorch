@@ -6,13 +6,15 @@
 # time: 2022/4/16 15:50
 # Description: 
 
+stage=1
+
+
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
 done
-stage=0
 
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
