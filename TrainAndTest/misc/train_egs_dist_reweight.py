@@ -50,7 +50,7 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, Additiv
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset, CrossMetaEgsDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset, CrossMetaEgsDataset, CrossValidEgsDataset
 import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
@@ -201,11 +201,11 @@ train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
 extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transform_V,
                                   trials_file=config_args['trials'], filer_loader=file_loader)
 
-valid_dir = CrossEgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
-                            transform=transform,
-                            enroll_utt=1, batch_size=config_args['batch_size'],
-                            random_chunk=config_args['random_chunk'],
-                            verbose=1 if torch.distributed.get_rank() == 0 else 0)
+valid_dir = CrossValidEgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
+                                 transform=transform,
+                                 enroll_utt=1, batch_size=config_args['batch_size'],
+                                 random_chunk=config_args['random_chunk'],
+                                 verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
 
 def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
@@ -226,11 +226,14 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
+        data = data.transpose(0, 1)
+
         if torch.cuda.is_available():
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
             label = label.cuda()
             data = data.cuda()
+
         data_shape = data.shape
 
         with higher.innerloop_ctx(model, optimizer) as (meta_model, meta_opt):
@@ -370,15 +373,15 @@ def valid_class(valid_loader, model, ce, epoch):
     total_loss = 0.
     other_loss = 0.
     ce_criterion, xe_criterion = ce
-    softmax = nn.Softmax(dim=1)
+    # softmax = nn.Softmax(dim=1)
 
     correct = 0.
     total_datasize = 0.
-    lambda_ = (epoch / config_args['epochs']) ** 2
+    # lambda_ = (epoch / config_args['epochs']) ** 2
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
-
+            data = data.transpose(0, 1)
             if torch.cuda.is_available():
                 data = data.cuda()
                 label = label.cuda()
@@ -386,14 +389,15 @@ def valid_class(valid_loader, model, ce, epoch):
             data_shape = data.shape
             # compute output
             out, feats = model(data)
-            feats = feats.reshape(int(data_shape / 2), 2, -1)
+            feats = feats.reshape(int(data_shape[0] / 2), 2, -1)
 
+            ce_criterion.criterion.reduction = 'mean'
             loss, prec = ce_criterion(feats)
 
             total_loss += float(loss.item())
             # pdb.set_trace()
 
-            correct += prec * len(feats)
+            correct += float(prec * len(feats) / 100)
             total_datasize += len(len(feats))
 
     total_batch = len(valid_loader)
