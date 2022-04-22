@@ -6,7 +6,7 @@
 # time: 2022/4/16 15:50
 # Description: 
 
-stage=1
+stage=0
 
 
 waited=0
@@ -24,7 +24,7 @@ if [ $stage -le 0 ]; then
   testset=cnceleb
   feat_type=klfb
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=512
   block_type=basic
