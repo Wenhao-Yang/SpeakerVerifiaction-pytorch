@@ -240,7 +240,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
 
         if xe_criterion != None:
             xe_criterion.ce.reduction = 'none'
-            loss = xe_criterion(classfier)
+            loss = xe_criterion(classfier, label)
             loss = torch.sum(w * loss)
 
             predicted_one_labels = torch.max(output_softmax(classfier), dim=1)[1]
