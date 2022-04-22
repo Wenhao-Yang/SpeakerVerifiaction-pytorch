@@ -235,7 +235,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             data = data.cuda()
 
         data_shape = data.shape
-
+        pdb.set_trace()
         with higher.innerloop_ctx(model.module, optimizer) as (meta_model, meta_opt):
             # 1. Update meta model on training data
             _, meta_train_outputs = meta_model(data)
