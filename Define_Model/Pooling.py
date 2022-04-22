@@ -106,7 +106,7 @@ class SelfAttentionPooling_v2(nn.Module):
             x = x.transpose(1, 2)
             x = x.reshape(x_shape[0], x_shape[2], -1)
 
-        assert x.shape[-1] == self.input_dim
+        assert x.shape[-1] == self.input_dim, print(x.shape, self.input_dim)
 
         alpha = self.Tanh(self.attention_linear(x))
         alpha = self.softmax(self.attention_vector(alpha))
