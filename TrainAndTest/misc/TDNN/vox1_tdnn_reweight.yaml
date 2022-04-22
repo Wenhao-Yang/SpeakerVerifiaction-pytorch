@@ -95,7 +95,7 @@ s: 30
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_var
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline_reweight/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_var
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
