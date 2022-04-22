@@ -5,15 +5,19 @@
 @Author: yangwenhao
 @Contact: 874681044@qq.com
 @Software: PyCharm
-@File: train_egs_distributed.py
-@Time: 2022/4/20 16:21
+@File: train_egs_dist_reweight.py
+@Time: 2022/4/22 14:04
 @Overview:
 """
+
 from __future__ import print_function
 
 import argparse
+import itertools
+
 import yaml
 import os
+import higher
 import os.path as osp
 import pdb
 import random
@@ -38,6 +42,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
+from Define_Model.Loss.End2End import GE2ELoss, ProtoLoss, AngleProtoLoss
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss, DistributeLoss, MMD_Loss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
@@ -45,7 +50,7 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, Additiv
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset, CrossEgsDataset, CrossMetaEgsDataset
 import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
@@ -159,26 +164,46 @@ elif config_args['feat_format'] == 'npy':
 
 # torch.multiprocessing.set_sharing_strategy('file_system')
 
-train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
-                       transform=transform,
-                       batch_size=config_args['batch_size'], random_chunk=config_args['random_chunk'],
-                       verbose=1 if torch.distributed.get_rank() == 0 else 0)
+# train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
+#                        transform=transform,
+#                        batch_size=config_args['batch_size'], random_chunk=config_args['random_chunk'],
+#                        verbose=1 if torch.distributed.get_rank() == 0 else 0)
+#
+# train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
+#                                         transform=transform_V,
+#                                         filer_loader=file_loader,
+#                                         trials_file=config_args['train_trials'])
+#
+# extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transform_V,
+#                                   trials_file=config_args['trials'], filer_loader=file_loader)
+#
+# valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
+#                        transform=transform,
+#                        verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
-train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
+train_dir = CrossEgsDataset(dir=args['train_dir'], feat_dim=args['input_dim'], loader=file_loader,
+                            transform=transform, enroll_utt=args['enroll_utts'],
+                            batch_size=args['batch_size'], random_chunk=args['random_chunk'],
+                            num_meta_spks=args['num_meta_spks'])
+
+meta_dir = CrossMetaEgsDataset(dir=args['train_dir'], feat_dim=args['input_dim'], loader=file_loader,
+                               spks=train_dir.meta_spks, enroll_utt=args['enroll_utts'],
+                               transform=transform, batch_size=args['batch_size'], random_chunk=args['random_chunk'])
+
+train_extract_dir = KaldiExtractDataset(dir=args['train_test_dir'],
                                         transform=transform_V,
                                         filer_loader=file_loader,
-                                        trials_file=config_args['train_trials'])
+                                        trials_file=args['train_trials'])
 
-extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transform_V,
-                                  trials_file=config_args['trials'], filer_loader=file_loader)
+extract_dir = KaldiExtractDataset(dir=args['test_dir'], transform=transform_V,
+                                  trials_file=args['trials'], filer_loader=file_loader)
+
+valid_dir = CrossEgsDataset(dir=args['valid_dir'], feat_dim=args['input_dim'], loader=file_loader, transform=transform,
+                            enroll_utt=1, batch_size=args['batch_size'], random_chunk=args['random_chunk'],
+                            )
 
 
-valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
-                       transform=transform,
-                       verbose=1 if torch.distributed.get_rank() == 0 else 0)
-
-
-def train(train_loader, model, ce, optimizer, epoch, scheduler):
+def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
 
@@ -190,8 +215,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
-    output_softmax = nn.Softmax(dim=1)
-    lambda_ = (epoch / config_args['epochs']) ** 2
+    # output_softmax = nn.Softmax(dim=1)
+    # lambda_ = (epoch / config_args['epochs']) ** 2
 
     # start_time = time.time()
     # pdb.set_trace()
@@ -201,66 +226,61 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             # data = data.cuda(non_blocking=True)
             label = label.cuda()
             data = data.cuda()
+        data_shape = data.shape
 
-        data, label = Variable(data), Variable(label)
-        # pdb.set_trace()
-        classfier, feats = model(data)
-        # cos_theta, phi_theta = classfier
-        classfier_label = classfier
-        # print('max logit is ', classfier_label.max())
+        with higher.innerloop_ctx(model, optimizer) as (meta_model, meta_opt):
+            # 1. Update meta model on training data
+            _, meta_train_outputs = meta_model(data)
+            ce_criterion.criterion.reduction = 'none'
+            meta_train_outputs = meta_train_outputs.reshape(int(data_shape[0] / (config_args['enroll_utts'] + 1)),
+                                                            config_args['enroll_utts'] + 1, -1)
+            meta_train_loss, _ = ce_criterion(meta_train_outputs)
+            # print(meta_train_loss)
 
-        if config_args['loss_type'] == 'soft':
-            loss = ce_criterion(classfier, label)
-        elif config_args['loss_type'] == 'asoft':
-            classfier_label, _ = classfier
-            loss = xe_criterion(classfier, label)
-        elif config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = config_args['loss_ratio'] * xe_criterion(feats, label)
-            other_loss += loss_xent
+            eps = torch.zeros(meta_train_loss.size(), requires_grad=True).cuda()
+            meta_train_loss = torch.sum(eps * meta_train_loss)
+            meta_opt.step(meta_train_loss)
 
-            loss = loss_xent + loss_cent
-        elif config_args['loss_type'] == 'ring':
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = config_args['loss_ratio'] * xe_criterion(feats)
+            # 2. Compute grads of eps on meta validation data
+            meta_inputs, meta_labels = next(meta_loader)
+            meta_inputs = meta_inputs.transpose(0, 1)
+            meta_inputs, meta_labels = meta_inputs.cuda(non_blocking=True), meta_labels.cuda(non_blocking=True)
 
-            other_loss += loss_xent
-            loss = loss_xent + loss_cent
-        elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
-            loss = xe_criterion(classfier, label)
-        elif 'arcdist' in config_args['loss_type']:
+            _, meta_val_outputs = meta_model(meta_inputs)
+            ce_criterion.criterion.reduction = 'mean'
+            meta_val_loss, _ = ce_criterion(
+                meta_val_outputs.reshape(int(meta_inputs.shape[0] / (config_args['enroll_utts'] + 1)),
+                                         config_args['enroll_utts'] + 1, -1))
+            # print(meta_val_loss)
             # pdb.set_trace()
-            loss_cent = config_args['loss_ratio'] * ce_criterion(classfier, label)
-            if 'loss_lambda' in config_args and config_args['loss_lambda']:
-                loss_cent = loss_cent * lambda_
+            eps_grads = torch.autograd.grad(meta_val_loss, eps, allow_unused=True)[0].detach()
 
-            loss_xent = xe_criterion(classfier, label)
+        w_tilde = torch.clamp(-eps_grads, min=0)
+        l1_norm = torch.sum(w_tilde)
+        if l1_norm != 0:
+            w = w_tilde / l1_norm
+        else:
+            w = w_tilde
 
-            other_loss += loss_cent
-            loss = loss_xent + loss_cent
+        classfier, feats = model(data)
+        feats = feats.reshape(int(feats.shape[0] / (config_args['enroll_utts'] + 1)), config_args['enroll_utts'] + 1,
+                              -1)
 
-        predicted_labels = output_softmax(classfier_label)
-        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+        ce_criterion.criterion.reduction = 'none'
+        end2end_loss, prec = ce_criterion(feats)
+        end2end_loss = torch.sum(w * end2end_loss)
 
-        if 'lncl' in config_args and config_args['lncl']:
-            if config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
-                predict_loss = xe_criterion(classfier, predicted_one_labels)
-            else:
-                predict_loss = ce_criterion(classfier, predicted_one_labels)
+        loss = end2end_loss
 
-            alpha_t = np.clip(config_args['alpha_t'] * (epoch / config_args['epochs']) ** 2, a_min=0, a_max=1)
-            mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
+        minibatch_acc = float(prec)
+        correct += prec * len(feats)
 
-            loss = (1 - alpha_t) * loss + alpha_t * predict_loss + config_args['beta'] * torch.mean(-torch.log(mp))
-
-        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
-        minibatch_acc = minibatch_correct / len(predicted_one_labels)
-        correct += minibatch_correct
-
-        total_datasize += len(predicted_one_labels)
+        total_datasize += len(feats)
         total_loss += float(loss.item())
+
         if torch.distributed.get_rank() == 0:
-            writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
+            writer.add_scalar('Train/All_Loss', float(loss.item()),
+                              int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
             raise ValueError('Loss value is NaN!')
@@ -303,22 +323,23 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         if (batch_idx + 1) % config_args['log_interval'] == 0:
             epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
                                                                           len(train_loader.dataset),
-                                                                          100. * batch_idx / len(train_loader))
+                                                                          100. * batch_idx / len(train_loader.dataset))
 
-            if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
-                    config_args['random_chunk'][
-                        1]:
+            if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
 
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
-            if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
-            if 'arcdist' in config_args['loss_type']:
-                epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+            # if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
+            #     epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+            # if args.loss_type in ['arcdist']:
+            #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+
+            epoch_str += ' E2E Loss: {:.4f}'.format(end2end_loss.float())
+
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                            100. * minibatch_acc)
+                                                                            minibatch_acc)
             pbar.set_description(epoch_str)
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
@@ -357,46 +378,18 @@ def valid_class(valid_loader, model, ce, epoch):
                 data = data.cuda()
                 label = label.cuda()
 
+            data_shape = data.shape
             # compute output
-            # pdb.set_trace()
             out, feats = model(data)
-            if config_args['loss_type'] == 'asoft':
-                predicted_labels, _ = out
-            else:
-                predicted_labels = out
+            feats = feats.reshape(int(data_shape / 2), 2, -1)
 
-            classfier = predicted_labels
-            if config_args['loss_type'] == 'soft':
-                loss = ce_criterion(classfier, label)
-            elif config_args['loss_type'] == 'asoft':
-                classfier_label, _ = classfier
-                loss = xe_criterion(classfier, label)
-            elif config_args['loss_type'] in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
-                loss_cent = ce_criterion(classfier, label)
-                loss_xent = config_args['loss_ratio'] * xe_criterion(feats, label)
-                other_loss += float(loss_xent.item())
-
-                loss = loss_xent + loss_cent
-            elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc']:
-                loss = xe_criterion(classfier, label)
-            elif 'arcdist' in config_args['loss_type']:
-                loss_cent = config_args['loss_ratio'] * ce_criterion(classfier, label)
-                if 'loss_lambda' in config_args:
-                    loss_cent = loss_cent * lambda_
-
-                loss_xent = xe_criterion(classfier, label)
-
-                other_loss += float(loss_cent.item())
-                loss = loss_xent + loss_cent
+            loss, prec = ce_criterion(feats)
 
             total_loss += float(loss.item())
             # pdb.set_trace()
-            predicted_one_labels = softmax(predicted_labels)
-            predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
 
-            batch_correct = (predicted_one_labels.cuda() == label).sum().item()
-            correct += batch_correct
-            total_datasize += len(predicted_one_labels)
+            correct += prec * len(feats)
+            total_datasize += len(len(feats))
 
     total_batch = len(valid_loader)
     all_total_loss = [None for _ in range(torch.distributed.get_world_size())]
@@ -562,61 +555,68 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
-    ce_criterion = nn.CrossEntropyLoss()
-    if config_args['loss_type'] == 'soft':
-        xe_criterion = None
-    elif config_args['loss_type'] == 'asoft':
-        ce_criterion = None
-        xe_criterion = AngleSoftmaxLoss(lambda_min=config_args['lambda_min'], lambda_max=config_args['lambda_max'])
-    elif config_args['loss_type'] == 'center':
-        xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'variance':
-        xe_criterion = VarianceLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'gaussian':
-        xe_criterion = GaussianLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'coscenter':
-        xe_criterion = CenterCosLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'mulcenter':
-        xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'],
-                                       num_center=config_args['num_center'])
-    elif config_args['loss_type'] == 'amsoft':
-        ce_criterion = None
-        xe_criterion = AMSoftmaxLoss(margin=config_args['margin'], s=config_args['s'])
+    if config_args['loss_type'] == 'e2e':
+        ce_criterion = GE2ELoss()
+    elif config_args['loss_type'] == 'proto':
+        ce_criterion = ProtoLoss()
+    elif config_args['loss_type'] in ['angleproto']:
+        ce_criterion = AngleProtoLoss()
+    xe_criterion = None
 
-    elif config_args['loss_type'] in ['arcsoft', 'subarc']:
-        ce_criterion = None
-        if 'class_weight' in config_args and config_args['class_weight'] == 'cnc1':
-            class_weight = torch.tensor(C.CNC1_WEIGHT)
-            if len(class_weight) != train_dir.num_spks:
-                class_weight = None
-        else:
-            class_weight = None
-
-        all_iteraion = 0 if 'all_iteraion' not in config_args else config_args['all_iteraion']
-        smooth_ratio = 0 if 'smooth_ratio' not in config_args else config_args['smooth_ratio']
-        xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                      all_iteraion=all_iteraion,
-                                      smooth_ratio=smooth_ratio,
-                                      class_weight=class_weight)
-    elif config_args['loss_type'] == 'minarcsoft':
-        ce_criterion = None
-        xe_criterion = MinArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                         all_iteraion=config_args['all_iteraion'])
-    elif config_args['loss_type'] == 'minarcsoft2':
-        ce_criterion = None
-        xe_criterion = MinArcSoftmaxLoss_v2(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                            all_iteraion=config_args['all_iteraion'])
-    elif config_args['loss_type'] == 'wasse':
-        xe_criterion = Wasserstein_Loss(source_cls=config_args['source_cls'])
-    elif config_args['loss_type'] == 'mmd':
-        xe_criterion = MMD_Loss()
-    elif config_args['loss_type'] == 'ring':
-        xe_criterion = RingLoss(ring=config_args['ring'])
-        args.alpha = 0.0
-    elif 'arcdist' in config_args['loss_type']:
-        ce_criterion = DistributeLoss(stat_type=config_args['stat_type'], margin=config_args['m'])
-        xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                      all_iteraion=config_args['all_iteraion'])
+    # if config_args['loss_type'] == 'soft':
+    #     xe_criterion = None
+    # elif config_args['loss_type'] == 'asoft':
+    #     ce_criterion = None
+    #     xe_criterion = AngleSoftmaxLoss(lambda_min=config_args['lambda_min'], lambda_max=config_args['lambda_max'])
+    # elif config_args['loss_type'] == 'center':
+    #     xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
+    # elif config_args['loss_type'] == 'variance':
+    #     xe_criterion = VarianceLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
+    # elif config_args['loss_type'] == 'gaussian':
+    #     xe_criterion = GaussianLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
+    # elif config_args['loss_type'] == 'coscenter':
+    #     xe_criterion = CenterCosLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
+    # elif config_args['loss_type'] == 'mulcenter':
+    #     xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'],
+    #                                    num_center=config_args['num_center'])
+    # elif config_args['loss_type'] == 'amsoft':
+    #     ce_criterion = None
+    #     xe_criterion = AMSoftmaxLoss(margin=config_args['margin'], s=config_args['s'])
+    #
+    # elif config_args['loss_type'] in ['arcsoft', 'subarc']:
+    #     ce_criterion = None
+    #     if 'class_weight' in config_args and config_args['class_weight'] == 'cnc1':
+    #         class_weight = torch.tensor(C.CNC1_WEIGHT)
+    #         if len(class_weight) != train_dir.num_spks:
+    #             class_weight = None
+    #     else:
+    #         class_weight = None
+    #
+    #     all_iteraion = 0 if 'all_iteraion' not in config_args else config_args['all_iteraion']
+    #     smooth_ratio = 0 if 'smooth_ratio' not in config_args else config_args['smooth_ratio']
+    #     xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
+    #                                   all_iteraion=all_iteraion,
+    #                                   smooth_ratio=smooth_ratio,
+    #                                   class_weight=class_weight)
+    # elif config_args['loss_type'] == 'minarcsoft':
+    #     ce_criterion = None
+    #     xe_criterion = MinArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
+    #                                      all_iteraion=config_args['all_iteraion'])
+    # elif config_args['loss_type'] == 'minarcsoft2':
+    #     ce_criterion = None
+    #     xe_criterion = MinArcSoftmaxLoss_v2(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
+    #                                         all_iteraion=config_args['all_iteraion'])
+    # elif config_args['loss_type'] == 'wasse':
+    #     xe_criterion = Wasserstein_Loss(source_cls=config_args['source_cls'])
+    # elif config_args['loss_type'] == 'mmd':
+    #     xe_criterion = MMD_Loss()
+    # elif config_args['loss_type'] == 'ring':
+    #     xe_criterion = RingLoss(ring=config_args['ring'])
+    #     args.alpha = 0.0
+    # elif 'arcdist' in config_args['loss_type']:
+    #     ce_criterion = DistributeLoss(stat_type=config_args['stat_type'], margin=config_args['m'])
+    #     xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
+    #                                   all_iteraion=config_args['all_iteraion'])
 
     model_para = [{'params': model.parameters()}]
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
@@ -682,7 +682,7 @@ def main():
                                'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
                   'w') as f:
             f.write('model: ' + str(model) + '\n')
-            f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
+            f.write('End2End Loss: ' + str(ce_criterion) + '\n')
             f.write('Other Loss: ' + str(xe_criterion) + '\n')
             f.write('Optimizer: ' + str(optimizer) + '\n')
 
@@ -717,7 +717,7 @@ def main():
         pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
 
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_dir)
-        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=1,
                                                    collate_fn=PadCollate(dim=pad_dim,
                                                                          num_batch=int(
                                                                              np.ceil(
@@ -729,6 +729,17 @@ def main():
                                                                          config_args['chisquare'],
                                                                          verbose=1 if torch.distributed.get_rank() == 0 else 0),
                                                    shuffle=config_args['shuffle'], sampler=train_sampler, **kwargs)
+
+        meta_sampler = torch.utils.data.distributed.DistributedSampler(meta_dir)
+        meta_loader = torch.utils.data.DataLoader(meta_dir, batch_size=1,
+                                                  collate_fn=PadCollate(dim=pad_dim,
+                                                                        num_batch=int(
+                                                                            np.ceil(len(train_dir) / args.batch_size)),
+                                                                        min_chunk_size=min_chunk_size,
+                                                                        max_chunk_size=max_chunk_size,
+                                                                        chisquare=False if 'chisquare' not in config_args else
+                                                                        config_args['chisquare'], ),
+                                                  shuffle=args.shuffle, **kwargs)
 
         valid_sampler = torch.utils.data.distributed.DistributedSampler(valid_dir)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
@@ -758,6 +769,7 @@ def main():
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
                                                        sampler=train_extract_sampler, **extract_kwargs)
 
+    meta_loader = itertools.cycle(meta_loader)
     # if config_args['cuda']:
     if len(config_args['gpu_id']) > 1:
         print("Continue with gpu: %s ..." % str(args.local_rank))
@@ -801,7 +813,7 @@ def main():
                     lr_string += '{:.10f} '.format(param_group['lr'])
                 print('%s \33[0m' % lr_string)
 
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
+            train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (
@@ -832,7 +844,6 @@ def main():
 
     except KeyboardInterrupt:
         end = epoch
-
 
     stop_time = time.time()
     t = float(stop_time - start_time)
