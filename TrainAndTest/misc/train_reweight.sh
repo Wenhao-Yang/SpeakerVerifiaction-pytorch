@@ -152,7 +152,7 @@ if [ $stage -le 1 ]; then
    feat=fb${input_dim}
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/misc/train_egs_dist_weight.py
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/misc/train_egs_dist_reweight.py
   done
   exit
 fi
