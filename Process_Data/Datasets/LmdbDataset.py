@@ -431,6 +431,7 @@ class LmdbTestDataset(Dataset):
 
 class EgsDataset(Dataset):
     def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
+                 num_meta_spks=0, cls2cls={},
                  random_chunk=[], batch_size=0, label_dir='', verbose=1):
 
         feat_scp = dir + '/feats.scp'
@@ -443,9 +444,7 @@ class EgsDataset(Dataset):
         doms = set([])
 
         with open(feat_scp, 'r') as u:
-
-            all_cls_upath = tqdm(u.readlines()) if verbose > 0 else u.readlines()
-
+            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
             for line in all_cls_upath:
                 try:
                     cls, upath = line.split()
@@ -458,9 +457,15 @@ class EgsDataset(Dataset):
                 except ValueError as v:
                     pass
 
-                dataset.append((cls, dom_cls, upath))
-                doms.add(dom_cls)
-                spks.add(cls)
+                if len(cls2cls) > 0:
+                    if cls in cls2cls:
+                        dataset.append((cls2cls[cls], dom_cls, upath))
+                        doms.add(dom_cls)
+                        spks.add(cls2cls[cls])
+                else:
+                    dataset.append((cls, dom_cls, upath))
+                    doms.add(dom_cls)
+                    spks.add(cls)
 
         label_feat_scp = label_dir + '/feat.scp'
         guide_label = []
@@ -470,6 +475,26 @@ class EgsDataset(Dataset):
                 for line in all_lb_upath:
                     lb, lpath = line.split()
                     guide_label.append((int(lb), lpath))
+
+        if num_meta_spks > 0:
+            spks = list(spks)
+            random.shuffle(spks)
+            meta_spks = spks[-num_meta_spks:]
+            spks = spks[:-num_meta_spks]
+            self.meta_spks = meta_spks
+
+            self.cls2cls = {}
+
+            for i, cls in enumerate(spks):
+                self.cls2cls[cls] = i
+
+            new_dataset = []
+            for cls, dom_cls, upath in dataset:
+                if cls not in meta_spks:
+                    new_dataset.append((self.cls2cls[cls], dom_cls, upath))
+
+            dataset = new_dataset
+
         if verbose > 0:
             print('==> There are {} speakers in Dataset.'.format(len(spks)))
             print('    There are {} egs in Dataset'.format(len(dataset)))
@@ -532,7 +557,8 @@ class EgsDataset(Dataset):
 
 class CrossEgsDataset(Dataset):
     def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False, num_meta_spks=0,
-                 random_chunk=[], batch_size=144, enroll_utt=5, label_dir='', verbose=1):
+                 random_chunk=[], batch_size=144, enroll_utt=5,
+                 label_dir='', verbose=1):
 
         feat_scp = dir + '/feats.scp'
 
@@ -546,7 +572,7 @@ class CrossEgsDataset(Dataset):
 
         with open(feat_scp, 'r') as u:
 
-            all_cls_upath = tqdm(u.readlines()) if verbose > 0 else u.readlines()
+            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
 
             for line in all_cls_upath:
                 try:
@@ -584,7 +610,7 @@ class CrossEgsDataset(Dataset):
             self.meta_spks = meta_spks
 
         self.dataset = cls2dom2utt
-        self.dataset_len = dataset_len
+        self.dataset_len = int(dataset_len / batch_size)
         # self.guide_label = guide_label
 
         self.feat_dim = feat_dim
@@ -598,15 +624,27 @@ class CrossEgsDataset(Dataset):
         self.chunk_size = []
         self.batch_size = batch_size
         self.batch_spks = int(batch_size / (enroll_utt + 1))
+        # self.sim_matrix = None
+        self.most_sim_spk = None
 
     def __getitem__(self, idx):
         # time_s = time.time()
         # print('Starting loading...')
-
         batch_spks = set([])
-        while len(batch_spks) < self.batch_spks:
-            batch_spks.add(random.choice(self.spks))
+        if self.most_sim_spk == None:
+            while len(batch_spks) < self.batch_spks:
+                batch_spks.add(random.choice(self.spks))
+        else:
+            # spk_idx = idx % self.num_spks
+            i = 0
+            while len(batch_spks) < self.batch_spks:
+                spk_idx = (idx + i) % self.num_spks
+                # print(self.most_sim_spk)
+                for spk in self.most_sim_spk[spk_idx]:
+                    batch_spks.add(int(spk))
+                i += 1
 
+        batch_spks = list(batch_spks)[:self.batch_spks]
         # print('Batch_spks: ', self.batch_spks)
         features = []
         label = []
@@ -619,12 +657,24 @@ class CrossEgsDataset(Dataset):
 
             if len(this_dom2utt) == 1:
                 this_spks_utts = this_dom2utt[list(this_dom2utt.keys())[0]]
+                if len(this_spks_utts) == 1:
+                    continue
                 test_utt.append(random.choice(this_spks_utts))
 
-                while len(enroll_utts) < self.enroll_utt:
-                    rand_enroll_utt = random.choice(this_spks_utts)
-                    if rand_enroll_utt not in test_utt:
-                        enroll_utts.add(rand_enroll_utt)
+                if len(this_spks_utts) - 1 > self.enroll_utt:
+                    while len(enroll_utts) < self.enroll_utt:
+                        rand_enroll_utt = random.choice(this_spks_utts)
+                        if rand_enroll_utt not in test_utt:
+                            enroll_utts.add(rand_enroll_utt)
+                else:
+                    for i in this_spks_utts:
+                        if i not in test_utt:
+                            enroll_utts.add(i)
+
+                    enroll_utts = list(enroll_utts)
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.extend([random.choice(enroll_utts)])
+
             else:
                 this_spk_doms = list(this_dom2utt.keys())
                 test_dom = random.choice(this_spk_doms)
@@ -635,8 +685,16 @@ class CrossEgsDataset(Dataset):
 
                 test_utt.append(random.choice(this_dom2utt[test_dom]))
 
-                while len(enroll_utts) < self.enroll_utt:
-                    enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
+                if len(this_dom2utt[enroll_dom]) > self.enroll_utt:
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
+                else:
+                    for i in this_dom2utt[enroll_dom]:
+                        enroll_utts.add(i)
+
+                    enroll_utts = list(enroll_utts)
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.extend([random.choice(enroll_utts)])
 
             utts_feat = [self.transform(self.loader(upath)) for upath in test_utt]
             utts_feat.extend([self.transform(self.loader(upath)) for upath in enroll_utts])
@@ -662,7 +720,7 @@ class CrossEgsDataset(Dataset):
         return feature
 
     def __len__(self):
-        return int(self.dataset_len / self.batch_size)  # 返回一个epoch的采样数
+        return self.dataset_len  # 返回一个epoch的采样数
 
 
 class CrossValidEgsDataset(Dataset):
@@ -681,7 +739,7 @@ class CrossValidEgsDataset(Dataset):
 
         with open(feat_scp, 'r') as u:
 
-            all_cls_upath = tqdm(u.readlines()) if verbose > 0 else u.readlines()
+            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
 
             for line in all_cls_upath:
                 try:
@@ -776,19 +834,28 @@ class CrossValidEgsDataset(Dataset):
                         enroll_utts.extend([random.choice(enroll_utts)])
 
             else:
-                print('Enroll dom > 1')
                 this_spk_doms = list(this_dom2utt.keys())
                 test_dom = random.choice(this_spk_doms)
                 enroll_dom = random.choice(this_spk_doms)
 
                 while enroll_dom == test_dom:
                     enroll_dom = random.choice(this_spk_doms)
-                print('Enroll dom: ', enroll_dom)
 
                 test_utt.append(random.choice(this_dom2utt[test_dom]))
 
-                while len(enroll_utts) < self.enroll_utt:
-                    enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
+                this_spks_utts = this_dom2utt[enroll_dom]
+                if len(this_spks_utts) >= self.enroll_utt:
+
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.add(random.choice(this_spks_utts))
+                else:
+                    for i in this_spks_utts:
+                        if i not in test_utt:
+                            enroll_utts.add(i)
+
+                    enroll_utts = list(enroll_utts)
+                    while len(enroll_utts) < self.enroll_utt:
+                        enroll_utts.extend([random.choice(enroll_utts)])
 
             utts_feat = [self.transform(self.loader(upath)) for upath in test_utt]
             utts_feat.extend([self.transform(self.loader(upath)) for upath in enroll_utts])
@@ -834,7 +901,7 @@ class CrossMetaEgsDataset(Dataset):
 
         with open(feat_scp, 'r') as u:
 
-            all_cls_upath = tqdm(u.readlines()) if verbose > 0 else u.readlines()
+            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
 
             for line in all_cls_upath:
                 try:

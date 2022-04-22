@@ -570,8 +570,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='input batch size for testing (default: 64)')
 
     # loss configure
-    parser.add_argument('--loss-type', type=str, default='soft',
-                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--loss-type', type=str, help='path to voxceleb1 test dataset')
+    parser.add_argument('--e2e-loss-type', type=str, default='angleproto', help='path to voxceleb1 test dataset')
     parser.add_argument('--num-center', type=int, default=2, help='the num of source classes')
     parser.add_argument('--source-cls', type=int, default=1951,
                         help='the num of source classes')

@@ -135,13 +135,15 @@ elif args.feat_format == 'npy':
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-# train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
-#                        batch_size=args.batch_size, random_chunk=args.random_chunk)
-
-train_dir = CrossEgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader,
-                            transform=transform, enroll_utt=args.enroll_utts,
-                            batch_size=args.batch_size, random_chunk=args.random_chunk,
-                            num_meta_spks=args.num_meta_spks)
+if args.loss_type != None:
+    train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
+                           num_meta_spks=args.num_meta_spks,
+                           batch_size=args.batch_size, random_chunk=args.random_chunk)
+else:
+    train_dir = CrossEgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader,
+                                transform=transform, enroll_utt=args.enroll_utts,
+                                batch_size=args.batch_size, random_chunk=args.random_chunk,
+                                num_meta_spks=args.num_meta_spks)
 
 meta_dir = CrossMetaEgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader,
                                spks=train_dir.meta_spks, enroll_utt=args.enroll_utts,
@@ -155,9 +157,15 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
 extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
                                   trials_file=args.trials, filer_loader=file_loader)
 
-valid_dir = CrossValidEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
-                                 enroll_utt=1, batch_size=args.batch_size, random_chunk=args.random_chunk,
-                                 )
+if args.loss_type != None:
+    valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
+                           cls2cls=train_dir.cls2cls,
+                           batch_size=args.batch_size, random_chunk=args.random_chunk)
+else:
+    valid_dir = CrossValidEgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader,
+                                     transform=transform,
+                                     enroll_utt=1, batch_size=int(args.batch_size / 2), random_chunk=args.random_chunk,
+                                     )
 
 
 def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
@@ -172,11 +180,12 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
 
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
-    # output_softmax = nn.Softmax(dim=1)
+    output_softmax = nn.Softmax(dim=1)
     lambda_ = (epoch / args.epochs) ** 2
     for batch_idx, (data, label) in pbar:
+        if xe_criterion == None:
+            data = data.transpose(0, 1)
 
-        data = data.transpose(0, 1)
         if args.cuda:
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
@@ -189,11 +198,17 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
         # optimizer.zero_grad()
         with higher.innerloop_ctx(model, optimizer) as (meta_model, meta_opt):
             # 1. Update meta model on training data
-            _, meta_train_outputs = meta_model(data)
-            ce_criterion.criterion.reduction = 'none'
-            meta_train_outputs = meta_train_outputs.reshape(int(data_shape[0] / (args.enroll_utts + 1)),
-                                                            args.enroll_utts + 1, -1)
-            meta_train_loss, _ = ce_criterion(meta_train_outputs)
+            if xe_criterion != None:
+                classfier, _ = meta_model(data)
+                xe_criterion.ce.reduction = 'none'
+                meta_train_loss = xe_criterion(classfier, label)
+
+            else:
+                _, meta_train_outputs = meta_model(data)
+                ce_criterion.criterion.reduction = 'none'
+                meta_train_outputs = meta_train_outputs.reshape(int(data_shape[0] / (args.enroll_utts + 1)),
+                                                                args.enroll_utts + 1, -1)
+                meta_train_loss, _ = ce_criterion(meta_train_outputs)
             # print(meta_train_loss)
 
             eps = torch.zeros(meta_train_loss.size(), requires_grad=True).cuda()
@@ -222,11 +237,22 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             w = w_tilde
 
         classfier, feats = model(data)
-        feats = feats.reshape(int(feats.shape[0] / (args.enroll_utts + 1)), args.enroll_utts + 1, -1)
+        if xe_criterion != None:
+            xe_criterion.ce.reduction = 'none'
+            loss = xe_criterion(classfier, label)
+            loss = torch.sum(w * loss)
 
-        ce_criterion.criterion.reduction = 'none'
-        end2end_loss, prec = ce_criterion(feats)
-        end2end_loss = torch.sum(w * end2end_loss)
+            predicted_one_labels = torch.max(output_softmax(classfier), dim=1)[1]
+            prec = float((predicted_one_labels.cpu() == label.cpu()).sum().item()) / len(feats) * 100
+
+        else:
+            feats = feats.reshape(int(feats.shape[0] / (args.enroll_utts + 1)), args.enroll_utts + 1, -1)
+
+            ce_criterion.criterion.reduction = 'none'
+            end2end_loss, prec = ce_criterion(feats)
+            end2end_loss = torch.sum(w * end2end_loss)
+
+            loss = end2end_loss
         # # cos_theta, phi_theta = classfier
         # classfier_label = classfier
         # # print('max logit is ', classfier_label.max())
@@ -261,7 +287,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
         #     other_loss += loss_cent
         #     loss = loss_xent + loss_cent
 
-        loss = end2end_loss  # + loss
+        # loss = end2end_loss  # + loss
 
         # predicted_labels = output_softmax(classfier_label)
         # predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
@@ -336,7 +362,10 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             # if args.loss_type in ['arcdist']:
             #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
 
-            epoch_str += ' E2E Loss: {:.4f}'.format(end2end_loss.float())
+            if xe_criterion != None:
+                epoch_str += ' {} Loss: {:.4f}'.format(args.loss_type, loss.float())
+            else:
+                epoch_str += ' E2E Loss: {:.4f}'.format(loss.float())
 
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
                                                                             minibatch_acc)
@@ -364,7 +393,7 @@ def valid_class(valid_loader, model, ce, epoch):
     total_loss = 0.
     other_loss = 0.
     ce_criterion, xe_criterion = ce
-    # softmax = nn.Softmax(dim=1)
+    softmax = nn.Softmax(dim=1)
 
     correct = 0.
     total_datasize = 0.
@@ -373,17 +402,23 @@ def valid_class(valid_loader, model, ce, epoch):
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
-            data = data.transpose(0, 1)
+            if xe_criterion != None:
+                data = data.transpose(0, 1)
+
             data = data.cuda()
             label = label.cuda()
 
             data_shape = data.shape
             # compute output
-            out, feats = model(data)
-            feats = feats.reshape(int(data_shape[0] / 2), 2, -1)
+            classfier, feats = model(data)
+            if xe_criterion != None:
+                xe_criterion.ce.reduction = 'mean'
+                loss = xe_criterion(classfier, label)
+            else:
+                feats = feats.reshape(int(data_shape[0] / 2), 2, -1)
 
-            ce_criterion.criterion.reduction = 'mean'
-            loss, prec = ce_criterion(feats)
+                ce_criterion.criterion.reduction = 'mean'
+                loss, prec = ce_criterion(feats)
 
             # if args.loss_type == 'asoft':
             #     predicted_labels, _ = out
@@ -557,13 +592,17 @@ def main():
             print('=> no checkpoint found at {}'.format(args.resume))
 
     # ce_criterion = nn.CrossEntropyLoss()
-    if args.loss_type == 'e2e':
+    if args.e2e_loss_type == 'e2e':
         ce_criterion = GE2ELoss()
-    elif args.loss_type == 'proto':
+    elif args.e2e_loss_type == 'proto':
         ce_criterion = ProtoLoss()
-    elif args.loss_type in ['angleproto']:
+    elif args.e2e_loss_type in ['angleproto']:
         ce_criterion = AngleProtoLoss()
-    xe_criterion = None
+
+    if args.loss_type == 'arcsoft':
+        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
+    else:
+        xe_criterion = None
 
     model_para = [{'params': model.parameters()}]
     if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
@@ -666,7 +705,8 @@ def main():
         else:
             noise_padding_dir = None
 
-        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=1,
+        train_batch_size = args.batch_size if args.loss_type != None else 1
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=train_batch_size,
                                                    collate_fn=PadCollate(dim=pad_dim,
                                                                          num_batch=int(
                                                                              np.ceil(len(train_dir) / args.batch_size)),
@@ -684,7 +724,7 @@ def main():
                                                                         chisquare=args.chisquare,
                                                                         noise_padding=noise_padding_dir),
                                                   shuffle=args.shuffle, **kwargs)
-        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=1,
+        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=train_batch_size,
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                          min_chunk_size=args.chunk_size,
                                                                          max_chunk_size=args.chunk_size + 1),
