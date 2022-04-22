@@ -833,10 +833,11 @@ def main():
     except KeyboardInterrupt:
         end = epoch
 
-    writer.close()
+
     stop_time = time.time()
     t = float(stop_time - start_time)
     if torch.distributed.get_rank() == 0:
+        writer.close()
         print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     # torch.distributed.des
     exit(0)
