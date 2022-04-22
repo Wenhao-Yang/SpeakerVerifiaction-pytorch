@@ -36,7 +36,7 @@ if [ $stage -le 0 ]; then
   scheduler=rop
   optimizer=sgd
   input_dim=40
-  batch_size=192 #384
+  batch_size=128 #384
   fast=none1
   mask_layer=baseline
   weight=vox2_rcf
@@ -107,7 +107,7 @@ if [ $stage -le 0 ]; then
       --m 0.2 \
       --s 30 \
       --num-center 3 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0 \
       --extract \
