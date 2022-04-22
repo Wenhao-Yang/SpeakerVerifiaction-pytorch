@@ -184,12 +184,14 @@ elif config_args['feat_format'] == 'npy':
 train_dir = CrossEgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                             transform=transform, enroll_utt=config_args['enroll_utts'],
                             batch_size=config_args['batch_size'], random_chunk=config_args['random_chunk'],
-                            num_meta_spks=config_args['num_meta_spks'])
+                            num_meta_spks=config_args['num_meta_spks'],
+                            verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
 meta_dir = CrossMetaEgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                                spks=train_dir.meta_spks, enroll_utt=config_args['enroll_utts'],
                                transform=transform, batch_size=config_args['batch_size'],
-                               random_chunk=config_args['random_chunk'])
+                               random_chunk=config_args['random_chunk'],
+                               verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
 train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
                                         transform=transform_V,
@@ -203,7 +205,7 @@ valid_dir = CrossEgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['
                             transform=transform,
                             enroll_utt=1, batch_size=config_args['batch_size'],
                             random_chunk=config_args['random_chunk'],
-                            )
+                            verbose=1 if torch.distributed.get_rank() == 0 else 0)
 
 
 def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
@@ -737,7 +739,8 @@ def main():
         meta_loader = torch.utils.data.DataLoader(meta_dir, batch_size=1,
                                                   collate_fn=PadCollate(dim=pad_dim,
                                                                         num_batch=int(
-                                                                            np.ceil(len(train_dir) / args.batch_size)),
+                                                                            np.ceil(len(train_dir) / config_args[
+                                                                                'batch_size'])),
                                                                         min_chunk_size=min_chunk_size,
                                                                         max_chunk_size=max_chunk_size,
                                                                         chisquare=False if 'chisquare' not in config_args else
