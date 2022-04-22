@@ -38,7 +38,7 @@ if [ $stage -le 0 ]; then
   scheduler=rop
   optimizer=sgd
   input_dim=40
-  batch_size=384 #384
+  batch_size=192 #384
   fast=none1
   mask_layer=baseline
   weight=vox2_rcf
