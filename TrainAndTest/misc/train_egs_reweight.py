@@ -201,7 +201,7 @@ def train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler):
             if xe_criterion != None:
                 classfier, _ = meta_model(data)
                 xe_criterion.ce.reduction = 'none'
-                meta_train_loss = ce_criterion(classfier, label)
+                meta_train_loss = xe_criterion(classfier, label)
 
             else:
                 _, meta_train_outputs = meta_model(data)
