@@ -77,6 +77,7 @@ if [ $stage -le 0 ]; then
       --feat-format kaldi \
       --shuffle \
       --random-chunk 200 400 \
+      --input-dim ${input_dim} \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 0 \
