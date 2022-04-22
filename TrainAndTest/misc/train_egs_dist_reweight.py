@@ -745,7 +745,7 @@ def main():
                                                                         max_chunk_size=max_chunk_size,
                                                                         chisquare=False if 'chisquare' not in config_args else
                                                                         config_args['chisquare'], ),
-                                                  shuffle=args.shuffle, **kwargs)
+                                                  shuffle=config_args['shuffle'], **kwargs)
 
         valid_sampler = torch.utils.data.distributed.DistributedSampler(valid_dir)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
