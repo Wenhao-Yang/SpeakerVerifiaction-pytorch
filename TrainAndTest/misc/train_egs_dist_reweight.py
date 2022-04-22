@@ -82,7 +82,7 @@ parser.add_argument('--local_rank', default=-1, type=int,
                     help='node rank for distributed training')
 
 parser.add_argument('--train-config',
-                    default='TrainAndTest/misc/TDNNs/vox1_tdnn_reweight.yaml',
+                    default='TrainAndTest/misc/TDNN/vox1_tdnn_reweight.yaml',
                     type=str,
                     help='node rank for distributed training')
 
