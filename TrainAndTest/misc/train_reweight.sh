@@ -100,7 +100,7 @@ if [ $stage -le 0 ]; then
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 5 \
+      --avg-size 0 \
       --enroll-utts 2 \
       --num-meta-spks 40 \
       --encoder-type ${encoder_type} \
