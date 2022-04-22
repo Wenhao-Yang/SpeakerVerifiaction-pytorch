@@ -429,6 +429,7 @@ class LmdbTestDataset(Dataset):
 
 class EgsDataset(Dataset):
     def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
+                 num_meta_spks=0, cls2cls={},
                  random_chunk=[], batch_size=0, verbose=1):
 
         feat_scp = dir + '/feats.scp'
@@ -452,9 +453,35 @@ class EgsDataset(Dataset):
 
                 cls = int(cls)
 
-                dataset.append((cls, dom_cls, upath))
-                doms.add(dom_cls)
-                spks.add(cls)
+                if len(cls2cls) > 0:
+                    if cls in cls2cls:
+                        dataset.append((cls2cls[cls], dom_cls, upath))
+                        doms.add(dom_cls)
+                        spks.add(cls2cls[cls])
+                else:
+                    dataset.append((cls, dom_cls, upath))
+                    doms.add(dom_cls)
+                    spks.add(cls)
+
+        if num_meta_spks > 0:
+            spks = list(spks)
+            random.shuffle(spks)
+            meta_spks = spks[-num_meta_spks:]
+            spks = spks[:-num_meta_spks]
+            self.meta_spks = meta_spks
+
+            self.cls2cls = {}
+
+            for i, cls in enumerate(spks):
+                self.cls2cls[cls] = i
+
+            new_dataset = []
+            for cls, dom_cls, upath in dataset:
+                if cls not in meta_spks:
+                    new_dataset.append((self.cls2cls[cls], dom_cls, upath))
+
+            dataset = new_dataset
+
         if verbose > 0:
             print('==> There are {} speakers in Dataset.'.format(len(spks)))
             print('    There are {} egs in Dataset'.format(len(dataset)))

@@ -156,7 +156,7 @@ if [ $stage -le 1 ]; then
   chn=16
         # --milestones 15,25,35,45 \
 
-  for loss in angleproto ; do
+  for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
     if [ "$loss" == "arcdist" ];then
@@ -173,7 +173,7 @@ if [ $stage -le 1 ]; then
       chn_str=chn32_
     fi
     channels=512,512,512,512,1500
-
+    e2e_loss=angleproto
 #    ${loss_str}
     python TrainAndTest/misc/train_egs_reweight.py \
       --model ${model} \
@@ -199,7 +199,7 @@ if [ $stage -le 1 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}_reweight/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}_reweight/${e2e_loss}${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var \
       --resume Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_80.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
@@ -227,6 +227,7 @@ if [ $stage -le 1 ]; then
       --all-iteraion 0 \
       --remove-vad \
       --loss-type ${loss} \
+      --e2e-loss-type ${e2e_loss} \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
   done
