@@ -72,7 +72,7 @@ embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
 #classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
 #  feat_dim: !ref <embedding_size>
 #  num_classes: 797
-classifier: None
+classifier:
 
 model: TDNN_v5
 kernel_size:
