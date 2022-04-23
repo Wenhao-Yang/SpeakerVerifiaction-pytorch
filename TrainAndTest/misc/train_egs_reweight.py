@@ -393,7 +393,7 @@ def valid_class(valid_loader, model, ce, epoch):
     total_loss = 0.
     other_loss = 0.
     ce_criterion, xe_criterion = ce
-    softmax = nn.Softmax(dim=1)
+    output_softmax = nn.Softmax(dim=1)
 
     correct = 0.
     total_datasize = 0.
@@ -414,6 +414,9 @@ def valid_class(valid_loader, model, ce, epoch):
             if xe_criterion != None:
                 xe_criterion.ce.reduction = 'mean'
                 loss = xe_criterion(classfier, label)
+
+                predicted_one_labels = torch.max(output_softmax(classfier), dim=1)[1]
+                prec = float((predicted_one_labels.cpu() == label.cpu()).sum().item()) / len(feats) * 100
             else:
                 feats = feats.reshape(int(data_shape[0] / 2), 2, -1)
 
