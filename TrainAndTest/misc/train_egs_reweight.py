@@ -402,7 +402,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
-            if xe_criterion != None:
+            if xe_criterion == None:
                 data = data.transpose(0, 1)
 
             data = data.cuda()
@@ -770,7 +770,7 @@ def main():
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler)
+            # train(train_loader, meta_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (
