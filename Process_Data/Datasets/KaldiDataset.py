@@ -15,6 +15,7 @@ import pdb
 import random
 
 import kaldi_io
+import kaldiio
 import numpy as np
 import torch
 import torch.utils.data as data
@@ -686,6 +687,7 @@ class ScriptVerifyDataset(data.Dataset):
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
+                 vad_select=False,
                  segment_len=c.N_SAMPLES, verbose=1):
         self.return_uid = return_uid
         self.domain = domain
@@ -697,18 +699,39 @@ class ScriptTrainDataset(data.Dataset):
         utt2spk = dir + '/utt2spk'
         utt2num_frames = dir + '/utt2num_frames'
         utt2dom = dir + '/utt2dom'
+        vad_scp = dir + '/vad.scp'
 
         assert os.path.exists(feat_scp), feat_scp
         assert os.path.exists(spk2utt), spk2utt
 
         invalid_uid = []
         base_utts = []
+
+        uid2vad = {}
+        if vad_select:
+            assert os.path.exists(vad_scp), vad_scp
+            # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+            with open(vad_scp, 'r') as f:
+                for line in f.readlines():
+                    uid_vad = line.split()
+                    uid, vad_offset = uid_vad
+
+                    if uid in invalid_uid:
+                        continue
+
+                    uid2vad[uid] = vad_offset
+
         total_frames = 0
         if os.path.exists(utt2num_frames):
             with open(utt2num_frames, 'r') as f:
                 for l in f.readlines():
                     uid, num_frames = l.split()
-                    num_frames = int(num_frames)
+
+                    if uid in uid2vad:
+                        num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
+                    else:
+                        num_frames = int(num_frames)
+
                     total_frames += num_frames
                     this_numofseg = int(np.ceil(float(num_frames) / segment_len))
 
@@ -829,6 +852,7 @@ class ScriptTrainDataset(data.Dataset):
         self.utt2spk_dict = utt2spk_dict
         self.dataset = dataset
         self.uid2feat = uid2feat
+        self.uid2vad = uid2vad
         self.spk_to_idx = spk_to_idx
         self.idx_to_spk = idx_to_spk
         self.num_spks = len(speakers)
@@ -879,7 +903,14 @@ class ScriptTrainDataset(data.Dataset):
             while True:
                 (uid, start, end) = self.base_utts[sid]
                 if uid not in self.valid_utt2spk_dict:
-                    y = self.loader(self.uid2feat[uid])[start:end]
+                    y = self.loader(self.uid2feat[uid])
+                    if uid in self.uid2vad:
+                        voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                        y = y[voice_idx]
+                        y = y[start:end]
+                    else:
+                        y = y[start:end]
+
                     sid = self.utt2spk_dict[uid]
                     sid = self.spk_to_idx[sid]
                     break
@@ -898,6 +929,10 @@ class ScriptTrainDataset(data.Dataset):
             uid = utts[rand_utt_idx]
 
             feature = self.loader(self.uid2feat[uid])
+            if uid in self.uid2vad:
+                voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                feature = feature[voice_idx]
+
             y = np.concatenate((y, feature), axis=0)
 
             while len(y) < self.segment_len:
@@ -907,6 +942,10 @@ class ScriptTrainDataset(data.Dataset):
                 uid = utts[rand_utt_idx]
 
                 feature = self.loader(self.uid2feat[uid])
+                if uid in self.uid2vad:
+                    voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                    feature = feature[voice_idx]
+
                 y = np.concatenate((y, feature), axis=0)
 
                 # transform features if required
