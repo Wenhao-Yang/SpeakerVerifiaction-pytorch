@@ -110,7 +110,7 @@ if [ $stage -le 2 ]; then
   elif [ "$feat" = "klfb" ]; then
     feat_type=klfb
   fi
-  nj=1
+  nj=12
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs with kaldi fbank for ${dataset}\033[0m\n"
   for s in fb40_tmp; do

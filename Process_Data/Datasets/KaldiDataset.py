@@ -727,8 +727,7 @@ class ScriptTrainDataset(data.Dataset):
                     uid, num_frames = l.split()
                     if uid in uid2vad:
                         num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
-                    else:
-                        num_frames = int(num_frames)
+                    num_frames = int(num_frames)
 
                     if num_frames >= min_frames:
                         total_frames += num_frames
@@ -909,9 +908,9 @@ class ScriptTrainDataset(data.Dataset):
                     y = self.loader(self.uid2feat[uid])
                     if uid in self.uid2vad:
                         voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
-                        print(voice_idx)
+                        # print(voice_idx)
                         y = y[voice_idx]
-                        print(y)
+                        # print(y)
 
                     y = y[start:end]
                     sid = self.utt2spk_dict[uid]
