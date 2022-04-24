@@ -909,6 +909,7 @@ class ScriptTrainDataset(data.Dataset):
                     y = self.loader(self.uid2feat[uid])
                     if uid in self.uid2vad:
                         voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                        print(voice_idx)
                         y = y[voice_idx]
 
                     y = y[start:end]
