@@ -110,13 +110,14 @@ if [ $stage -le 2 ]; then
   elif [ "$feat" = "klfb" ]; then
     feat_type=klfb
   fi
+  nj=1
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs with kaldi fbank for ${dataset}\033[0m\n"
   for s in fb40_tmp; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 12 \
+      --nj ${nj} \
       --feat-type ${feat_type} \
       --train \
       --input-per-spks 1024 \
@@ -131,7 +132,7 @@ if [ $stage -le 2 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 12 \
+      --nj ${nj} \
       --feat-type ${feat_type} \
       --num-frames 600 \
       --input-per-spks 1024 \

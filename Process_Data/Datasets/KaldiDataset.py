@@ -904,6 +904,7 @@ class ScriptTrainDataset(data.Dataset):
         if sid < len(self.base_utts):
             while True:
                 (uid, start, end) = self.base_utts[sid]
+                pdb.set_trace()
                 if uid not in self.valid_utt2spk_dict:
                     y = self.loader(self.uid2feat[uid])
                     if uid in self.uid2vad:
