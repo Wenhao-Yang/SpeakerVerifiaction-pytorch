@@ -62,6 +62,7 @@ parser.add_argument('--feat-type', type=str, default='fbank',
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
 
+parser.add_argument('--vad-select', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--input-per-spks', type=int, default=0, metavar='IPFT',
@@ -239,6 +240,7 @@ elif args.feat_format in ['kaldi', 'klfb']:
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                    transform=transform, num_valid=args.num_valid, domain=args.domain,
+                                   vad_select=args.vad_select,
                                    segment_len=args.num_frames)
     # train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
     #                                transform=transform, num_valid=args.num_valid, domain=args.domain)
