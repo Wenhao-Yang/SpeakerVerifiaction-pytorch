@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=20
+stage=2
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
@@ -99,7 +99,8 @@ fi
 
 #stage=200.0
 if [ $stage -le 2 ]; then
-  dataset=vox1
+#  dataset=vox1
+  dataset=cnceleb
   feat=klfb
 
   if [ "$feat" = "pyfb" ]; then
@@ -111,7 +112,7 @@ if [ $stage -le 2 ]; then
   fi
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs with kaldi fbank for ${dataset}\033[0m\n"
-  for s in fb40; do
+  for s in fb40_tmp; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
@@ -124,6 +125,7 @@ if [ $stage -le 2 ]; then
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
+      --vad-select \
       --out-set dev_${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
@@ -137,6 +139,7 @@ if [ $stage -le 2 ]; then
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
+      --vad-select \
       --out-set valid_${s}
   done
   exit

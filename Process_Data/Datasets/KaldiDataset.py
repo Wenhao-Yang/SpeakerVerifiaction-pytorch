@@ -718,10 +718,6 @@ class ScriptTrainDataset(data.Dataset):
                 for line in f.readlines():
                     uid_vad = line.split()
                     uid, vad_offset = uid_vad
-
-                    if uid in invalid_uid:
-                        continue
-
                     uid2vad[uid] = vad_offset
 
         total_frames = 0
