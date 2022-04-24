@@ -911,6 +911,7 @@ class ScriptTrainDataset(data.Dataset):
                         voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                         print(voice_idx)
                         y = y[voice_idx]
+                        print(y)
 
                     y = y[start:end]
                     sid = self.utt2spk_dict[uid]
