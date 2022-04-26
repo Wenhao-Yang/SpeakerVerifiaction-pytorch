@@ -2531,6 +2531,9 @@ if [ $stage -le 301 ]; then
      --kernel-size ${kernel} \
      --downsample ${downsample} \
      --channels 32,64,128,256 \
+     --score-norm as-norm \
+     --n-train-snts 100000 \
+     --cohort-size 5000 \
      --vad-select \
      --fast none1 \
      --stride 2,1 \
@@ -2570,6 +2573,7 @@ if [ $stage -le 301 ]; then
 # ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml
 # |   cnceleb-test2   |   2.1231    |   0.2031    |   0.0924    |    0.1497    | 20220413 22:37:30 |
 # |   cnceleb-test    |   12.7860   |   0.1296    |   0.6069    |    0.7224    | 20220222 01:49:12 |
+# |   cnceleb-test    |   12.7521   |   0.1296    |   0.6118    |    0.7273    | 20220426 15:48:18 | vad select
 
 
 # for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
