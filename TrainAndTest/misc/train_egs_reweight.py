@@ -147,7 +147,7 @@ else:
 
 meta_dir = CrossMetaEgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader,
                                spks=train_dir.meta_spks, enroll_utt=args.enroll_utts,
-                               transform=transform, batch_size=int(args.batch_size / 2), random_chunk=args.random_chunk)
+                               transform=transform, batch_size=int(args.batch_size / 4), random_chunk=args.random_chunk)
 
 train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         transform=transform_V,

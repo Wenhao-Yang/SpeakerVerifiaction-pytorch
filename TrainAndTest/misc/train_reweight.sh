@@ -146,10 +146,11 @@ if [ $stage -le 1 ]; then
   mask_layer=baseline
   weight=vox2_rcf
   scale=0.2
-  subset=
+  subset=12
   stat_type=maxmargin
   loss_ratio=5
   chn=16
+  train_subset=12
         # --milestones 15,25,35,45 \
   e2e_loss=angleproto
 
@@ -173,10 +174,10 @@ if [ $stage -le 1 ]; then
 #    ${loss_str}
     python TrainAndTest/misc/train_egs_reweight.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${train_subset}_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${train_subset}_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
       --random-chunk 200 400 \
@@ -193,8 +194,7 @@ if [ $stage -le 1 ]; then
       --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}_reweight/${e2e_loss}${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var \
-      --resume Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}_reweight/${e2e_loss}${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wde4_var \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels ${channels} \
@@ -213,7 +213,7 @@ if [ $stage -le 1 ]; then
       --m 0.2 \
       --s 30 \
       --num-center 3 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0 \
       --extract \
@@ -225,6 +225,8 @@ if [ $stage -le 1 ]; then
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
   done
+#        --resume Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wde4_var/checkpoint_60.pth \
+
   # --lncl
   exit
 fi
