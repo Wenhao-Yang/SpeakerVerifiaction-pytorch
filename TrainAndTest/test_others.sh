@@ -2490,7 +2490,7 @@ if [ $stage -le 301 ]; then
   loss=arcsoft
 
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=512
   block_type=basic
@@ -2506,10 +2506,10 @@ if [ $stage -le 301 ]; then
 
   train_set=cnceleb
   test_set=cnceleb
-  train_subset=
+  train_subset=12
 #  subset=dev
   subset=test
-  epoch=50
+  epoch=60
 
 
 #       --trials subtrials/trials_${s} \
@@ -2530,7 +2530,7 @@ if [ $stage -le 301 ]; then
      --input-dim ${input_dim} \
      --kernel-size ${kernel} \
      --downsample ${downsample} \
-     --channels 16,32,64,128 \
+     --channels 32,64,128,256 \
      --vad-select \
      --fast none1 \
      --stride 2,1 \
@@ -2548,27 +2548,29 @@ if [ $stage -le 301 ]; then
      --input-length fix \
      --remove-vad \
      --frame-shift 300 \
-     --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${subset}_epoch${epoch}_fix_vad \
-     --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
-     --model-yaml Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.03.25.yaml \
+     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${subset}_epoch${epoch}_fix_vad \
+     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
+     --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
      --gpu-id 0 \
      --loss-type ${loss} \
      --verbose 2 \
      --cos-sim
  done
 
- # ThinResNet 18 dev 1 both mask 5,5
-
+# ThinResNet 18 dev 1 both mask 5,5
+# ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.03.25.yaml
 # +-------------------+-------------+-------------+-------------+--------------+-------------------+
 # |     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 # +-------------------+-------------+-------------+-------------+--------------+-------------------+
-# |   cnceleb-test2   |   15.1695   |   0.1361    |   0.6795    |    0.8206    | 20220413 22:01:21 | 18 trained by dev1
+# |   cnceleb-test2   |   15.1695   |   0.1361    |   0.6795    |    0.8206    | 20220413 22:01:21 |
 # |   cnceleb-test    |   13.5036   |   0.1474    |   0.6502    |    0.7434    | 20220426 15:34:33 | vad select
 # |   cnceleb-test    |   13.5657   |   0.1475    |   0.6518    |    0.7377    | 20220325 16:26:40 |
 
- # ThinResNet 34 dev 1 2
+# ThinResNet 34 dev 1 2
+# ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml
+# |   cnceleb-test2   |   2.1231    |   0.2031    |   0.0924    |    0.1497    | 20220413 22:37:30 |
+# |   cnceleb-test    |   12.7860   |   0.1296    |   0.6069    |    0.7224    | 20220222 01:49:12 |
 
-# |   cnceleb-test2   |   2.1231    |   0.2031    |   0.0924    |    0.1497    | 20220413 22:37:30 | 34 trained by dev1 & 2
 
 # for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
 #   python -W ignore TrainAndTest/test_egs.py \
