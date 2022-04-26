@@ -300,7 +300,7 @@ if not args.valid:
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
 
-if os.path.isdir(args.train_extract_dir):
+if args.score_norm != '':
     train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, filer_loader=file_loader,
                                             verbose=args.verbose, trials_file='')
 
