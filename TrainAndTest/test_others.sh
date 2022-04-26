@@ -2556,6 +2556,7 @@ if [ $stage -le 301 ]; then
      --resume Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
      --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
      --gpu-id 0 \
+     --extract \
      --loss-type ${loss} \
      --verbose 2 \
      --cos-sim
