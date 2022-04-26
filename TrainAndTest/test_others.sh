@@ -2490,7 +2490,7 @@ if [ $stage -le 301 ]; then
   loss=arcsoft
 
   model=ThinResNet
-  resnet_size=34
+  resnet_size=18
   encoder_type=SAP2
   embedding_size=512
   block_type=basic
@@ -2506,10 +2506,10 @@ if [ $stage -le 301 ]; then
 
   train_set=cnceleb
   test_set=cnceleb
-  train_subset=12
+  train_subset=
 #  subset=dev
-  subset=test2
-  epoch=60
+  subset=test
+  epoch=50
 
 
 #       --trials subtrials/trials_${s} \
@@ -2530,7 +2530,8 @@ if [ $stage -le 301 ]; then
      --input-dim ${input_dim} \
      --kernel-size ${kernel} \
      --downsample ${downsample} \
-     --channels 32,64,128,256 \
+     --channels 16,32,64,128 \
+     --vad-select \
      --fast none1 \
      --stride 2,1 \
      --time-dim 1 \
@@ -2547,9 +2548,9 @@ if [ $stage -le 301 ]; then
      --input-length fix \
      --remove-vad \
      --frame-shift 300 \
-     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${subset}_epoch${epoch}_fix \
-     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
-     --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
+     --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${subset}_epoch${epoch}_fix_vad \
+     --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
+     --model-yaml Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_both/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.03.25.yaml \
      --gpu-id 3 \
      --loss-type ${loss} \
      --verbose 2 \

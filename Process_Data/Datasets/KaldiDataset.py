@@ -526,10 +526,13 @@ class KaldiTupleDataset(data.Dataset):
 
 
 class KaldiExtractDataset(data.Dataset):
-    def __init__(self, dir, transform, filer_loader, trials_file='trials', extract_trials=True, verbose=0):
+    def __init__(self, dir, transform, filer_loader, trials_file='trials',
+                 extract_trials=True, vad_select=False,
+                 verbose=0):
 
         feat_scp = dir + '/feats.scp'
         trials = dir + '/%s' % trials_file
+        vad_scp = dir + '/vad.scp'
 
         if os.path.exists(trials) and extract_trials:
             assert os.path.exists(feat_scp), feat_scp
@@ -567,6 +570,16 @@ class KaldiExtractDataset(data.Dataset):
                     uid = utt_path[0]
                     uid2feat[uid] = utt_path[-1]
 
+        uid2vad = {}
+        if vad_select:
+            assert os.path.exists(vad_scp), vad_scp
+            # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+            with open(vad_scp, 'r') as f:
+                for line in f.readlines():
+                    uid_vad = line.split()
+                    uid, vad_offset = uid_vad
+                    uid2vad[uid] = vad_offset
+
         # pdb.set_trace()
         utts = list(uid2feat.keys())
         utts.sort()
@@ -575,6 +588,7 @@ class KaldiExtractDataset(data.Dataset):
             print('==> There are {} utterances in Verifcation set to extract vectors.'.format(len(utts)))
 
         self.uid2feat = uid2feat
+        self.uid2vad = uid2vad
         self.transform = transform
         self.uids = utts
         self.file_loader = filer_loader
@@ -582,6 +596,11 @@ class KaldiExtractDataset(data.Dataset):
     def __getitem__(self, index):
         uid = self.uids[index]
         y = self.file_loader(self.uid2feat[uid])
+
+        if uid in self.uid2vad:
+            voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+            y = y[voice_idx]
+
         feature = self.transform(y)
 
         return feature, uid

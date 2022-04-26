@@ -76,6 +76,7 @@ parser.add_argument('--score-suffix', type=str, default='', help='path to voxcel
 
 parser.add_argument('--test-input', type=str, default='fix', help='path to voxceleb1 test dataset')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
+parser.add_argument('--vad-select', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--xvector', action='store_true', default=False, help='need to make mfb file')
 
 parser.add_argument('--extract', action='store_false', default=True, help='need to make mfb file')
@@ -304,6 +305,7 @@ if os.path.isdir(args.train_extract_dir):
                                             verbose=args.verbose, trials_file='')
 
 verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
+                                  vad_select=args.vad_select,
                                   verbose=args.verbose)
 
 if args.valid:
