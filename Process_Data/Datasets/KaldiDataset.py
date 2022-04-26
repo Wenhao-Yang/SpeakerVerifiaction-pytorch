@@ -572,6 +572,8 @@ class KaldiExtractDataset(data.Dataset):
 
         uid2vad = {}
         if vad_select:
+            if verbose > 0:
+                print("    Select voiced frames to extracting xvectors!")
             assert os.path.exists(vad_scp), vad_scp
             # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
             with open(vad_scp, 'r') as f:
