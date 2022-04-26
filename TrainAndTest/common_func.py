@@ -331,8 +331,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         if torch.distributed.get_rank() == 0:
             # pdb.set_trace()
             writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
-            # for uid in uids:
-            #     writer(str(uid), uid2vectors[uid])
+
             uid2vectors = np.concatenate(all_uid2vectors)
             # print('uid2vectors:', len(uid2vectors))
             for uid, uid_vec in uid2vectors:
@@ -344,28 +343,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         for uid, uid_vec in uid2vectors:
             writer(str(uid), uid_vec)
 
-    # torch.distributed.monitored_barrier(wait_all_ranks=True)
-    # if torch.distributed.get_rank() != 1:
-    #     torch.distributed.monitored_barrier()
-
-    # if torch.distributed.get_rank() == 0:
-    #     torch.distributed.monitored_barrier(wait_all_ranks=True)
-    # for set_id in range(int(np.ceil(len(uids) / ark_num))):
-    #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
-    #     with open(ark_file, 'wb') as ark:
-    #         ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
-    #         for i in ranges:
-    #             key = uids[i]
-    #             vec = uid2vectors[key]
-    #             len_vec = len(vec.tobytes())
-    #             try:
-    #                 kaldi_io.write_vec_flt(ark, vec, key=key)
-    #             except Exception as e:
-    #                 pdb.set_trace()
-    #             # print(ark.tell())
-    #             scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
-    # scp.close()
-    # print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
 def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
