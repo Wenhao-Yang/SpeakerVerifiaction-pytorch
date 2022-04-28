@@ -1473,6 +1473,9 @@ class Wav2Down(nn.Module):
         elif len(x.shape) == 4:
             x = x.squeeze(1)
 
+        if x.shape[2] == self.input_dim:
+            x = x.transpose(1, 2)
+
         for conv in self.conv_layers:
             x = conv(x)
 
@@ -1484,9 +1487,3 @@ class Wav2Down(nn.Module):
         tmp_gate = self.tmp_gate(x.transpose(1, 2)).transpose(1, 2)
         x = x * tmp_gate
         return x.transpose(1, 2)
-
-    # 20210604
-    # Epoch 40: Train Accuracy: 99.999839%, Avg loss: 0.036217.
-    #           Valid Accuracy: 99.502488%, Avg loss: 0.078200.
-    #           Train EER: 2.4206%, Threshold: 0.2692, mindcf-0.01: 0.3075, mindcf-0.001: 0.5515.
-    #           Test  ERR: 7.2534%, Threshold: 0.2015, mindcf-0.01: 0.6058, mindcf-0.001: 0.7008.
