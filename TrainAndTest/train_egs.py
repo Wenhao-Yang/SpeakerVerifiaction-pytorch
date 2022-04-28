@@ -40,7 +40,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     VarianceLoss, DistributeLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
+    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, DAMSoftmaxLoss
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
@@ -193,7 +193,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             other_loss += loss_xent
             loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
+        elif args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
             loss = xe_criterion(classfier, label)
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
@@ -210,7 +210,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
         if args.lncl:
-            if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
+            if args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
                 predict_loss = xe_criterion(classfier, predicted_one_labels)
             else:
                 predict_loss = ce_criterion(classfier, predicted_one_labels)
@@ -335,7 +335,8 @@ def valid_class(valid_loader, model, ce, epoch):
                 other_loss += float(loss_xent.item())
 
                 loss = loss_xent + loss_cent
-            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
+            elif args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam',
+                                    'subdam']:
                 loss = xe_criterion(classfier, label)
             elif args.loss_type == 'arcdist':
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
@@ -511,6 +512,9 @@ def main():
     elif args.loss_type in ['amsoft', 'subam']:
         ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
+    elif args.loss_type in ['damsoft', 'subdam']:
+        ce_criterion = None
+        xe_criterion = DAMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
         ce_criterion = None
         if args.class_weight == 'cnc1':
