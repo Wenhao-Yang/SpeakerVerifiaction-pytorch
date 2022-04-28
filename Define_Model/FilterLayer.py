@@ -1444,6 +1444,7 @@ class Wav2Down(nn.Module):
     def __init__(self, input_dim=1, out_dim=512, log_compression=False):
         super(Wav2Down, self).__init__()
 
+        self.input_dim = input_dim
         in_d = input_dim
         # conv_layers = [(40, 10, 5), (200, 5, 4), (300, 3, 2), (512, 3, 2), (out_dim, 3, 2)]
         conv_layers = [(40, 10, 4), (200, 5, 2), (300, 3, 2), (512, 3, 2), (out_dim, 3, 1)]
