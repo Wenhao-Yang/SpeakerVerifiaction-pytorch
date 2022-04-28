@@ -32,7 +32,7 @@ if [ $stage -le 0 ]; then
   lr_ratio=0.1
 #  --channels 512,512,512,512,1500 \
 
-  for filter in wav2down; do
+  for filter in sinc2down; do
     echo -e "\n\033[1;4;31m Stage${stage} :Training ${model} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
