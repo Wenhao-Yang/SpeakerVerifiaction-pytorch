@@ -250,6 +250,40 @@ class AMSoftmaxLoss(nn.Module):
         return "AMSoftmaxLoss(margin=%f, s=%d)" % (self.margin, self.s)
 
 
+class DAMSoftmaxLoss(nn.Module):
+    def __init__(self, margin=0.3, s=15, lamda=2):
+        super(DAMSoftmaxLoss, self).__init__()
+        self.s = s
+        self.margin = margin
+        self.ce = nn.CrossEntropyLoss()
+        self.lamda = lamda
+
+    def forward(self, costh, label):
+        lb_view = label.view(-1, 1)
+
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
+
+        delt_costh = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+
+        if costh.is_cuda:
+            delt_costh = Variable(delt_costh.cuda())
+
+        costh_m_target = costh.gather(1, lb_view)
+        costh_m_target = torch.exp(1 - costh_m_target) / self.lamda
+
+        delt_costh = delt_costh * costh_m_target
+        costh_m = costh - delt_costh
+        costh_m_s = self.s * costh_m
+
+        loss = self.ce(costh_m_s, label)
+
+        return loss
+
+    def __repr__(self):
+        return "DAMSoftmaxLoss(margin=%f, s=%d)" % (self.margin, self.s)
+
+
 class ArcSoftmaxLoss(nn.Module):
 
     def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0, smooth_ratio=0, class_weight=None):
