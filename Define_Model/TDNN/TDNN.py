@@ -23,7 +23,7 @@ from torch.autograd import Variable
 
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer, AttentionweightLayer, \
     TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0, DropweightLayer, DropweightLayer_v2, Sinc2Down, \
-    Sinc2Conv, Wav2Conv
+    Sinc2Conv, Wav2Conv, Wav2Down
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
     SelfAttentionPooling, MaxStatisticPooling
@@ -963,6 +963,8 @@ class TDNN_v5(nn.Module):
             self.filter_layer = Wav2Conv(out_dim=feat_dim)
         elif self.filter == 'sinc2down':
             self.filter_layer = Sinc2Down(input_dim, out_dim=feat_dim, fs=sr)
+        elif self.filter == 'wav2down':
+            self.filter_layer = Wav2Down(input_dim=input_dim, out_dim=feat_dim)
         else:
             self.filter_layer = None
 
