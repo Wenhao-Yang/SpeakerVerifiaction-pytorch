@@ -22,15 +22,15 @@ if [ $stage -le 0 ]; then
   loss=soft
   avgsize=4
   alpha=0
-  embedding_size=512
+  embedding_size=128
   block_type=None
-  filter=fBPLayer
   feat_dim=40
   loss=soft
   scheduler=rop
   optimizer=sgd
 
   lr_ratio=0.1
+#  --channels 512,512,512,512,1500 \
 
   for filter in sinc2down; do
     echo -e "\n\033[1;4;31m Stage${stage} :Training ${model} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -58,11 +58,11 @@ if [ $stage -le 0 ]; then
       --time-dim 1 \
       --patience 3 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_${optimizer}_${scheduler}/${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_adalr${lr_ratio} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_${optimizer}_${scheduler}/${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_adalr${lr_ratio}/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_${optimizer}_${scheduler}/chn256_${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_adalr${lr_ratio} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_${optimizer}_${scheduler}/chn256_${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_adalr${lr_ratio}/checkpoint_9.pth \
       --stride 1 \
       --block-type ${block_type} \
-      --channels 512,512,512,512,1500 \
+      --channels 256,256,256,256,750 \
       --encoder-type ${encoder_type} \
       --embedding-size ${embedding_size} \
       --avg-size ${avgsize} \
