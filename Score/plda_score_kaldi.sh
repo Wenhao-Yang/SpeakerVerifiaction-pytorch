@@ -18,6 +18,7 @@ data_dir=$2
 train_feat_dir=$3
 test_feat_dir=$4
 trials=$5
+adaptation=false
 # out_dir=$5
 # model_path=SuResCNN10
 logdir=$test_feat_dir/log
@@ -69,6 +70,18 @@ if ! [ -s $plda_model ];then
     ivector-compute-plda ark:$train_feat_dir/spk2utt \
     "ark:ivector-subtract-global-mean scp:$train_feat_dir/xvectors.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:-  ark:- |" \
     $plda_model || exit 1;
+fi
+
+# Adaptation plda using out-of-domain dataset
+if $adaptation; then
+  echo "Adapting PLDA ..."
+  ivector-adapt-plda --within-covar-scale=0.75 --between-covar-scale=0.25 \
+    $plda_model \
+    "ark:ivector-subtract-global-mean scp:$test_feat_dir/xvectors.scp ark:- | transform-vec $transform_mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+    ${plda_model}_adapt || exit 1
+
+  mv ${plda_model} ${plda_model}_noadapt
+  mv ${plda_model}_adapt ${plda_model}
 fi
 
 if ! [ -s $test_score ];then
