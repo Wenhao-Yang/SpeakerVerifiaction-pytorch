@@ -274,7 +274,7 @@ class DAMSoftmaxLoss(nn.Module):
         if costh.is_cuda:
             delt_costh = Variable(delt_costh.cuda())
 
-        costh_m_target = costh.gather(1, lb_view)
+        costh_m_target = costh.gather(1, label.reshape(-1, 1))
         costh_m_target = torch.exp(1 - costh_m_target) / self.lamda
 
         delt_costh = delt_costh * costh_m_target
