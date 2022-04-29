@@ -765,7 +765,7 @@ if [ $stage -le 101 ]; then
   subset=
   stat_type=maxmargin
   loss_ratio=1
-  margin=0.2
+  margin=0.1
   m=0.2
   class_weight=
   max_cls_weight=0.8
@@ -773,11 +773,14 @@ if [ $stage -le 101 ]; then
         # --milestones 15,25,35,45 \
 #        --class-weight ${class_weight} \
 
-  for loss in arcsoft ; do
+  for loss in damsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
     if [ "$loss" == "arcdist" ]; then
       loss_str=_${stat_type}lr${loss_ratio}m${m}
+
+    elif [ "$loss" == "damsoft" ]; then
+      loss_str=_margin${margin}
     else
       loss_str=
     fi
