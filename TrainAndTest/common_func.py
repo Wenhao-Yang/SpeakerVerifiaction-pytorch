@@ -119,7 +119,7 @@ def create_model(name, **kwargs):
 
     model = __factory[name](**kwargs)
 
-    if kwargs['loss_type'] in ['asoft', 'amsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2']:
+    if kwargs['loss_type'] in ['asoft', 'amsoft', 'damsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                 normalize=kwargs['normalize'],
                                                 num_classes=kwargs['num_classes'])
