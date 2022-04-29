@@ -265,6 +265,7 @@ class DAMSoftmaxLoss(nn.Module):
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
+        pdb.set_trace()
 
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
