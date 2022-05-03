@@ -1337,18 +1337,18 @@ class Sinc2Down(nn.Module):
         # conv_layers = [(80, 251, 1), (60, 5, 1), (out_dim, 5, 1)]
         self.conv_layers = nn.ModuleList()
         self.conv_layer1 = nn.Sequential(
-            nn.Conv1d(in_channels=input_dim, out_channels=80, kernel_size=129, stride=4),
+            nn.Conv2d(in_channels=input_dim, out_channels=80, kernel_size=(1, 31), stride=(1, 4)),
             # SincConv_fast(80, 251, self.fs, stride=6),
             # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
-            nn.InstanceNorm1d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
+            nn.InstanceNorm2d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
             nn.LeakyReLU(),
         )
 
         # self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
         self.conv_layer2 = nn.Sequential(
-            nn.Conv1d(in_channels=80, out_channels=60, kernel_size=5, stride=2),
+            nn.Conv2d(in_channels=80, out_channels=60, kernel_size=(2, 5), stride=(1, 2)),
             # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
-            nn.InstanceNorm1d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
+            nn.InstanceNorm2d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
             nn.LeakyReLU(),
         )
         #
@@ -1380,8 +1380,13 @@ class Sinc2Down(nn.Module):
         if x.shape[2] == self.input_dim:
             x = x.transpose(1, 2)
 
+        x_shape = x.shape
+        x = x.reshape(x_shape[0], 20, 2, -1)
+
         x = self.conv_layer1(x)
         x = self.conv_layer2(x)
+
+        x = x.squeeze(2)
         x = self.conv_layer3(x)
         x = self.conv_layer4(x)
 
