@@ -1342,6 +1342,7 @@ class Sinc2Down(nn.Module):
             # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
             nn.InstanceNorm2d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
             nn.LeakyReLU(),
+            nn.Dropout2d(0.1)
         )
 
         # self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
@@ -1350,6 +1351,7 @@ class Sinc2Down(nn.Module):
             # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
             nn.InstanceNorm2d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
             nn.LeakyReLU(),
+            nn.Dropout2d(0.1)
         )
         #
         # self.current_input = int((self.current_input - 5 + 1) / 3)

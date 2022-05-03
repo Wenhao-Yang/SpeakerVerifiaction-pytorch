@@ -58,8 +58,8 @@ if [ $stage -le 0 ]; then
       --time-dim 1 \
       --patience 3 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_${optimizer}_${scheduler}/chn256_${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_2d_adalr${lr_ratio} \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_${optimizer}_${scheduler}/chn256_${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_2d_adalr${lr_ratio}/checkpoint_9.pth \
+      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_${optimizer}_${scheduler}/chn256_${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_2ddp01_adalr${lr_ratio} \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_filter/${loss}_${optimizer}_${scheduler}/chn256_${input_norm}_${encoder_type}_${block_type}_dp${dropout_p}_alpha${alpha}_em${embedding_size}_wd5e4/${filter}${feat_dim}_2ddp01_adalr${lr_ratio}/checkpoint_9.pth \
       --stride 1 \
       --block-type ${block_type} \
       --channels 256,256,256,256,750 \
