@@ -1360,6 +1360,7 @@ class Sinc2Down(nn.Module):
             # nn.MaxPool1d(kernel_size=3),
             nn.InstanceNorm1d(60),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
             nn.LeakyReLU(),
+            nn.Dropout1d(0.1)
         )
         #
         self.conv_layer4 = nn.Sequential(
@@ -1367,6 +1368,7 @@ class Sinc2Down(nn.Module):
             # nn.AvgPool1d(kernel_size=3),  # nn.MaxPool1d(kernel_size=3),
             nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
             nn.LeakyReLU(),
+            nn.Dropout1d(0.1)
         )
 
         self.current_output = int((self.current_input - 5 + 1) / 3)
