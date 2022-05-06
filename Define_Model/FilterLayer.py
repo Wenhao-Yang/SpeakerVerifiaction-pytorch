@@ -1337,7 +1337,7 @@ class Sinc2Down(nn.Module):
         # conv_layers = [(80, 251, 1), (60, 5, 1), (out_dim, 5, 1)]
         self.conv_layers = nn.ModuleList()
         self.conv_layer1 = nn.Sequential(
-            nn.Conv2d(in_channels=int(input_dim / 2), out_channels=80, kernel_size=(1, 31), stride=(1, 4)),
+            nn.Conv2d(in_channels=int(input_dim / 2), out_channels=80, kernel_size=(1, 31), stride=(1, 4), bias=False),
             # SincConv_fast(80, 251, self.fs, stride=6),
             # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
             nn.InstanceNorm2d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
