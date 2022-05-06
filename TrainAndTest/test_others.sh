@@ -2612,8 +2612,8 @@ if [ $stage -le 301 ]; then
   embedding_size=256
   train_set=cnceleb
   test_set=cnceleb
-  dev_subset=dev12
-  test_subset=test
+  dev_subset=dev
+  test_subset=dev
 
   resnet_size=18
   encoder_type=SAP2
@@ -2632,9 +2632,10 @@ if [ $stage -le 301 ]; then
 #    --trials trials_${s} \
 #      --score-suffix ${s} \
 #      --extract \
+#--score-norm s-norm \
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
-  for trials in trials ; do
+  for trials in trials_500w ; do
 
 # --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch50_fix \
   #      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
@@ -2669,14 +2670,12 @@ if [ $stage -le 301 ]; then
        --s 30 \
        --input-length fix \
        --remove-vad \
-       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs12_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_maxmarginlr1m0.2_wde4_var/checkpoint_60.pth \
-       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs12_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_maxmarginlr1m0.2_wde4_var/${test_set}_${test_subset}_fix_norm \
+       --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
+       --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${test_subset}_fix \
        --frame-shift 300 \
        --num-frames 300 \
-       --score-norm s-norm \
        --gpu-id 1 \
        --verbose 2 \
-       --extract \
        --cos-sim
    done
 
