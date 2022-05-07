@@ -521,7 +521,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                          log_interval=args.log_interval,
                                                                          xvector_dir=this_xvector_dir,
                                                                          epoch=epoch,
-                                                                         return_dist=True)
+                                                                         return_dist=True,
+                                                                         verbose=2, )
 
     i = 0
     with open(os.path.join(args.train_test_dir, args.train_trials), 'r') as f1, \
