@@ -793,7 +793,7 @@ if [ $stage -le 101 ]; then
     python TrainAndTest/misc/train_egs_hard.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
-      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim} \
       --train-trials trials_250w \
       --shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
