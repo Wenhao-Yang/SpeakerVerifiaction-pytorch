@@ -719,7 +719,7 @@ if __name__ == '__main__':
                                        loader=file_loader, return_uid=return_uid)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
-                                                  batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
+                                                  batch_size=1 if not args.mean_vector else args.test_batch_size * 128,
                                                   shuffle=False, **kwargs)
 
         train_stats_pickle = os.path.join(test_xvector_dir,

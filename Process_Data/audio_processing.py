@@ -851,7 +851,19 @@ class PadCollate3d:
         else:
             xs = xs.contiguous()
 
-        ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
+        if isinstance(batch[0][1], torch.Tensor):
+            ys = torch.stack(list(map(lambda x: x[1], batch)), dim=0)
+
+            if frame_len < batch[0][1].shape[-2]:
+                start = np.random.randint(low=0, high=batch[0][1].shape[-2] - frame_len)
+                end = start + frame_len
+                ys = ys[:, :, start:end, :].contiguous()
+            else:
+                ys = ys.contiguous()
+
+        else:
+            ys = torch.LongTensor(list(map(lambda x: x[2], batch)))
+
         if isinstance(batch[0][2], torch.Tensor):
             zs = torch.stack(list(map(lambda x: x[2], batch)), dim=0)
         else:

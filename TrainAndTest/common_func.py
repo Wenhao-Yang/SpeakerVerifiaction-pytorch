@@ -345,7 +345,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
-def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
+def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False):
     # switch to evaluate mode
     labels, distances = [], []
     dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
@@ -399,6 +399,9 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
                                                       cos=True if dist_type == 'cos' else False,
                                                       re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
+
+    if return_dist:
+        eer, eer_threshold, mindcf_01, mindcf_001, distances
 
     return eer, eer_threshold, mindcf_01, mindcf_001
 
