@@ -345,14 +345,16 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
-def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False):
+def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False,
+                      verbose=0, ):
     # switch to evaluate mode
     labels, distances = [], []
     dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
 
     # pbar = tqdm(enumerate(test_loader))
     with torch.no_grad():
-        for batch_idx, (data_a, data_p, label) in enumerate(test_loader):
+        pbar = tqdm(enumerate(test_loader)) if verbose > 0 else enumerate(test_loader)
+        for batch_idx, (data_a, data_p, label) in pbar:
             data_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
             data_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
             # dists = dist_fn.forward(data_a, data_p).cpu().numpy()
