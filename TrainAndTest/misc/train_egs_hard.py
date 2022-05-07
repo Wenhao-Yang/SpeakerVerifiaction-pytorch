@@ -524,10 +524,16 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                          return_dist=True,
                                                                          verbose=2, )
 
+    print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
+          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
+                                                                     eer_threshold,
+                                                                     mindcf_01,
+                                                                     mindcf_001))
+
     i = 0
     with open(os.path.join(args.train_test_dir, args.train_trials), 'r') as f1, \
             open(os.path.join(this_xvector_dir, 'miss_trials'), 'w') as f2:
-        for l in f1.readlines():
+        for l in tqdm(f1.readlines()):
             enroll_uid, eval_uid, truth = l.split()
             s = float(dists[i])
 
@@ -537,12 +543,6 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                 f2.write(enroll_uid + ' ' + eval_uid + ' ' + truth)
 
             i += 1
-
-    print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
-          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
-                                                                     eer_threshold,
-                                                                     mindcf_01,
-                                                                     mindcf_001))
 
     writer.add_scalar('Train/EER', 100. * eer, epoch)
     writer.add_scalar('Train/Threshold', eer_threshold, epoch)
