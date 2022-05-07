@@ -2635,7 +2635,7 @@ if [ $stage -le 301 ]; then
 #--score-norm s-norm \
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
-  for trials in trials_500w ; do
+  for trials in trials_250w trials_250w2; do
 
 # --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch50_fix \
   #      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
@@ -2676,6 +2676,7 @@ if [ $stage -le 301 ]; then
        --num-frames 300 \
        --gpu-id 1 \
        --verbose 2 \
+       --extract \
        --cos-sim
    done
 
