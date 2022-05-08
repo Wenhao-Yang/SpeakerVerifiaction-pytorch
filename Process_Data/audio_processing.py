@@ -879,7 +879,7 @@ class PadCollate3d:
                     ws = torch.LongTensor(list(map(lambda x: x[i], batch)))
                 os.append(ws)
 
-            return xs, ys, zs, ws
+            return xs, ys, zs, os
 
         # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
         # pad_batch = list(map_batch)
