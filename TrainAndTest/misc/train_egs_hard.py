@@ -336,7 +336,7 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
         enroll_classfier, enroll_feats = model(enroll_data)
         eval_classfier, eval_feats = model(eval_data)
 
-        scores = l2_dist(enroll_classfier, eval_classfier)
+        scores = l2_dist(enroll_feats, eval_feats)
 
         target = scores[torch.where(label == 1)[0]]
         nontarget = scores[torch.where(label == 0)[0]]
