@@ -557,7 +557,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     i = 0
     with open(os.path.join(args.train_test_dir, args.train_trials), 'r') as f1, \
             open(os.path.join(this_xvector_dir, 'miss_trials'), 'w') as f2:
-        for l in tqdm(f1.readlines()):
+        for l in f1.readlines():  # tqdm(f1.readlines()):
             enroll_uid, eval_uid, truth = l.split()
             s = float(dists[i])
 
