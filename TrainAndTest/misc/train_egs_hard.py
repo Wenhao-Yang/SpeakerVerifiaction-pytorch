@@ -327,14 +327,18 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
             label = label.cuda()
-            enroll_data = enroll_data.cuda()
-            eval_data = eval_data.cuda()
 
-        enroll_data, eval_data = Variable(enroll_data), Variable(eval_data)
+            enroll_len = enroll_data.shape[0]
+            data = torch.cat([enroll_data, eval_data])
+            data = data.cuda()
+
+        data = Variable(data)
         label = Variable(label)
 
-        enroll_classfier, enroll_feats = model(enroll_data)
-        eval_classfier, eval_feats = model(eval_data)
+        classfier, feats = model(data)
+        enroll_feats = feats[:enroll_len]
+        eval_feats = feats[-enroll_len:]
+        # eval_classfier, eval_feats = model(eval_data)
 
         scores = l2_dist(enroll_feats, eval_feats)
 
@@ -346,12 +350,6 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
         # print('max logit is ', classfier_label.max())
-        if np.isnan(loss.item()):
-            pdb.set_trace()
-            raise ValueError('Loss value is NaN!')
-
-        # compute gradient and update weights
-        loss.backward()
 
         eer, eer_threshold, accuracy = evaluate_kaldi_eer(scores.detach().cpu().numpy(), label.cpu().numpy(),
                                                           cos=True if args.cos_sim else False,
@@ -364,6 +362,13 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
         total_datasize += len(enroll_data)
         total_loss += float(loss.item())
         writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(hard_loader) + batch_idx + 1))
+
+        if np.isnan(loss.item()):
+            pdb.set_trace()
+            raise ValueError('Loss value is NaN!')
+
+        # compute gradient and update weights
+        loss.backward()
 
         if args.grad_clip > 0:
             this_lr = args.lr
