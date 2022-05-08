@@ -403,7 +403,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
     if return_dist:
-        eer, eer_threshold, mindcf_01, mindcf_001, distances
+        return eer, eer_threshold, mindcf_01, mindcf_001, distances
 
     return eer, eer_threshold, mindcf_01, mindcf_001
 
