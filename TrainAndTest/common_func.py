@@ -346,7 +346,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     torch.cuda.empty_cache()
 
 def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False,
-                      verbose=0, ):
+                      verbose=0):
     # switch to evaluate mode
     labels, distances = [], []
     dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
