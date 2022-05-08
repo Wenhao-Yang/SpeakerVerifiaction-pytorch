@@ -324,7 +324,7 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
     # pdb.set_trace()
     for batch_idx, (enroll_data, eval_data, label, ws) in pbar:
         if args.cuda:
-            pdb.set_trace()
+            # pdb.set_trace()
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
             label = label.cuda()
