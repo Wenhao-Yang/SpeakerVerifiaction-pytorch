@@ -912,8 +912,8 @@ def main():
 
         if args.scheduler == 'rop':
             scheduler.step(valid_loss)
-        elif args.scheduler == 'cyclic':
-            continue
+        # elif args.scheduler == 'cyclic':
+        #     continue
         else:
             scheduler.step()
 
