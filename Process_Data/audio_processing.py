@@ -847,6 +847,7 @@ class PadCollate3d:
         if frame_len < batch[0][0].shape[-2]:
             start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len)
             end = start + frame_len
+            print(xs.shape)
             xs = xs[:, :, start:end, :].contiguous()
         else:
             xs = xs.contiguous()
