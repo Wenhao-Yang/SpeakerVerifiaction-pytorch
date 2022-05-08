@@ -123,6 +123,7 @@ elif args.test_input == 'fix':
 
 transform_H = transforms.Compose([
     ConcateInput(remove_vad=args.remove_vad, num_frames=args.chunk_size),
+    totensor()
 ])
 
 if args.log_scale:
