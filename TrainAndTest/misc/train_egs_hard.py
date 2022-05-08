@@ -347,7 +347,7 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
         # classfier_label = classfier
         # print('max logit is ', classfier_label.max())
 
-        eer, eer_threshold, accuracy = evaluate_kaldi_eer(scores.numpy(), label.numpy(),
+        eer, eer_threshold, accuracy = evaluate_kaldi_eer(scores.cpu().numpy(), label.cpu().numpy(),
                                                           cos=True if args.cos_sim else False,
                                                           re_thre=True)
 
