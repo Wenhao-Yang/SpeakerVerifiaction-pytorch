@@ -421,8 +421,8 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
             #     epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
             # if args.loss_type in ['arcdist']:
             #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
-            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                            100. * minibatch_acc)
+            epoch_str += ' Avg Loss: {:.4f} Batch EER: {:.4f}%'.format(total_loss / (batch_idx + 1),
+                                                                       100. * minibatch_acc)
             pbar.set_description(epoch_str)
 
     this_epoch_str = 'Hard Mining Epoch {:>2d}: \33[91mEER: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
