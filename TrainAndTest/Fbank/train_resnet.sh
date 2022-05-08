@@ -823,7 +823,7 @@ if [ $stage -le 101 ]; then
       --stride 2,1 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
-      --avg-size 0 \
+      --avg-size 5 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
