@@ -1726,6 +1726,7 @@ class PairTrainDataset(data.Dataset):
         dataset = []
         with open(miss_trials, 'r') as f:
             for l in f.readlines():
+                pdb.set_trace()
                 enroll_uid, eval_uid, truth = l.split()
                 if enroll_uid in uid_feat and eval_uid in uid2feat:
                     dataset.append((enroll_uid, eval_uid, truth))
