@@ -1598,7 +1598,7 @@ class my_data_prefetcher:
 class PairTrainDataset(data.Dataset):
     def __init__(self, dir, miss_trials, transform, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
-                 vad_select=False,
+                 vad_select=False, target_ratio=0.5,
                  segment_len=c.N_SAMPLES, verbose=1):
         self.return_uid = return_uid
         self.domain = domain
@@ -1724,12 +1724,26 @@ class PairTrainDataset(data.Dataset):
                 uid2feat[uid] = feat_offset
 
         dataset = []
+        target = []
+        nontarget = []
         with open(miss_trials, 'r') as f:
             for l in f.readlines():
                 # pdb.set_trace()
                 enroll_uid, eval_uid, truth = l.split()
                 if enroll_uid in uid2feat and eval_uid in uid2feat:
-                    dataset.append((enroll_uid, eval_uid, truth))
+                    # dataset.append((enroll_uid, eval_uid, truth))
+                    if truth == 'target':
+                        target.append((enroll_uid, eval_uid, truth))
+                    else:
+                        nontarget.append((enroll_uid, eval_uid, truth))
+
+        i = 0
+        for enroll_uid, eval_uid, truth in target:
+            dataset.append((enroll_uid, eval_uid, truth))
+            for j in range(int((1 - target_ratio) / target)):
+                i += j
+                i = i % len(nontarget)
+                dataset.append(nontarget[i])
 
         if verbose > 0:
             print('    There are {} pairs in Train Dataset.'.format(len(dataset)))

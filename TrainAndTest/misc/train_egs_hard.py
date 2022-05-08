@@ -37,7 +37,7 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss, DistributeLoss
+    VarianceLoss, DistributeLoss, pAUCLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, DAMSoftmaxLoss
@@ -665,7 +665,7 @@ def main():
         ce_criterion = None
         xe_criterion = DAMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
-        ce_criterion = None
+        ce_criterion = pAUCLoss()
         if args.class_weight == 'cnc1':
             class_weight = torch.tensor(C.CNC1_WEIGHT) * args.max_cls_weight + 1 - args.max_cls_weight
             if len(class_weight) != train_dir.num_spks:
