@@ -1771,13 +1771,15 @@ class PairTrainDataset(data.Dataset):
         # start_time = time.time()
 
         enroll_uid, eval_uid, truth = self.dataset[sid]
+        enroll_sid = self.utt2spk_dict[enroll_uid]
+        eval_sid = self.utt2spk_dict[eval_uid]
 
         enroll_feature = self.transform(self.loader(self.uid2feat[enroll_uid]))
         eval_feature = self.transform(self.loader(self.uid2feat[eval_uid]))
 
         label = 1 if truth in ['True', 'true', 'target'] else 0
 
-        return enroll_feature, eval_feature, label
+        return enroll_feature, eval_feature, label, self.spk_to_idx[enroll_sid], self.spk_to_idx[eval_sid]
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数

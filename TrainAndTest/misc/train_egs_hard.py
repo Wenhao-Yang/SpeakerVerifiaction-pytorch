@@ -322,7 +322,7 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
 
     # start_time = time.time()
     # pdb.set_trace()
-    for batch_idx, (enroll_data, eval_data, label) in pbar:
+    for batch_idx, (enroll_data, eval_data, label, ws) in pbar:
         if args.cuda:
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
@@ -332,8 +332,11 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
             data = torch.cat([enroll_data, eval_data])
             data = data.cuda()
 
+            spk_label = torch.cat(ws).cuda()
+
         data = Variable(data)
         label = Variable(label)
+        spk_label = Variable(spk_label)
 
         classfier, feats = model(data)
         enroll_feats = feats[:enroll_len]
@@ -346,6 +349,8 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
         nontarget = scores[torch.where(label == 0)[0]]
 
         loss = ce_criterion(target, nontarget)
+
+        loss += xe_criterion(classfier, spk_label)
 
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
