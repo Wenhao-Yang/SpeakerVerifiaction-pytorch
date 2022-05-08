@@ -352,7 +352,7 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
 
         loss = ce_criterion(target, nontarget)
 
-        loss += xe_criterion(classfier, spk_label)
+        loss += args.loss_ratio * xe_criterion(classfier, spk_label)
 
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
@@ -561,7 +561,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
             enroll_uid, eval_uid, truth = l.split()
             s = float(dists[i])
 
-            if (s >= eer_threshold and truth == 'True') or (s <= eer_threshold and truth == 'False'):
+            if (s >= eer_threshold * (1 - args.inter_ratio) and truth == 'True') or (
+                    s <= eer_threshold * (1 + args.inter_ratio) and truth == 'False'):
                 pass
             else:
                 f2.write(enroll_uid + ' ' + eval_uid + ' ' + truth + '\n')
@@ -870,50 +871,51 @@ def main():
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
+            # train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
-            if (epoch == 1 or epoch != (end - 2)) and (
-                    epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
-                model.eval()
-                check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
-                model_state_dict = model.module.state_dict() \
-                    if isinstance(model, DistributedDataParallel) else model.state_dict()
-                torch.save({'epoch': epoch,
-                            'state_dict': model_state_dict,
-                            'criterion': ce}, check_path)
+            # if (epoch == 1 or epoch != (end - 2)) and (
+            #         epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
+            #     model.eval()
+            check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
+            model_state_dict = model.module.state_dict() \
+                if isinstance(model, DistributedDataParallel) else model.state_dict()
+            torch.save({'epoch': epoch,
+                        'state_dict': model_state_dict,
+                        'criterion': ce}, check_path)
 
-                valid_test(train_extract_loader, model, epoch, xvector_dir)
-                test(model, epoch, writer, xvector_dir)
+            valid_test(train_extract_loader, model, epoch, xvector_dir)
+            test(model, epoch, writer, xvector_dir)
 
-                # hard mining
-                hard_dir = PairTrainDataset(dir=args.train_test_dir,
-                                            miss_trials="%s/train/epoch_%s/miss_trials" % (xvector_dir, epoch),
-                                            loader=file_loader, transform=transform_H, segment_len=args.chunk_size)
+            # hard mining
+            hard_dir = PairTrainDataset(dir=args.train_test_dir,
+                                        miss_trials="%s/train/epoch_%s/miss_trials" % (xvector_dir, epoch),
+                                        target_ratio=args.target_ratio,
+                                        loader=file_loader, transform=transform_H, segment_len=args.chunk_size)
 
-                hard_loader = torch.utils.data.DataLoader(hard_dir, batch_size=args.batch_size,
-                                                          collate_fn=PadCollate3d(dim=pad_dim,
-                                                                                  num_batch=int(np.ceil(
-                                                                                      len(hard_dir) / args.batch_size)),
-                                                                                  min_chunk_size=min_chunk_size,
-                                                                                  max_chunk_size=max_chunk_size),
-                                                          shuffle=False, **kwargs)
+            hard_loader = torch.utils.data.DataLoader(hard_dir, batch_size=args.batch_size,
+                                                      collate_fn=PadCollate3d(dim=pad_dim,
+                                                                              num_batch=int(np.ceil(
+                                                                                  len(hard_dir) / args.batch_size)),
+                                                                              min_chunk_size=min_chunk_size,
+                                                                              max_chunk_size=max_chunk_size),
+                                                      shuffle=False, **kwargs)
 
-                hard_train(hard_loader, model, ce, optimizer, epoch)
+            hard_train(hard_loader, model, ce, optimizer, epoch)
 
-                # if epoch != (end - 1):
-                #     try:
-                #         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
-                #         shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                #     except Exception as e:
-                #         print('rm dir xvectors error:', e)
+            # if epoch != (end - 1):
+            #     try:
+            #         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
+            #         shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
+            #     except Exception as e:
+            #         print('rm dir xvectors error:', e)
 
-            if args.scheduler == 'rop':
-                scheduler.step(valid_loss)
-            elif args.scheduler == 'cyclic':
-                continue
-            else:
-                scheduler.step()
+        if args.scheduler == 'rop':
+            scheduler.step(valid_loss)
+        elif args.scheduler == 'cyclic':
+            continue
+        else:
+            scheduler.step()
 
     except KeyboardInterrupt:
         end = epoch

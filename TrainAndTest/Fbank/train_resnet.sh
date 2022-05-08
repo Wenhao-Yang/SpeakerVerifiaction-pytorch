@@ -805,10 +805,11 @@ if [ $stage -le 101 ]; then
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 60 \
+      --target-ratio 0.2 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.001 \
+      --lr 0.01 \
       --base-lr 0.00000001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
@@ -832,6 +833,7 @@ if [ $stage -le 101 ]; then
       --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
+      --loss-ratio 0.5 \
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
