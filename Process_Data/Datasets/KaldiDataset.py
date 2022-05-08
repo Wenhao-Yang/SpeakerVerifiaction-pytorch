@@ -1760,7 +1760,7 @@ class PairTrainDataset(data.Dataset):
         enroll_feature = self.transform(self.loader(self.uid2feat[enroll_uid]))
         eval_feature = self.transform(self.loader(self.uid2feat[eval_uid]))
 
-        label = 1 if truth in ['True', 'true'] else 0
+        label = 1 if truth in ['True', 'true', 'target'] else 0
 
         return enroll_feature, eval_feature, label
 

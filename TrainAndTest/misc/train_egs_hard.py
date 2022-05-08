@@ -859,11 +859,11 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                valid_test(train_extract_loader, model, epoch, xvector_dir)
-                test(model, epoch, writer, xvector_dir)
+                # valid_test(train_extract_loader, model, epoch, xvector_dir)
+                # test(model, epoch, writer, xvector_dir)
 
                 # hard mining
-                hard_dir = PairTrainDataset(dir=args.data_dir,
+                hard_dir = PairTrainDataset(dir=args.train_test_dir,
                                             miss_trials="%s/train/epoch_%s/miss_trials" % (xvector_dir, epoch),
                                             loader=file_loader, transform=transform_H, segment_len=args.num_frames)
 
