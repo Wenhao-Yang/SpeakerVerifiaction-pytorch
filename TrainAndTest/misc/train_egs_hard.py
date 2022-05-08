@@ -870,7 +870,7 @@ def main():
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            # train(train_loader, model, ce, optimizer, epoch, scheduler)
+            train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if (epoch == 1 or epoch != (end - 2)) and (
@@ -883,8 +883,8 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                # valid_test(train_extract_loader, model, epoch, xvector_dir)
-                # test(model, epoch, writer, xvector_dir)
+                valid_test(train_extract_loader, model, epoch, xvector_dir)
+                test(model, epoch, writer, xvector_dir)
 
                 # hard mining
                 hard_dir = PairTrainDataset(dir=args.train_test_dir,
