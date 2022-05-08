@@ -149,11 +149,9 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
     # split the target and non-target distance array
     target = []
     non_target = []
-    new_distances = []
-
-    if cos:
+    # new_distances = []
+    if not cos:
         distances = -np.array(distances)
-
     new_distances = np.array(distances) if not cos else -np.array(distances)
 
     for (distance, label) in zip(distances, labels):
@@ -165,8 +163,7 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
         else:
             non_target.append(distance)
 
-    new_distances = np.array(new_distances).astype(np.float)
-
+    # new_distances = np.array(new_distances).astype(np.float)
     target = np.sort(target).astype(np.float)
     non_target = np.sort(non_target).astype(np.float)
 
