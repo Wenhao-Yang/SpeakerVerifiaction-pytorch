@@ -509,8 +509,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     model.eval()
 
     this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
-    # verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input,
-    #                      verbose=2, )
+    verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input,
+                         verbose=2, )
 
     verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
                                      xvectors_dir=this_xvector_dir,
