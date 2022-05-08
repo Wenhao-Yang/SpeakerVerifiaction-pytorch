@@ -865,7 +865,7 @@ def main():
                 # hard mining
                 hard_dir = PairTrainDataset(dir=args.train_test_dir,
                                             miss_trials="%s/train/epoch_%s/miss_trials" % (xvector_dir, epoch),
-                                            loader=file_loader, transform=transform_H, segment_len=args.num_frames)
+                                            loader=file_loader, transform=transform_H, segment_len=args.chunk_size)
 
                 hard_loader = torch.utils.data.DataLoader(hard_dir, batch_size=args.batch_size,
                                                           collate_fn=PadCollate3d(dim=pad_dim,
