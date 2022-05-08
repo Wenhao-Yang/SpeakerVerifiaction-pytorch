@@ -540,7 +540,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
             if (s >= eer_threshold and truth == 'True') or (s <= eer_threshold and truth == 'False'):
                 pass
             else:
-                f2.write(enroll_uid + ' ' + eval_uid + ' ' + truth)
+                f2.write(enroll_uid + ' ' + eval_uid + ' ' + truth + '\n')
 
             i += 1
 
