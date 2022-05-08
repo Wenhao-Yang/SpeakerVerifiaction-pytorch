@@ -1740,7 +1740,7 @@ class PairTrainDataset(data.Dataset):
         i = 0
         for enroll_uid, eval_uid, truth in target:
             dataset.append((enroll_uid, eval_uid, truth))
-            for j in range(int((1 - target_ratio) / target)):
+            for j in range(int((1 - target_ratio) / target_ratio)):
                 i += j
                 i = i % len(nontarget)
                 dataset.append(nontarget[i])
