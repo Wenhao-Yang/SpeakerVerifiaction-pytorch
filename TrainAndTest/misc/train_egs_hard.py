@@ -910,12 +910,12 @@ def main():
             #     except Exception as e:
             #         print('rm dir xvectors error:', e)
 
-        if args.scheduler == 'rop':
-            scheduler.step(valid_loss)
-        # elif args.scheduler == 'cyclic':
-        #     continue
-        else:
-            scheduler.step()
+            if args.scheduler == 'rop':
+                scheduler.step(valid_loss)
+            elif args.scheduler == 'cyclic':
+                continue
+            else:
+                scheduler.step()
 
     except KeyboardInterrupt:
         end = epoch
