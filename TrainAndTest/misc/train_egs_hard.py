@@ -561,8 +561,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
             enroll_uid, eval_uid, truth = l.split()
             s = float(dists[i])
 
-            if (s >= eer_threshold * (1 - args.inter_ratio) and truth == 'True') or (
-                    s <= eer_threshold * (1 + args.inter_ratio) and truth == 'False'):
+            if (s >= eer_threshold * (1 + args.inter_ratio) and truth == 'True') or (
+                    s <= eer_threshold * (1 - args.inter_ratio) and truth == 'False'):
                 pass
             else:
                 f2.write(enroll_uid + ' ' + eval_uid + ' ' + truth + '\n')
