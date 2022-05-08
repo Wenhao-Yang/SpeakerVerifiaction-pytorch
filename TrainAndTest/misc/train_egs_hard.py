@@ -310,6 +310,7 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
     model.train()
 
     correct = 0.
+    error = 0.
     total_datasize = 0.
     total_loss = 0.
     orth_err = 0
@@ -361,9 +362,15 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
                                                           cos=True if args.cos_sim else False,
                                                           re_thre=True)
 
-        minibatch_correct = eer * len(enroll_data)
-        minibatch_acc = eer
+        predicted_labels = output_softmax(classfier)
+        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+        minibatch_correct = float((predicted_one_labels.cpu() == spk_label.cpu()).sum().item())
+        minibatch_acc = minibatch_correct / len(predicted_one_labels)
         correct += minibatch_correct
+
+        minibatch_error = eer * len(enroll_data)
+        minibatch_eer = eer
+        error += minibatch_error
 
         total_datasize += len(enroll_data)
         total_loss += float(loss.item())
@@ -407,9 +414,8 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
         #     scheduler.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
-            epoch_str = 'Hard Mining Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(enroll_data),
-                                                                                len(hard_loader),
-                                                                                100. * batch_idx / len(hard_loader))
+            epoch_str = 'Hard Mining Epoch {}: [{:8d} ({:3.0f}%)]'.format(epoch, len(hard_loader),
+                                                                          100. * batch_idx / len(hard_loader))
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d}'.format(enroll_data.shape[-2])
@@ -421,12 +427,19 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
             #     epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
             # if args.loss_type in ['arcdist']:
             #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
-            epoch_str += ' Avg Loss: {:.4f} Batch EER: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                       100. * minibatch_acc)
+            epoch_str += ' EER: {:.4f}%'.format(100. * minibatch_eer)
+            epoch_str += ' Accuracy: {:.4f}% Avg Loss: {:.4f} '.format(100. * minibatch_acc,
+                                                                       total_loss / (batch_idx + 1))
+
             pbar.set_description(epoch_str)
 
-    this_epoch_str = 'Hard Mining Epoch {:>2d}: \33[91mEER: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
-        correct) / total_datasize, total_loss / len(hard_loader))
+    this_epoch_str = 'Hard Mining Epoch {:>2d}: \33[91mAccuracy: {:.6f}%, EER: {:.6f}%, Avg Loss: {:6f}'.format(epoch,
+                                                                                                                50 * float(
+                                                                                                                    correct) / total_datasize,
+                                                                                                                100 * float(
+                                                                                                                    error) / total_datasize,
+                                                                                                                total_loss / len(
+                                                                                                                    hard_loader))
 
     if other_loss != 0:
         this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(hard_loader))
