@@ -1746,7 +1746,9 @@ class PairTrainDataset(data.Dataset):
                 dataset.append(nontarget[i])
 
         if verbose > 0:
-            print('    There are {} pairs in Train Dataset.'.format(len(dataset)))
+            print('    There are {} pairs in Train Dataset, {} of them are unique.'.format(len(dataset),
+                                                                                           len(target) + len(
+                                                                                               nontarget)))
 
         self.speakers = speakers
         self.utt2spk_dict = utt2spk_dict
