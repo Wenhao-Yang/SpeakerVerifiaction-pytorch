@@ -551,6 +551,8 @@ class pAUCLoss(nn.Module):
         loss = self.margin - (target.repeat(nontarget.shape[0]) - nontarget.repeat(target.shape[0]))
         loss = loss.clamp_min(0) * self.s
 
+        loss = loss.max(dim=1)[0]
+
         loss = torch.mean(loss.pow(2))
 
         return loss
