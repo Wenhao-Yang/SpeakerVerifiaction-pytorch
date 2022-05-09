@@ -1738,6 +1738,7 @@ class PairTrainDataset(data.Dataset):
                         nontarget.append((enroll_uid, eval_uid, truth))
 
         i = 0
+        random.shuffle(nontarget)
         for enroll_uid, eval_uid, truth in target:
             dataset.append((enroll_uid, eval_uid, truth))
             for j in range(int((1 - target_ratio) / target_ratio)):
