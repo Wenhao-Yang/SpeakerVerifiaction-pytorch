@@ -542,14 +542,15 @@ class LabelSmoothing(nn.Module):
 
 class pAUCLoss(nn.Module):
 
-    def __init__(self, margin=0.2):
+    def __init__(self, s=10.0, margin=0.2):
         super(pAUCLoss, self).__init__()
         self.margin = margin
+        self.s = s
 
     def forward(self, target, nontarget):
         loss = self.margin - (target.repeat(nontarget.shape[0]) - nontarget.repeat(target.shape[0]))
         loss = loss.clamp_min(0)
 
-        loss = torch.mean(loss.pow(2))
+        loss = torch.mean(loss.pow(2)) * self.s
 
         return loss
