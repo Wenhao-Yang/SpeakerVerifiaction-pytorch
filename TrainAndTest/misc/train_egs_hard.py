@@ -887,9 +887,9 @@ def main():
                         'criterion': ce}, check_path)
             if (epoch == 1 or epoch != (end - 2)) and (
                     epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
-                valid_test(train_extract_loader, model, epoch, xvector_dir)
+                # valid_test(train_extract_loader, model, epoch, xvector_dir)
                 miss_trials = "%s/train/epoch_%s/miss_trials" % (xvector_dir, epoch)
-                test(model, epoch, writer, xvector_dir)
+                # test(model, epoch, writer, xvector_dir)
 
             # hard mining
             hard_dir = PairTrainDataset(dir=args.train_test_dir,
