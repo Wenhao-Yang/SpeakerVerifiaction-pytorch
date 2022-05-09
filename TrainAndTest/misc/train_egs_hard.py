@@ -427,7 +427,7 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
             #
             # if args.loss_type in ['arcdist']:
             #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
-            epoch_str += ' '.format()
+            # epoch_str += ' '.format()
             epoch_str += ' EER: {:.4f}%'.format(100. * minibatch_eer)
             epoch_str += ' Accuracy: {:.4f}% Loss Hard: {:.4f} Avg: {:.4f} '.format(100. * minibatch_acc,
                                                                                     float(hard_loss),
