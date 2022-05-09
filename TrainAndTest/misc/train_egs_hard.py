@@ -350,9 +350,9 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
         target = scores[torch.where(label == 1)[0]]
         nontarget = scores[torch.where(label == 0)[0]]
 
-        loss = ce_criterion(target, nontarget)
+        hard_loss = ce_criterion(target, nontarget)
 
-        loss += args.loss_ratio * xe_criterion(classfier, spk_label)
+        loss = hard_loss + args.loss_ratio * xe_criterion(classfier, spk_label)
 
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
@@ -424,12 +424,14 @@ def hard_train(hard_loader, model, ce, optimizer, epoch):
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
             # if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-            #     epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+            #
             # if args.loss_type in ['arcdist']:
             #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+            epoch_str += ' '.format()
             epoch_str += ' EER: {:.4f}%'.format(100. * minibatch_eer)
-            epoch_str += ' Accuracy: {:.4f}% Avg Loss: {:.4f} '.format(100. * minibatch_acc,
-                                                                       total_loss / (batch_idx + 1))
+            epoch_str += ' Accuracy: {:.4f}% Loss Hard: {:.4f} Avg: {:.4f} '.format(100. * minibatch_acc,
+                                                                                    float(hard_loss),
+                                                                                    total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
 
