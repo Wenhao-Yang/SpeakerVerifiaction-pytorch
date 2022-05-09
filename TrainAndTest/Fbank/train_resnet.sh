@@ -805,7 +805,7 @@ if [ $stage -le 101 ]; then
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 60 \
-      --target-ratio 0.2 \
+      --target-ratio 0.5 \
       --inter-ratio 0.25 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
