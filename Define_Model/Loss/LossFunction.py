@@ -549,7 +549,7 @@ class pAUCLoss(nn.Module):
 
     def forward(self, target, nontarget):
         loss = self.margin - (target.repeat(nontarget.shape[0]) - nontarget.repeat(target.shape[0]))
-        loss = loss.clamp_min(0) * self.s
+        loss = loss.clamp_max(0) * self.s
 
         loss = torch.mean(loss.pow(2))
 
