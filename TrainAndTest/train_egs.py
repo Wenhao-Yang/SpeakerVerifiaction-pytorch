@@ -721,7 +721,8 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                if early_stopping_scheduler.best_epoch == epoch:
+                if (
+                        early_stopping_scheduler.best_epoch == epoch and epoch % args.test_interval == 1) or early_stopping_scheduler.early_stop:
                     test(model, epoch, writer, xvector_dir)
 
                 if epoch != (end - 1):
