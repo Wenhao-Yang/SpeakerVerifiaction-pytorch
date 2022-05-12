@@ -573,7 +573,7 @@ def main():
 
     optimizer = create_optimizer(model_para, args.optimizer, **opt_kwargs)
     early_stopping_scheduler = EarlyStopping(patience=args.early_patience,
-                                             min_delta=1e-4)
+                                             min_delta=args.early_delta)
 
     if not args.finetune and args.resume:
         if os.path.isfile(args.resume):
