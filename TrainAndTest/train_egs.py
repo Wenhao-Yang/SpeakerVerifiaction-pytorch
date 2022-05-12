@@ -721,7 +721,9 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                test(model, epoch, writer, xvector_dir)
+                if early_stopping_scheduler.best_epoch == epoch:
+                    test(model, epoch, writer, xvector_dir)
+
                 if epoch != (end - 1):
                     try:
                         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
