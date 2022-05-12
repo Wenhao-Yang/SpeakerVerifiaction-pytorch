@@ -1043,7 +1043,7 @@ if [ $stage -le 102 ]; then
       --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
