@@ -708,8 +708,11 @@ def main():
             valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
             valid_test_dict['Valid_Loss'] = valid_loss
 
-            if (epoch == 1 or epoch != (end - 2)) and (
-                    epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
+            if args.early_stopping:
+                early_stopping_scheduler.step(valid_test_dict[args.early_meta], epoch)
+
+            if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
+                    end - 1) or early_stopping_scheduler.best_epoch == epoch:
                 model.eval()
                 check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
                 model_state_dict = model.module.state_dict() \
@@ -733,11 +736,9 @@ def main():
             else:
                 scheduler.step()
 
-            if args.early_stopping:
-                early_stopping_scheduler.step(valid_test_dict[args.early_meta], epoch)
-                if early_stopping_scheduler.early_stop:
-                    print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
-                    break
+            if early_stopping_scheduler.early_stop:
+                print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
+                break
 
     except KeyboardInterrupt:
         end = epoch
