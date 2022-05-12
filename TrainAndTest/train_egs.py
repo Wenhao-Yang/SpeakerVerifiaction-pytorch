@@ -709,7 +709,7 @@ def main():
             valid_test_dict['Valid_Loss'] = valid_loss
 
             if args.early_stopping:
-                early_stopping_scheduler.step(valid_test_dict[args.early_meta], epoch)
+                early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
 
             if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
@@ -721,8 +721,7 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                if (
-                        early_stopping_scheduler.best_epoch == epoch and epoch % args.test_interval == 1) or early_stopping_scheduler.early_stop:
+                if early_stopping_scheduler.best_epoch == epoch or epoch % args.test_interval == 1:
                     test(model, epoch, writer, xvector_dir)
 
                 if epoch != (end - 1):
