@@ -1048,7 +1048,7 @@ if [ $stage -le 102 ]; then
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --early-stopping \
-      --early-patience 6 \
+      --early-patience 10 \
       --early-delta 0.001 \
       --early-meta MinDCF_01 \
       --lr 0.1 \
