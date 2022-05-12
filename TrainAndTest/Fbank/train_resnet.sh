@@ -1048,8 +1048,8 @@ if [ $stage -le 102 ]; then
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --early-stopping \
-      --early-patience 5 \
-      --early-delta 0.01 \
+      --early-patience 6 \
+      --early-delta 0.001 \
       --early-meta MinDCF_01 \
       --lr 0.1 \
       --base-lr 0.000001 \
