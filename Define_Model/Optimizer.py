@@ -93,7 +93,6 @@ class SAMSGD(SGD):
 
 
 # https://github.com/neuralsyn/sam-1/blob/main/sam.py
-
 class SAM(torch.optim.Optimizer):
     def __init__(self, params, base_optimizer=torch.optim.SGD, rho=0.05, **kwargs):
         assert rho >= 0.0, f"Invalid rho, should be non-negative: {rho}"
@@ -143,3 +142,42 @@ class SAM(torch.optim.Optimizer):
             p=2
         )
         return norm
+
+
+class EarlyStopping():
+    """
+    Early stopping to stop the training when the loss does not improve after
+    certain epochs.
+    """
+
+    def __init__(self, patience=5, min_delta=1e-3):
+        """
+        :param patience: how many epochs to wait before stopping when loss is
+               not improving
+        :param min_delta: minimum difference between new loss and old loss for
+               new loss to be considered as an improvement
+        """
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.best_epoch = 0
+        self.best_loss = None
+        self.early_stop = False
+
+    def __call__(self, val_loss, epoch):
+        if self.best_loss == None:
+            self.best_loss = val_loss
+            self.best_epoch = epoch
+
+        elif self.best_loss - val_loss > self.min_delta:
+            self.best_loss = val_loss
+            self.best_epoch = epoch
+
+            # reset counter if validation loss improves
+            self.counter = 0
+        elif self.best_loss - val_loss < self.min_delta:
+            self.counter += 1
+            print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
+            if self.counter >= self.patience:
+                print('INFO: Early stopping')
+                self.early_stop = True

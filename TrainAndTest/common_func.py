@@ -497,6 +497,13 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         metavar='SCH', help='The optimizer to use (default: Adagrad)')
     parser.add_argument('--patience', default=3, type=int,
                         metavar='PAT', help='patience for scheduler (default: 4)')
+    parser.add_argument('--early-stopping', action='store_true', default=False, help='vad layers')
+
+    parser.add_argument('--early-patience', default=5, type=int,
+                        metavar='PAT', help='patience for scheduler (default: 4)')
+    parser.add_argument('--early-delta', default=0.001, type=float, help='patience for scheduler (default: 4)')
+    parser.add_argument('--early-meta', default='MinDCF_01', type=str, help='patience for scheduler (default: 4)')
+
     parser.add_argument('--gamma', default=0, type=float,
                         metavar='GAMMA', help='The optimizer to use (default: Adagrad)')
     parser.add_argument('--milestones', default='10,15', type=str,
