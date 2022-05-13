@@ -126,7 +126,7 @@ parser.add_argument('--fast', type=str, default='None', help='max pooling for fa
 
 parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
 parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
-parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
+parser.add_argument('--mask-len', type=str, default='', help='maximum length of time or freq masking layers')
 parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
@@ -363,10 +363,11 @@ def main():
 
     dilation = args.dilation.split(',')
     dilation = [int(x) for x in dilation]
+    mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
 
     xvector_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                       'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
-                      'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
+                      'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
                       'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm,
                       'input_norm': args.input_norm, 'first_2d': args.first_2d,
                       'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
