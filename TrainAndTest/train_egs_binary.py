@@ -360,6 +360,9 @@ def main():
 
     channels = args.channels.split(',')
     channels = [int(x) for x in channels]
+    milestones = args.milestones.split(',')
+    milestones = [int(x) for x in milestones]
+    milestones.sort()
 
     dilation = args.dilation.split(',')
     dilation = [int(x) for x in dilation]
@@ -467,10 +470,6 @@ def main():
         spk_scheduler = ReduceLROnPlateau(spk_optimizer, patience=args.patience, min_lr=args.base_lr)
         dom_scheduler = ReduceLROnPlateau(dom_optimizer, patience=args.patience, min_lr=args.base_lr)
     else:
-        milestones = args.milestones.split(',')
-        milestones = [int(x) for x in milestones]
-        milestones.sort()
-
         spk_scheduler = MultiStepLR(spk_optimizer, milestones=milestones, gamma=0.1)
         dom_scheduler = MultiStepLR(dom_optimizer, milestones=milestones, gamma=0.1)
 
