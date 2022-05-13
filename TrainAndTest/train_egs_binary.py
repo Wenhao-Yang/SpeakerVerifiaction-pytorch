@@ -30,7 +30,7 @@ from kaldi_io import read_mat, read_vec_flt
 from torch.utils.tensorboard import SummaryWriter
 from torch.autograd import Variable
 from torch.nn.parallel.distributed import DistributedDataParallel
-from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR
+from torch.optim.lr_scheduler import MultiStepLR, ExponentialLR, ReduceLROnPlateau
 from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss, MMD_Loss
@@ -219,7 +219,8 @@ parser.add_argument('--dampening', default=0, type=float,
                     metavar='DAM', help='dampening for sgd (default: 0.0)')
 parser.add_argument('--optimizer', default='sgd', type=str,
                     metavar='OPT', help='The optimizer to use (default: Adagrad)')
-
+parser.add_argument('--patience', default=3, type=int,
+                    metavar='PAT', help='patience for scheduler (default: 4)')
 parser.add_argument('--early-stopping', action='store_true', default=False, help='vad layers')
 parser.add_argument('--early-patience', default=5, type=int,
                     metavar='PAT', help='patience for scheduler (default: 4)')
@@ -461,6 +462,9 @@ def main():
     if args.scheduler == 'exp':
         spk_scheduler = ExponentialLR(spk_optimizer, gamma=args.gamma)
         dom_scheduler = ExponentialLR(dom_optimizer, gamma=args.gamma)
+    elif args.scheduler == 'rop':
+        spk_scheduler = ReduceLROnPlateau(spk_optimizer, patience=args.patience, min_lr=args.base_lr)
+        dom_scheduler = ReduceLROnPlateau(dom_optimizer, patience=args.patience, min_lr=args.base_lr)
     else:
         milestones = args.milestones.split(',')
         milestones = [int(x) for x in milestones]

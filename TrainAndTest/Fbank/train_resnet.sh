@@ -1047,6 +1047,7 @@ if [ $stage -le 102 ]; then
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
+      --patience 2 \
       --early-stopping \
       --early-patience 15 \
       --early-delta 0.001 \
