@@ -576,28 +576,31 @@ def main():
                        check_path)
 
             # valid_test(train_extract_loader, model, epoch, xvector_dir)
-            if early_stopping_scheduler.best_epoch == epoch or (
-                    args.early_stopping == False and epoch % args.test_interval == 1):
-                test(model, epoch, writer, xvector_dir)
+            # if early_stopping_scheduler.best_epoch == epoch or (
+            #         args.early_stopping == False and epoch % args.test_interval == 1):
+            #     test(model, epoch, writer, xvector_dir)
 
             if epoch != (end - 1):
                 try:
                     shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
                     shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
                 except Exception as e:
-                    print('rm dir xvectors error:', e)
+                    # print('rm dir xvectors error:', e)
+                    pass
 
-        # if args.scheduler == 'rop':
-        #     spkscheduler.step(valid_loss)
-        # elif args.scheduler == 'cyclic':
-        #     continue
-        # else:
-        #     scheduler.step()
-        spk_scheduler.step()
-        dom_scheduler.step()
+        if args.scheduler == 'rop':
+            # spkscheduler.step(valid_loss)
+            spk_scheduler.step(valid_loss)
+            dom_scheduler.step(valid_loss)
+        elif args.scheduler == 'cyclic':
+            continue
+        else:
+            spk_scheduler.step()
+            dom_scheduler.step()
 
         if early_stopping_scheduler.early_stop:
-            print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
+            print('Best %s is %.4f in Epoch %d.' % (
+            args.early_meta, early_stopping_scheduler.best_loss, early_stopping_scheduler.best_epoch))
             break
 
         # exit(1)
