@@ -219,7 +219,7 @@ if [ $stage -le 70 ]; then
   mask_layer=binary
   weight=vox2_rcf
   scale=0.2
-  subset=
+  subset=12
   stat_type=maxmargin
   dom_ratio=0.5
 #  _${stat_type}
