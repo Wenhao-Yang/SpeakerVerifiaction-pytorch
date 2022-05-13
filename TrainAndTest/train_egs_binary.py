@@ -35,6 +35,7 @@ from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss, MMD_Loss
 from Define_Model.Loss.SoftmaxLoss import ArcSoftmaxLoss
+from Define_Model.Optimizer import EarlyStopping
 from Define_Model.ResNet import DomainNet
 from Define_Model.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss
 from Define_Model.model import PairwiseDistance
@@ -218,6 +219,12 @@ parser.add_argument('--dampening', default=0, type=float,
                     metavar='DAM', help='dampening for sgd (default: 0.0)')
 parser.add_argument('--optimizer', default='sgd', type=str,
                     metavar='OPT', help='The optimizer to use (default: Adagrad)')
+
+parser.add_argument('--early-stopping', action='store_true', default=False, help='vad layers')
+parser.add_argument('--early-patience', default=5, type=int,
+                    metavar='PAT', help='patience for scheduler (default: 4)')
+parser.add_argument('--early-delta', default=0.001, type=float, help='patience for scheduler (default: 4)')
+parser.add_argument('--early-meta', default='MinDCF_01', type=str, help='patience for scheduler (default: 4)')
 
 # Device options
 parser.add_argument('--no-cuda', action='store_true', default=False,
@@ -435,6 +442,8 @@ def main():
                                       {'params': classifier_spk.parameters()}], args.optimizer, **opt_kwargs)
     dom_optimizer = create_optimizer(classifier_dom.parameters(), args.optimizer, **opt_kwargs)
 
+    early_stopping_scheduler = EarlyStopping(patience=args.early_patience,
+                                             min_delta=args.early_delta)
     # if args.loss_type == 'center':
     #     optimizer = torch.optim.SGD([{'params': xe_criterion.parameters(), 'lr': args.lr * 5},
     #                                  {'params': model.parameters()}],
@@ -539,15 +548,21 @@ def main():
 
         train(train_loader, model, ce, optimizer, epoch, scheduler, steps)
         valid_loss = valid_class(valid_loader, model, ce, epoch)
+        valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+        valid_test_dict['Valid_Loss'] = valid_loss
 
-        if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
+        if args.early_stopping:
+            early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
+
+        if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (
+                end - 1)) or early_stopping_scheduler.best_epoch == epoch:
             xvector_model, classifier_spk, classifier_dom = model
             xvector_model.eval()
             classifier_spk.eval()
             classifier_dom.eval()
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             model_state_dict = xvector_model.module.state_dict() \
-                                   if isinstance(xvector_model, DistributedDataParallel) else xvector_model.state_dict()
+                if isinstance(xvector_model, DistributedDataParallel) else xvector_model.state_dict()
             classifier_spk_dict = classifier_spk.module.state_dict() \
                 if isinstance(classifier_spk, DistributedDataParallel) else classifier_spk.state_dict()
             classifier_dom_dict = classifier_dom.module.state_dict() \
@@ -560,8 +575,11 @@ def main():
                         'criterion': ce},
                        check_path)
 
-            valid_test(train_extract_loader, model, epoch, xvector_dir)
-            test(model, epoch, writer, xvector_dir)
+            # valid_test(train_extract_loader, model, epoch, xvector_dir)
+            if early_stopping_scheduler.best_epoch == epoch or (
+                    args.early_stopping == False and epoch % args.test_interval == 1):
+                test(model, epoch, writer, xvector_dir)
+
             if epoch != (end - 1):
                 try:
                     shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
@@ -577,6 +595,10 @@ def main():
         #     scheduler.step()
         spk_scheduler.step()
         dom_scheduler.step()
+
+        if early_stopping_scheduler.early_stop:
+            print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
+            break
 
         # exit(1)
 
@@ -864,6 +886,9 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
 
     torch.cuda.empty_cache()
+
+    return {'EER': eer, 'Threshold': eer_threshold,
+            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
 
 
 def test(model, epoch, writer, xvector_dir):

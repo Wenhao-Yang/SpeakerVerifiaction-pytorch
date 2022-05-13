@@ -983,7 +983,7 @@ if [ $stage -le 102 ]; then
   testset=cnceleb
   feat_type=klfb
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=256
   block_type=basic
@@ -1002,7 +1002,7 @@ if [ $stage -le 102 ]; then
   weight=one
   scale=0.2
   weight_p=0.1584
-  subset=
+  subset=12
   mask_len=5,5
   stat_type=maxmargin
   chn=16
@@ -1032,7 +1032,7 @@ if [ $stage -le 102 ]; then
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
-      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test2_fb${input_dim} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --train-trials trials \
       --shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
@@ -1048,7 +1048,7 @@ if [ $stage -le 102 ]; then
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --early-stopping \
-      --early-patience 10 \
+      --early-patience 15 \
       --early-delta 0.001 \
       --early-meta MinDCF_01 \
       --lr 0.1 \
@@ -1056,8 +1056,8 @@ if [ $stage -le 102 ]; then
       --mask-layer ${mask_layer} \
       --mask-len ${mask_len} \
       --milestones 10,20,30,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var_espatience10 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var_espatience10/checkpoint_30.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var_espatience10 \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}_wd5e4_var_espatience10/checkpoint_30.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels ${channels} \

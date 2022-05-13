@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=70
 
 waited=0
 while [ $(ps 113458 | wc -l) -eq 2 ]; do
@@ -230,14 +230,15 @@ if [ $stage -le 70 ]; then
      python TrainAndTest/train_egs_binary.py \
        --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
-       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
-       --train-trials trials_2w \
+       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/test_fb${input_dim} \
+       --train-trials trials \
        --shuffle \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --random-chunk 200 400 \
        --input-norm ${input_norm} \
+       --input-dim ${input_dim} \
        --resnet-size ${resnet_size} \
        --nj 12 \
        --epochs 60 \
@@ -246,10 +247,14 @@ if [ $stage -le 70 ]; then
        --scheduler ${scheduler} \
        --lr 0.1 \
        --base-lr 0.000006 \
+       --early-stopping \
+       --early-patience 15 \
+       --early-delta 0.001 \
+       --early-meta MinDCF_01 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_dom${dom_ratio}_submean_wd5e4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_dom${dom_ratio}_submean_wd5e4_var/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_dom${dom_ratio}_wd5e4_var_es \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_dom${dom_ratio}_wd5e4_var_es/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
@@ -258,7 +263,7 @@ if [ $stage -le 70 ]; then
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
        --time-dim 1 \
-       --avg-size 5 \
+       --avg-size 0 \
        --encoder-type ${encoder_type} \
        --num-valid 2 \
        --alpha ${alpha} \
@@ -273,7 +278,6 @@ if [ $stage -le 70 ]; then
        --cos-sim \
        --all-iteraion 0 \
        --remove-vad \
-       --submean \
        --loss-type ${loss}
 
 #    python TrainAndTest/train_egs.py \
