@@ -216,10 +216,11 @@ if [ $stage -le 70 ]; then
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=binary
+  mask_layer=both
   weight=vox2_rcf
   scale=0.2
   subset=12
+  mask_len=5,5
   stat_type=maxmargin
   dom_ratio=0.5
 #  _${stat_type}
@@ -252,9 +253,10 @@ if [ $stage -le 70 ]; then
        --early-delta 0.001 \
        --early-meta MinDCF_01 \
        --mask-layer ${mask_layer} \
+       --mask-len ${mask_len} \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_dom${dom_ratio}_wd5e4_var_es \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_dom${dom_ratio}_wd5e4_var_es/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}_binary/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_dom${dom_ratio}_wd5e4_var_es \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}_${mask_layer}_binary/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_dom${dom_ratio}_wd5e4_var_es/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
