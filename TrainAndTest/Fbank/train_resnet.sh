@@ -1084,7 +1084,7 @@ if [ $stage -le 102 ]; then
       --stat-type ${stat_type} \
       --loss-type ${loss}
   done
-  exit
+#  exit
 fi
 
 
