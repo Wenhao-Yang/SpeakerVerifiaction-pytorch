@@ -568,6 +568,30 @@ class pAUCLoss(nn.Module):
         return loss
 
 
+class aAUCLoss(nn.Module):
+
+    def __init__(self, s=10.0, margin=0.2):
+        super(pAUCLoss, self).__init__()
+        self.margin = margin
+        self.s = s
+
+    def forward(self, costh, label):
+        label = label.reshape(-1, 1)
+        positive_dist = costh.gather(dim=1, index=label)
+
+        negative_label = torch.arange(costh.shape[1]).reshape(1, -1).repeat(positive_dist.shape[0], 1)
+        if label.is_cuda:
+            negative_label = negative_label.cuda()
+
+        negative_label = negative_label.scatter(1, label, -1)
+        negative_label = torch.where(negative_label != -1)[1].reshape(positive_dist.shape[0], -1)
+        negative_dist = costh.gather(dim=1, index=negative_label)
+
+        loss = torch.sigmoid(self.alpha * (positive_dist - negative_dist)).mean()
+
+        return loss
+
+
 class aDCFLoss(nn.Module):
     def __init__(self, alpha=40, beta=0.25, gamma=0.75, omega=0.5):
         super(aDCFLoss, self).__init__()
