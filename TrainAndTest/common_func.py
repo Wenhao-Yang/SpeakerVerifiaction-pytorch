@@ -113,7 +113,7 @@ def create_model(name, **kwargs):
 
     model = __factory[name](**kwargs)
 
-    if kwargs['loss_type'] in ['asoft', 'amsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2']:
+    if kwargs['loss_type'] in ['asoft', 'amsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2', 'aDCF']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                 num_classes=kwargs['num_classes'])
     elif 'sub' in kwargs['loss_type']:
@@ -680,6 +680,18 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     if 'Extraction' in description:
         parser.add_argument('--train-extract-dir', type=str, help='path to dev dataset')
         parser.add_argument('--xvector-dir', type=str, help='path to dev dataset')
+
+    if 'Domain' in description:
+        parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
+        parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
+        parser.add_argument('--speech-dom', default='4,7,9,10', type=str, help='set domain in dataset')
+
+        parser.add_argument('--dom-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
+                            help='the ratio softmax loss - triplet loss (default: 2.0')
+        parser.add_argument('--sim-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
+                            help='the ratio softmax loss - triplet loss (default: 2.0')
+        parser.add_argument('--submean', action='store_true', default=False,
+                            help='substract center for speaker embeddings')
 
     if 'Gradient' in description:
         parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')

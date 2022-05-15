@@ -207,7 +207,7 @@ if [ $stage -le 70 ]; then
   block_type=basic
   downsample=k3
   kernel=5,5
-  loss=arcsoft
+  loss=aDCF
   alpha=0
   input_norm=Mean
   mask_layer=baseline
@@ -270,7 +270,8 @@ if [ $stage -le 70 ]; then
        --num-valid 2 \
        --alpha ${alpha} \
        --margin 0.2 \
-       --s 30 \
+       --smooth_ratio 0.25 \
+       --s 40 \
        --weight-decay 0.0005 \
        --dropout-p 0.1 \
        --gpu-id 0,3 \

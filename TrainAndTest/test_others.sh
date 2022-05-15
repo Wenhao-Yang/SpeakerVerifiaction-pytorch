@@ -2580,6 +2580,12 @@ if [ $stage -le 301 ]; then
 # |   cnceleb-test    |   12.7521   |   0.1296    |   0.6118    |    0.7273    | 20220426 15:48:18 | vad select
 # |   cnceleb-test    |   12.6165   |   -1.5863   |   0.6032    |    0.7168    | 20220426 16:28:10 | vad select as-norm
 
+# ThinResNet 34 dev 1 2 early stopping spechaug
+#ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es/checkpoint_13.pth
+#|   cnceleb-test    |  10.2831    |    0.1450   |   0.5341    |    0.6478    | 20220513 21:34:44 |
+#|   cnceleb-test    |   9.9780    |   -1.5883   |   0.5206    |    0.6432    | 20220515 10:37:41 | as-norm
+
+
 
 # for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
 #   python -W ignore TrainAndTest/test_egs.py \

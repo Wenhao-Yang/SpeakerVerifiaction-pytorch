@@ -36,7 +36,7 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss, DistributeLoss, MMD_Loss
+    VarianceLoss, DistributeLoss, MMD_Loss, aDCFLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
@@ -192,7 +192,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             other_loss += loss_xent
             loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc',]:
+        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
             loss = xe_criterion(classfier, label)
         elif 'arcdist' in args.loss_type:
             # pdb.set_trace()
@@ -209,7 +209,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
         if args.lncl:
-            if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
+            if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist', 'aDCF']:
                 predict_loss = xe_criterion(classfier, predicted_one_labels)
             else:
                 predict_loss = ce_criterion(classfier, predicted_one_labels)
@@ -335,7 +335,7 @@ def valid_class(valid_loader, model, ce, epoch):
                 other_loss += float(loss_xent.item())
 
                 loss = loss_xent + loss_cent
-            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc']:
+            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
                 loss = xe_criterion(classfier, label)
             elif 'arcdist' in args.loss_type:
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
@@ -526,6 +526,10 @@ def main():
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
                                       all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio,
                                       class_weight=class_weight)
+    elif args.loss_type in ['aDCF']:
+        ce_criterion = None
+        xe_criterion = aDCFLoss(alpha=args.s, beta=(1 - args.smooth_ratio), gamma=args.smooth_ratio, omega=args.margin)
+
     elif args.loss_type == 'minarcsoft':
         ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
