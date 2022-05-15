@@ -587,7 +587,7 @@ class aAUCLoss(nn.Module):
         negative_label = torch.where(negative_label != -1)[1].reshape(positive_dist.shape[0], -1)
         negative_dist = costh.gather(dim=1, index=negative_label)
 
-        loss = torch.sigmoid(self.alpha * (positive_dist - negative_dist)).mean()
+        loss = torch.sigmoid(self.s * (positive_dist - negative_dist)).mean()
 
         return loss
 
