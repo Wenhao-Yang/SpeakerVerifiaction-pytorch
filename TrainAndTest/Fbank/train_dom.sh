@@ -270,7 +270,7 @@ if [ $stage -le 70 ]; then
        --num-valid 2 \
        --alpha ${alpha} \
        --margin 0.2 \
-       --smooth_ratio 0.25 \
+       --smooth-ratio 0.25 \
        --s 40 \
        --weight-decay 0.0005 \
        --dropout-p 0.1 \
