@@ -767,6 +767,7 @@ class ScriptTrainDataset(data.Dataset):
                 # if int(num_frames) < 50:
                 #     invalid_uid.append(uid)
         self.base_utts = base_utts
+        self.num_base_utts = len(base_utts)
         dataset = {}
         with open(spk2utt, 'r') as u:
             all_cls = u.readlines()
@@ -988,7 +989,7 @@ class ScriptTrainDataset(data.Dataset):
         return feature, label
 
     def __len__(self):
-        return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
+        return max(self.samples_per_speaker * len(self.speakers), self.self.num_base_utts)  # 返回一个epoch的采样数
 
 
 class ScriptValidDataset(data.Dataset):

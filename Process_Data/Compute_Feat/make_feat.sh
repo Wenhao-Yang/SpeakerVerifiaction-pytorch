@@ -110,12 +110,14 @@ if [ $stage -le 2 ]; then
   elif [ "$feat" = "klfb" ]; then
     feat_type=klfb
   fi
-  nj=12
+#        --vad-select \
+
+  nj=16
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs with kaldi fbank for ${dataset}\033[0m\n"
-  for s in fb40_tmp; do
+  for s in dev12_3p_aug; do
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj ${nj} \
       --feat-type ${feat_type} \
@@ -126,11 +128,11 @@ if [ $stage -le 2 ]; then
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --vad-select \
-      --out-set dev_${s}
+      --domain \
+      --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/dev_${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj ${nj} \
       --feat-type ${feat_type} \
@@ -140,8 +142,8 @@ if [ $stage -le 2 ]; then
       --out-format kaldi_cmp \
       --num-valid 2 \
       --remove-vad \
-      --vad-select \
-      --out-set valid_${s}
+      --domain \
+      --out-set ${s}_valid
   done
   exit
 fi
