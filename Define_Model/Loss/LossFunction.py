@@ -550,6 +550,24 @@ class LabelSmoothing(nn.Module):
         return loss.mean()
 
 
+class pAUCLoss(nn.Module):
+
+    def __init__(self, s=10.0, margin=0.2):
+        super(pAUCLoss, self).__init__()
+        self.margin = margin
+        self.s = s
+
+    def forward(self, target, nontarget):
+        loss = self.margin - (target.repeat(nontarget.shape[0]) - nontarget.repeat(target.shape[0]))
+        loss = loss.clamp_min(0)  # .reshape(target.shape[0], nontarget.shape[0]) * self.s
+        # print(loss.shape)
+        # loss = loss.max(dim=1)[0]
+
+        loss = torch.mean(loss.pow(2))
+
+        return loss
+
+
 class aDCFLoss(nn.Module):
     def __init__(self, alpha=40, beta=0.25, gamma=0.75, omega=0.5):
         super(aDCFLoss, self).__init__()
