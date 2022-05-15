@@ -2503,13 +2503,15 @@ if [ $stage -le 301 ]; then
 
   batch_size=256
   fast=none1
+  mask_len=5,5
+  mask_layer=both
 
   train_set=cnceleb
   test_set=cnceleb
   train_subset=12
 #  subset=dev
   subset=test
-  epoch=60
+  epoch=13
 
 
 #       --trials subtrials/trials_${s} \
@@ -2529,9 +2531,11 @@ if [ $stage -le 301 ]; then
      --feat-format kaldi \
      --input-norm ${input_norm} \
      --input-dim ${input_dim} \
+     --mask-layer ${mask_layer} \
+     --mask-len ${mask_len} \
      --kernel-size ${kernel} \
      --downsample ${downsample} \
-     --channels 32,64,128,256 \
+     --channels 16,32,64,128 \
      --score-norm as-norm \
      --n-train-snts 100000 \
      --cohort-size 5000 \
@@ -2539,27 +2543,25 @@ if [ $stage -le 301 ]; then
      --fast none1 \
      --stride 2,1 \
      --time-dim 1 \
-     --avg-size 5 \
+     --avg-size 0 \
      --nj 12 \
      --alpha 0 \
      --margin 0.2 \
      --s 30 \
      --block-type ${block_type} \
      --embedding-size ${embedding_size} \
-     --time-dim 1 \
-     --avg-size 5 \
      --encoder-type ${encoder_type} \
      --input-length fix \
      --remove-vad \
      --frame-shift 300 \
-     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${subset}_epoch${epoch}_fix_vad \
-     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_${epoch}.pth \
-     --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
+     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es/${test_set}_${subset}_epoch${epoch}_fix \
+     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es/checkpoint_${epoch}.pth \
      --gpu-id 0 \
-     --extract \
      --loss-type ${loss} \
      --verbose 2 \
      --cos-sim
+#     --extract \
+#      --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
  done
 
 # ThinResNet 18 dev 1 both mask 5,5
