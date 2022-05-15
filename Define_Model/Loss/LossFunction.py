@@ -561,7 +561,7 @@ class aDCFLoss(nn.Module):
 
     def forward(self, costh, label):
         # label = label.view(-1, 1)
-        positive_dist = costh.gather(dim=1, index=label)
+        positive_dist = costh.gather(dim=1, index=label.reshape(-1, 1))
 
         negative_label = torch.arange(costh.shape[1]).reshape(1, -1).repeat(positive_dist.shape[0], 1)
         negative_label = negative_label.scatter(1, label, -1)
