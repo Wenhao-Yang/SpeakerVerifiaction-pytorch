@@ -2556,7 +2556,7 @@ if [ $stage -le 301 ]; then
      --frame-shift 300 \
      --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es/${test_set}_${subset}_epoch${epoch}_fix \
      --resume Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es/checkpoint_${epoch}.pth \
-     --gpu-id 0 \
+     --gpu-id 3 \
      --loss-type ${loss} \
      --verbose 2 \
      --cos-sim
