@@ -112,7 +112,7 @@ if [ $stage -le 2 ]; then
   fi
 #        --vad-select \
 
-  nj=16
+  nj=8
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs with kaldi fbank for ${dataset}\033[0m\n"
   for s in dev12_3p_aug; do
