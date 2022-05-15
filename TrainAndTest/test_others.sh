@@ -2494,7 +2494,7 @@ if [ $stage -le 301 ]; then
   encoder_type=SAP2
   embedding_size=512
   block_type=basic
-  downsample=k3
+  downsample=k1
   kernel=5,5
   loss=arcsoft
   alpha=0
