@@ -691,6 +691,7 @@ def main():
         ce_criterion = None
         xe_criterion = DAMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
+        # ce_criterion = aAUCLoss()
         ce_criterion = pAUCLoss()
         if args.class_weight == 'cnc1':
             class_weight = torch.tensor(C.CNC1_WEIGHT) * args.max_cls_weight + 1 - args.max_cls_weight
