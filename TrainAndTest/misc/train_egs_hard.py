@@ -37,7 +37,7 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss, DistributeLoss, pAUCLoss
+    VarianceLoss, DistributeLoss, pAUCLoss, aDCFLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, DAMSoftmaxLoss
@@ -703,6 +703,11 @@ def main():
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
                                       all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio,
                                       class_weight=class_weight)
+    elif args.loss_type in ['aDCF']:
+        # ce_criterion = aAUCLoss()
+        ce_criterion = pAUCLoss()
+        xe_criterion = aDCFLoss(alpha=args.s, beta=args.margin, gamma=(1 - args.margin), omega=args.smooth_ratio)
+
     elif args.loss_type == 'minarcsoft':
         ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
@@ -883,9 +888,7 @@ def main():
             check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
             model_state_dict = model.module.state_dict() \
                 if isinstance(model, DistributedDataParallel) else model.state_dict()
-            torch.save({'epoch': epoch,
-                        'state_dict': model_state_dict,
-                        'criterion': ce}, check_path)
+            torch.save({'epoch': epoch, 'state_dict': model_state_dict, 'criterion': ce}, check_path)
 
             valid_test(train_extract_loader, model, epoch, xvector_dir)
             miss_trials = "%s/train/epoch_%s/miss_trials" % (xvector_dir, epoch)
@@ -895,8 +898,7 @@ def main():
                 test(model, epoch, writer, xvector_dir)
 
             # hard mining
-            hard_dir = PairTrainDataset(dir=args.train_test_dir,
-                                        miss_trials=miss_trials,
+            hard_dir = PairTrainDataset(dir=args.train_test_dir, miss_trials=miss_trials,
                                         target_ratio=args.target_ratio,
                                         loader=file_loader, transform=transform_H, segment_len=args.chunk_size,
                                         verbose=0)
