@@ -896,7 +896,8 @@ def main():
             hard_dir = PairTrainDataset(dir=args.train_test_dir,
                                         miss_trials=miss_trials,
                                         target_ratio=args.target_ratio,
-                                        loader=file_loader, transform=transform_H, segment_len=args.chunk_size)
+                                        loader=file_loader, transform=transform_H, segment_len=args.chunk_size,
+                                        verbose=0)
 
             hard_loader = torch.utils.data.DataLoader(hard_dir, batch_size=args.batch_size,
                                                       collate_fn=PadCollate3d(dim=pad_dim,
