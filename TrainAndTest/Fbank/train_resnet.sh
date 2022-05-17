@@ -806,7 +806,7 @@ if [ $stage -le 101 ]; then
       --nj 12 \
       --epochs 60 \
       --target-ratio 0.33 \
-      --inter-ratio 0.25 \
+      --inter-ratio 0.1 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
