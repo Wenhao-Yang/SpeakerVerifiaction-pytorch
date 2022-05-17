@@ -37,7 +37,7 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss, DistributeLoss
+    VarianceLoss, DistributeLoss, aDCFLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, DAMSoftmaxLoss
@@ -194,7 +194,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             other_loss += loss_xent
             loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam']:
+        elif args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc',
+                                'aDCF', 'subam']:
             loss = xe_criterion(classfier, label)
         elif args.loss_type == 'arcdist':
             # pdb.set_trace()
@@ -211,7 +212,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
         if args.lncl:
-            if args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
+            if args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2',
+                                  'aDCF', 'subarc', 'arcdist']:
                 predict_loss = xe_criterion(classfier, predicted_one_labels)
             else:
                 predict_loss = ce_criterion(classfier, predicted_one_labels)
@@ -338,7 +340,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
                 loss = loss_xent + loss_cent
             elif args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam',
-                                    'subdam']:
+                                    'subdam', 'aDCF']:
                 loss = xe_criterion(classfier, label)
             elif args.loss_type == 'arcdist':
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
@@ -532,6 +534,10 @@ def main():
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
                                       all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio,
                                       class_weight=class_weight)
+    elif args.loss_type in ['aDCF']:
+        ce_criterion = None
+        xe_criterion = aDCFLoss(alpha=args.s, beta=(1 - args.smooth_ratio), gamma=args.smooth_ratio, omega=args.margin)
+
     elif args.loss_type == 'minarcsoft':
         ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
@@ -723,16 +729,19 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                if early_stopping_scheduler.best_epoch == epoch or (
-                        args.early_stopping == False and epoch % args.test_interval == 1):
+                if args.early_stopping:
+                    pass
+                # elif early_stopping_scheduler.best_epoch == epoch or (
+                #         args.early_stopping == False and epoch % args.test_interval == 1):
+                elif epoch % args.test_interval == 1:
                     test(model, epoch, writer, xvector_dir)
 
-                if epoch != (end - 1):
-                    try:
-                        shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
-                        shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                    except Exception as e:
-                        print('rm dir xvectors error:', e)
+                # if epoch != (end - 1):
+                #     try:
+                #         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
+                #         shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
+                #     except Exception as e:
+                #         print('rm dir xvectors error:', e)
 
             if args.scheduler == 'rop':
                 scheduler.step(valid_loss)
