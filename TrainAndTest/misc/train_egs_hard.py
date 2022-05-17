@@ -885,8 +885,8 @@ def main():
             torch.save({'epoch': epoch,
                         'state_dict': model_state_dict,
                         'criterion': ce}, check_path)
-            if (epoch in [1, start_epoch] or epoch != (end - 2)) and (
-                    epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1)):
+            if epoch in [1, start_epoch] or (epoch != (end - 2) and (
+                    epoch % args.test_interval == 1 or epoch in milestones or epoch == (end - 1))):
                 valid_test(train_extract_loader, model, epoch, xvector_dir)
                 miss_trials = "%s/train/epoch_%s/miss_trials" % (xvector_dir, epoch)
                 test(model, epoch, writer, xvector_dir)
