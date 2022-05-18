@@ -154,7 +154,7 @@ class AdditiveMarginLinear(nn.Module):
         self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes), requires_grad=True)
         if use_gpu:
             self.W.cuda()
-        nn.init.xavier_normal(self.W, gain=1)
+        nn.init.xavier_normal_(self.W, gain=1)
 
     def forward(self, x):
         # assert x.size()[0] == label.size()[0]

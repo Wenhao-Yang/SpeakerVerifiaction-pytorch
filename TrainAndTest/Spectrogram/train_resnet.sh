@@ -75,11 +75,15 @@ if [ $stage -le 20 ]; then
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 3 \
+      --early-stopping \
+      --early-patience 15 \
+      --early-delta 0.001 \
+      --early-meta MinDCF_01 \
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd5e4_var/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}_${fast}_wd5e4_var_es \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}_${fast}_wd5e4_var_es/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --downsample ${downsample} \
       --input-dim 161 \
@@ -98,7 +102,7 @@ if [ $stage -le 20 ]; then
       --s 30 \
       --lr-ratio 0.01 \
       --weight-decay 0.0005 \
-      --dropout-p 0.1 \
+      --dropout-p 0.2 \
       --gpu-id 0,1 \
       --shuffle \
       --all-iteraion 0 \
