@@ -62,8 +62,8 @@ if [ $stage -le 20 ]; then
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_${subset} \
-      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/${sname}/trials_dir \
-      --train-trials trials_2w \
+      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
+      --train-trials trials \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_${subset}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
       --feat-format kaldi \
