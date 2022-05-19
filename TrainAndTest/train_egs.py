@@ -533,7 +533,7 @@ def main():
 
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
                                       all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio,
-                                      class_weight=class_weight)
+                                      class_weight=class_weight, focal=args.focal)
     elif args.loss_type in ['aDCF']:
         ce_criterion = None
         xe_criterion = aDCFLoss(alpha=args.s, beta=(1 - args.smooth_ratio), gamma=args.smooth_ratio, omega=args.margin)

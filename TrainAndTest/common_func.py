@@ -629,6 +629,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='random seed (default: 0)')
     parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
                         help='random seed (default: 0)')
+    parser.add_argument('--focal', action='store_true', default=False, help='using Cosine similarity')
 
     parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.125)')
     parser.add_argument('--base-lr', type=float, default=1e-8, metavar='LR', help='learning rate (default: 0.125)')
