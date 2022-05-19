@@ -767,7 +767,7 @@ if [ $stage -le 101 ]; then
   loss_ratio=0.1
   margin=0.1
   m=0.2
-  class_weight=
+  class_weight=cnc1_dur
   max_cls_weight=0.8
 #  --num-center 3 \
         # --milestones 15,25,35,45 \
@@ -786,6 +786,8 @@ if [ $stage -le 101 ]; then
     fi
 
     if [ "$class_weight" == "cnc1" ]; then
+      cls_str=_${class_weight}${max_cls_weight}
+    elif [ "$class_weight" == "cnc1_dur" ]; then
       cls_str=_${class_weight}${max_cls_weight}
     else
       cls_str=
@@ -875,13 +877,32 @@ if [ $stage -le 102 ]; then
   weight_p=0.1
   subset=
   stat_type=maxmargin
+  class_weight=cnc1_dur
+  max_cls_weight=0.8
         # --milestones 15,25,35,45 \
 #               --train-trials trials_2w \
 
 
   for mask_layer in baseline ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-     python TrainAndTest/train_egs.py \
+    if [ "$loss" == "arcdist" ]; then
+      loss_str=_${stat_type}lr${loss_ratio}m${m}
+
+    elif [ "$loss" == "damsoft" ]; then
+      loss_str=_margin${margin}
+    else
+      loss_str=
+    fi
+
+    if [ "$class_weight" == "cnc1" ]; then
+      cls_str=_cls${class_weight}${max_cls_weight}
+    elif [ "$class_weight" == "cnc1_dur" ]; then
+      cls_str=_cls${class_weight}${max_cls_weight}
+    else
+      cls_str=
+    fi
+
+    python TrainAndTest/train_egs.py \
        --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
@@ -906,9 +927,10 @@ if [ $stage -le 102 ]; then
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --mask-len 5,5 \
+       --class-weight ${class_weight} \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var_es_focal \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var_es_focal/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_wd5e4_var_es \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_wd5e4_var_es/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
@@ -931,8 +953,7 @@ if [ $stage -le 102 ]; then
        --all-iteraion 0 \
        --remove-vad \
        --stat-type ${stat_type} \
-       --loss-type ${loss} \
-       --focal
+       --loss-type ${loss}
 
 #    python TrainAndTest/train_egs.py \
 #      --model ${model} \

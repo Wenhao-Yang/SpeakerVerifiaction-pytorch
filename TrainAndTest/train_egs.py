@@ -528,6 +528,10 @@ def main():
             class_weight = torch.tensor(C.CNC1_WEIGHT) * args.max_cls_weight + 1 - args.max_cls_weight
             if len(class_weight) != train_dir.num_spks:
                 class_weight = None
+        elif args.class_weight == 'cnc1_dur':
+            class_weight = torch.tensor(C.CNC1_DUR_WEIGHT)  # * args.max_cls_weight + 1 - args.max_cls_weight
+            if len(class_weight) != train_dir.num_spks:
+                class_weight = None
         else:
             class_weight = None
 
