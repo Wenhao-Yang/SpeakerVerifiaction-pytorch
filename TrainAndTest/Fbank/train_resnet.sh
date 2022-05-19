@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=102
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -860,7 +860,7 @@ if [ $stage -le 102 ]; then
   block_type=basic
   downsample=k3
   kernel=5,5
-  loss=arcdist
+  loss=arcsoft
   alpha=0
   input_norm=Mean
   mask_layer=None
@@ -876,14 +876,15 @@ if [ $stage -le 102 ]; then
   subset=
   stat_type=maxmargin
         # --milestones 15,25,35,45 \
+#               --train-trials trials_2w \
 
-  for mask_layer in both ; do
+
+  for mask_layer in baseline ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs.py \
        --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
-       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
-       --train-trials trials_2w \
+       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
        --shuffle \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
@@ -896,13 +897,18 @@ if [ $stage -le 102 ]; then
        --batch-size ${batch_size} \
        --optimizer ${optimizer} \
        --scheduler ${scheduler} \
+       --early-stopping \
+       --early-patience 15 \
+       --early-delta 0.0001 \
+       --early-meta EER \
+       --mask-layer ${mask_layer} \
        --lr 0.1 \
        --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --mask-len 5,5 \
        --milestones 10,20,30,40,50 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var/checkpoint_60.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var_es_focal \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${stat_type}_wd5e4_var_es_focal/checkpoint_60.pth \
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
@@ -925,7 +931,8 @@ if [ $stage -le 102 ]; then
        --all-iteraion 0 \
        --remove-vad \
        --stat-type ${stat_type} \
-       --loss-type ${loss}
+       --loss-type ${loss} \
+       --focal
 
 #    python TrainAndTest/train_egs.py \
 #      --model ${model} \
