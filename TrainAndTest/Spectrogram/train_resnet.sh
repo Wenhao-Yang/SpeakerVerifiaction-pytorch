@@ -49,7 +49,7 @@ if [ $stage -le 20 ]; then
   feat_type=klsp
   sname=dev
 
-  mask_layer=rvec
+  mask_layer=reweight
   scheduler=rop
   optimizer=sgd
   fast=none1
@@ -57,7 +57,7 @@ if [ $stage -le 20 ]; then
   sname=dev
   subset=
 
-  for subset in female male ; do
+  for subset in female ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -79,11 +79,13 @@ if [ $stage -le 20 ]; then
       --early-patience 15 \
       --early-delta 0.001 \
       --early-meta MinDCF_01 \
+      --mask-layer ${mask_layer} \
+      --init-weight v1_f2m \
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}_${fast}_wd5e4_var_es \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}_${fast}_wd5e4_var_es/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_rvec_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}_${fast}_wd5e4_var_es \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_rvec_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}_${fast}_wd5e4_var_es/checkpoint_10.pth \
       --channels 16,32,64,128 \
       --downsample ${downsample} \
       --input-dim 161 \

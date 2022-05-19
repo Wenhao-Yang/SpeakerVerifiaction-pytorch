@@ -825,7 +825,43 @@ class AttentionweightLayer(nn.Module):
 
     def __repr__(self):
 
-        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, power_weight=%s)" % (self.input_dim, self.weight, self.power_weight)
+        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, power_weight=%s)" % (
+        self.input_dim, self.weight, self.power_weight)
+
+
+class ReweightLayer(nn.Module):
+    def __init__(self, input_dim=161, weight='v1_f2m'):
+        super(ReweightLayer, self).__init__()
+        self.input_dim = input_dim
+        self.weight = weight
+
+        if weight == 'v1_f2m':
+            ynew = c.VOX1_F2M
+        else:
+            raise ValueError(weight)
+
+        ynew = np.array(ynew)
+        self.weight = nn.Parameter(torch.tensor(ynew), requires_grad=False)
+        # self.drop_p = ynew  # * dropout_p
+
+        # self.activation = nn.Tanh()
+        # self.activation = nn.Softmax(dim=-1)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+
+        assert len(self.weight) == x.shape[-1], print(len(self.weight), x.shape)
+
+        if len(x.shape) == 4:
+            weight = self.weight.reshape(1, 1, 1, -1).float()
+        else:
+            weight = self.weight.reshape(1, 1, -1).float()
+
+        return x * weight
+
+    def __repr__(self):
+
+        return "ReweightLayer(input_dim=%d, weight=%s)" % (self.input_dim, self.weight)
 
 
 class AttentionweightLayer_v2(nn.Module):

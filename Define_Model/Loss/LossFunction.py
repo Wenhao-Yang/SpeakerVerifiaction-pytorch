@@ -467,7 +467,7 @@ class AttentionMining(nn.Module):
 
 
 class focal_loss(nn.Module):
-    def __init__(self, alpha=0.25, gamma=2, num_classes = 3, size_average=True):
+    def __init__(self, alpha=0.25, gamma=2, num_classes=3, size_average=True):
         """
         focal_loss损失函数, -α(1-yi)**γ *ce_loss(xi,yi)
         步骤详细的实现了 focal_loss损失函数.
@@ -513,6 +513,35 @@ class focal_loss(nn.Module):
             loss = loss.mean()
         else:
             loss = loss.sum()
+        return loss
+
+
+class focal_cross_entropy(nn.Module):
+    def __init__(self, gamma=2, weight=None):
+        super(focal_cross_entropy, self).__init__()
+        self.gamma = gamma
+
+    def forward(self, preds, labels):
+        """
+        focal_loss损失计算
+        :param preds:   预测类别. size:[B,N,C] or [B,C]    分别对应与检测与分类任务, B 批次, N检测框数, C类别数
+        :param labels:  实际类别. size:[B,N] or [B]
+        :return:
+        """
+        # assert preds.dim()==2 and labels.dim()==1
+        preds = preds.view(-1, preds.size(-1))
+        preds_softmax = torch.nn.functional.softmax(preds,
+                                                    dim=1)  # 这里并没有直接使用log_softmax, 因为后面会用到softmax的结果(当然你也可以使用log_softmax,然后进行exp操作)
+        preds_logsoft = torch.log(preds_softmax)
+        preds_softmax = preds_softmax.gather(1, labels.view(-1, 1))  # 这部分实现nll_loss ( crossempty = log_softmax + nll )
+        preds_logsoft = preds_logsoft.gather(1, labels.view(-1, 1))
+        loss = -torch.mul(torch.pow((1 - preds_softmax), self.gamma),
+                          preds_logsoft)  # torch.pow((1-preds_softmax), self.gamma) 为focal loss中 (1-pt)**γ
+
+        loss = torch.mul(self.alpha, loss.t())
+
+        loss = loss.mean()
+
         return loss
 
 
