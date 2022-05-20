@@ -877,7 +877,7 @@ if [ $stage -le 102 ]; then
   weight_p=0.1
   subset=
   stat_type=maxmargin
-  class_weight=cnc1_dur
+  class_weight=cnc1_dur_cbl99
   max_cls_weight=0.8
         # --milestones 15,25,35,45 \
 #               --train-trials trials_2w \
