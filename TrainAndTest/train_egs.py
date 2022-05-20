@@ -760,6 +760,7 @@ def main():
 
             if early_stopping_scheduler.early_stop:
                 print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
+                end = epoch
                 break
 
     except KeyboardInterrupt:
