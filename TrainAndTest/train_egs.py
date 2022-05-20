@@ -526,17 +526,18 @@ def main():
         ce_criterion = None
         if args.class_weight == 'cnc1':
             class_weight = torch.tensor(C.CNC1_WEIGHT) * args.max_cls_weight + 1 - args.max_cls_weight
-            if len(class_weight) != train_dir.num_spks:
-                class_weight = None
         elif args.class_weight == 'cnc1_dur':
             class_weight = torch.tensor(C.CNC1_DUR_WEIGHT)  # * args.max_cls_weight + 1 - args.max_cls_weight
-            if len(class_weight) != train_dir.num_spks:
-                print('Skip Assigning Class weights %s' % args.class_weight)
-                class_weight = None
-            else:
-                print('Class weight is %s' % args.class_weight)
+        elif args.class_weight == 'cnc1_dur_cbl99':
+            class_weight = torch.tensor(C.CNC1_DUR_CBL99)  # * args.max_cls_weight + 1 - args.max_cls_weigh
         else:
             class_weight = None
+
+        if class_weight != None and len(class_weight) != train_dir.num_spks:
+            print('Skip Assigning Class weights %s' % args.class_weight)
+            class_weight = None
+        else:
+            print('Class weight is %s' % args.class_weight)
 
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
                                       all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio,

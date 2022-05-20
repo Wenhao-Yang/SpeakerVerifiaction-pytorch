@@ -898,6 +898,8 @@ if [ $stage -le 102 ]; then
       cls_str=_cls${class_weight}${max_cls_weight}
     elif [ "$class_weight" == "cnc1_dur" ]; then
       cls_str=_cls${class_weight}${max_cls_weight}
+    elif [ "$class_weight" == "cnc1_dur_cbl99" ]; then
+      cls_str=_cls${class_weight}${max_cls_weight}
     else
       cls_str=
     fi
