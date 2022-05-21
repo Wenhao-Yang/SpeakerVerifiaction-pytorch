@@ -810,8 +810,8 @@ def main():
 
             # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
-            lr_string = '\n\33[1;34m Ranking {}: Current \'{}\' learning rate is '.format(torch.distributed.get_rank(),
-                                                                                          config_args['optimizer'])
+            lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate is '.format(torch.distributed.get_rank(),
+                                                                                        config_args['optimizer'])
             for param_group in optimizer.param_groups:
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
