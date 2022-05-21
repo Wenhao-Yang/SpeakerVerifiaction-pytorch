@@ -650,8 +650,8 @@ def main():
                                'weight_decay': init_wd})
 
     optimizer = create_optimizer(model_para, config_args['optimizer'], **opt_kwargs)
-    early_stopping_scheduler = EarlyStopping(patience=args.early_patience,
-                                             min_delta=args.early_delta)
+    early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
+                                             min_delta=config_args['early_delta'])
 
     if 'resume' in config_args:
         if os.path.isfile(config_args['resume']):
