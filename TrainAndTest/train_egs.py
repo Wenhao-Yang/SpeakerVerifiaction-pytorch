@@ -564,7 +564,7 @@ def main():
         model_para = [{'params': rest_params},
                       {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
-    if model.filter_layer != None:
+    if hasattr(model, 'filter_layer') and model.filter_layer != None:
         # args.filter in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down', 'wav2down']:
         filter_params = list(map(id, model.filter_layer.parameters()))
         rest_params = filter(lambda p: id(p) not in filter_params, model_para[0]['params'])
