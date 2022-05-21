@@ -14,6 +14,7 @@ For all model, the pre_forward function is for extract vectors and forward for c
 """
 
 import torch
+import numpy as np
 import torch.nn.functional as F
 from torch import nn
 from torchvision.models.resnet import BasicBlock
@@ -809,8 +810,8 @@ class ThinResNet(nn.Module):
             encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
         else:
             self.avgpool = None
-            encode_input_dim = int(input_dim / self.conv1.stride[1] / 4 / last_stride * self.num_filter[
-                3] * block.expansion)
+            encode_input_dim = int(np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride * self.num_filter[
+                3] * block.expansion))
 
         if encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
