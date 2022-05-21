@@ -12,6 +12,7 @@ This file define resnet in 'Deep Residual Learning for Image Recognition'
 
 For all model, the pre_forward function is for extract vectors and forward for classification.
 """
+import pdb
 
 import torch
 import numpy as np
@@ -810,6 +811,7 @@ class ThinResNet(nn.Module):
             encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
         else:
             self.avgpool = None
+            pdb.set_trace()
             encode_input_dim = int(np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride * self.num_filter[
                 3] * block.expansion))
 
