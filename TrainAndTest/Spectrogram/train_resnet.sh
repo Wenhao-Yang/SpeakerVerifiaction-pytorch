@@ -460,7 +460,7 @@ if [ $stage -le 50 ]; then
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 5 \
+      --avg-size 0 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
