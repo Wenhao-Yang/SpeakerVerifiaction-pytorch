@@ -802,11 +802,11 @@ def main():
     try:
         for epoch in range(start, end):
 
-            if torch.is_distributed():
-                train_sampler.set_epoch(epoch)
-                valid_sampler.set_epoch(epoch)
-                train_extract_sampler.set_epoch(epoch)
-                extract_sampler.set_epoch(epoch)
+            # if torch. is_distributed():
+            train_sampler.set_epoch(epoch)
+            valid_sampler.set_epoch(epoch)
+            train_extract_sampler.set_epoch(epoch)
+            extract_sampler.set_epoch(epoch)
 
             # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
