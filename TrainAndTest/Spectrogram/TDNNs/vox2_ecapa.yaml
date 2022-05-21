@@ -75,7 +75,7 @@ model: ECAPA_TDNN
 kernel_size:
 alpha: 0
 embedding_size: 192
-batch_size: 64
+batch_size: 128
 dropout_p: 0.0
 activation: leakyrelu
 channels: 512,512,512,512,1500
@@ -110,7 +110,7 @@ check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_base
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
-gpu_id: 0,1
+gpu_id: 1,2
 
 test_interval: 4
 log_interval: 10

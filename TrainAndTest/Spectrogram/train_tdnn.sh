@@ -115,7 +115,7 @@ if [ $stage -le 10 ]; then
    feat=fb${input_dim}
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py \
+   CUDA_VISIBLE_DEVICES=1,2 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py \
    --train-config TrainAndTest/Spectrogram/TDNNs/vox2_ecapa.yaml
   done
   exit
