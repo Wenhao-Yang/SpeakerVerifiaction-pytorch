@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=20
+stage=50
 
 waited=0
 while [ $(ps 10392 | wc -l) -eq 2 ]; do
@@ -439,14 +439,18 @@ if [ $stage -le 50 ]; then
       --resnet-size ${resnet_size} \
       --downsample ${downsample} \
       --nj 12 \
-      --epochs 60 \
+      --epochs 50 \
       --patience 3 \
+      --early-stopping \
+      --early-patience 15 \
+      --early-delta 0.0001 \
+      --early-meta EER \
       --accu-steps 1 \
       --fast ${fast} \
       --lr 0.1 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var/checkpoint_25.pth \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var/checkpoint_10.pth \
       --kernel-size 5,5 \
       --channels 16,32,64,128 \
       --input-dim 161 \
@@ -473,5 +477,6 @@ if [ $stage -le 50 ]; then
       --cos-sim \
       --loss-type ${loss}
   done
+  exit
 
 fi
