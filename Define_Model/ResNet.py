@@ -811,9 +811,9 @@ class ThinResNet(nn.Module):
             encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
         else:
             self.avgpool = None
-            pdb.set_trace()
-            encode_input_dim = int(np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride * self.num_filter[
-                3] * block.expansion))
+            # pdb.set_trace()
+            encode_input_dim = int(np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * self.num_filter[
+                3] * block.expansion)
 
         if encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
