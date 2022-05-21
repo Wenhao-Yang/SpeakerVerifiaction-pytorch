@@ -43,6 +43,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
+from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
@@ -465,6 +466,9 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
     torch.cuda.empty_cache()
 
+    return {'EER': eer, 'Threshold': eer_threshold,
+            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
+
 
 def test(extract_loader, model, epoch, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
@@ -646,6 +650,8 @@ def main():
                                'weight_decay': init_wd})
 
     optimizer = create_optimizer(model_para, config_args['optimizer'], **opt_kwargs)
+    early_stopping_scheduler = EarlyStopping(patience=args.early_patience,
+                                             min_delta=args.early_delta)
 
     if 'resume' in config_args:
         if os.path.isfile(config_args['resume']):
@@ -795,18 +801,34 @@ def main():
 
     try:
         for epoch in range(start, end):
+
+            if torch.is_distributed():
+                train_sampler.set_epoch(epoch)
+                valid_sampler.set_epoch(epoch)
+                train_extract_sampler.set_epoch(epoch)
+                extract_sampler.set_epoch(epoch)
+
             # pdb.set_trace()
-            if torch.distributed.get_rank() == 0:
-                lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(config_args['optimizer'])
-                for param_group in optimizer.param_groups:
-                    lr_string += '{:.10f} '.format(param_group['lr'])
-                print('%s \33[0m' % lr_string)
+            # if torch.distributed.get_rank() == 0:
+            lr_string = '\n\33[1;34m Ranking {}: Current \'{}\' learning rate is '.format(torch.distributed.get_rank(),
+                                                                                          config_args['optimizer'])
+            for param_group in optimizer.param_groups:
+                lr_string += '{:.10f} '.format(param_group['lr'])
+            print('%s \33[0m' % lr_string)
 
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
+            valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+            valid_test_dict['Valid_Loss'] = valid_loss
 
-            if (epoch == 1 or epoch != (end - 2)) and (
-                    epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
+            if torch.distributed.get_rank() == 0 and config_args['early_stopping']:
+                early_stopping_scheduler(valid_test_dict[config_args['early_meta']], epoch)
+
+            if epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
+                    end - 1) or early_stopping_scheduler.best_epoch == epoch:
+
+                # if (epoch == 1 or epoch != (end - 2)) and (
+                #     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
                 model.eval()
                 check_path = '{}/checkpoint_{}.pth'.format(config_args['check_path'], epoch)
                 model_state_dict = model.module.state_dict() \
@@ -815,14 +837,22 @@ def main():
                             'state_dict': model_state_dict,
                             'criterion': ce}, check_path)
 
-                valid_test(train_extract_loader, model, epoch, xvector_dir)
-                test(extract_loader, model, epoch, xvector_dir)
-                if epoch != (end - 1) and torch.distributed.get_rank() == 0:
-                    try:
-                        shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
-                        shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                    except Exception as e:
-                        print('rm dir xvectors error:', e)
+                # valid_test(train_extract_loader, model, epoch, xvector_dir)
+                # test(extract_loader, model, epoch, xvector_dir)
+
+                if config_args['early_stopping']:
+                    pass
+                # elif early_stopping_scheduler.best_epoch == epoch or (
+                #         args.early_stopping == False and epoch % args.test_interval == 1):
+                elif epoch % config_args['test_interval'] == 1:
+                    test(extract_loader, model, epoch, xvector_dir)
+
+                # if epoch != (end - 1) and torch.distributed.get_rank() == 0:
+                #     try:
+                #         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
+                #         shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
+                #     except Exception as e:
+                #         print('rm dir xvectors error:', e)
 
             if config_args['scheduler'] == 'rop':
                 scheduler.step(valid_loss)
@@ -830,6 +860,11 @@ def main():
                 continue
             else:
                 scheduler.step()
+
+            if torch.distributed.get_rank() == 0 and early_stopping_scheduler.early_stop:
+                end = epoch
+                print('Best %s is Epoch %d.' % (config_args['early_meta'], early_stopping_scheduler.best_epoch))
+                break
 
     except KeyboardInterrupt:
         end = epoch
