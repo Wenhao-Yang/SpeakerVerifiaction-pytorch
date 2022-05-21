@@ -35,7 +35,7 @@ if [ $stage -le 0 ]; then
   scheduler=rop
   optimizer=sgd
   input_dim=161
-  batch_size=64
+  batch_size=128
 #  fast=none1
 #  downsample=k5
 
