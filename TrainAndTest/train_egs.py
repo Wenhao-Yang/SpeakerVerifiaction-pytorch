@@ -155,7 +155,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     other_loss = 0.
 
     ce_criterion, xe_criterion = ce
-    pbar = tqdm(enumerate(train_loader))
+    pbar = tqdm(enumerate(train_loader), total=len(train_loader))
     output_softmax = nn.Softmax(dim=1)
     lambda_ = (epoch / args.epochs) ** 2
 
