@@ -58,16 +58,16 @@ if [ $stage -le 0 ]; then
       --random-chunk 200 400 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --patience 3 \
+      --patience 2 \
       --early-stopping \
-      --early-patience 15 \
-      --early-delta 0.001 \
+      --early-patience 20 \
+      --early-delta 0.0001 \
       --early-meta EER \
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_wd2e5_var \
-      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_wd2e5_var/checkpoint_10.pth \
+      --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_wd2e5_var/checkpoint_21.pth \
       --channels 512,512,512,512,1536 \
       --embedding-size ${embedding_size} \
       --encoder-type ${encoder_type} \
