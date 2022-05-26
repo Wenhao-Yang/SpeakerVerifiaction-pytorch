@@ -711,12 +711,13 @@ class ScriptVerifyDataset(data.Dataset):
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
-                 vad_select=False,
+                 vad_select=False, sample_type='instance',
                  segment_len=c.N_SAMPLES, verbose=1, min_frames=50):
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
         self.segment_len = segment_len
+        self.sample_type = sample_type  # balance or instance
 
         feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
@@ -883,7 +884,12 @@ class ScriptTrainDataset(data.Dataset):
         self.loader = loader
         self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[-1]
         self.transform = transform
-        if samples_per_speaker == 0:
+
+        if sample_type == 'instance':
+            if verbose > 1:
+                print('    The number of sampling utterances is euqal to the number of total utterance.')
+
+        elif samples_per_speaker == 0:
             samples_per_speaker = np.power(2, np.ceil(np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
             if verbose > 1:
                 print(
@@ -988,7 +994,10 @@ class ScriptTrainDataset(data.Dataset):
         return feature, label
 
     def __len__(self):
-        return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
+        if self.sample_type == 'instance':
+            return len(self.base_utts)
+        else:
+            return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
 
 
 class ScriptValidDataset(data.Dataset):
