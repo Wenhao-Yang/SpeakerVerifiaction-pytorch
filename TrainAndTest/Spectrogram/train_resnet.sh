@@ -408,7 +408,7 @@ if [ $stage -le 50 ]; then
   encoder_type=SAP2
   alpha=0
   block_type=bottle_v2
-  batch_size=256
+  batch_size=128
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
