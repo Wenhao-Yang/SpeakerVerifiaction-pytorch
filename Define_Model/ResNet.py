@@ -678,7 +678,7 @@ class Bottleneck_v2(nn.Module):
             dilation: int = 1,
             norm_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
-        super(Bottleneck, self).__init__()
+        super(Bottleneck_v2, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(planes * (base_width / 64.)) * groups
