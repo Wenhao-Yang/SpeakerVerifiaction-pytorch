@@ -404,10 +404,10 @@ fi
 if [ $stage -le 50 ]; then
   datasets=vox2
   model=ThinResNet
-  resnet_size=34
+  resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=cbam_v2
+  block_type=bottle_v2
   batch_size=256
   embedding_size=256
   input_norm=Mean
