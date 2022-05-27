@@ -690,7 +690,7 @@ class Bottleneck_v2(nn.Module):
             self.conv2 = conv3x3(width, width, stride, groups, dilation)
             # self.conv2 = conv3x3(inplanes, planes, stride)
         elif stride == 2:
-            self.conv1 = conv5x5(width, width, stride, groups, dilation)
+            self.conv2 = conv5x5(width, width, stride, groups, dilation)
 
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, planes * self.expansion)
