@@ -773,12 +773,8 @@ class ThinResNet(nn.Module):
             block = CBAMBlock_v2
         elif block_type in ['basic', 'None']:
             block = BasicBlock if resnet_size < 50 else Bottleneck
-        elif block_type in ['bottle']:
-            block = Bottleneck
-        elif block_type in ['bottle_v2']:
-            block = Bottleneck_v2
         elif block_type == 'basic_v2':
-            block = BasicBlock_v2
+            block = BasicBlock_v2 if resnet_size < 50 else Bottleneck_v2
         elif block_type == 'se2block':
             block = SE_Res2Block
         elif block_type == 'res2block':

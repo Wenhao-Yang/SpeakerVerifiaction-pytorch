@@ -407,7 +407,7 @@ if [ $stage -le 50 ]; then
   resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=bottle_v2
+  block_type=basic_v2
   batch_size=128
   embedding_size=256
   input_norm=Mean
@@ -415,6 +415,7 @@ if [ $stage -le 50 ]; then
   feat_type=klsp
   sname=dev
 #  downsample=k3
+  downsample=k5
 
   mask_layer=rvec
   scheduler=rop
@@ -423,7 +424,16 @@ if [ $stage -le 50 ]; then
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for downsample in k5; do
+  for resnet_size in 34 50; do
+
+    if [ $resnet_size -eq 34 ];then
+      expansion=1
+      batch_size=256
+    else
+      expansion=2
+      batch_size=128
+    fi
+
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -453,7 +463,7 @@ if [ $stage -le 50 ]; then
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var_es \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde4_var_es/checkpoint_10.pth \
       --kernel-size 5,5 \
-      --expansion 2 \
+      --expansion ${expansion} \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} \
