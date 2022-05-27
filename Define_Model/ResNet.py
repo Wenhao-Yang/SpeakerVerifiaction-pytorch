@@ -784,7 +784,7 @@ class ThinResNet(nn.Module):
         elif block_type == 'res2block':
             block = Res2Block
 
-        block.expansion = expansion
+        # block.expansion = expansion
         # num_filter = [32, 64, 128, 256]
 
         if replace_stride_with_dilation is None:
