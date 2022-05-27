@@ -25,7 +25,7 @@ if [ $stage -le 0 ]; then
   encoder_type=SAP2
   alpha=0
   block_type=res2tdnn
-  embedding_size=192
+  embedding_size=256
   input_norm=Mean
   loss=arcsoft
   feat_type=klsp
