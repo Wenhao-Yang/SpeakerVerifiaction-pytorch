@@ -973,6 +973,7 @@ class ThinResNet(nn.Module):
                 )
 
         layers = []
+        pdb.set_trace()
         layers.append(block(self.inplanes, planes, stride=stride, downsample=downsample))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
