@@ -423,7 +423,7 @@ def test(model, epoch, writer, xvector_dir):
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
     print(
-        '          \33[91mTest  ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
+        '          \33[91mTest  EER: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
             100. * eer, eer_threshold, mindcf_01, mindcf_001))
 
     writer.add_scalar('Test/EER', 100. * eer, epoch)
@@ -512,7 +512,7 @@ def main():
     elif args.loss_type == 'mulcenter':
         xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
                                        num_center=args.num_center)
-    elif args.loss_type == 'amsoft':
+    elif args.loss_type in ['amsoft', 'subam']:
         ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type in ['arcsoft', 'subarc']:
@@ -748,6 +748,7 @@ def main():
 
             if early_stopping_scheduler.early_stop:
                 print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
+                end = epoch
                 break
 
     except KeyboardInterrupt:

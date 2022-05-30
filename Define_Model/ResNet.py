@@ -677,7 +677,7 @@ class Bottleneck_v2(nn.Module):
             dilation: int = 1,
             norm_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
-        super(Bottleneck, self).__init__()
+        super(Bottleneck_v2, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(planes * (base_width / 64.)) * groups
@@ -689,7 +689,7 @@ class Bottleneck_v2(nn.Module):
             self.conv2 = conv3x3(width, width, stride, groups, dilation)
             # self.conv2 = conv3x3(inplanes, planes, stride)
         elif stride == 2:
-            self.conv1 = conv5x5(width, width, stride, groups, dilation)
+            self.conv2 = conv5x5(width, width, stride, groups, dilation)
 
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, planes * self.expansion)
@@ -773,12 +773,8 @@ class ThinResNet(nn.Module):
             block = CBAMBlock_v2
         elif block_type in ['basic', 'None']:
             block = BasicBlock if resnet_size < 50 else Bottleneck
-        elif block_type in ['bottle']:
-            block = Bottleneck
-        elif block_type in ['bottle_v2']:
-            block = Bottleneck_v2
         elif block_type == 'basic_v2':
-            block = BasicBlock_v2
+            block = BasicBlock_v2 if resnet_size < 50 else Bottleneck_v2
         elif block_type == 'se2block':
             block = SE_Res2Block
         elif block_type == 'res2block':
@@ -873,7 +869,7 @@ class ThinResNet(nn.Module):
             encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
         else:
             self.avgpool = None
-            encode_input_dim = int(input_dim / self.conv1.stride[1] / 4 / last_stride * self.num_filter[
+            encode_input_dim = int(np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * self.num_filter[
                 3] * block.expansion)
 
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))

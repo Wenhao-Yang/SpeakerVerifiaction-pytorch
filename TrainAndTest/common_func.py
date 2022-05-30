@@ -536,6 +536,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
     parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
     parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
+    parser.add_argument('--expansion', default=1, type=int, metavar='N', help='acoustic feature dimension')
 
     parser.add_argument('--red-ratio', default=8, type=int, metavar='N', help='acoustic feature dimension')
     parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
@@ -774,9 +775,7 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
 
     parser.add_argument('--valid-dir-a', type=str, help='path to dataset')
     parser.add_argument('--valid-dir-b', type=str, help='path to dataset')
-    parser.add_argument('--test-dir', type=str,
-                        default='/home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_power',
-                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
     parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
 
     parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
