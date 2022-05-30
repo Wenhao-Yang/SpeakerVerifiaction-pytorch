@@ -353,6 +353,7 @@ if [ $stage -le 50 ]; then
   optimizer=sgd
   fast=none1
   expansion=4
+  chn=16
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
