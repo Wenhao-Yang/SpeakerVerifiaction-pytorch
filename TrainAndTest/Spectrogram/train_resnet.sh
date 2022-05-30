@@ -357,13 +357,13 @@ if [ $stage -le 50 ]; then
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for resnet_size in 50 101; do
-      if [ $resnet_size -eq 50 ];then
-#      expansion=2
-      batch_size=256
-    else
-#      expansion=2
-      batch_size=128
-    fi
+#      if [ $resnet_size -eq 50 ];then
+##      expansion=2
+##      batch_size=256
+#    else
+##      expansion=2
+#      batch_size=128
+#    fi
 
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
