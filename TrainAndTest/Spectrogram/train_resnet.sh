@@ -407,7 +407,7 @@ if [ $stage -le 50 ]; then
   resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=basic_v2
+  block_type=basic
   batch_size=128
   embedding_size=256
   input_norm=Mean
