@@ -13,7 +13,7 @@ This file define resnet in 'Deep Residual Learning for Image Recognition'
 For all model, the pre_forward function is for extract vectors and forward for classification.
 """
 import pdb
-
+import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
