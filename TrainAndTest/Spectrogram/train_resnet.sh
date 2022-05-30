@@ -352,16 +352,16 @@ if [ $stage -le 50 ]; then
   scheduler=rop
   optimizer=sgd
   fast=none1
-  expansion=2
+  expansion=4
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for resnet_size in 50 101; do
       if [ $resnet_size -eq 50 ];then
-      expansion=2
+#      expansion=2
       batch_size=256
     else
-      expansion=2
+#      expansion=2
       batch_size=128
     fi
 
