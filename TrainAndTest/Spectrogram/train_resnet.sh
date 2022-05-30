@@ -389,10 +389,10 @@ if [ $stage -le 50 ]; then
       --resnet-size ${resnet_size} \
       --downsample ${downsample} \
       --nj 12 \
-      --epochs 60 \
-      --patience 3 \
+      --epochs 100 \
+      --patience 4 \
       --early-stopping \
-      --early-patience 15 \
+      --early-patience 20 \
       --early-delta 0.0001 \
       --early-meta EER \
       --accu-steps 1 \
