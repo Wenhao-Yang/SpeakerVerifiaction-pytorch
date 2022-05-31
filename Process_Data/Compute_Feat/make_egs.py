@@ -52,7 +52,7 @@ parser.add_argument('--out-dir', type=str, required=True, help='number of jobs t
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--feat-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp'],
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--sample-type', type=str, choices=['instance', 'balance'],
+parser.add_argument('--sample-type', type=str, choices=['instance', 'balance', 'half_balance'],
                     default='balance', help='sample type for datasets')
 parser.add_argument('--out-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp'], default='kaldi_cmp',
                     help='number of jobs to make feats (default: 10)')

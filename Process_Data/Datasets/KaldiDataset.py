@@ -743,31 +743,32 @@ class ScriptTrainDataset(data.Dataset):
                     uid2vad[uid] = vad_offset
 
         total_frames = 0
-        if os.path.exists(utt2num_frames):
-            with open(utt2num_frames, 'r') as f:
-                for l in f.readlines():
-                    uid, num_frames = l.split()
-                    if uid in uid2vad:
-                        num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
-                    num_frames = int(num_frames)
+        if self.sample_type != 'balance':
+            if os.path.exists(utt2num_frames):
+                with open(utt2num_frames, 'r') as f:
+                    for l in f.readlines():
+                        uid, num_frames = l.split()
+                        if uid in uid2vad:
+                            num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
+                        num_frames = int(num_frames)
 
-                    if num_frames >= min_frames:
-                        total_frames += num_frames
-                        this_numofseg = int(np.ceil(float(num_frames) / segment_len))
+                        if num_frames >= min_frames:
+                            total_frames += num_frames
+                            this_numofseg = int(np.ceil(float(num_frames) / segment_len))
 
-                        for i in range(this_numofseg):
-                            end = min((i + 1) * segment_len, num_frames)
-                            start = min(end - segment_len, 0)
-                            base_utts.append((uid, start, end))
-                    else:
-                        invalid_uid.append(uid)
+                            for i in range(this_numofseg):
+                                end = min((i + 1) * segment_len, num_frames)
+                                start = min(end - segment_len, 0)
+                                base_utts.append((uid, start, end))
+                        else:
+                            invalid_uid.append(uid)
 
-            if verbose > 0:
-                print('    There are {} basic segments.'.format(len(base_utts)))
-
-                # if int(num_frames) < 50:
-                #     invalid_uid.append(uid)
+                    # if int(num_frames) < 50:
+                    #     invalid_uid.append(uid)
         self.base_utts = base_utts
+        if verbose > 0:
+            print('    There are {} basic segments.'.format(len(base_utts)))
+
         dataset = {}
         with open(spk2utt, 'r') as u:
             all_cls = u.readlines()
