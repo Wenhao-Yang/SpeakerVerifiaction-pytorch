@@ -58,7 +58,7 @@ if [ $stage -le 1 ]; then
 
 #  feat=klfb
 #  feat_type=klfb
-  num_frames=600
+  num_frames=400
 #        --remove-vad \
 #--domain \
 
