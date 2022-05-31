@@ -59,6 +59,7 @@ if [ $stage -le 1 ]; then
 #  feat=klfb
 #  feat_type=klfb
   num_frames=400
+  input_per_spks=512
 #        --remove-vad \
 #--domain \
 
@@ -72,8 +73,7 @@ if [ $stage -le 1 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --sample-type instance \
-      --input-per-spks 1024 \
+      --input-per-spks ${input_per_spks} \
       --num-frames ${num_frames} \
       --feat-format kaldi \
       --out-format kaldi_cmp \
@@ -84,10 +84,9 @@ if [ $stage -le 1 ]; then
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
-      --sample-type instance \
       --feat-type ${feat_type} \
       --num-frames ${num_frames} \
-      --input-per-spks 1024 \
+      --input-per-spks ${input_per_spks} \
       --feat-format kaldi \
       --out-format kaldi_cmp \
       --num-valid 2 \
