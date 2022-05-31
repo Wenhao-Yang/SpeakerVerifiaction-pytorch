@@ -765,6 +765,7 @@ class ScriptTrainDataset(data.Dataset):
 
                     # if int(num_frames) < 50:
                     #     invalid_uid.append(uid)
+        random.shuffle(base_utts)
         self.base_utts = base_utts
         if verbose > 0:
             print('    There are {} basic segments.'.format(len(base_utts)))
