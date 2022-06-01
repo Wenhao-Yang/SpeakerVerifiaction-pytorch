@@ -357,7 +357,7 @@ if [ $stage -le 50 ]; then
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for resnet_size in 50 101; do
+  for resnet_size in 34 50 101; do
 #      if [ $resnet_size -eq 50 ];then
 ##      expansion=2
 ##      batch_size=256
@@ -387,7 +387,6 @@ if [ $stage -le 50 ]; then
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --resnet-size ${resnet_size} \
-      --downsample ${downsample} \
       --nj 12 \
       --epochs 100 \
       --patience 4 \
@@ -404,6 +403,7 @@ if [ $stage -le 50 ]; then
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es/checkpoint_25.pth \
       --kernel-size 5,5 \
       --channels ${channels} \
+      --downsample ${downsample} \
       --expansion ${expansion} \
       --input-dim 161 \
       --block-type ${block_type} \
