@@ -1295,7 +1295,7 @@ if [ $stage -le 79 ]; then
   scheduler=rop
 #  mask_layer=gau_noise
   mask_layer=attention
-  chn=16
+  chn=32
   if [ $chn -eq 64 ];then
     channels=64,128,256
     dp=0.25
