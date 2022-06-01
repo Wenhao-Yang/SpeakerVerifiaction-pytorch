@@ -397,7 +397,8 @@ if [ $stage -le 50 ]; then
       --early-meta EER \
       --accu-steps 1 \
       --fast ${fast} \
-      --lr 0.1 \
+      --lr 0.001 \
+      --base-lr 0.00000001 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es/checkpoint_25.pth \
