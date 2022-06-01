@@ -349,8 +349,8 @@ if [ $stage -le 50 ]; then
   batch_size=128
 
   mask_layer=rvec
-  scheduler=rop
-  optimizer=sgd
+  scheduler=cyclic
+  optimizer=adam
   fast=none1
   expansion=4
   chn=16
