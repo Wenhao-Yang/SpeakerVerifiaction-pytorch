@@ -357,13 +357,13 @@ if [ $stage -le 50 ]; then
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for resnet_size in 34 50 101; do
-    if [ $resnet_size -eq 34 ];then
+  for resnet_size in 18 34 50 101; do
+    if [ $resnet_size -le 34 ];then
       expansion=1
-#      batch_size=256
+      batch_size=256
     else
       expansion=4
-#      batch_size=128
+      batch_size=128
     fi
     if [ $chn -eq 16 ]; then
       channels=16,32,64,128
