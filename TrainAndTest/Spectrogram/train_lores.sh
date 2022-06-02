@@ -1296,7 +1296,12 @@ if [ $stage -le 79 ]; then
 #  mask_layer=gau_noise
   mask_layer=attention
   chn=32
-  if [ $chn -eq 64 ];then
+
+
+  weight=randt
+  for chn in 16 32 ; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    if [ $chn -eq 64 ];then
     channels=64,128,256
     dp=0.25
     dp_str=25
@@ -1310,8 +1315,6 @@ if [ $stage -le 79 ]; then
     dp_str=125
   fi
 
-  for weight in randt ; do
-    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
@@ -1335,8 +1338,8 @@ if [ $stage -le 79 ]; then
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var/checkpoint_50.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --channels ${channels} \
       --stride 2 \
