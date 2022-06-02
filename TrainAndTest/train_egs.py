@@ -739,17 +739,17 @@ def main():
                 #     except Exception as e:
                 #         print('rm dir xvectors error:', e)
 
+            if early_stopping_scheduler.early_stop:
+                print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
+                end = epoch
+                break
+
             if args.scheduler == 'rop':
                 scheduler.step(valid_loss)
             elif args.scheduler == 'cyclic':
                 continue
             else:
                 scheduler.step()
-
-            if early_stopping_scheduler.early_stop:
-                print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
-                end = epoch
-                break
 
     except KeyboardInterrupt:
         end = epoch
