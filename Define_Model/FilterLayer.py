@@ -815,6 +815,7 @@ class AttentionweightLayer(nn.Module):
             # drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
             drop_weight = self.drop_p.reshape(1, 1, -1).float()
 
+        drop_weight = drop_weight / drop_weight.max()
         # if x.is_cuda:
         #     drop_weight = drop_weight.cuda()
 
