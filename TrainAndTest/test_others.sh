@@ -1691,7 +1691,7 @@ if [ $stage -le 95 ]; then
   input_norm=Mean
   mask_layer=attention
   weight=randt
-  chn=32
+  chn=16
 
   for weight in randt ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -1740,7 +1740,7 @@ if [ $stage -le 95 ]; then
       --avg-size 4 \
       --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var/checkpoint_50.pth \
-      --model-yaml Data/checkpoint/LoResNet8/vox1/klsp_egs_attention/arcsoft_sgd_rop/Mean_cbam_None_dp20_alpha0_em256_randtreg_chn32_wd5e4_var/model.2022.06.03.yaml \
+      --model-yaml Data/checkpoint/LoResNet8/vox1/klsp_egs_attention/arcsoft_sgd_rop/Mean_cbam_None_dp125_alpha0_em256_randtreg_chn16_wd5e4_var/model.2022.06.02.yaml \
       --gpu-id 0 \
       --verbose 2 \
       --cos-sim
@@ -1751,6 +1751,8 @@ fi
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #|  vox1-test-rand   |   4.1994    |   0.2521    |   0.3782    |    0.5004    | 20220327 20:06:46 |   chn16
 
+
+#|  vox1-test-randt  |   3.5154    |   0.2561    |   0.3427    |    0.4371    | 20220604 09:37:27 |   chn32
 
 
 
