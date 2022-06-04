@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=95
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1690,9 +1690,25 @@ if [ $stage -le 95 ]; then
   test_subset=test
   input_norm=Mean
   mask_layer=attention
+  weight=randt
+  chn=32
 
-  for weight in rand ; do
+  for weight in randt ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+    if [ $chn -eq 64 ];then
+      channels=64,128,256
+      dp=0.25
+      dp_str=25
+    elif [ $chn -eq 32 ];then
+      channels=32,64,128
+      dp=0.2
+      dp_str=20
+    elif [ $chn -eq 16 ];then
+      channels=16,32,64
+      dp=0.125
+      dp_str=125
+    fi
+
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 8 \
@@ -1714,17 +1730,17 @@ if [ $stage -le 95 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 32,64,128 \
+      --channels ${channels} \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
       --input-length var \
-      --dropout-p 0.2 \
+      --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_${weight}_chn32_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_${weight}_chn32_wd5e4_var/checkpoint_50.pth \
-      --model-yaml Data/checkpoint/LoResNet8/vox1/klsp_egs_attention/arcsoft_sgd_rop/Mean_cbam_None_dp20_alpha0_em256_rand_chn16_wd5e4_var/model.2022.03.26.yaml \
+      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var/checkpoint_50.pth \
+      --model-yaml Data/checkpoint/LoResNet8/vox1/klsp_egs_attention/arcsoft_sgd_rop/Mean_cbam_None_dp20_alpha0_em256_randtreg_chn32_wd5e4_var/model.2022.06.03.yaml \
       --gpu-id 0 \
       --verbose 2 \
       --cos-sim
