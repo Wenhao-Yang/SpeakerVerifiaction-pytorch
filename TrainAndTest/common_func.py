@@ -499,6 +499,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='number of epochs to train (default: 10)')
     parser.add_argument('--scheduler', default='multi', type=str,
                         metavar='SCH', help='The optimizer to use (default: Adagrad)')
+    parser.add_argument('--cyclic-epoch', default=5, type=int,
+                        metavar='PAT', help='patience for scheduler (default: 4)')
     parser.add_argument('--patience', default=3, type=int,
                         metavar='PAT', help='patience for scheduler (default: 4)')
     parser.add_argument('--early-stopping', action='store_true', default=False, help='vad layers')
