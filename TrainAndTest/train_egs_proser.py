@@ -174,7 +174,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
 
-        half_batch_size = int(feats.shape[0] / 1)
+        half_batch_size = int(feats.shape[0] / 2)
         half_feats = feats[-half_batch_size:]
         half_label = label[-half_batch_size:]
 
