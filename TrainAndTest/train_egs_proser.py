@@ -184,9 +184,12 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         shuf_half_idx_ten = torch.LongTensor(half_idx)
 
-        half_a_feat = torch.masked_select(half_feats, mask=half_label != half_label[shuf_half_idx_ten])
+        select_bool = half_label != half_label[shuf_half_idx_ten]
+        select_bool = select_bool.repeat_interleave(half_feats.shape[1], dim=1)
+        # torch.repeat_interleave()
+        half_a_feat = torch.masked_select(half_feats, mask=select_bool)
         half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten],
-                                          mask=half_label != half_label[shuf_half_idx_ten])
+                                          mask=select_bool)
 
         lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
         half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
