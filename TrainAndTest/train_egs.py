@@ -626,7 +626,8 @@ def main():
         cycle_momentum = False if args.optimizer == 'adam' else True
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
                                           max_lr=args.lr,
-                                          step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
+                                          step_size_up=args.cyclic_epoch * int(
+                                              np.ceil(len(train_dir) / args.batch_size)),
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
     else:

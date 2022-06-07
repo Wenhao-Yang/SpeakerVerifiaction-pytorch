@@ -802,6 +802,9 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
                         help='number of epochs to train (default: 10)')
     parser.add_argument('--scheduler', default='multi', type=str,
                         metavar='SCH', help='The optimizer to use (default: Adagrad)')
+    parser.add_argument('--cyclic-epoch', default=5, type=int,
+                        metavar='PAT', help='patience for scheduler (default: 4)')
+
     parser.add_argument('--patience', default=4, type=int,
                         metavar='PAT', help='patience for scheduler (default: 4)')
     parser.add_argument('--gamma', default=0.75, type=float,
