@@ -625,7 +625,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     # num_meta_spks
     parser.add_argument('--most-sim-spk', type=int, default=8, metavar='M',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
-    parser.add_argument('--beta-alpha', type=float, default=1.0, metavar='MARGIN',
+    parser.add_argument('--beta-alpha', type=float, default=0.2, metavar='MARGIN',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
     # args for a-softmax
     parser.add_argument('--all-iteraion', type=int, default=0, metavar='M',
