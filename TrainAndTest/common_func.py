@@ -29,7 +29,7 @@ from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear
+from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear, MarginLinearDummy
 from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
@@ -120,7 +120,9 @@ def create_model(name, **kwargs):
     elif 'sub' in kwargs['loss_type']:
         model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
                                            num_center=kwargs['num_center'], )
-
+    elif kwargs['loss_type'] in ['proser']:
+        model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'], dummy_classes=kwargs['num_center'],
+                                             num_classes=kwargs['num_classes'])
     return model
 
 

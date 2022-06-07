@@ -20,6 +20,8 @@ https://github.com/CoinCheung/pytorch-loss/blob/master/amsoftmax.py
 """
 import math
 import pdb
+from random import random
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -643,3 +645,80 @@ class EVMClassifier(nn.Module):
 # amsoft = AMSoftmax(in_feats=3)
 # am_a = amsoft(a, a_label)
 # print("amsoftmax loss is {}".format(am_a))
+class MarginLinearDummy(nn.Module):
+    def __init__(self, feat_dim, num_classes, dummy_classes=1):
+        super(MarginLinearDummy, self).__init__()
+        self.feat_dim = feat_dim
+        self.num_classes = num_classes
+        self.dummy_classes = dummy_classes
+        self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes + dummy_classes), requires_grad=True)
+
+        nn.init.xavier_normal_(self.W, gain=1)
+
+    def forward(self, x):
+        # assert x.size()[0] == label.size()[0]
+        assert x.size()[1] == self.feat_dim
+
+        x_norm = F.normalize(x, dim=1)
+        w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
+
+        if self.dummy_classes > 1:
+            costh_dummy = torch.max(costh[:, -self.dummy_classes:], dim=1, keepdim=True)[0]
+            costh = torch.cat([costh[:, :-self.dummy_classes], costh_dummy], dim=1)
+
+        return costh  # .clamp(min=-1.0, max=1.)
+
+    def __repr__(self):
+        return "MarginLinearDummy(feat_dim=%f, num_classes=%d, dummy_classes=%d)" % (
+        self.feat_dim, self.num_classes, self.dummy_classes)
+
+
+class ProserLoss(nn.Module):
+
+    def __init__(self, margin=0.5, s=64, smooth_ratio=0, class_weight=None,
+                 beta_alpha=0.2, gamma=1.0, beta=1.0):
+        super(ProserLoss, self).__init__()
+        self.s = s
+        self.margin = margin
+        # self.dummy_classes = dummy_classes
+        self.beta_alpha = beta_alpha
+        self.gamma = gamma
+        self.beta = beta
+
+        self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss(weight=class_weight)
+        self.smooth_ratio = smooth_ratio
+
+    def forward(self, costh, label):
+
+        lb_view = label.view(-1, 1)
+
+        half_batch_size = int(costh.shape[0] / 1)
+        theta = costh.acos()
+
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
+
+        delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+
+        # pdb.set_trace()
+        if costh.is_cuda:
+            delt_theta = Variable(delt_theta.cuda())
+
+        costh_sm = self.s * (theta + delt_theta).cos()
+
+        half_a_costh_m = costh_sm[:half_batch_size]
+
+        half_b_costh_m = costh_sm[-half_batch_size:]
+        last_label = torch.LongTensor([costh.shape[1] - 1 for i in range(half_batch_size)])
+
+        loss = self.ce(half_a_costh_m, label[:half_batch_size]) + self.beta * self.ce(
+            half_a_costh_m.scatter_(1, lb_view[:half_batch_size], 0), last_label)
+        loss += self.gamma * self.ce(half_b_costh_m.scatter_(1, lb_view[-half_batch_size:], 0), last_label)
+
+        return loss
+
+    def __repr__(self):
+        return "ProserLoss(margin=%f, s=%d, smooth_ratio=%s, beta_alpha=%s, gamma=%s)" % (
+        self.margin, self.s, self.smooth_ratio,
+        self.beta_alpha, self.gamma)
