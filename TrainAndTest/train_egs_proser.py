@@ -170,9 +170,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         data, label = Variable(data), Variable(label)
         # pdb.set_trace()
-        classfier, feats = model(data)
+        feats = model.xvector(data, embedding_type='far')
         # cos_theta, phi_theta = classfier
-        classfier_label = classfier
+        # classfier_label = classfier
 
         half_batch_size = int(feats.shape[0] / 1)
         half_feats = feats[-half_batch_size:]
@@ -191,6 +191,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
         half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
         feats = torch.cat([feats[:half_batch_size], half_feat], dim=0)
+
+        classfier = model.classifier(feats)
+        classfier_label = classfier
         # print('max logit is ', classfier_label.max())
 
         if args.loss_type == 'soft':

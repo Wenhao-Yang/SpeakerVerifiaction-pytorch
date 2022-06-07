@@ -1022,7 +1022,7 @@ class ThinResNet(nn.Module):
 
         return logits, x
 
-    def xvector(self, x):
+    def xvector(self, x, embedding_type='near'):
         # pdb.set_trace()
         # print(x.shape)
         if self.filter_layer != None:
@@ -1054,7 +1054,10 @@ class ThinResNet(nn.Module):
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
-        embeddings = self.fc1[0](x)
+        if embedding_type == 'near':
+            embeddings = self.fc1[0](x)
+        else:
+            embeddings = self.fc1(x)
 
         return embeddings
 

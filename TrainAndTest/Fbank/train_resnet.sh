@@ -243,7 +243,7 @@ if [ $stage -le 40 ]; then
   block_type=cbam
   downsample=k3
   kernel=5,5
-  loss=arcsoft
+  loss=proser
   alpha=0
   input_norm=Mean
   mask_layer=baseline
@@ -304,9 +304,11 @@ if [ $stage -le 40 ]; then
 #      --remove-vad
 #  done
 
-  for input_dim in 64 80 ; do
+#  for input_dim in 64 80 ; do
+  for input_dim in 40 ; do
+
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    python TrainAndTest/train_egs.py \
+    python TrainAndTest/train_egs_proser.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
@@ -337,7 +339,7 @@ if [ $stage -le 40 ]; then
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 5 \
+      --avg-size 0 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
@@ -346,7 +348,7 @@ if [ $stage -le 40 ]; then
       --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 2,3 \
+      --gpu-id 1,2 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
