@@ -191,6 +191,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten],
                                           mask=select_bool)
 
+        pdb.set_trace()
         lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
         half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
         print(feats[:half_batch_size].shape, half_feat.shape)
