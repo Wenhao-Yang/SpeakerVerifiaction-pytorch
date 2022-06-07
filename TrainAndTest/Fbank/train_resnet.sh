@@ -492,6 +492,7 @@ if [ $stage -le 41 ]; then
       --feat-format kaldi \
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
+      --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 50 \
