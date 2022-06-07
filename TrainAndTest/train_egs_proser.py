@@ -190,6 +190,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
         half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
+        print(feats[:half_batch_size].shape, half_feat.shape)
         feats = torch.cat([feats[:half_batch_size], half_feat], dim=0)
 
         classfier = model.module.classifier(feats)
