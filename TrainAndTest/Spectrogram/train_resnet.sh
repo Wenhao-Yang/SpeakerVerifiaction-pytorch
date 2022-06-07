@@ -350,10 +350,12 @@ if [ $stage -le 50 ]; then
 
   mask_layer=rvec
   scheduler=cyclic
-  optimizer=adam
+  optimizer=sgd
   fast=none1
   expansion=4
   chn=16
+  cyclic_epoch=8
+#  nesterov
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
@@ -385,22 +387,24 @@ if [ $stage -le 50 ]; then
       --input-norm ${input_norm} \
       --random-chunk 200 400 \
       --optimizer ${optimizer} \
+      --nesterov \
+      --cyclic-epoch ${cyclic_epoch} \
       --scheduler ${scheduler} \
       --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 100 \
       --patience 4 \
       --early-stopping \
-      --early-patience 20 \
+      --early-patience 30 \
       --early-delta 0.0001 \
       --early-meta EER \
       --accu-steps 1 \
       --fast ${fast} \
-      --lr 0.001 \
-      --base-lr 0.00000001 \
+      --lr 0.1 \
+      --base-lr 0.000001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es_nestcyc${cyclic_epoch} \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es_nestcyc${cyclic_epoch}/checkpoint_25.pth \
       --kernel-size 5,5 \
       --channels ${channels} \
       --downsample ${downsample} \
