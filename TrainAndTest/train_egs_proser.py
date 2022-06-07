@@ -187,9 +187,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         select_bool = half_label != half_label[shuf_half_idx_ten]
         select_bool = select_bool.reshape(-1, 1).repeat_interleave(half_feats.shape[1], dim=1)
         # torch.repeat_interleave()
-        half_a_feat = torch.masked_select(half_feats, mask=select_bool)
+        half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, half_feats.shape[1])
         half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten],
-                                          mask=select_bool)
+                                          mask=select_bool).reshape(-1, half_feats.shape[1])
 
         pdb.set_trace()
         lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
