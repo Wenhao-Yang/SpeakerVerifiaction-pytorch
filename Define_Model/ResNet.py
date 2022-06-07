@@ -869,7 +869,7 @@ class ThinResNet(nn.Module):
             encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
         else:
             self.avgpool = None
-            print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
+            # print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
             encode_input_dim = int(np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * self.num_filter[
                 3] * block.expansion)
 

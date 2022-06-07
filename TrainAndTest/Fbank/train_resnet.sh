@@ -319,6 +319,7 @@ if [ $stage -le 40 ]; then
       --feat-format kaldi \
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
+      --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
       --nj 8 \
       --epochs 50 \
@@ -513,7 +514,7 @@ if [ $stage -le 41 ]; then
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 5 \
+      --avg-size 0 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
