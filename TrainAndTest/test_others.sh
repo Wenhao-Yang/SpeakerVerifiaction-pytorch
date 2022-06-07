@@ -1708,7 +1708,7 @@ if [ $stage -le 95 ]; then
       dp=0.125
       dp_str=125
     fi
-
+    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 8 \
@@ -1738,9 +1738,9 @@ if [ $stage -le 95 ]; then
       --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var/checkpoint_50.pth \
-      --model-yaml Data/checkpoint/LoResNet8/vox1/klsp_egs_attention/arcsoft_sgd_rop/Mean_cbam_None_dp125_alpha0_em256_randtreg_chn16_wd5e4_var/model.2022.06.02.yaml \
+      --xvector-dir Data/xvector/${check_path} \
+      --resume Data/checkpoint/${check_path}/checkpoint_50.pth \
+      --model-yaml Data/checkpoint/${check_path}/model.2022.06.02.yaml \
       --gpu-id 0 \
       --verbose 2 \
       --cos-sim
@@ -1749,10 +1749,20 @@ if [ $stage -le 95 ]; then
 fi
 
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
-#|  vox1-test-rand   |   4.1994    |   0.2521    |   0.3782    |    0.5004    | 20220327 20:06:46 |   chn16
+#|     vox1-test     |   4.2100    |   0.2511    |   0.3781    |    0.5214    | 20211004 15:15:00 |   chn16 baseline
+#|  vox1-test-clean  |   4.1092    |   0.2534    |   0.3652    |    0.5319    | 20211003 17:52:05 |
+#|   vox1-test-mel   |   4.2259    |   0.2573    |   0.3831    |    0.5475    | 20211003 17:49:54 |
+#|   vox1-test-aug   |   4.2683    |   0.2522    |   0.3505    |    0.4622    | 20211003 17:54:16 |
+#|  vox1-test-vox2   |   4.0933    |   0.2519    |   0.3792    |    0.4627    | 20211003 17:56:27 |
+#|  vox1-test-rand   |   4.1994    |   0.2521    |   0.3782    |    0.5004    | 20220327 20:06:46 |
+#|  vox1-test-randt  |   4.0668    |   0.2565    |   0.3700    |    0.5125    | 20220604 09:40:43 |
 
-
-#|  vox1-test-randt  |   3.5154    |   0.2561    |   0.3427    |    0.4371    | 20220604 09:37:27 |   chn32
+#|     vox1-test     |   3.6585    |   0.2510    |   0.3411    |    0.4408    | 20210930 11:08:10 |   chn32 baseline
+#|  vox1-test-clean  |   3.2715    |   0.2566    |   0.3187    |    0.3876    | 20210930 11:27:25 |
+#|   vox1-test-mel   |   3.4305    |   0.2551    |   0.3169    |    0.3806    | 20210930 11:24:51 |
+#|   vox1-test-aug   |   3.2715    |   0.2598    |   0.3201    |    0.3913    | 20210930 11:29:59 |
+#|  vox1-test-vox2   |   3.2556    |   0.2566    |   0.3032    |    0.4597    | 20211002 21:08:24 |
+#|  vox1-test-randt  |   3.5154    |   0.2561    |   0.3427    |    0.4371    | 20220604 09:37:27 |
 
 
 

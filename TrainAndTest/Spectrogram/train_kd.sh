@@ -35,7 +35,8 @@ if [ $stage -le 0 ]; then
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
   label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
-  kd_type=em_l2
+  kd_type=vanilla #em_l2
+  kd_loss=kld
 #  _${weight}
 
    for encoder_type in AVG ; do
@@ -62,8 +63,8 @@ if [ $stage -le 0 ]; then
        --mask-layer ${mask_layer} \
        --init-weight ${weight} \
        --milestones 10,20,30,40 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var_${kd_type} \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var_${kd_type}/checkpoint_50.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var_${kd_type}${kd_loss} \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var_${kd_type}${kd_loss}/checkpoint_50.pth \
        --kernel-size ${kernel} \
        --channels 16,32,64 \
        --stride 2 \
@@ -84,6 +85,7 @@ if [ $stage -le 0 ]; then
        --all-iteraion 0 \
        --loss-type ${loss} \
        --kd-type ${kd_type} \
+       --kd-loss ${kd_loss} \
        --distil-weight 0.5 \
        --teacher-model-yaml ${teacher_dir}/model.2022.01.05.yaml \
        --teacher-resume ${teacher_dir}/checkpoint_40.pth \

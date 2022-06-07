@@ -155,7 +155,11 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
-    kd_loss = nn.MSELoss()
+
+    if args.kd_loss == 'mse':
+        kd_loss = nn.MSELoss()
+    elif args.kd_loss == 'kld':
+        kd_loss = nn.KLDivLoss()
 
     for batch_idx, (data, label) in pbar:
 
