@@ -171,28 +171,31 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # data, label = Variable(data), Variable(label)
         # pdb.set_trace()
         # feats = model.module.xvector(data, embedding_type='far')
-        classfier, feats = model(data, proser=False, label=label)
+
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
 
-        # half_batch_size = int(feats.shape[0] / 2)
-        # half_feats = feats[-half_batch_size:]
-        # half_label = label[-half_batch_size:]
+        half_batch_size = int(data.shape[0] / 2)
+        half_label = label[-half_batch_size:]
         #
-        # half_idx = [i for i in range(half_batch_size)]
+        half_idx = [i for i in range(half_batch_size)]
         # half_idx_ten = torch.LongTensor(half_idx)
-        # random.shuffle(half_idx)
+        random.shuffle(half_idx)
+        shuf_half_idx_ten = torch.LongTensor(half_idx)
         #
-        # shuf_half_idx_ten = torch.LongTensor(half_idx)
-        #
-        # select_bool = half_label != half_label[shuf_half_idx_ten]
+        select_bool = half_label != half_label[shuf_half_idx_ten]
         # select_bool = select_bool.reshape(-1, 1).repeat_interleave(half_feats.shape[1], dim=1)
+        select_bool = select_bool.reshape(-1, 1, 1, 1).repeat(1, data.shape[1], data.shape[2], data.shape[3])
+        # data = torch.masked_select(data, mask=select_bool)
+        half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
+
+        classfier, feats = model(data, proser=shuf_half_idx_ten, label=select_bool)
+
         # # torch.repeat_interleave()
         # half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, half_feats.shape[1])
         # half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten],
         #                                   mask=select_bool).reshape(-1, half_feats.shape[1])
         #
-        # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
         #
         # # pdb.set_trace()
         # lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
@@ -202,7 +205,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # classfier = model.module.classifier(feats)
         classfier_label = classfier
-        label = torch.cat([half_label[:half_batch_size], half_b_label], dim=0)
+        label = torch.cat([label[:half_batch_size], half_b_label], dim=0)
         # print('max logit is ', classfier_label.max())
 
         if args.loss_type == 'soft':

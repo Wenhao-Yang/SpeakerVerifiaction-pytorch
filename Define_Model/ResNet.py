@@ -1021,25 +1021,24 @@ class ThinResNet(nn.Module):
         if feature_map:
             return embeddings, x
 
-        if proser and label != None:
+        if proser != None and label != None:
             half_batch_size = int(x.shape[0] / 2)
             half_feats = x[-half_batch_size:]
             half_label = label[-half_batch_size:]
 
-            half_idx = [i for i in range(half_batch_size)]
-            half_idx_ten = torch.LongTensor(half_idx)
-            random.shuffle(half_idx)
+            # half_idx = [i for i in range(half_batch_size)]
+            # half_idx_ten = torch.LongTensor(half_idx)
+            # random.shuffle(half_idx)
 
-            shuf_half_idx_ten = torch.LongTensor(half_idx)
-
-            select_bool = half_label != half_label[shuf_half_idx_ten]
-            select_bool = select_bool.reshape(-1, 1).repeat_interleave(half_feats.shape[1], dim=1)
+            shuf_half_idx_ten = proser
+            select_bool = label
+            # select_bool = select_bool.reshape(-1, 1).repeat_interleave(half_feats.shape[1], dim=1)
             # torch.repeat_interleave()
             half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, half_feats.shape[1])
             half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten],
                                               mask=select_bool).reshape(-1, half_feats.shape[1])
 
-            half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
+            # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
 
             # pdb.set_trace()
             lamda_beta = np.random.beta(0.2, 0.2)
