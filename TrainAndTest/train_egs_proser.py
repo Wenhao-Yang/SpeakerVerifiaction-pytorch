@@ -227,7 +227,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             other_loss += loss_xent
             loss = loss_xent + loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF', 'proser']:
-            loss = xe_criterion(classfier, label)
+            loss = xe_criterion(classfier, label, half_batch_size=half_batch_size)
         elif 'arcdist' in args.loss_type:
             # pdb.set_trace()
             loss_cent = args.loss_ratio * ce_criterion(classfier, label)

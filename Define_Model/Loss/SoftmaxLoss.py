@@ -689,11 +689,11 @@ class ProserLoss(nn.Module):
         self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss(weight=class_weight)
         self.smooth_ratio = smooth_ratio
 
-    def forward(self, costh, label):
+    def forward(self, costh, label, half_batch_size):
 
         lb_view = label.view(-1, 1)
 
-        half_batch_size = int(costh.shape[0] / 1)
+        # half_batch_size = int(costh.shape[0] / 2)
         theta = costh.acos()
 
         if lb_view.is_cuda:
@@ -708,8 +708,8 @@ class ProserLoss(nn.Module):
         costh_sm = self.s * (theta + delt_theta).cos()
 
         half_a_costh_m = costh_sm[:half_batch_size].clone()
+        half_b_costh_m = costh_sm[half_batch_size:].clone()
 
-        half_b_costh_m = costh_sm[-half_batch_size:].clone()
         last_label = torch.LongTensor([costh.shape[1] - 1 for i in range(half_batch_size)])
         if costh.is_cuda:
             last_label = last_label.cuda()
