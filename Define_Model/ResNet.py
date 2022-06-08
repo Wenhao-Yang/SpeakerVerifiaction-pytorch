@@ -1036,7 +1036,7 @@ class ThinResNet(nn.Module):
             # torch.repeat_interleave()
             half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
 
-            print(half_feats[shuf_half_idx_ten].shape, select_bool.shape)
+            print(half_feats[shuf_half_idx_ten], select_bool)
             half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten], mask=select_bool).reshape(-1,
                                                                                                        self.embedding_size)
 
