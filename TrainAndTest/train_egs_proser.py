@@ -199,6 +199,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         classfier = model.module.classifier(feats)
         classfier_label = classfier
+        label = torch.cat([half_label[:half_batch_size], half_label[shuf_half_idx_ten]], dim=0)
         # print('max logit is ', classfier_label.max())
 
         if args.loss_type == 'soft':
