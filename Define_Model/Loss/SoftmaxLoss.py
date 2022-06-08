@@ -711,6 +711,8 @@ class ProserLoss(nn.Module):
 
         half_b_costh_m = costh_sm[-half_batch_size:]
         last_label = torch.LongTensor([costh.shape[1] - 1 for i in range(half_batch_size)])
+        if costh.is_cuda:
+            last_label = last_label.cuda()
 
         loss = self.ce(half_a_costh_m, label[:half_batch_size]) + self.beta * self.ce(
             half_a_costh_m.scatter_(1, lb_view[:half_batch_size], 0), last_label)
