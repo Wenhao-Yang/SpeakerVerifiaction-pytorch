@@ -1037,7 +1037,7 @@ class ThinResNet(nn.Module):
             # torch.repeat_interleave()
             half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
 
-            print(half_feats[shuf_half_idx_ten], select_bool)
+            # print(half_feats[shuf_half_idx_ten], select_bool)
             half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten], mask=select_bool).reshape(-1,
                                                                                                        self.embedding_size)
 
@@ -1046,7 +1046,7 @@ class ThinResNet(nn.Module):
             # pdb.set_trace()
             lamda_beta = np.random.beta(0.2, 0.2)
             half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
-            print(x[:half_batch_size].shape, half_feat.shape)
+            # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
         logits = "" if self.classifier == None else self.classifier(x)
