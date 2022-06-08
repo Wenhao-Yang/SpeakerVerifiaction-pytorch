@@ -37,9 +37,25 @@ if [ $stage -le 0 ]; then
   label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
   kd_type=vanilla #em_l2
   kd_loss=kld
+  chn=32
 #  _${weight}
 
    for encoder_type in AVG ; do
+
+     if [ $chn -eq 64 ];then
+      channels=64,128,256
+      dp=0.25
+      dp_str=25
+    elif [ $chn -eq 32 ];then
+      channels=32,64,128
+      dp=0.2
+      dp_str=20
+    elif [ $chn -eq 16 ];then
+      channels=16,32,64
+      dp=0.125
+      dp_str=125
+    fi
+
      echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs_kd.py \
        --model ${model} \
@@ -63,10 +79,10 @@ if [ $stage -le 0 ]; then
        --mask-layer ${mask_layer} \
        --init-weight ${weight} \
        --milestones 10,20,30,40 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var_${kd_type}${kd_loss} \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp125_alpha${alpha}_em${embedding_size}_wd5e4_chn16_var_${kd_type}${kd_loss}/checkpoint_50.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss} \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss}/checkpoint_50.pth \
        --kernel-size ${kernel} \
-       --channels 16,32,64 \
+       --channels ${channels} \
        --stride 2 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
@@ -78,7 +94,7 @@ if [ $stage -le 0 ]; then
        --margin 0.2 \
        --s 30 \
        --weight-decay 0.0005 \
-       --dropout-p 0.125 \
+       --dropout-p ${dp} \
        --gpu-id 0,1 \
        --extract \
        --cos-sim \
