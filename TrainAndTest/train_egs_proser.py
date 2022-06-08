@@ -191,6 +191,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten],
                                           mask=select_bool).reshape(-1, half_feats.shape[1])
 
+        half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
+
         pdb.set_trace()
         lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
         half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
@@ -199,7 +201,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         classfier = model.module.classifier(feats)
         classfier_label = classfier
-        label = torch.cat([half_label[:half_batch_size], half_label[shuf_half_idx_ten]], dim=0)
+        label = torch.cat([half_label[:half_batch_size], half_b_label], dim=0)
         # print('max logit is ', classfier_label.max())
 
         if args.loss_type == 'soft':
