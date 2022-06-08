@@ -184,10 +184,11 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         shuf_half_idx_ten = torch.LongTensor(half_idx)
         #
         select_bool = half_label != half_label[shuf_half_idx_ten]
+        pdb.set_trace()
+        half_b_label = torch.masked_select(half_label, mask=select_bool)
         # select_bool = select_bool.reshape(-1, 1).repeat_interleave(half_feats.shape[1], dim=1)
         select_bool = select_bool.reshape(-1, 1, 1, 1).repeat(1, data.shape[1], data.shape[2], data.shape[3])
         # data = torch.masked_select(data, mask=select_bool)
-        half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
 
         classfier, feats = model(data, proser=shuf_half_idx_ten, label=select_bool)
 

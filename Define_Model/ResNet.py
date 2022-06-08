@@ -1024,7 +1024,7 @@ class ThinResNet(nn.Module):
         if proser != None and label != None:
             half_batch_size = int(x.shape[0] / 2)
             half_feats = x[-half_batch_size:]
-            half_label = label[-half_batch_size:]
+            # half_label = label[-half_batch_size:]
 
             # half_idx = [i for i in range(half_batch_size)]
             # half_idx_ten = torch.LongTensor(half_idx)
