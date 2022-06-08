@@ -260,6 +260,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             raise ValueError('Loss value is NaN!')
 
         # compute gradient and update weights
+        torch.autograd.set_detect_anomaly(True)
         loss.backward()
 
         if args.grad_clip > 0:
