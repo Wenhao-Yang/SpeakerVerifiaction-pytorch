@@ -657,7 +657,7 @@ class MarginLinearDummy(nn.Module):
 
     def forward(self, x):
         # assert x.size()[0] == label.size()[0]
-        assert x.size()[1] == self.feat_dim
+        assert x.shape[1] == self.feat_dim
 
         x_norm = F.normalize(x, dim=1)
         w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
