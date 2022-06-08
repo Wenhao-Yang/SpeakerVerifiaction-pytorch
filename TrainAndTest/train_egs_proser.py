@@ -170,34 +170,35 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # data, label = Variable(data), Variable(label)
         # pdb.set_trace()
-        feats = model.module.xvector(data, embedding_type='far')
+        # feats = model.module.xvector(data, embedding_type='far')
+        feats = model(data, proser=False, label=label)
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
 
-        half_batch_size = int(feats.shape[0] / 2)
-        half_feats = feats[-half_batch_size:]
-        half_label = label[-half_batch_size:]
-
-        half_idx = [i for i in range(half_batch_size)]
-        half_idx_ten = torch.LongTensor(half_idx)
-        random.shuffle(half_idx)
-
-        shuf_half_idx_ten = torch.LongTensor(half_idx)
-
-        select_bool = half_label != half_label[shuf_half_idx_ten]
-        select_bool = select_bool.reshape(-1, 1).repeat_interleave(half_feats.shape[1], dim=1)
-        # torch.repeat_interleave()
-        half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, half_feats.shape[1])
-        half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten],
-                                          mask=select_bool).reshape(-1, half_feats.shape[1])
-
-        half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
-
-        # pdb.set_trace()
-        lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
-        half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
-        print(feats[:half_batch_size].shape, half_feat.shape)
-        feats = torch.cat([feats[:half_batch_size], half_feat], dim=0)
+        # half_batch_size = int(feats.shape[0] / 2)
+        # half_feats = feats[-half_batch_size:]
+        # half_label = label[-half_batch_size:]
+        #
+        # half_idx = [i for i in range(half_batch_size)]
+        # half_idx_ten = torch.LongTensor(half_idx)
+        # random.shuffle(half_idx)
+        #
+        # shuf_half_idx_ten = torch.LongTensor(half_idx)
+        #
+        # select_bool = half_label != half_label[shuf_half_idx_ten]
+        # select_bool = select_bool.reshape(-1, 1).repeat_interleave(half_feats.shape[1], dim=1)
+        # # torch.repeat_interleave()
+        # half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, half_feats.shape[1])
+        # half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten],
+        #                                   mask=select_bool).reshape(-1, half_feats.shape[1])
+        #
+        # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
+        #
+        # # pdb.set_trace()
+        # lamda_beta = np.random.beta(args.beta_alpha, args.beta_alpha)
+        # half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
+        # print(feats[:half_batch_size].shape, half_feat.shape)
+        # feats = torch.cat([feats[:half_batch_size], half_feat], dim=0)
 
         classfier = model.module.classifier(feats)
         classfier_label = classfier
