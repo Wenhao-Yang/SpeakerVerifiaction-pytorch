@@ -1029,7 +1029,7 @@ class ThinResNet(nn.Module):
             # half_idx = [i for i in range(half_batch_size)]
             # half_idx_ten = torch.LongTensor(half_idx)
             # random.shuffle(half_idx)
-            # pdb.set_trace()
+            pdb.set_trace()
             shuf_half_idx_ten = proser
             select_bool = label[:, 0, 0, 0]
             select_bool = select_bool.reshape(-1, 1).repeat_interleave(self.embedding_size, dim=1)
