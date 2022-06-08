@@ -171,7 +171,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # data, label = Variable(data), Variable(label)
         # pdb.set_trace()
         # feats = model.module.xvector(data, embedding_type='far')
-        feats = model(data, proser=False, label=label)
+        classfier, feats = model(data, proser=False, label=label)
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
 
@@ -200,7 +200,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # print(feats[:half_batch_size].shape, half_feat.shape)
         # feats = torch.cat([feats[:half_batch_size], half_feat], dim=0)
 
-        classfier = model.module.classifier(feats)
+        # classfier = model.module.classifier(feats)
         classfier_label = classfier
         label = torch.cat([half_label[:half_batch_size], half_b_label], dim=0)
         # print('max logit is ', classfier_label.max())
