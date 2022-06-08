@@ -1033,6 +1033,7 @@ class ThinResNet(nn.Module):
             shuf_half_idx_ten = proser
             select_bool = label[:, 0, 0, 0]
             select_bool = select_bool.reshape(-1, 1).repeat_interleave(self.embedding_size, dim=1)
+            select_bool = select_bool.to(device=half_feats.device)
             # torch.repeat_interleave()
             half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
 
