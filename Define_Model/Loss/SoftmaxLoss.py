@@ -707,9 +707,9 @@ class ProserLoss(nn.Module):
 
         costh_sm = self.s * (theta + delt_theta).cos()
 
-        half_a_costh_m = costh_sm[:half_batch_size].copy()
+        half_a_costh_m = costh_sm[:half_batch_size].clone()
 
-        half_b_costh_m = costh_sm[-half_batch_size:].copy()
+        half_b_costh_m = costh_sm[-half_batch_size:].clone()
         last_label = torch.LongTensor([costh.shape[1] - 1 for i in range(half_batch_size)])
         if costh.is_cuda:
             last_label = last_label.cuda()
