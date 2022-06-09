@@ -755,7 +755,7 @@ def main():
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
-            # train(train_loader, model, ce, optimizer, epoch, scheduler)
+            train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
             valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
             valid_test_dict['Valid_Loss'] = valid_loss
