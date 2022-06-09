@@ -355,7 +355,7 @@ def valid_class(valid_loader, model, ce, epoch):
             # pdb.set_trace()
             predicted_labels, feats = model(data)
 
-            loss = ce_criterion(out, predicted_labels)
+            loss = ce_criterion(predicted_labels, label)
             # if args.loss_type == 'asoft':
             #     predicted_labels, _ = out
             # else:
