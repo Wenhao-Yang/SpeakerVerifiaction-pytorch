@@ -306,7 +306,7 @@ if [ $stage -le 40 ]; then
 #  done
 
 #  for input_dim in 64 80 ; do
-  for input_dim in 40 ; do
+  for dummy in 10 20 40 100 200; do
 
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs_proser.py \
@@ -323,7 +323,7 @@ if [ $stage -le 40 ]; then
       --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
       --nj 8 \
-      --epochs 50 \
+      --epochs 10 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
