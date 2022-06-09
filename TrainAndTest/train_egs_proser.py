@@ -339,6 +339,7 @@ def valid_class(valid_loader, model, ce, epoch):
     total_loss = 0.
     other_loss = 0.
     ce_criterion, xe_criterion = ce
+    ce_criterion = nn.CrossEntropyLoss()
     softmax = nn.Softmax(dim=1)
 
     correct = 0.
@@ -353,34 +354,36 @@ def valid_class(valid_loader, model, ce, epoch):
             # compute output
             # pdb.set_trace()
             out, feats = model(data)
-            if args.loss_type == 'asoft':
-                predicted_labels, _ = out
-            else:
-                predicted_labels = out
 
-            classfier = predicted_labels
-            if args.loss_type == 'soft':
-                loss = ce_criterion(classfier, label)
-            elif args.loss_type == 'asoft':
-                classfier_label, _ = classfier
-                loss = xe_criterion(classfier, label)
-            elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
-                loss_cent = ce_criterion(classfier, label)
-                loss_xent = args.loss_ratio * xe_criterion(feats, label)
-                other_loss += float(loss_xent.item())
-
-                loss = loss_xent + loss_cent
-            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
-                loss = xe_criterion(classfier, label)
-            elif 'arcdist' in args.loss_type:
-                loss_cent = args.loss_ratio * ce_criterion(classfier, label)
-                if args.loss_lambda:
-                    loss_cent = loss_cent * lambda_
-
-                loss_xent = xe_criterion(classfier, label)
-
-                other_loss += float(loss_cent.item())
-                loss = loss_xent + loss_cent
+            loss = ce_criterion(out, label)
+            # if args.loss_type == 'asoft':
+            #     predicted_labels, _ = out
+            # else:
+            #     predicted_labels = out
+            #
+            # classfier = predicted_labels
+            # if args.loss_type == 'soft':
+            #     loss = ce_criterion(classfier, label)
+            # elif args.loss_type == 'asoft':
+            #     classfier_label, _ = classfier
+            #     loss = xe_criterion(classfier, label)
+            # elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
+            #     loss_cent = ce_criterion(classfier, label)
+            #     loss_xent = args.loss_ratio * xe_criterion(feats, label)
+            #     other_loss += float(loss_xent.item())
+            #
+            #     loss = loss_xent + loss_cent
+            # elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
+            #     loss = xe_criterion(classfier, label)
+            # elif 'arcdist' in args.loss_type:
+            #     loss_cent = args.loss_ratio * ce_criterion(classfier, label)
+            #     if args.loss_lambda:
+            #         loss_cent = loss_cent * lambda_
+            #
+            #     loss_xent = xe_criterion(classfier, label)
+            #
+            #     other_loss += float(loss_cent.item())
+            #     loss = loss_xent + loss_cent
 
             total_loss += float(loss.item())
             # pdb.set_trace()
