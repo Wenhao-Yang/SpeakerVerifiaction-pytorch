@@ -707,6 +707,8 @@ class ProserLoss(nn.Module):
 
         costh_sm = self.s * (theta + delt_theta).cos()
 
+        loss = self.ce(costh_sm, label)
+
         half_a_costh_m = costh_sm[:half_batch_size].clone()
         half_b_costh_m = costh_sm[half_batch_size:].clone()
 
@@ -718,8 +720,8 @@ class ProserLoss(nn.Module):
             lb_view = lb_view.cuda()
 
         # pdb.set_trace()
-        loss = self.ce(half_a_costh_m, label[:half_batch_size]) + self.beta * self.ce(
-            half_a_costh_m.clone().scatter_(1, lb_view[:half_batch_size], 0), last_a_label)
+        loss = loss + self.beta * self.ce(half_a_costh_m.clone().scatter_(1, lb_view[:half_batch_size], 0),
+                                          last_a_label)
         loss += self.gamma * self.ce(half_b_costh_m.scatter_(1, lb_view[half_batch_size:], 0), last_b_label)
 
         return loss
