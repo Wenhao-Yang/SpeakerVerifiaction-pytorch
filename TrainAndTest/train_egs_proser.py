@@ -572,7 +572,8 @@ def main():
         # else:
         class_weight = None
         xe_criterion = ProserLoss(margin=args.margin, s=args.s, smooth_ratio=args.smooth_ratio,
-                                  beta_alpha=0.2, gamma=1.0, beta=1.0, class_weight=class_weight)
+                                  beta_alpha=0.2, gamma=args.proser_ratio, beta=args.proser_ratio,
+                                  class_weight=class_weight)
     elif args.loss_type in ['aDCF']:
         ce_criterion = None
         xe_criterion = aDCFLoss(alpha=args.s, beta=(1 - args.smooth_ratio), gamma=args.smooth_ratio, omega=args.margin)
