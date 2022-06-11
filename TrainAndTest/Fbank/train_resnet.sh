@@ -306,7 +306,7 @@ if [ $stage -le 40 ]; then
 #  done
 
 #  for input_dim in 64 80 ; do
-  proser_ratio=0.5
+  proser_ratio=1
   dummy=50
   for proser_gamma in 0.01 ; do
 
@@ -324,8 +324,9 @@ if [ $stage -le 40 ]; then
       --input-norm ${input_norm} \
       --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
+      --patience 3 \
       --nj 8 \
-      --epochs 10 \
+      --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
