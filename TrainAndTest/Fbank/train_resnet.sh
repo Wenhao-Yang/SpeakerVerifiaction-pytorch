@@ -237,7 +237,7 @@ if [ $stage -le 40 ]; then
   testset=vox1
   feat_type=klfb
   model=ThinResNet
-  resnet_size=18
+  resnet_size=34
   encoder_type=SAP2
   embedding_size=256
   block_type=cbam
@@ -309,7 +309,7 @@ if [ $stage -le 40 ]; then
   proser_ratio=0.5
   proser_gamma=0.01
   dummy=50
-  for proser_ratio in 0.5 0.1 0.01 ; do
+  for proser_ratio in 0.5 ; do
 
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs_proser.py \
