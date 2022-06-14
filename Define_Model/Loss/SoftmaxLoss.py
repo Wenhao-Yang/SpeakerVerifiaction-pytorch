@@ -707,7 +707,7 @@ class ProserLoss(nn.Module):
 
         costh_sm = self.s * (theta + delt_theta).cos()
 
-        loss = self.ce(costh_sm, label)
+        loss = self.ce(costh_sm[:half_batch_size], label[:half_batch_size])
 
         half_a_costh_m = costh_sm[:half_batch_size].clone()
         half_b_costh_m = costh_sm[half_batch_size:].clone()
