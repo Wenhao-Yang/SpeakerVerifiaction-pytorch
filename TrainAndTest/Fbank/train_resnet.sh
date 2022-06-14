@@ -308,8 +308,8 @@ if [ $stage -le 40 ]; then
 #  for input_dim in 64 80 ; do
   proser_ratio=0.5
   proser_gamma=0.01
-  dummy=50
-  for proser_ratio in 0.5 ; do
+  dummy=500
+  for proser_ratio in 0.1 ; do
 
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs_proser.py \
