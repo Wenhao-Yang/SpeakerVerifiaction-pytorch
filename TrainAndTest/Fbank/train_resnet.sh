@@ -239,7 +239,7 @@ if [ $stage -le 40 ]; then
   model=ThinResNet
   resnet_size=34
   encoder_type=SAP2
-  embedding_size=256
+  embedding_size=512
   block_type=cbam
   downsample=k3
   kernel=5,5
