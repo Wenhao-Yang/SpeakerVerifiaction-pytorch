@@ -1045,6 +1045,9 @@ class ThinResNet(nn.Module):
 
             # pdb.set_trace()
             lamda_beta = np.random.beta(0.2, 0.2)
+            lamda_beta = max(0.2, lamda_beta)
+            lamda_beta = min(0.8, lamda_beta)
+
             half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
