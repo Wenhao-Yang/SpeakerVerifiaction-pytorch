@@ -710,7 +710,12 @@ def main():
 
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
-            valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+            if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
+                    end - 1)):
+                valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+            else:
+                valid_test_dict = {}
+
             valid_test_dict['Valid_Loss'] = valid_loss
 
             if args.early_stopping:
