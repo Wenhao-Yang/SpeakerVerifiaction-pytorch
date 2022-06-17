@@ -395,7 +395,7 @@ if [ $stage -le 40 ]; then
         --scheduler ${scheduler} \
         --resnet-size ${resnet_size} \
         --nj 12 \
-        --epochs 50 \
+        --epochs 60 \
         --patience 3 \
         --early-stopping \
         --early-patience 15 \
