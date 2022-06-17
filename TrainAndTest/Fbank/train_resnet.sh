@@ -309,10 +309,63 @@ if [ $stage -le 40 ]; then
   proser_ratio=0.5
   proser_gamma=0.01
   dummy=500
-  for proser_ratio in 1 ; do
+#  for proser_ratio in 1 ; do
+#
+#    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+#    python TrainAndTest/train_egs_proser.py \
+#      --model ${model} \
+#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
+#      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
+#      --train-trials trials_2w \
+#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
+#      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
+#      --feat-format kaldi \
+#      --random-chunk 200 400 \
+#      --input-norm ${input_norm} \
+#      --input-dim ${input_dim} \
+#      --resnet-size ${resnet_size} \
+#      --patience 3 \
+#      --nj 8 \
+#      --epochs 60 \
+#      --batch-size ${batch_size} \
+#      --optimizer ${optimizer} \
+#      --scheduler ${scheduler} \
+#      --lr 0.1 \
+#      --base-lr 0.000006 \
+#      --mask-layer ${mask_layer} \
+#      --milestones 10,20,30,40 \
+#      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var2_dummy${dummy}_beclga${proser_ratio}_gamma${proser_gamma} \
+#      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var2_dummy${dummy}_beclga${proser_ratio}_gamma${proser_gamma}/checkpoint_50.pth \
+#      --kernel-size ${kernel} \
+#      --downsample ${downsample} \
+#      --channels 16,32,64,128 \
+#      --fast ${fast} \
+#      --stride 2,1 \
+#      --block-type ${block_type} \
+#      --embedding-size ${embedding_size} \
+#      --time-dim 1 \
+#      --avg-size 0 \
+#      --encoder-type ${encoder_type} \
+#      --num-valid 2 \
+#      --alpha ${alpha} \
+#      --loss-type ${loss} \
+#      --proser-ratio ${proser_ratio} \
+#      --proser-gamma ${proser_gamma} \
+#      --num-center ${dummy} \
+#      --margin 0.2 \
+#      --s 30 \
+#      --weight-decay 0.0005 \
+#      --dropout-p 0.1 \
+#      --gpu-id 1 \
+#      --extract \
+#      --cos-sim \
+#      --all-iteraion 0 \
+#      --remove-vad
+#  done
 
+  for input_dim in 40; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    python TrainAndTest/train_egs_proser.py \
+    python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
@@ -322,20 +375,18 @@ if [ $stage -le 40 ]; then
       --feat-format kaldi \
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
-      --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
-      --patience 3 \
-      --nj 8 \
+      --nj 12 \
       --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --lr 0.1 \
-      --base-lr 0.000006 \
+      --base-lr 0.000001 \
       --mask-layer ${mask_layer} \
-      --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var2_dummy${dummy}_beclga${proser_ratio}_gamma${proser_gamma} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var2_dummy${dummy}_beclga${proser_ratio}_gamma${proser_gamma}/checkpoint_50.pth \
+      --milestones 10,20,30,40,50 \
+      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_shuf_var \
+      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_shuf_var/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -349,68 +400,16 @@ if [ $stage -le 40 ]; then
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} \
-      --proser-ratio ${proser_ratio} \
-      --proser-gamma ${proser_gamma} \
-      --num-center ${dummy} \
       --margin 0.2 \
       --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 1 \
+      --gpu-id 1,2 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
       --remove-vad
   done
-
-#  for input_dim in 64 80; do
-#    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-#    python TrainAndTest/train_egs.py \
-#      --model ${model} \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
-#      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
-#      --train-trials trials_2w \
-#      --shuffle \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
-#      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
-#      --feat-format kaldi \
-#      --random-chunk 200 400 \
-#      --input-norm ${input_norm} \
-#      --resnet-size ${resnet_size} \
-#      --nj 12 \
-#      --epochs 50 \
-#      --batch-size ${batch_size} \
-#      --optimizer ${optimizer} \
-#      --scheduler ${scheduler} \
-#      --lr 0.1 \
-#      --base-lr 0.000006 \
-#      --mask-layer ${mask_layer} \
-#      --milestones 10,20,30,40 \
-#      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
-#      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var/checkpoint_50.pth \
-#      --kernel-size ${kernel} \
-#      --downsample ${downsample} \
-#      --channels 16,32,64,128 \
-#      --fast ${fast} \
-#      --stride 2,2 \
-#      --block-type ${block_type} \
-#      --embedding-size ${embedding_size} \
-#      --time-dim 1 \
-#      --avg-size 5 \
-#      --encoder-type ${encoder_type} \
-#      --num-valid 2 \
-#      --alpha ${alpha} \
-#      --loss-type ${loss} \
-#      --margin 0.2 \
-#      --s 30 \
-#      --weight-decay 0.0005 \
-#      --dropout-p 0.1 \
-#      --gpu-id 0,1 \
-#      --extract \
-#      --cos-sim \
-#      --all-iteraion 0 \
-#      --remove-vad
-#  done
   exit
 fi
 
