@@ -374,8 +374,10 @@ if [ $stage -le 40 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
       --random-chunk 200 400 \
+      --input-dim ${input_dim} \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
+      --patience 3 \
       --nj 12 \
       --epochs 60 \
       --batch-size ${batch_size} \
