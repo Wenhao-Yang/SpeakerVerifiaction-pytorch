@@ -243,7 +243,7 @@ if [ $stage -le 40 ]; then
   block_type=cbam
   downsample=k3
   kernel=5,5
-  loss=proser
+  loss=arcsoft
   alpha=1
   input_norm=Mean
   mask_layer=baseline
