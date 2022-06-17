@@ -1412,11 +1412,12 @@ if [ $stage -le 80 ]; then
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 17 \
+      --epochs 50 \
       --scheduler rop \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.00001 \
+      --lr 0.1 \
+      --base-lr 0.000005 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wde4_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wde4_var/checkpoint_50.pth \
