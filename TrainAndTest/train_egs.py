@@ -746,7 +746,8 @@ def main():
                 #         print('rm dir xvectors error:', e)
 
             if early_stopping_scheduler.early_stop:
-                print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
+                print('Best %s in Epoch %d is %.6f.' % (
+                args.early_meta, early_stopping_scheduler.best_epoch, early_stopping_scheduler.best_loss))
                 end = epoch
                 break
 
