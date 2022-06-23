@@ -1406,7 +1406,6 @@ if [ $stage -le 80 ]; then
       chn=${chn}_${weight}
     fi
 
-
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wde4_var
