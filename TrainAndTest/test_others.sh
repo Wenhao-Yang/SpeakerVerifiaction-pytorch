@@ -1561,7 +1561,7 @@ if [ $stage -le 93 ]; then
   loss=arcsoft
   encod=SAP2
   alpha=0
-  datasets=vox1
+  datasets=vox2
   block_type=cbam
   encoder_type=None
   embedding_size=256
