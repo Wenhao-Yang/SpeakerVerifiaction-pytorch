@@ -2121,7 +2121,7 @@ if [ $stage -le 201 ]; then
   testset=vox1
   input_norm=Mean
 #  test_subset=
-  block_type=basic_v2
+  block_type=basic
   encoder_type=SAP2
   embedding_size=256
   resnet_size=34
