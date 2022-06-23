@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=95
+stage=93
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1567,8 +1567,30 @@ if [ $stage -le 93 ]; then
   embedding_size=256
   resnet_size=8
 
-  for sname in dev ; do
+  scheduler=rop
+  optimizer=sgd
+  input_norm=Mean
+  chn=32
+  sname=dev
+
+
+  for chn in 32 16 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+    if [ $chn -eq 64 ];then
+      channels=64,128,256
+      dp=0.25
+      dp_str=25
+    elif [ $chn -eq 32 ];then
+      channels=32,64,128
+      dp=0.2
+      dp_str=20
+    elif [ $chn -eq 16 ];then
+      channels=16,32,64
+      dp=0.125
+      dp_str=125
+    fi
+
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wde4_var
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 8 \
@@ -1578,7 +1600,7 @@ if [ $stage -le 93 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
-      --input-norm Mean \
+      --input-norm ${input_norm} \
       --input-dim 161 \
       --nj 12 \
       --embedding-size ${embedding_size} \
@@ -1587,28 +1609,32 @@ if [ $stage -le 93 ]; then
       --block-type ${block_type} \
       --kernel-size 5,5 \
       --stride 2,2 \
-      --channels 64,128,256 \
+      --channels ${channels} \
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
       --input-length var \
-      --dropout-p 0.25 \
+      --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_SAP2_dp25_alpha0_em256_wd5e4_var \
-      --resume Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_SAP2_dp25_alpha0_em256_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
   exit
-#+--------------+-------------+-------------+-------------+--------------+-------------------+
-#|   Test Set   |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
-#+--------------+-------------+-------------+-------------+--------------+-------------------+
-#|  vox1-test   |   3.2715%   |   0.2473    |   0.3078    |    0.4189    | 20210818 19:07:02 |
-#+--------------+-------------+-------------+-------------+--------------+-------------------+
-#|  vox1-test   |   2.8367%   |   0.2615    |   0.2735    |    0.4051    | 20210818 19:11:29 |
-#+--------------+-------------+-------------+-------------+--------------+-------------------+
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   3.2715%   |   0.2473    |   0.3078    |    0.4189    | 20210818 19:07:02 |
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   2.8367%   |   0.2615    |   0.2735    |    0.4051    | 20210818 19:11:29 | vox1_aug
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   2.9852%   |   0.2544    |   0.3110    |    0.3925    | 20211129 14:03:34 | SAP2
+
+# train vox2
+#+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   1.7285%   |   0.2826    |   0.1562    |    0.2301    | 20210917 16:54:39 |
 
 fi
 
