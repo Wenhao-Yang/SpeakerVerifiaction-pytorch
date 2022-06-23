@@ -747,7 +747,12 @@ def main():
 
             if early_stopping_scheduler.early_stop:
                 print('Best %s in Epoch %d is %.6f.' % (
-                args.early_meta, early_stopping_scheduler.best_epoch, early_stopping_scheduler.best_loss))
+                    args.early_meta, early_stopping_scheduler.best_epoch, early_stopping_scheduler.best_loss))
+                try:
+                    shutil.copy('{}/checkpoint_{}.pth'.format(args.check_path, early_stopping_scheduler.best_epoch),
+                                '{}/best.pth'.format(args.check_path))
+                except Exception as e:
+                    print(e)
                 end = epoch
                 break
 
