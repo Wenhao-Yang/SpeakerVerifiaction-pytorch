@@ -2138,9 +2138,9 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
-  for seed in 123457 ;do
+  for seed in 123458 ;do
     for resnet_size in 18 ; do
-      epoch=16
+      epoch=33
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
       if [ $resnet_size -le 34 ];then
         expansion=1
@@ -2206,6 +2206,7 @@ if [ $stage -le 201 ]; then
 
 # ResNet18
 #|     vox1-test     |   4.1145    |   0.2274    |   0.3849    |    0.4335    | 20220623 17:39:23 |
+#|     vox1-test     |   3.9714    |   0.2366    |   0.3860    |    0.4865    | 20220623 17:43:36 |
 
 fi
 
