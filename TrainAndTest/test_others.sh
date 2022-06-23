@@ -2178,6 +2178,7 @@ if [ $stage -le 201 ]; then
         --encoder-type ${encoder_type} \
         --block-type ${block_type} \
         --kernel-size 5,5 \
+        --expansion ${expansion} \
         --stride 2,2 \
         --channels ${channels} \
         --alpha ${alpha} \

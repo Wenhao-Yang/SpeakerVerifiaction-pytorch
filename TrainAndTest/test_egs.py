@@ -136,6 +136,7 @@ parser.add_argument('--inst-norm', action='store_true', default=False, help='bat
 parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
 parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
 parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--expansion', default=1, type=int, metavar='N', help='acoustic feature dimension')
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
@@ -624,6 +625,7 @@ if __name__ == '__main__':
         model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                         'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
                         'dilation': dilation, 'first_2d': args.first_2d,
+                        'expansion': args.expansion,
                         'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
                         'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
                         'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
