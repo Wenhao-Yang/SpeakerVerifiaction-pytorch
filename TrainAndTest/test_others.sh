@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=201
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2110,7 +2110,7 @@ if [ $stage -le 200 ]; then
 fi
 
 
-if [ $stage -le 200 ]; then
+if [ $stage -le 201 ]; then
   feat_type=klsp
   model=ThinResNet
   feat=log
@@ -2134,8 +2134,10 @@ if [ $stage -le 200 ]; then
   mask_layer=rvec
   batch_size=256
 
-  for seed in 123456 123457 123458 ;do
-    for resnet_size in 10 18 34 50 ; do
+#  123456 123457 123458
+#  10 18 34 50
+  for seed in 123456 ;do
+    for resnet_size in 10 ; do
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
       if [ $resnet_size -le 34 ];then
         expansion=1
@@ -2170,7 +2172,7 @@ if [ $stage -le 200 ]; then
         --loss-type ${loss} \
         --fast ${fast} \
         --downsample ${downsample} \
-        --encoder-type ${encod} \
+        --encoder-type ${encoder_type} \
         --block-type ${block_type} \
         --kernel-size 5,5 \
         --stride 2,2 \
@@ -2182,12 +2184,13 @@ if [ $stage -le 200 ]; then
         --avg-size 0 \
         --input-length var \
         --dropout-p 0.1 \
-        --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch_50_var \
-        --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+        --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch_15_var \
+        --resume Data/checkpoint/${model_dir}/checkpoint_15.pth \
         --gpu-id 0 \
         --cos-sim
     done
   done
+  exit
 fi
 
 
