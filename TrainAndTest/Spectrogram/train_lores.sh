@@ -1383,6 +1383,9 @@ if [ $stage -le 80 ]; then
   optimizer=sgd
   scheduler=rop
 
+  mask_layer=attention
+  weight=vox2
+
   for chn in 32 16 ; do
 
     if [ $chn -eq 64 ];then
@@ -1399,7 +1402,15 @@ if [ $stage -le 80 ]; then
       dp_str=125
     fi
 
+    if [ "$mask_layer" != "baseline" ];then
+      chn=${chn}_${weight}
+    fi
+
+
     echo -e "\n\033[1;4;31m Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wde4_var
+
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
@@ -1419,8 +1430,10 @@ if [ $stage -le 80 ]; then
       --lr 0.1 \
       --base-lr 0.000005 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wde4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wde4_var/checkpoint_50.pth \
+      --mask-layer ${mask_layer} \
+      --init-weight ${weight} \
+      --check-path Data/checkpoint/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --kernel-size ${kernel} \
       --channels ${channels} \
       --stride 2 \
