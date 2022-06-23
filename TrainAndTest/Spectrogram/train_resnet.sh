@@ -379,6 +379,9 @@ if [ $stage -le 40 ]; then
       fi
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
+
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wd5e4_var
+
       python TrainAndTest/train_egs.py \
         --model ${model} \
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
@@ -406,8 +409,8 @@ if [ $stage -le 40 ]; then
         --lr 0.1 \
         --base-lr 0.000001 \
         --milestones 10,20,30,40 \
-        --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wd5e4_var \
-        --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wd5e4_var/checkpoint_25.pth \
+        --check-path Data/checkpoint/${model_dir} \
+        --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
         --kernel-size 5,5 \
         --channels ${channels} \
         --downsample ${downsample} \
