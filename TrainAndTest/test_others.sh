@@ -2155,7 +2155,7 @@ if [ $stage -le 201 ]; then
       fi
 
       model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wd5e4_var
-
+      epoch=15
       python -W ignore TrainAndTest/test_egs.py \
         --model ${model} \
         --resnet-size ${resnet_size} \
@@ -2184,8 +2184,8 @@ if [ $stage -le 201 ]; then
         --avg-size 0 \
         --input-length var \
         --dropout-p 0.1 \
-        --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch_15_var \
-        --resume Data/checkpoint/${model_dir}/checkpoint_15.pth \
+        --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
+        --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
         --gpu-id 0 \
         --cos-sim
     done
