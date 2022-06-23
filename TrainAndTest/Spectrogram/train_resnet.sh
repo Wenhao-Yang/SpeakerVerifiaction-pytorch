@@ -341,13 +341,13 @@ if [ $stage -le 40 ]; then
   resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=basic_v2
+  block_type=basic
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
   feat_type=klsp
   sname=dev
-  downsample=k5
+  downsample=k1
   batch_size=128
 
   mask_layer=rvec
@@ -406,8 +406,8 @@ if [ $stage -le 40 ]; then
         --lr 0.1 \
         --base-lr 0.000001 \
         --milestones 10,20,30,40 \
-        --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var \
-        --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var/checkpoint_25.pth \
+        --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wd5e4_var \
+        --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wd5e4_var/checkpoint_25.pth \
         --kernel-size 5,5 \
         --channels ${channels} \
         --downsample ${downsample} \
@@ -426,7 +426,7 @@ if [ $stage -le 40 ]; then
         --grad-clip 0 \
         --s 30 \
         --lr-ratio 0.01 \
-        --weight-decay 0.0001 \
+        --weight-decay 0.0005 \
         --dropout-p 0.1 \
         --gpu-id 1,2 \
         --all-iteraion 0 \
