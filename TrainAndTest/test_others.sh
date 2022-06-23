@@ -2132,6 +2132,8 @@ if [ $stage -le 201 ]; then
   test_subset=test
   chn=16
   mask_layer=rvec
+  scheduler=rop
+  optimizer=sgd
   batch_size=256
 
 #  123456 123457 123458
