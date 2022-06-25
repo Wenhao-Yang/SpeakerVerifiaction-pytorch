@@ -737,6 +737,7 @@ class ThinResNet(nn.Module):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
+                       14: [2, 2, 2, 0],
                        18: [2, 2, 2, 2],
                        34: [3, 4, 6, 3],
                        50: [3, 4, 6, 3],
