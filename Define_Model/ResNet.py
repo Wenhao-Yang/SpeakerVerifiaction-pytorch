@@ -865,15 +865,17 @@ class ThinResNet(nn.Module):
 
         self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
         self.dropout = nn.Dropout(self.dropout_p)
+
+        last_channel = self.num_filter[3] if layers[3] > 0 else self.num_filter[2]
         # [64, 128, 37, 8]
         if freq_dim > 0:
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
+            encode_input_dim = int(freq_dim * last_channel * block.expansion)
         else:
             self.avgpool = None
             # print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
-            encode_input_dim = int(np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * self.num_filter[
-                3] * block.expansion)
+            encode_input_dim = int(
+                np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
 
         # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
         # 300 is the length of features
@@ -968,10 +970,11 @@ class ThinResNet(nn.Module):
                 )
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride=stride, downsample=downsample))
-        self.inplanes = planes * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
+        if block > 0:
+            layers.append(block(self.inplanes, planes, stride=stride, downsample=downsample))
+            self.inplanes = planes * block.expansion
+            for _ in range(1, blocks):
+                layers.append(block(self.inplanes, planes))
 
         return nn.Sequential(*layers)
 

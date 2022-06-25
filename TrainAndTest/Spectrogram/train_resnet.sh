@@ -362,7 +362,7 @@ if [ $stage -le 40 ]; then
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for seed in 123456 123457 123458 ;do
-    for resnet_size in 10 18 34 50 ; do
+    for resnet_size in 8 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
         batch_size=256
