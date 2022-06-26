@@ -380,7 +380,7 @@ if [ $stage -le 40 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wd5e4_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
 
       python TrainAndTest/train_egs.py \
         --model ${model} \
@@ -429,9 +429,9 @@ if [ $stage -le 40 ]; then
         --grad-clip 0 \
         --s 30 \
         --lr-ratio 0.01 \
-        --weight-decay 0.0005 \
+        --weight-decay 0.0001 \
         --dropout-p 0.1 \
-        --gpu-id 1,2 \
+        --gpu-id 3,6 \
         --all-iteraion 0 \
         --extract \
         --shuffle \
