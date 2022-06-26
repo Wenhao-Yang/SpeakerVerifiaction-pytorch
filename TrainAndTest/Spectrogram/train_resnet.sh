@@ -357,12 +357,13 @@ if [ $stage -le 40 ]; then
   expansion=4
   chn=16
   cyclic_epoch=8
+  avg_size=5
 #  nesterov
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for seed in 123456 123457 123458 ;do
-    for resnet_size in 8 ; do
+    for resnet_size in 8 10 18 34 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
         batch_size=256
@@ -380,7 +381,7 @@ if [ $stage -le 40 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
 
       python TrainAndTest/train_egs.py \
         --model ${model} \
@@ -421,7 +422,7 @@ if [ $stage -le 40 ]; then
         --batch-size ${batch_size} \
         --embedding-size ${embedding_size} \
         --time-dim 1 \
-        --avg-size 0 \
+        --avg-size ${avg_size} \
         --encoder-type ${encoder_type} \
         --num-valid 2 \
         --alpha ${alpha} \
