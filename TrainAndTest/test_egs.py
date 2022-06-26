@@ -480,16 +480,16 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
         result_str += '\nFor %s_distance, %d pairs:' % (dist_type, len(labels))
     result_str += '\n\33[91m'
     if args.verbose > 0:
-        result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
+        result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
 
-    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format('Test Set',
+    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^15s}|{: ^15s}|{: ^19s}|\n'.format('Test Set',
                                                                                      'EER (%)',
                                                                                      'Threshold',
                                                                                      'MinDCF-0.01',
                                                                                      'MinDCF-0.001',
                                                                                      'Date')
     if args.verbose > 0:
-        result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
+        result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
 
     eer = '{:.4f}'.format(eer * 100.)
     threshold = '{:.4f}'.format(eer_threshold)
@@ -497,14 +497,14 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     mindcf_001 = '{:.4f}'.format(mindcf_001)
     date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^13s}|{: ^14s}|{: ^19s}|\n'.format(test_set_name,
+    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^15s}|{: ^15s}|{: ^19s}|\n'.format(test_set_name,
                                                                                      eer,
                                                                                      threshold,
                                                                                      mindcf_01,
                                                                                      mindcf_001,
                                                                                      date)
     if args.verbose > 0:
-        result_str += '+-------------------+-------------+-------------+-------------+--------------+-------------------+\n'
+        result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
     result_str += '\33[0m'
 
     print(result_str)
