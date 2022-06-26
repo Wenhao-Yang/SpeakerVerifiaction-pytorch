@@ -432,7 +432,7 @@ if [ $stage -le 40 ]; then
         --lr-ratio 0.01 \
         --weight-decay 0.0001 \
         --dropout-p 0.1 \
-        --gpu-id 3,6 \
+        --gpu-id 1,2 \
         --all-iteraion 0 \
         --extract \
         --shuffle \
