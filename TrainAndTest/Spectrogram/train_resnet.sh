@@ -359,11 +359,12 @@ if [ $stage -le 40 ]; then
   cyclic_epoch=8
   avg_size=5
 #  nesterov
+  resnet_size=8
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for seed in 123456 123457 123458 ;do
-    for resnet_size in 8 10 18 34 ; do
+    for chn in 16 32 64 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
         batch_size=256
@@ -377,6 +378,9 @@ if [ $stage -le 40 ]; then
       elif [ $chn -eq 32 ]; then
         channels=32,64,128,256
         chn_str=chn32_
+      elif [ $chn -eq 64 ]; then
+        channels=64,128,256,512
+        chn_str=chn64_
       fi
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
@@ -432,7 +436,7 @@ if [ $stage -le 40 ]; then
         --lr-ratio 0.01 \
         --weight-decay 0.0001 \
         --dropout-p 0.1 \
-        --gpu-id 1,2 \
+        --gpu-id 2,3 \
         --all-iteraion 0 \
         --extract \
         --shuffle \
