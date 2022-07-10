@@ -2135,6 +2135,7 @@ if [ $stage -le 201 ]; then
   scheduler=rop
   optimizer=sgd
   batch_size=256
+  avg_size=5
 
 #  123456 123457 123458
 #  10 18 34 50
@@ -2191,7 +2192,7 @@ if [ $stage -le 201 ]; then
         --margin 0.2 \
         --s 30 \
         --time-dim 1 \
-        --avg-size 0 \
+        --avg-size ${avg_size} \
         --input-length var \
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
