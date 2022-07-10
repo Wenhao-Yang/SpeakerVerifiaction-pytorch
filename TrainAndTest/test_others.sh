@@ -2138,8 +2138,8 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
-  for seed in 123458 ;do
-    for resnet_size in 50 ; do
+  for seed in 123456 123457 123458 ;do
+    for resnet_size in 8 10 18 34 ; do
       epoch=21
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
       if [ $resnet_size -le 34 ];then
@@ -2157,7 +2157,13 @@ if [ $stage -le 201 ]; then
         chn_str=chn32_
       fi
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
+      if [ $avg_size -eq 0 ]; then
+        avg_str=
+      else
+        avg_str=avg${avg_size}_
+      fi
+
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
 
       python -W ignore TrainAndTest/test_egs.py \
         --model ${model} \
@@ -2189,9 +2195,11 @@ if [ $stage -le 201 ]; then
         --input-length var \
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
-        --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+        --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 0 \
         --cos-sim
+
+#        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
   done
   exit
