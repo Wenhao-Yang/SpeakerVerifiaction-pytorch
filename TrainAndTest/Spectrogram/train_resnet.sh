@@ -467,7 +467,7 @@ if [ $stage -le 50 ]; then
   scheduler=rop
   optimizer=sgd
   fast=none1
-  avg_size=0
+  avg_size=5
   expansion=4
   chn=16
   cyclic_epoch=8
