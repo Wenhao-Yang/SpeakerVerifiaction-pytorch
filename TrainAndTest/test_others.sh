@@ -2139,7 +2139,7 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
-  for seed in 123456 123457 123458 ;do
+  for seed in 123457 123458 ;do
     for resnet_size in 8 10 18 34 ; do
       epoch=21
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -2197,7 +2197,7 @@ if [ $stage -le 201 ]; then
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
-        --gpu-id 0 \
+        --gpu-id 3 \
         --cos-sim
 
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
@@ -2238,6 +2238,22 @@ if [ $stage -le 201 ]; then
 #|     vox1-test     |   4.2895    |   0.2120    |   0.3709    |    0.5213    | 20220623 20:23:30 | epoch 21
 
 
+# avg5
+#+-------------------+-------------+-------------+---------------+---------------+-------------------+
+#|     Test Set      |   EER (%)   |  Threshold  |  MinDCF-0.01  | MinDCF-0.001  |       Date        |
+#+-------------------+-------------+-------------+---------------+---------------+-------------------+
+
+# ResNet 8
+#|     vox1-test     |   5.2068    |   0.2433    |    0.4271     |    0.5969     | 20220710 10:10:46 |
+
+# ResNet 10
+#|     vox1-test     |   4.2683    |   0.2491    |    0.3690     |    0.4538     | 20220710 10:12:52 |
+
+# ResNet 18
+#|     vox1-test     |   3.7911    |   0.2574    |    0.3532     |    0.4427     | 20220710 10:15:04 |
+
+# ResNet 34
+#|     vox1-test     |   3.5896    |   0.2607    |    0.3467     |    0.3731     | 20220710 10:17:29 |
 
 
 fi
