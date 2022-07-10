@@ -202,7 +202,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
         if args.kd_type == 'em_l2':
             teacher_loss += kd_loss(feats, t_feats)
         elif args.kd_type == 'em_cos':
-            teacher_loss += torch.nn.functional.cosine_similarity(feats, t_feats).mean()
+            teacher_loss += (1 - torch.nn.functional.cosine_similarity(feats, t_feats)).mean() / 2
 
         total_teacher_loss += float(teacher_loss.item())
         # pdb.set_trace()
