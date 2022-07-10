@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=40
+stage=50
 
 waited=0
 while [ $(ps 4126745 | wc -l) -eq 2 ]; do
@@ -464,9 +464,10 @@ if [ $stage -le 50 ]; then
   batch_size=128
 
   mask_layer=rvec
-  scheduler=cyclic
+  scheduler=rop
   optimizer=sgd
   fast=none1
+  avg_size=0
   expansion=4
   chn=16
   cyclic_epoch=8
@@ -474,7 +475,7 @@ if [ $stage -le 50 ]; then
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for resnet_size in 18 34 50 101; do
+  for resnet_size in 8 10 18 34 ; do
     if [ $resnet_size -le 34 ];then
       expansion=1
       batch_size=256
@@ -490,27 +491,28 @@ if [ $stage -le 50 ]; then
       chn_str=chn32_
     fi
 
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var
+
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_inst \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --train-trials trials \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid_inst \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --random-chunk 200 400 \
       --optimizer ${optimizer} \
-      --nesterov \
       --cyclic-epoch ${cyclic_epoch} \
       --scheduler ${scheduler} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 100 \
-      --patience 4 \
+      --epochs 60 \
+      --patience 2 \
       --early-stopping \
-      --early-patience 30 \
+      --early-patience 15 \
       --early-delta 0.0001 \
       --early-meta EER \
       --accu-steps 1 \
@@ -518,8 +520,8 @@ if [ $stage -le 50 ]; then
       --lr 0.1 \
       --base-lr 0.000001 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es_nestcyc${cyclic_epoch} \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${chn_str}${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es_nestcyc${cyclic_epoch}/checkpoint_25.pth \
+      --check-path Data/checkpoint/${model_dir} \
+        --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
       --kernel-size 5,5 \
       --channels ${channels} \
       --downsample ${downsample} \
@@ -530,7 +532,7 @@ if [ $stage -le 50 ]; then
       --batch-size ${batch_size} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 0 \
+      --avg-size ${avg_size} \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
@@ -538,9 +540,9 @@ if [ $stage -le 50 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.00002 \
+      --weight-decay 0.00001 \
       --dropout-p 0.1 \
-      --gpu-id 0,3 \
+      --gpu-id 4,5 \
       --all-iteraion 0 \
       --extract \
       --shuffle \
