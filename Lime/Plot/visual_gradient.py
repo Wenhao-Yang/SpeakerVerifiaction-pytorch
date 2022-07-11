@@ -254,10 +254,11 @@ def main():
         plt.plot(xnew, ynew)
         # pdb.set_trace
     # if not os.path.exists(args.extract_path + '/grad.npy'):
-    ynew = veri_grad
+    # ynew = veri_grad
+    ynew = train_grad
     ynew = ynew / ynew.sum()
 
-    np.save(args.extract_path + '/train.grad.veri.npy', veri_grad)
+    np.save(args.extract_path + '/train.grad.npy', train_grad)
 
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Test_a', 'Test_b'], loc='upper right', fontsize=18)
     plt.legend(['Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'], loc='upper right', fontsize=24)
