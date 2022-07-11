@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=101
+stage=351
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
@@ -979,6 +979,79 @@ if [ $stage -le 350 ]; then
       --margin 0.2 \
       --s 30 \
       --remove-vad \
+      --sample-utt 4000
+    done
+  exit
+fi
+
+if [ $stage -le 351 ]; then
+  model=ThinResNet
+  datasets=vox1
+#  dataset=cnceleb
+#  dataset=aishell2
+
+  train_set=vox1
+  test_set=vox1
+  feat_type=klsp
+  mask_layer=rvec
+  feat=log
+  loss=arcsoft
+  optimizer=sgd
+  scheduler=rop
+  resnet_size=34
+  input_norm=Mean
+  encoder_type=SAP2
+  batch_size=256
+  embedding_size=256
+  block_type=basic
+  kernel=5,5
+  cam=gradient
+  downsample=k1
+  avg_str=avg5
+  fast=none1
+  chn_str=
+  alpha=0
+
+  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  for seed in 123456 123457 123458 ;do
+    if [ $seed -le 123456 ];then
+      epoch=27
+    elif [ $seed -le 123457 ]; then
+      epoch=31
+    else
+      epoch=19
+    fi
+
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
+    python Lime/cam_extract.py \
+      --model ${model} \
+      --resnet-size ${resnet_size} \
+      --cam ${cam} \
+      --start-epochs ${epoch} \
+      --epochs ${epoch} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-set-name ${train_set} \
+      --test-set-name ${test_set} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+      --input-norm Mean \
+      --kernel-size ${kernel} \
+      --fast ${fast} \
+      --stride 2,2 \
+      --channels 16,32,64,128 \
+      --encoder-type ${encoder_type} \
+      --block-type ${block_type} \
+      --downsample ${downsample} \
+      --time-dim 1 \
+      --avg-size 5 \
+      --embedding-size ${embedding_size} \
+      --alpha 0 \
+      --loss-type ${loss} \
+      --dropout-p 0.1 \
+      --check-path Data/checkpoint/${model_dir} \
+      --extract-path Data/gradient/${model_dir}/epoch_best_var_${cam} \
+      --gpu-id 4 \
+      --margin 0.2 \
+      --s 30 \
       --sample-utt 4000
     done
   exit
