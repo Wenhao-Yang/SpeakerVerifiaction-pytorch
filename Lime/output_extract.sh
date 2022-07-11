@@ -2,7 +2,7 @@
 
 stage=351
 waited=0
-lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
