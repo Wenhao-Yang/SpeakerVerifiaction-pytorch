@@ -202,11 +202,11 @@ random.shuffle(indices)
 indices = indices[:args.sample_utt]
 train_part = torch.utils.data.Subset(train_dir, indices)
 
-veri_dir = ScriptTestDataset(dir=args.train_dir, loader=file_loader, transform=transform, return_uid=True)
-veri_dir.partition(args.sample_utt)
+# veri_dir = ScriptTestDataset(dir=args.train_dir, loader=file_loader, transform=transform, return_uid=True)
+# veri_dir.partition(args.sample_utt)
 
-test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform, return_uid=True)
-test_dir.partition(args.sample_utt)
+# test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform, return_uid=True)
+# test_dir.partition(args.sample_utt)
 
 valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
                                valid_uid2feat=train_dir.valid_uid2feat, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
@@ -619,9 +619,9 @@ def main():
     model = create_model(args.model, **model_kwargs)
 
     train_loader = DataLoader(train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
-    veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+    # veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = DataLoader(valid_part, batch_size=args.batch_size, shuffle=False, **kwargs)
-    test_loader = DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
+    # test_loader = DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     # sitw_test_loader = DataLoader(sitw_test_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     # sitw_dev_loader = DataLoader(sitw_dev_part, batch_size=args.batch_size, shuffle=False, **kwargs)
 
