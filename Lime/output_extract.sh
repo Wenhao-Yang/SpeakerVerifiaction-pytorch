@@ -1007,7 +1007,7 @@ if [ $stage -le 351 ]; then
   kernel=5,5
   cam=gradient
   downsample=k1
-  avg_str=avg5
+  avg_str=avg5_
   fast=none1
   chn_str=
   alpha=0
