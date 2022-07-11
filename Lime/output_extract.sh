@@ -1029,7 +1029,7 @@ if [ $stage -le 351 ]; then
       --cam ${cam} \
       --start-epochs ${epoch} \
       --epochs ${epoch} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev \
       --train-set-name ${train_set} \
       --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
