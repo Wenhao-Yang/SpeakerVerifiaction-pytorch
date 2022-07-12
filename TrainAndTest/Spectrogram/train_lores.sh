@@ -1282,6 +1282,7 @@ if [ $stage -le 78 ]; then
         --weight-decay 0.0005 \
         --dropout-p ${dp} \
         --gpu-id 2,3 \
+        --shuffle \
         --extract \
         --cos-sim \
         --all-iteraion 0 \
