@@ -2141,7 +2141,7 @@ if [ $stage -le 201 ]; then
 #  10 18 34 50
   for resnet_size in 10 18 34 ; do
   for seed in 123456 123457 123458 ;do
-    for chn in 16 32 64 ; do
+#    for chn in 16 32 64 ; do
       epoch=21
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
       if [ $resnet_size -le 34 ];then
@@ -2205,7 +2205,7 @@ if [ $stage -le 201 ]; then
         --cos-sim
 
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-    done
+#    done
   done
   done
   exit
