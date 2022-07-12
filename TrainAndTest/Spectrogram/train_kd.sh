@@ -39,8 +39,8 @@ if [ $stage -le 0 ]; then
   kd_loss=mse
   chn=16
 #  _${weight}
-
-   for encoder_type in AVG ; do
+  for seed in 123457 123458; do
+  for encoder_type in AVG ; do
 
      if [ $chn -eq 64 ];then
       channels=64,128,256
@@ -65,6 +65,7 @@ if [ $stage -le 0 ]; then
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
        --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
        --feat-format kaldi \
+       --seed $seed \
        --random-chunk 200 400 \
        --input-norm ${input_norm} \
        --resnet-size ${resnet_size} \
@@ -79,8 +80,8 @@ if [ $stage -le 0 ]; then
        --mask-layer ${mask_layer} \
        --init-weight ${weight} \
        --milestones 10,20,30,40 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss} \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss}/checkpoint_50.pth \
+       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss} \
+       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss}/checkpoint_50.pth \
        --kernel-size ${kernel} \
        --channels ${channels} \
        --stride 2 \
@@ -106,6 +107,7 @@ if [ $stage -le 0 ]; then
        --teacher-model-yaml ${teacher_dir}/model.2022.01.05.yaml \
        --teacher-resume ${teacher_dir}/checkpoint_40.pth \
        --temperature 20
+   done
    done
 
 #  weight=vox2
