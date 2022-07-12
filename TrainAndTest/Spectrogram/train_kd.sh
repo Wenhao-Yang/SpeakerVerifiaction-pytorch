@@ -40,7 +40,7 @@ if [ $stage -le 0 ]; then
   chn=16
 #  _${weight}
   for seed in 123457 123458; do
-  for encoder_type in AVG ; do
+  for chn in 16 32 ; do
 
      if [ $chn -eq 64 ];then
       channels=64,128,256
