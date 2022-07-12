@@ -2124,7 +2124,7 @@ if [ $stage -le 201 ]; then
   block_type=basic
   encoder_type=SAP2
   embedding_size=256
-  resnet_size=34
+  resnet_size=8
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k1
@@ -2139,8 +2139,8 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
-  for seed in 123457 123458 ;do
-    for resnet_size in 8 10 18 34 ; do
+  for seed in 123456 123457 123458 ;do
+    for chn in 32 64 ; do
       epoch=21
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
       if [ $resnet_size -le 34 ];then
@@ -2156,6 +2156,9 @@ if [ $stage -le 201 ]; then
       elif [ $chn -eq 32 ]; then
         channels=32,64,128,256
         chn_str=chn32_
+      elif [ $chn -eq 64 ]; then
+        channels=64,128,256,512
+        chn_str=chn64_
       fi
 
       if [ $avg_size -eq 0 ]; then
@@ -2197,7 +2200,7 @@ if [ $stage -le 201 ]; then
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
-        --gpu-id 3 \
+        --gpu-id 4 \
         --cos-sim
 
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
