@@ -2280,7 +2280,7 @@ if [ $stage -le 201 ]; then
   encod=SAP2
   alpha=0
   datasets=vox1
-  testset=sitw
+  testset=vox1
 #  test_subset=
   block_type=basic
   encoder_type=None
