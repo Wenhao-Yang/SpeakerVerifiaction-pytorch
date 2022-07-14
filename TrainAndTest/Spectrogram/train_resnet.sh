@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=50
+stage=40
 
 waited=0
 while [ $(ps 4126745 | wc -l) -eq 2 ]; do
@@ -338,7 +338,7 @@ if [ $stage -le 40 ]; then
   datasets=vox1
   testsets=vox1
   model=ThinResNet
-  resnet_size=50
+#  resnet_size=50
   encoder_type=SAP2
   alpha=0
   block_type=basic
@@ -359,12 +359,12 @@ if [ $stage -le 40 ]; then
   cyclic_epoch=8
   avg_size=5
 #  nesterov
-  resnet_size=8
+  resnet_size=34
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for seed in 123456 123457 123458 ;do
-    for chn in 32 64 ; do
+    for chn in 32 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
         batch_size=256
@@ -436,7 +436,7 @@ if [ $stage -le 40 ]; then
         --lr-ratio 0.01 \
         --weight-decay 0.0001 \
         --dropout-p 0.1 \
-        --gpu-id 2,3 \
+        --gpu-id 4,5 \
         --all-iteraion 0 \
         --extract \
         --shuffle \
