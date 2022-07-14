@@ -469,14 +469,14 @@ if [ $stage -le 50 ]; then
   fast=none1
   avg_size=5
   expansion=4
-  chn=16
+  chn=32
   cyclic_epoch=8
 #  nesterov
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for seed in 123456 123457 123458 ;do
-    for resnet_size in 8 10 18 34 ; do
+    for resnet_size in 34 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
         batch_size=256
