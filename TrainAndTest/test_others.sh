@@ -2303,7 +2303,6 @@ if [ $stage -le 201 ]; then
 #        --downsample ${downsample} \
 #      --trials trials_20w \
 
-
   for testset in vox1 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
