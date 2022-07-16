@@ -528,7 +528,8 @@ def main():
                                       class_weight=class_weight)
     elif args.loss_type in ['aDCF']:
         ce_criterion = None
-        xe_criterion = aDCFLoss(alpha=args.s, beta=(1 - args.smooth_ratio), gamma=args.smooth_ratio, omega=args.margin)
+        xe_criterion = aDCFLoss(alpha=args.s, beta=(1 - args.smooth_ratio),
+                                gamma=args.smooth_ratio, omega=args.margin)
 
     elif args.loss_type == 'minarcsoft':
         ce_criterion = None

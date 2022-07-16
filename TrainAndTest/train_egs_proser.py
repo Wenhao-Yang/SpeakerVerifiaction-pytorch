@@ -339,12 +339,14 @@ def valid_class(valid_loader, model, ce, epoch):
     total_loss = 0.
     other_loss = 0.
     ce_criterion, xe_criterion = ce
-    ce_criterion = nn.CrossEntropyLoss()
+    # ce_criterion = nn.CrossEntropyLoss()
+    ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s,
+                                  smooth_ratio=args.smooth_ratio)
     softmax = nn.Softmax(dim=1)
 
     correct = 0.
     total_datasize = 0.
-    lambda_ = (epoch / args.epochs) ** 2
+    # lambda_ = (epoch / args.epochs) ** 2
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
