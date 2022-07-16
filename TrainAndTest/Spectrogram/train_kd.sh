@@ -56,6 +56,7 @@ if [ $stage -le 0 ]; then
       dp_str=125
     fi
 
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss}
      echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs_kd.py \
        --model ${model} \
@@ -80,8 +81,8 @@ if [ $stage -le 0 ]; then
        --mask-layer ${mask_layer} \
        --init-weight ${weight} \
        --milestones 10,20,30,40 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss} \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss}/checkpoint_50.pth \
+       --check-path Data/checkpoint/${model_dir} \
+       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
        --kernel-size ${kernel} \
        --channels ${channels} \
        --stride 2 \
