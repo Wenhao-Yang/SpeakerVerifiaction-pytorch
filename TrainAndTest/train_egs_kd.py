@@ -173,7 +173,6 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
 
         data, label = Variable(data), Variable(label)
         classfier, feats = model(data)
-
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
 
