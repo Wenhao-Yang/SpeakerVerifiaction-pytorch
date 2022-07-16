@@ -39,7 +39,7 @@ if [ $stage -le 0 ]; then
   kd_loss=mse
   chn=16
 #  _${weight}
-  for seed in 123458; do
+  for seed in 123459; do
   for chn in 32 ; do
 
      if [ $chn -eq 64 ];then
