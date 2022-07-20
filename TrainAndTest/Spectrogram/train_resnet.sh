@@ -469,7 +469,7 @@ if [ $stage -le 50 ]; then
   fast=none1
   avg_size=5
   expansion=4
-  chn=32
+  chn=16
   cyclic_epoch=8
 #  nesterov
 
