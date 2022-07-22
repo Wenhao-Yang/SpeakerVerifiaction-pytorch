@@ -469,7 +469,7 @@ if [ $stage -le 50 ]; then
   fast=none1
   avg_size=5
   expansion=4
-  chn=16
+  chn=32
   cyclic_epoch=8
 #  nesterov
 
@@ -523,7 +523,7 @@ if [ $stage -le 50 ]; then
         --base-lr 0.000001 \
         --milestones 10,20,30,40 \
         --check-path Data/checkpoint/${model_dir} \
-          --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
+        --resume Data/checkpoint/${model_dir}/checkpoint_19.pth \
         --kernel-size 5,5 \
         --channels ${channels} \
         --downsample ${downsample} \
