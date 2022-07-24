@@ -511,7 +511,7 @@ if [ $stage -le 50 ]; then
         --scheduler ${scheduler} \
         --resnet-size ${resnet_size} \
         --nj 12 \
-        --epochs 60 \
+        --epochs 19 \
         --patience 2 \
         --early-stopping \
         --early-patience 15 \
@@ -519,7 +519,7 @@ if [ $stage -le 50 ]; then
         --early-meta EER \
         --accu-steps 1 \
         --fast ${fast} \
-        --lr 0.1 \
+        --lr 0.001 \
         --base-lr 0.000001 \
         --milestones 10,20,30,40 \
         --check-path Data/checkpoint/${model_dir} \
