@@ -475,7 +475,7 @@ if [ $stage -le 50 ]; then
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for seed in 123456 123457 123458 ;do
+  for seed in 123456 ;do
     for resnet_size in 34 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
