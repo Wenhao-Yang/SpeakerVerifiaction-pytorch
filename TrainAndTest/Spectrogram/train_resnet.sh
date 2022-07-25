@@ -511,7 +511,7 @@ if [ $stage -le 50 ]; then
         --scheduler ${scheduler} \
         --resnet-size ${resnet_size} \
         --nj 12 \
-        --epochs 19 \
+        --epochs 21 \
         --patience 2 \
         --early-stopping \
         --early-patience 15 \
@@ -523,7 +523,7 @@ if [ $stage -le 50 ]; then
         --base-lr 0.000001 \
         --milestones 10,20,30,40 \
         --check-path Data/checkpoint/${model_dir} \
-        --resume Data/checkpoint/${model_dir}/checkpoint_41.pth \
+        --resume Data/checkpoint/${model_dir}/checkpoint_39.pth \
         --kernel-size 5,5 \
         --channels ${channels} \
         --downsample ${downsample} \
