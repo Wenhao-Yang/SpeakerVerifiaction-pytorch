@@ -454,13 +454,13 @@ if [ $stage -le 50 ]; then
   resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=basic
+  block_type=cbam_v2
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
   feat_type=klsp
   sname=dev
-  downsample=k1
+  downsample=k5
   batch_size=128
 
   mask_layer=rvec
@@ -511,7 +511,7 @@ if [ $stage -le 50 ]; then
         --scheduler ${scheduler} \
         --resnet-size ${resnet_size} \
         --nj 12 \
-        --epochs 21 \
+        --epochs 60 \
         --patience 2 \
         --early-stopping \
         --early-patience 15 \
@@ -519,7 +519,7 @@ if [ $stage -le 50 ]; then
         --early-meta EER \
         --accu-steps 1 \
         --fast ${fast} \
-        --lr 0.001 \
+        --lr 0.1 \
         --base-lr 0.000001 \
         --milestones 10,20,30,40 \
         --check-path Data/checkpoint/${model_dir} \
