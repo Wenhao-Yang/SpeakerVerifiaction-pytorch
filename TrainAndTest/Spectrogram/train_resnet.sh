@@ -454,13 +454,13 @@ if [ $stage -le 50 ]; then
   resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=cbam_v2
+  block_type=basic
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
   feat_type=klsp
   sname=dev
-  downsample=k5
+  downsample=k1
   batch_size=128
 
   mask_layer=rvec
