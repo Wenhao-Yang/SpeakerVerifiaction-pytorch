@@ -1725,7 +1725,7 @@ if [ $stage -le 95 ]; then
   chn=16
 
   for seed in 123458; do
-  for weight in vox2 ; do
+  for weight in clean ; do
 #      for weight in mel clean aug vox2 ; do
 
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -1754,6 +1754,7 @@ if [ $stage -le 95 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
       --feat-format kaldi \
       --input-norm Mean \
+      --seed 123458 \
       --input-dim 161 \
       --nj 12 \
       --embedding-size ${embedding_size} \
