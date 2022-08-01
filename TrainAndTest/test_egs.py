@@ -371,7 +371,6 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
     for batch_idx, this_batch in pbar:
         if test_cohort_scores != None:
-
             data_a, data_p, label, uid_a, uid_b = this_batch
         else:
             data_a, data_p, label = this_batch
@@ -725,11 +724,13 @@ if __name__ == '__main__':
         train_stats_pickle = os.path.join(test_xvector_dir,
                                           'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
 
-        if os.path.isfile(train_stats_pickle):
+        if args.score_norm == '':
+            train_stats = None
+        elif os.path.isfile(train_stats_pickle):
             with open(train_stats_pickle, 'rb') as f:
                 train_stats = pickle.load(f)
         else:
-            train_stats = cohort(train_xvector_dir, test_xvector_dir) if args.score_norm != '' else None
+            train_stats = cohort(train_xvector_dir, test_xvector_dir)
 
         test(test_loader, xvector_dir=args.xvector_dir, test_cohort_scores=train_stats)
 
