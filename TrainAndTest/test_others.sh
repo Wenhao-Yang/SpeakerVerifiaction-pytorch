@@ -1722,10 +1722,10 @@ if [ $stage -le 95 ]; then
   input_norm=Mean
   mask_layer=attention
   weight=randt
-  chn=16
+  chn=32
 
-  for seed in 123458; do
-  for weight in clean ; do
+  for seed in 123457 123458; do
+  for weight in mel clean aug vox2 ; do
 #      for weight in mel clean aug vox2 ; do
 
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -1781,7 +1781,7 @@ if [ $stage -le 95 ]; then
       --resume Data/checkpoint/${check_path}/checkpoint_50.pth \
       --model-yaml Data/checkpoint/${check_path}/model.2022.07.27.yaml \
       --gpu-id 0 \
-      --verbose 2 \
+      --verbose 0 \
       --cos-sim
   done
   done
