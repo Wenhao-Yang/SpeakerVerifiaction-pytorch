@@ -1774,13 +1774,12 @@ if [ $stage -le 95 ]; then
       --input-length fix \
       --num-frames 300 \
       --frame-shift 300 \
-      --score-norm as-norm \
       --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
       --xvector-dir Data/xvector/${check_path} \
       --resume Data/checkpoint/${check_path}/checkpoint_50.pth \
-      --model-yaml Data/checkpoint/${check_path}/model.2022.06.02.yaml \
+      --model-yaml Data/checkpoint/${check_path}/model.2022.07.27.yaml \
       --gpu-id 0 \
       --verbose 2 \
       --cos-sim
