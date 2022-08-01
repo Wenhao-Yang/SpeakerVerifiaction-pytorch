@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=93
+stage=95
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1724,7 +1724,8 @@ if [ $stage -le 95 ]; then
   weight=randt
   chn=16
 
-  for weight in randt ; do
+  for seed in 123457 123458; do
+  for weight in mel clean aug vox2 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     if [ $chn -eq 64 ];then
       channels=64,128,256
@@ -1739,7 +1740,8 @@ if [ $stage -le 95 ]; then
       dp=0.125
       dp_str=125
     fi
-    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}reg_chn${chn}_wd5e4_var
+    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var
+#    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 8 \
@@ -1775,6 +1777,7 @@ if [ $stage -le 95 ]; then
       --gpu-id 0 \
       --verbose 2 \
       --cos-sim
+  done
   done
   exit
 fi
