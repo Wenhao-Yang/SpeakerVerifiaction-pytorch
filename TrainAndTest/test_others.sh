@@ -1777,7 +1777,7 @@ if [ $stage -le 95 ]; then
       --resume Data/checkpoint/${check_path}/checkpoint_50.pth \
       --model-yaml Data/checkpoint/${check_path}/model.2022.06.02.yaml \
       --gpu-id 0 \
-      --verbose 0 \
+      --verbose 2 \
       --cos-sim
   done
   done
