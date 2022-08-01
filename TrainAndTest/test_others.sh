@@ -1770,8 +1770,8 @@ if [ $stage -le 95 ]; then
       --margin 0.2 \
       --s 30 \
       --input-length fix \
-      --num-frames 600 \
-      --frame-shift 600 \
+      --num-frames 300 \
+      --frame-shift 300 \
       --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
