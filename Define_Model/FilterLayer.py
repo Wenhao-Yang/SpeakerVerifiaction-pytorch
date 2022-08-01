@@ -763,6 +763,8 @@ class AttentionweightLayer(nn.Module):
             # ynew = 1 / ynew  # .max()
         elif weight == 'clean':
             ynew = c.VOX1_CLEAN
+        elif weight == 'rclean':
+            ynew = c.VOX1_RCLEAN
         elif weight == 'aug':
             ynew = c.VOX1_AUG
         elif weight == 'vox2':
@@ -804,6 +806,7 @@ class AttentionweightLayer(nn.Module):
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
         else:
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
+
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
