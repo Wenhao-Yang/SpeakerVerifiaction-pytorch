@@ -1769,12 +1769,14 @@ if [ $stage -le 95 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --input-length fix \
+      --num-frames 600 \
+      --frame-shift 600 \
       --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
       --xvector-dir Data/xvector/${check_path} \
-      --resume Data/checkpoint/${check_path}/checkpoint_45.pth \
+      --resume Data/checkpoint/${check_path}/checkpoint_50.pth \
       --model-yaml Data/checkpoint/${check_path}/model.2022.06.02.yaml \
       --gpu-id 0 \
       --verbose 2 \
@@ -1793,6 +1795,8 @@ fi
 
 #|  vox1-test-clean  |   4.1092    |   0.2534    |   0.3652    |    0.5319    | 20211003 17:52:05 |
 #|  vox1-test-clean  |   4.0721    |   0.2550    |   0.3653    |    0.5248    | 20220801 13:42:08 |
+#|  vox1-test-clean  |   4.0774    |   0.2525    |   0.3644    |    0.5180    | 20220801 14:27:17 | epoch49
+
 #|  vox1-test-clean  |   41.0021   |   0.9847    |   0.9985    |    0.9985    | 20220801 13:46:04 |
 
 #|   vox1-test-aug   |   4.2683    |   0.2522    |   0.3505    |    0.4622    | 20211003 17:54:16 |
@@ -1802,6 +1806,8 @@ fi
 
 #|  vox1-test-vox2   |   4.0933    |   0.2519    |   0.3792    |    0.4627    | 20211003 17:56:27 |
 #|  vox1-test-vox2   |   3.9024    |   0.2597    |   0.3661    |    0.5138    | 20220801 13:44:06 |
+#|  vox1-test-vox2   |   3.9979    |   0.2562    |   0.3642    |    0.4738    | 20220801 14:30:15 | epoch45
+
 #|  vox1-test-vox2   |   44.3372   |   0.9982    |   0.9984    |    0.9984    | 20220801 13:48:04 |
 
 
