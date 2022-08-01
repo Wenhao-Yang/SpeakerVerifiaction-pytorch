@@ -1725,7 +1725,7 @@ if [ $stage -le 95 ]; then
   chn=16
 
   for seed in 123458; do
-  for weight in clean vox2 ; do
+  for weight in vox2 ; do
 #      for weight in mel clean aug vox2 ; do
 
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -1774,7 +1774,7 @@ if [ $stage -le 95 ]; then
       --time-dim 1 \
       --avg-size 4 \
       --xvector-dir Data/xvector/${check_path} \
-      --resume Data/checkpoint/${check_path}/checkpoint_49.pth \
+      --resume Data/checkpoint/${check_path}/checkpoint_45.pth \
       --model-yaml Data/checkpoint/${check_path}/model.2022.06.02.yaml \
       --gpu-id 0 \
       --verbose 2 \
