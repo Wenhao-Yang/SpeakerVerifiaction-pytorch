@@ -797,7 +797,7 @@ class AttentionweightLayer(nn.Module):
         self.b = nn.Parameter(torch.tensor(-1.0))
 
         train_weight = True if weight in ['randt'] else False
-        self.drop_p = nn.Parameter(torch.tensor(ynew), requires_grad=train_weight)
+        self.drop_p = nn.Parameter(torch.tensor(ynew).float(), requires_grad=train_weight)
         # self.drop_p = ynew  # * dropout_p
 
         # self.activation = nn.Tanh()
