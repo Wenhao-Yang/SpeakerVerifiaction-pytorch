@@ -1773,6 +1773,7 @@ if [ $stage -le 95 ]; then
       --input-length fix \
       --num-frames 300 \
       --frame-shift 300 \
+      --score-norm as-norm \
       --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
