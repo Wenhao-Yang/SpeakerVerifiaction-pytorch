@@ -322,7 +322,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # scp = open(scp_file, 'w')
 
     # write scp and ark file
-    # pdb.set_trace()
+    pdb.set_trace()
     writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
 
     for uid in uids:
