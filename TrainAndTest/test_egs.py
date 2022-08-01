@@ -710,6 +710,7 @@ if __name__ == '__main__':
                                  mean_vector=args.mean_vector,
                                  xvector=args.xvector)
 
+    pdb.set_trace()
     if args.test:
         file_loader = kaldiio.load_mat
         # file_loader = read_vec_flt
