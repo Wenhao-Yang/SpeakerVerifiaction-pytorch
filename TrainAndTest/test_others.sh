@@ -1748,6 +1748,7 @@ if [ $stage -le 95 ]; then
       --model ${model} \
       --resnet-size 8 \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-extract-dir ${lstm_dir}/data/${datasets}/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
