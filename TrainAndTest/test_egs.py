@@ -462,7 +462,7 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
         for l in zip(labels, distances):
             f.write(" ".join([str(i) for i in l]) + '\n')
 
-    # pdb.set_trace()
+    pdb.set_trace()
     eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
@@ -738,12 +738,3 @@ if __name__ == '__main__':
     if args.verbose > 0:
         print("Running %.4f minutes for testing.\n" % (t / 60))
 
-# python TrainAndTest/Spectrogram/train_surescnn10_kaldi.py > Log/SuResCNN10/spect_161/
-
-# test easy spectrogram soft 161 vox1
-#   Test ERR is 1.6076%, Threshold is 0.31004807353019714
-#   mindcf-0.01 0.2094, mindcf-0.001 0.3767.
-
-# test hard spectrogram soft 161 vox1
-#   Test ERR is 2.9182%, Threshold is 0.35036733746528625
-#   mindcf-0.01 0.3369, mindcf-0.001 0.5494.

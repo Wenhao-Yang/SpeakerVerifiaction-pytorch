@@ -322,8 +322,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # scp = open(scp_file, 'w')
 
     # write scp and ark file
-    vec_norm = [np.sqrt(np.power(uid2vectors[a], 2).sum()) for a in uid2vectors.keys()]
-    pdb.set_trace()
+    # vec_norm = [np.sqrt(np.power(uid2vectors[a], 2).sum()) for a in uid2vectors.keys()]
+    # pdb.set_trace()
     writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
 
     for uid in uids:
