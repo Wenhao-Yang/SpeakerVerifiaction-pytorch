@@ -329,7 +329,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
             elif args.cam == 'grad_cam':
                 grad = torch.zeros_like(data)
-                assert len(out_layer_grad) == len(cam_layers), print(len(out_layer_grad), " is not equal to ", len(cam_layers))
+                # assert len(out_layer_grad) == len(cam_layers), print(len(out_layer_grad), " is not equal to ", len(cam_layers))
 
                 last_grad = out_layer_grad[0]
                 last_feat = out_layer_feat[-1]
@@ -413,7 +413,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 elif args.cam == 'grad_cam':
                     grad_a = torch.zeros_like(data_a)
                     L = len(cam_layers)
-                    assert len(out_layer_grad) == L, print(len(out_layer_grad))
+                    # assert len(out_layer_grad) == L, print(len(out_layer_grad))
 
                     last_grad = out_layer_grad[0]
                     last_feat = out_layer_feat[-1]
