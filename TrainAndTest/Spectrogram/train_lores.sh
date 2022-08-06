@@ -1294,30 +1294,36 @@ if [ $stage -le 79 ]; then
   optimizer=sgd
   scheduler=rop
 #  mask_layer=gau_noise
-  mask_layer=attention
+  mask_layer=baseline
   chn=32
 
   weight=clean
 
-  for chn in 16 ; do
-  for weight in clean vox2 ; do
-  for seed in 123458 ; do
+  for chn in 16 32 ; do
+#  for weight in clean vox2 ; do
+  for seed in 123457 123458 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     if [ $chn -eq 64 ];then
-    channels=64,128,256
-    dp=0.25
-    dp_str=25
-  elif [ $chn -eq 32 ];then
-    channels=32,64,128
-    dp=0.2
-    dp_str=20
-  elif [ $chn -eq 16 ];then
-    channels=16,32,64
-    dp=0.125
-    dp_str=125
-  fi
+      channels=64,128,256
+      dp=0.25
+      dp_str=25
+    elif [ $chn -eq 32 ];then
+      channels=32,64,128
+      dp=0.2
+      dp_str=20
+    elif [ $chn -eq 16 ];then
+      channels=16,32,64
+      dp=0.125
+      dp_str=125
+    fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var2
+    if [ "$mask_layer" = "attention" ];then
+      at_str=_${weight}
+    else
+      at_str=
+    fi
+
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var2
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
@@ -1368,7 +1374,7 @@ if [ $stage -le 79 ]; then
       --loss-type ${loss}
   done
   done
-  done
+#  done
   exit
 fi
 
