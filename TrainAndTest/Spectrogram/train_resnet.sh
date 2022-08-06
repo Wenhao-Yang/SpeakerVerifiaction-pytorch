@@ -478,6 +478,7 @@ if [ $stage -le 41 ]; then
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for seed in 123456 123457 123458 ;do
+    for resnet_size in 10 18 ; do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
@@ -558,6 +559,7 @@ if [ $stage -le 41 ]; then
         --shuffle \
         --cos-sim \
         --loss-type ${loss}
+    done
     done
   done
 exit
