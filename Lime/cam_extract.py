@@ -197,13 +197,14 @@ if args.mvnorm:
 file_loader = read_mat
 
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
-                               loader=file_loader, transform=transform, return_uid=True)
+                               loader=file_loader, transform=transform, return_uid=True,
+                               sample_type='balanced', )
 indices = list(range(len(train_dir)))
 random.shuffle(indices)
 indices = indices[:args.sample_utt]
 train_part = torch.utils.data.Subset(train_dir, indices)
 
-pdb.set_trace()
+# pdb.set_trace()
 # veri_dir = ScriptTestDataset(dir=args.train_dir, loader=file_loader, transform=transform, return_uid=True)
 # veri_dir.partition(args.sample_utt)
 

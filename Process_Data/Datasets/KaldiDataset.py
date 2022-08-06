@@ -919,11 +919,11 @@ class ScriptTrainDataset(data.Dataset):
     def __getitem__(self, sid):
         # start_time = time.time()
         if self.return_uid or self.domain:
-            try:
-                uid, label = self.utt_dataset[sid]
-            except Exception as e:
-                print(len(self.utt_dataset), sid)
-                raise e
+            # try:
+            uid, label = self.utt_dataset[sid]
+            # except Exception as e:
+            #     print(len(self.utt_dataset), sid)
+            #     raise e
             #     pdb.set_trace()
 
             y = self.loader(self.uid2feat[uid])
