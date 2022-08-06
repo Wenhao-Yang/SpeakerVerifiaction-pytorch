@@ -86,7 +86,8 @@ parser.add_argument('--mvnorm', action='store_true', default=False,
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
 parser.add_argument('--cam-layers',
-                    default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
+                    default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2',
+                             'layer3.5.conv2', 'layer4.2.conv2'],
                     type=list, metavar='CAML', help='The channels of convs layers)')
 parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
 
