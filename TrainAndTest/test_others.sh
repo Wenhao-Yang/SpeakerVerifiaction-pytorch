@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=210
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2486,6 +2486,121 @@ if [ $stage -le 203 ]; then
   exit
 
 fi
+
+
+if [ $stage -le 210 ]; then
+  feat_type=klsp
+  model=ThinResNet
+  feat=log
+  loss=arcsoft
+  encod=AVG
+  alpha=0
+  datasets=vox2
+  testset=sitw
+  input_norm=Mean
+#  test_subset=
+  block_type=basic
+  encoder_type=SAP2
+  embedding_size=256
+  resnet_size=8
+#  sname=dev #dev_aug_com
+  sname=dev #_aug_com
+  downsample=k1
+  fast=none1
+  test_subset=test
+  chn=16
+  mask_layer=rvec
+#  mask_layer=attention
+  weight=rclean
+  scheduler=rop
+  optimizer=sgd
+  batch_size=256
+  avg_size=5
+
+#  123456 123457 123458
+#  10 18 34 50
+  for resnet_size in 34 ; do
+  for testset in vox1 sitw ; do
+  for seed in 123456 123457 123458 ;do
+#    for chn in 16 32 64 ; do
+      epoch=
+      echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+      if [ $resnet_size -le 34 ];then
+        expansion=1
+        batch_size=256
+      else
+        expansion=4
+        batch_size=256
+      fi
+      if [ $chn -eq 16 ]; then
+        channels=16,32,64,128
+        chn_str=
+      elif [ $chn -eq 32 ]; then
+        channels=32,64,128,256
+        chn_str=chn32_
+      elif [ $chn -eq 64 ]; then
+        channels=64,128,256,512
+        chn_str=chn64_
+      fi
+
+      if [ $avg_size -eq 0 ]; then
+        avg_str=
+      else
+        avg_str=avg${avg_size}_
+      fi
+
+      if [ "$mask_layer" = "attention" ];then
+        at_str=_${weight}
+      else
+        at_str=
+      fi
+
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde5_var
+
+      python -W ignore TrainAndTest/test_egs.py \
+        --model ${model} \
+        --resnet-size ${resnet_size} \
+        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+        --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
+        --train-trials trials_2w \
+        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+        --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
+        --feat-format kaldi \
+        --input-norm ${input_norm} \
+        --input-dim 161 \
+        --nj 12 \
+        --mask-layer ${mask_layer} \
+        --init-weight ${weight} \
+        --embedding-size ${embedding_size} \
+        --loss-type ${loss} \
+        --fast ${fast} \
+        --downsample ${downsample} \
+        --encoder-type ${encoder_type} \
+        --block-type ${block_type} \
+        --kernel-size 5,5 \
+        --expansion ${expansion} \
+        --stride 2,2 \
+        --channels ${channels} \
+        --alpha ${alpha} \
+        --margin 0.2 \
+        --s 30 \
+        --time-dim 1 \
+        --avg-size ${avg_size} \
+        --input-length var \
+        --dropout-p 0.1 \
+        --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
+        --resume Data/checkpoint/${model_dir}/best.pth \
+        --gpu-id 4 \
+        --cos-sim
+
+#        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+    done
+  done
+  done
+  exit
+
+fi
+
 
 if [ $stage -le 300 ]; then
   feat_type=klfb
