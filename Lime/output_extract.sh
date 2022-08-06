@@ -986,11 +986,12 @@ fi
 
 if [ $stage -le 351 ]; then
   model=ThinResNet
-  datasets=vox1
+#  datasets=vox1
 #  dataset=cnceleb
 #  dataset=aishell2
+  datasets=vox2
+  train_set=vox2
 
-  train_set=vox1
   test_set=vox1
   feat_type=klsp
   mask_layer=rvec
@@ -1014,12 +1015,22 @@ if [ $stage -le 351 ]; then
 
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for seed in 123456 123457 123458 ;do
+    # vox1
+#    if [ $seed -le 123456 ];then
+#      epoch=27
+#    elif [ $seed -le 123457 ]; then
+#      epoch=31
+#    else
+#      epoch=19
+#    fi
+
+  # vox2
     if [ $seed -le 123456 ];then
-      epoch=27
+      epoch=41
     elif [ $seed -le 123457 ]; then
-      epoch=31
+      epoch=40
     else
-      epoch=19
+      epoch=53
     fi
 
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
