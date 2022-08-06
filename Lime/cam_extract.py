@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import json
 import os
+import pdb
 import pickle
 import random
 import time
@@ -202,6 +203,7 @@ random.shuffle(indices)
 indices = indices[:args.sample_utt]
 train_part = torch.utils.data.Subset(train_dir, indices)
 
+pdb.set_trace()
 # veri_dir = ScriptTestDataset(dir=args.train_dir, loader=file_loader, transform=transform, return_uid=True)
 # veri_dir.partition(args.sample_utt)
 
