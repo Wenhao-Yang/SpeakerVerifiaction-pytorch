@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=205
+stage=206
 if [ $stage -le 0 ]; then
   for model in LoResNet10; do
     python Lime/visual_gradient.py \
@@ -271,6 +271,7 @@ fi
 
 if [ $stage -le 205 ]; then
 #  for s in dev ;do
+  for cam in grad_cam fullgrad ; do
   for seed in 123456 123457 123458 ;do
     if [ $seed -le 123456 ];then
       epoch=27
@@ -282,6 +283,26 @@ if [ $stage -le 205 ]; then
 
     python Lime/Plot/visual_gradient.py \
       --extract-path Data/gradient/ThinResNet34/vox1/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/epoch_best_var_gradient/epoch_${epoch} \
+      --feat-dim 161 \
+      --acoustic-feature spectrogram
+  done
+  done
+  exit
+fi
+
+if [ $stage -le 206 ]; then
+#  for s in dev ;do
+  for seed in 123456 123457 123458 ;do
+    if [ $seed -le 123456 ];then
+      epoch=41
+    elif [ $seed -le 123457 ]; then
+      epoch=40
+    else
+      epoch=53
+    fi
+
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/epoch_best_var_gradient/epoch_${epoch} \
       --feat-dim 161 \
       --acoustic-feature spectrogram
   done
