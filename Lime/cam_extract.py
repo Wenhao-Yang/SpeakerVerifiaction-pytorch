@@ -384,8 +384,10 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                                 out_feature_grads[i] = out_feature_grads[i].reshape(1, bias.shape[1],
                                                                                     grads_shape[1], -1)
 
-                    bias = bias.expand_as(out_feature_grads[i])
-
+                    try:
+                        bias = bias.expand_as(out_feature_grads[i])
+                    except Exception as e:
+                        pdb.set_trace()
                     #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
                     #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
                     bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
