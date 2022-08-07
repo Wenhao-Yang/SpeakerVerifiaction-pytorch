@@ -1727,7 +1727,7 @@ if [ $stage -le 95 ]; then
   chn=16
 
   for chn in 16 32 ; do
-  for seed in 123457 123458; do
+  for seed in 123456; do
 
 #  for weight in clean vox2 ; do
 #      for weight in mel clean aug vox2 ; do
@@ -1756,7 +1756,9 @@ if [ $stage -le 95 ]; then
 
 #    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var
 #    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var
-    check_path=LoResNet8/vox1/klsp_egs_kd_baseline/${seed}/arcsoft_sgd_rop/Mean_cbam_AVG_dp${dp_str}_alpha0_em256_wd5e4_chn${chn}_var_em_cosmse
+#    check_path=LoResNet8/vox1/klsp_egs_kd_baseline/${seed}/arcsoft_sgd_rop/Mean_cbam_AVG_dp${dp_str}_alpha0_em256_wd5e4_chn${chn}_var_em_cosmse
+    check_path=LoResNet8/vox1/klsp_egs_kd_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp${dp_str}_alpha0_em256_wd5e4_chn${chn}_var_em_cosmse
+
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 8 \
@@ -1934,6 +1936,9 @@ fi
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   4.1304    |   0.2488    |   0.3850    |    0.4499    | 20220228 18:25:20 | kd soft + emdeddings_l2
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   4.2683    |   0.2433    |   0.3793    |    0.5153    | 20220807 20:01:01 | kd soft + emdeddings_cos
+#|     vox1-test     |   4.1888    |   0.2471    |   0.3434    |    0.5077    | 20220807 20:02:08 |
+
 
 
 # chn32
@@ -1946,6 +1951,10 @@ fi
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   3.4358    |   0.2541    |   0.3047    |    0.4223    | 20220228 18:31:14 | kd soft + emdeddings_l2
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
+#|     vox1-test     |   3.3404    |   0.2527    |   0.3193    |    0.3802    | 20220807 20:03:25 | kd soft + emdeddings_cos
+#|     vox1-test     |   3.4040    |   0.2566    |   0.3311    |    0.3775    | 20220807 20:04:41 |
+
+
 #|     vox1-test     |   3.3775    |   0.2592    |   0.3047    |    0.4303    | 20220216 18:14:06 | kd soft attention vox2
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
