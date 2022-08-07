@@ -282,7 +282,7 @@ if [ $stage -le 205 ]; then
     fi
 
     python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/ThinResNet34/vox1/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/epoch_best_var_gradient/epoch_${epoch} \
+      --extract-path Data/gradient/ThinResNet34/vox1/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/epoch_best_var_${cam}/epoch_${epoch} \
       --feat-dim 161 \
       --acoustic-feature spectrogram
   done
