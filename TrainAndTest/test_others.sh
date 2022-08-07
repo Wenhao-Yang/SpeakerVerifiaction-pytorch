@@ -1724,8 +1724,8 @@ if [ $stage -le 95 ]; then
   weight=randt
   chn=16
 
-  for seed in 123458; do
-  for weight in clean vox2 ; do
+  for seed in 123457 123458; do
+#  for weight in clean vox2 ; do
 #      for weight in mel clean aug vox2 ; do
 
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -1742,7 +1742,15 @@ if [ $stage -le 95 ]; then
       dp=0.125
       dp_str=125
     fi
-    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var2
+
+    if [ "$mask_layer" = "attention" ];then
+      at_str=_${weight}
+#      --score-suffix ${weight} \
+    else
+      at_str=
+    fi
+
+    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var
 #    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1755,13 +1763,11 @@ if [ $stage -le 95 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
       --feat-format kaldi \
       --input-norm Mean \
-      --seed 123458 \
       --input-dim 161 \
       --nj 12 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --mask-layer ${mask_layer} \
-      --score-suffix ${weight} \
       --init-weight ${weight} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
@@ -1778,11 +1784,11 @@ if [ $stage -le 95 ]; then
       --xvector-dir Data/xvector/${check_path} \
       --resume Data/checkpoint/${check_path}/checkpoint_50.pth \
       --model-yaml Data/checkpoint/${check_path}/model.2022.07.01.yaml \
-      --gpu-id 0 \
+      --gpu-id 1 \
       --verbose 0 \
       --cos-sim
   done
-  done
+#  done
   exit
 fi
 
