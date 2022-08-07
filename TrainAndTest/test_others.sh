@@ -1720,7 +1720,9 @@ if [ $stage -le 95 ]; then
   sname=dev #_aug_com
   test_subset=test
   input_norm=Mean
-  mask_layer=attention
+  mask_layer=baseline
+#  mask_layer=attention
+
   weight=randt
   chn=16
 
