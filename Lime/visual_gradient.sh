@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=206
+stage=205
 if [ $stage -le 0 ]; then
   for model in LoResNet10; do
     python Lime/visual_gradient.py \
