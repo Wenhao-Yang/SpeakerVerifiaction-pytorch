@@ -373,6 +373,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     if len(bias.shape) == 1:
                         bias = bias.reshape(1, -1, 1, 1)
                     if len(out_feature_grads[i].shape) == 3:
+                        pdb.set_trace()
                         bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
                         grads_shape = out_feature_grads[i].shape
                         out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
