@@ -376,8 +376,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
                         grads_shape = out_feature_grads[i].shape
                         out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
-                                                                            grads_shape[2] / model.avgpool.output_size[
-                                                                                1])
+                                                                            model.avgpool.output_size[1])
 
                     bias = bias.expand_as(out_feature_grads[i])
 
