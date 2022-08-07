@@ -467,28 +467,28 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                     L = len(bias_layers)
 
-                    for i, l in enumerate(bias_layers):
-                        bias = biases[L - i - 1]
+                    for j, l in enumerate(bias_layers):
+                        bias = biases[L - j - 1]
                         if len(bias.shape) == 1:
                             bias = bias.reshape(1, -1, 1, 1)
 
-                        if len(out_feature_grads[i].shape) == 3:
+                        if len(out_feature_grads[j].shape) == 3:
                             # pdb.set_trace()
-                            if bias.shape[1] == out_feature_grads[i].shape[-1]:
+                            if bias.shape[1] == out_feature_grads[j].shape[-1]:
                                 if bias.shape[1] % model.avgpool.output_size[1] == 0:
                                     bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
-                                    grads_shape = out_feature_grads[i].shape
-                                    out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
+                                    grads_shape = out_feature_grads[j].shape
+                                    out_feature_grads[j] = out_feature_grads[j].reshape(1, -1, grads_shape[1],
                                                                                         model.avgpool.output_size[1])
                                 else:
-                                    out_feature_grads[i] = out_feature_grads[i].reshape(1, bias.shape[1],
+                                    out_feature_grads[j] = out_feature_grads[j].reshape(1, bias.shape[1],
                                                                                         grads_shape[1], -1)
 
-                        bias = bias.expand_as(out_feature_grads[i])
+                        bias = bias.expand_as(out_feature_grads[j])
 
                         #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
                         #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                        bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
+                        bias_grad = (out_feature_grads[j] * bias).mean(dim=1, keepdim=True).clamp_min(0)
                         bias_grad /= bias_grad.max()
                         full_grad += ups(bias_grad)
 
