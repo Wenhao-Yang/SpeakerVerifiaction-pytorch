@@ -245,23 +245,26 @@ def main():
     plt.plot(xnew, ynew)
     # print(np.sum(ynew))
 
-    for s in train_grad, valid_grad, veri_grad, veri_grad_relu, test_grad:
+    plot_index = []
+    for i, s in enumerate([train_grad, valid_grad, veri_grad, veri_grad_relu, test_grad]):
         # for s in test_a_set_grad, test_b_set_grad:
         f = interpolate.interp1d(x, s)
         xnew = np.linspace(np.min(x), np.max(x), 161)
         ynew = f(xnew)
-        ynew = ynew / ynew.sum()
-        plt.plot(xnew, ynew)
+        if ynew.sum() != 0:
+            plot_index.append(i)
+            ynew = ynew / ynew.sum()
+            plt.plot(xnew, ynew)
         # pdb.set_trace
     # if not os.path.exists(args.extract_path + '/grad.npy'):
     # ynew = veri_grad
     ynew = train_grad
-    ynew = ynew / ynew.sum()
-
+    # ynew = ynew / ynew.sum()
     np.save(args.extract_path + '/train.grad.npy', train_grad)
 
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Test_a', 'Test_b'], loc='upper right', fontsize=18)
-    plt.legend(['Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'], loc='upper right', fontsize=24)
+    all_sets = np.array(['Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'])
+    plt.legend(all_sets[plot_index], loc='upper right', fontsize=24)
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Train Verify', 'Test'], loc='upper right', fontsize=24)
     pdf.savefig()
     pdf.close()
@@ -274,14 +277,18 @@ def main():
     plt.xlabel('Frequency (Hz)', fontsize=16)
     plt.ylabel('Log Power (-)', fontsize=16)
     # 插值平滑 ？？？
-    for s in train_input, valid_input, test_input:
+    plot_index = []
+    for i, s in enumerate([train_input, valid_input, test_input]):
         # for s in test_a_set_grad, test_b_set_grad:
         f = interpolate.interp1d(x, s)
         xnew = np.linspace(np.min(x), np.max(x), 161)
         ynew = f(xnew)
-        plt.plot(xnew, ynew)
+        if ynew.sum() != 0:
+            plot_index.append(i)
+            plt.plot(xnew, ynew)
 
-    plt.legend(['Train', 'Valid', 'Test'], loc='upper right', fontsize=16)
+    all_sets = np.array(['Train', 'Valid', 'Test'])
+    plt.legend(all_sets[plot_index], loc='upper right', fontsize=16)
     plt.savefig(args.extract_path + "/inputs.freq.png")
     plt.show()
 
