@@ -1299,9 +1299,9 @@ if [ $stage -le 79 ]; then
 
   weight=clean
 
-  for chn in 16 32 ; do
+  for chn in 32 ; do
 #  for weight in clean vox2 ; do
-  for seed in 123457 123458 ; do
+  for seed in 123457 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     if [ $chn -eq 64 ];then
       channels=64,128,256
@@ -1338,18 +1338,18 @@ if [ $stage -le 79 ]; then
       --input-dim 161 \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 1 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 2 \
       --accu-steps 1 \
-      --lr 0.1 \
+      --lr 0.00001 \
       --base-lr 0.000005 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model_dir} \
-      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+      --resume Data/checkpoint/${model_dir}/checkpoint_49.pth \
       --kernel-size ${kernel} \
       --channels ${channels} \
       --stride 2 \
