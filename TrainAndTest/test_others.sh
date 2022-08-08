@@ -2173,6 +2173,7 @@ if [ $stage -le 201 ]; then
 
       if [ "$mask_layer" = "attention" ];then
         at_str=_${weight}
+#        --score-suffix
       else
         at_str=
       fi
@@ -2193,6 +2194,7 @@ if [ $stage -le 201 ]; then
         --nj 12 \
         --mask-layer ${mask_layer} \
         --init-weight ${weight} \
+        --score-suffix ${weight} \
         --embedding-size ${embedding_size} \
         --loss-type ${loss} \
         --fast ${fast} \
