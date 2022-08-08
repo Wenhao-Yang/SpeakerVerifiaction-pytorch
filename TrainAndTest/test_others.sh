@@ -2141,8 +2141,8 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
-  for resnet_size in 8 ; do
   for testset in vox1 sitw ; do
+  for resnet_size in 10 18 ; do
   for seed in 123456 123457 123458 ;do
 #    for chn in 16 32 64 ; do
       epoch=
