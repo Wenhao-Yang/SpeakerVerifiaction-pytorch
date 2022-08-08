@@ -1754,8 +1754,8 @@ if [ $stage -le 95 ]; then
       at_str=
     fi
 
-#    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var
-    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var
+    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var
+#    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var
 #    check_path=LoResNet8/vox1/klsp_egs_kd_baseline/${seed}/arcsoft_sgd_rop/Mean_cbam_AVG_dp${dp_str}_alpha0_em256_wd5e4_chn${chn}_var_em_cosmse
 #    check_path=LoResNet8/vox1/klsp_egs_kd_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp${dp_str}_alpha0_em256_wd5e4_chn${chn}_var_em_cosmse
 
