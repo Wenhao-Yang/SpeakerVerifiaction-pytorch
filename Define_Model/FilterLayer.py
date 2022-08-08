@@ -765,6 +765,8 @@ class AttentionweightLayer(nn.Module):
             ynew = c.VOX1_CLEAN
         elif weight == 'rclean':
             ynew = c.VOX1_RCLEAN
+        elif weight == 'vox2_rclean':
+            ynew = c.VOX2_RCLEAN
         elif weight == 'aug':
             ynew = c.VOX1_AUG
         elif weight == 'vox2':

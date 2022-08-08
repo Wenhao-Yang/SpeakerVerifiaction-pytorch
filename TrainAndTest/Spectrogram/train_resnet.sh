@@ -464,7 +464,7 @@ if [ $stage -le 41 ]; then
   batch_size=128
 
   mask_layer=attention
-  weight=rclean
+  weight=vox2_rclean
   scheduler=rop
   optimizer=sgd
   fast=none1
@@ -478,7 +478,7 @@ if [ $stage -le 41 ]; then
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for seed in 123456 123457 123458 ;do
-    for resnet_size in 10 18 ; do
+    for resnet_size in 8 ; do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
