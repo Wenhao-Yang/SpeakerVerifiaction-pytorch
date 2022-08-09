@@ -1727,7 +1727,7 @@ if [ $stage -le 95 ]; then
   chn=16
 
   for chn in 32 ; do
-  for seed in 123457; do
+  for seed in 123458; do
 
 #  for weight in clean vox2 ; do
 #      for weight in mel clean aug vox2 ; do
