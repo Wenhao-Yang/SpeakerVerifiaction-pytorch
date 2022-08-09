@@ -479,7 +479,8 @@ if [ $stage -le 41 ]; then
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for seed in 123456 123457 123458 ;do
+  for scale in 0.3 0.4 0.5; do
+  for seed in 123456 ;do
     for resnet_size in 8 ; do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
@@ -572,6 +573,7 @@ if [ $stage -le 41 ]; then
         --loss-type ${loss}
     done
     done
+  done
   done
 exit
 fi
