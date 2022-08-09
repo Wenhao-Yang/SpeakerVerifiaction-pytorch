@@ -1784,7 +1784,7 @@ if [ $stage -le 95 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --input-length fix \
+      --input-length var \
       --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
