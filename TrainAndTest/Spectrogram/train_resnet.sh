@@ -479,7 +479,7 @@ if [ $stage -le 41 ]; then
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
-  for scale in 0.3 0.4 0.5; do
+  for scale in 0.3 0.5 0.8; do
   for seed in 123456 ;do
     for resnet_size in 8 ; do
     for chn in 16 ; do
