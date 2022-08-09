@@ -463,8 +463,8 @@ if [ $stage -le 41 ]; then
   downsample=k1
   batch_size=128
 
-  mask_layer=attention
-  weight=vox2_rclean
+  mask_layer=drop
+  weight=rclean
   scheduler=rop
   optimizer=sgd
   fast=none1
@@ -474,6 +474,8 @@ if [ $stage -le 41 ]; then
   avg_size=5
 #  nesterov
   resnet_size=8
+  weight_p=0
+  scale=0.2
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
@@ -497,10 +499,17 @@ if [ $stage -le 41 ]; then
         channels=64,128,256,512
         chn_str=chn64_
       fi
+      if [ "$mask_layer" = "attention" ];then
+        at_str=_${weight}
+      if [ "$mask_layer" = "drop" ];then
+        at_str=_${weight}_dp${weight_p}s${scale}
+      else
+        at_str=
+      fi
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${weight}_${chn_str}wde4_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
 
       python TrainAndTest/train_egs.py \
         --model ${model} \
@@ -533,6 +542,8 @@ if [ $stage -le 41 ]; then
         --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
         --mask-layer ${mask_layer} \
         --init-weight ${weight} \
+        --weight-p 0 \
+        --scale 0.2 \
         --kernel-size 5,5 \
         --channels ${channels} \
         --downsample ${downsample} \

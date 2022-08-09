@@ -546,7 +546,7 @@ class TimeFreqMaskLayer(nn.Module):
 
 
 class DropweightLayer(nn.Module):
-    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2):
+    def __init__(self, dropout_p=0.0, weight='mel', input_dim=161, scale=0.2):
         super(DropweightLayer, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
@@ -566,6 +566,10 @@ class DropweightLayer(nn.Module):
             ynew = 1 / ynew  # .max()
         elif weight == 'clean':
             ynew = c.VOX1_CLEAN
+        elif weight == 'rclean':
+            ynew = c.VOX1_RCLEAN
+        elif weight == 'vox2_rclean':
+            ynew = c.VOX2_RCLEAN
         elif weight == 'aug':
             ynew = c.VOX1_AUG
         elif weight == 'vox2':
