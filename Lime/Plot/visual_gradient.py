@@ -120,10 +120,10 @@ def main():
                     valid_time_var += np.var(grad, axis=0)
 
                     num_utt += 1
-
-        valid_time_mean = valid_time_mean / num_utt
-        valid_time_var = valid_time_var / num_utt
-        valid_data_mean = valid_data_mean / num_utt
+        if num_utt > 0:
+            valid_time_mean = valid_time_mean / num_utt
+            valid_time_var = valid_time_var / num_utt
+            valid_data_mean = valid_data_mean / num_utt
 
         freq_data['valid.time.mean'] = valid_time_mean
         freq_data['valid.time.var'] = valid_time_var
