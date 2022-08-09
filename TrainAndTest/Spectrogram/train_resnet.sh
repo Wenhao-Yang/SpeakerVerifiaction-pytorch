@@ -501,7 +501,7 @@ if [ $stage -le 41 ]; then
       fi
       if [ "$mask_layer" = "attention" ];then
         at_str=_${weight}
-      if [ "$mask_layer" = "drop" ];then
+      elif [ "$mask_layer" = "drop" ];then
         at_str=_${weight}_dp${weight_p}s${scale}
       else
         at_str=
