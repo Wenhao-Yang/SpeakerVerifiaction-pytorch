@@ -85,6 +85,9 @@ parser.add_argument('--mvnorm', action='store_true', default=False,
 # Model options
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
+parser.add_argument('--softmax', action='store_true', default=False,
+                    help='backward after softmax normalization')
+
 parser.add_argument('--cam-layers',
                     default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2',
                              'layer3.5.conv2', 'layer4.2.conv2'],
@@ -293,6 +296,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     global out_layer_feat
     global in_layer_grad
     global out_layer_grad
+    softmax = nn.Softmax(dim=1)
 
     for batch_idx, (data, label, uid) in pbar:
 
@@ -317,6 +321,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 classifed, _ = logit
             else:
                 classifed = logit
+
+            if args.softmax:
+                classifed = softmax(classifed)
 
             try:
                 classifed[0][label.long()].backward()
@@ -419,6 +426,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     classifed, _ = logit
                 else:
                     classifed = logit
+
+                if args.softmax:
+                    classifed = softmax(classifed)
 
                 classifed[0][label.long()].backward()
 

@@ -1014,7 +1014,7 @@ if [ $stage -le 351 ]; then
   alpha=0
 
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
-  for cam in fullgrad ;do
+  for cam in gradient ;do
   for seed in 123456 123457 123458 ;do
     # vox1
     if [ $seed -le 123456 ];then
@@ -1039,6 +1039,7 @@ if [ $stage -le 351 ]; then
       --model ${model} \
       --resnet-size ${resnet_size} \
       --cam ${cam} \
+      --softmax \
       --start-epochs ${epoch} \
       --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev \
@@ -1060,7 +1061,7 @@ if [ $stage -le 351 ]; then
       --loss-type ${loss} \
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
-      --extract-path Data/gradient/${model_dir}/epoch_best_var_${cam} \
+      --extract-path Data/gradient/${model_dir}/epoch_best_var_${cam}_softmax \
       --gpu-id 4 \
       --margin 0.2 \
       --s 30 \
