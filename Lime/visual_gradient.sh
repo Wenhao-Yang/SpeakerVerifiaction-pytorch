@@ -271,7 +271,7 @@ fi
 
 if [ $stage -le 205 ]; then
 #  for s in dev ;do
-  for cam in grad_cam fullgrad ; do
+  for cam in gradient ; do
   for seed in 123456 123457 123458 ;do
     if [ $seed -le 123456 ];then
       epoch=27
@@ -282,7 +282,7 @@ if [ $stage -le 205 ]; then
     fi
 
     python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/ThinResNet34/vox1/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/epoch_best_var_${cam}/epoch_${epoch} \
+      --extract-path Data/gradient/ThinResNet34/vox1/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/epoch_best_var_${cam}_softmax/epoch_${epoch} \
       --feat-dim 161 \
       --acoustic-feature spectrogram
   done
