@@ -1294,10 +1294,12 @@ if [ $stage -le 79 ]; then
   optimizer=sgd
   scheduler=rop
 #  mask_layer=gau_noise
-  mask_layer=baseline
+#  mask_layer=baseline
+  mask_layer=attention
+
   chn=32
 
-  weight=clean
+  weight=mel
 
   for chn in 32 ; do
 #  for weight in clean vox2 ; do
