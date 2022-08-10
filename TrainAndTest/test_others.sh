@@ -1720,10 +1720,10 @@ if [ $stage -le 95 ]; then
   sname=dev #_aug_com
   test_subset=test
   input_norm=Mean
-  mask_layer=baseline
-#  mask_layer=attention
+#  mask_layer=baseline
+  mask_layer=attention
 
-  weight=randt
+  weight=mel
   chn=16
 
   for chn in 32 ; do
@@ -1789,7 +1789,7 @@ if [ $stage -le 95 ]; then
       --time-dim 1 \
       --avg-size 4 \
       --xvector-dir Data/xvector/${check_path} \
-      --resume Data/checkpoint/${check_path}/checkpoint_49.pth \
+      --resume Data/checkpoint/${check_path}/checkpoint_50.pth \
       --model-yaml Data/checkpoint/${check_path}/model.2022.07.01.yaml \
       --gpu-id 1 \
       --verbose 0 \
