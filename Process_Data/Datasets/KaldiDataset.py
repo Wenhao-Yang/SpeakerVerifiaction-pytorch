@@ -1004,8 +1004,8 @@ class ScriptTrainDataset(data.Dataset):
     def __len__(self):
         if self.sample_type == 'instance':
             return len(self.base_utts)
-        elif self.sample_type == 'half_balance':
-            return max(len(self.base_utts), self.samples_per_speaker * len(self.speakers))
+        # elif self.sample_type == 'half_balance':
+        #     return max(len(self.base_utts), self.samples_per_speaker * len(self.speakers))
         else:
             return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
 
