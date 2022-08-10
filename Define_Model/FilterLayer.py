@@ -886,6 +886,7 @@ class AttentionweightLayer_v3(nn.Module):
     def __init__(self, input_dim=161, weight='mel'):
         super(AttentionweightLayer_v3, self).__init__()
         self.input_dim = input_dim
+        self.weight = weight
 
         if weight == 'mel':
             m = np.arange(0, 2840.0230467083188)
