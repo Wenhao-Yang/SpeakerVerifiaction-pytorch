@@ -1294,16 +1294,16 @@ if [ $stage -le 79 ]; then
   optimizer=sgd
   scheduler=rop
 #  mask_layer=gau_noise
-#  mask_layer=baseline
-  mask_layer=attention
+  mask_layer=baseline
+#  mask_layer=attention
 
   chn=32
 
   weight=mel
 
-  for chn in 32 ; do
+  for chn in 64 ; do
 #  for weight in clean vox2 ; do
-  for seed in 123458 ; do
+  for seed in 123457 123458 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     if [ $chn -eq 64 ];then
       channels=64,128,256
