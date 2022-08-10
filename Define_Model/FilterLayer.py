@@ -899,6 +899,10 @@ class AttentionweightLayer_v3(nn.Module):
             # ynew = 1 / ynew  # .max()
         elif weight == 'clean':
             ynew = c.VOX1_CLEAN
+        elif weight == 'rclean':
+            ynew = c.VOX1_RCLEAN
+        elif weight == 'vox2_rclean':
+            ynew = c.VOX2_RCLEAN
         elif weight == 'aug':
             ynew = c.VOX1_AUG
         elif weight == 'vox2':
@@ -912,8 +916,8 @@ class AttentionweightLayer_v3(nn.Module):
 
         ynew = np.array(ynew)
         ynew /= ynew.max()
-        self.s = nn.Parameter(torch.tensor(0.5))
-        self.b = nn.Parameter(torch.tensor(0.75))
+        self.s = nn.Parameter(torch.tensor(0.125).float())
+        self.b = nn.Parameter(torch.tensor(1.0).float())
 
         self.drop_p = ynew  # * dropout_p
         self.activation = nn.Sigmoid()
@@ -929,10 +933,16 @@ class AttentionweightLayer_v3(nn.Module):
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
-        drop_weight = (drop_weight - self.b * drop_weight.mean()) / self.s.clamp(min=0.0625, max=2.0)
+        drop_weight = (drop_weight - self.b.clamp(min=0.125, max=1) * drop_weight.mean()) / self.s.clamp(min=0.0625,
+                                                                                                         max=0.5)
         drop_weight = self.activation(drop_weight)
 
         return x * drop_weight
+
+    def __repr__(self):
+
+        return "AttentionweightLayer_v3(input_dim=%d, weight=%s, s=%.4f, b=%.4f)" % (
+        self.input_dim, self.weight, self.s, self.b)
 
 
 class AttentionweightLayer_v0(nn.Module):
