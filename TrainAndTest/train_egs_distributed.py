@@ -113,11 +113,11 @@ with open(args.train_config, 'r') as f:
 
 # create logger
 # Define visulaize SummaryWriter instance
-if not os.path.exists(config_args['check_path']):
-    print('Making checkpath...')
-    os.makedirs(config_args['check_path'])
-
 if torch.distributed.get_rank() == 0:
+    if not os.path.exists(config_args['check_path']):
+        print('Making checkpath...')
+        os.makedirs(config_args['check_path'])
+
     writer = SummaryWriter(logdir=config_args['check_path'], filename_suffix='SV')
     sys.stdout = NewLogger(
         os.path.join(config_args['check_path'], 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
