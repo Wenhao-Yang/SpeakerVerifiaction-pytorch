@@ -6,7 +6,7 @@
 # time: 2022/5/21 08:55
 # Description: 
 
-stage=0
+stage=10
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
