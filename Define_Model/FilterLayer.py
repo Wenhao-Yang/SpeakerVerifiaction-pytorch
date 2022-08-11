@@ -934,8 +934,8 @@ class AttentionweightLayer_v3(nn.Module):
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
-        drop_weight = (drop_weight - self.b.clamp(min=0.125, max=1) * drop_weight.mean()) / self.s.clamp(min=0.0625,
-                                                                                                         max=0.5)
+        drop_weight = (drop_weight - self.b.clamp(min=0.125, max=1.5) * drop_weight.mean()) / self.s.clamp(min=0.0625,
+                                                                                                           max=0.5)
         drop_weight = self.activation(drop_weight)
 
         return x * drop_weight
