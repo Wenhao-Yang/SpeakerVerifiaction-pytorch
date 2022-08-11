@@ -56,7 +56,7 @@ weight_decay: 0.00002
 dampening: 0
 momentum: 0.9
 accu_steps: 1
-
+nesterov: False
 
 # Scheduler
 patience: 3
