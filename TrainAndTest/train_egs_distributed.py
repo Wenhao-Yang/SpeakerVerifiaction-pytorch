@@ -130,7 +130,8 @@ opt_kwargs = {'lr': config_args['lr'],
               'lr_decay': config_args['lr_decay'],
               'weight_decay': config_args['weight_decay'],
               'dampening': config_args['dampening'],
-              'momentum': config_args['momentum']}
+              'momentum': config_args['momentum'],
+              'nesterov': config_args['nesterov']}
 
 l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if config_args['cos_sim'] else nn.PairwiseDistance(p=2)
 
