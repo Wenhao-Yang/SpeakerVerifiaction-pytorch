@@ -448,8 +448,8 @@ exit
 fi
 
 if [ $stage -le 41 ]; then
-  datasets=vox1
-  testsets=vox1
+  datasets=aishell2
+  testsets=aishell2
   model=ThinResNet
 #  resnet_size=50
   encoder_type=SAP2
@@ -463,7 +463,7 @@ if [ $stage -le 41 ]; then
   downsample=k1
   batch_size=128
 
-  mask_layer=attention3
+  mask_layer=baseline
   weight=rclean
   scheduler=rop
   optimizer=sgd
@@ -481,7 +481,7 @@ if [ $stage -le 41 ]; then
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
   for seed in 123456 123457 123458 ;do
-    for resnet_size in 8 ; do
+    for resnet_size in 34 18 ; do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
