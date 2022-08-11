@@ -15,6 +15,7 @@
 data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 
 ## Dataset
+seed: 123456
 datasets: vox2
 test_datasets: vox1
 feat_type: klsp
@@ -38,7 +39,7 @@ random_chunk: [ 200, 400 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
-nj: 12
+nj: 8
 shuffle: False
 feat_format: kaldi
 remove_vad: False
@@ -67,7 +68,7 @@ cos_sim: True
 
 early_stopping: True
 early_patience: 15
-early_delta: 0.001
+early_delta: 0.0001
 early_meta: EER
 
 ## model Setttings
@@ -106,11 +107,11 @@ s: 30
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd2e5_var
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<seed>/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd2e5_var
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
-gpu_id: 1,2
+gpu_id: 0,1
 
 test_interval: 4
 log_interval: 10
