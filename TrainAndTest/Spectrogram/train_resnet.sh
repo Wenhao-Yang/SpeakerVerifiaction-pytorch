@@ -527,7 +527,7 @@ if [ $stage -le 41 ]; then
         --cyclic-epoch ${cyclic_epoch} \
         --scheduler ${scheduler} \
         --resnet-size ${resnet_size} \
-        --nj 12 \
+        --nj 6 \
         --epochs 60 \
         --patience 3 \
         --early-stopping \
