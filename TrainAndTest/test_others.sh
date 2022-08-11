@@ -2214,7 +2214,7 @@ if [ $stage -le 201 ]; then
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
-        --gpu-id 4 \
+        --gpu-id 5 \
         --cos-sim
 
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
