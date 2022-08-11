@@ -449,7 +449,7 @@ if [ $stage -le 50 ]; then
       --scheduler ${scheduler} \
       --resnet-size ${resnet_size} \
       --downsample ${downsample} \
-      --nj 6 \
+      --nj 4 \
       --epochs 50 \
       --patience 3 \
       --early-stopping \
