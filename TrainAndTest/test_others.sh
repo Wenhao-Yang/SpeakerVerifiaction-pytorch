@@ -2132,8 +2132,8 @@ if [ $stage -le 201 ]; then
   test_subset=test
   chn=16
 #  mask_layer=rvec
-  mask_layer=attention
-  weight=vox2_rclean
+  mask_layer=attention3
+  weight=rclean
   scheduler=rop
   optimizer=sgd
   batch_size=256
@@ -2171,7 +2171,7 @@ if [ $stage -le 201 ]; then
         avg_str=avg${avg_size}_
       fi
 
-      if [ "$mask_layer" = "attention" ];then
+      if [[ $mask_layer == attention* ]];then
         at_str=_${weight}
 #        --score-suffix
       else
