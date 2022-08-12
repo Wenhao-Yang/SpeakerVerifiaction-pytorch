@@ -438,11 +438,11 @@ def main():
             #     model_conv1 = model.conv1.weight.cpu().detach().numpy()
             #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
-            train_extract(train_loader, model, file_dir, '%s_train'%args.train_set_name)
-            train_extract(valid_loader, model, file_dir, '%s_valid'%args.train_set_name)
-            test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
+            train_extract(train_loader, model, file_dir, '%s_train' % args.train_set_name)
+            # train_extract(valid_loader, model, file_dir, '%s_valid'%args.train_set_name)
+            # test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
 
-        test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
+        # test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
 
 
 if __name__ == '__main__':

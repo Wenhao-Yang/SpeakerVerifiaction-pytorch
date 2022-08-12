@@ -1035,6 +1035,7 @@ if [ $stage -le 351 ]; then
 #    fi
 
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
+    extract_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var/${seed}
     python Lime/cam_extract.py \
       --model ${model} \
       --resnet-size ${resnet_size} \
@@ -1061,8 +1062,8 @@ if [ $stage -le 351 ]; then
       --loss-type ${loss} \
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
-      --extract-path Data/gradient/${model_dir}/epoch_best_var_${cam}_softmax \
-      --gpu-id 4 \
+      --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax \
+      --gpu-id 5 \
       --margin 0.2 \
       --s 30 \
       --sample-utt 4000
