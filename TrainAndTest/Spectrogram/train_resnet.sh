@@ -402,13 +402,15 @@ if [ $stage -le 22 ]; then
 fi
 
 if [ $stage -le 50 ]; then
-  datasets=vox2
+  datasets=vox1
+  testsets=vox1
   model=ThinResNet
   resnet_size=50
-  encoder_type=SAP2
+  encoder_type=AVG
   alpha=0
   block_type=basic
   batch_size=128
+  chn=16
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
@@ -418,14 +420,20 @@ if [ $stage -le 50 ]; then
   downsample=k1
 
   mask_layer=rvec
+  weight=rclean
   scheduler=rop
   optimizer=sgd
   fast=none1
 
+
+  avg_size=5
+  weight_p=0
+  scale=0.2
+
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for resnet_size in 34 50; do
-
+    for seed in 123456 123457 123458 ;do
     if [ $resnet_size -eq 34 ];then
       expansion=1
       batch_size=256
@@ -433,24 +441,44 @@ if [ $stage -le 50 ]; then
       expansion=2
       batch_size=128
     fi
+    if [ $chn -eq 16 ]; then
+        channels=16,32,64,128
+        chn_str=
+    elif [ $chn -eq 32 ]; then
+      channels=32,64,128,256
+      chn_str=chn32_
+    elif [ $chn -eq 64 ]; then
+      channels=64,128,256,512
+      chn_str=chn64_
+    fi
+    if [[ $mask_layer == attention* ]];then
+      at_str=_${weight}
+    elif [ "$mask_layer" = "drop" ];then
+      at_str=_${weight}_dp${weight_p}s${scale}
+    else
+      at_str=
+    fi
+
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
 
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --train-test-dir ${lstm_dir}/data/${testsets}/${feat_type}/test \
       --train-trials trials \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
+      --test-dir ${lstm_dir}/data/${testsets}/${feat_type}/test \
       --feat-format kaldi \
+      --seed ${seed} \
       --input-norm ${input_norm} \
       --random-chunk 200 400 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --resnet-size ${resnet_size} \
       --downsample ${downsample} \
-      --nj 4 \
-      --epochs 50 \
+      --nj 6 \
+      --epochs 60 \
       --patience 3 \
       --early-stopping \
       --early-patience 15 \
@@ -460,8 +488,10 @@ if [ $stage -le 50 ]; then
       --fast ${fast} \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var_es/checkpoint_10.pth \
+      --check-path Data/checkpoint/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
+      --mask-layer ${mask_layer} \
+      --init-weight ${weight} \
       --kernel-size 5,5 \
       --expansion ${expansion} \
       --channels 16,32,64,128 \
@@ -472,7 +502,7 @@ if [ $stage -le 50 ]; then
       --batch-size ${batch_size} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
-      --avg-size 0 \
+      --avg-size ${avg_size} \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
@@ -480,7 +510,7 @@ if [ $stage -le 50 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.00002 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --all-iteraion 0 \
@@ -488,6 +518,7 @@ if [ $stage -le 50 ]; then
       --shuffle \
       --cos-sim \
       --loss-type ${loss}
+  done
   done
   exit
 
