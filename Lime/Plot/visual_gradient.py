@@ -30,7 +30,8 @@ parser.add_argument('--feat-dim', type=int, default=161, metavar='ES', help='Dim
 parser.add_argument('--samples', type=int, default=0, metavar='ES', help='Dimensionality of the features')
 parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='spectrogram',
                     help='choose the acoustic features type.')
-
+parser.add_argument('--grad-weight', choices=['max', 'mean'], default='mean',
+                    help='choose the acoustic features type.')
 parser.add_argument('--seed', type=int, default=123456, metavar='S', help='random seed (default: 0)')
 
 args = parser.parse_args()
@@ -89,7 +90,10 @@ def main():
                 sets = pickle.load(f)
                 # for (data, grad, uid) in tqdm(sets):
                 for (data, grad) in tqdm(sets):
-                    train_time_mean += np.mean(np.abs(grad), axis=0)
+                    if args.grad_weight == 'mean':
+                        train_time_mean += np.mean(np.abs(grad), axis=0)
+                    else:
+                        train_time_mean += np.max(np.abs(grad), axis=0)
                     train_time_var += np.var(grad, axis=0)
                     train_data_mean += np.mean(data, axis=0)
                     num_utt += 1
@@ -116,7 +120,8 @@ def main():
                 # for (data, grad, uid) in tqdm(sets):
                 for (data, grad) in tqdm(sets):
                     valid_data_mean += np.mean(data, axis=0)
-                    valid_time_mean += np.mean(np.abs(grad), axis=0)
+                    valid_time_mean += np.mean(np.abs(grad), axis=0) if args.grad_weight == 'mean' else np.max(
+                        np.abs(grad), axis=0)
                     valid_time_var += np.var(grad, axis=0)
 
                     num_utt += 1
@@ -144,7 +149,10 @@ def main():
                 sets = pickle.load(f)
                 for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets):
                     train_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
-                    train_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
+                    if args.grad_weight == 'mean':
+                        train_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
+                    else:
+                        train_veri_mean += (np.max(np.abs(grad_a), axis=0) + np.max(np.abs(grad_b), axis=0)) / 2
                     train_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) +
                                         np.mean(np.where(grad_b > 0, grad_b, 0), axis=0)) / 2
 
@@ -177,7 +185,11 @@ def main():
                 sets = pickle.load(f)
                 for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets):
                     test_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
-                    test_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
+                    if args.grad_weight == 'mean':
+                        test_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
+                    else:
+                        test_veri_mean += (np.max(np.abs(grad_a), axis=0) + np.max(np.abs(grad_b), axis=0)) / 2
+
                     test_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) + np.mean(
                         np.where(grad_b > 0, grad_b, 0), axis=0)) / 2
 
