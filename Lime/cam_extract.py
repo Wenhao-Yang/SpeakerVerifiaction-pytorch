@@ -298,7 +298,7 @@ def calculate_outputs_and_gradients(inputs, model, target_label_idx):
         if target_label_idx is None:
             target_label_idx = torch.argmax(output, 1).item()
 
-        index = np.ones((output.size()[0], 1)) * target_label_idx
+        index = torch.ones((output.size()[0], 1)) * target_label_idx
         index = torch.tensor(index, dtype=torch.int64)
         if s.is_cuda():
             index = index.cuda()
