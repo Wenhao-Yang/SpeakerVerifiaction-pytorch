@@ -300,7 +300,7 @@ def calculate_outputs_and_gradients(inputs, model, target_label_idx):
 
         index = torch.ones((output.size()[0], 1)) * target_label_idx
         index = torch.tensor(index, dtype=torch.int64)
-        if s.is_cuda():
+        if s.is_cuda:
             index = index.cuda()
 
         output = output.gather(1, index)
