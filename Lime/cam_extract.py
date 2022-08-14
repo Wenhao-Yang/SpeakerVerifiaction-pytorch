@@ -289,7 +289,7 @@ def calculate_outputs_and_gradients(inputs, model, target_label_idx):
     # do the pre-processing
     predict_idx = None
     gradients = []
-    for input in inputs:
+    for s in inputs:
         s = Variable(s.cuda(), requires_grad=True)
 
         output, _ = model(s)
