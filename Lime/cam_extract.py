@@ -308,7 +308,7 @@ def calculate_outputs_and_gradients(inputs, model, target_label_idx):
         model.zero_grad()
         output.backward()
 
-        gradient = s.grad
+        gradient = s.grad.clone()
         gradients.append(gradient)
 
     gradients = torch.cat(gradients)
@@ -351,6 +351,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
         data = Variable(data.cuda(), requires_grad=True)
         ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
+        baseline = None
 
         if len(data) == 1:
 
