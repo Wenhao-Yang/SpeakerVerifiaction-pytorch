@@ -26,6 +26,7 @@ import torch
 import torch._utils
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
+import torch.nn.functional as F
 import torchvision.transforms as transforms
 from kaldi_io import read_mat
 from torch.autograd import Variable
@@ -282,6 +283,34 @@ def _extract_layer_grad(module, in_grad, out_grad):
     out_layer_grad.append(out_grad[0])
 
 
+def calculate_outputs_and_gradients(inputs, model, target_label_idx):
+    # do the pre-processing
+    predict_idx = None
+    gradients = []
+    for input in inputs:
+        output, _ = model(input)
+        output = F.softmax(output, dim=1)
+
+        if target_label_idx is None:
+            target_label_idx = torch.argmax(output, 1).item()
+
+        index = np.ones((output.size()[0], 1)) * target_label_idx
+        index = torch.tensor(index, dtype=torch.int64)
+        if input.is_cuda():
+            index = index.cuda()
+
+        output = output.gather(1, index)
+        # clear grad
+        model.zero_grad()
+        output.backward()
+
+        gradient = input.grad
+        gradients.append(gradient)
+
+    gradients = torch.cat(gradients)
+
+    return gradients, target_label_idx
+
 
 def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     # switch to evaluate mode
@@ -298,9 +327,14 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     global out_layer_grad
     softmax = nn.Softmax(dim=1)
 
+    baseline = None
+
     for batch_idx, (data, label, uid) in pbar:
 
         # orig = data.detach().numpy().squeeze().astype(np.float32)
+        spks = [train_dir.utt2spk_dict[u] for u in uid]
+        target_label_index = [train_dir.spk_to_idx[s] for s in spks]
+        target_label_index = torch.LongTensor(target_label_index)
 
         if data.shape[2] > 5 * c.NUM_FRAMES_SPECT:
             num_half = int(data.shape[2] / (4 * c.NUM_FRAMES_SPECT))
@@ -315,96 +349,109 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
         ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
 
         if len(data) == 1:
-            logit, _ = model(data)
 
-            if args.loss_type == 'asoft':
-                classifed, _ = logit
-            else:
-                classifed = logit
+            if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad']:
+                logit, _ = model(data)
+                classifed = logit[0] if args.loss_type == 'asoft' else logit
 
-            if args.softmax:
-                classifed = softmax(classifed)
+                if args.softmax:
+                    classifed = softmax(classifed)
 
-            try:
-                classifed[0][label.long()].backward()
-            except Exception as e:
-                print(data.shape, ",", uid)
-                raise e
+                try:
+                    classifed[0][label.long()].backward()
+                except Exception as e:
+                    print(data.shape, ",", uid)
+                    raise e
 
-            if args.cam == 'gradient':
-                grad = data.grad  # .cpu().numpy().squeeze().astype(np.float32)
+                if args.cam == 'gradient':
+                    grad = data.grad  # .cpu().numpy().squeeze().astype(np.float32)
 
-            elif args.cam == 'grad_cam':
-                grad = torch.zeros_like(data)
-                # assert len(out_layer_grad) == len(cam_layers), print(len(out_layer_grad), " is not equal to ", len(cam_layers))
+                elif args.cam == 'grad_cam':
+                    grad = torch.zeros_like(data)
+                    # assert len(out_layer_grad) == len(cam_layers), print(len(out_layer_grad), " is not equal to ", len(cam_layers))
 
-                last_grad = out_layer_grad[0]
-                last_feat = out_layer_feat[-1]
+                    last_grad = out_layer_grad[0]
+                    last_feat = out_layer_feat[-1]
 
-                weight = last_grad.mean(dim=(2, 3), keepdim=True)
-                weight /= weight.sum()
-                feat = last_feat  # .copy()
+                    weight = last_grad.mean(dim=(2, 3), keepdim=True)
+                    weight /= weight.sum()
+                    feat = last_feat  # .copy()
 
-                T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
-                grad += ups(T).abs()
+                    T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
+                    grad += ups(T).abs()
 
-            elif args.cam == 'grad_cam_pp':
-                # grad cam ++ last
-                last_grad = out_layer_grad[0].cpu()
-                last_feat = out_layer_feat[-1].cpu()
-                first_derivative = classifed[0][label.long()].exp().cpu() * last_grad
-                alpha = last_grad.pow(2) / (
-                        2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
-                # weight = alpha * (first_derivative.clamp_min_(0))
-                weight = alpha * (first_derivative.abs())
+                elif args.cam == 'grad_cam_pp':
+                    # grad cam ++ last
+                    last_grad = out_layer_grad[0].cpu()
+                    last_feat = out_layer_feat[-1].cpu()
+                    first_derivative = classifed[0][label.long()].exp().cpu() * last_grad
+                    alpha = last_grad.pow(2) / (
+                            2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
+                    # weight = alpha * (first_derivative.clamp_min_(0))
+                    weight = alpha * (first_derivative.abs())
 
-                weight = weight.mean(dim=(2, 3), keepdim=True)
-                weight /= weight.sum()
+                    weight = weight.mean(dim=(2, 3), keepdim=True)
+                    weight /= weight.sum()
 
-                grad = (last_feat * weight).sum(dim=1, keepdim=True)
-                grad = ups(grad)
+                    grad = (last_feat * weight).sum(dim=1, keepdim=True)
+                    grad = ups(grad)
 
-                # grad_cam_pp -= grad_cam_pp.min()
-                grad = grad.abs()
-                grad /= grad.max()
+                    # grad_cam_pp -= grad_cam_pp.min()
+                    grad = grad.abs()
+                    grad /= grad.max()
 
-            elif args.cam == 'fullgrad':
-                # full grad
-                input_gradient = (data.grad * data)
-                full_grad = input_gradient.clone().clamp_min(0)
+                elif args.cam == 'fullgrad':
+                    # full grad
+                    input_gradient = (data.grad * data)
+                    full_grad = input_gradient.clone().clamp_min(0)
 
-                L = len(bias_layers)
+                    L = len(bias_layers)
 
-                for i, l in enumerate(bias_layers):
-                    bias = biases[L - i - 1]
-                    if len(bias.shape) == 1:
-                        bias = bias.reshape(1, -1, 1, 1)
-                    if len(out_feature_grads[i].shape) == 3:
-                        # pdb.set_trace()
-                        if bias.shape[1] == out_feature_grads[i].shape[-1]:
-                            if bias.shape[1] % model.avgpool.output_size[1] == 0:
-                                bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
-                                grads_shape = out_feature_grads[i].shape
-                                out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
-                                                                                    model.avgpool.output_size[1])
-                            else:
-                                out_feature_grads[i] = out_feature_grads[i].reshape(1, bias.shape[1],
-                                                                                    grads_shape[1], -1)
+                    for i, l in enumerate(bias_layers):
+                        bias = biases[L - i - 1]
+                        if len(bias.shape) == 1:
+                            bias = bias.reshape(1, -1, 1, 1)
+                        if len(out_feature_grads[i].shape) == 3:
+                            # pdb.set_trace()
+                            if bias.shape[1] == out_feature_grads[i].shape[-1]:
+                                if bias.shape[1] % model.avgpool.output_size[1] == 0:
+                                    bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
+                                    grads_shape = out_feature_grads[i].shape
+                                    out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
+                                                                                        model.avgpool.output_size[1])
+                                else:
+                                    out_feature_grads[i] = out_feature_grads[i].reshape(1, bias.shape[1],
+                                                                                        grads_shape[1], -1)
 
-                    try:
-                        bias = bias.expand_as(out_feature_grads[i])
-                    except Exception as e:
-                        pdb.set_trace()
-                    #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
-                    #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                    bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
-                    bias_grad /= bias_grad.max()
-                    full_grad += ups(bias_grad)
+                        try:
+                            bias = bias.expand_as(out_feature_grads[i])
+                        except Exception as e:
+                            pdb.set_trace()
+                        #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
+                        #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
+                        bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
+                        bias_grad /= bias_grad.max()
+                        full_grad += ups(bias_grad)
 
-                # full_grad -= full_grad.min()
-                # full_grad = full_grad.abs()
-                full_grad /= full_grad.max()
-                grad = full_grad.detach().cpu()
+                    # full_grad -= full_grad.min()
+                    # full_grad = full_grad.abs()
+                    full_grad /= full_grad.max()
+                    grad = full_grad.detach().cpu()
+
+            elif args.cam in ['integrad']:
+
+                if baseline is None:
+                    baseline = 0. * data
+
+                scaled_inputs = [baseline + (float(i) / args.steps) * (data - baseline) for i in
+                                 range(0, args.steps + 1)]
+
+                grads, target_label_idx = calculate_outputs_and_gradients(scaled_inputs, model, target_label_index)
+                grads = (grads[:-1] + grads[1:]) / 2.0
+                avg_grads = np.average(grads, axis=0)
+
+                grad = (data - baseline) * avg_grads  # shape: <grad.shape>
+
 
         else:
             grad = []
@@ -420,92 +467,108 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 data_a = data[i].unsqueeze(0)
                 data_a = Variable(data_a.cuda(), requires_grad=True)
 
-                logit, _ = model(data_a)
+                if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad']:
+                    logit, _ = model(data_a)
 
-                if args.loss_type == 'asoft':
-                    classifed, _ = logit
-                else:
-                    classifed = logit
+                    if args.loss_type == 'asoft':
+                        classifed, _ = logit
+                    else:
+                        classifed = logit
 
-                if args.softmax:
-                    classifed = softmax(classifed)
+                    if args.softmax:
+                        classifed = softmax(classifed)
 
-                classifed[0][label.long()].backward()
+                    classifed[0][label.long()].backward()
 
-                if args.cam == 'gradient':
-                    grad_a = data_a.grad  # .cpu().numpy().squeeze().astype(np.float32)
-                elif args.cam == 'grad_cam':
-                    grad_a = torch.zeros_like(data_a)
-                    L = len(cam_layers)
-                    # assert len(out_layer_grad) == L, print(len(out_layer_grad))
+                    if args.cam == 'gradient':
+                        grad_a = data_a.grad  # .cpu().numpy().squeeze().astype(np.float32)
+                    elif args.cam == 'grad_cam':
+                        grad_a = torch.zeros_like(data_a)
+                        L = len(cam_layers)
+                        # assert len(out_layer_grad) == L, print(len(out_layer_grad))
 
-                    last_grad = out_layer_grad[0]
-                    last_feat = out_layer_feat[-1]
+                        last_grad = out_layer_grad[0]
+                        last_feat = out_layer_feat[-1]
 
-                    weight = last_grad.mean(dim=(2, 3), keepdim=True)
-                    weight /= weight.sum()
-                    feat = last_feat  # .copy()
+                        weight = last_grad.mean(dim=(2, 3), keepdim=True)
+                        weight /= weight.sum()
+                        feat = last_feat  # .copy()
 
-                    T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
+                        T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
 
-                    grad_a += ups(T).abs()
+                        grad_a += ups(T).abs()
 
-                elif args.cam == 'grad_cam_pp':
-                    # grad cam ++ last
-                    last_grad = out_layer_grad[0]
-                    last_feat = out_layer_feat[-1]
-                    first_derivative = classifed[0][label.long()].exp() * last_grad
-                    alpha = last_grad.pow(2) / (
-                            2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
-                    # weight = alpha * (first_derivative.clamp_min_(0))
-                    weight = alpha * (first_derivative.abs())
+                    elif args.cam == 'grad_cam_pp':
+                        # grad cam ++ last
+                        last_grad = out_layer_grad[0]
+                        last_feat = out_layer_feat[-1]
+                        first_derivative = classifed[0][label.long()].exp() * last_grad
+                        alpha = last_grad.pow(2) / (
+                                2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
+                        # weight = alpha * (first_derivative.clamp_min_(0))
+                        weight = alpha * (first_derivative.abs())
 
-                    weight = weight.mean(dim=(2, 3), keepdim=True)
-                    weight /= weight.sum()
+                        weight = weight.mean(dim=(2, 3), keepdim=True)
+                        weight /= weight.sum()
 
-                    grad_a = (last_feat * weight).sum(dim=1, keepdim=True)
-                    grad_a = ups(grad_a)
+                        grad_a = (last_feat * weight).sum(dim=1, keepdim=True)
+                        grad_a = ups(grad_a)
 
-                    # grad_cam_pp -= grad_cam_pp.min()
-                    grad_a = grad_a.abs()
-                    grad_a /= grad_a.max()
+                        # grad_cam_pp -= grad_cam_pp.min()
+                        grad_a = grad_a.abs()
+                        grad_a /= grad_a.max()
 
-                elif args.cam == 'fullgrad':
-                    # full grad
-                    input_gradient = (data_a.grad * data_a)
-                    full_grad = input_gradient.clone().clamp_min(0)
+                    elif args.cam == 'fullgrad':
+                        # full grad
+                        input_gradient = (data_a.grad * data_a)
+                        full_grad = input_gradient.clone().clamp_min(0)
 
-                    L = len(bias_layers)
+                        L = len(bias_layers)
 
-                    for j, l in enumerate(bias_layers):
-                        bias = biases[L - j - 1]
-                        if len(bias.shape) == 1:
-                            bias = bias.reshape(1, -1, 1, 1)
+                        for j, l in enumerate(bias_layers):
+                            bias = biases[L - j - 1]
+                            if len(bias.shape) == 1:
+                                bias = bias.reshape(1, -1, 1, 1)
 
-                        if len(out_feature_grads[j].shape) == 3:
-                            # pdb.set_trace()
-                            if bias.shape[1] == out_feature_grads[j].shape[-1]:
-                                if bias.shape[1] % model.avgpool.output_size[1] == 0:
-                                    bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
-                                    grads_shape = out_feature_grads[j].shape
-                                    out_feature_grads[j] = out_feature_grads[j].reshape(1, -1, grads_shape[1],
-                                                                                        model.avgpool.output_size[1])
-                                else:
-                                    out_feature_grads[j] = out_feature_grads[j].reshape(1, bias.shape[1],
-                                                                                        grads_shape[1], -1)
+                            if len(out_feature_grads[j].shape) == 3:
+                                # pdb.set_trace()
+                                if bias.shape[1] == out_feature_grads[j].shape[-1]:
+                                    if bias.shape[1] % model.avgpool.output_size[1] == 0:
+                                        bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
+                                        grads_shape = out_feature_grads[j].shape
+                                        out_feature_grads[j] = out_feature_grads[j].reshape(1, -1, grads_shape[1],
+                                                                                            model.avgpool.output_size[
+                                                                                                1])
+                                    else:
+                                        out_feature_grads[j] = out_feature_grads[j].reshape(1, bias.shape[1],
+                                                                                            grads_shape[1], -1)
 
-                        bias = bias.expand_as(out_feature_grads[j])
+                            bias = bias.expand_as(out_feature_grads[j])
 
-                        #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
-                        #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                        bias_grad = (out_feature_grads[j] * bias).mean(dim=1, keepdim=True).clamp_min(0)
-                        bias_grad /= bias_grad.max()
-                        full_grad += ups(bias_grad)
+                            #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
+                            #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
+                            bias_grad = (out_feature_grads[j] * bias).mean(dim=1, keepdim=True).clamp_min(0)
+                            bias_grad /= bias_grad.max()
+                            full_grad += ups(bias_grad)
 
-                    # full_grad -= full_grad.min()
-                    # full_grad = full_grad.abs()
-                    full_grad /= full_grad.max()
-                    grad_a = full_grad
+                        # full_grad -= full_grad.min()
+                        # full_grad = full_grad.abs()
+                        full_grad /= full_grad.max()
+                        grad_a = full_grad
+
+                elif args.cam in ['integrad']:
+
+                    if baseline is None:
+                        baseline = 0. * data_a
+
+                    scaled_inputs = [baseline + (float(i) / args.steps) * (data_a - baseline) for i in
+                                     range(0, args.steps + 1)]
+
+                    grads, target_label_idx = calculate_outputs_and_gradients(scaled_inputs, model, target_label_index)
+                    grads = (grads[:-1] + grads[1:]) / 2.0
+                    avg_grads = np.average(grads, axis=0)
+
+                    grad_a = (data_a - baseline) * avg_grads  # shape: <grad.shape>
 
                 grad.append(grad_a.detach().cpu().squeeze())
                 all_data.append(data_a.detach().squeeze())
