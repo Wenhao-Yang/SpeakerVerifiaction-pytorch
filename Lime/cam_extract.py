@@ -775,24 +775,25 @@ def main():
         global biases
         global handlers
 
-        for name, m in model.named_modules():
-            try:
-                if name in cam_layers:
-                    handlers.append(m.register_forward_hook(_extract_layer_feat))
-                    handlers.append(m.register_backward_hook(_extract_layer_grad))
-                #         if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear) or isinstance(m, nn.BatchNorm2d):
-                if not ('fc' in name or 'classifier' in name or 'CBAM' in name):
-                    #             print(m)
-                    b = extract_layer_bias(m)
-                    if (b is not None):
-                        biases.append(b)
-                        bias_layers.append(name)
-                        #                 biases.append(_extract_layer_bias(m))
-                        #                 print("bias:", _extract_layer_bias(m))
-                        m.register_backward_hook(_extract_layer_grads)
-            #                     m.register_forward_hook(_extract_layer_feat)
-            except Exception as e:
-                continue
+        if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad']:
+            for name, m in model.named_modules():
+                try:
+                    if name in cam_layers:
+                        handlers.append(m.register_forward_hook(_extract_layer_feat))
+                        handlers.append(m.register_backward_hook(_extract_layer_grad))
+                    #         if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear) or isinstance(m, nn.BatchNorm2d):
+                    if not ('fc' in name or 'classifier' in name or 'CBAM' in name):
+                        #             print(m)
+                        b = extract_layer_bias(m)
+                        if (b is not None):
+                            biases.append(b)
+                            bias_layers.append(name)
+                            #                 biases.append(_extract_layer_bias(m))
+                            #                 print("bias:", _extract_layer_bias(m))
+                            m.register_backward_hook(_extract_layer_grads)
+                #                     m.register_forward_hook(_extract_layer_feat)
+                except Exception as e:
+                    continue
         print("The number of layers with biases: ", len(biases))
 
         file_dir = args.extract_path + '/epoch_%d' % ep
