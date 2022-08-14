@@ -86,6 +86,8 @@ parser.add_argument('--mvnorm', action='store_true', default=False,
 # Model options
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
+parser.add_argument('--steps', type=int, default=100, metavar='ES', help='Dimensionality of the embedding')
+
 parser.add_argument('--softmax', action='store_true', default=False,
                     help='backward after softmax normalization')
 
@@ -288,7 +290,9 @@ def calculate_outputs_and_gradients(inputs, model, target_label_idx):
     predict_idx = None
     gradients = []
     for input in inputs:
-        output, _ = model(input)
+        s = Variable(s.cuda(), requires_grad=True)
+
+        output, _ = model(s)
         output = F.softmax(output, dim=1)
 
         if target_label_idx is None:
@@ -296,7 +300,7 @@ def calculate_outputs_and_gradients(inputs, model, target_label_idx):
 
         index = np.ones((output.size()[0], 1)) * target_label_idx
         index = torch.tensor(index, dtype=torch.int64)
-        if input.is_cuda():
+        if s.is_cuda():
             index = index.cuda()
 
         output = output.gather(1, index)
@@ -448,7 +452,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                 grads, target_label_idx = calculate_outputs_and_gradients(scaled_inputs, model, target_label_index)
                 grads = (grads[:-1] + grads[1:]) / 2.0
-                avg_grads = np.average(grads, axis=0)
+                avg_grads = grads.mean(dim=0)
 
                 grad = (data - baseline) * avg_grads  # shape: <grad.shape>
 
@@ -566,7 +570,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                     grads, target_label_idx = calculate_outputs_and_gradients(scaled_inputs, model, target_label_index)
                     grads = (grads[:-1] + grads[1:]) / 2.0
-                    avg_grads = np.average(grads, axis=0)
+                    avg_grads = grads.mean(dim=0)
 
                     grad_a = (data_a - baseline) * avg_grads  # shape: <grad.shape>
 
