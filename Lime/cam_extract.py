@@ -308,7 +308,7 @@ def calculate_outputs_and_gradients(inputs, model, target_label_idx):
         model.zero_grad()
         output.backward()
 
-        gradient = input.grad
+        gradient = s.grad
         gradients.append(gradient)
 
     gradients = torch.cat(gradients)
