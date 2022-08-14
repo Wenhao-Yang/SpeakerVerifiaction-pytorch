@@ -1720,14 +1720,14 @@ if [ $stage -le 95 ]; then
   sname=dev #_aug_com
   test_subset=test
   input_norm=Mean
-#  mask_layer=baseline
-  mask_layer=attention
+  mask_layer=baseline
+#  mask_layer=attention
 
   weight=mel
   chn=16
 
-  for chn in 32 ; do
-  for seed in 123458; do
+  for chn in 64 ; do
+  for seed in 123457 123458; do
 
 #  for weight in clean vox2 ; do
 #      for weight in mel clean aug vox2 ; do
