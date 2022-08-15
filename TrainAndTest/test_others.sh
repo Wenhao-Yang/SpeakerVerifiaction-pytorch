@@ -2122,7 +2122,7 @@ if [ $stage -le 201 ]; then
   input_norm=Mean
 #  test_subset=
   block_type=basic
-  encoder_type=SAP2
+  encoder_type=AVG
   embedding_size=256
   resnet_size=8
 #  sname=dev #dev_aug_com
@@ -2132,7 +2132,8 @@ if [ $stage -le 201 ]; then
   test_subset=test
   chn=16
 #  mask_layer=rvec
-  mask_layer=attention3
+  mask_layer=baseline
+#  mask_layer=attention3
   weight=rclean
   scheduler=rop
   optimizer=sgd
@@ -2142,7 +2143,7 @@ if [ $stage -le 201 ]; then
 #  123456 123457 123458
 #  10 18 34 50
   for testset in vox1 sitw ; do
-  for resnet_size in 8 ; do
+  for resnet_size in 18 34 ; do
   for seed in 123456 123457 123458 ;do
 #    for chn in 16 32 64 ; do
       epoch=
@@ -2253,7 +2254,7 @@ if [ $stage -le 201 ]; then
 #|     vox1-test     |   4.2895    |   0.2120    |   0.3709    |    0.5213    | 20220623 20:23:30 | epoch 21
 
 
-# avg5 vox1
+# avg5 vox1 sap2
 #+-------------------+-------------+-------------+---------------+---------------+-------------------+
 #|     Test Set      |   EER (%)   |  Threshold  |  MinDCF-0.01  | MinDCF-0.001  |       Date        |
 #+-------------------+-------------+-------------+---------------+---------------+-------------------+
