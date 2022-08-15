@@ -854,7 +854,7 @@ class PadCollate3d:
             xs = xs.contiguous()
 
         # pdb.set_trace()
-        print(batch[0][1])
+        # print(batch[0][1])
         if isinstance(batch[0][1], torch.Tensor):
             ys = torch.stack(list(map(lambda x: x[1], batch)), dim=0)
 
@@ -866,7 +866,7 @@ class PadCollate3d:
                 ys = ys.contiguous()
 
         else:
-            ys = torch.LongTensor(list(map(lambda x: x[2], batch)))
+            ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
 
         if isinstance(batch[0][2], torch.Tensor):
             zs = torch.stack(list(map(lambda x: x[2], batch)), dim=0)
