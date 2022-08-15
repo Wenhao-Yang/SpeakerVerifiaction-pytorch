@@ -1880,6 +1880,7 @@ if [ $stage -le 96 ]; then
 #      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var/checkpoint_50.pth \
 #      --gpu-id 0 \
 #      --cos-sim
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var_vanillakld
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size 8 \
@@ -1893,7 +1894,7 @@ if [ $stage -le 96 ]; then
       --input-dim 161 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
-      --nj 12 \
+      --nj 8 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encod} \
@@ -1908,9 +1909,9 @@ if [ $stage -le 96 ]; then
       --dropout-p 0.12 \
       --time-dim 1 \
       --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var_em_l2 \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var_em_l2/checkpoint_50.pth \
-      --gpu-id 0 \
+      --xvector-dir Data/xvector/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+      --gpu-id 1 \
       --cos-sim
 
 #    _${weight}
