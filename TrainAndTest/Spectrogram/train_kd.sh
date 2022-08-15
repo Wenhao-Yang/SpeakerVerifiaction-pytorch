@@ -181,7 +181,7 @@ if [ $stage -le 5 ]; then
   mask_layer=attention
   scheduler=rop
   optimizer=sgd
-  nj=8
+  nj=1
   weight=clean
   chn=16
 

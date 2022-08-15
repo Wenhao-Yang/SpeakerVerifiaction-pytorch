@@ -535,6 +535,7 @@ class EgsDataset(Dataset):
                 return feature, label, dom_label, guide_label
             else:
                 return feature, label, guide_label
+
         if self.domain:
             return feature, label, dom_label
         else:

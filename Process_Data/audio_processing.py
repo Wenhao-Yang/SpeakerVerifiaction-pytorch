@@ -2,6 +2,7 @@
 # encoding: utf-8
 import os
 import pathlib
+import pdb
 import traceback
 import random
 import librosa
@@ -852,6 +853,7 @@ class PadCollate3d:
         else:
             xs = xs.contiguous()
 
+        pdb.set_trace()
         if isinstance(batch[0][1], torch.Tensor):
             ys = torch.stack(list(map(lambda x: x[1], batch)), dim=0)
 
