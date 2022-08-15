@@ -689,8 +689,11 @@ def main():
                 test(model, epoch, writer, xvector_dir)
                 if epoch != (end - 1):
                     try:
-                        shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                        shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
+
+                        if os.path.exists("%s/test/epoch_%s" % (xvector_dir, epoch)):
+                            shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
+                        if os.path.exists("%s/train/epoch_%s" % (xvector_dir, epoch)):
+                            shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
                     except Exception as e:
                         print('rm dir xvectors error:', e)
 
