@@ -854,6 +854,7 @@ class PadCollate3d:
             xs = xs.contiguous()
 
         pdb.set_trace()
+        print(batch[0][1])
         if isinstance(batch[0][1], torch.Tensor):
             ys = torch.stack(list(map(lambda x: x[1], batch)), dim=0)
 
