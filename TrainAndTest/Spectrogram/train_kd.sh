@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=5
 waited=0
 while [ $(ps 27253 | wc -l) -eq 2 ]; do
   sleep 60
@@ -183,13 +183,37 @@ if [ $stage -le 5 ]; then
   optimizer=sgd
   nj=8
   weight=clean
+  chn=16
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
   label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
 
-   for encoder_type in AVG ; do
-     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-     python TrainAndTest/train_egs_kd2.py \
+  for seed in 123457 123458 ;do
+    for encoder_type in AVG ; do
+      if [ $chn -eq 64 ];then
+        channels=64,128,256
+        dp=0.25
+        dp_str=25
+      elif [ $chn -eq 32 ];then
+        channels=32,64,128
+        dp=0.2
+        dp_str=20
+      elif [ $chn -eq 16 ];then
+        channels=16,32,64
+        dp=0.125
+        dp_str=125
+      fi
+
+      if [[ $mask_layer == attention* ]];then
+        at_str=_${weight}
+      else
+        at_str=
+      fi
+
+      echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd2_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}${at_str}_${chn_str}wd5e4_var
+
+      python TrainAndTest/train_egs_kd2.py \
        --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
        --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev/trials_dir \
@@ -211,10 +235,10 @@ if [ $stage -le 5 ]; then
        --mask-layer ${mask_layer} \
        --init-weight ${weight} \
        --milestones 10,20,30,40 \
-       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd2_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp20_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn32_var \
-       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd2_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp20_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_chn32_var/checkpoint_50.pth \
+       --check-path Data/checkpoint/${model_dir} \
+       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
        --kernel-size ${kernel} \
-       --channels 32,64,128 \
+       --channels ${channels} \
        --stride 2 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
@@ -226,7 +250,7 @@ if [ $stage -le 5 ]; then
        --margin 0.2 \
        --s 30 \
        --weight-decay 0.0005 \
-       --dropout-p 0.2 \
+       --dropout-p ${dp} \
        --gpu-id 0,1 \
        --extract \
        --cos-sim \
@@ -237,6 +261,8 @@ if [ $stage -le 5 ]; then
        --teacher-resume ${teacher_dir}/checkpoint_40.pth \
        --label-dir ${label_dir} \
        --temperature 20
+   done
+
    done
 
 #  weight=vox2
