@@ -155,7 +155,10 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
-    kd_loss = nn.MSELoss()
+    if args.kd_loss == 'mse':
+        kd_loss = nn.MSELoss()
+    elif args.kd_loss == 'kld':
+        kd_loss = nn.KLDivLoss()
 
     for batch_idx, (data, label) in pbar:
 
@@ -163,13 +166,12 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             label = label.cuda(non_blocking=True)
             data = data.cuda(non_blocking=True)
 
-        data, label = Variable(data), Variable(label)
-
-        classfier, feats = model(data)
-
         with torch.no_grad():
             t_classfier, t_feats = teacher_model(data)
+            # t_classfier = t_classfier
 
+        data, label = Variable(data), Variable(label)
+        classfier, feats = model(data)
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
 
@@ -196,6 +198,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
 
         if args.kd_type == 'em_l2':
             teacher_loss += kd_loss(feats, t_feats)
+        elif args.kd_type == 'em_cos':
+            teacher_loss += (1 - torch.nn.functional.cosine_similarity(feats, t_feats)).mean() / 2
 
         total_teacher_loss += float(teacher_loss.item())
         # pdb.set_trace()

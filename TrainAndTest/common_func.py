@@ -464,6 +464,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
     parser.add_argument('--class-weight', type=str, default='', help='path to voxceleb1 test dataset')
     parser.add_argument('--max-cls-weight', default=0.8, type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--target-ratio', default=0.5, type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--inter-ratio', default=0.2, type=float, help='replace batchnorm with instance norm')
 
     parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
     parser.add_argument('--exp', action='store_true', default=False, help='exp power spectogram')
@@ -534,7 +536,6 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--scale', default=0.2, type=float, metavar='FEAT', help='acoustic feature dimension')
 
     parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
-
     parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
 
     parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
@@ -723,7 +724,9 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
-        parser.add_argument('--distil-weight', type=float, default=0.5, help='path to voxceleb1 test dataset')
+        parser.add_argument('--kd-loss', type=str, default='kld', help='path to voxceleb1 test dataset')
+
+        arser.add_argument('--distil-weight', type=float, default=0.5, help='path to voxceleb1 test dataset')
         parser.add_argument('--teacher-model-yaml', type=str, required=True, help='path to teacher model')
         parser.add_argument('--teacher-resume', type=str, required=True, help='path to teacher model')
         parser.add_argument('--label-dir', type=str, default='', help='path to teacher model')
