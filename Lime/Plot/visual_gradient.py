@@ -74,7 +74,7 @@ def main():
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
                 # for (data, grad, uid) in tqdm(sets):
-                for (data, grad) in tqdm(sets):
+                for (data, grad) in tqdm(sets, ncols=100):
                     time_data.append((data, grad))
                     num_utt += 1
                     if args.samples > 0 and num_utt >= args.samples:
@@ -94,7 +94,7 @@ def main():
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
                 # for (data, grad, uid) in tqdm(sets):
-                for (data, grad) in tqdm(sets):
+                for (data, grad) in tqdm(sets, ncols=100):
                     if args.grad_weight == 'mean':
                         train_time_mean += np.mean(np.abs(grad), axis=0)
                     else:
@@ -123,7 +123,7 @@ def main():
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
                 # for (data, grad, uid) in tqdm(sets):
-                for (data, grad) in tqdm(sets):
+                for (data, grad) in tqdm(sets, ncols=100):
                     valid_data_mean += np.mean(data, axis=0)
                     valid_time_mean += np.mean(np.abs(grad), axis=0) if args.grad_weight == 'mean' else np.max(
                         np.abs(grad), axis=0)
@@ -152,7 +152,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets):
+                for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets, ncols=100):
                     train_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
                     if args.grad_weight == 'mean':
                         train_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
@@ -188,7 +188,7 @@ def main():
             p = str(t)
             with open(p, 'rb') as f:
                 sets = pickle.load(f)
-                for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets):
+                for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets, ncols=100):
                     test_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
                     if args.grad_weight == 'mean':
                         test_veri_mean += (np.mean(np.abs(grad_a), axis=0) + np.mean(np.abs(grad_b), axis=0)) / 2
