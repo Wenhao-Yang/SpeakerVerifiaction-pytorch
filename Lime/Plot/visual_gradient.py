@@ -10,6 +10,7 @@
 @Overview:
 """
 import argparse
+import os.path
 import pathlib
 import pickle
 import random
@@ -40,7 +41,6 @@ random.seed(args.seed)
 np.random.seed(args.seed)
 
 def main():
-
     # subsets = ['orignal', 'babble', 'noise', 'music', 'reverb']
 
     # load selected input uids
@@ -48,10 +48,15 @@ def main():
     print('Path is %s' % str(dir_path))
 
     # inputs [train/valid/test]
+    # if args.grad_weight == 'max':
+    vis_path = args.extract_path + '/' + args.grad_weight
+    if not os.path.exists(vis_path):
+        os.makedirs(vis_path)
+
     try:
-        with open(args.extract_path + '/freq.data.pickle', 'rb') as f:
+        with open(vis_path + '/freq.data.pickle', 'rb') as f:
             freq_data = pickle.load(f)  # avg on time axis
-        with open(args.extract_path + '/time.data.pickle', 'rb') as f:
+        with open(vis_path + '/time.data.pickle', 'rb') as f:
             time_data = pickle.load(f)  # avg on freq axis
 
     except:
@@ -74,7 +79,7 @@ def main():
                     num_utt += 1
                     if args.samples > 0 and num_utt >= args.samples:
                         break
-        with open(args.extract_path + '/time.data.pickle', 'wb') as f:
+        with open(vis_path + '/time.data.pickle', 'wb') as f:
             pickle.dump(time_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         freq_data = {}
@@ -209,7 +214,7 @@ def main():
 
         print('Saving inputs in %s' % args.extract_path)
 
-        with open(args.extract_path + '/freq.data.pickle', 'wb') as f:
+        with open(vis_path + '/freq.data.pickle', 'wb') as f:
             pickle.dump(freq_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -235,7 +240,7 @@ def main():
         x = mel2hz(m)
 
     # y = np.sum(all_data, axis=2)  # [5, 2, 162]
-    pdf = PdfPages(args.extract_path + '/grad.veri.time.mean.pdf')
+    pdf = PdfPages(vis_path + '/grad.veri.time.mean.pdf')
     plt.rc('font', family='Times New Roman')
 
     plt.figure(figsize=(12, 9))
@@ -270,12 +275,12 @@ def main():
         # pdb.set_trace
     # if not os.path.exists(args.extract_path + '/grad.npy'):
     # ynew = veri_grad
-    ynew = train_grad
-    # ynew = ynew / ynew.sum()
-    np.save(args.extract_path + '/train.grad.npy', train_grad)
+    # ynew = train_grad
+    # # ynew = ynew / ynew.sum()
+    np.save(vis_path + '/train.grad.npy', train_grad)
 
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Test_a', 'Test_b'], loc='upper right', fontsize=18)
-    all_sets = np.array(['Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'])
+    all_sets = np.array(['Mel', 'Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'])
     plt.legend(all_sets[plot_index], loc='upper right', fontsize=24)
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Train Verify', 'Test'], loc='upper right', fontsize=24)
     pdf.savefig()
@@ -301,7 +306,7 @@ def main():
 
     all_sets = np.array(['Train', 'Valid', 'Test'])
     plt.legend(all_sets[plot_index], loc='upper right', fontsize=16)
-    plt.savefig(args.extract_path + "/inputs.freq.png")
+    plt.savefig(vis_path + "/inputs.freq.png")
     plt.show()
 
     plt.figure(figsize=(16, 8))
@@ -336,7 +341,7 @@ def main():
 
     # plt.legend(['Train', 'Valid', 'Test'], loc='upper right', fontsize=16)
     plt.colorbar(im)  # 显示颜色标尺
-    plt.savefig(args.extract_path + "/inputs.time.png")
+    plt.savefig(vis_path + "/inputs.time.png")
     plt.show()
 
     print('Completed!\n')
