@@ -271,7 +271,7 @@ fi
 
 if [ $stage -le 205 ]; then
 #  for s in dev ;do
-  for cam in integrad ; do
+  for cam in grad_cam ; do
   for weight in max mean; do
   for seed in 123456 123457 123458 ;do
     if [ $seed -le 123456 ];then
