@@ -212,7 +212,7 @@ def main():
         freq_data['test.veri.data.mean'] = test_veri_data
         freq_data['test.veri.time.relu'] = test_veri_relu
 
-        print('Saving inputs in %s' % args.extract_path)
+        print('Saving inputs in %s' % vis_path)
 
         with open(vis_path + '/freq.data.pickle', 'wb') as f:
             pickle.dump(freq_data, f, protocol=pickle.HIGHEST_PROTOCOL)
