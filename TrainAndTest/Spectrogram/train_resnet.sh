@@ -452,7 +452,7 @@ if [ $stage -le 41 ]; then
   testsets=vox1
   model=ThinResNet
 #  resnet_size=50
-  encoder_type=AVG
+  encoder_type=SAP2
   alpha=0
   block_type=basic
   embedding_size=256
@@ -464,7 +464,7 @@ if [ $stage -le 41 ]; then
   batch_size=128
 
   mask_layer=attention
-  weight=rclean
+  weight=rclean_max
   scheduler=rop
   optimizer=sgd
   fast=none1
@@ -480,8 +480,10 @@ if [ $stage -le 41 ]; then
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
-  for resnet_size in 18 ; do
-    for seed in 123456 123457 123458 ;do
+  for mask_layer in attention attention0 ; do
+  for resnet_size in 10 ; do
+
+    for seed in 123456 123457 ;do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
@@ -571,6 +573,7 @@ if [ $stage -le 41 ]; then
         --shuffle \
         --cos-sim \
         --loss-type ${loss}
+    done
     done
     done
 #  done

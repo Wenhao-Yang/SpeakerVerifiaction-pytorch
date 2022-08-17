@@ -769,6 +769,8 @@ class AttentionweightLayer(nn.Module):
             ynew = c.VOX1_CLEAN
         elif weight == 'rclean':
             ynew = c.VOX1_RCLEAN
+        elif weight == 'rclean_max':
+            ynew = c.VOX1_RCLEAN_MAX
         elif weight == 'vox2_rclean':
             ynew = c.VOX2_RCLEAN
         elif weight == 'aug':
@@ -965,6 +967,10 @@ class AttentionweightLayer_v0(nn.Module):
             # ynew = 1 / ynew  # .max()
         elif weight == 'clean':
             ynew = c.VOX1_CLEAN
+        elif weight == 'rclean':
+            ynew = c.VOX1_RCLEAN
+        elif weight == 'rclean_max':
+            ynew = c.VOX1_RCLEAN_MAX
         elif weight == 'aug':
             ynew = c.VOX1_AUG
         elif weight == 'vox2':
@@ -1003,7 +1009,8 @@ class AttentionweightLayer_v0(nn.Module):
 
     def __repr__(self):
 
-        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, power_weight=%s)" % (self.input_dim, self.weight, str(self.power_weight))
+        return "AttentionweightLayer_v00(input_dim=%d, weight=%s, power_weight=%s)" % (
+        self.input_dim, self.weight, str(self.power_weight))
 
 
 class GaussianNoiseLayer(nn.Module):
