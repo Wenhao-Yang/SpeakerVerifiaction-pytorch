@@ -278,8 +278,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
                 if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                     epoch_str += ' Batch Len: {:>3d} Accuracy: {:.4f}%'.format(data.shape[-2],
-                                                                               100. * minibatch_acc[
-                                                                                   'width%s' % width_mult])
+                                                                               100. * minibatch_acc)
 
                 if orth_err['width%s' % width_mult] > 0:
                     epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err['width%s' % width_mult]))
