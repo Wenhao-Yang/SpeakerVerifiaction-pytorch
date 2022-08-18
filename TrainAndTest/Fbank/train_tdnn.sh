@@ -391,7 +391,7 @@ if [ $stage -le 70 ]; then
       --log-interval 10 \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
-  done
+#  done
 
 
 #  loss=arcsoft
