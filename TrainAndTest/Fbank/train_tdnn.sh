@@ -317,7 +317,7 @@ if [ $stage -le 70 ]; then
   #  feat=fb24
   feat_type=klfb
   loss=arcsoft
-  encod=STAP
+  encoder_type=STAP
   embedding_size=512
   input_dim=40
   input_norm=Mean
@@ -376,7 +376,7 @@ if [ $stage -le 70 ]; then
       --random-chunk 200 400 \
       --input-dim ${input_dim} \
       --channels 512,512,512,512,1536 \
-      --encoder-type ${encod} \
+      --encoder-type ${encoder_type} \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --cos-sim \

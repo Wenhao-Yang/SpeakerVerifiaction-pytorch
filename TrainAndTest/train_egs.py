@@ -151,11 +151,11 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
 
-    correct = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
-    total_datasize = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
-    total_loss = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
-    orth_err = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
-    other_loss = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    correct = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
+    total_datasize = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
+    total_loss = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
+    orth_err = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
+    other_loss = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
 
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))  # , total=len(train_loader), ncols=300)
@@ -334,10 +334,10 @@ def valid_class(valid_loader, model, ce, epoch):
     # switch to evaluate mode
     model.eval()
 
-    total_loss = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
-    other_loss = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
-    correct = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
-    total_datasize = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    total_loss = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
+    other_loss = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
+    correct = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
+    total_datasize = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
 
     ce_criterion, xe_criterion = ce
     softmax = nn.Softmax(dim=1)
