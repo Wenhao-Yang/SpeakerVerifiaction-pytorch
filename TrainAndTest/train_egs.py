@@ -276,6 +276,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                                                                               len(train_loader.dataset),
                                                                               100. * batch_idx / len(train_loader))
 
+                epoch_str += ' Width: {:.2f}'.format(width_mult)
                 if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                     epoch_str += ' Batch Len: {:>3d} Accuracy: {:.4f}%'.format(data.shape[-2],
                                                                                100. * minibatch_acc)
@@ -323,7 +324,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
     for width_mult in FLAGS.width_mult_list:
-        writer.add_scalar('Train/Accuracy_%s' % width_mult, correct['width%s' % width_mult] / total_datasize, epoch)
+        writer.add_scalar('Train/Accuracy_%s' % width_mult,
+                          correct['width%s' % width_mult] / total_datasize['width%s' % width_mult], epoch)
         writer.add_scalar('Train/Loss_%s' % width_mult, total_loss['width%s' % width_mult] / len(train_loader), epoch)
 
     torch.cuda.empty_cache()
