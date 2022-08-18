@@ -464,11 +464,17 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         mindcf_01_dict['width%s' % width_mult] = mindcf_01
         mindcf_001_dict['width%s' % width_mult] = mindcf_001
 
-        print('          \33[91mTest Width: {:.2f}, EER: {:.4f}%, Threshold: {:.4f}, ' \
-              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(width_mult, 100. * eer,
-                                                                         eer_threshold,
-                                                                         mindcf_01,
-                                                                         mindcf_001))
+        test_str = '          \33[91mTest '
+        if width_mult != 1.0:
+            test_str += 'Width: {:.2f}, '
+
+        test_str += 'EER: {:.4f}%, Threshold: {:.4f}, ' \
+                    'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(width_mult, 100. * eer,
+                                                                               eer_threshold,
+                                                                               mindcf_01,
+                                                                               mindcf_001)
+
+        print(test_str)
 
         writer.add_scalar('Train/EER_%s' % width_mult, 100. * eer, epoch)
         writer.add_scalar('Train/Threshold_%s' % width_mult, eer_threshold, epoch)
