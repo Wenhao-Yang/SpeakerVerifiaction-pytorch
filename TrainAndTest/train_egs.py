@@ -45,6 +45,7 @@ from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
+from Define_Model.TDNN.Slimmable import FLAGS
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
@@ -84,6 +85,7 @@ random.seed(args.seed)
 # torch.multiprocessing.set_sharing_strategy('file_system')
 
 if args.cuda:
+    torch.cuda.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
     cudnn.benchmark = True
 
@@ -149,11 +151,11 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
 
-    correct = 0.
-    total_datasize = 0.
-    total_loss = 0.
-    orth_err = 0
-    other_loss = 0.
+    correct = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    total_datasize = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    total_loss = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    orth_err = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    other_loss = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
 
     ce_criterion, xe_criterion = ce
     pbar = tqdm(enumerate(train_loader))  # , total=len(train_loader), ncols=300)
@@ -171,129 +173,159 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         data, label = Variable(data), Variable(label)
         # pdb.set_trace()
-        classfier, feats = model(data)
-        # cos_theta, phi_theta = classfier
-        classfier_label = classfier
-        # print('max logit is ', classfier_label.max())
 
-        if args.loss_type == 'soft':
-            loss = ce_criterion(classfier, label)
-        elif args.loss_type == 'asoft':
-            classfier_label, _ = classfier
-            loss = xe_criterion(classfier, label)
-        elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = args.loss_ratio * xe_criterion(feats, label)
-            other_loss += loss_xent
+        for width_mult in FLAGS.width_mult_list:
+            FLAGS.width_mult = width_mult
 
-            loss = loss_xent + loss_cent
-        elif args.loss_type == 'ring':
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = args.loss_ratio * xe_criterion(feats)
+            classfier, feats = model(data)
+            classfier_label = classfier
+            # print('max logit is ', classfier_label.max())
 
-            other_loss += loss_xent
-            loss = loss_xent + loss_cent
-        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
-            loss = xe_criterion(classfier, label)
-        elif 'arcdist' in args.loss_type:
-            # pdb.set_trace()
-            loss_cent = args.loss_ratio * ce_criterion(classfier, label)
-            if args.loss_lambda:
-                loss_cent = loss_cent * lambda_
+            if args.loss_type == 'soft':
+                loss = ce_criterion(classfier, label)
+            elif args.loss_type == 'asoft':
+                classfier_label, _ = classfier
+                loss = xe_criterion(classfier, label)
+            elif args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
+                loss_cent = ce_criterion(classfier, label)
+                loss_xent = args.loss_ratio * xe_criterion(feats, label)
+                other_loss += loss_xent
 
-            loss_xent = xe_criterion(classfier, label)
+                loss = loss_xent + loss_cent
+            elif args.loss_type == 'ring':
+                loss_cent = ce_criterion(classfier, label)
+                loss_xent = args.loss_ratio * xe_criterion(feats)
 
-            other_loss += loss_cent
-            loss = loss_xent + loss_cent
+                other_loss += loss_xent
+                loss = loss_xent + loss_cent
+            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
+                loss = xe_criterion(classfier, label)
+            elif 'arcdist' in args.loss_type:
+                # pdb.set_trace()
+                loss_cent = args.loss_ratio * ce_criterion(classfier, label)
+                if args.loss_lambda:
+                    loss_cent = loss_cent * lambda_
 
-        predicted_labels = output_softmax(classfier_label)
-        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+                loss_xent = xe_criterion(classfier, label)
 
-        if args.lncl:
-            if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist', 'aDCF']:
-                predict_loss = xe_criterion(classfier, predicted_one_labels)
-            else:
-                predict_loss = ce_criterion(classfier, predicted_one_labels)
+                other_loss += loss_cent
+                loss = loss_xent + loss_cent
 
-            alpha_t = np.clip(args.alpha_t * (epoch / args.epochs) ** 2, a_min=0, a_max=1)
-            mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
+            predicted_labels = output_softmax(classfier_label)
+            predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
-            loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
-
-        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
-        minibatch_acc = minibatch_correct / len(predicted_one_labels)
-        correct += minibatch_correct
-
-        total_datasize += len(predicted_one_labels)
-        total_loss += float(loss.item())
-        writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
-
-        if np.isnan(loss.item()):
-            raise ValueError('Loss value is NaN!')
-
-        # compute gradient and update weights
-        loss.backward()
-
-        if args.grad_clip > 0:
-            this_lr = args.lr
-            for param_group in optimizer.param_groups:
-                this_lr = min(param_group['lr'], this_lr)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
-
-        if ((batch_idx + 1) % args.accu_steps) == 0:
-            # optimizer the net
-            optimizer.step()  # update parameters of net
-            optimizer.zero_grad()  # reset gradient
-
-            if args.model == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
-                if isinstance(model, DistributedDataParallel):
-                    model.module.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
-                    orth_err += model.module.get_orth_errors()
+            if args.lncl:
+                if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist', 'aDCF']:
+                    predict_loss = xe_criterion(classfier, predicted_one_labels)
                 else:
-                    model.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
-                    orth_err += model.get_orth_errors()
+                    predict_loss = ce_criterion(classfier, predicted_one_labels)
 
-        # optimizer.zero_grad()
-        # loss.backward()
+                alpha_t = np.clip(args.alpha_t * (epoch / args.epochs) ** 2, a_min=0, a_max=1)
+                mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
 
-        if args.loss_ratio != 0:
-            if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
-                for param in xe_criterion.parameters():
-                    param.grad.data *= (1. / args.loss_ratio)
+                loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
 
-        # optimizer.step()
-        if args.scheduler == 'cyclic':
-            scheduler.step()
+            minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
+            minibatch_acc = minibatch_correct / len(predicted_one_labels)
+            correct['width%s' % width_mult] += minibatch_correct
 
-        if (batch_idx + 1) % args.log_interval == 0:
-            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
-                                                                          len(train_loader.dataset),
-                                                                          100. * batch_idx / len(train_loader))
+            total_datasize['width%s' % width_mult] += len(predicted_one_labels)
+            total_loss['width%s' % width_mult] += float(loss.item())
+            writer.add_scalar('Train/Loss_%s' % width_mult, float(loss.item()),
+                              int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
-            if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
-                epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
+            if np.isnan(loss.item()):
+                raise ValueError('Loss value is NaN!')
 
-            if orth_err > 0:
-                epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
+            # compute gradient and update weights
+            loss.backward()
 
-            if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
-            if 'arcdist' in args.loss_type:
-                epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
-            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                            100. * minibatch_acc)
-            pbar.set_description(epoch_str)
+            if args.grad_clip > 0:
+                this_lr = args.lr
+                for param_group in optimizer.param_groups:
+                    this_lr = min(param_group['lr'], this_lr)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
-    this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
-        correct) / total_datasize, total_loss / len(train_loader))
+            if ((batch_idx + 1) % args.accu_steps) == 0:
+                # optimizer the net
+                optimizer.step()  # update parameters of net
+                optimizer.zero_grad()  # reset gradient
 
-    if other_loss != 0:
-        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(train_loader))
+                if args.model == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
+                    if isinstance(model, DistributedDataParallel):
+                        model.module.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
+                        orth_err['width%s' % width_mult] += model.module.get_orth_errors()
+                    else:
+                        model.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
+                        orth_err['width%s' % width_mult] += model.get_orth_errors()
+
+            # optimizer.zero_grad()
+            # loss.backward()
+
+            if args.loss_ratio != 0:
+                if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+                    for param in xe_criterion.parameters():
+                        param.grad.data *= (1. / args.loss_ratio)
+
+            # optimizer.step()
+            if args.scheduler == 'cyclic':
+                scheduler.step()
+
+            if (batch_idx + 1) % args.log_interval == 0:
+                epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
+                                                                              len(train_loader.dataset),
+                                                                              100. * batch_idx / len(train_loader))
+
+                if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
+                    epoch_str += ' Batch Len: {:>3d} Accuracy: {:.4f}%'.format(data.shape[-2],
+                                                                               100. * minibatch_acc[
+                                                                                   'width%s' % width_mult])
+
+                if orth_err['width%s' % width_mult] > 0:
+                    epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err['width%s' % width_mult]))
+
+                if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
+                    epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+
+                if 'arcdist' in args.loss_type:
+                    epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+
+                epoch_str += ' Loss: {:.4f} '.format(total_loss['width%s' % width_mult] / (batch_idx + 1))
+                pbar.set_description(epoch_str)
+
+    this_epoch_str = 'Epoch {:>2d}: \33[91m'.format(epoch)
+
+    if len(FLAGS.width_mult_list) > 1:
+        this_epoch_str += 'Train Accuracy:           Loss:          \n'
+        for width_mult in FLAGS.width_mult_list:
+            this_epoch_str += '                   Width_{:.2f}%: {:.6f}%, Loss: {:6f}'.format(width_mult,
+                                                                                              100 * float(correct[
+                                                                                                              'width%s' % width_mult]) /
+                                                                                              total_datasize[
+                                                                                                  'width%s' % width_mult])
+
+            if other_loss['width%s' % width_mult] != 0:
+                this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
+                                                           other_loss['width%s' % width_mult] / len(train_loader))
+
+            this_epoch_str += '\n'
+    else:
+        this_key = FLAGS.width_mult_list[0]
+
+        this_epoch_str += 'Train Accuracy: {:.6f}%, Loss: {:6f}'.format(100 * float(
+            correct['width%s' % this_key]) / total_datasize['width%s' % this_key],
+                                                                        total_loss['width%s' % this_key] / len(
+                                                                            train_loader))
+
+        if other_loss['width%s' % this_key] != 0:
+            this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
+                                                       other_loss['width%s' % this_key] / len(train_loader))
 
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
-    writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
-    writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
+    for width_mult in FLAGS.width_mult_list:
+        writer.add_scalar('Train/Accuracy_%s' % width_mult, correct['width%s' % width_mult] / total_datasize, epoch)
+        writer.add_scalar('Train/Loss_%s' % width_mult, total_loss['width%s' % width_mult] / len(train_loader), epoch)
 
     torch.cuda.empty_cache()
 
@@ -302,13 +334,14 @@ def valid_class(valid_loader, model, ce, epoch):
     # switch to evaluate mode
     model.eval()
 
-    total_loss = 0.
-    other_loss = 0.
+    total_loss = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    other_loss = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    correct = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+    total_datasize = {'width_%s' % i: 0. for i in FLAGS.width_mult_list}
+
     ce_criterion, xe_criterion = ce
     softmax = nn.Softmax(dim=1)
 
-    correct = 0.
-    total_datasize = 0.
     lambda_ = (epoch / args.epochs) ** 2
 
     with torch.no_grad():
@@ -318,55 +351,84 @@ def valid_class(valid_loader, model, ce, epoch):
 
             # compute output
             # pdb.set_trace()
-            out, feats = model(data)
-            if args.loss_type == 'asoft':
-                predicted_labels, _ = out
-            else:
-                predicted_labels = out
+            for width_mult in FLAGS.width_mult_list:
+                FLAGS.width_mult = width_mult
 
-            classfier = predicted_labels
-            if args.loss_type == 'soft':
-                loss = ce_criterion(classfier, label)
-            elif args.loss_type == 'asoft':
-                classfier_label, _ = classfier
-                loss = xe_criterion(classfier, label)
-            elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
-                loss_cent = ce_criterion(classfier, label)
-                loss_xent = args.loss_ratio * xe_criterion(feats, label)
-                other_loss += float(loss_xent.item())
+                out, feats = model(data)
+                if args.loss_type == 'asoft':
+                    predicted_labels, _ = out
+                else:
+                    predicted_labels = out
 
-                loss = loss_xent + loss_cent
-            elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
-                loss = xe_criterion(classfier, label)
-            elif 'arcdist' in args.loss_type:
-                loss_cent = args.loss_ratio * ce_criterion(classfier, label)
-                if args.loss_lambda:
-                    loss_cent = loss_cent * lambda_
+                classfier = predicted_labels
+                if args.loss_type == 'soft':
+                    loss = ce_criterion(classfier, label)
+                elif args.loss_type == 'asoft':
+                    classfier_label, _ = classfier
+                    loss = xe_criterion(classfier, label)
+                elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
+                    loss_cent = ce_criterion(classfier, label)
+                    loss_xent = args.loss_ratio * xe_criterion(feats, label)
+                    other_loss += float(loss_xent.item())
 
-                loss_xent = xe_criterion(classfier, label)
+                    loss = loss_xent + loss_cent
+                elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
+                    loss = xe_criterion(classfier, label)
+                elif 'arcdist' in args.loss_type:
+                    loss_cent = args.loss_ratio * ce_criterion(classfier, label)
+                    if args.loss_lambda:
+                        loss_cent = loss_cent * lambda_
 
-                other_loss += float(loss_cent.item())
-                loss = loss_xent + loss_cent
+                    loss_xent = xe_criterion(classfier, label)
 
-            total_loss += float(loss.item())
-            # pdb.set_trace()
-            predicted_one_labels = softmax(predicted_labels)
-            predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+                    other_loss += float(loss_cent.item())
+                    loss = loss_xent + loss_cent
 
-            batch_correct = (predicted_one_labels.cuda() == label).sum().item()
-            correct += batch_correct
-            total_datasize += len(predicted_one_labels)
+                total_loss['width%s' % width_mult] += float(loss.item())
+                # pdb.set_trace()
+                predicted_one_labels = softmax(predicted_labels)
+                predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
 
-    valid_loss = total_loss / len(valid_loader)
-    valid_accuracy = 100. * correct / total_datasize
-    writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
-    writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
+                batch_correct = (predicted_one_labels.cuda() == label).sum().item()
+                correct['width%s' % width_mult] += batch_correct
+                total_datasize['width%s' % width_mult] += len(predicted_one_labels)
+
+    for width_mult in FLAGS.width_mult_list:
+        valid_loss = total_loss['width%s' % width_mult] / len(valid_loader)
+        valid_accuracy = 100. * correct['width%s' % width_mult] / total_datasize['width%s' % width_mult]
+        writer.add_scalar('Train/Valid_Loss_%s' % width_mult, valid_loss, epoch)
+        writer.add_scalar('Train/Valid_Accuracy_%s' % width_mult, valid_accuracy, epoch)
+
     torch.cuda.empty_cache()
 
-    this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(valid_accuracy, valid_loss)
+    this_epoch_str = '          \33[91mValid '
 
-    if other_loss != 0:
-        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(valid_loader))
+    if len(FLAGS.width_mult_list) > 1:
+        this_epoch_str += 'Accuracy:           Loss:          \n'
+        for width_mult in FLAGS.width_mult_list:
+            this_epoch_str += '                   Width_{:.2f}%: {:.6f}%, Loss: {:6f}'.format(width_mult,
+                                                                                              100 * float(correct[
+                                                                                                              'width%s' % width_mult]) /
+                                                                                              total_datasize[
+                                                                                                  'width%s' % width_mult])
+
+            if other_loss['width%s' % width_mult] != 0:
+                this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
+                                                           other_loss['width%s' % width_mult] / len(valid_loader))
+
+            this_epoch_str += '\n'
+    else:
+        this_key = FLAGS.width_mult_list[0]
+        # this_epoch_str += 'Accuracy: {:.6f}%, Loss: {:.6f}'.format(valid_accuracy, valid_loss)
+        this_epoch_str += 'Accuracy: {:.6f}%, Loss: {:6f}'.format(100 * float(
+            correct['width%s' % this_key]) / total_datasize['width%s' % this_key],
+                                                                  total_loss['width%s' % this_key] / len(
+                                                                      valid_loader))
+
+        if other_loss['width%s' % this_key] != 0:
+            this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
+                                                       other_loss['width%s' % this_key] / len(valid_loader))
+
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
 
@@ -377,31 +439,47 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     # switch to evaluate mode
     model.eval()
 
-    this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
-    verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
+    eer_dict = {}
+    eer_threshold_dict = {}
+    mindcf_01_dict = {}
+    mindcf_001_dict = {}
 
-    verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
-                                     xvectors_dir=this_xvector_dir,
-                                     loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
-    eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
-                                                                  dist_type=('cos' if args.cos_sim else 'l2'),
-                                                                  log_interval=args.log_interval,
-                                                                  xvector_dir=this_xvector_dir,
-                                                                  epoch=epoch)
+    for width_mult in FLAGS.width_mult_list:
+        this_xvector_dir = "%s/train/epoch_%s_width%s" % (xvector_dir, epoch, width_mult)
+        verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
 
-    print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
-          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
-                                                                     eer_threshold,
-                                                                     mindcf_01,
-                                                                     mindcf_001))
+        verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
+                                         xvectors_dir=this_xvector_dir,
+                                         loader=read_vec_flt)
+        verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
+        eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
+                                                                      dist_type=('cos' if args.cos_sim else 'l2'),
+                                                                      log_interval=args.log_interval,
+                                                                      xvector_dir=this_xvector_dir,
+                                                                      epoch=epoch)
 
-    writer.add_scalar('Train/EER', 100. * eer, epoch)
-    writer.add_scalar('Train/Threshold', eer_threshold, epoch)
-    writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
-    writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
+        eer_dict['width%s' % width_mult] = eer
+        eer_threshold_dict['width%s' % width_mult] = eer_threshold
+        mindcf_01_dict['width%s' % width_mult] = mindcf_01
+        mindcf_001_dict['width%s' % width_mult] = mindcf_001
+
+        print('          \33[91mTest Width: {:.2f}%, EER: {:.4f}%, Threshold: {:.4f}, ' \
+              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(width_mult, 100. * eer,
+                                                                         eer_threshold,
+                                                                         mindcf_01,
+                                                                         mindcf_001))
+
+        writer.add_scalar('Train/EER_%s' % width_mult, 100. * eer, epoch)
+        writer.add_scalar('Train/Threshold_%s' % width_mult, eer_threshold, epoch)
+        writer.add_scalar('Train/mindcf-0.01_%s' % width_mult, mindcf_01, epoch)
+        writer.add_scalar('Train/mindcf-0.001_%s' % width_mult, mindcf_001, epoch)
 
     torch.cuda.empty_cache()
+
+    eer = np.mean([eer_dict[i] for i in eer_dict])
+    eer_threshold = np.mean([eer_threshold_dict[i] for i in eer_threshold_dict])
+    mindcf_01 = np.mean([mindcf_01_dict[i] for i in mindcf_01_dict])
+    mindcf_001 = np.mean([mindcf_001_dict[i] for i in mindcf_001_dict])
 
     return {'EER': eer, 'Threshold': eer_threshold,
             'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
@@ -439,6 +517,15 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
+
+    # Simmable FLAGS
+    if 'Simmable' in args.model:
+        width_mult_list = [float(x) for x in args.width_mult_list.split(',')]
+        FLAGS.width_mult_list = width_mult_list
+    else:
+        width_mult_list = [1]
+        FLAGS.width_mult_list = width_mult_list
+
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()

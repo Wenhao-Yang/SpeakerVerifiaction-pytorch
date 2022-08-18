@@ -693,3 +693,66 @@ class SuperficialResCNN(nn.Module):  # 定义resnet
 
         logit = self.angle_linear(x)
         return logit, x  # 返回倒数第二层
+
+
+class AttrDict(dict):
+    """Dict as attribute trick.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+        for key in self.__dict__:
+            value = self.__dict__[key]
+            if isinstance(value, dict):
+                self.__dict__[key] = AttrDict(value)
+            elif isinstance(value, list):
+                if isinstance(value[0], dict):
+                    self.__dict__[key] = [AttrDict(item) for item in value]
+                else:
+                    self.__dict__[key] = value
+
+    def yaml(self):
+        """Convert object to yaml dict and return.
+        """
+        yaml_dict = {}
+        for key in self.__dict__:
+            value = self.__dict__[key]
+            if isinstance(value, AttrDict):
+                yaml_dict[key] = value.yaml()
+            elif isinstance(value, list):
+                if isinstance(value[0], AttrDict):
+                    new_l = []
+                    for item in value:
+                        new_l.append(item.yaml())
+                    yaml_dict[key] = new_l
+                else:
+                    yaml_dict[key] = value
+            else:
+                yaml_dict[key] = value
+        return yaml_dict
+
+    def __repr__(self):
+        """Print all variables.
+        """
+        ret_str = []
+        for key in self.__dict__:
+            value = self.__dict__[key]
+            if isinstance(value, AttrDict):
+                ret_str.append('{}:'.format(key))
+                child_ret_str = value.__repr__().split('\n')
+                for item in child_ret_str:
+                    ret_str.append('    ' + item)
+            elif isinstance(value, list):
+                if isinstance(value[0], AttrDict):
+                    ret_str.append('{}:'.format(key))
+                    for item in value:
+                        # treat as AttrDict above
+                        child_ret_str = item.__repr__().split('\n')
+                        for item in child_ret_str:
+                            ret_str.append('    ' + item)
+                else:
+                    ret_str.append('{}: {}'.format(key, value))
+            else:
+                ret_str.append('{}: {}'.format(key, value))
+        return '\n'.join(ret_str)

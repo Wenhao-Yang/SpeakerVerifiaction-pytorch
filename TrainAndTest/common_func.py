@@ -35,6 +35,7 @@ from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
+from Define_Model.TDNN.Slimmable import SimmableTDNN
 from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6, MixTDNN_v5
 from Define_Model.demucs_feature import Demucs
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -94,6 +95,7 @@ __factory = {
     'TDNN_v5': TDNN_v5,
     'TDNN_v6': TDNN_v6,
     'MixTDNN_v5': MixTDNN_v5,
+    'SimmableTDNN': SimmableTDNN,
     'ETDNN': ETDNN,
     'ETDNN_v4': ETDNN_v4,
     'ETDNN_v5': ETDNN_v5,
@@ -528,6 +530,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
     parser.add_argument('--resnet-size', default=8, type=int,
                         metavar='RES', help='The channels of convs layers)')
+    parser.add_argument('--width-mult-list', default='1', type=str, metavar='WIDTH',
+                        help='The channels of convs layers)')
     parser.add_argument('--activation', type=str, default='relu', help='activation functions')
     parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
     parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
