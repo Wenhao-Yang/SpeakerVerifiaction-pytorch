@@ -464,7 +464,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         mindcf_01_dict['width%s' % width_mult] = mindcf_01
         mindcf_001_dict['width%s' % width_mult] = mindcf_001
 
-        print('          \33[91mTest Width: {:.2f}%, EER: {:.4f}%, Threshold: {:.4f}, ' \
+        print('          \33[91mTest Width: {:.2f}, EER: {:.4f}%, Threshold: {:.4f}, ' \
               'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(width_mult, 100. * eer,
                                                                          eer_threshold,
                                                                          mindcf_01,
@@ -477,10 +477,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
     torch.cuda.empty_cache()
 
-    eer = np.mean([eer_dict[i] for i in eer_dict])
-    eer_threshold = np.mean([eer_threshold_dict[i] for i in eer_threshold_dict])
-    mindcf_01 = np.mean([mindcf_01_dict[i] for i in mindcf_01_dict])
-    mindcf_001 = np.mean([mindcf_001_dict[i] for i in mindcf_001_dict])
+    eer = np.min([eer_dict[i] for i in eer_dict])
+    eer_threshold = np.max([eer_threshold_dict[i] for i in eer_threshold_dict])
+    mindcf_01 = np.min([mindcf_01_dict[i] for i in mindcf_01_dict])
+    mindcf_001 = np.min([mindcf_001_dict[i] for i in mindcf_001_dict])
 
     return {'EER': eer, 'Threshold': eer_threshold,
             'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
