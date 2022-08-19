@@ -777,8 +777,10 @@ def main():
                 torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32458', rank=0,
                                                      world_size=1)
             # if args.gain
-            # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
-            model = DistributedDataParallel(model.cuda())
+            if 'Slimmable' in args.model:
+                model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
+            else:
+                model = DistributedDataParallel(model.cuda())
 
 
         else:
