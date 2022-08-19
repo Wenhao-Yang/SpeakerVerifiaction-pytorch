@@ -2122,7 +2122,7 @@ if [ $stage -le 201 ]; then
   input_norm=Mean
 #  test_subset=
   block_type=basic
-  encoder_type=AVG
+  encoder_type=SAP2
   embedding_size=256
   resnet_size=8
 #  sname=dev #dev_aug_com
@@ -2134,7 +2134,7 @@ if [ $stage -le 201 ]; then
 #  mask_layer=rvec
 #  mask_layer=baseline
   mask_layer=attention
-  weight=rclean
+  weight=rclean_max
   scheduler=rop
   optimizer=sgd
   batch_size=256
@@ -2142,9 +2142,10 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
+  for mask_layer in attention attention0 ;do
   for testset in vox1 sitw ; do
-  for resnet_size in 18 ; do
-  for seed in 123456 123457 123458 ;do
+  for resnet_size in 10 ; do
+  for seed in 123456 123457 ;do
 #    for chn in 16 32 64 ; do
       epoch=
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -2212,14 +2213,15 @@ if [ $stage -le 201 ]; then
         --time-dim 1 \
         --avg-size ${avg_size} \
         --input-length var \
-        --dropout-p 0.1 \
+        --dropout-p 0.2 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
-        --gpu-id 5 \
+        --gpu-id 1 \
         --cos-sim
 
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
+  done
   done
   done
   exit
