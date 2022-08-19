@@ -311,7 +311,7 @@ if [ $stage -le 60 ]; then
 fi
 
 if [ $stage -le 70 ]; then
-  model=SimmableTDNN
+  model=SlimmableTDNN
   datasets=vox1
   testsets=vox1
   #  feat=fb24
