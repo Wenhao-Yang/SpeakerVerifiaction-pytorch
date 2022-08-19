@@ -272,7 +272,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d} '.format(data.shape[-2])
 
-            epoch_str += 'Accuracy(%): '
+            epoch_str += ' Accuracy(%): '
 
             for minibatch_acc in batch_accs:
                 epoch_str += '{:>6.2f} '.format(100. * minibatch_acc)
@@ -286,7 +286,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             # if 'arcdist' in args.loss_type:
             #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
 
-            epoch_str += ' Loss: '
+            epoch_str += '  Loss: '
             for width_mult in FLAGS.width_mult_list:
                 epoch_str += '{:>7.4f} '.format(total_loss['width%s' % width_mult] / (batch_idx + 1))
 
