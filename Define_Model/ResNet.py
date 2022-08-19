@@ -733,7 +733,7 @@ class ThinResNet(nn.Module):
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
                  mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
-                 weight_p=0.1,
+                 weight_p=0.1, weight_norm='max',
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -831,7 +831,8 @@ class ThinResNet(nn.Module):
                 FreqMaskLayer(mask_len=mask_len[1])
             )
         elif self.mask == 'attention0':
-            self.mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight)
+            self.mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
+                                                      weight_norm=weight_norm)
         elif self.mask == 'attention':
             self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'attention2':

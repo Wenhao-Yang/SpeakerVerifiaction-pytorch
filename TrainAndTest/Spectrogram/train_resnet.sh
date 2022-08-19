@@ -463,7 +463,7 @@ if [ $stage -le 41 ]; then
   downsample=k1
   batch_size=128
 
-  mask_layer=attention
+  mask_layer=attention0
   weight=rclean_max
   scheduler=rop
   optimizer=sgd
@@ -480,10 +480,9 @@ if [ $stage -le 41 ]; then
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
-  for mask_layer in attention attention0 ; do
+  for weight_norm in max sum ; do
   for resnet_size in 10 ; do
-
-    for seed in 123456 123457 ;do
+    for seed in 123456 123457 123458 ;do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
@@ -504,6 +503,10 @@ if [ $stage -le 41 ]; then
       fi
       if [[ $mask_layer == attention* ]];then
         at_str=_${weight}
+        if [[ $weight_norm != max ]];then
+          at_str=${at_str}${weight_norm}
+        fi
+
       elif [ "$mask_layer" = "drop" ];then
         at_str=_${weight}_dp${weight_p}s${scale}
       else
@@ -512,7 +515,7 @@ if [ $stage -le 41 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
 
       python TrainAndTest/train_egs.py \
         --model ${model} \
@@ -566,7 +569,7 @@ if [ $stage -le 41 ]; then
         --s 30 \
         --lr-ratio 0.01 \
         --weight-decay 0.0001 \
-        --dropout-p 0.2 \
+        --dropout-p 0.1 \
         --gpu-id 0,1 \
         --all-iteraion 0 \
         --extract \

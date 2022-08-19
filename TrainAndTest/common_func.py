@@ -537,6 +537,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
     parser.add_argument('--power-weight', type=str, default='none', help='replace batchnorm with instance norm')
     parser.add_argument('--weight-p', default=0.1, type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--weight-norm', type=str, default='max', help='replace batchnorm with instance norm')
     parser.add_argument('--scale', default=0.2, type=float, metavar='FEAT', help='acoustic feature dimension')
 
     parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
