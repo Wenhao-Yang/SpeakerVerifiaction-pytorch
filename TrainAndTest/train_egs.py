@@ -246,11 +246,6 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                     this_lr = min(param_group['lr'], this_lr)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
-            if ((batch_idx + 1) % args.accu_steps) == 0:
-                # optimizer the net
-                optimizer.step()  # update parameters of net
-                optimizer.zero_grad()  # reset gradient
-
                 if args.model == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
                     if isinstance(model, DistributedDataParallel):
                         model.module.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
@@ -268,13 +263,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                         param.grad.data *= (1. / args.loss_ratio)
 
             # optimizer.step()
-            if args.scheduler == 'cyclic':
-                scheduler.step()
-
             if (batch_idx + 1) % args.log_interval == 0:
-                epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
-                                                                              len(train_loader.dataset),
-                                                                              100. * batch_idx / len(train_loader))
+                epoch_str = 'Train Epoch {}: [ {:3.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
 
                 epoch_str += ' Width: {:.2f}'.format(width_mult)
                 if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
@@ -292,6 +282,14 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
                 epoch_str += ' Loss: {:.4f} '.format(total_loss['width%s' % width_mult] / (batch_idx + 1))
                 pbar.set_description(epoch_str)
+
+        if ((batch_idx + 1) % args.accu_steps) == 0:
+            # optimizer the net
+            optimizer.step()  # update parameters of net
+            optimizer.zero_grad()  # reset gradient
+
+        if args.scheduler == 'cyclic':
+            scheduler.step()
 
     this_epoch_str = 'Epoch {:>2d}: \33[91m'.format(epoch)
 
