@@ -296,34 +296,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
     this_epoch_str = 'Epoch {:>2d}: \33[91m'.format(epoch)
 
-    if len(FLAGS.width_mult_list) > 1:
-        this_epoch_str += 'Train Accuracy:             Loss:          \n'
-        for width_mult in FLAGS.width_mult_list:  # .25%:
-            this_epoch_str += '              Width_{:.2f}:     {:6f}%         {:6f}'.format(width_mult,
-                                                                                            100 * float(correct[
-                                                                                                            'width%s' % width_mult]) /
-                                                                                            total_datasize[
-                                                                                                'width%s' % width_mult],
-                                                                                            total_loss[
-                                                                                                'width%s' % width_mult] / len(
-                                                                                                train_loader))
+    # if len(FLAGS.width_mult_list) > 1:
+    this_epoch_str += 'Train '
 
-            if other_loss['width%s' % width_mult] != 0:
-                this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
-                                                           other_loss['width%s' % width_mult] / len(train_loader))
+    acc_str = 'Accuracy(%): '
+    loss_str = 'Loss: '
+    other_str = '{} Loss: '.format(args.loss_type)
+    add_other = False
+    for width_mult in FLAGS.width_mult_list:  # .25%:
+        acc_str += '{:6f} '.format(
+            100 * float(correct['width%s' % width_mult]) / total_datasize['width%s' % width_mult])
+        loss_str += '{:6f} '.format(total_loss['width%s' % width_mult] / len(train_loader))
 
-            this_epoch_str += '\n'
-    else:
-        this_key = FLAGS.width_mult_list[0]
+        if other_loss['width%s' % width_mult] != 0:
+            add_other = True
+            other_str += '{:6f}'.format(other_loss['width%s' % width_mult] / len(train_loader))
 
-        this_epoch_str += 'Train Accuracy: {:.6f}%, Loss: {:6f}'.format(100 * float(
-            correct['width%s' % this_key]) / total_datasize['width%s' % this_key],
-                                                                        total_loss['width%s' % this_key] / len(
-                                                                            train_loader))
-
-        if other_loss['width%s' % this_key] != 0:
-            this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
-                                                       other_loss['width%s' % this_key] / len(train_loader))
+    this_epoch_str += acc_str + loss_str
+    if add_other:
+        this_epoch_str += other_str
 
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
@@ -411,14 +402,14 @@ def valid_class(valid_loader, model, ce, epoch):
     if len(FLAGS.width_mult_list) > 1:
         this_epoch_str += 'Accuracy:             Loss:          \n'
         for width_mult in FLAGS.width_mult_list:  # .25%:
-            this_epoch_str += '              Width_{:.2f}:     {:6f}%         {:6f}'.format(width_mult,
-                                                                                            100 * float(correct[
-                                                                                                            'width%s' % width_mult]) /
-                                                                                            total_datasize[
-                                                                                                'width%s' % width_mult],
-                                                                                            total_loss[
-                                                                                                'width%s' % width_mult] / len(
-                                                                                                valid_loader))
+            this_epoch_str += '          Width_{:.2f}:     {:6f}%         {:6f}'.format(width_mult,
+                                                                                        100 * float(correct[
+                                                                                                        'width%s' % width_mult]) /
+                                                                                        total_datasize[
+                                                                                            'width%s' % width_mult],
+                                                                                        total_loss[
+                                                                                            'width%s' % width_mult] / len(
+                                                                                            valid_loader))
 
             if other_loss['width%s' % width_mult] != 0:
                 this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
@@ -473,10 +464,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
         test_str = '          \33[91mTest '
         if width_mult != 1.0:
-            test_str += 'Width: {:.2f}, '
+            test_str += 'Width: {:.2f}, '.format(width_mult)
 
         test_str += 'EER: {:.4f}%, Threshold: {:.4f}, ' \
-                    'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(width_mult, 100. * eer,
+                    'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
                                                                                eer_threshold,
                                                                                mindcf_01,
                                                                                mindcf_001)
