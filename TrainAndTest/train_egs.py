@@ -526,7 +526,7 @@ def main():
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
 
     # Simmable FLAGS
-    if 'Simmable' in args.model:
+    if 'Slimmable' in args.model:
         width_mult_list = np.sort([float(x) for x in args.width_mult_list.split(',')])
         FLAGS.width_mult_list = width_mult_list
     else:

@@ -356,7 +356,7 @@ class SimmableTimeDelayLayer(nn.Module):
         return x.transpose(1, 2)
 
 
-class SimmableTDNN(nn.Module):
+class SlimmableTDNN(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
                  filter=None, sr=16000, feat_dim=64, exp=False, filter_fix=False,
                  dropout_p=0.0, dropout_layer=False, encoder_type='STAP', activation='relu',
@@ -364,7 +364,7 @@ class SimmableTDNN(nn.Module):
                  init_weight='mel', power_weight=False, num_center=3, scale=0.2, weight_p=0.1,
                  mask='None', mask_len=[5, 20], channels=[512, 512, 512, 512, 1536],
                  width_mult_list=[0.25, 0.50, 0.75, 1.0], **kwargs):
-        super(SimmableTDNN, self).__init__()
+        super(SlimmableTDNN, self).__init__()
         self.num_classes = num_classes
         self.num_classes_b = num_classes_b
         self.dropout_p = dropout_p
