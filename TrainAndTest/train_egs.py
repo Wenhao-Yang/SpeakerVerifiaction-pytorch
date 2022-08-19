@@ -526,6 +526,7 @@ def main():
     if 'Slimmable' in args.model:
         width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
         FLAGS.width_mult_list = width_mult_list
+        print('Slimmable width: ', width_mult_list)
     else:
         width_mult_list = [1]
         FLAGS.width_mult_list = width_mult_list
