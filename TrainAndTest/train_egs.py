@@ -522,15 +522,6 @@ def main():
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
 
-    # Simmable FLAGS
-    if 'Slimmable' in args.model:
-        width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
-        FLAGS.width_mult_list = width_mult_list
-        print('Slimmable width: ', width_mult_list)
-    else:
-        width_mult_list = [1]
-        FLAGS.width_mult_list = width_mult_list
-
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()
@@ -539,6 +530,15 @@ def main():
 
     print('Parsed options: \n{ %s }' % (', '.join(options)))
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
+
+    # Simmable FLAGS
+    if 'Slimmable' in args.model:
+        width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
+        FLAGS.width_mult_list = width_mult_list
+        print('Slimmable width: ', width_mult_list)
+    else:
+        width_mult_list = [1]
+        FLAGS.width_mult_list = width_mult_list
 
     # instantiate model and initialize weights
     model_kwargs = args_model(args, train_dir)
