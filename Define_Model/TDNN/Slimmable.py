@@ -456,7 +456,7 @@ class SlimmableTDNN(nn.Module):
             raise ValueError(self.block_type)
 
         # in_channels_list
-        self.inp = [self.input_dim]
+        self.inp = [self.input_dim for _ in FLAGS.width_mult_list]
         self.outp = [make_divisible(self.channels[0] * width_mult) for width_mult in FLAGS.width_mult_list]
         # print(self.inp, self.outp)
         self.frame1 = TDlayer(in_channels_list=self.inp, out_channels_list=self.outp,
