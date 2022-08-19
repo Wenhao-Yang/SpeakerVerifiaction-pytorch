@@ -286,7 +286,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             # if 'arcdist' in args.loss_type:
             #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
 
-            epoch_str += '  Loss: '
+            epoch_str += '   Loss: '
             for width_mult in FLAGS.width_mult_list:
                 epoch_str += '{:>7.4f} '.format(total_loss['width%s' % width_mult] / (batch_idx + 1))
 
@@ -408,7 +408,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
     this_epoch_str = '          \33[91mValid '
     acc_str = 'Accuracy(%): '
-    loss_str = ' Loss: '
+    loss_str = '   Loss: '
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
@@ -444,7 +444,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     threshold_str = ' Threshold: '
     mindcf_01_str = ' MinDcf-0.01: '
     mindcf_001_str = ' MinDcf-0.001: '
+
     for width_mult in FLAGS.width_mult_list:
+        FLAGS.width_mult = width_mult
+
         this_xvector_dir = "%s/train/epoch_%s_width%s" % (xvector_dir, epoch, width_mult)
         verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
 
@@ -521,7 +524,7 @@ def main():
 
     # Simmable FLAGS
     if 'Slimmable' in args.model:
-        width_mult_list = np.sort([float(x) for x in args.width_mult_list.split(',')])
+        width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
         FLAGS.width_mult_list = width_mult_list
     else:
         width_mult_list = [1]
