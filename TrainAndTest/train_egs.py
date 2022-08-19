@@ -288,6 +288,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             optimizer.step()  # update parameters of net
             optimizer.zero_grad()  # reset gradient
 
+            if (batch_idx + 1) == 200:
+                break
+
         if args.scheduler == 'cyclic':
             scheduler.step()
 
@@ -296,11 +299,14 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     if len(FLAGS.width_mult_list) > 1:
         this_epoch_str += 'Train Accuracy:           Loss:          \n'
         for width_mult in FLAGS.width_mult_list:
-            this_epoch_str += '                   Width_{:.2f}%: {:.6f}%, Loss: {:6f}'.format(width_mult,
-                                                                                              100 * float(correct[
-                                                                                                              'width%s' % width_mult]) /
-                                                                                              total_datasize[
-                                                                                                  'width%s' % width_mult])
+            this_epoch_str += '                   Width_{:.2f}%: {:.6f}%    {:6f}'.format(width_mult,
+                                                                                          100 * float(correct[
+                                                                                                          'width%s' % width_mult]) /
+                                                                                          total_datasize[
+                                                                                              'width%s' % width_mult],
+                                                                                          total_loss[
+                                                                                              'width%s' % width_mult] / len(
+                                                                                              train_loader))
 
             if other_loss['width%s' % width_mult] != 0:
                 this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
