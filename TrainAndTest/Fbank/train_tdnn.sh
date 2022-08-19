@@ -311,7 +311,7 @@ if [ $stage -le 60 ]; then
 fi
 
 if [ $stage -le 70 ]; then
-  model=TDNN_v5
+  model=SimmableTDNN
   datasets=vox1
   testsets=vox1
   #  feat=fb24
@@ -371,6 +371,7 @@ if [ $stage -le 70 ]; then
       --weight-decay 0.0005 \
       --alpha 0 \
       --feat-format kaldi \
+      --width-mult-list 0.25,0.5,0.75,1 \
       --embedding-size ${embedding_size} \
       --accu-steps 1 \
       --random-chunk 200 400 \

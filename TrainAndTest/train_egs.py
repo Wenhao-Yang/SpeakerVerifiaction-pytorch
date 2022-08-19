@@ -527,7 +527,7 @@ def main():
 
     # Simmable FLAGS
     if 'Simmable' in args.model:
-        width_mult_list = [float(x) for x in args.width_mult_list.split(',')]
+        width_mult_list = np.sort([float(x) for x in args.width_mult_list.split(',')])
         FLAGS.width_mult_list = width_mult_list
     else:
         width_mult_list = [1]
