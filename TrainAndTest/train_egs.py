@@ -309,7 +309,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     this_epoch_str += 'Train '
 
     acc_str = 'Accuracy(%): '
-    loss_str = '   Loss: '
+    loss_str = '   Loss:      '
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
@@ -408,7 +408,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
     this_epoch_str = '          \33[91mValid '
     acc_str = 'Accuracy(%): '
-    loss_str = '   Loss: '
+    loss_str = '   Loss:      '
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
@@ -441,7 +441,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
     test_str = '          \33[91mTest '
     eer_str = 'EER(%):       '
-    threshold_str = ' Threshold: '
+    threshold_str = '   Threshold: '
     mindcf_01_str = ' MinDcf-0.01: '
     mindcf_001_str = ' MinDcf-0.001: '
 
