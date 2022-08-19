@@ -173,7 +173,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         data, label = Variable(data), Variable(label)
         # pdb.set_trace()
-
+        batch_accs = []
         for width_mult in FLAGS.width_mult_list:
             FLAGS.width_mult = width_mult
 
@@ -227,6 +227,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
             minibatch_acc = minibatch_correct / len(predicted_one_labels)
+            batch_accs.append(minibatch_acc)
+
             correct['width%s' % width_mult] += minibatch_correct
 
             total_datasize['width%s' % width_mult] += len(predicted_one_labels)
@@ -262,26 +264,33 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                     for param in xe_criterion.parameters():
                         param.grad.data *= (1. / args.loss_ratio)
 
-            # optimizer.step()
-            if (batch_idx + 1) % args.log_interval == 0:
-                epoch_str = 'Train Epoch {}: [ {:3.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
+        # optimizer.step()
+        if (batch_idx + 1) % args.log_interval == 0:
+            epoch_str = 'Train Epoch {}: [ {:>5.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
 
-                epoch_str += ' Width: {:.2f}'.format(width_mult)
-                if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
-                    epoch_str += ' Batch Len: {:>3d} Accuracy: {:.4f}%'.format(data.shape[-2],
-                                                                               100. * minibatch_acc)
+            # epoch_str += ' Width: {:.2f}'.format(width_mult)
+            if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
+                epoch_str += ' Batch Len: {:>3d} '.format(data.shape[-2])
 
-                if orth_err['width%s' % width_mult] > 0:
-                    epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err['width%s' % width_mult]))
+            epoch_str += 'Accuracy(%): '
 
-                if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                    epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+            for minibatch_acc in batch_accs:
+                epoch_str += '{:>6.2f} '.format(100. * minibatch_acc)
 
-                if 'arcdist' in args.loss_type:
-                    epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+            # if orth_err['width%s' % width_mult] > 0:
+            #     epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err['width%s' % width_mult]))
+            #
+            # if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
+            #     epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+            #
+            # if 'arcdist' in args.loss_type:
+            #     epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
 
-                epoch_str += ' Loss: {:.4f} '.format(total_loss['width%s' % width_mult] / (batch_idx + 1))
-                pbar.set_description(epoch_str)
+            epoch_str += ' Loss: '
+            for width_mult in FLAGS.width_mult_list:
+                epoch_str += '{:>7.4f} '.format(total_loss['width%s' % width_mult] / (batch_idx + 1))
+
+            pbar.set_description(epoch_str)
 
         if ((batch_idx + 1) % args.accu_steps) == 0:
             # optimizer the net
