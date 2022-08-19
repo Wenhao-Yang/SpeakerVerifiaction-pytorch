@@ -399,7 +399,7 @@ def valid_class(valid_loader, model, ce, epoch):
 
     this_epoch_str = '          \33[91mValid '
     acc_str = 'Accuracy(%): '
-    loss_str = '  Loss: '
+    loss_str = ' Loss: '
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
