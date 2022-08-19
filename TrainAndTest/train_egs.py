@@ -304,7 +304,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
-        acc_str += '{:3.4f} '.format(
+        acc_str += '{:3.2f} '.format(
             100 * float(correct['width%s' % width_mult]) / total_datasize['width%s' % width_mult])
         loss_str += '{:2.4f} '.format(total_loss['width%s' % width_mult] / len(train_loader))
 
@@ -403,7 +403,7 @@ def valid_class(valid_loader, model, ce, epoch):
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
-        acc_str += '{:3.4f} '.format(
+        acc_str += '{:3.2f} '.format(
             100 * float(correct['width%s' % width_mult]) / total_datasize['width%s' % width_mult])
         loss_str += '{:2.4f} '.format(total_loss['width%s' % width_mult] / len(valid_loader))
 
