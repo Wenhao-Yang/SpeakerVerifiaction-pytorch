@@ -300,7 +300,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     this_epoch_str += 'Train '
 
     acc_str = 'Accuracy(%): '
-    loss_str = 'Loss: '
+    loss_str = '  Loss: '
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
@@ -397,36 +397,23 @@ def valid_class(valid_loader, model, ce, epoch):
 
     torch.cuda.empty_cache()
 
-    this_epoch_str = '              \33[91mValid '
+    this_epoch_str = '          \33[91mValid '
+    acc_str = 'Accuracy(%): '
+    loss_str = '  Loss: '
+    other_str = '{} Loss: '.format(args.loss_type)
+    add_other = False
+    for width_mult in FLAGS.width_mult_list:  # .25%:
+        acc_str += '{:6f} '.format(
+            100 * float(correct['width%s' % width_mult]) / total_datasize['width%s' % width_mult])
+        loss_str += '{:6f} '.format(total_loss['width%s' % width_mult] / len(valid_loader))
 
-    if len(FLAGS.width_mult_list) > 1:
-        this_epoch_str += 'Accuracy:             Loss:          \n'
-        for width_mult in FLAGS.width_mult_list:  # .25%:
-            this_epoch_str += '          Width_{:.2f}:     {:6f}%         {:6f}'.format(width_mult,
-                                                                                        100 * float(correct[
-                                                                                                        'width%s' % width_mult]) /
-                                                                                        total_datasize[
-                                                                                            'width%s' % width_mult],
-                                                                                        total_loss[
-                                                                                            'width%s' % width_mult] / len(
-                                                                                            valid_loader))
+        if other_loss['width%s' % width_mult] != 0:
+            add_other = True
+            other_str += '{:6f}'.format(other_loss['width%s' % width_mult] / len(valid_loader))
 
-            if other_loss['width%s' % width_mult] != 0:
-                this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
-                                                           other_loss['width%s' % width_mult] / len(valid_loader))
-
-            this_epoch_str += '\n'
-    else:
-        this_key = FLAGS.width_mult_list[0]
-        # this_epoch_str += 'Accuracy: {:.6f}%, Loss: {:.6f}'.format(valid_accuracy, valid_loss)
-        this_epoch_str += 'Accuracy: {:.6f}%, Loss: {:6f}'.format(100 * float(
-            correct['width%s' % this_key]) / total_datasize['width%s' % this_key],
-                                                                  total_loss['width%s' % this_key] / len(
-                                                                      valid_loader))
-
-        if other_loss['width%s' % this_key] != 0:
-            this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
-                                                       other_loss['width%s' % this_key] / len(valid_loader))
+    this_epoch_str += acc_str + loss_str
+    if add_other:
+        this_epoch_str += other_str
 
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
@@ -443,6 +430,11 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     mindcf_01_dict = {}
     mindcf_001_dict = {}
 
+    test_str = '          \33[91mTest '
+    eer_str = 'EER(%): '
+    threshold_str = ' Threshold: '
+    mindcf_01_str = ' MinDcf-0.01: '
+    mindcf_001_str = ' MinDcf-0.001: '
     for width_mult in FLAGS.width_mult_list:
         this_xvector_dir = "%s/train/epoch_%s_width%s" % (xvector_dir, epoch, width_mult)
         verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
@@ -462,23 +454,18 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         mindcf_01_dict['width%s' % width_mult] = mindcf_01
         mindcf_001_dict['width%s' % width_mult] = mindcf_001
 
-        test_str = '          \33[91mTest '
-        if width_mult != 1.0:
-            test_str += 'Width: {:.2f}, '.format(width_mult)
-
-        test_str += 'EER: {:.4f}%, Threshold: {:.4f}, ' \
-                    'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
-                                                                               eer_threshold,
-                                                                               mindcf_01,
-                                                                               mindcf_001)
-
-        print(test_str)
+        eer_str += '{:.4f} '.format(100. * eer)
+        threshold_str += '{:.4f} '.format(eer_threshold)
+        mindcf_01_str += '{:.4f} '.format(mindcf_01)
+        mindcf_001_str += '{:.4f} '.format(mindcf_001)
 
         writer.add_scalar('Train/EER_%s' % width_mult, 100. * eer, epoch)
         writer.add_scalar('Train/Threshold_%s' % width_mult, eer_threshold, epoch)
         writer.add_scalar('Train/mindcf-0.01_%s' % width_mult, mindcf_01, epoch)
         writer.add_scalar('Train/mindcf-0.001_%s' % width_mult, mindcf_001, epoch)
 
+    test_str += eer_str + threshold_str + mindcf_01_str + mindcf_001_str + '. \33[0m'
+    print(test_str)
     torch.cuda.empty_cache()
 
     eer = np.min([eer_dict[i] for i in eer_dict])
