@@ -300,13 +300,13 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     this_epoch_str += 'Train '
 
     acc_str = 'Accuracy(%): '
-    loss_str = '  Loss: '
+    loss_str = '   Loss: '
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
-        acc_str += '{:3.2f} '.format(
+        acc_str += '{:>6.2f} '.format(
             100 * float(correct['width%s' % width_mult]) / total_datasize['width%s' % width_mult])
-        loss_str += '{:2.4f} '.format(total_loss['width%s' % width_mult] / len(train_loader))
+        loss_str += '{:>7.4f} '.format(total_loss['width%s' % width_mult] / len(train_loader))
 
         if other_loss['width%s' % width_mult] != 0:
             add_other = True
@@ -403,9 +403,9 @@ def valid_class(valid_loader, model, ce, epoch):
     other_str = '{} Loss: '.format(args.loss_type)
     add_other = False
     for width_mult in FLAGS.width_mult_list:  # .25%:
-        acc_str += '{:3.2f} '.format(
+        acc_str += '{:>6.2f} '.format(
             100 * float(correct['width%s' % width_mult]) / total_datasize['width%s' % width_mult])
-        loss_str += '{:2.4f} '.format(total_loss['width%s' % width_mult] / len(valid_loader))
+        loss_str += '{:>7.4f} '.format(total_loss['width%s' % width_mult] / len(valid_loader))
 
         if other_loss['width%s' % width_mult] != 0:
             add_other = True
@@ -431,7 +431,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     mindcf_001_dict = {}
 
     test_str = '          \33[91mTest '
-    eer_str = 'EER(%): '
+    eer_str = 'EER(%):       '
     threshold_str = ' Threshold: '
     mindcf_01_str = ' MinDcf-0.01: '
     mindcf_001_str = ' MinDcf-0.001: '
@@ -454,10 +454,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         mindcf_01_dict['width%s' % width_mult] = mindcf_01
         mindcf_001_dict['width%s' % width_mult] = mindcf_001
 
-        eer_str += '{:2.4f} '.format(100. * eer)
-        threshold_str += '{:2.4f} '.format(eer_threshold)
-        mindcf_01_str += '{:2.4f} '.format(mindcf_01)
-        mindcf_001_str += '{:2.4f} '.format(mindcf_001)
+        eer_str += '{:>6.2f} '.format(100. * eer)
+        threshold_str += '{:.4f} '.format(eer_threshold)
+        mindcf_01_str += '{:.4f} '.format(mindcf_01)
+        mindcf_001_str += '{:.4f} '.format(mindcf_001)
 
         writer.add_scalar('Train/EER_%s' % width_mult, 100. * eer, epoch)
         writer.add_scalar('Train/Threshold_%s' % width_mult, eer_threshold, epoch)
