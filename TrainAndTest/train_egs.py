@@ -297,16 +297,16 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     this_epoch_str = 'Epoch {:>2d}: \33[91m'.format(epoch)
 
     if len(FLAGS.width_mult_list) > 1:
-        this_epoch_str += 'Train Accuracy:           Loss:          \n'
+        this_epoch_str += 'Train Accuracy:             Loss:          \n'
         for width_mult in FLAGS.width_mult_list:  # .25%:
-            this_epoch_str += '             Width_{:.2f}: {:6f}%    {:6f}'.format(width_mult,
-                                                                                  100 * float(correct[
-                                                                                                  'width%s' % width_mult]) /
-                                                                                  total_datasize[
-                                                                                      'width%s' % width_mult],
-                                                                                  total_loss[
-                                                                                      'width%s' % width_mult] / len(
-                                                                                      train_loader))
+            this_epoch_str += '              Width_{:.2f}:     {:6f}%         {:6f}'.format(width_mult,
+                                                                                            100 * float(correct[
+                                                                                                            'width%s' % width_mult]) /
+                                                                                            total_datasize[
+                                                                                                'width%s' % width_mult],
+                                                                                            total_loss[
+                                                                                                'width%s' % width_mult] / len(
+                                                                                                train_loader))
 
             if other_loss['width%s' % width_mult] != 0:
                 this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
@@ -406,16 +406,19 @@ def valid_class(valid_loader, model, ce, epoch):
 
     torch.cuda.empty_cache()
 
-    this_epoch_str = '          \33[91mValid '
+    this_epoch_str = '              \33[91mValid '
 
     if len(FLAGS.width_mult_list) > 1:
-        this_epoch_str += 'Accuracy:           Loss:          \n'
-        for width_mult in FLAGS.width_mult_list:
-            this_epoch_str += '                   Width_{:.2f}%: {:.6f}%, Loss: {:6f}'.format(width_mult,
-                                                                                              100 * float(correct[
-                                                                                                              'width%s' % width_mult]) /
-                                                                                              total_datasize[
-                                                                                                  'width%s' % width_mult])
+        this_epoch_str += 'Accuracy:             Loss:          \n'
+        for width_mult in FLAGS.width_mult_list:  # .25%:
+            this_epoch_str += '              Width_{:.2f}:     {:6f}%         {:6f}'.format(width_mult,
+                                                                                            100 * float(correct[
+                                                                                                            'width%s' % width_mult]) /
+                                                                                            total_datasize[
+                                                                                                'width%s' % width_mult],
+                                                                                            total_loss[
+                                                                                                'width%s' % width_mult] / len(
+                                                                                                valid_loader))
 
             if other_loss['width%s' % width_mult] != 0:
                 this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type,
