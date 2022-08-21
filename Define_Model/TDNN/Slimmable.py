@@ -25,12 +25,12 @@ from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMask
     TimeFreqMaskLayer, AttentionweightLayer_v2, AttentionweightLayer_v0, DropweightLayer, DropweightLayer_v2, Sinc2Down, \
     Sinc2Conv, Wav2Conv, Wav2Down
 
-FLAGS = AttrDict(width_mult_list=[0.25, 0.50, 0.75, 1.0],
+FLAGS = AttrDict(width_mult_list=[1.0, 0.75, 0.50, 0.25],
                  reset_parameters=False)
 
 
 class SwitchableBatchNorm2d(nn.Module):
-    def __init__(self, num_features_list, width_mult_list=[0.25, 0.50, 0.75, 1.0]):
+    def __init__(self, num_features_list, width_mult_list=[1.0, 0.75, 0.50, 0.25]):
         super(SwitchableBatchNorm2d, self).__init__()
         self.num_features_list = num_features_list
         self.num_features = max(num_features_list)
@@ -54,7 +54,7 @@ class SlimmableConv2d(nn.Conv2d):
     def __init__(self, in_channels_list, out_channels_list,
                  kernel_size, stride=1, padding=0, dilation=1,
                  groups_list=[1], bias=True,
-                 width_mult_list=[0.25, 0.50, 0.75, 1.0]):
+                 width_mult_list=[1.0, 0.75, 0.50, 0.25]):
         super(SlimmableConv2d, self).__init__(
             max(in_channels_list), max(out_channels_list),
             kernel_size, stride=stride, padding=padding, dilation=dilation,
@@ -87,7 +87,7 @@ class SlimmableConv1d(nn.Conv1d):
     def __init__(self, in_channels_list, out_channels_list,
                  kernel_size, stride=1, padding=0, dilation=1,
                  groups_list=[1], bias=True,
-                 width_mult_list=[0.25, 0.50, 0.75, 1.0]):
+                 width_mult_list=[1.0, 0.75, 0.50, 0.25]):
         # print(max(in_channels_list), max(out_channels_list))
         super(SlimmableConv1d, self).__init__(
             max(in_channels_list), max(out_channels_list),
@@ -119,7 +119,7 @@ class SlimmableConv1d(nn.Conv1d):
 
 
 class SwitchableBatchNorm1d(nn.Module):
-    def __init__(self, num_features_list, width_mult_list=[0.25, 0.50, 0.75, 1.0]):
+    def __init__(self, num_features_list, width_mult_list=[1.0, 0.75, 0.50, 0.25]):
         super(SwitchableBatchNorm1d, self).__init__()
         self.num_features_list = num_features_list
         self.num_features = max(num_features_list)
@@ -141,7 +141,7 @@ class SwitchableBatchNorm1d(nn.Module):
 
 class SlimmableLinear(nn.Linear):
     def __init__(self, in_features_list, out_features_list, bias=True,
-                 width_mult_list=[0.25, 0.50, 0.75, 1.0]):
+                 width_mult_list=[1.0, 0.75, 0.50, 0.25]):
         super(SlimmableLinear, self).__init__(
             max(in_features_list), max(out_features_list), bias=bias)
         self.in_features_list = in_features_list
@@ -305,10 +305,9 @@ def bn_calibration_init(m):
 
 class SimmableTimeDelayLayer(nn.Module):
 
-    def __init__(self, in_channels_list=[23], out_channels_list=[512],
+    def __init__(self, width_mult_list, in_channels_list=[23], out_channels_list=[512],
                  context_size=5, stride=1, dilation=1,
-                 dropout_p=0.0, padding=0, groups=1, activation='relu',
-                 width_mult_list=[0.25, 0.50, 0.75, 1.0]):
+                 dropout_p=0.0, padding=0, groups=1, activation='relu'):
         super(SimmableTimeDelayLayer, self).__init__()
         self.context_size = context_size
         self.stride = stride
@@ -363,7 +362,7 @@ class SlimmableTDNN(nn.Module):
                  num_classes_b=0, block_type='basic', first_2d=False, stride=[1],
                  init_weight='mel', power_weight=False, num_center=3, scale=0.2, weight_p=0.1,
                  mask='None', mask_len=[5, 20], channels=[512, 512, 512, 512, 1536],
-                 width_mult_list=[0.25, 0.50, 0.75, 1.0], **kwargs):
+                 width_mult_list=[1.0, 0.75, 0.50, 0.25], **kwargs):
         super(SlimmableTDNN, self).__init__()
         self.num_classes = num_classes
         self.num_classes_b = num_classes_b

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=75
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -552,13 +552,19 @@ if [ $stage -le 75 ]; then
   feat_type=klfb
   feat=fb40
   loss=arcsoft
+  encoder_type=STAP
+
   model=TDNN_v5
-  encod=STAP
   dataset=vox1
   subset=dev
   test_set=vox1
   input_dim=40
   input_norm=Mean
+  optimizer=sgd
+  scheduler=rop
+  mask_layer=baseline
+  batch_size=256
+  alpha=0
 
   # Training set: voxceleb 1 40-dimensional log fbanks kaldi  Loss: arcsoft
   # Cosine Similarity
@@ -579,9 +585,11 @@ if [ $stage -le 75 ]; then
   #|     vox1-dev      |   0.1552%   |   0.3450    |   0.0147    |    0.0334    | 20211130 17:35:29 | minarcsoft*0.1+arc
   # 20211130 18:08 min seems to be better on dev set
 
-
+  for seed in 123456 123457 123458; do
   for embedding_size in 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    model_dir=${model}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${loss_str}wd5e4_var
+
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
@@ -592,21 +600,21 @@ if [ $stage -le 75 ]; then
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --input-dim ${input_dim} \
-      --nj 12 \
+      --nj 4 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
-      --encoder-type ${encod} \
-      --channels 512,512,512,512,1500 \
-      --stride 1,1,1,1 \
+      --channels 512,512,512,512,1536 \
+      --encoder-type ${encoder_type} \
       --margin 0.2 \
       --s 30 \
       --input-length var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_45_var \
-      --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/checkpoint_45.pth \
+      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_var \
+      --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 1 \
       --remove-vad \
       --cos-sim
+  done
   done
   exit
 fi

@@ -767,6 +767,7 @@ def args_model(args, train_dir):
     dilation = [int(x) for x in dilation]
 
     mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
+    width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
@@ -780,7 +781,8 @@ def args_model(args, train_dir):
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks, 'downsample': args.downsample,
                     'num_classes_b': train_dir.num_doms, 'init_weight': args.init_weight,
                     'power_weight': args.power_weight, 'scale': args.scale, 'weight_p': args.weight_p,
-                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
+                    'channels': channels, 'width_mult_list': width_mult_list,
+                    'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'num_center': args.num_center,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}

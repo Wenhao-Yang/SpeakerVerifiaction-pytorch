@@ -36,6 +36,7 @@ from tqdm import tqdm
 
 # from Define_Model.Loss.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 import Define_Model
+from Define_Model.TDNN.Slimmable import FLAGS
 from Define_Model.model import PairwiseDistance
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
@@ -140,6 +141,8 @@ parser.add_argument('--expansion', default=1, type=int, metavar='N', help='acous
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
+parser.add_argument('--width-mult-list', default='1', type=str, metavar='WIDTH',
+                    help='The channels of convs layers)')
 parser.add_argument('--context', default='5,3,3,5', type=str, metavar='KE', help='kernel size of conv filters')
 
 parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
@@ -596,6 +599,14 @@ if __name__ == '__main__':
         print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
+    if 'Slimmable' in args.model:
+        width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
+        FLAGS.width_mult_list = width_mult_list
+        print('Slimmable width: ', width_mult_list)
+    else:
+        width_mult_list = [1]
+        FLAGS.width_mult_list = width_mult_list
+
     if os.path.exists(args.model_yaml):
         model_kwargs = load_model_args(args.model_yaml)
     else:
@@ -621,6 +632,7 @@ if __name__ == '__main__':
         dilation = [int(x) for x in dilation]
 
         mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
+        width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
 
         model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                         'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
@@ -632,7 +644,8 @@ if __name__ == '__main__':
                         'downsample': args.downsample, 'normalize': args.normalize,
                         'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
                         'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                        'channels': channels, 'context': context, 'init_weight': args.init_weight,
+                        'channels': channels, 'width_mult_list': width_mult_list,
+                        'context': context, 'init_weight': args.init_weight,
                         'alpha': args.alpha, 'dropout_p': args.dropout_p,
                         'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
@@ -706,42 +719,55 @@ if __name__ == '__main__':
             if args.score_norm != '':
                 train_verify_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=args.test_batch_size,
                                                                   shuffle=False, **kwargs)
-                verification_extract(train_verify_loader, model, xvector_dir=train_xvector_dir, epoch=start,
-                                     test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
-                                     mean_vector=args.mean_vector,
-                                     xvector=args.xvector)
+
+                for width_mult in FLAGS.width_mult_list:
+                    FLAGS.width_mult = width_mult
+                    verification_extract(train_verify_loader, model,
+                                         xvector_dir=train_xvector_dir + 'width%d' % width_mult, epoch=start,
+                                         test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
+                                         mean_vector=args.mean_vector,
+                                         xvector=args.xvector)
 
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
 
             # extract(verify_loader, model, args.xvector_dir)
-            verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
-                                 test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
-                                 mean_vector=args.mean_vector,
-                                 xvector=args.xvector)
+            for width_mult in FLAGS.width_mult_list:
+                FLAGS.width_mult = width_mult
+
+                verification_extract(verify_loader, model, xvector_dir=test_xvector_dir + 'width%d' % width_mult,
+                                     epoch=start,
+                                     test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
+                                     mean_vector=args.mean_vector,
+                                     xvector=args.xvector)
 
     if args.test:
 
         file_loader = kaldiio.load_mat
         # file_loader = read_vec_flt
         return_uid = True if args.score_norm != '' else False
-        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=test_xvector_dir,
-                                       loader=file_loader, return_uid=return_uid)
+        for width_mult in FLAGS.width_mult_list:
+            FLAGS.width_mult = width_mult
 
-        test_loader = torch.utils.data.DataLoader(test_dir,
-                                                  batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
-                                                  shuffle=False, **kwargs)
+            test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
+                                           xvectors_dir=test_xvector_dir + 'width%d' % width_mult,
+                                           loader=file_loader, return_uid=return_uid)
 
-        train_stats_pickle = os.path.join(test_xvector_dir,
-                                          'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
+            test_loader = torch.utils.data.DataLoader(test_dir,
+                                                      batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
+                                                      shuffle=False, **kwargs)
 
-        if os.path.isfile(train_stats_pickle):
-            with open(train_stats_pickle, 'rb') as f:
-                train_stats = pickle.load(f)
-        else:
-            train_stats = cohort(train_xvector_dir, test_xvector_dir) if args.score_norm != '' else None
+            train_stats_pickle = os.path.join(test_xvector_dir + 'width%d' % width_mult,
+                                              'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
 
-        test(test_loader, xvector_dir=args.xvector_dir, test_cohort_scores=train_stats)
+            if os.path.isfile(train_stats_pickle):
+                with open(train_stats_pickle, 'rb') as f:
+                    train_stats = pickle.load(f)
+            else:
+                train_stats = cohort(+'width%d' % width_mult,
+                                     test_xvector_dir + 'width%d' % width_mult) if args.score_norm != '' else None
+
+            test(test_loader, xvector_dir=test_xvector_dir + 'width%d' % width_mult, test_cohort_scores=train_stats)
 
     stop_time = time.time()
     t = float(stop_time - start_time)
