@@ -329,11 +329,11 @@ if [ $stage -le 70 ]; then
   weight=vox2_cf
   weight_p=0
   scale=0.2
-  batch_size=128
+  batch_size=256
   stat_type=margin
   loss_ratio=1
 
-  for model in SlimmableTDNN TDNN_v5  ; do
+  for model in SlimmableTDNN  ; do
   for seed in 123456 123457 123458 ;do
   for embedding_size in 512; do
     #    feat=combined
@@ -343,7 +343,7 @@ if [ $stage -le 70 ]; then
       loss_str=
     fi
 
-    model_dir=${model}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${loss_str}wd5e4_var
+    model_dir=${model}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${loss_str}wd5e4_var2
 
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
