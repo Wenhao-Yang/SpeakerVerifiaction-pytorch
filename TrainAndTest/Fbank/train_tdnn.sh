@@ -333,7 +333,7 @@ if [ $stage -le 70 ]; then
   stat_type=margin
   loss_ratio=1
 
-  for model in TDNN_v5 SlimmableTDNN ; do
+  for model in SlimmableTDNN TDNN_v5  ; do
   for seed in 123456 123457 123458 ;do
   for embedding_size in 512; do
     #    feat=combined
