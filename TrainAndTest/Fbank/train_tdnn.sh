@@ -2,7 +2,7 @@
 
 stage=70
 waited=0
-while [ $(ps 3338562 | wc -l) -eq 2 ]; do
+while [ $(ps 18118 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -329,10 +329,11 @@ if [ $stage -le 70 ]; then
   weight=vox2_cf
   weight_p=0
   scale=0.2
-  batch_size=256
+  batch_size=128
   stat_type=margin
   loss_ratio=1
 
+  for model in TDNN_v5 SlimmableTDNN ; do
   for seed in 123456 123457 123458 ;do
   for embedding_size in 512; do
     #    feat=combined
@@ -440,6 +441,7 @@ if [ $stage -le 70 ]; then
 #      --s 30 \
 #      --remove-vad \
 #      --log-interval 10
+  done
   done
   done
   exit

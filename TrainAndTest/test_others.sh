@@ -585,6 +585,11 @@ if [ $stage -le 75 ]; then
   #|     vox1-dev      |   0.1552%   |   0.3450    |   0.0147    |    0.0334    | 20211130 17:35:29 | minarcsoft*0.1+arc
   # 20211130 18:08 min seems to be better on dev set
 
+#|     vox1-test     |   4.7985    |   0.1963    |    0.4995     |    0.6178     | 20220821 11:20:52 |
+#|     vox1-test     |   4.6925    |   0.1942    |    0.4985     |    0.5893     | 20220821 11:22:43 |
+#|     vox1-test     |   4.7137    |   0.2004    |    0.4664     |    0.5888     | 20220821 11:24:07 |
+
+
   for seed in 123456 123457 123458; do
   for embedding_size in 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
