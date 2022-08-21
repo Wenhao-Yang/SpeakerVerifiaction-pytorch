@@ -597,6 +597,7 @@ if [ $stage -le 75 ]; then
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
+      --width-mult-list 1.0,0.75,0.5,0.25 \
       --train-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
