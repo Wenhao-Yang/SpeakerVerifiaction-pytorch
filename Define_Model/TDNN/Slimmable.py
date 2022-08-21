@@ -103,8 +103,6 @@ class SlimmableConv1d(nn.Conv1d):
         self.width_mult_list = width_mult_list
 
     def forward(self, input):
-        print(self.width_mult)
-
         idx = self.width_mult_list.index(self.width_mult)
         self.in_channels = self.in_channels_list[idx]
         self.out_channels = self.out_channels_list[idx]
@@ -135,8 +133,6 @@ class SwitchableBatchNorm1d(nn.Module):
         self.ignore_model_profiling = True
 
     def forward(self, input):
-        print(self.width_mult)
-
         idx = self.width_mult_list.index(self.width_mult)
         y = self.bn[idx](input)
 
@@ -155,8 +151,6 @@ class SlimmableLinear(nn.Linear):
 
     def forward(self, input):
         idx = self.width_mult_list.index(self.width_mult)
-
-        print(self.width_mult)
         self.in_features = self.in_features_list[idx]
         self.out_features = self.out_features_list[idx]
         weight = self.weight[:self.out_features, :self.in_features]
