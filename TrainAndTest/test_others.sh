@@ -556,7 +556,7 @@ if [ $stage -le 75 ]; then
 
   model=TDNN_v5
   dataset=vox1
-  subset=dev
+  subset=test
   test_set=vox1
   input_dim=40
   input_norm=Mean
