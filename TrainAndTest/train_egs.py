@@ -164,7 +164,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
     # start_time = time.time()
     # pdb.set_trace()
-    global FLAGS
+    # global FLAGS
     for batch_idx, (data, label) in pbar:
         if args.cuda:
             # label = label.cuda(non_blocking=True)
@@ -176,7 +176,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # pdb.set_trace()
         batch_accs = []
         for width_mult in FLAGS.width_mult_list:
-            FLAGS.width_mult = width_mult
+            # FLAGS.width_mult = width_mult
+            model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
             classfier, feats = model(data)
             classfier_label = classfier
@@ -306,7 +307,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
     this_epoch_str = 'Epoch {:>2d}: \33[91m'.format(epoch)
     if len(FLAGS.width_mult_list) > 1:
-        this_epoch_str += ' Width: ' + ' '.join(FLAGS.width_mult_list) + ' '
+        this_epoch_str += ' Width: ' + ' '.join([str(w) for w in FLAGS.width_mult_list]) + ' '
     # if len(FLAGS.width_mult_list) > 1:
     this_epoch_str += 'Train '
 
@@ -350,7 +351,7 @@ def valid_class(valid_loader, model, ce, epoch):
     softmax = nn.Softmax(dim=1)
 
     lambda_ = (epoch / args.epochs) ** 2
-    global FLAGS
+    # global FLAGS
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
             data = data.cuda()
@@ -359,7 +360,8 @@ def valid_class(valid_loader, model, ce, epoch):
             # compute output
             # pdb.set_trace()
             for width_mult in FLAGS.width_mult_list:
-                FLAGS.width_mult = width_mult
+                # FLAGS.width_mult = width_mult
+                model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
                 out, feats = model(data)
                 if args.loss_type == 'asoft':
@@ -446,9 +448,11 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     threshold_str = '   Threshold: '
     mindcf_01_str = ' MinDcf-0.01: '
     mindcf_001_str = ' MinDcf-0.001: '
-    global FLAGS
+    # global FLAGS
+
     for width_mult in FLAGS.width_mult_list:
-        FLAGS.width_mult = width_mult
+        model.apply(lambda m: setattr(m, 'width_mult', width_mult))
+        # FLAGS.width_mult = width_mult
 
         this_xvector_dir = "%s/train/epoch_%s_width%s" % (xvector_dir, epoch, width_mult)
         verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)

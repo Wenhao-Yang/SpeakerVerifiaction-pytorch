@@ -44,7 +44,7 @@ class SwitchableBatchNorm2d(nn.Module):
         self.ignore_model_profiling = True
 
     def forward(self, input):
-        idx = self.width_mult_list.index(FLAGS.width_mult)
+        idx = self.width_mult_list.index(self.width_mult)
         y = self.bn[idx](input)
 
         return y
@@ -68,7 +68,7 @@ class SlimmableConv2d(nn.Conv2d):
         self.width_mult_list = width_mult_list
 
     def forward(self, input):
-        idx = self.width_mult_list.index(FLAGS.width_mult)
+        idx = self.width_mult_list.index(self.width_mult)
         self.in_channels = self.in_channels_list[idx]
         self.out_channels = self.out_channels_list[idx]
         self.groups = self.groups_list[idx]
@@ -103,7 +103,9 @@ class SlimmableConv1d(nn.Conv1d):
         self.width_mult_list = width_mult_list
 
     def forward(self, input):
-        idx = self.width_mult_list.index(FLAGS.width_mult)
+        print(self.width_mult)
+
+        idx = self.width_mult_list.index(self.width_mult)
         self.in_channels = self.in_channels_list[idx]
         self.out_channels = self.out_channels_list[idx]
         self.groups = self.groups_list[idx]
@@ -133,7 +135,9 @@ class SwitchableBatchNorm1d(nn.Module):
         self.ignore_model_profiling = True
 
     def forward(self, input):
-        idx = self.width_mult_list.index(FLAGS.width_mult)
+        print(self.width_mult)
+
+        idx = self.width_mult_list.index(self.width_mult)
         y = self.bn[idx](input)
 
         return y
@@ -150,7 +154,9 @@ class SlimmableLinear(nn.Linear):
         self.width_mult = max(width_mult_list)
 
     def forward(self, input):
-        idx = self.width_mult_list.index(FLAGS.width_mult)
+        idx = self.width_mult_list.index(self.width_mult)
+
+        print(self.width_mult)
         self.in_features = self.in_features_list[idx]
         self.out_features = self.out_features_list[idx]
         weight = self.weight[:self.out_features, :self.in_features]
@@ -319,26 +325,14 @@ class SimmableTimeDelayLayer(nn.Module):
         self.groups = groups
         self.width_mult_list = width_mult_list
 
-        self.kernel = SlimmableConv1d(self.in_channels_list, self.out_channels_list,
-                                      self.context_size, stride=self.stride,
-                                      padding=self.padding, dilation=self.dilation,
-                                      groups_list=[self.groups],
-                                      width_mult_list=width_mult_list)
-
-        # in_channels_list, out_channels_list,
-        # kernel_size, stride = 1, padding = 0, dilation = 1,
-        # groups_list = [1], bias = True,
-        # width_mult_list = [0.25, 0.50, 0.75, 1.0]
-
-        if activation == 'relu':
-            self.nonlinearity = nn.ReLU(inplace=True)
-        elif activation in ['leakyrelu', 'leaky_relu']:
-            self.nonlinearity = nn.LeakyReLU()
-        elif activation == 'prelu':
-            self.nonlinearity = nn.PReLU()
-
-        self.bn = SwitchableBatchNorm1d(out_channels_list, width_mult_list)
-
+        self.kernel = [SlimmableConv1d(self.in_channels_list, self.out_channels_list,
+                                       self.context_size, stride=self.stride,
+                                       padding=self.padding, dilation=self.dilation,
+                                       groups_list=[self.groups],
+                                       width_mult_list=width_mult_list),
+                       get_activation(activation)(),
+                       SwitchableBatchNorm1d(out_channels_list, width_mult_list)]
+        self.layers = nn.Sequential(*self.kernel)
         # self.drop = nn.Dropout(p=self.dropout_p)
 
     def forward(self, x):
@@ -348,9 +342,7 @@ class SimmableTimeDelayLayer(nn.Module):
         '''
         # _, _, d = x.shape
         #     self.input_dim, d)
-        x = self.kernel(x.transpose(1, 2))
-        x = self.nonlinearity(x)
-        x = self.bn(x)
+        x = self.layers(x.transpose(1, 2))
 
         return x.transpose(1, 2)
 

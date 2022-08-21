@@ -722,7 +722,8 @@ if __name__ == '__main__':
                                                                   shuffle=False, **kwargs)
 
                 for width_mult in FLAGS.width_mult_list:
-                    FLAGS.width_mult = width_mult
+                    # FLAGS.width_mult = width_mult
+                    model.apply(lambda m: setattr(m, 'width_mult', width_mult))
                     verification_extract(train_verify_loader, model,
                                          xvector_dir=train_xvector_dir + 'width%d' % width_mult, epoch=start,
                                          test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
@@ -734,7 +735,8 @@ if __name__ == '__main__':
 
             # extract(verify_loader, model, args.xvector_dir)
             for width_mult in FLAGS.width_mult_list:
-                FLAGS.width_mult = width_mult
+                # FLAGS.width_mult = width_mult
+                model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
                 verification_extract(verify_loader, model, xvector_dir=test_xvector_dir + 'width%d' % width_mult,
                                      epoch=start,
@@ -748,7 +750,8 @@ if __name__ == '__main__':
         # file_loader = read_vec_flt
         return_uid = True if args.score_norm != '' else False
         for width_mult in FLAGS.width_mult_list:
-            FLAGS.width_mult = width_mult
+            # FLAGS.width_mult = width_mult
+            model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
             test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
                                            xvectors_dir=test_xvector_dir + 'width%d' % width_mult,
