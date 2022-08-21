@@ -767,6 +767,7 @@ if __name__ == '__main__':
             else:
                 train_stats = cohort(+'width%d' % width_mult,
                                      test_xvector_dir + 'width%d' % width_mult) if args.score_norm != '' else None
+
             if len(FLAGS.width_mult_list) > 1:
                 print('Model width: ', width_mult)
             test(test_loader, xvector_dir=test_xvector_dir + 'width%d' % width_mult, test_cohort_scores=train_stats)

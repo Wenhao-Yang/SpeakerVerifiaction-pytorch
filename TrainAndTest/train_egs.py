@@ -164,6 +164,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
     # start_time = time.time()
     # pdb.set_trace()
+    global FLAGS
     for batch_idx, (data, label) in pbar:
         if args.cuda:
             # label = label.cuda(non_blocking=True)
@@ -349,7 +350,7 @@ def valid_class(valid_loader, model, ce, epoch):
     softmax = nn.Softmax(dim=1)
 
     lambda_ = (epoch / args.epochs) ** 2
-
+    global FLAGS
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
             data = data.cuda()
@@ -445,7 +446,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     threshold_str = '   Threshold: '
     mindcf_01_str = ' MinDcf-0.01: '
     mindcf_001_str = ' MinDcf-0.001: '
-
+    global FLAGS
     for width_mult in FLAGS.width_mult_list:
         FLAGS.width_mult = width_mult
 
