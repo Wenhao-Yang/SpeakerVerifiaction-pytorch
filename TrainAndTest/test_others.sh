@@ -555,7 +555,7 @@ if [ $stage -le 75 ]; then
   encoder_type=STAP
 
   model=TDNN_v5
-  dataset=vox1
+  datasets=vox1
   subset=test
   test_set=vox1
   input_dim=40
@@ -592,10 +592,10 @@ if [ $stage -le 75 ]; then
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
-      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}/trials_dir \
+      --train-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/valid_${feat} \
+      --valid-dir ${lstm_dir}/data/${datasets}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi \
       --input-norm ${input_norm} \
