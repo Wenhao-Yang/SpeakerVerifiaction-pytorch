@@ -604,6 +604,7 @@ if [ $stage -le 75 ]; then
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --channels 512,512,512,512,1536 \
+      --stride 1,1,1,1 \
       --encoder-type ${encoder_type} \
       --margin 0.2 \
       --s 30 \
