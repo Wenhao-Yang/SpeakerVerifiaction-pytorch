@@ -554,7 +554,7 @@ if [ $stage -le 75 ]; then
   loss=arcsoft
   encoder_type=STAP
 
-  model=TDNN_v5
+  model=SlimmableTDNN
   datasets=vox1
   subset=test
   test_set=vox1
