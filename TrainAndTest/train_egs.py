@@ -467,7 +467,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         mindcf_001_dict['width%s' % width_mult] = mindcf_001
 
         eer_str += '{:>6.2f} '.format(100. * eer)
-        threshold_str += '{:.4f} '.format(eer_threshold)
+        threshold_str += '{:>7.4f} '.format(eer_threshold)
         mindcf_01_str += '{:.4f} '.format(mindcf_01)
         mindcf_001_str += '{:.4f} '.format(mindcf_001)
 
