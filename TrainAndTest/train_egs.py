@@ -533,6 +533,7 @@ def main():
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     # Simmable FLAGS
+    global FLAGS
     if 'Slimmable' in args.model:
         width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
         FLAGS.width_mult_list = width_mult_list
