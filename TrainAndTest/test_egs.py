@@ -122,14 +122,17 @@ parser.add_argument('--veri-pairs', type=int, default=20000, metavar='VP',
 # Model options
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
-parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
-parser.add_argument('--weight-norm', type=str, default='max', help='replace batchnorm with instance norm')
 
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
 parser.add_argument('--activation', type=str, default='relu', help='activation functions')
 
 parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--power-weight', type=str, default='none', help='replace batchnorm with instance norm')
+parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
+parser.add_argument('--weight-norm', type=str, default='max', help='replace batchnorm with instance norm')
+parser.add_argument('--weight-p', default=0.1, type=float, help='replace batchnorm with instance norm')
+
 parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
 parser.add_argument('--first-2d', action='store_true', default=False,
                     help='replace first tdnn layer with conv2d layers')
