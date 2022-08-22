@@ -2159,7 +2159,7 @@ if [ $stage -le 201 ]; then
 #  10 18 34 50
 #  for mask_layer in attention0 ;do
   for weight_norm in max ; do
-  for testset in vox1 ; do
+  for testset in sitw ; do
   for resnet_size in 10 ; do
   for seed in 123456 123457 123458 ;do
 #    for chn in 16 32 64 ; do
