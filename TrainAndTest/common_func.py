@@ -520,11 +520,14 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
     parser.add_argument('--resnet-size', default=8, type=int,
                         metavar='RES', help='The channels of convs layers)')
+    parser.add_argument('--width-mult-list', default='1', type=str, metavar='WIDTH',
+                        help='The channels of convs layers)')
     parser.add_argument('--activation', type=str, default='relu', help='activation functions')
     parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
     parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
     parser.add_argument('--power-weight', type=str, default='none', help='replace batchnorm with instance norm')
     parser.add_argument('--weight-p', default=0.1, type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--weight-norm', type=str, default='max', help='replace batchnorm with instance norm')
     parser.add_argument('--scale', default=0.2, type=float, metavar='FEAT', help='acoustic feature dimension')
 
     parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
@@ -748,6 +751,7 @@ def args_model(args, train_dir):
     dilation = [int(x) for x in dilation]
 
     mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
+    width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
@@ -761,8 +765,9 @@ def args_model(args, train_dir):
                     'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks, 'downsample': args.downsample,
                     'num_classes_b': train_dir.num_doms, 'init_weight': args.init_weight,
                     'power_weight': args.power_weight, 'scale': args.scale, 'weight_p': args.weight_p,
-                    'channels': channels, 'alpha': args.alpha, 'normalize': args.normalize,
-                    'dropout_p': args.dropout_p,
+                    'weight_norm': args.weight_norm,
+                    'channels': channels, 'width_mult_list': width_mult_list,
+                    'alpha': args.alpha, 'normalize': args.normalize, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'num_center': args.num_center,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}

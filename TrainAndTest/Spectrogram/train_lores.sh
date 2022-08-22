@@ -1299,11 +1299,11 @@ if [ $stage -le 79 ]; then
 
   chn=32
 
-  weight=mel
+  weight=clean
 
-  for chn in 64 ; do
-#  for weight in clean vox2 ; do
-  for seed in 123457 123458 ; do
+  for chn in 16 ; do
+  for weight_norm in max sum ; do
+  for seed in 123456 123457 123458 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     if [ $chn -eq 64 ];then
       channels=64,128,256
@@ -1319,11 +1319,17 @@ if [ $stage -le 79 ]; then
       dp_str=125
     fi
 
-    if [ "$mask_layer" = "attention" ];then
-      at_str=_${weight}
-    else
-      at_str=
-    fi
+    if [[ $mask_layer == attention* ]];then
+        at_str=_${weight}
+        if [[ $weight_norm != max ]];then
+          at_str=${at_str}${weight_norm}
+        fi
+
+      elif [ "$mask_layer" = "drop" ];then
+        at_str=_${weight}_dp${weight_p}s${scale}
+      else
+        at_str=
+      fi
 
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var
     python TrainAndTest/train_egs.py \
@@ -1348,6 +1354,7 @@ if [ $stage -le 79 ]; then
       --lr 0.1 \
       --base-lr 0.000005 \
       --mask-layer ${mask_layer} \
+      --weight-norm ${weight_norm} \
       --init-weight ${weight} \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model_dir} \
@@ -1376,7 +1383,7 @@ if [ $stage -le 79 ]; then
       --loss-type ${loss}
   done
   done
-#  done
+  done
   exit
 fi
 

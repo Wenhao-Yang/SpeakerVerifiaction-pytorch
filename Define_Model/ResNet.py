@@ -25,7 +25,7 @@ from torchvision.models.shufflenetv2 import InvertedResidual
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
     AttentionweightLayer, TimeFreqMaskLayer, \
-    AttentionweightLayer_v2, AttentionweightLayer_v3, ReweightLayer
+    AttentionweightLayer_v2, AttentionweightLayer_v3, ReweightLayer, AttentionweightLayer_v0
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2, AttentionStatisticPooling_v2, SelfAttentionPooling_v2, SelfAttentionPooling_v3
@@ -730,7 +730,7 @@ class ThinResNet(nn.Module):
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
-                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
+                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', weight_norm='max', scale=0.2,
                  weight_p=0.1, input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -755,6 +755,7 @@ class ThinResNet(nn.Module):
         self.mask = mask
         self.scale = scale
         self.weight_p = weight_p
+        self.weight_norm = weight_norm
 
         self.dilation = 1
         self.fast = str(fast)
@@ -830,6 +831,9 @@ class ThinResNet(nn.Module):
             )
         elif self.mask == 'attention':
             self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+        elif self.mask == 'attention0':
+            self.mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
+                                                      weight_norm=weight_norm)
         elif self.mask == 'attention2':
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'drop':
@@ -1251,7 +1255,7 @@ class LocalResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes, block_type='basic',
-                 input_dim=161, input_len=300, gain_layer=False, init_weight='mel',
+                 input_dim=161, input_len=300, gain_layer=False, init_weight='mel', weight_norm='max',
                  relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
                  avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 20], **kwargs):
@@ -1331,6 +1335,9 @@ class LocalResNet(nn.Module):
             self.mask_layer = MusanNoiseLayer(snr=15)
         elif self.mask == 'attention':
             self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+        elif self.mask == 'attention0':
+            self.mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
+                                                      weight_norm=weight_norm)
         elif self.mask == 'attention2':
             self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
         elif self.mask == 'attention3':
