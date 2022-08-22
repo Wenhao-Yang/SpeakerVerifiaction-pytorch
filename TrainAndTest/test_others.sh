@@ -2132,7 +2132,7 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox1
+  datasets=vox2
   testset=sitw
   input_norm=Mean
 #  test_subset=
@@ -2195,7 +2195,7 @@ if [ $stage -le 201 ]; then
         at_str=
       fi
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde5_var
 
       python -W ignore TrainAndTest/test_egs.py \
         --model ${model} \
