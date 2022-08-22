@@ -133,8 +133,8 @@ def frames_extract(train_loader, file_dir, set_name):
         os.makedirs(file_dir)
 
     if args.out_format == 'kaldi_cmp':
-        feat_ark = file_dir + '%s_%d.ark' % (set_name, args.input_per_spks)
-        feat_scp = file_dir + '%s_%d.scp' % (set_name, args.input_per_spks)
+        feat_ark = file_dir + '/%s_%d.ark' % (set_name, args.input_per_spks)
+        feat_scp = file_dir + '/%s_%d.scp' % (set_name, args.input_per_spks)
         writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp), compression_method=1)
     elif args.out_format == 'npy':
         filename = file_dir + '/%s_%d.npy' % (set_name, args.input_per_spks)
