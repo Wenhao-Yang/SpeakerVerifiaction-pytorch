@@ -353,7 +353,7 @@ if [ $stage -le 70 ]; then
       --train-trials trials \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testsets}/${feat_type}/test_fb${input_dim} \
-      --nj 8 \
+      --nj 6 \
       --seed ${seed} \
       --shuffle \
       --epochs 50 \
