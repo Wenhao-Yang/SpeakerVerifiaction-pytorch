@@ -651,7 +651,7 @@ if [ $stage -le 80 ]; then
       --file-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --out-dir Data/fratio/${dataset}/${feat_type}/dev \
       --nj 4 \
-      --output-fromat kaldi_cmp \
+      --out-fromat kaldi_cmp \
       --input-per-spks ${numframes} \
       --extract-frames \
       --feat-dim 161
