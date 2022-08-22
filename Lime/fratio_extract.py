@@ -20,6 +20,7 @@ import torch._utils
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 from kaldi_io import read_mat
+from kaldiio import WriteHelper, ReadHelper
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -53,6 +54,8 @@ parser.add_argument('--feat-dim', default=64, type=int, metavar='N',
                     help='acoustic feature dimension')
 
 parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
+                    help='choose the acoustic features type.')
+parser.add_argument('--output-fromat', choices=['npy', 'kaldi_cmp'], default='npy',
                     help='choose the acoustic features type.')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract-frames', action='store_true', default=False, help='using Cosine similarity')
@@ -126,24 +129,46 @@ def frames_extract(train_loader, file_dir, set_name):
     input_data = []
     pbar = tqdm(enumerate(train_loader))
 
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir)
+
+    if args.out_format == 'kaldi_cmp':
+        feat_ark = file_dir + '%s_%d.ark' % (set_name, args.input_per_spks)
+        feat_scp = file_dir + '%s_%d.scp' % (set_name, args.input_per_spks)
+        writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp), compression_method=1)
+    elif args.out_format == 'npy':
+        filename = file_dir + '/%s_%d.npy' % (set_name, args.input_per_spks)
+
     for batch_idx, (data, label) in pbar:
         data = data.squeeze().numpy()
         data = data[:args.input_per_spks].transpose()
         # print(data.shape)
+        if args.out_format == 'kaldi_cmp':
+            writer(str(label), data)
+        elif args.out_format == 'npy':
+            input_data.append(data)
 
-        input_data.append(data)
+    if args.out_format == 'kaldi_cmp':
+        writer.close()
+    elif args.out_format == 'npy':
+        input_data = np.array(input_data)
+        np.save(filename, np.array(input_data))
 
-    filename = file_dir + '/%s_%d.npy' % (set_name, args.input_per_spks)
-    input_data = np.array(input_data)
-
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-    print('Saving arrays to %s' % str(input_data.shape))
-    np.save(filename, np.array(input_data))
+    print('Saving arrays to %s' % str(file_dir))
 
 
 def fratio_extract(file_dir, set_name, log_scale=False):
-    input_data = np.load(os.path.join(file_dir, '%s_%d.npy' % (set_name, args.input_per_spks)), allow_pickle=True)
+    if args.out_format == 'kaldi_cmp':
+        input_data = []
+        scp_file = os.path.join(file_dir, '%s_%d.scp' % (set_name, args.input_per_spks))
+        helper = ReadHelper('scp:%s' % scp_file)
+        for _, array_out in helper:
+            input_data.append(array_out)
+
+        input_data = np.array(input_data, dtype=np.float32)
+
+    elif args.out_format == 'npy':
+        input_data = np.load(os.path.join(file_dir, '%s_%d.npy' % (set_name, args.input_per_spks)), allow_pickle=True)
 
     f_ratio = fratio(args.feat_dim, input_data)
     np.save(os.path.join(file_dir, 'fratio_%d.npy' % args.input_per_spks), f_ratio)
