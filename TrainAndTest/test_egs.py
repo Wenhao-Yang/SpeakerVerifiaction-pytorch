@@ -132,6 +132,8 @@ parser.add_argument('--first-2d', action='store_true', default=False,
                     help='replace first tdnn layer with conv2d layers')
 parser.add_argument('--dilation', default='1,1,1,1', type=str, metavar='CHA', help='The dilation of convs layers)')
 parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
+parser.add_argument('--red-ratio', default=8, type=int, metavar='N', help='acoustic feature dimension')
+
 parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
 parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
 
