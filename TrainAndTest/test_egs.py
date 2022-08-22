@@ -42,7 +42,7 @@ from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal
-from TrainAndTest.common_func import create_model, verification_extract, load_model_args
+from TrainAndTest.common_func import create_model, verification_extract, load_model_args, args_model
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -121,6 +121,8 @@ parser.add_argument('--veri-pairs', type=int, default=20000, metavar='VP',
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
 parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
+parser.add_argument('--weight-norm', type=str, default='max', help='replace batchnorm with instance norm')
+
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
@@ -611,44 +613,46 @@ if __name__ == '__main__':
     if os.path.exists(args.model_yaml):
         model_kwargs = load_model_args(args.model_yaml)
     else:
-        # instantiate model and initialize weights
-        kernel_size = args.kernel_size.split(',')
-        kernel_size = [int(x) for x in kernel_size]
-        if args.padding == '':
-            padding = [int((x - 1) / 2) for x in kernel_size]
-        else:
-            padding = args.padding.split(',')
-            padding = [int(x) for x in padding]
+        model_kwargs = args_model(args, train_dir)
 
-        kernel_size = tuple(kernel_size)
-        padding = tuple(padding)
-        stride = args.stride.split(',')
-        stride = [int(x) for x in stride]
-
-        channels = args.channels.split(',')
-        channels = [int(x) for x in channels]
-        context = args.context.split(',')
-        context = [int(x) for x in context]
-        dilation = args.dilation.split(',')
-        dilation = [int(x) for x in dilation]
-
-        mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
-        width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
-
-        model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                        'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
-                        'dilation': dilation, 'first_2d': args.first_2d,
-                        'expansion': args.expansion,
-                        'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
-                        'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
-                        'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-                        'downsample': args.downsample, 'normalize': args.normalize,
-                        'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                        'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                        'channels': channels, 'width_mult_list': width_mult_list,
-                        'context': context, 'init_weight': args.init_weight,
-                        'alpha': args.alpha, 'dropout_p': args.dropout_p,
-                        'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
+        # # instantiate model and initialize weights
+        # kernel_size = args.kernel_size.split(',')
+        # kernel_size = [int(x) for x in kernel_size]
+        # if args.padding == '':
+        #     padding = [int((x - 1) / 2) for x in kernel_size]
+        # else:
+        #     padding = args.padding.split(',')
+        #     padding = [int(x) for x in padding]
+        #
+        # kernel_size = tuple(kernel_size)
+        # padding = tuple(padding)
+        # stride = args.stride.split(',')
+        # stride = [int(x) for x in stride]
+        #
+        # channels = args.channels.split(',')
+        # channels = [int(x) for x in channels]
+        # context = args.context.split(',')
+        # context = [int(x) for x in context]
+        # dilation = args.dilation.split(',')
+        # dilation = [int(x) for x in dilation]
+        #
+        # mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
+        # width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
+        #
+        # model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
+        #                 'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
+        #                 'dilation': dilation, 'first_2d': args.first_2d,
+        #                 'expansion': args.expansion,
+        #                 'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
+        #                 'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
+        #                 'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
+        #                 'downsample': args.downsample, 'normalize': args.normalize,
+        #                 'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
+        #                 'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
+        #                 'channels': channels, 'width_mult_list': width_mult_list,
+        #                 'context': context, 'init_weight': args.init_weight,
+        #                 'alpha': args.alpha, 'dropout_p': args.dropout_p,
+        #                 'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
     if args.verbose > 1:
         print('Model options: {}'.format(model_kwargs))
