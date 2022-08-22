@@ -2157,9 +2157,9 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
-  for mask_layer in rvec ;do
-  for testset in aishell2 ; do
-  for resnet_size in 34 ; do
+  for mask_layer in attention0 ;do
+  for testset in vox1 ; do
+  for resnet_size in 10 ; do
   for seed in 123456 123457 123458 ;do
 #    for chn in 16 32 64 ; do
       epoch=
@@ -2195,7 +2195,7 @@ if [ $stage -le 201 ]; then
         at_str=
       fi
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde5_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
 
       python -W ignore TrainAndTest/test_egs.py \
         --model ${model} \
@@ -2228,7 +2228,7 @@ if [ $stage -le 201 ]; then
         --time-dim 1 \
         --avg-size ${avg_size} \
         --input-length var \
-        --dropout-p 0.2 \
+        --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 1 \
@@ -2318,6 +2318,8 @@ if [ $stage -le 201 ]; then
 # ResNet34
 #|     sitw-test     |  6.27±0.09  |             | 0.4681±0.0061 | 0.6555±0.0072 |
 #|     sitw-test     |  3.27±0.13  |             | 0.2661±0.0100 | 0.4016±0.0047 | vox2
+#|   aishell2-test   |  7.08±0.55  |             | 0.6882±0.0235 | 0.8727±0.0055 |
+#|   aishell2-test   |  4.87±0.16  |             | 0.5419±0.0137 | 0.7380±0.0197 | vox2
 
 # avg5 vox1 AVG
 #+-------------------+-------------+-------------+---------------+---------------+-------------------+
