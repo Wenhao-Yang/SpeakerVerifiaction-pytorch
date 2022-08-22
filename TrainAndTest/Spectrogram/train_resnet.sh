@@ -480,7 +480,7 @@ if [ $stage -le 41 ]; then
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
-  for weight_norm in max sum ; do
+  for weight_norm in sum ; do
   for resnet_size in 10 ; do
     for seed in 123456 123457 123458 ;do
     for chn in 16 ; do
@@ -548,6 +548,7 @@ if [ $stage -le 41 ]; then
         --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
         --mask-layer ${mask_layer} \
         --init-weight ${weight} \
+        --weight-norm ${weight_norm} \
         --weight-p 0 \
         --scale 0.2 \
         --kernel-size 5,5 \

@@ -2148,7 +2148,7 @@ if [ $stage -le 201 ]; then
   chn=16
 #  mask_layer=rvec
 #  mask_layer=baseline
-  mask_layer=attention
+  mask_layer=attention0
   weight=rclean_max
   scheduler=rop
   optimizer=sgd
@@ -2157,7 +2157,8 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
-  for mask_layer in attention0 ;do
+#  for mask_layer in attention0 ;do
+  for weight_norm in max ; do
   for testset in vox1 ; do
   for resnet_size in 10 ; do
   for seed in 123456 123457 123458 ;do
@@ -2211,6 +2212,7 @@ if [ $stage -le 201 ]; then
         --nj 12 \
         --mask-layer ${mask_layer} \
         --init-weight ${weight} \
+        --weight-norm ${weight_norm} \
         --score-suffix ${weight} \
         --embedding-size ${embedding_size} \
         --loss-type ${loss} \
