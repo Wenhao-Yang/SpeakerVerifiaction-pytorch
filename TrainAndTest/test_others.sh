@@ -1725,6 +1725,9 @@ if [ $stage -le 95 ]; then
   kd_type=vanilla #em_l2 vanilla
   kd_loss=kld
   weight=mel
+  scheduler=rop
+  optimizer=sgd
+
   chn=16
 
   for chn in 32 16 ; do
