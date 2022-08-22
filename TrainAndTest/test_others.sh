@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=75
+stage=201
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2157,10 +2157,10 @@ if [ $stage -le 201 ]; then
 
 #  123456 123457 123458
 #  10 18 34 50
-  for mask_layer in attention attention0 ;do
-  for testset in vox1 sitw ; do
-  for resnet_size in 10 ; do
-  for seed in 123456 123457 ;do
+  for mask_layer in rvec ;do
+  for testset in aishell2 ; do
+  for resnet_size in 34 ; do
+  for seed in 123456 123457 123458 ;do
 #    for chn in 16 32 64 ; do
       epoch=
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -2195,7 +2195,7 @@ if [ $stage -le 201 ]; then
         at_str=
       fi
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp02_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
 
       python -W ignore TrainAndTest/test_egs.py \
         --model ${model} \
