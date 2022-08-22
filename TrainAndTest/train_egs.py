@@ -823,6 +823,8 @@ def main():
 
             if args.early_stopping:
                 early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
+                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
+                    early_stopping_scheduler.early_stop = True
 
             if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
