@@ -132,6 +132,7 @@ parser.add_argument('--power-weight', type=str, default='none', help='replace ba
 parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
 parser.add_argument('--weight-norm', type=str, default='max', help='replace batchnorm with instance norm')
 parser.add_argument('--weight-p', default=0.1, type=float, help='replace batchnorm with instance norm')
+parser.add_argument('--scale', default=0.2, type=float, metavar='FEAT', help='acoustic feature dimension')
 
 parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
 parser.add_argument('--first-2d', action='store_true', default=False,
