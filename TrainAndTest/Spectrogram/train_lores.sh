@@ -1294,8 +1294,8 @@ if [ $stage -le 79 ]; then
   optimizer=sgd
   scheduler=rop
 #  mask_layer=gau_noise
-  mask_layer=baseline
-#  mask_layer=attention
+#  mask_layer=baseline
+  mask_layer=attention0
 
   chn=32
 
