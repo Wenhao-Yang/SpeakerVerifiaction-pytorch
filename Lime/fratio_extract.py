@@ -55,7 +55,7 @@ parser.add_argument('--feat-dim', default=64, type=int, metavar='N',
 
 parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
                     help='choose the acoustic features type.')
-parser.add_argument('--out-fromat', choices=['npy', 'kaldi_cmp'], default='npy',
+parser.add_argument('--out-format', choices=['npy', 'kaldi_cmp'], default='npy',
                     help='choose the acoustic features type.')
 parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--extract-frames', action='store_true', default=False, help='using Cosine similarity')
