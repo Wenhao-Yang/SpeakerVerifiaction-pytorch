@@ -610,15 +610,17 @@ class SlimmableTDNN(nn.Module):
     def reset_parameters(self):
         for m in self.modules():
             if isinstance(m, nn.Conv1d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-                if m.bias is not None:
-                    m.bias.data.zero_()
+                # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                # m.weight.data.normal_(0, math.sqrt(2. / n))
+                # if m.bias is not None:
+                #     m.bias.data.zero_()
+                nonlinear = 'leaky_relu' if self.activation == 'leakyrelu' else self.activation
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity=nonlinear)
             elif isinstance(m, nn.BatchNorm1d):
                 if m.affine:
                     m.weight.data.fill_(1)
                     m.bias.data.zero_()
-            elif isinstance(m, nn.Linear):
-                n = m.weight.size(1)
-                m.weight.data.normal_(0, 0.01)
-                m.bias.data.zero_()
+            # elif isinstance(m, nn.Linear):
+            #     n = m.weight.size(1)
+            #     m.weight.data.normal_(0, 0.01)
+            #     m.bias.data.zero_()
