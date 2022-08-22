@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=350
+stage=80
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
@@ -638,7 +638,7 @@ if [ $stage -le 62 ]; then
 fi
 
 if [ $stage -le 80 ]; then
-  dataset=vox1
+  dataset=vox2
   numframes=10000
   feat_type=klsp
 
