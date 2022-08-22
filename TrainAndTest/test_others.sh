@@ -2132,7 +2132,7 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox2
+  datasets=vox1
   testset=sitw
   input_norm=Mean
 #  test_subset=
