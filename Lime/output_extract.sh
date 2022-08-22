@@ -638,7 +638,7 @@ if [ $stage -le 62 ]; then
 fi
 
 if [ $stage -le 80 ]; then
-  dataset=vox2
+  dataset=vox1
   numframes=3000
   feat_type=klsp
 
