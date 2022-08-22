@@ -650,7 +650,7 @@ if [ $stage -le 80 ]; then
       --set-name ${dataset} \
       --file-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --out-dir Data/fratio/${dataset}/${feat_type}/dev \
-      --nj 4 \
+      --nj 0 \
       --input-per-spks ${numframes} \
       --extract-frames \
       --feat-dim 161
