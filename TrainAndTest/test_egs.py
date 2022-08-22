@@ -125,6 +125,7 @@ parser.add_argument('--weight-norm', type=str, default='max', help='replace batc
 
 parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
+parser.add_argument('--activation', type=str, default='relu', help='activation functions')
 
 parser.add_argument('--mask-layer', type=str, default='None', help='replace batchnorm with instance norm')
 parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
