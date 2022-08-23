@@ -17,8 +17,12 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
+from Define_Model.FilterLayer import MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, fDLR
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
-
+from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
+    RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
+    AttentionweightLayer, TimeFreqMaskLayer, \
+    AttentionweightLayer_v2, AttentionweightLayer_v3, AttentionweightLayer_v0
 
 def get_layer_param(model):
     return sum([torch.numel(param) for param in model.parameters()])
@@ -33,6 +37,74 @@ def get_activation(activation):
         nonlinearity = nn.PReLU
 
     return nonlinearity
+
+
+def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool):
+    if filter == 'fDLR':
+        filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+    elif filter == 'fBLayer':
+        filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+    elif filter == 'fBPLayer':
+        filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
+                                filter_fix=filter_fix)
+    elif filter == 'fLLayer':
+        filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
+    elif filter == 'Avg':
+        filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
+    else:
+        filter_layer = None
+
+    return filter_layer
+
+
+def get_input_norm(input_norm: str):
+    if input_norm == 'Mean':
+        inst_layer = Mean_Norm()
+    elif input_norm == 'SMean':
+        inst_layer = SlideMean_Norm()
+    elif input_norm == 'Mstd':
+        inst_layer = MeanStd_Norm()
+    else:
+        inst_layer = None
+
+    return inst_layer
+
+
+def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
+                   weight_p: float, scale: float, weight_norm: str):
+    if mask == "time":
+        maks_layer = TimeMaskLayer(mask_len=mask_len[0])
+    elif mask == "freq":
+        maks_layer = FreqMaskLayer(mask_len=mask_len[0])
+    elif mask == "both":
+        mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
+    elif mask == "time_freq":
+        mask_layer = nn.Sequential(
+            TimeMaskLayer(mask_len=mask_len[0]),
+            FreqMaskLayer(mask_len=mask_len[1])
+        )
+    elif mask == 'attention0':
+        mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
+                                             weight_norm=weight_norm)
+    elif mask == 'attention':
+        mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+    elif mask == 'attention2':
+        mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
+    elif mask == 'attention3':
+        mask_layer = AttentionweightLayer_v3(input_dim=input_dim, weight=init_weight)
+    elif mask == 'drop':
+        mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=weight_p,
+                                     weight=init_weight, scale=scale)
+    elif mask == 'drop2':
+        mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=weight_p,
+                                        weight=init_weight, scale=scale)
+    elif mask == 'drop3':
+        mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=weight_p,
+                                        weight=init_weight, scale=scale)
+    else:
+        mask_layer = None
+
+    return mask_layer
 
 
 class PairwiseDistance(Function):

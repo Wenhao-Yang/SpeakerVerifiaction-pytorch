@@ -417,6 +417,29 @@ class Mean_Norm(nn.Module):
         return "Mean_Norm(dim=%d)" % self.dim
 
 
+class SlideMean_Norm(nn.Module):
+    def __init__(self, dim=-2, win_len=300):
+        super(SlideMean_Norm, self).__init__()
+        self.dim = dim
+        self.win_len = win_len
+
+    def forward(self, x):
+        indexs = torch.arange(0, x.shape[self.dim])
+        start = (indexs - int(self.win_len / 2)).clamp_min(0)
+        end = (indexs + int(self.win_len / 2)).clamp_max(x.shape[self.dim] - 1)
+
+        x_mean = []
+        for i in range(x.shape[self.dim]):
+            s = start[i]
+            e = end[i]
+            x_mean.append(torch.mean(x[:, :, s:e, :], dim=self.dim, keepdim=True))
+
+        return x - torch.cat(x_mean, dim=self.dim)
+
+    def __repr__(self):
+        return "SlideMean_Norm(dim=%d)" % self.dim
+
+
 class MeanStd_Norm(nn.Module):
     def __init__(self, dim=-2):
         super(MeanStd_Norm, self).__init__()

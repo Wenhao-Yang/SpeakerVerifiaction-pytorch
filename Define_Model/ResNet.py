@@ -34,6 +34,8 @@ from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling
 from typing import Type, Any, Callable, Union, List, Optional
 from torch import Tensor
 
+from Define_Model.model import get_input_norm, get_mask_layer, get_filter_layer
+
 
 def conv1x1(in_planes, out_planes, stride=1):
     """1x1 convolution"""
@@ -796,60 +798,25 @@ class ThinResNet(nn.Module):
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
-
-        if self.filter == 'fDLR':
-            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
-        elif self.filter == 'fBLayer':
-            self.filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
-        elif self.filter == 'fBPLayer':
-            self.filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
-                                         filter_fix=filter_fix)
-        elif self.filter == 'fLLayer':
-            self.filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
-        elif self.filter == 'Avg':
-            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
-        else:
-            self.filter_layer = None
-
         self.input_norm = input_norm
-        if input_norm == 'Instance':
-            self.inst_layer = Inst_Norm(input_dim)
-        elif input_norm == 'Mean':
-            self.inst_layer = Mean_Norm()
-        else:
-            self.inst_layer = None
 
-        if self.mask == "time":
-            self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
-        elif self.mask == "freq":
-            self.mask = FreqMaskLayer(mask_len=mask_len[0])
-        elif self.mask == "both":
-            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
-        elif self.mask == "time_freq":
-            self.mask_layer = nn.Sequential(
-                TimeMaskLayer(mask_len=mask_len[0]),
-                FreqMaskLayer(mask_len=mask_len[1])
-            )
-        elif self.mask == 'attention0':
-            self.mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
-                                                      weight_norm=weight_norm)
-        elif self.mask == 'attention':
-            self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'attention2':
-            self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'attention3':
-            self.mask_layer = AttentionweightLayer_v3(input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'drop':
-            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=self.weight_p,
-                                              weight=init_weight, scale=self.scale)
-        elif self.mask == 'drop2':
-            self.mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=self.weight_p,
-                                                 weight=init_weight, scale=self.scale)
-        elif self.mask == 'drop3':
-            self.mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=self.weight_p,
-                                                 weight=init_weight, scale=self.scale)
-        else:
-            self.mask_layer = None
+        input_mask = []
+        filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
+                                        exp=exp, filter_fix=filter_fix)
+        if filter_layer != None:
+            input_mask.append(filter_layer)
+
+        norm_layer = get_input_norm(input_norm)
+        if norm_layer != None:
+            input_mask.append(norm_layer)
+        mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
+                                    init_weight=init_weight, weight_p=weight_p,
+                                    scale=scale, weight_norm=weight_norm)
+
+        if mask_layer != None:
+            input_mask.append(mask_layer)
+
+        self.input_mask = nn.Sequential(*input_mask)
 
         self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(self.num_filter[0])
@@ -988,14 +955,15 @@ class ThinResNet(nn.Module):
     def _forward(self, x, feature_map=False, proser=False, label=None):
         # pdb.set_trace()
         # print(x.shape)
-        if self.filter_layer != None:
-            x = self.filter_layer(x)
-
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
-        if self.mask_layer != None:
-            x = self.mask_layer(x)
+        # if self.filter_layer != None:
+        #     x = self.filter_layer(x)
+        #
+        # if self.inst_layer != None:
+        #     x = self.inst_layer(x)
+        #
+        # if self.mask_layer != None:
+        #     x = self.mask_layer(x)
+        x = self.input_mask(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -1348,14 +1316,7 @@ class LocalResNet(nn.Module):
         else:
             self.filter_layer = None
 
-        if input_norm == 'Inst':
-            self.inst_layer = Inst_Norm(self.input_len)
-        elif input_norm == 'Mean':
-            self.inst_layer = Mean_Norm()
-        elif input_norm == 'Mstd':
-            self.inst_layer = MeanStd_Norm()
-        else:
-            self.inst_layer = None
+        self.inst_layer = get_input_norm(input_norm)
 
         if self.mask == "time":
             self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
