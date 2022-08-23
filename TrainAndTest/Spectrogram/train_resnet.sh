@@ -3,7 +3,7 @@
 stage=41
 
 waited=0
-while [ $(ps 338507 | wc -l) -eq 2 ]; do
+while [ $(ps 333308 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -456,14 +456,14 @@ if [ $stage -le 41 ]; then
   alpha=0
   block_type=basic
   embedding_size=256
-  input_norm=Mean
+  input_norm=SMean
   loss=arcsoft
   feat_type=klsp
   sname=dev
   downsample=k1
   batch_size=128
 
-  mask_layer=both
+  mask_layer=rvec
   mask_len=5,10
   weight=rclean_max
   scheduler=rop
