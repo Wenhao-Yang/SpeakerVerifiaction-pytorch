@@ -511,7 +511,7 @@ if [ $stage -le 41 ]; then
       elif [ "$mask_layer" = "drop" ];then
         at_str=_${weight}_dp${weight_p}s${scale}
       elif [ "$mask_layer" = "both" ];then
-        at_str=${at_str}`echo $mask_len | sed  's/,//g'`
+        at_str=${at_str}_`echo $mask_len | sed  's/,//g'`
       else
         at_str=
       fi
