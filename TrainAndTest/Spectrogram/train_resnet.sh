@@ -463,7 +463,8 @@ if [ $stage -le 41 ]; then
   downsample=k1
   batch_size=128
 
-  mask_layer=attention0
+  mask_layer=both
+  mask_len=5,10
   weight=rclean_max
   scheduler=rop
   optimizer=sgd
@@ -509,6 +510,8 @@ if [ $stage -le 41 ]; then
 
       elif [ "$mask_layer" = "drop" ];then
         at_str=_${weight}_dp${weight_p}s${scale}
+      elif [ "$mask_layer" = "both" ];then
+        at_str=_${mask_len}
       else
         at_str=
       fi
@@ -547,6 +550,7 @@ if [ $stage -le 41 ]; then
         --check-path Data/checkpoint/${model_dir} \
         --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
         --mask-layer ${mask_layer} \
+        --mask-len ${mask_len} \
         --init-weight ${weight} \
         --weight-norm ${weight_norm} \
         --weight-p 0 \
