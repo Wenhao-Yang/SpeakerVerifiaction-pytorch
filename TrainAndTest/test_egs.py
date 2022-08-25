@@ -516,12 +516,12 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     if args.verbose > 0:
         result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
 
-    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^15s}|{: ^15s}|{: ^19s}|\n'.format('Test Set',
-                                                                                     'EER (%)',
-                                                                                     'Threshold',
-                                                                                     'MinDCF-0.01',
-                                                                                     'MinDCF-0.001',
-                                                                                     'Date')
+        result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^15s}|{: ^15s}|{: ^19s}|\n'.format('Test Set',
+                                                                                         'EER (%)',
+                                                                                         'Threshold',
+                                                                                         'MinDCF-0.01',
+                                                                                         'MinDCF-0.001',
+                                                                                         'Date')
     if args.verbose > 0:
         result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
 
