@@ -2166,7 +2166,7 @@ if [ $stage -le 201 ]; then
 #  for weight_norm in max ; do
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for ((i=0; i<=160; i++)); do
+  for ((i=2; i<=160; i++)); do
     mask_sub="$i,$((i+1))"
   for testset in vox1 ; do
   for resnet_size in 10 ; do
@@ -2245,7 +2245,7 @@ if [ $stage -le 201 ]; then
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
-        --gpu-id 1 \
+        --gpu-id 6 \
         --verbose 0 \
         --cos-sim
 
