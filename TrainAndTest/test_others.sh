@@ -2217,7 +2217,7 @@ if [ $stage -le 201 ]; then
         --feat-format kaldi \
         --input-norm ${input_norm} \
         --test-mask \
-        --mask-sub ${mask-sub} \
+        --mask-sub ${mask_sub} \
         --score-suffix ${mask_sub} \
         --input-dim 161 \
         --nj 12 \
