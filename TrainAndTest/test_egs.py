@@ -36,6 +36,7 @@ from tqdm import tqdm
 
 # from Define_Model.Loss.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 import Define_Model
+from Define_Model.FilterLayer import FreqMaskIndexLayer
 from Define_Model.TDNN.Slimmable import FLAGS
 from Define_Model.model import PairwiseDistance
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -255,6 +256,10 @@ parser.add_argument('--normalize', action='store_false', default=True,
 parser.add_argument('--mean-vector', action='store_false', default=True, help='mean for embeddings while extracting')
 parser.add_argument('--score-norm', type=str, default='', help='score normalization')
 
+parser.add_argument('--test-mask', action='store_true', default=False, help='need to make spectrograms file')
+parser.add_argument('--mask-index', type=int, default=0, help='mask input start index')
+parser.add_argument('--mask-lenght', type=int, default=1, help='mask input start index')
+
 parser.add_argument('--n-train-snts', type=int, default=100000,
                     help='how many batches to wait before logging training status')
 parser.add_argument('--cohort-size', type=int, default=50000,
@@ -304,6 +309,11 @@ else:
 if args.mvnorm:
     transform.transforms.append(mvnormal())
     transform_T.transforms.append(mvnormal())
+
+if args.test_mask:
+    transform.transforms.append(FreqMaskIndexLayer(start=args.mask_index, mask_len=args.mask_length))
+    transform_T.transforms.append(FreqMaskIndexLayer(start=args.mask_index, mask_len=args.mask_length))
+    print('Mean set values in frequecy from %d to %d.' % (args.mask_index, args.mask_length))
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':

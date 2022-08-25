@@ -2151,7 +2151,7 @@ if [ $stage -le 201 ]; then
   chn=16
 #  mask_layer=rvec
 #  mask_layer=baseline
-  mask_layer=attention0
+  mask_layer=both
   weight=rclean_max
   scheduler=rop
   optimizer=sgd
@@ -2162,9 +2162,9 @@ if [ $stage -le 201 ]; then
 #  10 18 34 50
 #  for mask_layer in attention0 ;do
   for weight_norm in max ; do
-  for testset in sitw ; do
+  for testset in vox1 ; do
   for resnet_size in 10 ; do
-  for seed in 123456 123457 123458 ;do
+  for seed in 123456 ;do
 #    for chn in 16 32 64 ; do
       epoch=
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -2194,7 +2194,9 @@ if [ $stage -le 201 ]; then
 
       if [[ $mask_layer == attention* ]];then
         at_str=_${weight}
-#        --score-suffix
+      #        --score-suffix
+      elif [ "$mask_layer" = "both" ];then
+        at_str=_`echo $mask_len | sed  's/,//g'`
       else
         at_str=
       fi

@@ -456,7 +456,7 @@ if [ $stage -le 41 ]; then
   alpha=0
   block_type=basic
   embedding_size=256
-  input_norm=SMean
+  input_norm=Mean
   loss=arcsoft
   feat_type=klsp
   sname=dev
@@ -507,11 +507,10 @@ if [ $stage -le 41 ]; then
         if [[ $weight_norm != max ]];then
           at_str=${at_str}${weight_norm}
         fi
-
       elif [ "$mask_layer" = "drop" ];then
         at_str=_${weight}_dp${weight_p}s${scale}
       elif [ "$mask_layer" = "both" ];then
-        at_str=${at_str}_`echo $mask_len | sed  's/,//g'`
+        at_str=_`echo $mask_len | sed  's/,//g'`
       else
         at_str=
       fi

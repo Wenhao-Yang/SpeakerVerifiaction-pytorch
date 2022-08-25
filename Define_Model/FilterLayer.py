@@ -529,6 +529,31 @@ class FreqMaskLayer(nn.Module):
         return "FreqMaskLayer(mask_len=%f)" % self.mask_len
 
 
+class FreqMaskIndexLayer(nn.Module):
+    def __init__(self, start=0, mask_len=2, normalized=False):
+        super(FreqMaskIndexLayer, self).__init__()
+        self.start = start
+        self.mask_len = mask_len
+        self.normalized = normalized
+
+    def forward(self, x):
+        x_shape = len(x.shape)
+
+        this_mean = x.mean(dim=-1, keepdim=True)  # .add(1e-6)
+        start = self.start
+        end = start + self.mask_len
+
+        if x_shape == 4:
+            x[:, :, :, start:end] = this_mean
+        elif x_shape == 3:
+            x[:, :, start:end] = this_mean
+
+        return x
+
+    def __repr__(self):
+        return "FreqMaskIndexLayer(start=%d, mask_len=%d)" % (self.start, self.mask_len)
+
+
 class TimeFreqMaskLayer(nn.Module):
     def __init__(self, mask_len=[5, 10], normalized=True):
         super(TimeFreqMaskLayer, self).__init__()
