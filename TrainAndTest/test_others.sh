@@ -2224,7 +2224,6 @@ if [ $stage -le 201 ]; then
         --mask-layer ${mask_layer} \
         --init-weight ${weight} \
         --weight-norm ${weight_norm} \
-        --score-suffix ${weight} \
         --embedding-size ${embedding_size} \
         --loss-type ${loss} \
         --fast ${fast} \
