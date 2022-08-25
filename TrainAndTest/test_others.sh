@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=75
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -593,7 +593,7 @@ if [ $stage -le 75 ]; then
   for seed in 123456 123457 123458; do
   for embedding_size in 512; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
-    model_dir=${model}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${loss_str}wd5e4_var
+    model_dir=${model}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${loss_str}wd5e4_var3
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
