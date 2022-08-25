@@ -618,7 +618,7 @@ if [ $stage -le 75 ]; then
       --frame-shift 300 \
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 1 \
+      --gpu-id 2 \
       --remove-vad \
       --cos-sim
   done
