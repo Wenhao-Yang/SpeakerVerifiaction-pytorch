@@ -343,7 +343,7 @@ if [ $stage -le 70 ]; then
       loss_str=
     fi
 
-    model_dir=${model}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${loss_str}wd5e4_var3
+    model_dir=${model}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${loss_str}wd5e4_var3_lr04
 
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # kernprof -l -v TrainAndTest/Spectrogram/train_egs.py \
@@ -367,7 +367,7 @@ if [ $stage -le 70 ]; then
       --early-patience 15 \
       --early-delta 0.0001 \
       --early-meta EER \
-      --lr 0.1 \
+      --lr 0.04 \
       --base-lr 0.00000001 \
       --weight-decay 0.0005 \
       --alpha 0 \
