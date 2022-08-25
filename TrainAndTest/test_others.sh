@@ -2158,14 +2158,16 @@ if [ $stage -le 201 ]; then
   optimizer=sgd
   batch_size=256
   avg_size=5
+  weight_norm=max
 
 #  123456 123457 123458
 #  10 18 34 50
 #  for mask_layer in attention0 ;do
-  for weight_norm in max ; do
+#  for weight_norm in max ; do
+  for mask_sub in 4,5 6,7 3,2 7,8 ; do
   for testset in vox1 ; do
   for resnet_size in 10 ; do
-  for seed in 123457 ;do
+  for seed in 123456 123457 ;do
 #    for chn in 16 32 64 ; do
       epoch=
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -2214,6 +2216,9 @@ if [ $stage -le 201 ]; then
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
         --feat-format kaldi \
         --input-norm ${input_norm} \
+        --test-mask \
+        --mask-sub ${mask-sub} \
+        --score-suffix ${mask-sub} \
         --input-dim 161 \
         --nj 12 \
         --mask-layer ${mask_layer} \
