@@ -2164,7 +2164,9 @@ if [ $stage -le 201 ]; then
 #  10 18 34 50
 #  for mask_layer in attention0 ;do
 #  for weight_norm in max ; do
-  for mask_sub in 4,5 6,7 3,2 7,8 ; do
+
+  for ((i=0; i<=160; i++)); do
+    mask_sub="$i,$((i+1))"
   for testset in vox1 ; do
   for resnet_size in 10 ; do
   for seed in 123456 123457 ;do
@@ -2244,6 +2246,7 @@ if [ $stage -le 201 ]; then
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 1 \
+        --verbose 0 \
         --cos-sim
 
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \

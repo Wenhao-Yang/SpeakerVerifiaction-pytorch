@@ -318,7 +318,8 @@ if args.test_mask:
     end = int(mask_str[1])
     transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
     transform_T.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
-    print('Mean set values in frequecy from %d to %d.' % (start, end))
+    if args.verbose > 0:
+        print('Mean set values in frequecy from %d to %d.' % (start, end))
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':
@@ -699,13 +700,15 @@ if __name__ == '__main__':
         #     model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
 
         assert os.path.isfile(args.resume), print(args.resume)
-        print('=> loading checkpoint {}'.format(args.resume))
+        if args.verbose > 0:
+            print('=> loading checkpoint {}'.format(args.resume))
         checkpoint = torch.load(args.resume)
         # start_epoch = checkpoint['epoch']
 
         checkpoint_state_dict = checkpoint['state_dict']
         start = checkpoint['epoch'] if 'epoch' in checkpoint else args.start_epoch
-        print('Epoch is : ' + str(start))
+        if args.verbose > 0:
+            print('Epoch is : ' + str(start))
 
         if isinstance(checkpoint_state_dict, tuple):
             checkpoint_state_dict = checkpoint_state_dict[0]
@@ -746,7 +749,8 @@ if __name__ == '__main__':
             valid(valid_loader, model)
 
         del train_dir  # , valid_dir
-        print('Memery Usage: %.4f GB' % (psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
+        if args.verbose > 0:
+            print('Memery Usage: %.4f GB' % (psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
 
         if args.extract:
             if args.score_norm != '':
