@@ -507,7 +507,7 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
             test_subset = test_directorys[i + 3].split('_')[0]
             test_set_name = "-".join((test_directorys[i + 1], test_subset))
     if args.score_suffix != '':
-        test_set_name = '-'.join((test_set_name, args.score_suffix[:4]))
+        test_set_name = '-'.join((test_set_name, args.score_suffix[:7]))
 
     result_str = ''
     if args.verbose > 0:
