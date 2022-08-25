@@ -2218,7 +2218,7 @@ if [ $stage -le 201 ]; then
         --input-norm ${input_norm} \
         --test-mask \
         --mask-sub ${mask-sub} \
-        --score-suffix ${mask-sub} \
+        --score-suffix ${mask_sub} \
         --input-dim 161 \
         --nj 12 \
         --mask-layer ${mask_layer} \
