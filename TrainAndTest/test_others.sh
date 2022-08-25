@@ -2165,7 +2165,7 @@ if [ $stage -le 201 ]; then
   for weight_norm in max ; do
   for testset in vox1 ; do
   for resnet_size in 10 ; do
-  for seed in 123456 ;do
+  for seed in 123457 ;do
 #    for chn in 16 32 64 ; do
       epoch=
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"

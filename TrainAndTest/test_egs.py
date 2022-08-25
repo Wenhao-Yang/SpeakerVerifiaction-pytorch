@@ -257,8 +257,8 @@ parser.add_argument('--mean-vector', action='store_false', default=True, help='m
 parser.add_argument('--score-norm', type=str, default='', help='score normalization')
 
 parser.add_argument('--test-mask', action='store_true', default=False, help='need to make spectrograms file')
-parser.add_argument('--mask-index', type=int, default=0, help='mask input start index')
-parser.add_argument('--mask-lenght', type=int, default=1, help='mask input start index')
+parser.add_argument('--mask-sub', type=str, default='0,1', help='mask input start index')
+# parser.add_argument('--mask-lenght', type=int, default=1, help='mask input start index')
 
 parser.add_argument('--n-train-snts', type=int, default=100000,
                     help='how many batches to wait before logging training status')
@@ -311,9 +311,12 @@ if args.mvnorm:
     transform_T.transforms.append(mvnormal())
 
 if args.test_mask:
-    transform.transforms.append(FreqMaskIndexLayer(start=args.mask_index, mask_len=args.mask_length))
-    transform_T.transforms.append(FreqMaskIndexLayer(start=args.mask_index, mask_len=args.mask_length))
-    print('Mean set values in frequecy from %d to %d.' % (args.mask_index, args.mask_length))
+    mask_str = args.mask_sub.split(',')
+    start = int(mask_str[0])
+    end = int(mask_str[1])
+    transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
+    transform_T.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
+    print('Mean set values in frequecy from %d to %d.' % (start, end))
 
 # pdb.set_trace()
 if args.feat_format == 'kaldi':
