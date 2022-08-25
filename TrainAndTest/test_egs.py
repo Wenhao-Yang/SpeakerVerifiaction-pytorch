@@ -311,7 +311,8 @@ if args.mvnorm:
     transform_T.transforms.append(mvnormal())
 
 if args.test_mask:
-    mask_str = args.mask_sub.split(',')
+    mask_str = args.mask_sub
+    mask_str = mask_str.split(',')
     start = int(mask_str[0])
     end = int(mask_str[1])
     transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
