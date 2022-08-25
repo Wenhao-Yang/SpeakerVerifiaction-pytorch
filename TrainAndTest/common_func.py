@@ -279,7 +279,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
                 if vec_shape[2] > 5 * c.NUM_FRAMES_SPECT:
-                    num_segments = np.ceil(vec_shape[2] / (5. * c.NUM_FRAMES_SPECT))
+                    num_segments = int(np.ceil(vec_shape[2] / (5. * c.NUM_FRAMES_SPECT)))
                     data_as = []
                     for i in range(num_segments):
                         start = i * 5 * c.NUM_FRAMES_SPECT
