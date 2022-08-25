@@ -2151,7 +2151,7 @@ if [ $stage -le 201 ]; then
   chn=16
 #  mask_layer=rvec
 #  mask_layer=baseline
-  mask_layer=both
+  mask_layer=rvec
   mask_len=5,10
   weight=rclean_max
   scheduler=rop
@@ -2170,7 +2170,7 @@ if [ $stage -le 201 ]; then
     mask_sub="$i,$((i+1))"
   for testset in vox1 ; do
   for resnet_size in 10 ; do
-  for seed in 123456 123457 ;do
+  for seed in 123456 123457 123458 ;do
 #    for chn in 16 32 64 ; do
       epoch=
       if [ $resnet_size -le 34 ];then
