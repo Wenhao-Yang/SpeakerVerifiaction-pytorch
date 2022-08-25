@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=75
+stage=201
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
