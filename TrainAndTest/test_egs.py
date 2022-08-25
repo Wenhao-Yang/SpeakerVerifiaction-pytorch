@@ -512,7 +512,7 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     result_str = ''
     if args.verbose > 0:
         result_str += '\nFor %s_distance, %d pairs:' % (dist_type, len(labels))
-    result_str += '\n\33[91m'
+    result_str += '\33[91m'
     if args.verbose > 0:
         result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
 
