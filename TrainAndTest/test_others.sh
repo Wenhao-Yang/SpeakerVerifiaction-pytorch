@@ -2152,6 +2152,7 @@ if [ $stage -le 201 ]; then
 #  mask_layer=rvec
 #  mask_layer=baseline
   mask_layer=both
+  mask_len=5,10
   weight=rclean_max
   scheduler=rop
   optimizer=sgd
