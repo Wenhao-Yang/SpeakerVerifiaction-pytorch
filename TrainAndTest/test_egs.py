@@ -742,7 +742,7 @@ if __name__ == '__main__':
                     # FLAGS.width_mult = width_mult
                     model.apply(lambda m: setattr(m, 'width_mult', width_mult))
                     verification_extract(train_verify_loader, model,
-                                         xvector_dir=train_xvector_dir + 'width%d' % width_mult, epoch=start,
+                                         xvector_dir=train_xvector_dir + 'width%.2f' % width_mult, epoch=start,
                                          test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
                                          mean_vector=args.mean_vector,
                                          xvector=args.xvector)
@@ -755,7 +755,7 @@ if __name__ == '__main__':
                 # FLAGS.width_mult = width_mult
                 model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
-                verification_extract(verify_loader, model, xvector_dir=test_xvector_dir + 'width%d' % width_mult,
+                verification_extract(verify_loader, model, xvector_dir=test_xvector_dir + 'width%.2f' % width_mult,
                                      epoch=start,
                                      test_input=args.input_length, ark_num=50000, gpu=True, verbose=args.verbose,
                                      mean_vector=args.mean_vector,
@@ -771,26 +771,26 @@ if __name__ == '__main__':
             model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
             test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
-                                           xvectors_dir=test_xvector_dir + 'width%d' % width_mult,
+                                           xvectors_dir=test_xvector_dir + 'width%.2f' % width_mult,
                                            loader=file_loader, return_uid=return_uid)
 
             test_loader = torch.utils.data.DataLoader(test_dir,
                                                       batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
                                                       shuffle=False, **kwargs)
 
-            train_stats_pickle = os.path.join(test_xvector_dir + 'width%d' % width_mult,
+            train_stats_pickle = os.path.join(test_xvector_dir + 'width%.2f' % width_mult,
                                               'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
 
             if os.path.isfile(train_stats_pickle):
                 with open(train_stats_pickle, 'rb') as f:
                     train_stats = pickle.load(f)
             else:
-                train_stats = cohort(+'width%d' % width_mult,
-                                     test_xvector_dir + 'width%d' % width_mult) if args.score_norm != '' else None
+                train_stats = cohort(+'width%.2f' % width_mult,
+                                     test_xvector_dir + 'width%.2f' % width_mult) if args.score_norm != '' else None
 
             if len(FLAGS.width_mult_list) > 1:
                 print('Model width: ', width_mult)
-            test(test_loader, xvector_dir=test_xvector_dir + 'width%d' % width_mult, test_cohort_scores=train_stats)
+            test(test_loader, xvector_dir=test_xvector_dir + 'width%.2f' % width_mult, test_cohort_scores=train_stats)
 
     stop_time = time.time()
     t = float(stop_time - start_time)
