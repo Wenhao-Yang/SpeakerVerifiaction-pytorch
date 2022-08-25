@@ -531,14 +531,14 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     mindcf_001 = '{:.4f}'.format(mindcf_001)
     date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^15s}|{: ^15s}|{: ^19s}|\n'.format(test_set_name,
-                                                                                     eer,
-                                                                                     threshold,
-                                                                                     mindcf_01,
-                                                                                     mindcf_001,
-                                                                                     date)
+    result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^15s}|{: ^15s}|{: ^19s}|'.format(test_set_name,
+                                                                                   eer,
+                                                                                   threshold,
+                                                                                   mindcf_01,
+                                                                                   mindcf_001,
+                                                                                   date)
     if args.verbose > 0:
-        result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
+        result_str += '\n+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
     result_str += '\33[0m'
 
     print(result_str)
