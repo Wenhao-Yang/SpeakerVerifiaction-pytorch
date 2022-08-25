@@ -312,6 +312,7 @@ if args.mvnorm:
 
 if args.test_mask:
     mask_str = args.mask_sub
+    print(mask_str)
     mask_str = mask_str.split(',')
     start = int(mask_str[0])
     end = int(mask_str[1])
