@@ -2164,6 +2164,7 @@ if [ $stage -le 201 ]; then
 #  10 18 34 50
 #  for mask_layer in attention0 ;do
 #  for weight_norm in max ; do
+  echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
   for ((i=0; i<=160; i++)); do
     mask_sub="$i,$((i+1))"
@@ -2172,7 +2173,6 @@ if [ $stage -le 201 ]; then
   for seed in 123456 123457 ;do
 #    for chn in 16 32 64 ; do
       epoch=
-      echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
       if [ $resnet_size -le 34 ];then
         expansion=1
         batch_size=256
