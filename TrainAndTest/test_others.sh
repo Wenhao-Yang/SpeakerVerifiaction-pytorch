@@ -1732,7 +1732,7 @@ if [ $stage -le 95 ]; then
   weight_norm=sum
 
   for chn in 16 ; do
-  for seed in 123456 123457 123458; do
+  for seed in 123457 ; do
 
 #  for weight in clean vox2 ; do
 #      for weight in mel clean aug vox2 ; do
@@ -1801,7 +1801,7 @@ if [ $stage -le 95 ]; then
       --time-dim 1 \
       --avg-size 4 \
       --xvector-dir Data/xvector/${check_path} \
-      --resume Data/checkpoint/${check_path}/checkpoint_50.pth \
+      --resume Data/checkpoint/${check_path}/checkpoint_49.pth \
       --model-yaml Data/checkpoint/${check_path}/model.2022.07.01.yaml \
       --gpu-id 1 \
       --verbose 0 \
