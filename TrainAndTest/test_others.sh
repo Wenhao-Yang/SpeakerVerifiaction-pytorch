@@ -1891,7 +1891,7 @@ if [ $stage -le 97 ]; then
       --time-dim 1 \
       --avg-size ${avg_size} \
       --xvector-dir Data/xvector/${model_dir} \
-      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+      --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 1 \
       --cos-sim
   done
