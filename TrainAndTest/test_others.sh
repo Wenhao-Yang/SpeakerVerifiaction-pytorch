@@ -1720,18 +1720,19 @@ if [ $stage -le 95 ]; then
   sname=dev #_aug_com
   test_subset=test
   input_norm=Mean
-  mask_layer=baseline
-#  mask_layer=attention
+#  mask_layer=baseline
+  mask_layer=attention0
   kd_type=vanilla #em_l2 vanilla
   kd_loss=kld
-  weight=mel
+  weight=clean
   scheduler=rop
   optimizer=sgd
 
   chn=16
+  weight_norm=sum
 
   for chn in 16 ; do
-  for seed in 123456; do
+  for seed in 123456 123457 123458; do
 
 #  for weight in clean vox2 ; do
 #      for weight in mel clean aug vox2 ; do
@@ -1751,15 +1752,19 @@ if [ $stage -le 95 ]; then
       dp_str=125
     fi
 
-    if [ "$mask_layer" = "attention" ];then
-      at_str=_${weight}
-#      --score-suffix ${weight} \
+    if [[ $mask_layer == attention* ]];then
+        at_str=_${weight}
+        if [[ $weight_norm != max ]];then
+          at_str=${at_str}${weight_norm}
+        fi
+    elif [ "$mask_layer" = "drop" ];then
+        at_str=_${weight}_dp${weight_p}s${scale}
     else
       at_str=
     fi
 
-#    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var
-    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss}
+    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var
+#    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss}
 #    ${seed}
 #    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var
 #    check_path=LoResNet8/vox1/klsp_egs_kd_baseline/${seed}/arcsoft_sgd_rop/Mean_cbam_AVG_dp${dp_str}_alpha0_em256_wd5e4_chn${chn}_var_em_cosmse
