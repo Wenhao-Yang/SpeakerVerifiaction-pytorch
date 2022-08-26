@@ -1862,7 +1862,7 @@ if [ $stage -le 97 ]; then
       dp_str=125
     fi
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_avg${avg_size}_${encoder_type}_dp${dp_str}_alpha${alpha}_chn${chn}_wd5e4_vares
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp${dp_str}_alpha${alpha}_chn${chn}_wd5e4_vares
 
 #    Mean_batch256_cbam_avg4_AVG_em256_dp25_alpha0_chn64_wd5e4_vares
     python -W ignore TrainAndTest/test_egs.py \
