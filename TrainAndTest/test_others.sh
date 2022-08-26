@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=97
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1837,6 +1837,7 @@ if [ $stage -le 97 ]; then
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   test_subset=test
+  avg_size=4
   input_norm=Mean
   mask_layer=baseline
 
@@ -1844,7 +1845,8 @@ if [ $stage -le 97 ]; then
   optimizer=sgd
 
 #  for weight in None ; do
-  for chn in 64 32 16 ; do
+  for seed in 123456 123457 123458; do
+  for chn in 64 ; do
     if [ $chn -eq 64 ];then
       channels=64,128,256
       dp=0.25
@@ -1859,6 +1861,9 @@ if [ $stage -le 97 ]; then
       dp_str=125
     fi
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${batch_size}_${block_type}_avg${avg_size}_${encoder_type}_dp${dp_str}_alpha${alpha}_chn${chn}_wd5e4_vares
+
+#    Mean_batch256_cbam_avg4_AVG_em256_dp25_alpha0_chn64_wd5e4_vares
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size ${resnet_size} \
@@ -1870,7 +1875,7 @@ if [ $stage -le 97 ]; then
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --input-dim 161 \
-      --nj 12 \
+      --nj 4 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encoder_type} \
@@ -1884,29 +1889,18 @@ if [ $stage -le 97 ]; then
       --input-length var \
       --dropout-p ${dp} \
       --time-dim 1 \
-      --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var/checkpoint_50.pth \
-      --gpu-id 0 \
+      --avg-size ${avg_size} \
+      --xvector-dir Data/xvector/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+      --gpu-id 1 \
       --cos-sim
+  done
   done
   exit
 fi
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
-# chn64
-#+-------------------+-------------+-------------+-------------+--------------+-------------------+
-#|     vox1-test     |   3.5101    |   0.2462    |   0.3361    |    0.4252    | 20220228 21:59:51 |
-#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
-# chn32
-#+-------------------+-------------+-------------+-------------+--------------+-------------------+
-#|     vox1-test     |   3.5472    |   0.2521    |   0.3507    |    0.5013    | 20220228 22:01:08 |
-#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
-# chn16
-#+-------------------+-------------+-------------+-------------+--------------+-------------------+
-#|     vox1-test     |   4.0403    |   0.2465    |   0.3449    |    0.4698    | 20220228 22:02:00 |
-#+-------------------+-------------+-------------+-------------+--------------+-------------------+
 
 
 
