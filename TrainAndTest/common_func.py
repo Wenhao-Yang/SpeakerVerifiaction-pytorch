@@ -279,10 +279,21 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
                 if vec_shape[2] > 10 * c.NUM_FRAMES_SPECT:
-                    num_half = int(vec_shape[2] / 2)
-                    half_a = a_data[:, :, :num_half, :]
-                    half_b = a_data[:, :, -num_half:, :]
-                    a_data = torch.cat((half_a, half_b), dim=0)
+                    num_segments = int(np.ceil(vec_shape[2] / (5. * c.NUM_FRAMES_SPECT)))
+                    data_as = []
+                    for i in range(num_segments):
+                        start = i * 5 * c.NUM_FRAMES_SPECT
+                        end = (i + 1) * 5 * c.NUM_FRAMES_SPECT
+                        end = min(end, vec_shape[2])
+                        if end == vec_shape[2]:
+                            start = max(0, end - 5 * c.NUM_FRAMES_SPECT)
+
+                        data_as.append(a_data[:, :, start:end, :])
+
+                    # num_half = int(vec_shape[2] / 2)
+                    # half_a = a_data[:, :, :num_half, :]
+                    # half_b = a_data[:, :, -num_half:, :]
+                    a_data = torch.cat(data_as, dim=0)
 
                 try:
                     if xvector:
