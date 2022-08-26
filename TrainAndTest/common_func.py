@@ -497,6 +497,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='number of epochs to train (default: 10)')
     parser.add_argument('--scheduler', default='multi', type=str,
                         metavar='SCH', help='The optimizer to use (default: Adagrad)')
+    parser.add_argument('--cyclic-epoch', default=5, type=int,
+                        metavar='PAT', help='patience for scheduler (default: 4)')
     parser.add_argument('--patience', default=3, type=int,
                         metavar='PAT', help='patience for scheduler (default: 4)')
     parser.add_argument('--early-stopping', action='store_true', default=False, help='vad layers')
@@ -609,6 +611,10 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='the ratio softmax loss - triplet loss (default: 2.0')
     parser.add_argument('--loss-lambda', action='store_true', default=False,
                         help='using Cosine similarity')
+    parser.add_argument('--proser-ratio', type=float, default=1, metavar='MARGIN',
+                        help='the margin value for the angualr softmax loss function (default: 3.0')
+    parser.add_argument('--proser-gamma', type=float, default=0.01, metavar='MARGIN',
+                        help='the margin value for the angualr softmax loss function (default: 3.0')
 
     # args for additive margin-softmax
     parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
@@ -713,7 +719,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
-        parser.add_argument('--kd-loss', type=str, default='mse', help='path to voxceleb1 test dataset')
+        parser.add_argument('--kd-loss', type=str, default='kld', help='path to voxceleb1 test dataset')
 
         parser.add_argument('--distil-weight', type=float, default=0.5, help='path to voxceleb1 test dataset')
         parser.add_argument('--teacher-model-yaml', type=str, required=True, help='path to teacher model')

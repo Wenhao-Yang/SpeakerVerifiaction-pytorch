@@ -1787,6 +1787,7 @@ if [ $stage -le 95 ]; then
       --loss-type ${loss} \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
+      --weight-norm ${weight_norm} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
       --kernel-size 5,5 \
