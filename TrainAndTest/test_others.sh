@@ -1713,7 +1713,7 @@ if [ $stage -le 95 ]; then
   testset=vox1
 #  test_subset=
   block_type=cbam
-  encoder_type=AVG
+  encoder_type=None
   embedding_size=256
   resnet_size=8
 #  sname=dev #dev_aug_com
