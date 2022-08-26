@@ -156,6 +156,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
 
+    mse_loss = nn.MSELoss()
+
     if args.kd_loss == 'mse':
         kd_loss = nn.MSELoss()
     elif args.kd_loss == 'kld':
@@ -189,19 +191,20 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
         elif args.loss_type in ['amsoft', 'arcsoft']:
             loss = xe_criterion(classfier, label)
 
-        # if args.kd_type == 'vanilla':
-        soft_teacher_out = F.softmax(t_classfier * args.s / args.temperature, dim=1)
-        soft_student_out = F.softmax(classfier * args.s / args.temperature, dim=1)
+        if 'mse' in args.kd_type:
+            teacher_loss = args.kd_ratio * mse_loss(feats, t_feats)
+        elif 'cos' in args.kd_type:
+            teacher_loss = args.kd_ratio * (1 - torch.nn.functional.cosine_similarity(feats, t_feats)).mean() / 2
 
-        # loss = (1 - args.distil_weight) * loss
-        teacher_loss = (args.distil_weight / (1 - args.distil_weight) * args.temperature * args.temperature) * kd_loss(
-            soft_teacher_out, soft_student_out
-        )
+        if 'vanilla' in args.kd_type:
+            soft_teacher_out = F.softmax(t_classfier * args.s / args.temperature, dim=1)
+            soft_student_out = F.softmax(classfier * args.s / args.temperature, dim=1)
 
-        if args.kd_type == 'em_l2':
-            teacher_loss += kd_loss(feats, t_feats)
-        elif args.kd_type == 'em_cos':
-            teacher_loss += (1 - torch.nn.functional.cosine_similarity(feats, t_feats)).mean() / 2
+            # loss = (1 - args.distil_weight) * loss
+            teacher_loss += (args.distil_weight / (
+                    1 - args.distil_weight) * args.temperature * args.temperature) * kd_loss(
+                soft_teacher_out, soft_student_out
+            )
 
         total_teacher_loss += float(teacher_loss.item())
         # pdb.set_trace()
