@@ -35,7 +35,7 @@ if [ $stage -le 0 ]; then
   scheduler=cyclic
   optimizer=adam
   input_dim=161
-  batch_size=128
+  batch_size=256
   chn=1024
 #  fast=none1
 #  downsample=k5
