@@ -279,6 +279,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
                 if vec_shape[2] >= 10 * c.NUM_FRAMES_SPECT:
+
                     num_segments = int(np.ceil(vec_shape[2] / (5. * c.NUM_FRAMES_SPECT)))
                     data_as = []
                     for i in range(num_segments):
@@ -332,6 +333,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 uid2vectors.append((a_uid[0], out[0]))
 
+                if batch_idx % 100 == 0:
+                    torch.cuda.empty_cache()
                 # uid2vectors[a_uid[0]] = out[0]
 
     # uids = list(uid2vectors.keys())
