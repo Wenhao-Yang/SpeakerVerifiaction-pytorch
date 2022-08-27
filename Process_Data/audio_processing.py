@@ -797,13 +797,13 @@ class PadCollate:
         #     frame_len = self.frame_len
         # else:
         # frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
-        self.memory_idx += 1
-        self.memory_idx %= self.num_batch
+        # self.memory_idx += 1
+        # self.memory_idx %= self.num_batch
 
-        if self.memory_idx % self.memory_len == 0:
-            self.frame_len = random.choice(self.batch_len)
+        # if self.memory_idx % self.memory_len == 0:
+        # self.frame_len = random.choice(self.batch_len)
 
-        frame_len = self.frame_len
+        frame_len = random.choice(self.batch_len)
 
         if self.noise_padding is not None:
             noise_features = self.noise_padding.__getrandomitem__()
