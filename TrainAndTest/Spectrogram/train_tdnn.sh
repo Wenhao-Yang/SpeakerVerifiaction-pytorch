@@ -88,7 +88,7 @@ if [ $stage -le 0 ]; then
       --s 30 \
       --lr-ratio 0.01 \
       --weight-decay 0.00002 \
-      --gpu-id 1,2 \
+      --gpu-id 0,1,2,3 \
       --shuffle \
       --all-iteraion 0 \
       --extract \
