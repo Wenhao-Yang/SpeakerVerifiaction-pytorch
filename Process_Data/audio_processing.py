@@ -748,6 +748,7 @@ class PadCollate:
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
                  num_batch=0, split=False, chisquare=False, noise_padding=None,
+                 memory_len=4,
                  fix_len=False, augment=False, verbose=1):
         """
         args:
@@ -764,20 +765,24 @@ class PadCollate:
         self.noise_padding = noise_padding
         self.augment = augment
 
-        if self.fix_len:
-            self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
-        else:
-            assert num_batch > 0
-            batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1, 10)
+        # if self.fix_len:
+        #     self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+        # else:
+        # assert num_batch > 0
+        batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1, 10)
 
-            if chisquare:
-                chi_len = np.random.chisquare(min_chunk_size, 2 * (max_chunk_size - min_chunk_size)).astype(np.int32)
-                batch_len = np.concatenate((chi_len, batch_len))
+        if chisquare:
+            chi_len = np.random.chisquare(min_chunk_size, 2 * (max_chunk_size - min_chunk_size)).astype(np.int32)
+            batch_len = np.concatenate((chi_len, batch_len))
 
-            self.batch_len = batch_len
-            if verbose > 0:
-                print('==> Generating %d different random length...' % (len(batch_len)))
-                print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
+        self.batch_len = batch_len
+        if verbose > 0:
+            print('==> Generating %d different random length...' % (len(batch_len)))
+            print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
+
+        self.frame_len = random.choice(self.batch_len)
+        self.memory_len = memory_len
+        self.memory_idx = 0
 
     def pad_collate(self, batch):
         """
@@ -788,11 +793,17 @@ class PadCollate:
             ys - a LongTensor of all labels in batch
         """
         # pdb.set_trace()
-        if self.fix_len:
-            frame_len = self.frame_len
-        else:
-            # frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
-            frame_len = random.choice(self.batch_len)
+        # if self.fix_len:
+        #     frame_len = self.frame_len
+        # else:
+        # frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+        self.memory_idx += 1
+        self.memory_idx %= self.num_batch
+
+        if self.memory_idx % self.memory_len == 0:
+            self.memory_batch_len = random.choice(self.batch_len)
+
+        frame_len = self.memory_batch_len
 
         if self.noise_padding is not None:
             noise_features = self.noise_padding.__getrandomitem__()
