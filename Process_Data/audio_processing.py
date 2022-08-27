@@ -801,9 +801,9 @@ class PadCollate:
         self.memory_idx %= self.num_batch
 
         if self.memory_idx % self.memory_len == 0:
-            self.memory_batch_len = random.choice(self.batch_len)
+            self.frame_len = random.choice(self.batch_len)
 
-        frame_len = self.memory_batch_len
+        frame_len = self.frame_len
 
         if self.noise_padding is not None:
             noise_features = self.noise_padding.__getrandomitem__()
