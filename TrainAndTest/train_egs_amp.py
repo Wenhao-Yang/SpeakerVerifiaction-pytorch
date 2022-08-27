@@ -214,7 +214,6 @@ def train(train_loader, scaler, model, ce, optimizer, epoch, scheduler):
             batch_accs.append(minibatch_acc)
 
             correct['width%s' % width_mult] += minibatch_correct
-
             total_datasize['width%s' % width_mult] += len(predicted_one_labels)
             total_loss['width%s' % width_mult] += float(loss.item())
             writer.add_scalar('Train/Loss_%s' % width_mult, float(loss.item()),

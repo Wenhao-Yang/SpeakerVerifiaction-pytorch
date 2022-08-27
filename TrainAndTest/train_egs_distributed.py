@@ -516,13 +516,6 @@ def main():
         # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
         # print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
-
-        # instantiate model and initialize weights
-        # model_kwargs = args_model(args, train_dir)
-        # keys = list(model_kwargs.keys())
-        # keys.sort()
-        # model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
-        # print('Model options: \n{ %s }' % (', '.join(model_options)))
         print('Testing with %s distance, ' % ('cos' if config_args['cos_sim'] else 'l2'))
     # model = create_model(config_args['model'], **model_kwargs)
     model = config_args['embedding_model']
