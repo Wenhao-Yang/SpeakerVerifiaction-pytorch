@@ -166,7 +166,7 @@ def train(train_loader, scaler, model, ce, optimizer, epoch, scheduler):
             label = label.cuda(non_blocking=True)
             data = data.cuda(non_blocking=True)
 
-        data, label = Variable(data), Variable(label)
+        # data, label = Variable(data), Variable(label)
         # pdb.set_trace()
         batch_accs = []
         for width_mult in FLAGS.width_mult_list:
