@@ -63,13 +63,13 @@ if [ $stage -le 0 ]; then
       --batch-size ${batch_size} \
       --resnet-size ${resnet_size} \
       --nj 6 \
-      --epochs 60 \
-      --random-chunk 200 400 \
+      --epochs 80 \
+      --random-chunk 200 200 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 2 \
       --early-stopping \
-      --early-patience 16 \
+      --early-patience 20 \
       --cyclic-epoch 4 \
       --early-delta 0.0001 \
       --early-meta EER \
