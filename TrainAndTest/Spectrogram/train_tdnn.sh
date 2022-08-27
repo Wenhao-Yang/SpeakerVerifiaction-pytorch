@@ -64,7 +64,7 @@ if [ $stage -le 0 ]; then
       --resnet-size ${resnet_size} \
       --nj 6 \
       --epochs 60 \
-      --random-chunk 200 201 \
+      --random-chunk 200 400 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 2 \
