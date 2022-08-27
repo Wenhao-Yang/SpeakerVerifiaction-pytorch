@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=97
+stage=201
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1846,6 +1846,7 @@ if [ $stage -le 97 ]; then
   optimizer=sgd
 
 #  for weight in None ; do
+  echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
   for seed in 123456 123457 123458; do
   for chn in 64 ; do
     if [ $chn -eq 64 ];then
@@ -1861,7 +1862,7 @@ if [ $stage -le 97 ]; then
       dp=0.125
       dp_str=125
     fi
-    echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp${dp_str}_alpha${alpha}_chn${chn}_wd5e4_vares
 
 #    Mean_batch256_cbam_avg4_AVG_em256_dp25_alpha0_chn64_wd5e4_vares
@@ -1901,7 +1902,10 @@ if [ $stage -le 97 ]; then
 fi
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 
-
+#|     vox1-test     |   3.3245    |   0.2646    |    0.3348     |    0.4285     | 20220826 17:49:48 |
+#|     vox1-test     |   3.1442    |   0.2583    |    0.2946     |    0.3872     | 20220826 17:52:01 |
+#|     vox1-test     |   3.4464    |   0.2494    |    0.3261     |    0.4060     | 20220826 17:54:15 |
+#
 
 
 
@@ -2161,7 +2165,7 @@ if [ $stage -le 201 ]; then
 #  for weight_norm in max ; do
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for ((i=81; i<=160; i++)); do
+  for ((i=138; i<=160; i++)); do
     mask_sub="$i,$((i+1))"
   for testset in vox1 ; do
   for resnet_size in 10 ; do
