@@ -83,7 +83,6 @@ torch.manual_seed(args.seed)
 random.seed(args.seed)
 
 # torch.multiprocessing.set_sharing_strategy('file_system')
-
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -521,17 +520,14 @@ def test(model, epoch, writer, xvector_dir):
     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
 
 
-
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
     # print the experiment configuration
     print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()
-
     options = ["\'%s\': \'%s\'" % (str(k), str(opts[k])) for k in keys]
 
     print('Parsed options: \n{ %s }' % (', '.join(options)))
@@ -559,7 +555,6 @@ def main():
     model = create_model(args.model, **model_kwargs)
     model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     save_model_args(model_kwargs, model_yaml_path)
-    # exit(0)
 
     start_epoch = 0
     if args.save_init and not args.finetune:
@@ -689,7 +684,6 @@ def main():
             checkpoint_state_dict = checkpoint['state_dict']
             if isinstance(checkpoint_state_dict, tuple):
                 checkpoint_state_dict = checkpoint_state_dict[0]
-
             filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
 
             # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
@@ -774,7 +768,6 @@ def main():
             #                                      init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile',
             #                                      rank=0,
             #                                      world_size=1)
-            #
             try:
                 torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32457', rank=0,
                                                      world_size=1)
@@ -786,7 +779,6 @@ def main():
                 model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             else:
                 model = DistributedDataParallel(model.cuda())
-
 
         else:
             model = model.cuda()
@@ -875,7 +867,6 @@ def main():
     stop_time = time.time()
     t = float(stop_time - start_time)
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
-    # torch.distributed.des
     exit(0)
 
 

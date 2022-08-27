@@ -454,7 +454,7 @@ if [ $stage -le 41 ]; then
 #  resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=basic
+  block_type=cbam
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
@@ -482,7 +482,7 @@ if [ $stage -le 41 ]; then
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
   for weight_norm in sum ; do
-  for resnet_size in 10 ; do
+  for resnet_size in 34 18 10 ; do
     for seed in 123456 123457 123458 ;do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
@@ -517,9 +517,9 @@ if [ $stage -le 41 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_amp
 
-      python TrainAndTest/train_egs.py \
+      python TrainAndTest/train_egs_amp.py \
         --model ${model} \
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/${testsets}/${feat_type}/test \
