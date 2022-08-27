@@ -64,7 +64,7 @@ if [ $stage -le 0 ]; then
       --resnet-size ${resnet_size} \
       --nj 6 \
       --epochs 60 \
-      --random-chunk 200 400 \
+      --random-chunk 200 201 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 2 \
@@ -75,7 +75,7 @@ if [ $stage -le 0 ]; then
       --early-meta EER \
       --accu-steps 1 \
       --lr 0.001 \
-      --base-lr 0.000001 \
+      --base-lr 0.00000001 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_21.pth \
