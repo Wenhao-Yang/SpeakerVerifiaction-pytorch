@@ -863,9 +863,10 @@ def main():
             else:
                 scheduler.step()
 
-            if torch.distributed.get_rank() == 0 and early_stopping_scheduler.early_stop:
+            if early_stopping_scheduler.early_stop:
                 end = epoch
-                print('Best %s is Epoch %d.' % (config_args['early_meta'], early_stopping_scheduler.best_epoch))
+                if torch.distributed.get_rank() == 0:
+                    print('Best %s is Epoch %d.' % (config_args['early_meta'], early_stopping_scheduler.best_epoch))
                 break
 
     except KeyboardInterrupt:

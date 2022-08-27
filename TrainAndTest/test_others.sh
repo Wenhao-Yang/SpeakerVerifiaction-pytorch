@@ -2165,9 +2165,9 @@ if [ $stage -le 201 ]; then
 #  for weight_norm in max ; do
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for ((i=158; i<=160; i++)); do
+  for ((i=0; i<=160; i++)); do
     mask_sub="$i,$((i+1))"
-  for testset in vox1 ; do
+  for testset in sitw ; do
   for resnet_size in 10 ; do
   for seed in 123456 123457 123458 ;do
 #    for chn in 16 32 64 ; do
