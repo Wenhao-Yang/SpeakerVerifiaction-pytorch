@@ -484,7 +484,7 @@ if [ $stage -le 41 ]; then
   for weight_norm in sum ; do
   for resnet_size in 34 18 10 ; do
     for seed in 123456 123457 123458 ;do
-    for chn in 16 ; do
+    for chn in 32 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
         batch_size=256
