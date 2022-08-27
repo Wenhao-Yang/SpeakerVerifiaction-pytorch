@@ -303,8 +303,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     else:
                         model_out = model(a_data)
                 except Exception as e:
-                    pdb.set_trace()
                     print('\ninput shape is ', a_data.shape)
+                    pdb.set_trace()
                     raise e
 
                 if isinstance(model_out, tuple):
