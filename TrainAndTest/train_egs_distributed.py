@@ -507,6 +507,7 @@ def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
     # print the experiment configuration
+    torch.distributed.barrier()
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
         # opts = vars(config_args)
