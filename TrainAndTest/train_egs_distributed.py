@@ -705,7 +705,8 @@ def main():
         cycle_momentum = False if config_args['optimizer'] == 'adam' else True
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
                                           max_lr=config_args['lr'],
-                                          step_size_up=5 * int(np.ceil(len(train_dir) / config_args['batch_size'])),
+                                          step_size_up=config_args['cyclic_epoch'] * int(
+                                              np.ceil(len(train_dir) / config_args['batch_size'])),
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
     else:

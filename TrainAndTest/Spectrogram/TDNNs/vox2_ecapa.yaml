@@ -50,7 +50,7 @@ remove_vad: False
 epochs: 60
 
 # optimizer
-optimizer: sgd
+optimizer: adam
 lr_decay: 0
 weight_decay: 0.00002
 dampening: 0
@@ -61,9 +61,10 @@ nesterov: False
 # Scheduler
 patience: 3
 milestones: [ 10,20,30,40 ]
-scheduler: rop
-lr: 0.1
-base_lr: 0.00001
+scheduler: cyclic
+cyclic_epoch: 4
+lr: 0.001
+base_lr: 1e-8
 cos_sim: True
 
 early_stopping: True
@@ -89,7 +90,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
   encoder_type: 'SAP2'
   embedding_size: !ref <embedding_size>
   num_classes: 5994
-  activation: relu
+  activation: leakyrelu
 
 classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
   feat_dim: !ref <embedding_size>
@@ -107,7 +108,7 @@ s: 30
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<seed>/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd2e5_var
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<seed>/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd2e5_var2
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
