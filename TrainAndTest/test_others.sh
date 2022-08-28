@@ -2134,17 +2134,17 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox1
+  datasets=vox2
   testset=sitw
   input_norm=Mean
 #  test_subset=
-  block_type=basic
+  block_type=cbam_v2
   encoder_type=SAP2
   embedding_size=256
   resnet_size=10
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
-  downsample=k1
+  downsample=k5
   fast=none1
   test_subset=test
   chn=16
@@ -2165,11 +2165,15 @@ if [ $stage -le 201 ]; then
 #  for weight_norm in max ; do
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for ((i=68; i<=160; i++)); do
-    mask_sub="$i,$((i+1))"
-  for testset in sitw ; do
-  for resnet_size in 10 ; do
-  for seed in 123456 123457 123458 ;do
+#  for ((i=68; i<=160; i++)); do
+#    mask_sub="$i,$((i+1))"
+#--test-mask \
+#        --mask-sub ${mask_sub} \
+#        --score-suffix ${mask_sub} \
+
+  for testset in vox1 sitw ; do
+  for resnet_size in 34 ; do
+  for seed in 123456 ;do
 #    for chn in 16 32 64 ; do
       epoch=
       if [ $resnet_size -le 34 ];then
@@ -2205,7 +2209,7 @@ if [ $stage -le 201 ]; then
         at_str=
       fi
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde5_var
 
       python -W ignore TrainAndTest/test_egs.py \
         --model ${model} \
@@ -2217,9 +2221,6 @@ if [ $stage -le 201 ]; then
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
         --feat-format kaldi \
         --input-norm ${input_norm} \
-        --test-mask \
-        --mask-sub ${mask_sub} \
-        --score-suffix ${mask_sub} \
         --input-dim 161 \
         --nj 12 \
         --mask-layer ${mask_layer} \
@@ -2252,7 +2253,7 @@ if [ $stage -le 201 ]; then
     done
   done
   done
-  done
+#  done
   exit
 
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
