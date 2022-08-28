@@ -264,9 +264,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             scheduler.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
-            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
-                                                                          len(train_loader.dataset),
-                                                                          100. * batch_idx / len(train_loader))
+            epoch_str = 'Train Epoch {}: [ {:5.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] < args.random_chunk[1]:
                 if args.feat_format == 'kaldi':
@@ -276,15 +274,15 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
 
                 epoch_str += ' Batch Len: {:>3d}'.format(batch_len)
 
+            epoch_str += ' Accuracy: {:6.2f}%'.format(100. * minibatch_acc)
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 epoch_str += ' Another Loss: {:.4f}'.format(loss_xent.float())
 
+            epoch_str += ' Avg Loss: {:.6f}'.format(total_loss / (batch_idx + 1))
             epoch_str += ' Teach Loss: {:.8f}'.format(teacher_loss.float())
-            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                            100. * minibatch_acc)
             pbar.set_description(epoch_str)
             # break
 

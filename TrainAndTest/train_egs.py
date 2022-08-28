@@ -269,13 +269,12 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             scheduler.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
-            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
-                                                                          len(train_loader.dataset),
-                                                                          100. * batch_idx / len(train_loader))
+            epoch_str = 'Train Epoch {}: [ {:>5.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
 
+            epoch_str += ' Accuracy: {:>6.2f}%'.format(100. * minibatch_acc)
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
@@ -283,15 +282,14 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
             if args.loss_type in ['arcdist']:
                 epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
-            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                            100. * minibatch_acc)
+            epoch_str += ' Avg Loss: {:.4f}'.format(total_loss / (batch_idx + 1))
             pbar.set_description(epoch_str)
 
-    this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
+    this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:6.2f}%, Avg loss: {:7.4f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
 
     if other_loss != 0:
-        this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(train_loader))
+        this_epoch_str += ' {} Loss: {:>7.4f}'.format(args.loss_type, other_loss / len(train_loader))
 
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
@@ -367,7 +365,7 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     torch.cuda.empty_cache()
 
-    this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(valid_accuracy, valid_loss)
+    this_epoch_str = '          \33[91mValid Accuracy: {:6.2f}%, Avg loss: {:.6f}'.format(valid_accuracy, valid_loss)
 
     if other_loss != 0:
         this_epoch_str += ' {} Loss: {:6f}'.format(args.loss_type, other_loss / len(valid_loader))
