@@ -2174,7 +2174,7 @@ if [ $stage -le 201 ]; then
   for testset in vox1 ; do
   for resnet_size in 34 ; do
   for seed in 123456 ;do
-  for sub_trials in easy ; do
+  for sub_trials in hard ; do
 #    for chn in 16 32 64 ; do
       epoch=
       if [ $resnet_size -le 34 ];then
@@ -2251,6 +2251,7 @@ if [ $stage -le 201 ]; then
         --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 0 \
         --verbose 2 \
+        --extract \
         --cos-sim
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
@@ -2333,6 +2334,8 @@ if [ $stage -le 201 ]; then
 # ResNet 34 cham_v2 k5 avg5_sap2 vox2
 #|     vox1-test     |   1.7550    |   0.2879    |    0.1853     |    0.2727     | 20220828 17:10:59 |
 #|     sitw-test     |   3.3352    |   0.2572    |    0.2532     |    0.3882     | 20220828 17:12:29 |
+
+#|   vox1-dev-easy   |   1.8414    |   0.2631    |    0.1776     |    0.3000     | 20220828 18:20:17 |
 
 
 # ResNet8
