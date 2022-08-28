@@ -789,7 +789,7 @@ if __name__ == '__main__':
         return_uid = True if args.score_norm != '' else False
         for width_mult in FLAGS.width_mult_list:
             # FLAGS.width_mult = width_mult
-            model.apply(lambda m: setattr(m, 'width_mult', width_mult))
+            # model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
             test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
                                            xvectors_dir=test_xvector_dir + 'width%f' % width_mult,
