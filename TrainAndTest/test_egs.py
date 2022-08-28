@@ -75,6 +75,8 @@ parser.add_argument('--exp', action='store_true', default=False, help='exp power
 parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
 
 parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
+parser.add_argument('--extract-trials', action='store_false', default=True, help='log power spectogram')
+
 parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
 parser.add_argument('--score-suffix', type=str, default='', help='path to voxceleb1 test dataset')
 
@@ -340,7 +342,7 @@ if args.score_norm != '':
                                             verbose=args.verbose, trials_file='')
 
 verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
-                                  vad_select=args.vad_select,
+                                  vad_select=args.vad_select, extract_trials=args.extract_trials,
                                   verbose=args.verbose)
 
 if args.valid:

@@ -2174,7 +2174,7 @@ if [ $stage -le 201 ]; then
   for testset in vox1 ; do
   for resnet_size in 34 ; do
   for seed in 123456 ;do
-  for sub_trials in hard easy ; do
+  for sub_trials in easy ; do
 #    for chn in 16 32 64 ; do
       epoch=
       if [ $resnet_size -le 34 ];then
@@ -2218,6 +2218,7 @@ if [ $stage -le 201 ]; then
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
         --train-trials trials_2w \
+        --extract-trials \
         --trials trials_${sub_trials} \
         --score-suffix ${sub_trials} \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
@@ -2249,9 +2250,8 @@ if [ $stage -le 201 ]; then
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 0 \
-        --verbose 0 \
+        --verbose 2 \
         --cos-sim
-
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
   done
