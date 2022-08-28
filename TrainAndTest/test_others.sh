@@ -2146,7 +2146,7 @@ if [ $stage -le 201 ]; then
   sname=dev #_aug_com
   downsample=k5
   fast=none1
-  test_subset=test
+  test_subset=dev
   chn=16
 #  mask_layer=rvec
 #  mask_layer=baseline
@@ -2163,7 +2163,7 @@ if [ $stage -le 201 ]; then
 #  10 18 34 50
 #  for mask_layer in attention0 ;do
 #  for weight_norm in max ; do
-  echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+#  echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
 #  for ((i=68; i<=160; i++)); do
 #    mask_sub="$i,$((i+1))"
@@ -2171,9 +2171,10 @@ if [ $stage -le 201 ]; then
 #        --mask-sub ${mask_sub} \
 #        --score-suffix ${mask_sub} \
 
-  for testset in vox1 sitw ; do
+  for testset in vox1 ; do
   for resnet_size in 34 ; do
   for seed in 123456 ;do
+  for sub_trials in hard easy ; do
 #    for chn in 16 32 64 ; do
       epoch=
       if [ $resnet_size -le 34 ];then
@@ -2217,6 +2218,8 @@ if [ $stage -le 201 ]; then
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
         --train-trials trials_2w \
+        --trials trials_${sub_trials} \
+        --score-suffix ${sub_trials} \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
         --feat-format kaldi \
@@ -2253,7 +2256,7 @@ if [ $stage -le 201 ]; then
     done
   done
   done
-#  done
+  done
   exit
 
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
