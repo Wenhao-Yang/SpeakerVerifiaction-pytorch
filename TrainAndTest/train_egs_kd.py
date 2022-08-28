@@ -38,7 +38,8 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss
+from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, \
+    AttentionTransferLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, \
     ArcSoftmaxLoss, GaussianLoss
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
@@ -85,7 +86,7 @@ if args.cuda:
 
 # create logger
 # Define visulaize SummaryWriter instance
-writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
+writer = SummaryWriter(logdir=args.check_path)
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': True} if args.cuda else {}
@@ -170,12 +171,18 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             data = data.cuda(non_blocking=True)
 
         with torch.no_grad():
-            t_classfier, t_feats = teacher_model(data)
+            if 'attention' in args.kd_type:
+                t_classfier, t_feats = teacher_model(data, feature_map='attention')
+            else:
+                t_classfier, t_feats = teacher_model(data)
             # t_classfier = t_classfier
 
         data, label = Variable(data), Variable(label)
-        classfier, feats = model(data)
-        # cos_theta, phi_theta = classfier
+        if 'attention' in args.kd_type:
+            classfier, feats = model(data, feature_map='attention')
+        else:
+            classfier, feats = model(data)  # cos_theta, phi_theta = classfier
+
         classfier_label = classfier
 
         if args.loss_type == 'soft':
@@ -205,6 +212,9 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
                     1 - args.distil_weight) * args.temperature * args.temperature) * kd_loss(
                 soft_teacher_out, soft_student_out
             )
+
+        if 'attention' in args.kd_type:
+            teacher_loss += AttentionTransferLoss(feats, t_feats)
 
         total_teacher_loss += float(teacher_loss.item())
         # pdb.set_trace()

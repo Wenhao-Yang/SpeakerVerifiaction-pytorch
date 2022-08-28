@@ -35,12 +35,12 @@ if [ $stage -le 0 ]; then
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
   label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
-  kd_type=em_l2 #em_l2 vanilla
+  kd_type=embedding_cos #em_l2 vanilla
   kd_loss=kld
   chn=16
 #  _${weight}
-  for chn in 16 32; do
-  for seed in 1234567 123458; do
+  for chn in 16 ; do
+  for seed in 123456 1234567 123458; do
 
      if [ $chn -eq 64 ];then
       channels=64,128,256
