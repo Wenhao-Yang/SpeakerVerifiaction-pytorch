@@ -36,6 +36,7 @@ if [ $stage -le 0 ]; then
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
   label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
   kd_type=embedding_cos #em_l2 vanilla
+  kd_ratio=0.4
   kd_loss=kld
   chn=16
 #  _${weight}
@@ -56,7 +57,7 @@ if [ $stage -le 0 ]; then
       dp_str=125
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_loss}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_ratio}${kd_loss}
      echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs_kd.py \
        --model ${model} \
@@ -105,6 +106,7 @@ if [ $stage -le 0 ]; then
        --kd-type ${kd_type} \
        --kd-loss ${kd_loss} \
        --distil-weight 0.5 \
+       --kd-ratio ${kd_ratio} \
        --teacher-model-yaml ${teacher_dir}/model.2022.01.05.yaml \
        --teacher-resume ${teacher_dir}/checkpoint_40.pth \
        --temperature 20

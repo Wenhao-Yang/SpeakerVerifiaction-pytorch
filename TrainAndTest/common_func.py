@@ -720,6 +720,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
         parser.add_argument('--kd-loss', type=str, default='kld', help='path to voxceleb1 test dataset')
+        parser.add_argument('--kd-ratio', type=float, default=0.4, help='path to voxceleb1 test dataset')
 
         parser.add_argument('--distil-weight', type=float, default=0.5, help='path to voxceleb1 test dataset')
         parser.add_argument('--teacher-model-yaml', type=str, required=True, help='path to teacher model')
