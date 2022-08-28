@@ -34,7 +34,7 @@ if [ $stage -le 0 ]; then
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp25_alpha0_em256_wd5e4_var
   label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp25_alpha0_em256_wd5e4_var
-  kd_type=em_l2
+  kd_type=vanilla_attention
 #  _${weight}
 
    for encoder_type in AVG ; do
@@ -84,6 +84,7 @@ if [ $stage -le 0 ]; then
        --all-iteraion 0 \
        --loss-type ${loss} \
        --kd-type ${kd_type} \
+       --kd-loss kld \
        --distil-weight 0.5 \
        --teacher-model-yaml ${teacher_dir}/model.2022.02.23.yaml \
        --teacher-resume ${teacher_dir}/checkpoint_40.pth \

@@ -952,7 +952,7 @@ class ThinResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward(self, x, feature_map=False, proser=False, label=None):
+    def _forward(self, x, feature_map='', proser=False, label=None):
         # pdb.set_trace()
         # print(x.shape)
         # if self.filter_layer != None:
@@ -972,20 +972,22 @@ class ThinResNet(nn.Module):
             x = self.maxpool(x)
 
         # print(x.shape)
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        group1 = self.layer1(x)
+        group2 = self.layer2(group1)
+        group3 = self.layer3(group2)
+        group4 = self.layer4(group3)
         # print(x.shape)
 
         if self.dropout_p > 0:
-            x = self.dropout(x)
+            group4 = self.dropout(group4)
 
-        if feature_map:
-            embeddings = x
+        if feature_map == 'last':
+            embeddings = group4
+        elif feature_map == 'attention':
+            embeddings = (group1, group2, group3, group4)
 
         if self.avgpool != None:
-            x = self.avgpool(x)
+            x = self.avgpool(group4)
 
         if self.encoder != None:
             x = self.encoder(x)
@@ -996,7 +998,7 @@ class ThinResNet(nn.Module):
         if self.alpha:
             x = self.l2_norm(x)
 
-        if feature_map:
+        if feature_map == 'last':
             return embeddings, x
 
         if proser != None and label != None:
@@ -1020,7 +1022,6 @@ class ThinResNet(nn.Module):
                                                                                                        self.embedding_size)
 
             # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
-
             # pdb.set_trace()
             lamda_beta = np.random.beta(0.2, 0.2)
             lamda_beta = max(0.2, lamda_beta)
@@ -1031,6 +1032,9 @@ class ThinResNet(nn.Module):
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
         logits = "" if self.classifier == None else self.classifier(x)
+
+        if feature_map == 'attention':
+            return logits, embeddings
 
         return logits, x
 
@@ -1321,7 +1325,7 @@ class LocalResNet(nn.Module):
         if self.mask == "time":
             self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
         elif self.mask == "freq":
-            self.mask = FreqMaskLayer(mask_len=mask_len[0])
+            self.maks_layer = FreqMaskLayer(mask_len=mask_len[0])
         elif self.mask == "time_freq":
             self.mask_layer = nn.Sequential(
                 TimeMaskLayer(mask_len=mask_len[0]),

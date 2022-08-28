@@ -14,6 +14,7 @@ import torch
 import torch.nn as nn
 from geomloss import SamplesLoss
 import numpy as np
+import torch.nn.functional as F
 
 
 class CenterLoss(nn.Module):
@@ -617,5 +618,20 @@ class aDCFLoss(nn.Module):
         pmiss = self.beta * torch.sigmoid(self.alpha * (self.omega - negative_dist)).mean()
 
         loss = pfa + pmiss
+
+        return loss
+
+
+class AttentionTransferLoss(nn.Module):
+    def __init__(self):
+        super(AttentionTransferLoss, self).__init__()
+
+    def at(self, x):
+        return F.normalize(x.pow(2).mean(1).view(x.size(0), -1))
+
+    def forward(self, s_feats, t_feats):
+        loss = 0.
+        for s_f, t_f in zip(s_feats, t_feats):
+            loss += (self.at(s_f) - self.at(t_f)).pow(2).mean()
 
         return loss
