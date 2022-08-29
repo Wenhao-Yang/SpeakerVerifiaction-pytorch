@@ -42,6 +42,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     AttentionTransferLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, \
     ArcSoftmaxLoss, GaussianLoss
+from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
@@ -527,6 +528,8 @@ def main():
                            'weight_decay': init_wd})
 
     optimizer = create_optimizer(model_para, args.optimizer, **opt_kwargs)
+    early_stopping_scheduler = EarlyStopping(patience=args.early_patience,
+                                             min_delta=args.early_delta)
 
     if not args.finetune and args.resume:
         if os.path.isfile(args.resume):
@@ -696,8 +699,21 @@ def main():
 
             train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
+            if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
+                    end - 1)):
+                valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+            else:
+                valid_test_dict = {}
 
-            if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
+            valid_test_dict['Valid_Loss'] = valid_loss
+
+            if args.early_stopping:
+                early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
+                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
+                    early_stopping_scheduler.early_stop = True
+
+            if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
+                    end - 1) or early_stopping_scheduler.best_epoch == epoch:
                 model.eval()
                 check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
                 model_state_dict = model.module.state_dict() \
@@ -707,14 +723,23 @@ def main():
                             'criterion': ce},
                            check_path)
 
-                valid_test(train_extract_loader, model, epoch, xvector_dir)
-                test(model, epoch, writer, xvector_dir)
-                if epoch != (end - 1):
-                    try:
-                        shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
-                        shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                    except Exception as e:
-                        print('rm dir xvectors error:', e)
+                if args.early_stopping:
+                    pass
+                # elif early_stopping_scheduler.best_epoch == epoch or (
+                #         args.early_stopping == False and epoch % args.test_interval == 1):
+                elif epoch % args.test_interval == 1:
+                    test(model, epoch, writer, xvector_dir)
+
+            if early_stopping_scheduler.early_stop:
+                print('Best %s in Epoch %d is %.6f.' % (
+                    args.early_meta, early_stopping_scheduler.best_epoch, early_stopping_scheduler.best_loss))
+                try:
+                    shutil.copy('{}/checkpoint_{}.pth'.format(args.check_path, early_stopping_scheduler.best_epoch),
+                                '{}/best.pth'.format(args.check_path))
+                except Exception as e:
+                    print(e)
+                end = epoch
+                break
 
             if args.scheduler == 'rop':
                 scheduler.step(valid_loss)
@@ -722,12 +747,9 @@ def main():
                 continue
             else:
                 scheduler.step()
-
     except KeyboardInterrupt:
         end = epoch
 
-    # torch.cuda.empty_cache()
-    # torch.distributed.destroy_process_group()
     writer.close()
     stop_time = time.time()
     t = float(stop_time - start_time)
