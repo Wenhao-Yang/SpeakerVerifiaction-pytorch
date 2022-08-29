@@ -397,7 +397,7 @@ if [ $stage -le 41 ]; then
   chn=16
   cyclic_epoch=8
   avg_size=5
-
+  fast=none1
 
   for resnet_size in 34 18 10; do
   for seed in 123456 123457 123458 ; do
