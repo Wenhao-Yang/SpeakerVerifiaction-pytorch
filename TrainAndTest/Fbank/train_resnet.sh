@@ -389,7 +389,7 @@ if [ $stage -le 41 ]; then
   mask_layer=baseline
   scheduler=rop
   optimizer=sgd
-  input_dim=64
+  input_dim=40
   batch_size=256
   power_weight=max
 
