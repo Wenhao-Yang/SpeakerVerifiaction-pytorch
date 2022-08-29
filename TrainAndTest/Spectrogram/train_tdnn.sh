@@ -74,7 +74,7 @@ if [ $stage -le 0 ]; then
       --early-delta 0.0001 \
       --early-meta EER \
       --accu-steps 1 \
-      --lr 0.001 \
+      --lr 0.1 \
       --base-lr 0.00000001 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model_dir} \
