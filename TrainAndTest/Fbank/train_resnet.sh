@@ -378,7 +378,7 @@ if [ $stage -le 41 ]; then
   feat_type=klfb
   model=ThinResNet
   resnet_size=34
-  encoder_type=SAP2
+  encoder_type=AVG
   embedding_size=256
   block_type=basic
   downsample=k1
@@ -396,7 +396,7 @@ if [ $stage -le 41 ]; then
   expansion=4
   chn=16
   cyclic_epoch=8
-  avg_size=5
+  avg_size=4
   fast=none1
 
   for resnet_size in 34 18 10; do
