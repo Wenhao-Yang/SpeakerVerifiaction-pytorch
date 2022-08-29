@@ -290,13 +290,13 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             pbar.set_description(epoch_str)
             # break
 
-    print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:>6.2f}%, Avg loss: {:6f}, Teacher loss: {:.8f}.\33[0m'.format(epoch,
-                                                                                                                  100 * float(
-                                                                                                                      correct) / total_datasize,
-                                                                                                                  total_loss / len(
-                                                                                                                      train_loader),
-                                                                                                                  total_teacher_loss / len(
-                                                                                                                      train_loader)))
+    print('Epoch {:>2d}: \33[91mTrain Accuracy: {:>6.2f}%, Avg loss: {:6f}, Teacher loss: {:.8f}.\33[0m'.format(epoch,
+                                                                                                                100 * float(
+                                                                                                                    correct) / total_datasize,
+                                                                                                                total_loss / len(
+                                                                                                                    train_loader),
+                                                                                                                total_teacher_loss / len(
+                                                                                                                    train_loader)))
 
     writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
@@ -356,8 +356,8 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     # torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(valid_accuracy,
-                                                                                     valid_loss))
+    print('          \33[91mValid Accuracy: {:>6.2f}%, Avg loss: {:.6f}.\33[0m'.format(valid_accuracy,
+                                                                                       valid_loss))
 
     return valid_loss
 
