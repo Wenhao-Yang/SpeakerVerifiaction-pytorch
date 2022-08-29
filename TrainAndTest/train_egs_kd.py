@@ -290,13 +290,13 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             pbar.set_description(epoch_str)
             # break
 
-    print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}, Teacher loss: {:.8f}.\33[0m'.format(epoch,
-                                                                                                                100 * float(
-                                                                                                                    correct) / total_datasize,
-                                                                                                                total_loss / len(
-                                                                                                                    train_loader),
-                                                                                                                total_teacher_loss / len(
-                                                                                                                    train_loader)))
+    print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:>6.2f}%, Avg loss: {:6f}, Teacher loss: {:.8f}.\33[0m'.format(epoch,
+                                                                                                                  100 * float(
+                                                                                                                      correct) / total_datasize,
+                                                                                                                  total_loss / len(
+                                                                                                                      train_loader),
+                                                                                                                  total_teacher_loss / len(
+                                                                                                                      train_loader)))
 
     writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
     writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
