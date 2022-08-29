@@ -335,7 +335,7 @@ if [ $stage -le 10 ]; then
         at_str=
       fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_${kd_type}${kd_ratio}${kd_loss}/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_${kd_type}${kd_ratio}${kd_loss}/${seed}
 
 #    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_ratio}${kd_loss}
 #           --kd-loss ${kd_loss} \
@@ -361,6 +361,10 @@ if [ $stage -le 10 ]; then
        --scheduler ${scheduler} \
        --lr 0.1 \
        --base-lr 0.000006 \
+       --early-stopping \
+       --early-patience 15 \
+       --early-delta 0.0001 \
+       --early-meta EER \
        --mask-layer ${mask_layer} \
        --init-weight ${weight} \
        --milestones 10,20,30,40 \
