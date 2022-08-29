@@ -69,7 +69,7 @@ if [ $stage -le 0 ]; then
       --scheduler ${scheduler} \
       --patience 2 \
       --early-stopping \
-      --early-patience 20 \
+      --early-patience 16 \
       --cyclic-epoch 4 \
       --early-delta 0.0001 \
       --early-meta EER \
