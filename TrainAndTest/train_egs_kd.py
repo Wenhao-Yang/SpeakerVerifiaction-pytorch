@@ -392,6 +392,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
 
+    return {'EER': eer, 'Threshold': eer_threshold,
+            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
     # torch.cuda.empty_cache()
 
 
