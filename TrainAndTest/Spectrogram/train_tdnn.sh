@@ -32,8 +32,8 @@ if [ $stage -le 0 ]; then
   sname=dev
 
   mask_layer=baseline
-  scheduler=cyclic
-  optimizer=adam
+  scheduler=rop
+  optimizer=sgd
   input_dim=161
   batch_size=256
   chn=512
