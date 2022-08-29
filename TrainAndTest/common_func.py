@@ -52,7 +52,7 @@ def create_optimizer(parameters, optimizer, **kwargs):
                         momentum=kwargs['momentum'],
                         dampening=kwargs['dampening'],
                         weight_decay=kwargs['weight_decay'],
-                        nesterov=kwargs['nesterov'], )
+                        nesterov=kwargs['nesterov'])
 
     elif optimizer == 'adam':
         opt = optim.Adam(parameters,
@@ -678,9 +678,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         metavar='DAM', help='dampening for sgd (default: 0.0)')
     parser.add_argument('--optimizer', default='sgd', type=str,
                         metavar='OPT', help='The optimizer to use (default: Adagrad)')
-
-    parser.add_argument('--nesterov', action='store_true', default=False,
-                        help='nesterov for sgd')
+    parser.add_argument('--nesterov', action='store_true', default=False, help='nesterov for sgd')
     parser.add_argument('--grad-clip', default=0., type=float,
                         help='gradient clip threshold (default: 0)')
     # Device options
