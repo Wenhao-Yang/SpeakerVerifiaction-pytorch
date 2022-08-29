@@ -277,7 +277,7 @@ if [ $stage -le 10 ]; then
   datasets=vox1
   feat_type=klsp
   model=ThinResNet
-  resnet_size=8
+  resnet_size=10
   encoder_type=AVG
   embedding_size=256
   block_type=basic
