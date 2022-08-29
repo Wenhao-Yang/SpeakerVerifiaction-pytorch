@@ -278,7 +278,7 @@ if [ $stage -le 10 ]; then
   feat_type=klsp
   model=ThinResNet
   resnet_size=10
-  encoder_type=AVG
+  encoder_type=SAP2
   embedding_size=256
   block_type=basic
   kernel=5,5
@@ -292,6 +292,9 @@ if [ $stage -le 10 ]; then
   weight=clean
   avg_size=5
   dp=0.1
+  downsample=k1
+  fast=none1
+
 
   teacher_dir=Data/checkpoint/ThinResNet34/vox1/klsp_egs_rvec/123458/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var
   kd_type=embedding_cos #em_l2 vanilla
@@ -365,6 +368,8 @@ if [ $stage -le 10 ]; then
        --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
        --kernel-size ${kernel} \
        --channels ${channels} \
+       --downsample ${downsample} \
+       --fast ${fast} \
        --stride 2 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
@@ -375,7 +380,7 @@ if [ $stage -le 10 ]; then
        --alpha ${alpha} \
        --margin 0.2 \
        --s 30 \
-       --weight-decay 0.0005 \
+       --weight-decay 0.0001 \
        --dropout-p ${dp} \
        --gpu-id 1 \
        --extract \
