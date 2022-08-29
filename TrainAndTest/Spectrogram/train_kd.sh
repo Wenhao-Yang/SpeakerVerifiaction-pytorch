@@ -344,7 +344,7 @@ if [ $stage -le 10 ]; then
      python TrainAndTest/train_egs_kd.py \
        --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
-       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev/trials_dir \
+       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
        --train-trials trials_2w \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
        --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
