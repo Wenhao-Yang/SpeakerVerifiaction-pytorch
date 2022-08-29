@@ -345,7 +345,7 @@ if [ $stage -le 10 ]; then
        --model ${model} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
        --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
-       --train-trials trials_2w \
+       --train-trials trials \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
        --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
        --feat-format kaldi \
