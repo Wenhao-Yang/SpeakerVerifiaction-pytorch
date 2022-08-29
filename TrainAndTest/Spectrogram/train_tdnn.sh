@@ -36,7 +36,7 @@ if [ $stage -le 0 ]; then
   optimizer=adam
   input_dim=161
   batch_size=256
-  chn=1024
+  chn=512
 #  fast=none1
 #  downsample=k5
   for seed in 123456 123457 123458 ; do
@@ -49,7 +49,7 @@ if [ $stage -le 0 ]; then
       chn_str=chn1024_
     fi
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wde5_var/${seed}
+    model_dir=${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wde5_var_025/${seed}
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
@@ -64,7 +64,7 @@ if [ $stage -le 0 ]; then
       --resnet-size ${resnet_size} \
       --nj 6 \
       --epochs 80 \
-      --random-chunk 200 200 \
+      --random-chunk 200 400 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 2 \
@@ -83,7 +83,7 @@ if [ $stage -le 0 ]; then
       --embedding-size ${embedding_size} \
       --encoder-type ${encoder_type} \
       --alpha ${alpha} \
-      --margin 0.2 \
+      --margin 0.25 \
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
