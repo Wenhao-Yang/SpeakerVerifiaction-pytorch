@@ -22,7 +22,7 @@ if [ $stage -le 0 ]; then
   testset=vox1
   model=ECAPA
   resnet_size=34
-  encoder_type=STAP
+  encoder_type=ASAP
   alpha=0
   block_type=res2tdnn
   embedding_size=192
@@ -88,7 +88,7 @@ if [ $stage -le 0 ]; then
       --s 30 \
       --lr-ratio 0.01 \
       --weight-decay 0.00002 \
-      --gpu-id 1,2,3 \
+      --gpu-id 2,3 \
       --shuffle \
       --all-iteraion 0 \
       --extract \
