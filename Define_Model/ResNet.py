@@ -761,6 +761,7 @@ class ThinResNet(nn.Module):
         self.mask = mask
         self.scale = scale
         self.weight_p = weight_p
+        self.weight_norm = weight_norm
 
         self.dilation = 1
         self.fast = str(fast)
