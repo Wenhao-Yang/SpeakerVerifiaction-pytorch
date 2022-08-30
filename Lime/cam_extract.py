@@ -332,7 +332,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     softmax = nn.Softmax(dim=1)
 
     baseline = None
-
     for batch_idx, (data, label, uid) in pbar:
 
         # orig = data.detach().numpy().squeeze().astype(np.float32)
