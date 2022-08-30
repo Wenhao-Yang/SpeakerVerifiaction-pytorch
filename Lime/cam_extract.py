@@ -355,7 +355,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
         if len(data) == 1:
 
-            if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad']:
+            if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input']:
                 logit, _ = model(data)
                 classifed = logit[0] if args.loss_type == 'asoft' else logit
 
@@ -512,7 +512,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 data_a = data[i].unsqueeze(0)
                 data_a = Variable(data_a.cuda(), requires_grad=True)
 
-                if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad']:
+                if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input']:
                     logit, _ = model(data_a)
 
                     if args.loss_type == 'asoft':
