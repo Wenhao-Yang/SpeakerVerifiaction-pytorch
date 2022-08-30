@@ -857,7 +857,7 @@ def main():
         global biases
         global handlers
 
-        if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad']:
+        if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input']:
             for name, m in model.named_modules():
                 try:
                     if name in cam_layers:
