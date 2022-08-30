@@ -448,7 +448,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     acc_grad = input_gradient.clone().clamp_min(0)
                     acc_grad /= acc_grad.max()
 
-                    for i, l in range(len(out_layer_grad)):
+                    for i in range(len(out_layer_grad)):
                         this_grad = out_layer_grad[i].clone().cpu()
                         this_feat = out_layer_feat[-1 - i].clone().cpu()
                         print(this_grad.shape, this_feat.shape)
@@ -608,7 +608,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         acc_grad = input_gradient.clone().clamp_min(0)
                         acc_grad /= acc_grad.max()
 
-                        for i, l in range(len(out_layer_grad)):
+                        for i in range(len(out_layer_grad)):
                             this_grad = out_layer_grad[i].clone().cpu()
                             this_feat = out_layer_feat[-1 - i].clone().cpu()
                             print(this_grad.shape, this_feat.shape)
