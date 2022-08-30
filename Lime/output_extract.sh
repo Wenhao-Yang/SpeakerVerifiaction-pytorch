@@ -1022,7 +1022,7 @@ if [ $stage -le 351 ]; then
   alpha=0
 
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
-  for cam in acc_input ;do
+  for cam in acc_grad acc_input ;do
   for seed in 123456 123457 123458 ;do
     # vox1
     if [ $seed -le 123456 ];then
