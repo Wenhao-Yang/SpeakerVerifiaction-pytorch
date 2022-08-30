@@ -12,6 +12,7 @@
 import argparse
 import os.path
 import pathlib
+import pdb
 import pickle
 import random
 
@@ -105,10 +106,14 @@ def main():
                 sets = pickle.load(f)
                 # for (data, grad, uid) in tqdm(sets):
                 for (data, grad) in tqdm(sets, ncols=100):
-                    train_time_mean += time_squeeze(grad_clip(grad), axis=0)
-                    train_time_var += np.var(grad, axis=0)
-                    train_data_mean += np.mean(data, axis=0)
-                    num_utt += 1
+                    try:
+
+                        train_time_mean += time_squeeze(grad_clip(grad), axis=0)
+                        train_time_var += np.var(grad, axis=0)
+                        train_data_mean += np.mean(data, axis=0)
+                        num_utt += 1
+                    except Exception as e:
+                        pdb.set_trace()
 
         train_time_mean /= num_utt
         train_time_var /= num_utt

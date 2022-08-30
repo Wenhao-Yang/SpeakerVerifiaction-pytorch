@@ -444,7 +444,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     grad = full_grad.detach().cpu()
 
                 elif args.cam == 'acc_grad':
-                    pdb.set_trace()
+                    # pdb.set_trace()
                     input_gradient = (data.grad * data)
                     acc_grad = input_gradient.clone().clamp_min(0)
                     acc_grad /= acc_grad.max()
@@ -465,7 +465,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     grad = acc_grad / acc_grad.sum()
 
                 elif args.cam == 'acc_input':
-                    pdb.set_trace()
+                    # pdb.set_trace()
                     acc_grad = torch.zeros_like(data)
                     # acc_grad /= acc_grad.max()
 
@@ -604,7 +604,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         grad_a = full_grad
 
                     elif args.cam == 'acc_grad':
-                        pdb.set_trace()
+                        # pdb.set_trace()
                         input_gradient = (data_a.grad * data)
                         acc_grad = input_gradient.clone().clamp_min(0)
                         acc_grad /= acc_grad.max()
@@ -625,7 +625,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         grad_a = acc_grad / acc_grad.sum()
 
                     elif args.cam == 'acc_input':
-                        pdb.set_trace()
+                        # pdb.set_trace()
                         acc_grad = torch.zeros_like(data_a)
                         # acc_grad /= acc_grad.max()
 
