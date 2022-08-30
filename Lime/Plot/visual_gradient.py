@@ -241,7 +241,7 @@ def main():
         x = mel2hz(m)
 
     # y = np.sum(all_data, axis=2)  # [5, 2, 162]
-    pdf = PdfPages(vis_path + '/grad.veri.time.mean.pdf')
+    # pdf = PdfPages(vis_path + '/grad.veri.time.mean.pdf')
     plt.rc('font', family='Times New Roman')
 
     plt.figure(figsize=(12, 9))
@@ -284,8 +284,10 @@ def main():
     all_sets = np.array(['Mel', 'Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'])
     plt.legend(all_sets[plot_index], loc='upper right', fontsize=24)
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Train Verify', 'Test'], loc='upper right', fontsize=24)
-    pdf.savefig()
-    pdf.close()
+    plt.savefig(vis_path + "/freq.sets.png")
+    plt.show()
+    # pdf.savefig()
+    # pdf.close()
 
     # plt.savefig(args.extract_path + "/grads.png")
     # plt.show()
