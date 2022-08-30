@@ -355,7 +355,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
         if len(data) == 1:
 
-            if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad']:
+            if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad']:
                 logit, _ = model(data)
                 classifed = logit[0] if args.loss_type == 'asoft' else logit
 
@@ -443,6 +443,46 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     full_grad /= full_grad.max()
                     grad = full_grad.detach().cpu()
 
+                elif args.cam == 'acc_grad':
+                    input_gradient = (data.grad * data)
+                    acc_grad = input_gradient.clone().clamp_min(0)
+                    acc_grad /= acc_grad.max()
+
+                    for i, l in range(len(out_layer_grad)):
+                        this_grad = out_layer_grad[i].clone().cpu()
+                        this_feat = out_layer_feat[-1 - i].clone().cpu()
+
+                        try:
+                            this_grad = ups(this_grad * this_feat).mean(dim=1)
+                        except Exception as e:
+                            print(this_grad.shape, this_feat.shape)
+
+                        this_grad = this_grad.clamp_min(0)
+                        this_grad /= this_grad.max()
+
+                        acc_grad += this_grad
+                    grad = acc_grad / acc_grad.sum()
+
+                elif args.cam == 'acc_input':
+                    acc_grad = torch.zeros_like(data)
+                    # acc_grad /= acc_grad.max()
+
+                    for i in range(len(out_layer_feat)):
+                        # this_grad = out_layer_grad[i].clone().cpu()
+                        this_feat = out_layer_feat[-1 - i].clone().cpu()
+
+                        try:
+                            this_grad = ups(this_feat).mean(dim=1)
+                        except Exception as e:
+                            print(this_feat.shape)
+
+                        this_grad = this_grad.clamp_min(0)
+                        this_grad /= this_grad.max()
+
+                        acc_grad += this_grad
+                    grad = acc_grad / acc_grad.sum()
+
+
             elif args.cam in ['integrad']:
 
                 if baseline is None:
@@ -472,7 +512,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 data_a = data[i].unsqueeze(0)
                 data_a = Variable(data_a.cuda(), requires_grad=True)
 
-                if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad']:
+                if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad']:
                     logit, _ = model(data_a)
 
                     if args.loss_type == 'asoft':
@@ -560,6 +600,45 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         # full_grad = full_grad.abs()
                         full_grad /= full_grad.max()
                         grad_a = full_grad
+
+                    elif args.cam == 'acc_grad':
+                        input_gradient = (data.grad * data)
+                        acc_grad = input_gradient.clone().clamp_min(0)
+                        acc_grad /= acc_grad.max()
+
+                        for i, l in range(len(out_layer_grad)):
+                            this_grad = out_layer_grad[i].clone().cpu()
+                            this_feat = out_layer_feat[-1 - i].clone().cpu()
+
+                            try:
+                                this_grad = ups(this_grad * this_feat).mean(dim=1)
+                            except Exception as e:
+                                print(this_grad.shape, this_feat.shape)
+
+                            this_grad = this_grad.clamp_min(0)
+                            this_grad /= this_grad.max()
+
+                            acc_grad += this_grad
+                        grad = acc_grad / acc_grad.sum()
+
+                    elif args.cam == 'acc_input':
+                        acc_grad = torch.zeros_like(data)
+                        # acc_grad /= acc_grad.max()
+
+                        for i in range(len(out_layer_feat)):
+                            # this_grad = out_layer_grad[i].clone().cpu()
+                            this_feat = out_layer_feat[-1 - i].clone().cpu()
+
+                            try:
+                                this_grad = ups(this_feat).mean(dim=1)
+                            except Exception as e:
+                                print(this_feat.shape)
+
+                            this_grad = this_grad.clamp_min(0)
+                            this_grad /= this_grad.max()
+
+                            acc_grad += this_grad
+                        grad = acc_grad / acc_grad.sum()
 
                 elif args.cam in ['integrad']:
 
