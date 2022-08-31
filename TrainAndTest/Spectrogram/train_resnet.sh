@@ -482,9 +482,9 @@ if [ $stage -le 41 ]; then
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
   for weight_norm in sum ; do
-  for resnet_size in 34 18 10 ; do
+  for resnet_size in 10 ; do
     for seed in 123456 123457 123458 ;do
-    for chn in 32 ; do
+    for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
         batch_size=256
@@ -517,9 +517,9 @@ if [ $stage -le 41 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_amp
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_lr05
 
-      python TrainAndTest/train_egs_amp.py \
+      python TrainAndTest/train_egs.py \
         --model ${model} \
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/${testsets}/${feat_type}/test \
@@ -543,8 +543,8 @@ if [ $stage -le 41 ]; then
         --early-meta EER \
         --accu-steps 1 \
         --fast ${fast} \
-        --lr 0.1 \
-        --base-lr 0.000001 \
+        --lr 0.05 \
+        --base-lr 0.0000005 \
         --milestones 10,20,30,40 \
         --check-path Data/checkpoint/${model_dir} \
         --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
@@ -574,7 +574,7 @@ if [ $stage -le 41 ]; then
         --lr-ratio 0.01 \
         --weight-decay 0.0001 \
         --dropout-p 0.1 \
-        --gpu-id 0,1,2,3 \
+        --gpu-id 2,3 \
         --all-iteraion 0 \
         --extract \
         --shuffle \
