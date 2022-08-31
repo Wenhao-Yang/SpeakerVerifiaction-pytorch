@@ -1766,7 +1766,7 @@ if [ $stage -le 95 ]; then
     fi
 
 #    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}${at_str}_chn${chn}_wd5e4_var
-    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_ratio}${kd_loss}
+    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_ratio}${kd_loss}
 #    Data/checkpoint/LoResNet8/vox1/klsp_egs_kd_baseline/123458/arcsoft_sgd_rop/Mean_cbam_AVG_dp125_alpha0_em256_wd5e4_chn16_var_embedding_cos0.4
 #    ${seed}
 #    check_path=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_sgd_rop/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_${weight}_chn${chn}_wd5e4_var
