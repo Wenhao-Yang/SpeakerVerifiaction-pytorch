@@ -274,7 +274,7 @@ if [ $stage -le 205 ]; then
   for cam in acc_grad acc_input ; do
   for grad_clip in relu ; do
   for weight in mean max ; do
-  for seed in 123456 123457 123458  ;do
+  for seed in 123456 ;do
     if [ $seed -le 123456 ];then
       epoch=27
     elif [ $seed -le 123457 ]; then
