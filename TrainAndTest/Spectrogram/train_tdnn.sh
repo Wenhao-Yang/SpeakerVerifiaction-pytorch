@@ -83,7 +83,7 @@ if [ $stage -le 0 ]; then
       --embedding-size ${embedding_size} \
       --encoder-type ${encoder_type} \
       --alpha ${alpha} \
-      --margin 0.25 \
+      --margin 0.2 \
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
