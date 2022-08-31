@@ -220,7 +220,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             )
 
         if 'attention' in args.kd_type:
-            teacher_loss += att_loss(feats, t_feats)
+            teacher_loss += args.kd_ratio * att_loss(feats, t_feats)
 
         total_teacher_loss += float(teacher_loss.item())
         # pdb.set_trace()
