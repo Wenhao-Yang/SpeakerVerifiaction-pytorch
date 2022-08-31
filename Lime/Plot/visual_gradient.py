@@ -62,7 +62,7 @@ def main():
         os.makedirs(vis_path)
 
     grad_clip = np.abs if args.grad_clip == 'abs' else relu
-    time_squeeze = np.abs if args.grad_weight == 'mean' else np.max
+    time_squeeze = np.mean if args.grad_weight == 'mean' else np.max
 
     if os.path.exists(vis_path + '/freq.data.pickle') and os.path.exists(vis_path + '/time.data.pickle'):
         with open(vis_path + '/freq.data.pickle', 'rb') as f:
