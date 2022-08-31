@@ -660,6 +660,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                     grad_a = (data_a - baseline) * avg_grads  # shape: <grad.shape>
 
+                assert grad_a.shape == data_a.shape, print(grad_a.shape, data_a.shape)
                 grad.append(grad_a.detach().cpu().squeeze())
                 all_data.append(data_a.detach().squeeze())
 
