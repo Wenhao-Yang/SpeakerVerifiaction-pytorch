@@ -477,6 +477,7 @@ if [ $stage -le 41 ]; then
   resnet_size=8
   weight_p=0
   scale=0.2
+  weight_norm=sum
 
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
