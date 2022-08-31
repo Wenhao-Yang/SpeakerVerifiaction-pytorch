@@ -1734,7 +1734,7 @@ if [ $stage -le 95 ]; then
   kd_loss=
 
   for chn in 16 ; do
-  for seed in 123456 123457 123458 ; do
+  for seed in 1234567  ; do
 
 #  for weight in clean vox2 ; do
 #      for weight in mel clean aug vox2 ; do
