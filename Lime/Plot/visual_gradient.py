@@ -57,7 +57,7 @@ def main():
 
     # inputs [train/valid/test]
     # if args.grad_weight == 'max':
-    vis_path = args.extract_path + '/' + args.grad_weight
+    vis_path = args.extract_path + '/' + args.grad_clip + '_' + args.grad_weight
     if not os.path.exists(vis_path):
         os.makedirs(vis_path)
 

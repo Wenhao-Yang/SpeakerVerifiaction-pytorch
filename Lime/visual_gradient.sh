@@ -272,8 +272,9 @@ fi
 if [ $stage -le 205 ]; then
 #  for s in dev ;do
   for cam in acc_grad acc_input ; do
-  for weight in max ; do
-  for seed in 123456  ;do
+  for grad_clip in relu ; do
+  for weight in mean max ; do
+  for seed in 123456 123457 123458  ;do
     if [ $seed -le 123456 ];then
       epoch=27
     elif [ $seed -le 123457 ]; then
@@ -286,7 +287,9 @@ if [ $stage -le 205 ]; then
       --extract-path Data/gradient/ThinResNet34/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch} \
       --feat-dim 161 \
       --grad-weight ${weight} \
+      --grad-clip ${grad_clip} \
       --acoustic-feature spectrogram
+  done
   done
   done
   done
