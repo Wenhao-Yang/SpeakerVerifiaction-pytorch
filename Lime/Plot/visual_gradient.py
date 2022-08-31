@@ -113,6 +113,7 @@ def main():
                         train_data_mean += np.mean(data, axis=0)
                         num_utt += 1
                     except Exception as e:
+                        print(e)
                         pdb.set_trace()
 
         train_time_mean /= num_utt
