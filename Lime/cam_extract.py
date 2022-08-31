@@ -449,11 +449,11 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     acc_grad /= acc_grad.max()
 
                     for i in range(len(out_layer_grad)):
-                        this_grad = out_layer_grad[i].clone()  # .cpu()
-                        this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
+                        # this_grad = out_layer_grad[i].clone()  # .cpu()
+                        # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
                         # print(this_grad.shape, this_feat.shape)
                         # try:
-                        this_grad = ups(this_grad * this_feat).mean(dim=1, keepdim=True)
+                        this_grad = ups(out_layer_grad[i] * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
                         # except Exception as e:
                         #     print(this_grad.shape, this_feat.shape)
 
@@ -610,11 +610,11 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         acc_grad /= acc_grad.max()
 
                         for i in range(len(out_layer_grad)):
-                            this_grad = out_layer_grad[i].clone()  # .cpu()
-                            this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
+                            # this_grad = out_layer_grad[i].clone()  # .cpu()
+                            # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
                             # print(this_grad.shape, this_feat.shape)
                             # try:
-                            this_grad = ups(this_grad * this_feat).mean(dim=1, keepdim=True)
+                            this_grad = ups(out_layer_grad[i] * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
                             # except Exception as e:
                             #     print(this_grad.shape, this_feat.shape)
 
