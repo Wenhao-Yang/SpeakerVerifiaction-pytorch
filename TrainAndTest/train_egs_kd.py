@@ -163,6 +163,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
         kd_loss = nn.MSELoss()
     elif args.kd_loss == 'kld':
         kd_loss = nn.KLDivLoss()
+    elif 'attention' in args.kd_type:
+        kd_loss = AttentionTransferLoss()
 
     for batch_idx, (data, label) in pbar:
 
@@ -214,7 +216,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             )
 
         if 'attention' in args.kd_type:
-            teacher_loss += AttentionTransferLoss(feats, t_feats)
+            teacher_loss += kd_loss(feats, t_feats)
 
         total_teacher_loss += float(teacher_loss.item())
         # pdb.set_trace()
