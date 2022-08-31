@@ -74,8 +74,8 @@ if [ $stage -le 0 ]; then
       --early-delta 0.0001 \
       --early-meta EER \
       --accu-steps 1 \
-      --lr 0.05 \
-      --base-lr 0.000005 \
+      --lr 0.1 \
+      --base-lr 0.00001 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_21.pth \
@@ -87,7 +87,7 @@ if [ $stage -le 0 ]; then
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.00002 \
+      --weight-decay 0.00001 \
       --gpu-id 2,3 \
       --shuffle \
       --all-iteraion 0 \
