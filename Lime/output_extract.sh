@@ -1072,7 +1072,7 @@ if [ $stage -le 351 ]; then
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
       --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax \
-      --gpu-id 1 \
+      --gpu-id 2 \
       --margin 0.2 \
       --s 30 \
       --sample-utt 4000
