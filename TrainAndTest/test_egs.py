@@ -282,8 +282,9 @@ if args.cuda:
 # create logger
 # Define visulaize SummaryWriter instance
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-sys.stdout = NewLogger(os.path.join(os.path.dirname(args.resume), 'test.log'))
+assert os.path.isfile(args.resume), print(args.resume)
 
+sys.stdout = NewLogger(os.path.join(os.path.dirname(args.resume), 'test.log'))
 
 l2_dist = nn.CosineSimilarity(dim=-1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
 
@@ -669,7 +670,6 @@ if __name__ == '__main__':
     if args.valid or args.extract:
         model = create_model(args.model, **model_kwargs)
 
-        assert os.path.isfile(args.resume), print(args.resume)
         if args.verbose > 0:
             print('=> loading checkpoint {}'.format(args.resume))
         checkpoint = torch.load(args.resume)
