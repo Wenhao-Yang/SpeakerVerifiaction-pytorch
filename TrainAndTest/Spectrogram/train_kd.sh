@@ -35,7 +35,7 @@ if [ $stage -le 0 ]; then
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
   label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
-  kd_type=embedding_cos #em_l2 vanilla
+  kd_type=embedding_mse #em_l2 vanilla
   kd_ratio=0.4
   kd_loss=
   chn=16
