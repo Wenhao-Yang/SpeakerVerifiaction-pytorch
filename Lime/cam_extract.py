@@ -465,7 +465,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                 elif args.cam == 'acc_input':
                     # pdb.set_trace()
-                    acc_grad = torch.zeros_like(data)
+                    acc_grad = torch.zeros_like(data).cpu()
                     # acc_grad /= acc_grad.max()
 
                     for i in range(len(out_layer_feat)):
