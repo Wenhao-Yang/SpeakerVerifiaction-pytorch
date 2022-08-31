@@ -474,7 +474,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                         if len(this_feat.shape) == 3:
                             this_feat = this_feat.unsqueeze(0)
-                        this_grad = ups(this_feat.unsqueeze(0)).mean(dim=1, keepdim=True)
+                        this_grad = ups(this_feat).mean(dim=1, keepdim=True)
                         # except Exception as e:
                         #     print(this_feat.shape)
 
