@@ -322,13 +322,13 @@ if [ $stage -le 10 ]; then
         channels=64,128,256,512
         chn_str=chn64_
       fi
-      if [[ $mask_layer == attention* ]];then
+      if [[ $kd_type == attention ]];then
         kd_ratio=1000
       else
         kd_ratio=0.4
       fi
 
-      if [[ $kd_type == attention ]];then
+      if [[ $mask_layer == attention* ]];then
         at_str=_${weight}
         if [[ $weight_norm != max ]];then
           at_str=${at_str}${weight_norm}
