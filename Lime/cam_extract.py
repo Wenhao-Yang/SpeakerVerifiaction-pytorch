@@ -472,10 +472,11 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         # this_grad = out_layer_grad[i].clone().cpu()
                         this_feat = out_layer_feat[-1 - i].clone().cpu()
 
-                        try:
-                            this_grad = ups(this_feat).mean(dim=1, keepdim=True)
-                        except Exception as e:
-                            print(this_feat.shape)
+                        if len(this_feat.shape) == 3:
+                            this_feat = this_feat.unsqueeze(0)
+                        this_grad = ups(this_feat.unsqueeze(0)).mean(dim=1, keepdim=True)
+                        # except Exception as e:
+                        #     print(this_feat.shape)
 
                         this_grad = this_grad.clamp_min(0)
                         this_grad /= this_grad.max()
@@ -631,6 +632,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         for i in range(len(out_layer_feat)):
                             # this_grad = out_layer_grad[i].clone().cpu()
                             this_feat = out_layer_feat[-1 - i].clone().cpu()
+                            if len(this_feat.shape) == 3:
+                                this_feat = this_feat.unsqueeze(0)
                             # try:
                             this_grad = ups(this_feat).mean(dim=1, keepdim=True)
                             # except Exception as e:
