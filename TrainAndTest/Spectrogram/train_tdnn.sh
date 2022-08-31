@@ -32,8 +32,8 @@ if [ $stage -le 0 ]; then
   sname=dev
 
   mask_layer=baseline
-  scheduler=cyclic
-  optimizer=adam
+  scheduler=rop
+  optimizer=sgd
   input_dim=161
   batch_size=256
   chn=512
@@ -64,7 +64,7 @@ if [ $stage -le 0 ]; then
       --resnet-size ${resnet_size} \
       --nj 6 \
       --epochs 80 \
-      --random-chunk 200 200 \
+      --random-chunk 200 400 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 2 \
@@ -74,8 +74,8 @@ if [ $stage -le 0 ]; then
       --early-delta 0.0001 \
       --early-meta EER \
       --accu-steps 1 \
-      --lr 0.001 \
-      --base-lr 0.00000001 \
+      --lr 0.05 \
+      --base-lr 0.000005 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_21.pth \
