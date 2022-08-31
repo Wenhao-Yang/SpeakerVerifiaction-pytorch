@@ -605,7 +605,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                     elif args.cam == 'acc_grad':
                         # pdb.set_trace()
-                        input_gradient = (data_a.grad * data)
+                        input_gradient = (data_a.grad * data_a)
                         acc_grad = input_gradient.clone().clamp_min(0).cpu()
                         acc_grad /= acc_grad.max()
 
@@ -660,7 +660,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                     grad_a = (data_a - baseline) * avg_grads  # shape: <grad.shape>
 
-                assert grad_a.shape == data_a.shape, print(grad_a.shape, data_a.shape)
+                if grad_a.shape != data_a.shape:
+                    print(grad_a.shape, data_a.shape)
+                    pdb.set_trace()
                 grad.append(grad_a.detach().cpu().squeeze())
                 all_data.append(data_a.detach().squeeze())
 
