@@ -481,9 +481,10 @@ if [ $stage -le 41 ]; then
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
-  for weight_norm in sum ; do
+#  for weight_norm in sum ; do
+  for lr in 0.05 0.1 ; do
   for resnet_size in 10 ; do
-    for seed in 123456 123457 123458 ;do
+    for seed in 123456 ;do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
         expansion=1
@@ -517,7 +518,7 @@ if [ $stage -le 41 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_lr05
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_lr${lr}
 
       python TrainAndTest/train_egs.py \
         --model ${model} \
@@ -543,7 +544,7 @@ if [ $stage -le 41 ]; then
         --early-meta EER \
         --accu-steps 1 \
         --fast ${fast} \
-        --lr 0.05 \
+        --lr ${lr} \
         --base-lr 0.0000005 \
         --milestones 10,20,30,40 \
         --check-path Data/checkpoint/${model_dir} \
