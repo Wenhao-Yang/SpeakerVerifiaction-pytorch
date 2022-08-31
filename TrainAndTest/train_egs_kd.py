@@ -206,7 +206,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             teacher_loss = args.kd_ratio * mse_loss(feats, t_feats)
         elif 'cos' in args.kd_type:
             teacher_loss = args.kd_ratio * (1 - torch.nn.functional.cosine_similarity(feats, t_feats)).mean() / 2
-
+        else:
+            teacher_loss = 0.
         if 'vanilla' in args.kd_type:
             soft_teacher_out = F.softmax(t_classfier * args.s / args.temperature, dim=1)
             soft_student_out = F.softmax(classfier * args.s / args.temperature, dim=1)
