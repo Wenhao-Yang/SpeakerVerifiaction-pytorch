@@ -298,7 +298,7 @@ if [ $stage -le 10 ]; then
 
   teacher_dir=Data/checkpoint/ThinResNet34/vox1/klsp_egs_rvec/123458/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var
   kd_type=attention #em_l2 vanilla
-  kd_ratio=0.4
+  kd_ratio=1000
   kd_loss=
   chn=16
 #  _${weight}
