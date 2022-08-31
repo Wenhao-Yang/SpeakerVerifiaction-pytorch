@@ -454,7 +454,7 @@ if [ $stage -le 41 ]; then
 #  resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=cbam
+  block_type=basic
   embedding_size=256
   input_norm=Mean
   loss=arcsoft
@@ -519,7 +519,7 @@ if [ $stage -le 41 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_lr${lr}
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_lr${lr}/${seed}
 
       python TrainAndTest/train_egs.py \
         --model ${model} \
