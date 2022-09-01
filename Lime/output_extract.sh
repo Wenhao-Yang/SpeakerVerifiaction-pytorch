@@ -994,7 +994,7 @@ fi
 
 if [ $stage -le 351 ]; then
   model=ThinResNet
-  datasets=vox1
+  datasets=vox2
 #  dataset=cnceleb
 #  dataset=aishell2
 #  datasets=vox2
