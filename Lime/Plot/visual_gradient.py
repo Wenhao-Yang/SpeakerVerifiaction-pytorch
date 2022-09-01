@@ -318,7 +318,7 @@ def main():
             plt.plot(xnew, ynew)
 
     all_sets = np.array(['Train', 'Valid', 'Test'])
-    plt.legend(all_sets[plot_index], loc='upper right', fontsize=16)
+    plt.legend(all_sets[plot_index], loc='upper right')
     # plt.savefig(vis_path + "/inputs.freq.png")
     # plt.show()
 
