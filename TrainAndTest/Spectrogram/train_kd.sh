@@ -302,7 +302,7 @@ if [ $stage -le 10 ]; then
   kd_loss=
   chn=16
 #  _${weight}
-  for kd_type in attention embedding_cos embedding_mse ; do
+  for kd_type in embedding_cos embedding_mse ; do
   for seed in 123456 ; do
 
      if [ $resnet_size -le 34 ];then
