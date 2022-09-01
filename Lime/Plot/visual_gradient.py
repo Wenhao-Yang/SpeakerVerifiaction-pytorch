@@ -64,166 +64,164 @@ def main():
     grad_clip = np.abs if args.grad_clip == 'abs' else relu
     time_squeeze = np.mean if args.grad_weight == 'mean' else np.max
 
-    if os.path.exists(vis_path + '/freq.data.pickle') and os.path.exists(vis_path + '/time.data.pickle'):
-        with open(vis_path + '/freq.data.pickle', 'rb') as f:
-            freq_data = pickle.load(f)  # avg on time axis
-        with open(vis_path + '/time.data.pickle', 'rb') as f:
-            time_data = pickle.load(f)  # avg on freq axis
+    # if os.path.exists(vis_path + '/freq.data.pickle') and os.path.exists(vis_path + '/time.data.pickle'):
+    #     with open(vis_path + '/freq.data.pickle', 'rb') as f:
+    #         freq_data = pickle.load(f)  # avg on time axis
+    #     with open(vis_path + '/time.data.pickle', 'rb') as f:
+    #         time_data = pickle.load(f)  # avg on freq axis
+    #
+    # else:
+    train_lst = list(dir_path.glob('*train*bin'))
+    veri_lst = list(dir_path.glob('*ver*bin'))
+    valid_lst = list(dir_path.glob('*valid*bin'))
+    test_lst = list(dir_path.glob('*test*bin'))
 
-    else:
-        train_lst = list(dir_path.glob('*train*bin'))
-        veri_lst = list(dir_path.glob('*ver*bin'))
-        valid_lst = list(dir_path.glob('*valid*bin'))
-        test_lst = list(dir_path.glob('*test*bin'))
+    print(' Train set extracting:')
+    time_data = []
 
-        print(' Train set extracting:')
-        time_data = []
+    num_utt = 0
+    for t in train_lst:
+        p = str(t)
+        with open(p, 'rb') as f:
+            sets = pickle.load(f)
+            # for (data, grad, uid) in tqdm(sets):
+            for (data, grad) in tqdm(sets, ncols=100):
+                time_data.append((data, grad))
+                num_utt += 1
+                if args.samples > 0 and num_utt >= args.samples:
+                    break
+    # with open(vis_path + '/time.data.pickle', 'wb') as f:
+    #     pickle.dump(time_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-        num_utt = 0
-        for t in train_lst:
-            p = str(t)
-            with open(p, 'rb') as f:
-                sets = pickle.load(f)
-                # for (data, grad, uid) in tqdm(sets):
-                for (data, grad) in tqdm(sets, ncols=100):
-                    time_data.append((data, grad))
+    freq_data = {}
+
+    train_data_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
+    train_time_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
+    train_time_var = np.zeros((args.feat_dim))
+
+    num_utt = 0
+    for t in train_lst:
+        p = str(t)
+        with open(p, 'rb') as f:
+            sets = pickle.load(f)
+            # for (data, grad, uid) in tqdm(sets):
+            for (data, grad) in tqdm(sets, ncols=100):
+                try:
+                    train_time_mean += time_squeeze(grad_clip(grad), axis=0)
+                    train_time_var += np.var(grad, axis=0)
+                    train_data_mean += np.mean(data, axis=0)
                     num_utt += 1
-                    if args.samples > 0 and num_utt >= args.samples:
-                        break
-        with open(vis_path + '/time.data.pickle', 'wb') as f:
-            pickle.dump(time_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+                except Exception as e:
+                    print(e)
+                    pdb.set_trace()
 
-        freq_data = {}
+    train_time_mean /= num_utt
+    train_time_var /= num_utt
+    train_data_mean /= num_utt
 
-        train_data_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
-        train_time_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
-        train_time_var = np.zeros((args.feat_dim))
+    freq_data['train.time.mean'] = train_time_mean
+    freq_data['train.time.var'] = train_time_var
+    freq_data['train.data.mean'] = train_data_mean
 
-        num_utt = 0
-        for t in train_lst:
-            p = str(t)
-            with open(p, 'rb') as f:
-                sets = pickle.load(f)
-                # for (data, grad, uid) in tqdm(sets):
-                for (data, grad) in tqdm(sets, ncols=100):
-                    try:
+    print(' Valid set extracting:')
+    valid_data_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
+    valid_time_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
+    valid_time_var = np.zeros((args.feat_dim))
 
-                        train_time_mean += time_squeeze(grad_clip(grad), axis=0)
-                        train_time_var += np.var(grad, axis=0)
-                        train_data_mean += np.mean(data, axis=0)
-                        num_utt += 1
-                    except Exception as e:
-                        print(e)
-                        pdb.set_trace()
+    valid_data = np.zeros((3, args.feat_dim))  # [data/grad]
+    num_utt = 0
+    for t in valid_lst:
+        p = str(t)
+        with open(p, 'rb') as f:
+            sets = pickle.load(f)
+            # for (data, grad, uid) in tqdm(sets):
+            for (data, grad) in tqdm(sets, ncols=100):
+                valid_data_mean += np.mean(data, axis=0)
+                valid_time_mean += time_squeeze(grad_clip(grad), axis=0)
+                valid_time_var += np.var(grad, axis=0)
 
-        train_time_mean /= num_utt
-        train_time_var /= num_utt
-        train_data_mean /= num_utt
+                num_utt += 1
+    if num_utt > 0:
+        valid_time_mean = valid_time_mean / num_utt
+        valid_time_var = valid_time_var / num_utt
+        valid_data_mean = valid_data_mean / num_utt
 
-        freq_data['train.time.mean'] = train_time_mean
-        freq_data['train.time.var'] = train_time_var
-        freq_data['train.data.mean'] = train_data_mean
+    freq_data['valid.time.mean'] = valid_time_mean
+    freq_data['valid.time.var'] = valid_time_var
+    freq_data['valid.data.mean'] = valid_data_mean
 
-        print(' Valid set extracting:')
-        valid_data_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
-        valid_time_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
-        valid_time_var = np.zeros((args.feat_dim))
+    print(' Train verification set extracting:')
+    veri_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
 
-        valid_data = np.zeros((3, args.feat_dim))  # [data/grad]
-        num_utt = 0
-        for t in valid_lst:
-            p = str(t)
-            with open(p, 'rb') as f:
-                sets = pickle.load(f)
-                # for (data, grad, uid) in tqdm(sets):
-                for (data, grad) in tqdm(sets, ncols=100):
-                    valid_data_mean += np.mean(data, axis=0)
-                    valid_time_mean += time_squeeze(grad_clip(grad), axis=0)
-                    valid_time_var += np.var(grad, axis=0)
+    train_veri_data = np.zeros((args.feat_dim))
+    train_veri_mean = np.zeros((args.feat_dim))
+    train_veri_var = np.zeros((args.feat_dim))
+    train_veri_relu = np.zeros((args.feat_dim))
 
-                    num_utt += 1
-        if num_utt > 0:
-            valid_time_mean = valid_time_mean / num_utt
-            valid_time_var = valid_time_var / num_utt
-            valid_data_mean = valid_data_mean / num_utt
+    num_utt = 0
+    for t in veri_lst:
+        p = str(t)
+        with open(p, 'rb') as f:
+            sets = pickle.load(f)
+            for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets, ncols=100):
+                train_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
+                train_veri_mean += (time_squeeze(grad_clip(grad_a), axis=0) + time_squeeze(grad_clip(grad_b),
+                                                                                           axis=0)) / 2
+                train_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) +
+                                    np.mean(np.where(grad_b > 0, grad_b, 0), axis=0)) / 2
 
-        freq_data['valid.time.mean'] = valid_time_mean
-        freq_data['valid.time.var'] = valid_time_var
-        freq_data['valid.data.mean'] = valid_data_mean
+                train_veri_var += (np.var(grad_a, axis=0) + np.var(grad_b, axis=0)) / 2
 
-        print(' Train verification set extracting:')
-        veri_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
+                num_utt += 1
 
-        train_veri_data = np.zeros((args.feat_dim))
-        train_veri_mean = np.zeros((args.feat_dim))
-        train_veri_var = np.zeros((args.feat_dim))
-        train_veri_relu = np.zeros((args.feat_dim))
+    if num_utt > 0:
+        train_veri_data /= num_utt
+        train_veri_mean /= num_utt
+        train_veri_var /= num_utt
+        train_veri_relu /= num_utt
 
-        num_utt = 0
-        for t in veri_lst:
-            p = str(t)
-            with open(p, 'rb') as f:
-                sets = pickle.load(f)
-                for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets, ncols=100):
-                    train_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
-                    train_veri_mean += (time_squeeze(grad_clip(grad_a), axis=0) + time_squeeze(grad_clip(grad_b),
-                                                                                               axis=0)) / 2
-                    train_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) +
-                                        np.mean(np.where(grad_b > 0, grad_b, 0), axis=0)) / 2
+    freq_data['train.veri.time.mean'] = train_veri_mean
+    freq_data['train.veri.time.var'] = train_veri_var
+    freq_data['train.veri.data.mean'] = train_veri_data
+    freq_data['train.veri.time.relu'] = train_veri_relu
 
-                    train_veri_var += (np.var(grad_a, axis=0) + np.var(grad_b, axis=0)) / 2
+    print(' Test set extracting:')
+    # test_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
+    test_veri_data = np.zeros((args.feat_dim))
+    test_veri_mean = np.zeros((args.feat_dim))
+    test_veri_var = np.zeros((args.feat_dim))
+    test_veri_relu = np.zeros((args.feat_dim))
 
-                    num_utt += 1
+    num_utt = 0
+    for t in test_lst:
+        p = str(t)
+        with open(p, 'rb') as f:
+            sets = pickle.load(f)
+            for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets, ncols=100):
+                test_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
+                test_veri_mean += (time_squeeze(grad_clip(grad_a), axis=0) + time_squeeze(grad_clip(grad_b),
+                                                                                          axis=0)) / 2
+                test_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) + np.mean(
+                    np.where(grad_b > 0, grad_b, 0), axis=0)) / 2
 
-        if num_utt > 0:
-            train_veri_data /= num_utt
-            train_veri_mean /= num_utt
-            train_veri_var /= num_utt
-            train_veri_relu /= num_utt
+                test_veri_var += (np.var(grad_a, axis=0) + np.var(grad_b, axis=0)) / 2
 
-        freq_data['train.veri.time.mean'] = train_veri_mean
-        freq_data['train.veri.time.var'] = train_veri_var
-        freq_data['train.veri.data.mean'] = train_veri_data
-        freq_data['train.veri.time.relu'] = train_veri_relu
+                num_utt += 1
+    if num_utt > 0:
+        test_veri_data /= num_utt
+        test_veri_mean /= num_utt
+        test_veri_var /= num_utt
+        test_veri_relu /= num_utt
 
-        print(' Test set extracting:')
-        # test_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
-        test_veri_data = np.zeros((args.feat_dim))
-        test_veri_mean = np.zeros((args.feat_dim))
-        test_veri_var = np.zeros((args.feat_dim))
-        test_veri_relu = np.zeros((args.feat_dim))
+    freq_data['test.veri.time.mean'] = test_veri_mean
+    freq_data['test.veri.time.var'] = test_veri_var
+    freq_data['test.veri.data.mean'] = test_veri_data
+    freq_data['test.veri.time.relu'] = test_veri_relu
 
-        num_utt = 0
-        for t in test_lst:
-            p = str(t)
-            with open(p, 'rb') as f:
-                sets = pickle.load(f)
-                for (label, grad_a, grad_b, data_a, data_b) in tqdm(sets, ncols=100):
-                    test_veri_data += (np.mean(data_a, axis=0) + np.mean(data_b, axis=0)) / 2
-                    test_veri_mean += (time_squeeze(grad_clip(grad_a), axis=0) + time_squeeze(grad_clip(grad_b),
-                                                                                              axis=0)) / 2
-                    test_veri_relu += (np.mean(np.where(grad_a > 0, grad_a, 0), axis=0) + np.mean(
-                        np.where(grad_b > 0, grad_b, 0), axis=0)) / 2
+    print('Saving inputs in %s' % vis_path)
 
-                    test_veri_var += (np.var(grad_a, axis=0) + np.var(grad_b, axis=0)) / 2
-
-                    num_utt += 1
-        if num_utt > 0:
-            test_veri_data /= num_utt
-            test_veri_mean /= num_utt
-            test_veri_var /= num_utt
-            test_veri_relu /= num_utt
-
-        freq_data['test.veri.time.mean'] = test_veri_mean
-        freq_data['test.veri.time.var'] = test_veri_var
-        freq_data['test.veri.data.mean'] = test_veri_data
-        freq_data['test.veri.time.relu'] = test_veri_relu
-
-        print('Saving inputs in %s' % vis_path)
-
-        with open(vis_path + '/freq.data.pickle', 'wb') as f:
-            pickle.dump(freq_data, f, protocol=pickle.HIGHEST_PROTOCOL)
-
+    with open(vis_path + '/freq.data.pickle', 'wb') as f:
+        pickle.dump(freq_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # all_data [5, 2, 120, 161]
     # plotting filters distributions
