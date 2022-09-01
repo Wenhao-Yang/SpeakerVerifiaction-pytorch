@@ -998,7 +998,7 @@ if [ $stage -le 351 ]; then
 #  dataset=cnceleb
 #  dataset=aishell2
 #  datasets=vox2
-  train_set=vox1
+  train_set=vox2
 
   test_set=vox1
   feat_type=klsp
@@ -1023,7 +1023,7 @@ if [ $stage -le 351 ]; then
 
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in acc_input ;do
-  for seed in 123458 ;do
+  for seed in 123456 ;do
     # vox1
     if [ $seed -le 123456 ];then
       epoch=32 #27
@@ -1042,8 +1042,8 @@ if [ $stage -le 351 ]; then
 #      epoch=53
 #    fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
-    extract_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var
+    extract_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var/${seed}
     python Lime/cam_extract.py \
       --model ${model} \
       --resnet-size ${resnet_size} \
@@ -1075,7 +1075,7 @@ if [ $stage -le 351 ]; then
       --gpu-id 2 \
       --margin 0.2 \
       --s 30 \
-      --sample-utt 4000
+      --sample-utt 6000
     done
     done
   exit
