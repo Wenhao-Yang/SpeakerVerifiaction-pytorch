@@ -278,13 +278,13 @@ if [ $stage -le 205 ]; then
     if [ $seed -le 123456 ];then
       epoch=32 #27
     elif [ $seed -le 123457 ]; then
-      epoch=35 #31
+      epoch=31#35 #31
     else
-      epoch=27 #19
+      epoch=19#27 #19
     fi
 
     python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/ThinResNet10/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch} \
+      --extract-path Data/gradient/ThinResNet34/vox1/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch} \
       --feat-dim 161 \
       --grad-weight ${weight} \
       --grad-clip ${grad_clip} \
