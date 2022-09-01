@@ -1026,7 +1026,7 @@ if [ $stage -le 351 ]; then
   for seed in 123456 ;do
     # vox1
     if [ $seed -le 123456 ];then
-      epoch=32 #27
+      epoch=41 # 32 #27
     elif [ $seed -le 123457 ]; then
       epoch=31 # 35 #31
     else
