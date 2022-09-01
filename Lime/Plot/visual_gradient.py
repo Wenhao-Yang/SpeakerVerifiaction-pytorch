@@ -250,14 +250,14 @@ def main():
     # pdf = PdfPages(vis_path + '/grad.veri.time.mean.pdf')
     # plt.rc('font', family='Times New Roman')
 
-    plt.figure(figsize=(12, 9))
+    plt.figure(figsize=(12, 16))
     # plt.title('Gradient Distributions', fontsize=22)
 
     plt.subplot(3, 1, 1)
-    plt.xlabel('Frequency (Hz)', fontsize=24)
-    plt.xticks(fontsize=22)
-    plt.ylabel('Weight', fontsize=24)
-    plt.yticks(fontsize=22)
+    plt.xlabel('Frequency (Hz)')
+    # plt.xticks(fontsize=22)
+    plt.ylabel('Weight')
+    # plt.yticks(fontsize=22)
 
     m = np.arange(0, 2840.0230467083188)
     m = 700 * (10 ** (m / 2595.0) - 1)
@@ -289,7 +289,7 @@ def main():
 
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Test_a', 'Test_b'], loc='upper right', fontsize=18)
     all_sets = np.array(['Mel', 'Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'])
-    plt.legend(all_sets[plot_index], loc='upper right', fontsize=24)
+    plt.legend(all_sets[plot_index], loc='upper right')
     plt.grid(linestyle='--', axis='both', alpha=0.2, linewidth=1.5)
 
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Train Verify', 'Test'], loc='upper right', fontsize=24)
@@ -303,9 +303,9 @@ def main():
 
     # plt.figure(figsize=(8, 6))
     plt.subplot(3, 1, 2)
-    plt.title('Data distributions', fontsize=22)
-    plt.xlabel('Frequency (Hz)', fontsize=16)
-    plt.ylabel('Log Power (-)', fontsize=16)
+    plt.title('Data distributions')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Log Power (-)')
     # 插值平滑 ？？？
     plot_index = []
     for i, s in enumerate([train_input, valid_input, test_input]):
@@ -324,9 +324,9 @@ def main():
 
     plt.subplot(6, 1, 5)
     # plt.figure(figsize=(16, 8))
-    plt.title('Data distributions in Time Axis', fontsize=22)
-    plt.xlabel('Time', fontsize=16)
-    plt.ylabel('Magnetitude', fontsize=16)
+    plt.title('Data distributions in Time Axis')
+    plt.xlabel('Time')
+    plt.ylabel('Magnetitude')
     # 插值平滑 ？？？
     # for i, (data, grad) in enumerate(time_data):
     # for s in test_a_set_grad, test_b_set_grad:
@@ -355,6 +355,8 @@ def main():
 
     # plt.legend(['Train', 'Valid', 'Test'], loc='upper right', fontsize=16)
     plt.colorbar(im)  # 显示颜色标尺
+    plt.tight_layout()
+
     plt.savefig(vis_path + "/inputs.time.png")
     plt.show()
 
