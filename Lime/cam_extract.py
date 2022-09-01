@@ -481,7 +481,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         this_grad = this_grad.clamp_min(0)
                         this_grad /= this_grad.max() + 1e-6
 
-                        if np.isnan(this_grad.detach().cpu().numpy()).all():
+                        if np.isnan(this_grad.detach().cpu().numpy()).any():
                             pdb.set_trace()
 
                         acc_grad += this_grad
@@ -645,7 +645,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             this_grad = this_grad.clamp_min(0)
                             this_grad /= this_grad.max() + 1e-6
 
-                            if np.isnan(this_grad.detach().cpu().numpy()).all():
+                            if np.isnan(this_grad.detach().cpu().numpy()).any():
                                 pdb.set_trace()
 
                             acc_grad += this_grad
