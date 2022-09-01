@@ -1007,7 +1007,7 @@ if [ $stage -le 351 ]; then
   loss=arcsoft
   optimizer=sgd
   scheduler=rop
-  resnet_size=34
+  resnet_size=10
   input_norm=Mean
   encoder_type=SAP2
   batch_size=256
@@ -1026,7 +1026,7 @@ if [ $stage -le 351 ]; then
   for seed in 123456 ;do
     # vox1
     if [ $seed -le 123456 ];then
-      epoch=27
+      epoch=32
     elif [ $seed -le 123457 ]; then
       epoch=31
     else
