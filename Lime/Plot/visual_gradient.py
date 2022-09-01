@@ -239,6 +239,8 @@ def main():
     test_grad = freq_data['test.veri.time.mean']
     test_grad_relu = freq_data['test.veri.time.relu']
 
+    np.save(vis_path + '/train.grad.npy', train_grad)
+
     x = np.arange(args.feat_dim) * 8000 / (args.feat_dim - 1)  # [0-8000]
     if args.acoustic_feature == 'fbank':
         m = np.linspace(0, 2840.0230467083188, args.feat_dim)
@@ -246,10 +248,12 @@ def main():
 
     # y = np.sum(all_data, axis=2)  # [5, 2, 162]
     # pdf = PdfPages(vis_path + '/grad.veri.time.mean.pdf')
-    plt.rc('font', family='Times New Roman')
+    # plt.rc('font', family='Times New Roman')
 
     plt.figure(figsize=(12, 9))
     # plt.title('Gradient Distributions', fontsize=22)
+
+    plt.subplot(3, 1, 1)
     plt.xlabel('Frequency (Hz)', fontsize=24)
     plt.xticks(fontsize=22)
     plt.ylabel('Weight', fontsize=24)
@@ -282,21 +286,23 @@ def main():
     # ynew = veri_grad
     # ynew = train_grad
     # # ynew = ynew / ynew.sum()
-    np.save(vis_path + '/train.grad.npy', train_grad)
 
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Test_a', 'Test_b'], loc='upper right', fontsize=18)
     all_sets = np.array(['Mel', 'Train', 'Valid', 'Train Verify', 'Train Verify Relu', 'Test'])
     plt.legend(all_sets[plot_index], loc='upper right', fontsize=24)
+    plt.grid(linestyle='--', axis='both', alpha=0.2, linewidth=1.5)
+
     # plt.legend(['Mel-scale', 'Train', 'Valid', 'Train Verify', 'Test'], loc='upper right', fontsize=24)
-    plt.savefig(vis_path + "/freq.sets.png")
-    plt.show()
+    # plt.savefig(vis_path + "/freq.sets.png")
+    # plt.show()
     # pdf.savefig()
     # pdf.close()
 
     # plt.savefig(args.extract_path + "/grads.png")
     # plt.show()
 
-    plt.figure(figsize=(8, 6))
+    # plt.figure(figsize=(8, 6))
+    plt.subplot(3, 1, 2)
     plt.title('Data distributions', fontsize=22)
     plt.xlabel('Frequency (Hz)', fontsize=16)
     plt.ylabel('Log Power (-)', fontsize=16)
@@ -313,10 +319,11 @@ def main():
 
     all_sets = np.array(['Train', 'Valid', 'Test'])
     plt.legend(all_sets[plot_index], loc='upper right', fontsize=16)
-    plt.savefig(vis_path + "/inputs.freq.png")
-    plt.show()
+    # plt.savefig(vis_path + "/inputs.freq.png")
+    # plt.show()
 
-    plt.figure(figsize=(16, 8))
+    plt.subplot(6, 1, 5)
+    # plt.figure(figsize=(16, 8))
     plt.title('Data distributions in Time Axis', fontsize=22)
     plt.xlabel('Time', fontsize=16)
     plt.ylabel('Magnetitude', fontsize=16)
@@ -327,24 +334,24 @@ def main():
     grad = time_data[0][1]
     norm = matplotlib.colors.Normalize(vmin=0., vmax=1.)
     # data_mean = data.mean(axis=10
-
-    ax = plt.subplot(2, 1, 1)
+    # ax = plt.subplot(2, 1, 1)
 
     # data = (data - data.min()) / (data.max() - data.min())
     # im = ax.imshow(np.log(data.transpose()), cmap='viridis', aspect='auto')
-    im = ax.imshow(data.transpose(), cmap='viridis', aspect='auto')
+    im = plt.imshow(data.transpose(), cmap='viridis', aspect='auto')
     # print(data.min(), data.max())
     plt.colorbar(im)  # 显示颜色标尺
     # ax.plot(data_mean)
 
-    ax = plt.subplot(2, 1, 2)
+    # ax = plt.subplot(2, 1, 2)
+    plt.subplot(6, 1, 6)
     grad = np.abs(grad)
     grad_mean = grad
     # grad_mean = (grad - grad.min()) / (grad.max() - grad.min())
     # im = ax.imshow(1/np.log(grad_mean.transpose()), norm=norm, cmap='viridis', aspect='auto')
-    im = ax.imshow(grad_mean.transpose(), cmap='viridis', aspect='auto')
+    im = plt.imshow(grad_mean.transpose(), cmap='viridis', aspect='auto')
     # ax.plot(np.log(grad_mean))
-    ax.set_xlim(0, len(grad_mean))
+    plt.xlim(0, len(grad_mean))
 
     # plt.legend(['Train', 'Valid', 'Test'], loc='upper right', fontsize=16)
     plt.colorbar(im)  # 显示颜色标尺
