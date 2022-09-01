@@ -278,9 +278,9 @@ if [ $stage -le 205 ]; then
     if [ $seed -le 123456 ];then
       epoch=32 #27
     elif [ $seed -le 123457 ]; then
-      epoch=31#35 #31
+      epoch=31 #35 #31
     else
-      epoch=19#27 #19
+      epoch=19 #27 #19
     fi
 
     python Lime/Plot/visual_gradient.py \
