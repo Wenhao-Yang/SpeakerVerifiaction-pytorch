@@ -224,7 +224,7 @@ class ECAPA_TDNN(nn.Module):
 
         return logits, embeddings
 
-    def xvector(self, x):
+    def xvector(self, x, embedding_type='near'):
         if len(x.shape) == 4:
             x = x.squeeze(1).float()
 
@@ -240,7 +240,11 @@ class ECAPA_TDNN(nn.Module):
         out = torch.cat([out2, out3, out4], dim=1)
         out = F.relu(self.conv(out))
         out = self.bn0(self.pooling(out))
-        embeddings = self.fc1(out)
+        if embedding_type == 'near':
+            embeddings = self.fc1(out)
+        else:
+            embeddings = self.bn1(self.fc1(x))
+        # embeddings = self.fc1(out)
 
         return embeddings
 
