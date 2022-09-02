@@ -326,6 +326,9 @@ if [ $stage -le 10 ]; then
       fi
       if [[ $kd_type == attention ]];then
         kd_ratio=1000
+        if [[ $norm_type == input_weight ]]; then
+          kd_ratio=100
+        fi
         kd_str=_${kd_type}${kd_ratio}${kd_loss}_${attention_type}_${norm_type}
       else
         kd_ratio=0.4
