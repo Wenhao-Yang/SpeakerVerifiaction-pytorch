@@ -651,11 +651,11 @@ class AttentionTransferLoss(nn.Module):
             t_map = torch.zeros_like(t_feats[0].mean(dim=1, keepdim=True))
 
             for i, (s_f, t_f) in enumerate(zip(s_feats, t_feats)):
-                s_input = ups(s_f).mean(dim=1, keepdim=True).clamp_min(0)
+                s_input = ups(s_f).mean(dim=1, keepdim=True)  # .clamp_min(0)
                 s_input /= s_input.max()
                 s_map += ((1 + i) / len(s_feats)) * s_input
 
-                t_input = ups(t_f).mean(dim=1, keepdim=True).clamp_min(0)
+                t_input = ups(t_f).mean(dim=1, keepdim=True)  #.clamp_min(0)
                 t_input /= t_input.max()
                 t_map += ((1 + i) / len(t_feats)) * t_input
 
