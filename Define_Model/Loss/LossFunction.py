@@ -623,11 +623,17 @@ class aDCFLoss(nn.Module):
 
 
 class AttentionTransferLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, attention_type='both'):
         super(AttentionTransferLoss, self).__init__()
+        self.attention_type = attention_type
 
     def at(self, x):
-        return F.normalize(x.pow(2).mean(1).view(x.size(0), -1))
+        if self.attention_type == 'both':
+            return F.normalize(x.pow(2).mean(1).view(x.size(0), -1))
+        elif self.attention_type == 'time':
+            return F.normalize(x.pow(2).mean(1).mean(1).view(x.size(0), -1))
+        elif self.attention_type == 'freq':
+            return F.normalize(x.pow(2).mean(1).mean(0).view(x.size(0), -1))
 
     def forward(self, s_feats, t_feats):
         loss = 0.
