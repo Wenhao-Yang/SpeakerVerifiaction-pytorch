@@ -1048,6 +1048,7 @@ if [ $stage -le 351 ]; then
       --model ${model} \
       --resnet-size ${resnet_size} \
       --cam ${cam} \
+      --layer-weight \
       --steps 20 \
       --softmax \
       --start-epochs ${epoch} \

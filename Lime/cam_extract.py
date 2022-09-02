@@ -86,6 +86,8 @@ parser.add_argument('--mvnorm', action='store_true', default=False,
 # Model options
 parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
 parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
+
+parser.add_argument('--layer-weight', action='store_true', default=False, help='backward after softmax normalization')
 parser.add_argument('--steps', type=int, default=100, metavar='ES', help='Dimensionality of the embedding')
 
 parser.add_argument('--softmax', action='store_true', default=False,
@@ -484,7 +486,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         if np.isnan(this_grad.detach().cpu().numpy()).any():
                             pdb.set_trace()
 
-                        acc_grad += this_grad
+                        acc_grad += this_grad if args.layer_weight else (len(out_layer_feat) - i) / len(
+                            out_layer_feat) * this_grad
+
                     grad = acc_grad / acc_grad.sum()
 
 
@@ -648,7 +652,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             if np.isnan(this_grad.detach().cpu().numpy()).any():
                                 pdb.set_trace()
 
-                            acc_grad += this_grad
+                            acc_grad += this_grad if args.layer_weight else (len(out_layer_feat) - i) / len(
+                                out_layer_feat) * this_grad
 
                         grad_a = acc_grad / acc_grad.sum()
 
@@ -891,6 +896,9 @@ def main():
         print("The number of layers with biases: ", len(biases))
 
         file_dir = args.extract_path + '/epoch_%d' % ep
+        if args.cam == 'acc_input' and args.layer_weight:
+            file_dir += '_layer_weight'
+
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
 
