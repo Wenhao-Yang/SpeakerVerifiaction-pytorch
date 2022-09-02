@@ -623,21 +623,54 @@ class aDCFLoss(nn.Module):
 
 
 class AttentionTransferLoss(nn.Module):
-    def __init__(self, attention_type='both'):
+    def __init__(self, attention_type='both', norm_type='input'):
         super(AttentionTransferLoss, self).__init__()
         self.attention_type = attention_type
+        self.norm_type = norm_type
 
     def at(self, x):
         if self.attention_type == 'both':
             return F.normalize(x.pow(2).mean(1).view(x.size(0), -1))
         elif self.attention_type == 'time':
-            return F.normalize(x.pow(2).mean(1).mean(1).view(x.size(0), -1))
+            return F.normalize(x.pow(2).mean(1).mean(2).view(x.size(0), -1))
         elif self.attention_type == 'freq':
-            return F.normalize(x.pow(2).mean(1).mean(0).view(x.size(0), -1))
+            return F.normalize(x.pow(2).mean(1).mean(1).view(x.size(0), -1))
+
+    def min_max(self, x):
+        return (x - x.min()) / (x.max() - x.min())
 
     def forward(self, s_feats, t_feats):
         loss = 0.
-        for s_f, t_f in zip(s_feats, t_feats):
-            loss += (self.at(s_f) - self.at(t_f)).pow(2).mean()
+        if self.norm_type == 'input':
+            for s_f, t_f in zip(s_feats, t_feats):
+                loss += (self.at(s_f) - self.at(t_f)).pow(2).mean()
+
+        elif self.norm_type == 'input_weight':
+            ups = nn.UpsamplingBilinear2d(s_feats[0].shape[-2:])
+            s_map = torch.zeros_like(s_feats[0].mean(dim=1, keepdim=True))
+            t_map = torch.zeros_like(t_feats[0].mean(dim=1, keepdim=True))
+
+            for i, (s_f, t_f) in enumerate(zip(s_feats, t_feats)):
+                s_input = ups(s_f).mean(dim=1, keepdim=True).clamp_min(0)
+                s_input /= s_input.max()
+                s_map += ((1 + i) / len(s_feats)) * s_input
+
+                t_input = ups(t_f).mean(dim=1, keepdim=True).clamp_min(0)
+                t_input /= t_input.max()
+                t_map += ((1 + i) / len(t_feats)) * t_input
+
+            if self.attention_type == 'both':
+                loss += (self.min_max(s_map.mean(dim=2, keepdim=True)) - self.min_max(
+                    t_map.mean(dim=2, keepdim=True))).pow(2).mean()
+                loss += (self.min_max(s_map.mean(dim=3, keepdim=True)) - self.min_max(
+                    t_map.mean(dim=3, keepdim=True))).pow(2).mean()
+
+            elif self.attention_type == 'time':
+                loss += (self.min_max(s_map.mean(dim=3, keepdim=True)) - self.min_max(
+                    t_map.mean(dim=3, keepdim=True))).pow(2).mean()
+
+            elif self.attention_type == 'freq':
+                loss += (self.min_max(s_map.mean(dim=2, keepdim=True)) - self.min_max(
+                    t_map.mean(dim=2, keepdim=True))).pow(2).mean()
 
         return loss

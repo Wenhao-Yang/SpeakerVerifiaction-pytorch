@@ -750,6 +750,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--label-dir', type=str, default='', help='path to teacher model')
         parser.add_argument('--temperature', type=float, default=20, help='path to voxceleb1 test dataset')
         parser.add_argument('--teacher-model', type=str, default='', help='path to voxceleb1 test dataset')
+        parser.add_argument('--attention-type', type=str, default='both', help='path to voxceleb1 test dataset')
+        parser.add_argument('--norm-type', type=str, default='input', help='path to voxceleb1 test dataset')
 
     args = parser.parse_args()
 

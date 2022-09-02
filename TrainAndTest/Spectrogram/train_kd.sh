@@ -295,6 +295,8 @@ if [ $stage -le 10 ]; then
   downsample=k1
   fast=none1
 
+  attention_type=freq
+  norm_type=input_weight
 
   teacher_dir=Data/checkpoint/ThinResNet34/vox1/klsp_egs_rvec/123458/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var
   kd_type=attention #em_l2 vanilla
@@ -302,7 +304,7 @@ if [ $stage -le 10 ]; then
   kd_loss=
   chn=16
 #  _${weight}
-  for kd_type in embedding_cos embedding_mse ; do
+  for kd_type in attention ; do
   for seed in 123456 ; do
 
      if [ $resnet_size -le 34 ];then
@@ -324,8 +326,10 @@ if [ $stage -le 10 ]; then
       fi
       if [[ $kd_type == attention ]];then
         kd_ratio=1000
+        kd_str=_${kd_type}${kd_ratio}${kd_loss}_${attention_type}_${norm_type}
       else
         kd_ratio=0.4
+        kd_str=_${kd_type}${kd_ratio}${kd_loss}
       fi
 
       if [[ $mask_layer == attention* ]];then
@@ -341,7 +345,7 @@ if [ $stage -le 10 ]; then
         at_str=
       fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_${kd_type}${kd_ratio}${kd_loss}/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares${kd_str}/${seed}
 
 #    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_ratio}${kd_loss}
 #           --kd-loss ${kd_loss} \
@@ -398,6 +402,8 @@ if [ $stage -le 10 ]; then
        --all-iteraion 0 \
        --loss-type ${loss} \
        --kd-type ${kd_type} \
+       --attention-type ${attention_type} \
+       --norm-type ${norm_type} \
        --distil-weight 0.5 \
        --kd-ratio ${kd_ratio} \
        --teacher-model-yaml ${teacher_dir}/model.2022.07.01.yaml \

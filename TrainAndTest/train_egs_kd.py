@@ -159,7 +159,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
     output_softmax = nn.Softmax(dim=1)
 
     mse_loss = nn.MSELoss()
-    att_loss = AttentionTransferLoss()
+    att_loss = AttentionTransferLoss(attention_type=args.attention_type,
+                                     norm_type=args.norm_type)
 
     if args.kd_loss == 'mse':
         kd_loss = nn.MSELoss()
