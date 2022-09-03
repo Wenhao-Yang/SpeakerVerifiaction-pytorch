@@ -1722,7 +1722,7 @@ if [ $stage -le 95 ]; then
   input_norm=Mean
   mask_layer=baseline
 #  mask_layer=attention0
-  kd_type=embedding_cos #vanilla #em_l2 vanilla
+  kd_type=embedding_mse #vanilla #em_l2 vanilla
 #  kd_loss=kld
   weight=clean
   scheduler=rop
@@ -1734,7 +1734,7 @@ if [ $stage -le 95 ]; then
   kd_loss=
 
   for chn in 16 ; do
-  for seed in 1234567  ; do
+  for seed in 123456 1234567 123458  ; do
 
 #  for weight in clean vox2 ; do
 #      for weight in mel clean aug vox2 ; do
