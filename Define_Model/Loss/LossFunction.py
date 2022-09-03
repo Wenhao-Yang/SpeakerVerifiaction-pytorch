@@ -653,11 +653,13 @@ class AttentionTransferLoss(nn.Module):
             for i, (s_f, t_f) in enumerate(zip(s_feats, t_feats)):
                 s_input = ups(s_f).mean(dim=1, keepdim=True).clamp_min(0)
                 # s_input /= s_input.max()
-                s_map += ((1 + i) / len(s_feats)) * s_input / s_input.max(dim=2)
+                s_max = s_input.view(s_input.size(0), -1).max(dim=1).values.reshape(-1, 1, 1, 1)
+                s_map += ((1 + i) / len(s_feats)) * s_input / s_max
 
                 t_input = ups(t_f).mean(dim=1, keepdim=True).clamp_min(0)
+                t_max = t_input.view(t_input.size(0), -1).max(dim=1).values.reshape(-1, 1, 1, 1)
                 # t_input /= t_input.max()
-                t_map += ((1 + i) / len(t_feats)) * t_input / t_input.max()
+                t_map += ((1 + i) / len(t_feats)) * t_input / t_max
 
             if self.attention_type == 'both':
                 loss += (self.min_max(s_map.mean(dim=2, keepdim=True)) - self.min_max(
