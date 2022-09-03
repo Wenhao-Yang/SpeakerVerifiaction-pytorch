@@ -653,7 +653,7 @@ class AttentionTransferLoss(nn.Module):
             for i, (s_f, t_f) in enumerate(zip(s_feats, t_feats)):
                 s_input = ups(s_f).mean(dim=1, keepdim=True).clamp_min(0)
                 # s_input /= s_input.max()
-                s_map += ((1 + i) / len(s_feats)) * s_input / s_input.max()
+                s_map += ((1 + i) / len(s_feats)) * s_input / s_input.max(dim=2)
 
                 t_input = ups(t_f).mean(dim=1, keepdim=True).clamp_min(0)
                 # t_input /= t_input.max()
