@@ -417,6 +417,29 @@ class Mean_Norm(nn.Module):
         return "Mean_Norm(dim=%d)" % self.dim
 
 
+class SlideMean_Norm(nn.Module):
+    def __init__(self, dim=-2, win_len=300):
+        super(SlideMean_Norm, self).__init__()
+        self.dim = dim
+        self.win_len = win_len
+
+    def forward(self, x):
+        indexs = torch.arange(0, x.shape[self.dim])
+        start = (indexs - int(self.win_len / 2)).clamp_min(0)
+        end = (indexs + int(self.win_len / 2)).clamp_max(x.shape[self.dim] - 1)
+
+        x_mean = []
+        for i in range(x.shape[self.dim]):
+            s = start[i]
+            e = end[i]
+            x_mean.append(torch.mean(x[:, :, s:e, :], dim=self.dim, keepdim=True))
+
+        return x - torch.cat(x_mean, dim=self.dim)
+
+    def __repr__(self):
+        return "SlideMean_Norm(dim=%d)" % self.dim
+
+
 class MeanStd_Norm(nn.Module):
     def __init__(self, dim=-2):
         super(MeanStd_Norm, self).__init__()
@@ -504,6 +527,31 @@ class FreqMaskLayer(nn.Module):
 
     def __repr__(self):
         return "FreqMaskLayer(mask_len=%f)" % self.mask_len
+
+
+class FreqMaskIndexLayer(nn.Module):
+    def __init__(self, start=0, mask_len=2, normalized=False):
+        super(FreqMaskIndexLayer, self).__init__()
+        self.start = start
+        self.mask_len = mask_len
+        self.normalized = normalized
+
+    def forward(self, x):
+        x_shape = len(x.shape)
+
+        this_mean = x.mean(dim=-1, keepdim=True)  # .add(1e-6)
+        start = self.start
+        end = start + self.mask_len
+
+        if x_shape == 4:
+            x[:, :, :, start:end] = this_mean
+        elif x_shape == 3:
+            x[:, :, start:end] = this_mean
+
+        return x
+
+    def __repr__(self):
+        return "FreqMaskIndexLayer(start=%d, mask_len=%d)" % (self.start, self.mask_len)
 
 
 class TimeFreqMaskLayer(nn.Module):
@@ -983,6 +1031,11 @@ class AttentionweightLayer_v3(nn.Module):
 
         return x * drop_weight
 
+    def __repr__(self):
+
+        return "AttentionweightLayer_v3(input_dim=%d, weight=%s, s=%.4f, b=%.4f)" % (
+            self.input_dim, self.weight, self.s, self.b)
+
 
 class AttentionweightLayer_v0(nn.Module):
     def __init__(self, input_dim=161, weight='mel', power_weight=False,
@@ -1389,6 +1442,78 @@ class Sinc2Conv(nn.Module):
     #           Train EER: 2.0071%, Threshold: 0.2855, mindcf-0.01: 0.2954, mindcf-0.001: 0.5138.
     #           Test  ERR: 7.1262%, Threshold: 0.2042, mindcf-0.01: 0.6215, mindcf-0.001: 0.8115.
 
+
+class Sinc2Down(nn.Module):
+    def __init__(self, input_dim, out_dim=60, fs=16000):
+        super(Sinc2Down, self).__init__()
+        self.fs = fs
+        self.input_dim = input_dim
+        self.current_input = input_dim
+        self.out_dim = out_dim
+
+        # conv_layers = [(80, 251, 1), (60, 5, 1), (out_dim, 5, 1)]
+        self.conv_layers = nn.ModuleList()
+        self.conv_layer1 = nn.Sequential(
+            nn.Conv2d(in_channels=int(input_dim / 2), out_channels=80, kernel_size=(1, 31), stride=(1, 4), bias=False),
+            # SincConv_fast(80, 251, self.fs, stride=6),
+            # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
+            nn.InstanceNorm2d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.5)
+        )
+
+        # self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
+        self.conv_layer2 = nn.Sequential(
+            nn.Conv2d(in_channels=80, out_channels=60, kernel_size=(2, 5), stride=(1, 2)),
+            # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
+            nn.InstanceNorm2d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.5)
+        )
+        #
+        # self.current_input = int((self.current_input - 5 + 1) / 3)
+        self.conv_layer3 = nn.Sequential(
+            nn.Conv1d(in_channels=60, out_channels=60, kernel_size=5, stride=2),
+            # nn.MaxPool1d(kernel_size=3),
+            nn.InstanceNorm1d(60),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            nn.LeakyReLU(),
+            nn.Dropout(0.5)
+        )
+        #
+        self.conv_layer4 = nn.Sequential(
+            nn.Conv1d(in_channels=60, out_channels=self.out_dim, kernel_size=5, stride=2),
+            # nn.AvgPool1d(kernel_size=3),  # nn.MaxPool1d(kernel_size=3),
+            nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            nn.LeakyReLU(),
+            nn.Dropout(0.5)
+        )
+
+        self.current_output = int((self.current_input - 5 + 1) / 3)
+
+    def forward(self, x):
+        # BxT -> BxCxT
+        if len(x.shape) == 2:
+            x = x.unsqueeze(1)
+        elif len(x.shape) == 4:
+            x = x.squeeze(1)
+
+        # print(x.shape)
+        if x.shape[2] == self.input_dim:
+            x = x.transpose(1, 2)
+
+        x_shape = x.shape
+        x = x.reshape(x_shape[0], 20, 2, -1)
+
+        x = self.conv_layer1(x)
+        x = self.conv_layer2(x)
+
+        x = x.squeeze(2)
+        x = self.conv_layer3(x)
+        x = self.conv_layer4(x)
+
+        return x.transpose(1, 2)
+
+
 # https://github.com/pytorch/fairseq/blob/c47a9b2eef0f41b0564c8daf52cb82ea97fc6548/fairseq/models/wav2vec/wav2vec.py#L367
 class Wav2Conv(nn.Module):
     def __init__(self, out_dim=512, log_compression=True):
@@ -1439,3 +1564,53 @@ class Wav2Conv(nn.Module):
     #           Valid Accuracy: 99.502488%, Avg loss: 0.078200.
     #           Train EER: 2.4206%, Threshold: 0.2692, mindcf-0.01: 0.3075, mindcf-0.001: 0.5515.
     #           Test  ERR: 7.2534%, Threshold: 0.2015, mindcf-0.01: 0.6058, mindcf-0.001: 0.7008.
+
+
+class Wav2Down(nn.Module):
+    def __init__(self, input_dim=1, out_dim=512, log_compression=False):
+        super(Wav2Down, self).__init__()
+
+        self.input_dim = input_dim
+        in_d = input_dim
+        # conv_layers = [(40, 10, 5), (200, 5, 4), (300, 3, 2), (512, 3, 2), (out_dim, 3, 2)]
+        conv_layers = [(40, 10, 4), (200, 5, 2), (300, 3, 2), (512, 3, 2), (out_dim, 3, 1)]
+        self.conv_layers = nn.ModuleList()
+        for dim, k, stride in conv_layers:
+            self.conv_layers.append(self.block(in_d, dim, k, stride))
+            in_d = dim
+        self.tmp_gate = nn.Sequential(
+            nn.Linear(out_dim, 1),
+            nn.Sigmoid()
+        )
+        self.log_compression = log_compression
+        # self.skip_connections = skip_connections
+        # self.residual_scale = math.sqrt(residual_scale)
+
+    def block(self, n_in, n_out, k, stride):
+        return nn.Sequential(
+            nn.Conv1d(n_in, n_out, k, stride=stride, bias=False),
+            nn.InstanceNorm1d(n_out),  # nn.GroupNorm(1, n_out), in wav2spk replace group by instance normalization
+            nn.ReLU(),
+        )
+
+    def forward(self, x):
+        # BxT -> BxCxT
+        if len(x.shape) == 2:
+            x = x.unsqueeze(1)
+        elif len(x.shape) == 4:
+            x = x.squeeze(1)
+
+        if x.shape[2] == self.input_dim:
+            x = x.transpose(1, 2)
+
+        for conv in self.conv_layers:
+            x = conv(x)
+
+        if self.log_compression:
+            x = x.abs()
+            x = x + 1
+            x = x.log()
+
+        tmp_gate = self.tmp_gate(x.transpose(1, 2)).transpose(1, 2)
+        x = x * tmp_gate
+        return x.transpose(1, 2)

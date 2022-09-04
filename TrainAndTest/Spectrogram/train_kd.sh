@@ -39,6 +39,8 @@ if [ $stage -le 0 ]; then
   kd_ratio=0.4
   kd_loss=
   chn=16
+
+
 #  _${weight}
   for chn in 16 ; do
   for seed in 123456 1234567 123458; do

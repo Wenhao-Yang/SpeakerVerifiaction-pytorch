@@ -33,6 +33,8 @@ from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling
 from typing import Type, Any, Callable, Union, List, Optional
 from torch import Tensor
 
+from Define_Model.model import get_input_norm, get_mask_layer, get_filter_layer
+
 
 def conv1x1(in_planes, out_planes, stride=1):
     """1x1 convolution"""
@@ -730,11 +732,13 @@ class ThinResNet(nn.Module):
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
-                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', weight_norm='max', scale=0.2,
-                 weight_p=0.1, input_norm='', gain_layer=False, **kwargs):
+                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
+                 weight_p=0.1, weight_norm='max',
+                 input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
+                       14: [2, 2, 2, 0],
                        18: [2, 2, 2, 2],
                        34: [3, 4, 6, 3],
                        50: [3, 4, 6, 3],
@@ -793,63 +797,25 @@ class ThinResNet(nn.Module):
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
-
-        if self.filter == 'fDLR':
-            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
-        elif self.filter == 'fBLayer':
-            self.filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
-        elif self.filter == 'fBPLayer':
-            self.filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
-                                         filter_fix=filter_fix)
-        elif self.filter == 'fLLayer':
-            self.filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
-        elif self.filter == 'Avg':
-            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
-        else:
-            self.filter_layer = None
-
         self.input_norm = input_norm
-        if input_norm == 'Instance':
-            self.inst_layer = Inst_Norm(input_dim)
-        elif input_norm == 'Mean':
-            self.inst_layer = Mean_Norm()
-        elif input_norm == 'Mstd':
-            self.inst_layer = MeanStd_Norm()
-        else:
-            self.inst_layer = None
 
-        if self.mask == "time":
-            self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
-        elif self.mask == "freq":
-            self.mask = FreqMaskLayer(mask_len=mask_len[0])
-        elif self.mask == "both":
-            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
-        elif self.mask == "time_freq":
-            self.mask_layer = nn.Sequential(
-                TimeMaskLayer(mask_len=mask_len[0]),
-                FreqMaskLayer(mask_len=mask_len[1])
-            )
-        elif self.mask == 'attention':
-            self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'attention0':
-            self.mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
-                                                      weight_norm=weight_norm)
-        elif self.mask == 'attention2':
-            self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'drop':
-            self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=self.weight_p,
-                                              weight=init_weight, scale=self.scale)
-        elif self.mask == 'reweight':
-            self.mask_layer = ReweightLayer(input_dim=input_dim, weight=init_weight)
+        input_mask = []
+        filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
+                                        exp=exp, filter_fix=filter_fix)
+        if filter_layer != None:
+            input_mask.append(filter_layer)
 
-        elif self.mask == 'drop2':
-            self.mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=self.weight_p,
-                                                 weight=init_weight, scale=self.scale)
-        elif self.mask == 'drop3':
-            self.mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=self.weight_p,
-                                                 weight=init_weight, scale=self.scale)
-        else:
-            self.mask_layer = None
+        norm_layer = get_input_norm(input_norm)
+        if norm_layer != None:
+            input_mask.append(norm_layer)
+        mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
+                                    init_weight=init_weight, weight_p=weight_p,
+                                    scale=scale, weight_norm=weight_norm)
+
+        if mask_layer != None:
+            input_mask.append(mask_layer)
+
+        self.input_mask = nn.Sequential(*input_mask)
 
         self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(self.num_filter[0])
@@ -872,16 +838,17 @@ class ThinResNet(nn.Module):
 
         self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
         self.dropout = nn.Dropout(self.dropout_p)
+
+        last_channel = self.num_filter[3] if layers[3] > 0 else self.num_filter[2]
         # [64, 128, 37, 8]
-        # 300 is the length of features
         if freq_dim > 0:
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            encode_input_dim = int(freq_dim * self.num_filter[3] * block.expansion)
+            encode_input_dim = int(freq_dim * last_channel * block.expansion)
         else:
             self.avgpool = None
-            # pdb.set_trace()
-            encode_input_dim = int(np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * self.num_filter[
-                3] * block.expansion)
+            # print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
+            encode_input_dim = int(
+                np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
 
         if encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
@@ -981,17 +948,18 @@ class ThinResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward(self, x, feature_map=False):
+    def _forward(self, x, feature_map=''):
         # pdb.set_trace()
         # print(x.shape)
-        if self.filter_layer != None:
-            x = self.filter_layer(x)
-
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
-        if self.mask_layer != None:
-            x = self.mask_layer(x)
+        # if self.filter_layer != None:
+        #     x = self.filter_layer(x)
+        #
+        # if self.inst_layer != None:
+        #     x = self.inst_layer(x)
+        #
+        # if self.mask_layer != None:
+        #     x = self.mask_layer(x)
+        x = self.input_mask(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -1000,20 +968,22 @@ class ThinResNet(nn.Module):
             x = self.maxpool(x)
 
         # print(x.shape)
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        group1 = self.layer1(x)
+        group2 = self.layer2(group1)
+        group3 = self.layer3(group2)
+        group4 = self.layer4(group3)
         # print(x.shape)
 
         if self.dropout_p > 0:
-            x = self.dropout(x)
+            group4 = self.dropout(group4)
 
-        if feature_map:
-            embeddings = x
+        if feature_map == 'last':
+            embeddings = group4
+        elif feature_map == 'attention':
+            embeddings = (group1, group2, group3, group4)
 
         if self.avgpool != None:
-            x = self.avgpool(x)
+            x = self.avgpool(group4)
 
         if self.encoder != None:
             x = self.encoder(x)
@@ -1024,14 +994,17 @@ class ThinResNet(nn.Module):
         if self.alpha:
             x = self.l2_norm(x)
 
-        if feature_map:
+        if feature_map == 'last':
             return embeddings, x
 
         logits = "" if self.classifier == None else self.classifier(x)
 
+        if feature_map == 'attention':
+            return logits, embeddings
+
         return logits, x
 
-    def xvector(self, x):
+    def xvector(self, x, embedding_type='near'):
         # pdb.set_trace()
         # print(x.shape)
         if self.filter_layer != None:
@@ -1063,7 +1036,10 @@ class ThinResNet(nn.Module):
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
-        embeddings = self.fc1[0](x)
+        if embedding_type == 'near':
+            embeddings = self.fc1[0](x)
+        else:
+            embeddings = self.fc1(x)
 
         return embeddings
 
@@ -1255,10 +1231,13 @@ class LocalResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes, block_type='basic',
-                 input_dim=161, input_len=300, gain_layer=False, init_weight='mel', weight_norm='max',
+                 input_dim=161, input_len=300, gain_layer=False,
+                 exp=False, filter_fix=False, feat_dim=64, sr=16000,
                  relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
-                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 20], **kwargs):
+                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 20],
+                 init_weight='mel', weight_norm='max', scale=0.2, weight_p=0.1,
+                 **kwargs):
 
         super(LocalResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -1302,48 +1281,23 @@ class LocalResNet(nn.Module):
         self.input_len = input_len
         self.filter = filter
 
-        if self.filter == 'Avg':
-            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 5), stride=(1, 2))
-        else:
-            self.filter_layer = None
+        input_mask = []
+        filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
+                                        exp=exp, filter_fix=filter_fix)
+        if filter_layer != None:
+            input_mask.append(filter_layer)
 
-        if input_norm == 'Inst':
-            self.inst_layer = Inst_Norm(self.input_len)
-        elif input_norm == 'Mean':
-            self.inst_layer = Mean_Norm()
-        elif input_norm == 'Mstd':
-            self.inst_layer = MeanStd_Norm()
-        else:
-            self.inst_layer = None
+        norm_layer = get_input_norm(input_norm)
+        if norm_layer != None:
+            input_mask.append(norm_layer)
+        mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
+                                    init_weight=init_weight, weight_p=weight_p,
+                                    scale=scale, weight_norm=weight_norm)
 
-        if self.mask == "time":
-            self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
-        elif self.mask == "freq":
-            self.mask = FreqMaskLayer(mask_len=mask_len[0])
-        elif self.mask == "time_freq":
-            self.mask_layer = nn.Sequential(
-                TimeMaskLayer(mask_len=mask_len[0]),
-                FreqMaskLayer(mask_len=mask_len[1])
-            )
-        elif self.mask == "both":
-            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
-        elif self.mask == 'drop':
-            self.mask_layer = DropweightLayer(dropout_p=0.25)
-        elif self.mask == 'gau_noise':
-            self.mask_layer = GaussianNoiseLayer(dropout_p=0.01)
-        elif self.mask == 'mus_noise':
-            self.mask_layer = MusanNoiseLayer(snr=15)
-        elif self.mask == 'attention':
-            self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'attention0':
-            self.mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
-                                                      weight_norm=weight_norm)
-        elif self.mask == 'attention2':
-            self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'attention3':
-            self.mask_layer = AttentionweightLayer_v3(input_dim=input_dim, weight=init_weight)
-        else:
-            self.mask_layer = None
+        if mask_layer != None:
+            input_mask.append(mask_layer)
+
+        self.input_mask = nn.Sequential(*input_mask)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(1, channels[0], kernel_size=kernal_size, stride=stride, padding=padding)
@@ -1481,43 +1435,36 @@ class LocalResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
-        if self.filter_layer != None:
-            x = self.filter_layer(x)
+    def forward(self, x, feature_map=''):
+        x = self.input_mask(x)
 
-        if self.mask_layer != None:
-            x = self.mask_layer(x)
-
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
+        x = self.relu(self.bn1(self.conv1(x)))
         if self.maxpool != None:
             x = self.maxpool(x)
-        x = self.layer1(x)
+        group1 = self.layer1(x)
 
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = self.relu(x)
-        x = self.layer2(x)
+        x = self.relu(self.bn2(self.conv2(group1)))
+        group2 = self.layer2(x)
 
-        x = self.conv3(x)
-        x = self.bn3(x)
-        x = self.relu(x)
-        x = self.layer3(x)
+        x = self.relu(self.bn3(self.conv3(group2)))
+        group3 = self.layer3(x)
+
+        groups = [group1, group2, group3]
 
         if self.layers[3] != 0:
-            x = self.conv4(x)
-            x = self.bn4(x)
-            x = self.relu(x)
-            x = self.layer4(x)
+            x = self.relu(self.bn4(self.conv4(group3)))
+            group4 = self.layer4(x)
+            groups.append(group4)
 
         if self.dropout_p > 0:
-            x = self.dropout(x)
+            groups[-1] = self.dropout(groups[-1])
 
-        x = self.avgpool(x)
+        if feature_map == 'last':
+            embeddings = groups[-1]
+        elif feature_map == 'attention':
+            embeddings = groups
+
+        x = self.avgpool(groups[-1])
         if self.encoder != None:
             x = self.encoder(x)
 
@@ -1532,19 +1479,18 @@ class LocalResNet(nn.Module):
         if self.alpha:
             x = self.l2_norm(x)
 
-        logits = self.classifier(x)
+        if feature_map == 'last':
+            return embeddings, x
+
+        logits = "" if self.classifier == None else self.classifier(x)
+
+        if feature_map == 'attention':
+            return logits, embeddings
 
         return logits, x
 
-    def xvector(self, x):
-        if self.filter_layer != None:
-            x = self.filter_layer(x)
-
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
-        if self.mask_layer != None:
-            x = self.mask_layer(x)
+    def xvector(self, x, embedding_type='near'):
+        x = self.input_mask(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -1578,7 +1524,10 @@ class LocalResNet(nn.Module):
 
         x = x.view(x.size(0), -1)
         # x = self.fc1(x)
-        embeddings = self.fc[0](x)
+        if embedding_type == 'near':
+            embeddings = self.fc[0](x)
+        else:
+            embeddings = self.fc(x)
 
         return "", embeddings
 

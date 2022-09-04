@@ -42,6 +42,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     AttentionTransferLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, \
     ArcSoftmaxLoss, GaussianLoss
+from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
@@ -158,13 +159,13 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
     output_softmax = nn.Softmax(dim=1)
 
     mse_loss = nn.MSELoss()
+    att_loss = AttentionTransferLoss(attention_type=args.attention_type,
+                                     norm_type=args.norm_type)
 
     if args.kd_loss == 'mse':
         kd_loss = nn.MSELoss()
     elif args.kd_loss == 'kld':
         kd_loss = nn.KLDivLoss()
-    elif 'attention' in args.kd_type:
-        kd_loss = AttentionTransferLoss()
 
     for batch_idx, (data, label) in pbar:
 
@@ -177,9 +178,11 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
                 t_classfier, t_feats = teacher_model(data, feature_map='attention')
             else:
                 t_classfier, t_feats = teacher_model(data)
+
             # t_classfier = t_classfier
 
         data, label = Variable(data), Variable(label)
+
         if 'attention' in args.kd_type:
             classfier, feats = model(data, feature_map='attention')
         else:
@@ -204,6 +207,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             teacher_loss = args.kd_ratio * mse_loss(feats, t_feats)
         elif 'cos' in args.kd_type:
             teacher_loss = args.kd_ratio * (1 - torch.nn.functional.cosine_similarity(feats, t_feats)).mean() / 2
+        else:
+            teacher_loss = 0.
 
         if 'vanilla' in args.kd_type:
             soft_teacher_out = F.softmax(t_classfier * args.s / args.temperature, dim=1)
@@ -216,7 +221,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             )
 
         if 'attention' in args.kd_type:
-            teacher_loss += kd_loss(feats, t_feats)
+            teacher_loss += args.kd_ratio * att_loss(feats, t_feats)
 
         total_teacher_loss += float(teacher_loss.item())
         # pdb.set_trace()
@@ -276,7 +281,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
 
                 epoch_str += ' Batch Len: {:>3d}'.format(batch_len)
 
-            epoch_str += ' Accuracy: {:6.2f}%'.format(100. * minibatch_acc)
+            epoch_str += ' Accuracy: {:>6.2f}%'.format(100. * minibatch_acc)
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
@@ -288,7 +293,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             pbar.set_description(epoch_str)
             # break
 
-    print('\nEpoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}, Teacher loss: {:.8f}.\33[0m'.format(epoch,
+    print('Epoch {:>2d}: \33[91mTrain Accuracy: {:>6.2f}%, Avg loss: {:6f}, Teacher loss: {:.8f}.\33[0m'.format(epoch,
                                                                                                                 100 * float(
                                                                                                                     correct) / total_datasize,
                                                                                                                 total_loss / len(
@@ -354,8 +359,8 @@ def valid_class(valid_loader, model, ce, epoch):
     writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
     writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
     # torch.cuda.empty_cache()
-    print('          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}.\33[0m'.format(valid_accuracy,
-                                                                                     valid_loss))
+    print('          \33[91mValid Accuracy: {:>6.2f}%, Avg loss: {:.6f}.\33[0m'.format(valid_accuracy,
+                                                                                       valid_loss))
 
     return valid_loss
 
@@ -388,6 +393,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
 
+    return {'EER': eer, 'Threshold': eer_threshold,
+            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
     # torch.cuda.empty_cache()
 
 
@@ -524,6 +531,8 @@ def main():
                            'weight_decay': init_wd})
 
     optimizer = create_optimizer(model_para, args.optimizer, **opt_kwargs)
+    early_stopping_scheduler = EarlyStopping(patience=args.early_patience,
+                                             min_delta=args.early_delta)
 
     if not args.finetune and args.resume:
         if os.path.isfile(args.resume):
@@ -689,8 +698,21 @@ def main():
 
             train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
+            if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
+                    end - 1)):
+                valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+            else:
+                valid_test_dict = {}
 
-            if (epoch == 1 or epoch != (end - 2)) and (epoch % 4 == 1 or epoch in milestones or epoch == (end - 1)):
+            valid_test_dict['Valid_Loss'] = valid_loss
+
+            if args.early_stopping:
+                early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
+                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
+                    early_stopping_scheduler.early_stop = True
+
+            if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
+                    end - 1) or early_stopping_scheduler.best_epoch == epoch:
                 model.eval()
                 check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
                 model_state_dict = model.module.state_dict() \
@@ -700,14 +722,23 @@ def main():
                             'criterion': ce},
                            check_path)
 
-                valid_test(train_extract_loader, model, epoch, xvector_dir)
-                test(model, epoch, writer, xvector_dir)
-                if epoch != (end - 1):
-                    try:
-                        shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
-                        shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                    except Exception as e:
-                        print('rm dir xvectors error:', e)
+                if args.early_stopping:
+                    pass
+                # elif early_stopping_scheduler.best_epoch == epoch or (
+                #         args.early_stopping == False and epoch % args.test_interval == 1):
+                elif epoch % args.test_interval == 1:
+                    test(model, epoch, writer, xvector_dir)
+
+            if early_stopping_scheduler.early_stop:
+                print('Best %s in Epoch %d is %.6f.' % (
+                    args.early_meta, early_stopping_scheduler.best_epoch, early_stopping_scheduler.best_loss))
+                try:
+                    shutil.copy('{}/checkpoint_{}.pth'.format(args.check_path, early_stopping_scheduler.best_epoch),
+                                '{}/best.pth'.format(args.check_path))
+                except Exception as e:
+                    print(e)
+                end = epoch
+                break
 
             if args.scheduler == 'rop':
                 scheduler.step(valid_loss)
@@ -715,12 +746,9 @@ def main():
                 continue
             else:
                 scheduler.step()
-
     except KeyboardInterrupt:
         end = epoch
 
-    # torch.cuda.empty_cache()
-    # torch.distributed.destroy_process_group()
     writer.close()
     stop_time = time.time()
     t = float(stop_time - start_time)

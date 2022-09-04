@@ -35,6 +35,7 @@ from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
+from Define_Model.TDNN.Slimmable import SlimmableTDNN
 from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6, MixTDNN_v5
 from Define_Model.demucs_feature import Demucs
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
@@ -99,6 +100,7 @@ __factory = {
     'TDNN_v5': TDNN_v5,
     'TDNN_v6': TDNN_v6,
     'MixTDNN_v5': MixTDNN_v5,
+    'SlimmableTDNN': SlimmableTDNN,
     'ETDNN': ETDNN,
     'ETDNN_v4': ETDNN_v4,
     'ETDNN_v5': ETDNN_v5,
@@ -728,6 +730,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--label-dir', type=str, default='', help='path to teacher model')
         parser.add_argument('--temperature', type=float, default=20, help='path to voxceleb1 test dataset')
         parser.add_argument('--teacher-model', type=str, default='', help='path to voxceleb1 test dataset')
+        parser.add_argument('--attention-type', type=str, default='both', help='path to voxceleb1 test dataset')
+        parser.add_argument('--norm-type', type=str, default='input', help='path to voxceleb1 test dataset')
 
     args = parser.parse_args()
 
