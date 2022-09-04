@@ -45,6 +45,7 @@ if [ $stage -le 0 ]; then
   norm_type=input_weight
 #  _${weight}
   for kd_type in attention ; do
+  for norm_type in input input_weight ; do
   for chn in 16 ; do
   for seed in 123456 1234567 123458; do
 
@@ -129,6 +130,7 @@ if [ $stage -le 0 ]; then
        --teacher-model-yaml ${teacher_dir}/model.2022.01.05.yaml \
        --teacher-resume ${teacher_dir}/checkpoint_50.pth \
        --temperature 20
+   done
    done
    done
    done
