@@ -87,6 +87,8 @@ if args.cuda:
 
 # create logger
 # Define visulaize SummaryWriter instance
+assert os.path.exists(args.teacher_resume), print('=> no checkpoint found at {}'.format(args.teacher_resume))
+
 writer = SummaryWriter(logdir=args.check_path)
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
@@ -596,7 +598,7 @@ def main():
                 model_dict.update(filtered)
                 teacher_model.load_state_dict(model_dict)
         else:
-            print('=> no checkpoint found at {}'.format(args.resume))
+            print('=> no checkpoint found at {}'.format(args.teacher_resume))
 
     # Save model config txt
     with open(osp.join(args.check_path, 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
