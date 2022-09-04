@@ -667,6 +667,8 @@ class AttentionTransferLoss(nn.Module):
                 loss += (self.min_max(s_map.mean(dim=3, keepdim=True)) - self.min_max(
                     t_map.mean(dim=3, keepdim=True))).pow(2).mean()
 
+                loss = loss / 2
+
             elif self.attention_type == 'time':
                 loss += (self.min_max(s_map.mean(dim=3, keepdim=True)) - self.min_max(
                     t_map.mean(dim=3, keepdim=True))).pow(2).mean()
