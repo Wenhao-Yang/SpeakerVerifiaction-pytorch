@@ -213,12 +213,12 @@ class ECAPA_TDNN(nn.Module):
         out = torch.cat([out2, out3, out4], dim=1)
         out = F.relu(self.conv(out))
         out = self.bn0(self.pooling(out))
-        embeddings = self.fc1(out)
+        embeddings = self.bn1(self.fc1(out))
 
         if self.classifier == None:
             logits = ""
         else:
-            logits = self.classifier(self.bn1(embeddings))
+            logits = self.classifier(embeddings)
 
         # logits = self.classifier(embeddings)
 
