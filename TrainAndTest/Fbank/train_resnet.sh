@@ -394,7 +394,7 @@ if [ $stage -le 41 ]; then
   power_weight=max
 
   expansion=4
-  chn=16
+  chn=32
   cyclic_epoch=8
   red_ratio=8
   avg_size=1
