@@ -437,7 +437,7 @@ if [ $stage -le 41 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_reduct${red_ratio}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_fast/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_reduct${red_ratio}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_fast/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -487,7 +487,7 @@ if [ $stage -le 41 ]; then
       --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.0 \
-      --gpu-id 1 \
+      --gpu-id 1,2 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
