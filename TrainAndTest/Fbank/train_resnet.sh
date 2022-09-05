@@ -380,8 +380,8 @@ if [ $stage -le 41 ]; then
   resnet_size=34
   encoder_type=SAP2
   embedding_size=256
-  block_type=seblock
-  downsample=k1
+  block_type=cbam
+  downsample=k3
   kernel=5,5
   loss=arcsoft
   alpha=0
@@ -397,7 +397,7 @@ if [ $stage -le 41 ]; then
   chn=16
   cyclic_epoch=8
   red_ratio=2
-  avg_size=1
+  avg_size=5
   fast=none1
 
   for resnet_size in 34 18 10; do
@@ -437,8 +437,8 @@ if [ $stage -le 41 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_reduct${red_ratio}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares/${seed}
-
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares/${seed}
+    # _reduct${red_ratio}
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
@@ -453,7 +453,7 @@ if [ $stage -le 41 ]; then
       --input-norm ${input_norm} \
       --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
-      --nj 12 \
+      --nj 6 \
       --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
