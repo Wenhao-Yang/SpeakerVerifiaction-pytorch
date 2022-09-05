@@ -382,7 +382,7 @@ if [ $stage -le 41 ]; then
   embedding_size=256
   block_type=basic
   downsample=k1
-  kernel=5,5
+  kernel=7,7
   loss=arcsoft
   alpha=0
   input_norm=Mean
@@ -396,7 +396,7 @@ if [ $stage -le 41 ]; then
   expansion=4
   chn=16
   cyclic_epoch=8
-  avg_size=5
+  avg_size=1
   fast=none1
 
   for resnet_size in 34 18 10; do
@@ -436,7 +436,7 @@ if [ $stage -le 41 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_fast/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -453,7 +453,7 @@ if [ $stage -le 41 ]; then
       --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 50 \
+      --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
@@ -471,6 +471,7 @@ if [ $stage -le 41 ]; then
       --kernel-size ${kernel} \
       --channels ${channels} \
       --downsample ${downsample} \
+      --first-bias \
       --fast ${fast} \
       --stride 2,1 \
       --block-type ${block_type} \
@@ -483,8 +484,8 @@ if [ $stage -le 41 ]; then
       --margin 0.2 \
       --s 30 \
       --weight-decay 0.0005 \
-      --dropout-p 0.1 \
-      --gpu-id 0 \
+      --dropout-p 0.0 \
+      --gpu-id 1 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \

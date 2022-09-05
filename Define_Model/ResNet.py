@@ -730,7 +730,8 @@ class ThinResNet(nn.Module):
 
     def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
                  input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
-                 kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
+                 first_bias=True, kernel_size=5, stride=1, padding=2,
+                 dropout_p=0.0, exp=False, filter_fix=False,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
@@ -819,7 +820,8 @@ class ThinResNet(nn.Module):
 
         self.input_mask = nn.Sequential(*input_mask)
 
-        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
+        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding,
+                               bias=first_bias)
         self.bn1 = self._norm_layer(self.num_filter[0])
         self.relu = nn.ReLU(inplace=True)
 
