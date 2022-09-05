@@ -394,7 +394,7 @@ if [ $stage -le 41 ]; then
   power_weight=max
 
   expansion=4
-  chn=32
+  chn=16
   cyclic_epoch=8
   red_ratio=2
   avg_size=1
@@ -484,7 +484,7 @@ if [ $stage -le 41 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0.0 \
       --gpu-id 1,2 \
       --extract \
