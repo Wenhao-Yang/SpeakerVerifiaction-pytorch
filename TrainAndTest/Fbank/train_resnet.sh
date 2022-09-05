@@ -380,7 +380,7 @@ if [ $stage -le 41 ]; then
   resnet_size=34
   encoder_type=AVG
   embedding_size=256
-  block_type=basic
+  block_type=seblock
   downsample=k1
   kernel=7,7
   loss=arcsoft
@@ -396,6 +396,7 @@ if [ $stage -le 41 ]; then
   expansion=4
   chn=16
   cyclic_epoch=8
+  red_ratio=8
   avg_size=1
   fast=none1
 
@@ -436,7 +437,7 @@ if [ $stage -le 41 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_fast/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_reduct${red_ratio}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp00_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_fast/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} \
@@ -475,6 +476,7 @@ if [ $stage -le 41 ]; then
       --fast ${fast} \
       --stride 2,1 \
       --block-type ${block_type} \
+      --red-ratio ${red_ratio} \
       --embedding-size ${embedding_size} \
       --time-dim 1 \
       --avg-size ${avg_size} \
