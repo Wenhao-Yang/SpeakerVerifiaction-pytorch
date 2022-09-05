@@ -378,7 +378,7 @@ if [ $stage -le 41 ]; then
   feat_type=klfb
   model=ThinResNet
   resnet_size=34
-  encoder_type=AVG
+  encoder_type=SAP2
   embedding_size=256
   block_type=seblock
   downsample=k1
