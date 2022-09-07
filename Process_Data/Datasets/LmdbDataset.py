@@ -429,7 +429,7 @@ class LmdbTestDataset(Dataset):
 
 class EgsDataset(Dataset):
     def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
-                 num_meta_spks=0, cls2cls={},
+                 num_meta_spks=0, cls2cls={}, shuffle=False,
                  random_chunk=[], batch_size=0, verbose=1):
 
         feat_scp = dir + '/feats.scp'
@@ -440,18 +440,24 @@ class EgsDataset(Dataset):
         dataset = []
         spks = set([])
         doms = set([])
-
+        self.common_path = ''
         with open(feat_scp, 'r') as u:
             all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
             for line in all_cls_upath:
                 try:
                     cls, upath = line.split()
+                    # /home/yangwenhao/project/lstm_speaker_verification/data/vox1/klfb/fbank/dev_fb40/raw_fbank_dev_fb40.1.ark:26
                     dom_cls = -1
                 except ValueError as v:
                     cls, dom_cls, upath = line.split()
                     dom_cls = int(dom_cls)
 
                 cls = int(cls)
+
+                if self.common_path == '':
+                    self.common_path = '/'.join(upath.split('/')[:-1]) + '/'
+
+                upath = upath.split('/')[-1]
 
                 if len(cls2cls) > 0:
                     if cls in cls2cls:
@@ -495,17 +501,22 @@ class EgsDataset(Dataset):
         self.domain = domain
         self.chunk_size = []
         self.batch_size = batch_size
+        self.shuffle = shuffle
 
     def __getitem__(self, idx):
         # time_s = time.time()
         # print('Starting loading...')
         label, dom_label, upath = self.dataset[idx]
 
-        y = self.loader(upath)
+        y = self.loader(self.common_path + upath)
 
         feature = self.transform(y)
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
+        if idx == len(self.dataset) - 1 and self.shuffle:
+            dataset_batch = self.dataset.reshape(-1, self.batch_size)
+            np.random.shuffle(dataset_batch)
+
         if self.domain:
             return feature, label, dom_label
         else:
