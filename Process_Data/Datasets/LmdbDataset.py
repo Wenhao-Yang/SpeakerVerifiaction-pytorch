@@ -518,14 +518,15 @@ class EgsDataset(Dataset):
         feature = self.transform(y)
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
-        if idx == len(self.dataset) - 1 and self.shuffle:
-            dataset_batch = self.dataset.reshape(-1, self.batch_size, 3)
-            np.random.shuffle(dataset_batch)
 
         if self.domain:
             return feature, label, dom_label
         else:
             return feature, label
+
+    def shuffle(self):
+        dataset_batch = self.dataset.reshape(-1, self.batch_size, 3)
+        np.random.shuffle(dataset_batch)
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数
