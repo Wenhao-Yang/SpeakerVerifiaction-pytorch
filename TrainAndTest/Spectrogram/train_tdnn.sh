@@ -22,7 +22,7 @@ if [ $stage -le 0 ]; then
   testset=vox1
   model=ECAPA
   resnet_size=34
-  encoder_type=ASP
+  encoder_type=ASTP
   alpha=0
   block_type=res2tdnn
   embedding_size=192
@@ -32,8 +32,8 @@ if [ $stage -le 0 ]; then
   sname=dev
 
   mask_layer=baseline
-  scheduler=cyclic
-  optimizer=adam
+  scheduler=rop
+  optimizer=sgd
   input_dim=161
   batch_size=128
   chn=512
@@ -49,7 +49,7 @@ if [ $stage -le 0 ]; then
       chn_str=chn1024_
     fi
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wde5_vares_mg25_bashuf/${seed}
+    model_dir=${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
@@ -64,18 +64,18 @@ if [ $stage -le 0 ]; then
       --resnet-size ${resnet_size} \
       --nj 6 \
       --epochs 80 \
-      --random-chunk 200 200 \
+      --random-chunk 200 400 \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --patience 2 \
       --early-stopping \
-      --early-patience 16 \
+      --early-patience 20 \
       --cyclic-epoch 4 \
       --early-delta 0.0001 \
       --early-meta EER \
       --accu-steps 1 \
-      --lr 0.001 \
-      --base-lr 0.00000001 \
+      --lr 0.1 \
+      --base-lr 0.000001 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_21.pth \
@@ -83,11 +83,11 @@ if [ $stage -le 0 ]; then
       --embedding-size ${embedding_size} \
       --encoder-type ${encoder_type} \
       --alpha ${alpha} \
-      --margin 0.25 \
+      --margin 0.2 \
       --grad-clip 0 \
       --s 30 \
       --lr-ratio 0.01 \
-      --weight-decay 0.00001 \
+      --weight-decay 0.00002 \
       --gpu-id 2,3 \
       --shuffle \
       --batch-shuffle \
