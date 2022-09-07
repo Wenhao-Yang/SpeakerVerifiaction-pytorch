@@ -35,7 +35,7 @@ if [ $stage -le 0 ]; then
   scheduler=cyclic
   optimizer=adam
   input_dim=161
-  batch_size=256
+  batch_size=128
   chn=512
 #  fast=none1
 #  downsample=k5
@@ -49,7 +49,7 @@ if [ $stage -le 0 ]; then
       chn_str=chn1024_
     fi
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wde5_var_margin25/${seed}
+    model_dir=${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wde5_vares_mg25_bashuf/${seed}
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
@@ -90,6 +90,7 @@ if [ $stage -le 0 ]; then
       --weight-decay 0.00001 \
       --gpu-id 2,3 \
       --shuffle \
+      --batch-shuffle \
       --all-iteraion 0 \
       --extract \
       --cos-sim \
