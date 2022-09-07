@@ -306,7 +306,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         if args.scheduler == 'cyclic':
             scheduler.step()
 
-    train_dir.__shuffle__()
+    if args.batch_shuffle:
+        train_dir.__shuffle__()
+
     this_epoch_str = 'Epoch {:>2d}: \33[91m'.format(epoch)
     # if len(FLAGS.width_mult_list) > 1:
     #     this_epoch_str += ' Width: ' + ' '.join([str(w) for w in FLAGS.width_mult_list]) + ' '
