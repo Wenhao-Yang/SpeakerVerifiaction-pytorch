@@ -510,6 +510,9 @@ class EgsDataset(Dataset):
 
         y = self.loader(self.common_path + upath)
 
+        if idx == 0:
+            print(label, upath)
+
         feature = self.transform(y)
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
