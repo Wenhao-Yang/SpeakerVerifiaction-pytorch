@@ -305,7 +305,7 @@ if [ $stage -le 10 ]; then
   chn=16
 #  _${weight}
   for kd_type in attention ; do
-  for seed in 123457 123458 ; do
+  for seed in 123456 123457 123458 ; do
 
      if [ $resnet_size -le 34 ];then
         expansion=1
@@ -327,7 +327,7 @@ if [ $stage -le 10 ]; then
       if [[ $kd_type == attention ]];then
         kd_ratio=1000
         if [[ $norm_type == input_weight ]]; then
-          kd_ratio=40
+          kd_ratio=10
         fi
         kd_str=_${kd_type}${kd_ratio}${kd_loss}_${attention_type}_${norm_type}
       else
