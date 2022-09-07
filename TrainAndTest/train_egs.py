@@ -85,6 +85,7 @@ random.seed(args.seed)
 # torch.multiprocessing.set_sharing_strategy('file_system')
 
 if args.cuda:
+    torch.cuda.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
     cudnn.benchmark = True
 
@@ -284,6 +285,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
             epoch_str += ' Avg Loss: {:.4f}'.format(total_loss / (batch_idx + 1))
             pbar.set_description(epoch_str)
+
+    if args.batch_shuffle:
+        train_dir.__shuffle__()
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:6.2f}%, Avg loss: {:7.4f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
@@ -637,7 +641,8 @@ def main():
         cycle_momentum = False if args.optimizer == 'adam' else True
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
                                           max_lr=args.lr,
-                                          step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
+                                          step_size_up=args.cyclic_epoch * int(
+                                              np.ceil(len(train_dir) / args.batch_size)),
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
     else:
@@ -729,6 +734,8 @@ def main():
 
             if args.early_stopping:
                 early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
+                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
+                    early_stopping_scheduler.early_stop = True
 
             if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
@@ -747,12 +754,16 @@ def main():
                 elif epoch % args.test_interval == 1 or epoch == (end - 1):
                     test(model, epoch, writer, xvector_dir)
 
-                # if epoch != (end - 1):
-                #     try:
-                #         shutil.rmtree("%s/train/epoch_%s" % (xvector_dir, epoch))
-                #         shutil.rmtree("%s/test/epoch_%s" % (xvector_dir, epoch))
-                #     except Exception as e:
-                #         print('rm dir xvectors error:', e)
+            if early_stopping_scheduler.early_stop:
+                print('Best %s in Epoch %d is %.6f.' % (
+                    args.early_meta, early_stopping_scheduler.best_epoch, early_stopping_scheduler.best_loss))
+                try:
+                    shutil.copy('{}/checkpoint_{}.pth'.format(args.check_path, early_stopping_scheduler.best_epoch),
+                                '{}/best.pth'.format(args.check_path))
+                except Exception as e:
+                    print(e)
+                end = epoch
+                break
 
             if args.scheduler == 'rop':
                 scheduler.step(valid_loss)
@@ -760,11 +771,6 @@ def main():
                 continue
             else:
                 scheduler.step()
-
-            if early_stopping_scheduler.early_stop:
-                print('Best %s is Epoch %d.' % (args.early_meta, early_stopping_scheduler.best_epoch))
-                end = epoch
-                break
 
     except KeyboardInterrupt:
         end = epoch

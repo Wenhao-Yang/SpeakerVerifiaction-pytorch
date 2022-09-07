@@ -442,7 +442,7 @@ class EgsDataset(Dataset):
         dataset = []
         spks = set([])
         doms = set([])
-
+        self.common_path = ''
         with open(feat_scp, 'r') as u:
             all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
             for line in all_cls_upath:
@@ -456,6 +456,10 @@ class EgsDataset(Dataset):
                     cls = int(cls)
                 except ValueError as v:
                     pass
+                if self.common_path == '':
+                    self.common_path = '/'.join(upath.split('/')[:-1]) + '/'
+
+                upath = upath.split('/')[-1]
 
                 if len(cls2cls) > 0:
                     if cls in cls2cls:
@@ -503,7 +507,7 @@ class EgsDataset(Dataset):
                 print('    There are {} guide labels for egs in Dataset'.format(len(guide_label)))
             assert len(guide_label) == len(dataset)
 
-        self.dataset = dataset
+        self.dataset = np.array(dataset)
         self.guide_label = guide_label
 
         self.feat_dim = feat_dim
@@ -519,8 +523,10 @@ class EgsDataset(Dataset):
         # time_s = time.time()
         # print('Starting loading...')
         label, dom_label, upath = self.dataset[idx]
+        label = int(label)
+        dom_label = int(dom_label)
 
-        y = self.loader(upath)
+        y = self.loader(self.common_path + upath)
 
         feature = self.transform(y)
         # time_e = time.time()
@@ -551,6 +557,10 @@ class EgsDataset(Dataset):
         feature = self.transform(y)
 
         return feature
+
+    def __shuffle__(self):
+        dataset_batch = self.dataset.reshape(-1, self.batch_size, 3)
+        np.random.shuffle(dataset_batch)
 
     def __len__(self):
         return len(self.dataset)  # 返回一个epoch的采样数
