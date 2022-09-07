@@ -511,9 +511,8 @@ class EgsDataset(Dataset):
         dom_label = int(dom_label)
 
         y = self.loader(self.common_path + upath)
-
-        if idx == 0:
-            print(label, upath)
+        # if idx == 0:
+        #     print(label, upath)
 
         feature = self.transform(y)
         # time_e = time.time()

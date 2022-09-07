@@ -267,8 +267,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # optimizer.step()
         if (batch_idx + 1) % args.log_interval == 0:
-            if (batch_idx + 1) % 500 == 0:
-                break
+            # if (batch_idx + 1) % 500 == 0:
+            #     break
             epoch_str = 'Train Epoch {}: [ {:>5.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
 
             # epoch_str += ' Width: {:.2f}'.format(width_mult)
