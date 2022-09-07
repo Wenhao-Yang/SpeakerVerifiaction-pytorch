@@ -483,6 +483,7 @@ if [ $stage -le 41 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
       --train-trials trials \
       --shuffle \
+      --batch-shuffle \
       --seed ${seed} \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
