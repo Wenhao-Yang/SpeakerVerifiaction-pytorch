@@ -507,6 +507,8 @@ class EgsDataset(Dataset):
         # time_s = time.time()
         # print('Starting loading...')
         label, dom_label, upath = self.dataset[idx]
+        label = int(label)
+        dom_label = int(dom_label)
 
         y = self.loader(self.common_path + upath)
 
