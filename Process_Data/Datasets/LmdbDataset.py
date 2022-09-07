@@ -492,7 +492,7 @@ class EgsDataset(Dataset):
             print('==> There are {} speakers in Dataset.'.format(len(spks)))
             print('    There are {} egs in Dataset'.format(len(dataset)))
 
-        self.dataset = dataset
+        self.dataset = np.array(dataset)
         self.feat_dim = feat_dim
         self.loader = loader
         self.transform = transform
@@ -517,7 +517,7 @@ class EgsDataset(Dataset):
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
         if idx == len(self.dataset) - 1 and self.shuffle:
-            dataset_batch = self.dataset.reshape(-1, self.batch_size)
+            dataset_batch = self.dataset.reshape(-1, self.batch_size, 3)
             np.random.shuffle(dataset_batch)
 
         if self.domain:
