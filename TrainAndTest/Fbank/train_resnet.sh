@@ -462,7 +462,7 @@ if [ $stage -le 41 ]; then
       --base-lr 0.000001 \
       --patience 3 \
       --early-stopping \
-      --early-patience 15 \
+      --early-patience 20 \
       --early-delta 0.0001 \
       --early-meta EER \
       --milestones 10,20,30,40 \
