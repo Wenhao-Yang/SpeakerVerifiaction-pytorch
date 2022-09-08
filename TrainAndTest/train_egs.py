@@ -724,8 +724,7 @@ def main():
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
     elif args.scheduler == 'cyclic':
         cycle_momentum = False if args.optimizer == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
-                                          max_lr=args.lr,
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr, max_lr=args.lr,
                                           step_size_up=args.cyclic_epoch * int(
                                               np.ceil(len(train_dir) / args.batch_size)),
                                           cycle_momentum=cycle_momentum,
@@ -800,13 +799,18 @@ def main():
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
 
+    all_lr = []
     try:
         for epoch in range(start, end):
             # pdb.set_trace()
             lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
+            this_lr = []
             for param_group in optimizer.param_groups:
+                this_lr.append(param_group['lr'])
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
+            all_lr.append(this_lr[0])
+            writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
@@ -822,6 +826,10 @@ def main():
                 early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
                 if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
                     early_stopping_scheduler.early_stop = True
+
+                if args.scheduler != 'cyclic' and this_lr[0] <= 0.1 ** 3 * args.lr:
+                    if len(all_lr) > 2 and all_lr[-2] == this_lr[0]:
+                        early_stopping_scheduler.early_stop = True
 
             if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
