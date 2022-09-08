@@ -284,7 +284,7 @@ if [ $stage -le 205 ]; then
     fi
 
     python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/ThinResNet34/aishell2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch}_layer_weight \
+      --extract-path Data/gradient/ThinResNet34/aishell2/klsp_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch}_layer_weight \
       --feat-dim 161 \
       --grad-weight ${weight} \
       --grad-clip ${grad_clip} \
