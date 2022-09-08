@@ -519,7 +519,7 @@ if [ $stage -le 41 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var_lr${lr}/${seed}
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd2e4_var_lr${lr}/${seed}
 
       python TrainAndTest/train_egs.py \
         --model ${model} \
@@ -574,9 +574,9 @@ if [ $stage -le 41 ]; then
         --grad-clip 0 \
         --s 30 \
         --lr-ratio 0.01 \
-        --weight-decay 0.0001 \
+        --weight-decay 0.0002 \
         --dropout-p 0.1 \
-        --gpu-id 2,3 \
+        --gpu-id 1 \
         --all-iteraion 0 \
         --extract \
         --shuffle \
