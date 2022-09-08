@@ -447,7 +447,6 @@ def main():
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()
-
     options = ["\'%s\': \'%s\'" % (str(k), str(opts[k])) for k in keys]
 
     print('Parsed options: \n{ %s }' % (', '.join(options)))
@@ -465,7 +464,6 @@ def main():
     model = create_model(args.model, **model_kwargs)
     model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     save_model_args(model_kwargs, model_yaml_path)
-    # exit(0)
 
     start_epoch = 0
     if args.save_init and not args.finetune:
@@ -603,7 +601,6 @@ def main():
             checkpoint_state_dict = checkpoint['state_dict']
             if isinstance(checkpoint_state_dict, tuple):
                 checkpoint_state_dict = checkpoint_state_dict[0]
-
             filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
 
             # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
@@ -714,13 +711,18 @@ def main():
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
 
+    all_lr = []
     try:
         for epoch in range(start, end):
             # pdb.set_trace()
             lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
+            this_lr = []
             for param_group in optimizer.param_groups:
+                this_lr.append(param_group['lr'])
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
+            all_lr.append(this_lr[0])
+            writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
@@ -736,6 +738,10 @@ def main():
                 early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
                 if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
                     early_stopping_scheduler.early_stop = True
+
+                if args.scheduler != 'cyclic' and this_lr[0] <= 0.1 ** 3 * args.lr:
+                    if len(all_lr) > 2 and all_lr[-2] == this_lr[0]:
+                        early_stopping_scheduler.early_stop = True
 
             if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
