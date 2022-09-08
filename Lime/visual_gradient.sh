@@ -276,7 +276,7 @@ if [ $stage -le 205 ]; then
   for weight in mean ; do
   for seed in 123456;do
     if [ $seed -le 123456 ];then
-      epoch=41 #32 #27
+      epoch=15 #41 #32 #27
     elif [ $seed -le 123457 ]; then
       epoch=31 #35 #31
     else
@@ -284,7 +284,7 @@ if [ $stage -le 205 ]; then
     fi
 
     python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch}_layer_weight \
+      --extract-path Data/gradient/ThinResNet34/aishell2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch}_layer_weight \
       --feat-dim 161 \
       --grad-weight ${weight} \
       --grad-clip ${grad_clip} \
