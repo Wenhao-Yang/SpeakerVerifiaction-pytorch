@@ -501,8 +501,8 @@ if [ $stage -le 41 ]; then
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.1 \
-      --base-lr 0.000001 \
+      --lr 0.001 \
+      --base-lr 0.0000001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 15,25,35,45 \
