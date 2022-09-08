@@ -749,9 +749,7 @@ def main():
                 check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
-                torch.save({'epoch': epoch,
-                            'state_dict': model_state_dict,
-                            'criterion': ce}, check_path)
+                torch.save({'epoch': epoch, 'state_dict': model_state_dict, 'criterion': ce}, check_path)
 
                 if args.early_stopping:
                     pass
