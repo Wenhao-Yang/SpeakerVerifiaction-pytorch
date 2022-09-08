@@ -483,7 +483,7 @@ if [ $stage -le 41 ]; then
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
 #  for weight_norm in sum ; do
-  for lr in 0.05 0.1 ; do
+  for lr in 0.2 ; do
   for resnet_size in 10 ; do
     for seed in 123456 ;do
     for chn in 16 ; do
