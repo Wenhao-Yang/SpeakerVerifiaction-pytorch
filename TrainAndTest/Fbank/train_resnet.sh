@@ -442,9 +442,9 @@ if [ $stage -le 41 ]; then
   weight_p=0
   scale=0.2
 
-  for resnet_size in 34 10 ; do
+  for resnet_size in 10 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    for seed in 123456 ;do
+    for seed in 123456 123457 123458 ;do
     if [ $resnet_size -le 34 ];then
       expansion=1
       batch_size=256
