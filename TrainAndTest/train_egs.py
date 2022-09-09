@@ -65,7 +65,6 @@ except AttributeError:
         tensor._backward_hooks = backward_hooks
         return tensor
 
-
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 # Training settings
@@ -486,7 +485,6 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         mindcf_001_str += '{:.4f} '.format(mindcf_001)
 
         wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
-
         writer.add_scalar('Train/EER' + wid_str, 100. * eer, epoch)
         writer.add_scalar('Train/Threshold' + wid_str, eer_threshold, epoch)
         writer.add_scalar('Train/mindcf-0.01' + wid_str, mindcf_01, epoch)
