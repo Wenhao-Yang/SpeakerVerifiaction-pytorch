@@ -295,7 +295,7 @@ if [ $stage -le 10 ]; then
   downsample=k1
   fast=none1
 
-  attention_type=freq
+  attention_type=time
   norm_type=input_weight
 
   teacher_dir=Data/checkpoint/ThinResNet34/vox1/klsp_egs_rvec/123458/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var
@@ -304,8 +304,8 @@ if [ $stage -le 10 ]; then
   kd_loss=
   chn=16
 #  _${weight}
-  for kd_type in attention ; do
-  for seed in 123456 123457 123458 ; do
+  for attention_type in time both ; do
+  for seed in 123456 ; do
 
      if [ $resnet_size -le 34 ];then
         expansion=1
@@ -327,7 +327,7 @@ if [ $stage -le 10 ]; then
       if [[ $kd_type == attention ]];then
         kd_ratio=1000
         if [[ $norm_type == input_weight ]]; then
-          kd_ratio=10
+          kd_ratio=40
         fi
         kd_str=_${kd_type}${kd_ratio}${kd_loss}_${attention_type}_${norm_type}
       else
