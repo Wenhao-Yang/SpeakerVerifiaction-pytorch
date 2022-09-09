@@ -231,10 +231,11 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             batch_accs.append(minibatch_acc)
 
             correct['width%s' % width_mult] += minibatch_correct
-
             total_datasize['width%s' % width_mult] += len(predicted_one_labels)
             total_loss['width%s' % width_mult] += float(loss.item())
-            writer.add_scalar('Train/Loss_%s' % width_mult, float(loss.item()),
+
+            wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
+            writer.add_scalar('Train/Loss' + wid_str, float(loss.item()),
                               int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
             if np.isnan(loss.item()):
@@ -335,9 +336,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
     for width_mult in FLAGS.width_mult_list:
-        writer.add_scalar('Train/Accuracy_%s' % width_mult,
+        wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
+        writer.add_scalar('Train/Accuracy' + wid_str,
                           correct['width%s' % width_mult] / total_datasize['width%s' % width_mult], epoch)
-        writer.add_scalar('Train/Loss_%s' % width_mult, total_loss['width%s' % width_mult] / len(train_loader), epoch)
+        writer.add_scalar('Train/Loss' + wid_str, total_loss['width%s' % width_mult] / len(train_loader), epoch)
 
     torch.cuda.empty_cache()
 
@@ -407,10 +409,12 @@ def valid_class(valid_loader, model, ce, epoch):
                 total_datasize['width%s' % width_mult] += len(predicted_one_labels)
 
     for width_mult in FLAGS.width_mult_list:
+        wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
+
         valid_loss = total_loss['width%s' % width_mult] / len(valid_loader)
         valid_accuracy = 100. * correct['width%s' % width_mult] / total_datasize['width%s' % width_mult]
-        writer.add_scalar('Train/Valid_Loss_%s' % width_mult, valid_loss, epoch)
-        writer.add_scalar('Train/Valid_Accuracy_%s' % width_mult, valid_accuracy, epoch)
+        writer.add_scalar('Train/Valid_Loss' + wid_str, valid_loss, epoch)
+        writer.add_scalar('Train/Valid_Accuracy' + wid_str, valid_accuracy, epoch)
 
     torch.cuda.empty_cache()
 
@@ -481,10 +485,12 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         mindcf_01_str += '{:.4f} '.format(mindcf_01)
         mindcf_001_str += '{:.4f} '.format(mindcf_001)
 
-        writer.add_scalar('Train/EER_%s' % width_mult, 100. * eer, epoch)
-        writer.add_scalar('Train/Threshold_%s' % width_mult, eer_threshold, epoch)
-        writer.add_scalar('Train/mindcf-0.01_%s' % width_mult, mindcf_01, epoch)
-        writer.add_scalar('Train/mindcf-0.001_%s' % width_mult, mindcf_001, epoch)
+        wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
+
+        writer.add_scalar('Train/EER' + wid_str, 100. * eer, epoch)
+        writer.add_scalar('Train/Threshold' + wid_str, eer_threshold, epoch)
+        writer.add_scalar('Train/mindcf-0.01' + wid_str, mindcf_01, epoch)
+        writer.add_scalar('Train/mindcf-0.001' + wid_str, mindcf_001, epoch)
 
     test_str += eer_str + threshold_str + mindcf_01_str + mindcf_001_str + '. \33[0m'
     print(test_str)
