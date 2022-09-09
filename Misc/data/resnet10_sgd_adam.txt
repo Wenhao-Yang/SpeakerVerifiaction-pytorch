@@ -1,0 +1,175 @@
+Epoch  1: Train Accuracy: 64.970195%, Avg loss: 5.586430.
+Epoch  2: Train Accuracy: 87.414601%, Avg loss: 3.140831.
+Epoch  3: Train Accuracy: 90.975466%, Avg loss: 2.592462.
+Epoch  4: Train Accuracy: 92.851337%, Avg loss: 2.266140.
+Epoch  5: Train Accuracy: 94.051355%, Avg loss: 2.026476.
+Epoch  6: Train Accuracy: 94.871636%, Avg loss: 1.835893.
+Epoch  7: Train Accuracy: 95.285969%, Avg loss: 1.744718.
+Epoch  8: Train Accuracy: 95.613049%, Avg loss: 1.662143.
+Epoch  9: Train Accuracy: 95.767073%, Avg loss: 1.620380.
+Epoch 10: Train Accuracy: 95.973272%, Avg loss: 1.567100.
+Epoch 11: Train Accuracy: 96.000771%, Avg loss: 1.562128.
+Epoch 12: Train Accuracy: 96.139796%, Avg loss: 1.523242.
+Epoch 13: Train Accuracy: 96.235275%, Avg loss: 1.495692.
+Epoch 14: Train Accuracy: 96.270273%, Avg loss: 1.491458.
+Epoch 15: Train Accuracy: 96.328415%, Avg loss: 1.472593.
+Epoch 16: Train Accuracy: 97.681410%, Avg loss: 1.031585.
+Epoch 17: Train Accuracy: 98.034618%, Avg loss: 0.939784.
+Epoch 18: Train Accuracy: 98.130580%, Avg loss: 0.912249.
+Epoch 19: Train Accuracy: 98.179852%, Avg loss: 0.902717.
+Epoch 20: Train Accuracy: 98.234285%, Avg loss: 0.895853.
+Epoch 21: Train Accuracy: 98.258719%, Avg loss: 0.891591.
+Epoch 22: Train Accuracy: 98.272589%, Avg loss: 0.886796.
+Epoch 23: Train Accuracy: 98.290330%, Avg loss: 0.882233.
+Epoch 24: Train Accuracy: 98.309442%, Avg loss: 0.878734.
+Epoch 25: Train Accuracy: 98.498626%, Avg loss: 0.806319.
+Epoch 26: Train Accuracy: 98.547333%, Avg loss: 0.789875.
+Epoch 27: Train Accuracy: 98.567977%, Avg loss: 0.777753.
+Epoch 28: Train Accuracy: 98.587170%, Avg loss: 0.767618.
+Epoch 29: Train Accuracy: 98.565639%, Avg loss: 0.780818.
+Epoch 30: Train Accuracy: 98.587895%, Avg loss: 0.766942.
+Epoch 31: Train Accuracy: 98.603620%, Avg loss: 0.769242.
+Epoch 32: Train Accuracy: 98.611685%, Avg loss: 0.765761.
+Epoch 33: Train Accuracy: 98.595153%, Avg loss: 0.771438.
+Epoch 34: Train Accuracy: 98.606362%, Avg loss: 0.770534.
+Epoch 35: Train Accuracy: 98.616281%, Avg loss: 0.770547.
+Epoch 36: Train Accuracy: 98.619345%, Avg loss: 0.766471.
+Epoch 37: Train Accuracy: 98.628861%, Avg loss: 0.767929.
+Epoch 38: Train Accuracy: 98.632812%, Avg loss: 0.766953.
+Epoch 39: Train Accuracy: 98.651602%, Avg loss: 0.755359.
+Epoch 40: Train Accuracy: 98.637812%, Avg loss: 0.762185.
+Epoch 41: Train Accuracy: 98.649666%, Avg loss: 0.753396.
+Epoch 42: Train Accuracy: 98.643860%, Avg loss: 0.766895.
+Epoch 43: Train Accuracy: 98.655634%, Avg loss: 0.760335.
+Epoch 44: Train Accuracy: 98.663456%, Avg loss: 0.754411.
+Epoch 45: Train Accuracy: 98.668617%, Avg loss: 0.751010.
+Epoch 46: Train Accuracy: 98.658618%, Avg loss: 0.757934.
+Epoch 47: Train Accuracy: 98.680391%, Avg loss: 0.749882.
+
+Epoch  1: Train Accuracy(%):  61.90    Loss:       5.9443 .
+Epoch  2: Train Accuracy(%):  88.64    Loss:       2.9695 .
+Epoch  3: Train Accuracy(%):  92.48    Loss:       2.3368 .
+Epoch  4: Train Accuracy(%):  94.04    Loss:       2.0329 .
+Epoch  5: Train Accuracy(%):  94.85    Loss:       1.8580 .
+Epoch  6: Train Accuracy(%):  95.44    Loss:       1.7206 .
+Epoch  7: Train Accuracy(%):  95.84    Loss:       1.6228 .
+Epoch  8: Train Accuracy(%):  96.11    Loss:       1.5446 .
+Epoch  9: Train Accuracy(%):  96.28    Loss:       1.5047 .
+Epoch 10: Train Accuracy(%):  96.48    Loss:       1.4427 .
+Epoch 11: Train Accuracy(%):  96.60    Loss:       1.4113 .
+Epoch 12: Train Accuracy(%):  96.68    Loss:       1.3872 .
+Epoch 13: Train Accuracy(%):  96.88    Loss:       1.3346 .
+Epoch 14: Train Accuracy(%):  96.94    Loss:       1.3149 .
+Epoch 15: Train Accuracy(%):  96.95    Loss:       1.3058 .
+Epoch 16: Train Accuracy(%):  97.84    Loss:       1.0057 .
+Epoch 17: Train Accuracy(%):  98.05    Loss:       0.9460 .
+Epoch 18: Train Accuracy(%):  98.15    Loss:       0.9283 .
+Epoch 19: Train Accuracy(%):  98.19    Loss:       0.9153 .
+Epoch 20: Train Accuracy(%):  98.22    Loss:       0.9062 .
+Epoch 21: Train Accuracy(%):  98.22    Loss:       0.9106 .
+Epoch 22: Train Accuracy(%):  98.29    Loss:       0.8832 .
+Epoch 23: Train Accuracy(%):  98.31    Loss:       0.8860 .
+Epoch 24: Train Accuracy(%):  98.41    Loss:       0.8463 .
+Epoch 25: Train Accuracy(%):  98.40    Loss:       0.8521 .
+Epoch 26: Train Accuracy(%):  98.41    Loss:       0.8543 .
+Epoch 27: Train Accuracy(%):  98.41    Loss:       0.8480 .
+Epoch 28: Train Accuracy(%):  98.45    Loss:       0.8345 .
+Epoch 29: Train Accuracy(%):  98.42    Loss:       0.8431 .
+Epoch 30: Train Accuracy(%):  98.44    Loss:       0.8411 .
+Epoch 31: Train Accuracy(%):  98.45    Loss:       0.8344 .
+Epoch 32: Train Accuracy(%):  98.45    Loss:       0.8404 .
+Epoch 33: Train Accuracy(%):  98.42    Loss:       0.8502 .
+Epoch 34: Train Accuracy(%):  98.45    Loss:       0.8402 .
+Epoch 35: Train Accuracy(%):  98.44    Loss:       0.8404 .
+Epoch 36: Train Accuracy(%):  98.45    Loss:       0.8416 .
+Epoch 37: Train Accuracy(%):  98.45    Loss:       0.8444 .
+Epoch 38: Train Accuracy(%):  98.45    Loss:       0.8406 .
+Epoch 39: Train Accuracy(%):  98.48    Loss:       0.8272 .
+
+Train EER: 9.6978%, Threshold: 0.3541, mindcf-0.01: 0.6657, mindcf-0.001: 0.7859. 
+Train EER: 8.2397%, Threshold: 0.3515, mindcf-0.01: 0.6004, mindcf-0.001: 0.6777. 
+Train EER: 7.6511%, Threshold: 0.3231, mindcf-0.01: 0.5642, mindcf-0.001: 0.6774. 
+Train EER: 7.7943%, Threshold: 0.3647, mindcf-0.01: 0.6238, mindcf-0.001: 0.6621. 
+Train EER: 6.9989%, Threshold: 0.3532, mindcf-0.01: 0.5399, mindcf-0.001: 0.6508. 
+Train EER: 6.6702%, Threshold: 0.3337, mindcf-0.01: 0.5168, mindcf-0.001: 0.5976. 
+Train EER: 8.0329%, Threshold: 0.3651, mindcf-0.01: 0.5950, mindcf-0.001: 0.7073. 
+Train EER: 6.8081%, Threshold: 0.3549, mindcf-0.01: 0.5480, mindcf-0.001: 0.6977. 
+Train EER: 6.3203%, Threshold: 0.3627, mindcf-0.01: 0.5030, mindcf-0.001: 0.5523. 
+Train EER: 6.9724%, Threshold: 0.3545, mindcf-0.01: 0.5469, mindcf-0.001: 0.6379. 
+Train EER: 6.3362%, Threshold: 0.3203, mindcf-0.01: 0.5236, mindcf-0.001: 0.6004. 
+Train EER: 7.1209%, Threshold: 0.3890, mindcf-0.01: 0.5191, mindcf-0.001: 0.6105. 
+Train EER: 7.1580%, Threshold: 0.3758, mindcf-0.01: 0.4927, mindcf-0.001: 0.5562. 
+Train EER: 6.5111%, Threshold: 0.3441, mindcf-0.01: 0.5100, mindcf-0.001: 0.5845. 
+Train EER: 6.4846%, Threshold: 0.3502, mindcf-0.01: 0.4905, mindcf-0.001: 0.5470. 
+Train EER: 4.7561%, Threshold: 0.2447, mindcf-0.01: 0.4291, mindcf-0.001: 0.4931. 
+Train EER: 4.7137%, Threshold: 0.2547, mindcf-0.01: 0.4249, mindcf-0.001: 0.5006. 
+Train EER: 4.6501%, Threshold: 0.2530, mindcf-0.01: 0.4136, mindcf-0.001: 0.4853. 
+Train EER: 5.0265%, Threshold: 0.2592, mindcf-0.01: 0.4285, mindcf-0.001: 0.5069. 
+Train EER: 4.8144%, Threshold: 0.2543, mindcf-0.01: 0.4397, mindcf-0.001: 0.5267. 
+Train EER: 4.8727%, Threshold: 0.2594, mindcf-0.01: 0.4481, mindcf-0.001: 0.5199. 
+Train EER: 5.0583%, Threshold: 0.2604, mindcf-0.01: 0.4274, mindcf-0.001: 0.5148. 
+Train EER: 4.8940%, Threshold: 0.2590, mindcf-0.01: 0.4400, mindcf-0.001: 0.5125. 
+Train EER: 4.9894%, Threshold: 0.2515, mindcf-0.01: 0.4327, mindcf-0.001: 0.4984. 
+Train EER: 4.5440%, Threshold: 0.2433, mindcf-0.01: 0.4008, mindcf-0.001: 0.4493. 
+Train EER: 4.5069%, Threshold: 0.2456, mindcf-0.01: 0.4142, mindcf-0.001: 0.4713. 
+Train EER: 4.4857%, Threshold: 0.2423, mindcf-0.01: 0.4080, mindcf-0.001: 0.4637. 
+Train EER: 4.5016%, Threshold: 0.2426, mindcf-0.01: 0.4159, mindcf-0.001: 0.4870. 
+Train EER: 4.5758%, Threshold: 0.2447, mindcf-0.01: 0.4138, mindcf-0.001: 0.4913. 
+Train EER: 4.5122%, Threshold: 0.2422, mindcf-0.01: 0.4138, mindcf-0.001: 0.4566. 
+Train EER: 4.5334%, Threshold: 0.2437, mindcf-0.01: 0.4145, mindcf-0.001: 0.4829. 
+Train EER: 4.4751%, Threshold: 0.2443, mindcf-0.01: 0.4135, mindcf-0.001: 0.5051. 
+Train EER: 4.5599%, Threshold: 0.2420, mindcf-0.01: 0.4180, mindcf-0.001: 0.4826. 
+Train EER: 4.4751%, Threshold: 0.2458, mindcf-0.01: 0.4243, mindcf-0.001: 0.5090. 
+Train EER: 4.5016%, Threshold: 0.2430, mindcf-0.01: 0.4189, mindcf-0.001: 0.4896. 
+Train EER: 4.5652%, Threshold: 0.2429, mindcf-0.01: 0.4238, mindcf-0.001: 0.4859. 
+Train EER: 4.5652%, Threshold: 0.2433, mindcf-0.01: 0.4188, mindcf-0.001: 0.4819. 
+Train EER: 4.5440%, Threshold: 0.2419, mindcf-0.01: 0.4279, mindcf-0.001: 0.4706. 
+Train EER: 4.4857%, Threshold: 0.2430, mindcf-0.01: 0.4194, mindcf-0.001: 0.4898. 
+Train EER: 4.5387%, Threshold: 0.2432, mindcf-0.01: 0.4204, mindcf-0.001: 0.4872. 
+Train EER: 4.5122%, Threshold: 0.2407, mindcf-0.01: 0.4212, mindcf-0.001: 0.4850. 
+Train EER: 4.5387%, Threshold: 0.2412, mindcf-0.01: 0.4239, mindcf-0.001: 0.4812. 
+Train EER: 4.6023%, Threshold: 0.2426, mindcf-0.01: 0.4265, mindcf-0.001: 0.4902. 
+Train EER: 4.6235%, Threshold: 0.2438, mindcf-0.01: 0.4209, mindcf-0.001: 0.4745. 
+Train EER: 4.5016%, Threshold: 0.2446, mindcf-0.01: 0.4215, mindcf-0.001: 0.4874. 
+Train EER: 4.5440%, Threshold: 0.2407, mindcf-0.01: 0.4171, mindcf-0.001: 0.4666. 
+Train EER: 4.6023%, Threshold: 0.2409, mindcf-0.01: 0.4172, mindcf-0.001: 0.4786. 
+
+Test EER(%):         9.61    Threshold:  0.2729  MinDcf-0.01: 0.6715  MinDcf-0.001: 0.8118 . 
+Test EER(%):         7.34    Threshold:  0.2534  MinDcf-0.01: 0.5846  MinDcf-0.001: 0.7082 . 
+Test EER(%):         6.71    Threshold:  0.2626  MinDcf-0.01: 0.5389  MinDcf-0.001: 0.7281 . 
+Test EER(%):         6.72    Threshold:  0.2858  MinDcf-0.01: 0.5424  MinDcf-0.001: 0.6902 . 
+Test EER(%):         6.36    Threshold:  0.2680  MinDcf-0.01: 0.5056  MinDcf-0.001: 0.6783 . 
+Test EER(%):         6.41    Threshold:  0.2799  MinDcf-0.01: 0.5295  MinDcf-0.001: 0.5859 . 
+Test EER(%):         6.68    Threshold:  0.2979  MinDcf-0.01: 0.5048  MinDcf-0.001: 0.6623 . 
+Test EER(%):         6.21    Threshold:  0.2966  MinDcf-0.01: 0.5131  MinDcf-0.001: 0.6409 . 
+Test EER(%):         5.78    Threshold:  0.2637  MinDcf-0.01: 0.4894  MinDcf-0.001: 0.6030 . 
+Test EER(%):         5.85    Threshold:  0.2933  MinDcf-0.01: 0.4931  MinDcf-0.001: 0.6283 . 
+Test EER(%):         6.05    Threshold:  0.2974  MinDcf-0.01: 0.5302  MinDcf-0.001: 0.6146 . 
+Test EER(%):         6.20    Threshold:  0.2871  MinDcf-0.01: 0.5039  MinDcf-0.001: 0.6258 . 
+Test EER(%):         6.01    Threshold:  0.2976  MinDcf-0.01: 0.5262  MinDcf-0.001: 0.6138 . 
+Test EER(%):         6.05    Threshold:  0.3111  MinDcf-0.01: 0.4994  MinDcf-0.001: 0.6258 . 
+Test EER(%):         5.97    Threshold:  0.2857  MinDcf-0.01: 0.5027  MinDcf-0.001: 0.5791 . 
+Test EER(%):         4.77    Threshold:  0.2422  MinDcf-0.01: 0.4399  MinDcf-0.001: 0.5540 . 
+Test EER(%):         4.78    Threshold:  0.2399  MinDcf-0.01: 0.4385  MinDcf-0.001: 0.5374 . 
+Test EER(%):         4.85    Threshold:  0.2440  MinDcf-0.01: 0.4419  MinDcf-0.001: 0.5633 . 
+Test EER(%):         4.82    Threshold:  0.2416  MinDcf-0.01: 0.4329  MinDcf-0.001: 0.5257 . 
+Test EER(%):         4.77    Threshold:  0.2433  MinDcf-0.01: 0.4505  MinDcf-0.001: 0.5383 . 
+Test EER(%):         4.80    Threshold:  0.2423  MinDcf-0.01: 0.4455  MinDcf-0.001: 0.5512 . 
+Test EER(%):         4.83    Threshold:  0.2423  MinDcf-0.01: 0.4562  MinDcf-0.001: 0.5250 . 
+Test EER(%):         4.88    Threshold:  0.2406  MinDcf-0.01: 0.4467  MinDcf-0.001: 0.5236 . 
+Test EER(%):         4.67    Threshold:  0.2379  MinDcf-0.01: 0.4357  MinDcf-0.001: 0.5031 . 
+Test EER(%):         4.68    Threshold:  0.2380  MinDcf-0.01: 0.4301  MinDcf-0.001: 0.4965 . 
+Test EER(%):         4.70    Threshold:  0.2382  MinDcf-0.01: 0.4375  MinDcf-0.001: 0.4992 . 
+Test EER(%):         4.67    Threshold:  0.2381  MinDcf-0.01: 0.4377  MinDcf-0.001: 0.5021 . 
+Test EER(%):         4.68    Threshold:  0.2379  MinDcf-0.01: 0.4358  MinDcf-0.001: 0.4990 . 
+Test EER(%):         4.71    Threshold:  0.2390  MinDcf-0.01: 0.4347  MinDcf-0.001: 0.5058 . 
+Test EER(%):         4.70    Threshold:  0.2373  MinDcf-0.01: 0.4335  MinDcf-0.001: 0.5072 . 
+Test EER(%):         4.67    Threshold:  0.2380  MinDcf-0.01: 0.4379  MinDcf-0.001: 0.5020 . 
+Test EER(%):         4.67    Threshold:  0.2382  MinDcf-0.01: 0.4357  MinDcf-0.001: 0.4989 . 
+Test EER(%):         4.69    Threshold:  0.2375  MinDcf-0.01: 0.4326  MinDcf-0.001: 0.5110 . 
+Test EER(%):         4.70    Threshold:  0.2379  MinDcf-0.01: 0.4375  MinDcf-0.001: 0.5061 . 
+Test EER(%):         4.68    Threshold:  0.2372  MinDcf-0.01: 0.4412  MinDcf-0.001: 0.5133 . 
+Test EER(%):         4.67    Threshold:  0.2381  MinDcf-0.01: 0.4375  MinDcf-0.001: 0.5016 . 
+Test EER(%):         4.71    Threshold:  0.2376  MinDcf-0.01: 0.4427  MinDcf-0.001: 0.5201 . 
+Test EER(%):         4.67    Threshold:  0.2381  MinDcf-0.01: 0.4369  MinDcf-0.001: 0.5080 . 
+Test EER(%):         4.68    Threshold:  0.2389  MinDcf-0.01: 0.4368  MinDcf-0.001: 0.5074 .
