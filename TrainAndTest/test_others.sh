@@ -2351,8 +2351,8 @@ if [ $stage -le 202 ]; then
       --time-dim 1 --avg-size ${avg_size} \
       --input-length var \
       --dropout-p ${dp} \
-      --xvector-dir Data/xvector/${check_path}/${testset}_${test_subset}_var \
-      --resume Data/checkpoint/${check_path}/best.pth \
+      --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
+      --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
       --extract \
       --remove-vad \
