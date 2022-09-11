@@ -661,6 +661,9 @@ class AttentionTransferLoss(nn.Module):
                 # t_input /= t_input.max()
                 t_map += ((1 + i) / len(t_feats)) * t_input / t_max
 
+            t_map = t_map / len(t_feats)
+            s_map = s_map / len(s_feats)
+
             if self.attention_type == 'both':
                 # loss += (self.min_max(s_map.mean(dim=2, keepdim=True)) - self.min_max(
                 #     t_map.mean(dim=2, keepdim=True))).pow(2).mean()
@@ -676,7 +679,6 @@ class AttentionTransferLoss(nn.Module):
                 # loss += (self.min_max(s_map.mean(dim=3, keepdim=True)) - self.min_max(
                 #     t_map.mean(dim=3, keepdim=True))).pow(2).mean()
                 loss += (s_map.mean(dim=3, keepdim=True) - t_map.mean(dim=3, keepdim=True)).pow(2).mean()
-
 
             elif self.attention_type == 'freq':
                 # loss += (self.min_max(s_map.mean(dim=2, keepdim=True)) - self.min_max(
