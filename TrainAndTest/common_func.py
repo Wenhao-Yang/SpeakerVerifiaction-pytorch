@@ -760,7 +760,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--train-extract-dir', type=str, default='', help='path to dataset')
         parser.add_argument('--extract-trials', action='store_false', default=True, help='log power spectogram')
         parser.add_argument('--score-suffix', type=str, default='', help='path to voxceleb1 test dataset')
-        parser.add_argument('--xvector', action='store_true', default=False, help='need to make mfb file')
+        # parser.add_argument('--xvector', action='store_true', default=False, help='need to make mfb file')
 
         parser.add_argument('--cluster', default='mean', type=str, help='The optimizer to use (default: Adagrad)')
         parser.add_argument('--skip-test', action='store_false', default=True, help='need to make mfb file')
