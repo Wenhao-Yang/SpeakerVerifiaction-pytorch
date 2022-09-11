@@ -493,7 +493,7 @@ if [ $stage -le 41 ]; then
       --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
-      --lr 0.001 --base-lr 0.0000001 \
+      --lr 0.1 --base-lr 0.0000001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 15,25,35,45 \
