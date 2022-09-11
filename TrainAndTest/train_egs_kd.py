@@ -290,8 +290,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 epoch_str += ' Another Loss: {:.4f}'.format(loss_xent.float())
 
-            epoch_str += ' Avg Loss: {:.6f}'.format(total_loss / (batch_idx + 1))
-            epoch_str += ' Teach Loss: {:.8f}'.format(teacher_loss.float())
+            epoch_str += ' Avg Loss: {:>9.6f}'.format(total_loss / (batch_idx + 1))
+            epoch_str += ' Teach Loss: {:.4f} '.format(teacher_loss.float())
             pbar.set_description(epoch_str)
             # break
 
