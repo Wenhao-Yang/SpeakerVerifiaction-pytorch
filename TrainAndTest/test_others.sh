@@ -2335,28 +2335,20 @@ if [ $stage -le 202 ]; then
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb40/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb40 \
-      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 \
-      --trials trials \
-      --feat-format kaldi \
-      --input-norm ${input_norm} \
-      --input-dim ${input_dim} \
-      --nj 8 \
-      --embedding-size ${embedding_size} \
-      --loss-type ${loss} \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 --trials trials \
+      --feat-format kaldi --nj 8 \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
       --mask-layer ${mask_layer} \
       --init-weight vox2_rcf \
       --fast ${fast} \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,1 \
-      --channels 16,32,64,128 \
+      --embedding-size ${embedding_size} \
+      --kernel-size 5,5 --stride 2,1 --channels 16,32,64,128 \
       --downsample ${downsample} \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
-      --time-dim 1 \
-      --avg-size ${avg_size} \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --time-dim 1 --avg-size ${avg_size} \
       --input-length var \
       --dropout-p ${dp} \
       --xvector-dir Data/xvector/${check_path}/${testset}_${test_subset}_var \
