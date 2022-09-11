@@ -3112,7 +3112,7 @@ if [ $stage -le 450 ]; then
       --channels 512,512,512,512,1536 \
       --stride 1,1,1,1 \
       --margin 0.2 --s 30 \
-      --test-length var --frame-shift 300 \
+      --test-input var --frame-shift 300 \
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --check-yaml Data/checkpoint/${model_dir}/model.2022.09.07.yaml \
