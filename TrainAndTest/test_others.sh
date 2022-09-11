@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=45
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -3061,6 +3061,65 @@ if [ $stage -le 400 ]; then
       --resume Data/checkpoint/TDNN_v5/aishell2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_var/checkpoint_50.pth \
       --gpu-id 1 \
       --remove-vad \
+      --cos-sim
+  done
+  exit
+fi
+
+
+if [ $stage -le 450 ]; then
+  feat_type=klsp
+  feat=klsp
+  loss=arcsoft
+  model=ECAPA
+  encod=ASTP2
+  dataset=vox2
+  test_set=vox1
+  subset=test
+  input_dim=161
+  input_norm=Mean
+  embedding_size=192
+  block_type=res2tdnn
+
+  mask_layer=baseline
+  scheduler=rop
+  optimizer=sgd
+  input_dim=161
+  batch_size=128
+  chn=512
+  seed=123456
+
+  # Training set: vox2 161-dimensional log spectrogram kaldi  Loss: arcsoft
+#      --remove-vad \
+
+  for test_set in vox1 cnceleb aishell2; do # 32,128,512; 8,32,128
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+
+    model_dir=${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_valid \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset} \
+      --feat-format kaldi \
+      --input-norm ${input_norm} \
+      --input-dim ${input_dim} \
+      --nj 4 \
+      --embedding-size ${embedding_size} \
+      --loss-type ${loss} \
+      --encoder-type ${encod} \
+      --channels 512,512,512,512,1536 \
+      --stride 1,1,1,1 \
+      --margin 0.2 \
+      --s 30 \
+      --input-length var \
+      --frame-shift 300 \
+      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_var \
+      --resume Data/checkpoint/${model_dir}/best.pth \
+      --model-yaml Data/checkpoint/${model_dir}/ model.2022.09.07.yaml \
+      --gpu-id 1 \
       --cos-sim
   done
   exit
