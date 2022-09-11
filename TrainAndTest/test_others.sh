@@ -2285,6 +2285,7 @@ if [ $stage -le 202 ]; then
 #        --downsample ${downsample} \
 #      --trials trials_20w \
   for resnet_size in 18 10;do
+        echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
   for seed in 123456 123457 123458 ; do
   for testset in vox1 ; do
     if [ $resnet_size -le 34 ];then
@@ -2324,8 +2325,6 @@ if [ $stage -le 202 ]; then
       dp_str=01
     fi
 
-
-    echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
 
     python -W ignore TrainAndTest/test_egs.py \
@@ -2338,23 +2337,20 @@ if [ $stage -le 202 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 --trials trials \
       --feat-format kaldi --nj 8 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
-      --mask-layer ${mask_layer} \
-      --init-weight vox2_rcf \
-      --fast ${fast} \
+      --mask-layer ${mask_layer} --init-weight vox2_rcf \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} --red-ratio ${red_ratio} \
       --embedding-size ${embedding_size} \
-      --kernel-size 5,5 --stride 2,1 --channels 16,32,64,128 \
-      --downsample ${downsample} \
+      --kernel-size 5,5 --stride 2,1 --channels ${channels} \
+      --downsample ${downsample} --fast ${fast} \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 \
       --time-dim 1 --avg-size ${avg_size} \
-      --input-length var \
       --dropout-p ${dp} \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
-      --remove-vad \
+      --remove-vad --input-length var \
       --verbose 0 \
       --cos-sim
   done
