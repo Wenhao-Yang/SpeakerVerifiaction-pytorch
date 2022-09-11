@@ -2342,7 +2342,7 @@ if [ $stage -le 202 ]; then
       --init-weight vox2_rcf \
       --fast ${fast} \
       --encoder-type ${encoder_type} \
-      --block-type ${block_type} \
+      --block-type ${block_type} --red-ratio ${red_ratio} \
       --embedding-size ${embedding_size} \
       --kernel-size 5,5 --stride 2,1 --channels 16,32,64,128 \
       --downsample ${downsample} \
