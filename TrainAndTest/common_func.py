@@ -765,8 +765,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--cluster', default='mean', type=str, help='The optimizer to use (default: Adagrad)')
         parser.add_argument('--skip-test', action='store_false', default=True, help='need to make mfb file')
 
-        parser.add_argument('--mean-vector', action='store_false', default=True,
-                            help='mean for embeddings while extracting')
+        # parser.add_argument('--mean-vector', action='store_false', default=True,
+        #                     help='mean for embeddings while extracting')
         parser.add_argument('--score-norm', type=str, default='', help='score normalization')
 
         parser.add_argument('--test-mask', action='store_true', default=False, help='need to make spectrograms file')
