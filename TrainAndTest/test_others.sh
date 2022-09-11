@@ -3108,7 +3108,7 @@ if [ $stage -le 450 ]; then
       --input-dim ${input_dim} \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
-      --encoder-type ${encod} \
+      --encoder-type ${encoder_type} \
       --channels 512,512,512,512,1536 \
       --stride 1,1,1,1 \
       --margin 0.2 --s 30 \
