@@ -267,7 +267,7 @@ except AttributeError:
 #
 # args = parser.parse_args()
 
-args = args_parse('PyTorch Speaker Recognition: Test')
+args = args_parse('PyTorch Speaker Recognition: Extraction, Test')
 
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
