@@ -291,7 +291,7 @@ sys.stdout = NewLogger(os.path.join(os.path.dirname(args.resume), 'test.log'))
 
 l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
 
-if args.test_length == 'var':
+if args.test_input == 'var':
     transform = transforms.Compose([
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
@@ -299,7 +299,7 @@ if args.test_length == 'var':
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
 
-elif args.test_length == 'fix':
+elif args.test_input == 'fix':
     transform = transforms.Compose([
         ConcateVarInput(num_frames=args.num_frames, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
     ])
@@ -765,7 +765,7 @@ if __name__ == '__main__':
                     model.apply(lambda m: setattr(m, 'width_mult', width_mult))
                     verification_extract(train_verify_loader, model,
                                          xvector_dir=train_xvector_dir + 'width%f' % width_mult, epoch=start,
-                                         test_input=args.test_length, ark_num=50000, gpu=True, verbose=args.verbose,
+                                         test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                          mean_vector=args.mean_vector,
                                          xvector=args.xvector)
 
@@ -779,7 +779,7 @@ if __name__ == '__main__':
 
                 verification_extract(verify_loader, model, xvector_dir=test_xvector_dir + 'width%f' % width_mult,
                                      epoch=start,
-                                     test_input=args.test_length, ark_num=50000, gpu=True, verbose=args.verbose,
+                                     test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                      mean_vector=args.mean_vector,
                                      xvector=args.xvector)
 

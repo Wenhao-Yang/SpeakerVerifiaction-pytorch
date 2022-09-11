@@ -3072,7 +3072,7 @@ if [ $stage -le 450 ]; then
   feat=klsp
   loss=arcsoft
   model=ECAPA
-  encod=ASTP2
+  encoder_type=ASTP
   dataset=vox2
   test_set=vox1
   subset=test
