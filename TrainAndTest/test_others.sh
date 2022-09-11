@@ -2284,8 +2284,8 @@ if [ $stage -le 202 ]; then
   chn=16
 #        --downsample ${downsample} \
 #      --trials trials_20w \
-  for seed in 123456 123457 123458 ; do
   for resnet_size in 18 10;do
+  for seed in 123456 123457 123458 ; do
   for testset in vox1 ; do
     if [ $resnet_size -le 34 ];then
       expansion=1
