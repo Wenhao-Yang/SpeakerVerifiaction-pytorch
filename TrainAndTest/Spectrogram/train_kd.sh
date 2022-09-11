@@ -304,7 +304,7 @@ if [ $stage -le 10 ]; then
   kd_loss=
   chn=16
 #  _${weight}
-  for attention_type in time both ; do
+  for attention_type in freq time both ; do
   for seed in 123456 ; do
 
      if [ $resnet_size -le 34 ];then
@@ -348,7 +348,7 @@ if [ $stage -le 10 ]; then
         at_str=
       fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares${kd_str}/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares${kd_str}wonorm/${seed}
 
 #    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_wd5e4_chn${chn}_var_${kd_type}${kd_ratio}${kd_loss}
 #           --kd-loss ${kd_loss} \
