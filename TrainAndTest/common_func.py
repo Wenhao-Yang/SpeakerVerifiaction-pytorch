@@ -766,6 +766,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
         parser.add_argument('--mvnorm', action='store_true', default=False,
                             help='need to make spectrograms file')
+        parser.add_argument('--valid', action='store_true', default=False,
+                            help='need to make spectrograms file')
         # parser.add_argument('--mean-vector', action='store_false', default=True,
         #                     help='mean for embeddings while extracting')
         parser.add_argument('--score-norm', type=str, default='', help='score normalization')
