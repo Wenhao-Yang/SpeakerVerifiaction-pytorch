@@ -2354,7 +2354,6 @@ if [ $stage -le 202 ]; then
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
-      --extract \
       --remove-vad \
       --verbose 2 \
       --cos-sim
