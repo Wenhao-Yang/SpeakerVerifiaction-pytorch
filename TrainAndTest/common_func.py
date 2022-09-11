@@ -757,7 +757,6 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     if 'Test' in description:
         # parser.add_argument('--model-yaml', default='', type=str, help='path to yaml of model for the latest checkpoint')
-        parser.add_argument('--train-extract-dir', type=str, default='', help='path to dataset')
         parser.add_argument('--extract-trials', action='store_false', default=True, help='log power spectogram')
         parser.add_argument('--score-suffix', type=str, default='', help='path to voxceleb1 test dataset')
         # parser.add_argument('--xvector', action='store_true', default=False, help='need to make mfb file')
