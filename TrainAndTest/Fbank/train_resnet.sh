@@ -478,59 +478,44 @@ if [ $stage -le 41 ]; then
       # --power-weight ${power_weight} \
       # _${weight}${power_weight}
     python TrainAndTest/train_egs.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
       --train-trials trials \
-      --shuffle \
-      --batch-shuffle \
+      --shuffle --batch-shuffle \
       --seed ${seed} \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
-      --feat-format kaldi \
+      --feat-format kaldi --nj 8 \
       --random-chunk 200 400 \
-      --input-norm ${input_norm} \
-      --input-dim ${input_dim} \
-      --resnet-size ${resnet_size} \
-      --nj 8 \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
       --epochs 60 \
-      --early-stopping \
-      --early-patience 15 \
-      --early-delta 0.0001 \
-      --early-meta EER \
+      --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
       --batch-size ${batch_size} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
-      --lr 0.001 \
-      --base-lr 0.0000001 \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --lr 0.001 --base-lr 0.0000001 \
       --mask-layer ${mask_layer} \
       --init-weight ${weight} \
       --milestones 15,25,35,45 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
-      --kernel-size ${kernel} \
-      --downsample ${downsample} \
-      --channels ${channels} \
-      --fast ${fast} \
-      --stride 2,1 \
-      --block-type ${block_type} \
-      --red-ratio ${red_ratio} \
+      --kernel-size ${kernel} --channels ${channels} \
+      --stride 2,1 --fast ${fast} \
+      --block-type ${block_type} --red-ratio ${red_ratio} --downsample ${downsample} \
       --embedding-size ${embedding_size} \
-      --time-dim 1 \
-      --avg-size ${avg_size} \
+      --time-dim 1 --avg-size ${avg_size} \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --extract \
       --cos-sim \
       --all-iteraion 0 \
-      --remove-vad \
-      --loss-type ${loss}
+      --remove-vad
+
   done
   done
   exit
