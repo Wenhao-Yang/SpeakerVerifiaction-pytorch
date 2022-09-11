@@ -3098,6 +3098,7 @@ if [ $stage -le 450 ]; then
     model_dir=${model}/${dataset}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
+      --test-batch-size 1 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
