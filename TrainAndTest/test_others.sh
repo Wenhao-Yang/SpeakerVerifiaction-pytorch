@@ -2355,7 +2355,7 @@ if [ $stage -le 202 ]; then
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
       --remove-vad \
-      --verbose 2 \
+      --verbose 0 \
       --cos-sim
   done
   done
