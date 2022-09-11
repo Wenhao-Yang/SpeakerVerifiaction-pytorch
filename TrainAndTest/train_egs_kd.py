@@ -87,6 +87,8 @@ if args.cuda:
 
 # create logger
 # Define visulaize SummaryWriter instance
+assert os.path.exists(args.teacher_resume), print('=> no checkpoint found at {}'.format(args.teacher_resume))
+
 writer = SummaryWriter(logdir=args.check_path)
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 

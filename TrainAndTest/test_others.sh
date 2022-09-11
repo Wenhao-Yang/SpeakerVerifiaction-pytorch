@@ -3103,22 +3103,19 @@ if [ $stage -le 450 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_valid \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset} \
-      --feat-format kaldi \
+      --feat-format kaldi --nj 4 \
       --input-norm ${input_norm} \
       --input-dim ${input_dim} \
-      --nj 4 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encod} \
       --channels 512,512,512,512,1536 \
       --stride 1,1,1,1 \
-      --margin 0.2 \
-      --s 30 \
-      --input-length var \
-      --frame-shift 300 \
+      --margin 0.2 --s 30 \
+      --input-length var --frame-shift 300 \
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --model-yaml Data/checkpoint/${model_dir}/model.2022.09.07.yaml \
+      --check-yaml Data/checkpoint/${model_dir}/model.2022.09.07.yaml \
       --gpu-id 1 \
       --cos-sim
   done
