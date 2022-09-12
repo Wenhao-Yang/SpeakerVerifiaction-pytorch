@@ -449,8 +449,8 @@ if [ $stage -le 41 ]; then
       expansion=1
       batch_size=256
     else
-      expansion=2
-      batch_size=128
+      expansion=4
+      batch_size=256
     fi
 
     if [ $chn -eq 16 ]; then
