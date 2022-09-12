@@ -449,7 +449,7 @@ if [ $stage -le 41 ]; then
       expansion=1
       batch_size=256
     else
-      expansion=4
+      expansion=2
       batch_size=256
     fi
 
@@ -472,7 +472,13 @@ if [ $stage -le 41 ]; then
       at_str=
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
+    if [ $expansion -eq 1 ]; then
+      exp_str=
+    else
+      exp_str=_exp${expansion}
+    fi
+
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
 
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
