@@ -459,13 +459,9 @@ if [ $stage -le 41 ]; then
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
-      --lr 0.1 \
-      --base-lr 0.000001 \
+      --lr 0.1 --base-lr 0.000001 \
       --patience 3 \
-      --early-stopping \
-      --early-patience 20 \
-      --early-delta 0.0001 \
-      --early-meta EER \
+      --early-stopping --early-patience 20 --early-delta 0.0001 --early-meta EER \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
