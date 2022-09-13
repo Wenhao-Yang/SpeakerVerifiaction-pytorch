@@ -350,6 +350,10 @@ class SubArcSoftmaxLoss(nn.Module):
         min_costh = torch.zeros(cos_max.size()).scatter_(1, label.view(-1, 1), 1)
         max_costh = torch.zeros(cos_max.size()).scatter_(1, label.view(-1, 1), -1) + 1
 
+        if lb_view.is_cuda:
+            min_costh = min_costh.cuda()
+            max_costh = max_costh.cuda()
+
         costh = cos_max * max_costh + cos_min * min_costh
 
         theta = costh.acos()
