@@ -214,7 +214,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if args.loss_type in ['subarc']:
                 classfier_label = classfier_label.max(dim=-1)[0]
 
-            predicted_labels = output_softmax(classfier_label, dim=1)
+            predicted_labels = output_softmax(classfier_label)
             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
             if args.lncl:
