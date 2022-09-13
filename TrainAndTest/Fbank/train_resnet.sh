@@ -437,15 +437,14 @@ if [ $stage -le 41 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_exp${expansion}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf/${seed}
     # _reduct${red_ratio}
     python TrainAndTest/train_egs.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
       --train-trials trials \
-      --shuffle \
-      --batch-shuffle \
+      --shuffle --batch-shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
@@ -453,16 +452,14 @@ if [ $stage -le 41 ]; then
       --seed ${seed} \
       --input-norm ${input_norm} \
       --input-dim ${input_dim} \
-      --resnet-size ${resnet_size} \
       --nj 6 \
       --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} \
       --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.000001 \
-      --patience 3 \
+      --patience 3 --milestones 10,20,30,40 \
       --early-stopping --early-patience 20 --early-delta 0.0001 --early-meta EER \
-      --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --mask-layer ${mask_layer} \
@@ -470,7 +467,7 @@ if [ $stage -le 41 ]; then
       --channels ${channels} \
       --downsample ${downsample} \
       --fast ${fast} --stride 2,1 \
-      --block-type ${block_type} --red-ratio ${red_ratio} \
+      --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
       --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size ${avg_size} \
       --encoder-type ${encoder_type} \
