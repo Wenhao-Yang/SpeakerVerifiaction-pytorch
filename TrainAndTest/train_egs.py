@@ -39,7 +39,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     VarianceLoss, DistributeLoss, MMD_Loss, aDCFLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
+    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, SubArcSoftmaxLoss
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -178,7 +178,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
             classfier, feats = model(data)
-            classfier_label = classfier
+            classfier_label = classfier.clone()
             # print('max logit is ', classfier_label.max())
 
             if args.loss_type == 'soft':
@@ -211,7 +211,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 other_loss += loss_cent
                 loss = loss_xent + loss_cent
 
-            predicted_labels = output_softmax(classfier_label)
+            if args.loss_type in ['subarc']:
+                classfier_label = classfier_label.max(dim=-1)[0]
+
+            predicted_labels = output_softmax(classfier_label, dim=1)
             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
             if args.lncl:
@@ -619,7 +622,7 @@ def main():
     elif args.loss_type in ['amsoft', 'subam']:
         ce_criterion = None
         xe_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
-    elif args.loss_type in ['arcsoft', 'subarc']:
+    elif args.loss_type in ['arcsoft']:
         ce_criterion = None
         if args.class_weight == 'cnc1':
             class_weight = torch.tensor(C.CNC1_WEIGHT)
@@ -630,6 +633,18 @@ def main():
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
                                       all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio,
                                       class_weight=class_weight)
+    elif args.loss_type in ['subarc']:
+        ce_criterion = None
+        if args.class_weight == 'cnc1':
+            class_weight = torch.tensor(C.CNC1_WEIGHT)
+            if len(class_weight) != train_dir.num_spks:
+                class_weight = None
+        else:
+            class_weight = None
+        xe_criterion = SubArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration,
+                                         all_iteraion=args.all_iteraion, smooth_ratio=args.smooth_ratio,
+                                         class_weight=class_weight)
+
     elif args.loss_type in ['aDCF']:
         ce_criterion = None
         xe_criterion = aDCFLoss(alpha=args.s, beta=(1 - args.smooth_ratio),

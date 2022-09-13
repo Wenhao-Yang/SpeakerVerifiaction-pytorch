@@ -181,35 +181,30 @@ class AdditiveMarginLinear(nn.Module):
 
 
 class SubMarginLinear(nn.Module):
-    def __init__(self, feat_dim, num_classes, num_center=3, use_gpu=False):
+    def __init__(self, feat_dim, num_classes, num_center=3, output_subs=False):
         super(SubMarginLinear, self).__init__()
         self.feat_dim = feat_dim
         self.num_classes = num_classes
         self.num_center = num_center
+        self.output_subs = output_subs
+
         self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes, num_center), requires_grad=True)
-        if use_gpu:
-            self.W.cuda()
+
         nn.init.xavier_normal(self.W, gain=1)
 
     def forward(self, x):
         # assert x.size()[0] == label.size()[0]
         assert x.size()[1] == self.feat_dim
 
-        # pdb.set_trace()
-        # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
-        # x_norm = torch.div(x, x_norm)
-
-#         x_norm = F.normalize(x, dim=1)
-#         w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
-#         costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
-        
         x = x.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, self.num_classes, self.num_center)
         w = self.W.unsqueeze(0).repeat(x.shape[0], 1, 1, 1)
-        
+
         # # w_norm = torch.div(self.W, w_norm)
         costh = torch.cosine_similarity(x, w, dim=1)
         # costh = torch.max(costh, dim=-1).values
-        costh = torch.min(costh, dim=-1).values
+        if not self.training:
+            # not self.output_subs:
+            costh = torch.max(costh, dim=-1).values
 
         return costh  # .clamp(min=-1.0, max=1.)
 
@@ -333,6 +328,63 @@ class ArcSoftmaxLoss(nn.Module):
                                                                                                     self.iteraion,
                                                                                                     self.all_iteraion,
                                                                                                     self.smooth_ratio)
+
+
+class SubArcSoftmaxLoss(nn.Module):
+
+    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0, smooth_ratio=0, class_weight=None):
+        super(SubArcSoftmaxLoss, self).__init__()
+        self.s = s
+        self.margin = margin
+
+        self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss(weight=class_weight)
+        self.iteraion = iteraion
+        self.all_iteraion = all_iteraion
+        self.smooth_ratio = smooth_ratio
+
+    def forward(self, costh, label):
+        lb_view = label.view(-1, 1)
+        cos_max = costh.max(dim=-1).values
+        cos_min = costh.min(dim=-1).values
+
+        min_costh = torch.zeros(cos_max.size()).scatter_(1, label.view(-1, 1), 1)
+        max_costh = torch.zeros(cos_max.size()).scatter_(1, label.view(-1, 1), -1) + 1
+
+        costh = cos_max * max_costh + cos_min * min_costh
+
+        theta = costh.acos()
+        # print('theta is ', theta.max())
+
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
+
+        delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+
+        # pdb.set_trace()
+        if costh.is_cuda:
+            delt_theta = Variable(delt_theta.cuda())
+            # print('delt_theta max is ', delt_theta.max())
+            # print('theta + delt_theta max is ', (theta + delt_theta).max())
+
+        costh_m = (theta + delt_theta).cos()
+        # print('costh_m max is ', costh_m.max())
+        if self.iteraion < self.all_iteraion:
+            costh_m = 0.5 * costh + 0.5 * costh_m
+            self.iteraion += 1
+
+        costh_m_s = self.s * costh_m
+        # print('costh_m_s max is ', costh_m_s.max())
+
+        loss = self.ce(costh_m_s, label)
+
+        return loss
+
+    def __repr__(self):
+        return "SubArcSoftmaxLoss(margin=%f, s=%d, iteration=%d, all_iteraion=%s, smooth_ratio=%s)" % (self.margin,
+                                                                                                       self.s,
+                                                                                                       self.iteraion,
+                                                                                                       self.all_iteraion,
+                                                                                                       self.smooth_ratio)
 
 
 class MinArcSoftmaxLoss(nn.Module):

@@ -121,7 +121,7 @@ def create_model(name, **kwargs):
                                                 num_classes=kwargs['num_classes'])
     elif 'sub' in kwargs['loss_type']:
         model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
-                                           num_center=kwargs['num_center'], )
+                                           num_center=kwargs['num_center'], output_subs=kwargs['output_subs'])
     elif kwargs['loss_type'] in ['proser']:
         model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'], dummy_classes=kwargs['num_center'],
                                              num_classes=kwargs['num_classes'])
@@ -616,6 +616,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--loss-type', type=str, help='path to voxceleb1 test dataset')
     parser.add_argument('--e2e-loss-type', type=str, default='angleproto', help='path to voxceleb1 test dataset')
     parser.add_argument('--num-center', type=int, default=2, help='the num of source classes')
+    parser.add_argument('--output-subs', action='store_true', default=False, help='using Cosine similarity')
+
     parser.add_argument('--source-cls', type=int, default=1951,
                         help='the num of source classes')
     parser.add_argument('--finetune', action='store_true', default=False,
@@ -831,7 +833,7 @@ def args_model(args, train_dir):
                     'channels': channels, 'width_mult_list': width_mult_list,
                     'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
-                    'num_center': args.num_center,
+                    'num_center': args.num_center, 'output_subs': args.output_subs,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}
 
     return model_kwargs

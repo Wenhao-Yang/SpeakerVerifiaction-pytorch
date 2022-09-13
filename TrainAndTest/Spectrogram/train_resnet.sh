@@ -457,7 +457,8 @@ if [ $stage -le 41 ]; then
   block_type=basic
   embedding_size=256
   input_norm=Mean
-  loss=arcsoft
+  loss=subarc
+  num_center=4
   feat_type=klsp
   sname=dev
   downsample=k1
@@ -467,7 +468,7 @@ if [ $stage -le 41 ]; then
   mask_len=5,10
   weight=rclean_max
   scheduler=rop
-  optimizer=adam
+  optimizer=sgd
   fast=none1
   expansion=4
   chn=16
@@ -483,8 +484,8 @@ if [ $stage -le 41 ]; then
 #  for block_type in seblock cbam; do
 #  for scale in 0.3 0.5 0.8; do
 #  for weight_norm in sum ; do
-  for lr in 0.001 ; do
-  for resnet_size in 10 18 ; do
+  for lr in 0.1 ; do
+  for resnet_size in 10; do
     for seed in 123456 ;do
     for chn in 16 ; do
       if [ $resnet_size -le 34 ];then
@@ -519,10 +520,10 @@ if [ $stage -le 41 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares/${seed}
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_center${num_center}_${chn_str}wde4_vares/${seed}
 
       python TrainAndTest/train_egs.py \
-        --model ${model} \
+        --model ${model} --resnet-size ${resnet_size} \
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/${testsets}/${feat_type}/test \
         --train-trials trials \
@@ -530,23 +531,18 @@ if [ $stage -le 41 ]; then
         --test-dir ${lstm_dir}/data/${testsets}/${feat_type}/test \
         --feat-format kaldi \
         --input-norm ${input_norm} \
-        --seed ${seed} \
+        --seed ${seed} --shuffle \
         --random-chunk 200 400 \
+        --batch-size ${batch_size} \
         --optimizer ${optimizer} \
         --cyclic-epoch ${cyclic_epoch} \
         --scheduler ${scheduler} \
-        --resnet-size ${resnet_size} \
         --nj 6 \
-        --epochs 60 \
-        --patience 3 \
-        --early-stopping \
-        --early-patience 15 \
-        --early-delta 0.0001 \
-        --early-meta EER \
+        --epochs 60 --patience 3 \
+        --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
         --accu-steps 1 \
         --fast ${fast} \
-        --lr ${lr} \
-        --base-lr 0.0000005 \
+        --lr ${lr} --base-lr 0.0000005 \
         --milestones 10,20,30,40 \
         --check-path Data/checkpoint/${model_dir} \
         --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
@@ -563,23 +559,19 @@ if [ $stage -le 41 ]; then
         --input-dim 161 \
         --block-type ${block_type} \
         --stride 2,2 \
-        --batch-size ${batch_size} \
         --embedding-size ${embedding_size} \
-        --time-dim 1 \
-        --avg-size ${avg_size} \
+        --time-dim 1 --avg-size ${avg_size} \
         --encoder-type ${encoder_type} \
         --num-valid 2 \
         --alpha ${alpha} \
-        --margin 0.2 \
+        --s 30 --margin 0.2 --output-subs --num-center ${num_center}\
         --grad-clip 0 \
-        --s 30 \
         --lr-ratio 0.01 \
         --weight-decay 0.0001 \
         --dropout-p 0.1 \
         --gpu-id 5 \
         --all-iteraion 0 \
         --extract \
-        --shuffle \
         --cos-sim \
         --loss-type ${loss}
     done
