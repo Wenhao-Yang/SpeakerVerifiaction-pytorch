@@ -380,7 +380,7 @@ if [ $stage -le 41 ]; then
   resnet_size=34
   encoder_type=SAP2
   embedding_size=256
-  block_type=cbam
+  block_type=seblock
   downsample=k3
   kernel=5,5
   loss=arcsoft
@@ -400,7 +400,7 @@ if [ $stage -le 41 ]; then
   avg_size=5
   fast=avp1
 
-  for resnet_size in 34 18 10; do
+  for resnet_size in 101 34; do
   for seed in 123456 123457 123458 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
@@ -412,7 +412,7 @@ if [ $stage -le 41 ]; then
       expansion=1
       batch_size=256
     else
-      expansion=4
+      expansion=2
       batch_size=256
     fi
     if [ $chn -eq 16 ]; then
@@ -473,18 +473,14 @@ if [ $stage -le 41 ]; then
       --kernel-size ${kernel} \
       --channels ${channels} \
       --downsample ${downsample} \
-      --fast ${fast} \
-      --stride 2,1 \
-      --block-type ${block_type} \
-      --red-ratio ${red_ratio} \
+      --fast ${fast} --stride 2,1 \
+      --block-type ${block_type} --red-ratio ${red_ratio} \
       --embedding-size ${embedding_size} \
-      --time-dim 1 \
-      --avg-size ${avg_size} \
+      --time-dim 1 --avg-size ${avg_size} \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 2 \
