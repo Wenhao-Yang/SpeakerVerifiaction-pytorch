@@ -2284,7 +2284,7 @@ if [ $stage -le 202 ]; then
   chn=16
 #        --downsample ${downsample} \
 #      --trials trials_20w \
-  for resnet_size in 34;do
+  for resnet_size in 50;do
         echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
   for seed in 123456 123457 123458 ; do
   for testset in vox1 ; do
