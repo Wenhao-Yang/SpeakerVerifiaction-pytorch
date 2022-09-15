@@ -409,8 +409,9 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
     torch.cuda.empty_cache()
 
-    return {'EER': eer, 'Threshold': eer_threshold,
-            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
+    return {'EER': 100. * eer, 'Threshold': eer_threshold,
+            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001,
+            'mix3': 100. * eer * mindcf_01 * mindcf_001}
 
 
 def test(model, epoch, writer, xvector_dir):

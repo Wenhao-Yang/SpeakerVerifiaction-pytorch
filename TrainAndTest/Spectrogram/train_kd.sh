@@ -490,8 +490,7 @@ if [ $stage -le 20 ]; then
        --stride 2,1 --fast ${fast} \
        --block-type ${block_type} --red-ratio ${red_ratio} --downsample ${downsample} --expansion ${expansion} \
        --embedding-size ${embedding_size} \
-       --time-dim 1 --avg-size ${avg_size} \
-       --encoder-type ${encoder_type} \
+       --time-dim 1 --avg-size ${avg_size} --encoder-type ${encoder_type} \
        --num-valid 2 \
        --alpha ${alpha} \
        --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
