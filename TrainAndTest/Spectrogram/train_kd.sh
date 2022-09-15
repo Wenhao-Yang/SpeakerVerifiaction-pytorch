@@ -304,7 +304,7 @@ if [ $stage -le 10 ]; then
   kd_loss=
   chn=16
 #  _${weight}
-  for attention_type in both ; do
+  for attention_type in freq ; do
   for seed in 123457 123458  ; do
 
      if [ $resnet_size -le 34 ];then
@@ -355,60 +355,42 @@ if [ $stage -le 10 ]; then
 
      echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs_kd.py \
-       --model ${model} \
+       --model ${model} --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
        --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
        --train-trials trials \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
        --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
-       --feat-format kaldi \
+       --feat-format kaldi --nj ${nj} \
        --seed $seed \
        --random-chunk 200 400 \
        --input-norm ${input_norm} \
-       --resnet-size ${resnet_size} \
-       --nj ${nj} \
        --shuffle \
-       --epochs 50 \
-       --batch-size ${batch_size} \
-       --optimizer ${optimizer} \
-       --scheduler ${scheduler} \
-       --lr 0.1 \
-       --base-lr 0.000006 \
-       --early-stopping \
-       --early-patience 15 \
-       --early-delta 0.0001 \
-       --early-meta EER \
-       --mask-layer ${mask_layer} \
-       --init-weight ${weight} \
+       --epochs 50 --batch-size ${batch_size} \
+       --optimizer ${optimizer} --scheduler ${scheduler} \
+       --lr 0.1 --base-lr 0.000006 \
+       --early-stopping --early-patience 15 --early-delta 0.01 --early-meta EER \
+       --mask-layer ${mask_layer} --init-weight ${weight} \
        --milestones 10,20,30,40 \
        --check-path Data/checkpoint/${model_dir} \
        --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
-       --kernel-size ${kernel} \
-       --channels ${channels} \
-       --downsample ${downsample} \
-       --fast ${fast} \
-       --stride 2 \
+       --kernel-size ${kernel} --channels ${channels} \
+       --downsample ${downsample} --fast ${fast} --stride 2 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
-       --time-dim 1 \
-       --avg-size ${avg_size} \
+       --time-dim 1 --avg-size ${avg_size} \
        --encoder-type ${encoder_type} \
        --num-valid 2 \
        --alpha ${alpha} \
-       --margin 0.2 \
-       --s 30 \
+       --margin 0.2 --s 30 --all-iteraion 0 \
        --weight-decay 0.0001 \
        --dropout-p ${dp} \
-       --gpu-id 2 \
+       --gpu-id 6 \
        --extract \
        --cos-sim \
-       --all-iteraion 0 \
        --loss-type ${loss} \
-       --kd-type ${kd_type} \
-       --attention-type ${attention_type} \
-       --norm-type ${norm_type} \
-       --distil-weight 0.5 \
-       --kd-ratio ${kd_ratio} \
+       --kd-type ${kd_type} --attention-type ${attention_type} --norm-type ${norm_type} \
+       --distil-weight 0.5 --kd-ratio ${kd_ratio} \
        --teacher-model-yaml ${teacher_dir}/model.2022.07.01.yaml \
        --teacher-resume ${teacher_dir}/best.pth \
        --temperature 20
