@@ -504,8 +504,9 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     mindcf_01 = np.min([mindcf_01_dict[i] for i in mindcf_01_dict])
     mindcf_001 = np.min([mindcf_001_dict[i] for i in mindcf_001_dict])
 
-    return {'EER': eer, 'Threshold': eer_threshold,
-            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
+    return {'EER': 100. * eer, 'Threshold': eer_threshold,
+            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001,
+            'mix3': 100. * eer * mindcf_01 * mindcf_001}
 
 
 def test(model, epoch, writer, xvector_dir):
