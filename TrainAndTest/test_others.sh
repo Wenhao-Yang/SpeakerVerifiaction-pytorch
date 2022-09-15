@@ -2296,6 +2296,12 @@ if [ $stage -le 202 ]; then
       batch_size=128
     fi
 
+    if [ $expansion -eq 1 ]; then
+      exp_str=
+    else
+      exp_str=_exp${expansion}
+    fi
+
     if [ $chn -eq 16 ]; then
         channels=16,32,64,128
         chn_str=
@@ -2325,7 +2331,7 @@ if [ $stage -le 202 ]; then
       dp_str=01
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}_${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -2339,7 +2345,7 @@ if [ $stage -le 202 ]; then
       --input-norm ${input_norm} --input-dim ${input_dim} \
       --mask-layer ${mask_layer} --init-weight vox2_rcf \
       --encoder-type ${encoder_type} \
-      --block-type ${block_type} --red-ratio ${red_ratio} \
+      --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
       --embedding-size ${embedding_size} \
       --kernel-size 5,5 --stride 2,1 --channels ${channels} \
       --downsample ${downsample} --fast ${fast} \
