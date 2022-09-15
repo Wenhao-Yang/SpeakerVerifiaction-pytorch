@@ -2293,7 +2293,7 @@ if [ $stage -le 202 ]; then
       batch_size=256
     else
       expansion=2
-      batch_size=128
+      batch_size=256
     fi
 
     if [ $expansion -eq 1 ]; then
