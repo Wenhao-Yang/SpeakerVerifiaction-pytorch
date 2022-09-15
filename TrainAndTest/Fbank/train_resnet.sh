@@ -437,7 +437,7 @@ if [ $stage -le 41 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_exp${expansion}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_exp${expansion}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
     # _reduct${red_ratio}
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -447,41 +447,33 @@ if [ $stage -le 41 ]; then
       --shuffle --batch-shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
-      --feat-format kaldi \
+      --feat-format kaldi --nj 6 \
       --random-chunk 200 400 \
       --seed ${seed} \
-      --input-norm ${input_norm} \
-      --input-dim ${input_dim} \
-      --nj 6 \
-      --epochs 60 \
-      --batch-size ${batch_size} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
+      --epochs 60 --batch-size ${batch_size} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.000001 \
       --patience 3 --milestones 10,20,30,40 \
       --early-stopping --early-patience 20 --early-delta 0.0001 --early-meta EER \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --mask-layer ${mask_layer} \
-      --kernel-size ${kernel} \
-      --channels ${channels} \
-      --downsample ${downsample} \
-      --fast ${fast} --stride 2,1 \
+      --kernel-size ${kernel} --channels ${channels} \
+      --downsample ${downsample} --fast ${fast} --stride 2,1 \
       --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
       --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size ${avg_size} \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 --s 30 \
-      --weight-decay 0.0001 \
+      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
+      --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 1,6 \
       --extract \
       --cos-sim \
-      --all-iteraion 0 \
-      --remove-vad \
-      --loss-type ${loss}
+      --remove-vad
   done
   done
   exit
