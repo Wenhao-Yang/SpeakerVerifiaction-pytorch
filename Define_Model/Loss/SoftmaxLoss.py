@@ -202,9 +202,9 @@ class SubMarginLinear(nn.Module):
         # # w_norm = torch.div(self.W, w_norm)
         costh = torch.cosine_similarity(x, w, dim=1)
         # costh = torch.max(costh, dim=-1).values
-        if not self.training:
-            # not self.output_subs:
-            costh = torch.max(costh, dim=-1).values
+        # if not self.training:
+        #     # not self.output_subs:
+        #     costh = torch.max(costh, dim=-1).values
 
         return costh  # .clamp(min=-1.0, max=1.)
 

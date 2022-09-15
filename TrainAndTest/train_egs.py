@@ -303,8 +303,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             optimizer.step()  # update parameters of net
             optimizer.zero_grad()  # reset gradient
 
-            # if (batch_idx + 1) == 200:
-            #     break
+            if (batch_idx + 1) == 200:
+                break
 
         if args.scheduler == 'cyclic':
             scheduler.step()
@@ -403,6 +403,8 @@ def valid_class(valid_loader, model, ce, epoch):
 
                 total_loss['width%s' % width_mult] += float(loss.item())
                 # pdb.set_trace()
+                if args.loss_type in ['subarc']:
+                    predicted_labels = predicted_labels.max(dim=-1)[0]
                 predicted_one_labels = softmax(predicted_labels)
                 predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
 
