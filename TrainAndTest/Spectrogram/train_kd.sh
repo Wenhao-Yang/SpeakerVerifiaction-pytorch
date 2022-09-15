@@ -361,11 +361,9 @@ if [ $stage -le 10 ]; then
        --train-trials trials \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
        --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
-       --feat-format kaldi --nj ${nj} \
-       --seed $seed \
-       --random-chunk 200 400 \
+       --feat-format kaldi --nj ${nj} --shuffle \
+       --seed $seed --random-chunk 200 400 \
        --input-norm ${input_norm} \
-       --shuffle \
        --epochs 50 --batch-size ${batch_size} \
        --optimizer ${optimizer} --scheduler ${scheduler} \
        --lr 0.1 --base-lr 0.000006 \
