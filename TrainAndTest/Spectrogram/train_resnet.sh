@@ -569,7 +569,7 @@ if [ $stage -le 41 ]; then
         --lr-ratio 0.01 \
         --weight-decay 0.0001 \
         --dropout-p 0.1 \
-        --gpu-id 0,2 \
+        --gpu-id 1,6 \
         --all-iteraion 0 \
         --extract \
         --cos-sim \
