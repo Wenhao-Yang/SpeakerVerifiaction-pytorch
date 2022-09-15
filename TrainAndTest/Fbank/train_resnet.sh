@@ -448,9 +448,11 @@ if [ $stage -le 41 ]; then
     if [ $resnet_size -le 34 ];then
       expansion=1
       batch_size=256
+      exp_str=
     else
       expansion=2
       batch_size=256
+      exp_str=_exp${expansion}
     fi
 
     if [ $chn -eq 16 ]; then
@@ -470,12 +472,6 @@ if [ $stage -le 41 ]; then
       at_str=_${weight}_dp${weight_p}s${scale}
     else
       at_str=
-    fi
-
-    if [ $expansion -eq 1 ]; then
-      exp_str=
-    else
-      exp_str=_exp${expansion}
     fi
 
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}

@@ -294,6 +294,8 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             epoch_str += ' Teach Loss: {:.4f} '.format(teacher_loss.float())
             pbar.set_description(epoch_str)
             # break
+    if args.batch_shuffle:
+        train_dir.__shuffle__()
 
     print('Epoch {:>2d}: \33[91mTrain Accuracy: {:>6.2f}%, Avg loss: {:6f}, Teacher loss: {:.8f}.\33[0m'.format(epoch,
                                                                                                                 100 * float(
