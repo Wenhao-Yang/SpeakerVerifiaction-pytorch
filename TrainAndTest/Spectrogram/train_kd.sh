@@ -469,11 +469,11 @@ if [ $stage -le 20 ]; then
      echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs_kd.py \
        --model ${model} --resnet-size ${resnet_size} \
-       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
-       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev/trials_dir \
-       --train-trials trials_2w \
-       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
-       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
+       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
+       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
+       --train-trials trials \
+       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
+       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --seed $seed --nj ${nj} --shuffle --batch-shuffle \
        --random-chunk 200 400 \
