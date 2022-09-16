@@ -394,12 +394,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     writer.add_scalar('Train/Threshold', eer_threshold, epoch)
     writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
-    writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
     writer.add_scalar('Train/mix3', mix3, epoch)
 
-    return {'EER': 100. * eer, 'Threshold': eer_threshold,
-            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001,
-            'mix3': mix3}
+    return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
+            'MinDCF_001': mindcf_001, 'mix3': mix3}
 
 
 def test(model, epoch, writer, xvector_dir):
