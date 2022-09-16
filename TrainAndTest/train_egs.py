@@ -871,7 +871,7 @@ def main():
                     test(model, epoch, writer, xvector_dir)
 
             if early_stopping_scheduler.early_stop:
-                print('Best Epoch is %.6f:' % (early_stopping_scheduler.best_epoch))
+                print('Best Epoch is %d:' % (early_stopping_scheduler.best_epoch))
                 best_epoch = early_stopping_scheduler.best_epoch
                 best_res = valid_test_result[int(best_epoch - 1)]
 
