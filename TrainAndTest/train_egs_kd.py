@@ -383,21 +383,23 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                   log_interval=args.log_interval,
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
+    mix3 = 100. * eer * mindcf_01 * mindcf_001
 
     print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
-          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
-                                                                     eer_threshold,
-                                                                     mindcf_01,
-                                                                     mindcf_001))
+          'Mindcf-0.01: {:.4f}, Mindcf-0.001: {:.4f}, Mix3: {:.4f}. \33[0m'.format(100. * eer,
+                                                                                   eer_threshold,
+                                                                                   mindcf_01, mindcf_001, mix3))
 
     writer.add_scalar('Train/EER', 100. * eer, epoch)
     writer.add_scalar('Train/Threshold', eer_threshold, epoch)
     writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
+    writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
+    writer.add_scalar('Train/mix3', mix3, epoch)
 
     return {'EER': 100. * eer, 'Threshold': eer_threshold,
             'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001,
-            'mix3': 100. * eer * mindcf_01 * mindcf_001}
+            'mix3': mix3}
 
 
 def test(model, epoch, writer, xvector_dir):

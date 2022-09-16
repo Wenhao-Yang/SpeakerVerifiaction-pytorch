@@ -454,12 +454,14 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     eer_threshold_dict = {}
     mindcf_01_dict = {}
     mindcf_001_dict = {}
+    mix_dict = {}
 
     test_str = '          \33[91mTest '
     eer_str = 'EER(%):       '
     threshold_str = '   Threshold: '
     mindcf_01_str = ' MinDcf-0.01: '
     mindcf_001_str = ' MinDcf-0.001: '
+    mix_str = ' Mix3: '
     # global FLAGS
 
     for width_mult in FLAGS.width_mult_list:
@@ -478,22 +480,26 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                       log_interval=args.log_interval,
                                                                       xvector_dir=this_xvector_dir,
                                                                       epoch=epoch)
+        mix3 = 100. * eer * mindcf_01 * mindcf_001
 
         eer_dict['width%s' % width_mult] = eer
         eer_threshold_dict['width%s' % width_mult] = eer_threshold
         mindcf_01_dict['width%s' % width_mult] = mindcf_01
         mindcf_001_dict['width%s' % width_mult] = mindcf_001
+        mix_dict['width%s' % width_mult] = mix3
 
         eer_str += '{:>6.2f} '.format(100. * eer)
         threshold_str += '{:>7.4f} '.format(eer_threshold)
         mindcf_01_str += '{:.4f} '.format(mindcf_01)
         mindcf_001_str += '{:.4f} '.format(mindcf_001)
+        mix_str += '{:.4f} '.format(mix3)
 
         wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
         writer.add_scalar('Train/EER' + wid_str, 100. * eer, epoch)
         writer.add_scalar('Train/Threshold' + wid_str, eer_threshold, epoch)
         writer.add_scalar('Train/mindcf-0.01' + wid_str, mindcf_01, epoch)
         writer.add_scalar('Train/mindcf-0.001' + wid_str, mindcf_001, epoch)
+        writer.add_scalar('Train/mix3' + wid_str, mix3, epoch)
 
     test_str += eer_str + threshold_str + mindcf_01_str + mindcf_001_str + '. \33[0m'
     print(test_str)
@@ -504,9 +510,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     mindcf_01 = np.min([mindcf_01_dict[i] for i in mindcf_01_dict])
     mindcf_001 = np.min([mindcf_001_dict[i] for i in mindcf_001_dict])
 
-    return {'EER': 100. * eer, 'Threshold': eer_threshold,
-            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001,
-            'mix3': 100. * eer * mindcf_01 * mindcf_001}
+    return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
+            'MinDCF_001': mindcf_001, 'mix3': mix3}
 
 
 def test(model, epoch, writer, xvector_dir):
