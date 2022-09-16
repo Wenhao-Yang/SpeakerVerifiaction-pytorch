@@ -645,21 +645,23 @@ class AttentionTransferLoss(nn.Module):
             for s_f, t_f in zip(s_feats, t_feats):
                 loss += (self.at(s_f) - self.at(t_f)).pow(2).mean()
 
-        elif self.norm_type == 'input_weight':
+        else:
             ups = nn.UpsamplingBilinear2d(s_feats[0].shape[-2:])
             s_map = torch.zeros_like(s_feats[0].mean(dim=1, keepdim=True))
             t_map = torch.zeros_like(t_feats[0].mean(dim=1, keepdim=True))
 
             for i, (s_f, t_f) in enumerate(zip(s_feats, t_feats)):
+                weight = ((1 + i) / len(s_feats)) if 'weight' in self.norm_type else 1.0
+
                 s_input = ups(s_f).mean(dim=1, keepdim=True).clamp_min(0)
                 # s_input /= s_input.max()
                 s_max = s_input.view(s_input.size(0), -1).max(dim=1).values.reshape(-1, 1, 1, 1)
-                s_map += ((1 + i) / len(s_feats)) * s_input / s_max
+                s_map += weight * s_input / s_max
 
                 t_input = ups(t_f).mean(dim=1, keepdim=True).clamp_min(0)
                 t_max = t_input.view(t_input.size(0), -1).max(dim=1).values.reshape(-1, 1, 1, 1)
                 # t_input /= t_input.max()
-                t_map += ((1 + i) / len(t_feats)) * t_input / t_max
+                t_map += weight * t_input / t_max
 
             t_map = t_map / len(t_feats)
             s_map = s_map / len(s_feats)
