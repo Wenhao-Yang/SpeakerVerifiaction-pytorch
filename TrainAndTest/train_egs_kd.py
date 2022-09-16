@@ -14,7 +14,7 @@ from __future__ import print_function
 # import argparse
 import os
 import os.path as osp
-# import random
+import random
 import pdb
 import shutil
 import sys
@@ -78,10 +78,13 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
+random.seed(args.seed)
+
 # torch.multiprocessing.set_sharing_strategy('file_system')
 
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 if args.cuda:
+    torch.cuda.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
     cudnn.benchmark = True
 
@@ -92,8 +95,8 @@ assert os.path.exists(args.teacher_resume), print('=> no checkpoint found at {}'
 writer = SummaryWriter(logdir=args.check_path)
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
-kwargs = {'num_workers': args.nj, 'pin_memory': True} if args.cuda else {}
-extract_kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
+kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
+extract_kwargs = {'num_workers': 4, 'pin_memory': False} if args.cuda else {}
 
 if not os.path.exists(args.check_path):
     print('Making checkpath...')
@@ -443,7 +446,6 @@ def main():
     keys.sort()
     model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
     print('Model options: \n{ %s }' % (', '.join(model_options)))
-
     print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
