@@ -311,9 +311,9 @@ if [ $stage -le 41 ]; then
   feat_type=klfb
   model=ThinResNet
   resnet_size=18
-  encoder_type=SAP2
+  encoder_type=ASTP2
   embedding_size=256
-  block_type=basic
+  block_type=seblock
   downsample=k1
   kernel=5,5
   loss=arcsoft
@@ -347,6 +347,7 @@ if [ $stage -le 41 ]; then
     else
       expansion=2
       batch_size=256
+      exp_str=_exp${expansion}
     fi
     if [ $chn -eq 16 ]; then
       channels=16,32,64,128
@@ -370,9 +371,9 @@ if [ $stage -le 41 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
-    # _reduct${red_ratio}
-#    _exp${expansion}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
+    #
+#
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
