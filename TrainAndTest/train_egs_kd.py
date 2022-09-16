@@ -385,20 +385,21 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                   log_interval=args.log_interval,
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
+    mix3 = 100. * eer * mindcf_01 * mindcf_001
 
     print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
-          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
-                                                                     eer_threshold,
-                                                                     mindcf_01,
-                                                                     mindcf_001))
+          'Mindcf-0.01: {:.4f}, Mindcf-0.001: {:.4f}, Mix3: {:.4f}. \33[0m'.format(100. * eer,
+                                                                                   eer_threshold,
+                                                                                   mindcf_01, mindcf_001, mix3))
 
     writer.add_scalar('Train/EER', 100. * eer, epoch)
     writer.add_scalar('Train/Threshold', eer_threshold, epoch)
     writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
+    writer.add_scalar('Train/mix3', mix3, epoch)
 
-    return {'EER': eer, 'Threshold': eer_threshold,
-            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001}
+    return {'EER': 100. * eer, 'Threshold': eer_threshold,
+            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001, 'mix3': mix3}
     # torch.cuda.empty_cache()
 
 
@@ -417,7 +418,7 @@ def test(model, epoch, writer, xvector_dir):
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
     print(
-        '          \33[91mTest  ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
+        '          \33[91mTest  EER: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
             100. * eer, eer_threshold, mindcf_01, mindcf_001))
 
     writer.add_scalar('Test/EER', 100. * eer, epoch)
@@ -621,7 +622,8 @@ def main():
         cycle_momentum = False if args.optimizer == 'adam' else True
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
                                           max_lr=args.lr,
-                                          step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
+                                          step_size_up=args.cyclic_epoch * int(
+                                              np.ceil(len(train_dir) / args.batch_size)),
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
     else:
@@ -688,6 +690,8 @@ def main():
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
 
+    all_lr = []
+    valid_test_result = []
     try:
         for epoch in range(start, end):
             # pdb.set_trace()
@@ -696,7 +700,10 @@ def main():
             #     optimizer.param_groups[0]['lr'] = args.lr * args.lr_ratio
 
             lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
+            this_lr = []
+
             for param_group in optimizer.param_groups:
+                this_lr.append(param_group['lr'])
                 lr_string += '{:.10f} '.format(param_group['lr'])
             print('%s \33[0m' % lr_string)
 
@@ -709,11 +716,15 @@ def main():
                 valid_test_dict = {}
 
             valid_test_dict['Valid_Loss'] = valid_loss
+            valid_test_result.append(valid_test_dict)
 
             if args.early_stopping:
                 early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
                 if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
                     early_stopping_scheduler.early_stop = True
+                if args.scheduler != 'cyclic' and this_lr[0] <= 0.1 ** 3 * args.lr:
+                    if len(all_lr) > 10 and all_lr[-10] == this_lr[0]:
+                        early_stopping_scheduler.early_stop = True
 
             if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
@@ -723,8 +734,7 @@ def main():
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch,
                             'state_dict': model_state_dict,
-                            'criterion': ce},
-                           check_path)
+                            'criterion': ce}, check_path)
 
                 if args.early_stopping:
                     pass
@@ -734,8 +744,18 @@ def main():
                     test(model, epoch, writer, xvector_dir)
 
             if early_stopping_scheduler.early_stop:
-                print('Best %s in Epoch %d is %.6f.' % (
-                    args.early_meta, early_stopping_scheduler.best_epoch, early_stopping_scheduler.best_loss))
+                print('Best Epoch is %.6f:' % (early_stopping_scheduler.best_epoch))
+                best_epoch = early_stopping_scheduler.best_epoch
+                best_res = valid_test_result[int(best_epoch - 1)]
+
+                best_str = 'EER(%):       ' + '{:>6.2f} '.format(best_res['EER'])
+                best_str += '   Threshold: ' + '{:>7.4f} '.format(best_res['Threshold'])
+                best_str += ' MinDcf-0.01: ' + '{:.4f} '.format(best_res['MinDCF_01'])
+                best_str += ' MinDcf-0.001: ' + '{:.4f} '.format(best_res['MinDCF_001'])
+                best_str += ' Mix3: ' + '{:.4f}\n'.format(best_res['mix3'])
+
+                print(best_str)
+
                 try:
                     shutil.copy('{}/checkpoint_{}.pth'.format(args.check_path, early_stopping_scheduler.best_epoch),
                                 '{}/best.pth'.format(args.check_path))

@@ -395,23 +395,23 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                   log_interval=args.log_interval,
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
+    mix3 = 100. * eer * mindcf_01 * mindcf_001
 
     print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
-          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}. \33[0m'.format(100. * eer,
-                                                                     eer_threshold,
-                                                                     mindcf_01,
-                                                                     mindcf_001))
+          'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix: {:.4f}. \33[0m'.format(100. * eer,
+                                                                                  eer_threshold,
+                                                                                  mindcf_01, mindcf_001, mix3))
 
     writer.add_scalar('Train/EER', 100. * eer, epoch)
     writer.add_scalar('Train/Threshold', eer_threshold, epoch)
     writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
     writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
+    writer.add_scalar('Train/mix3', mix3, epoch)
 
     torch.cuda.empty_cache()
 
-    return {'EER': 100. * eer, 'Threshold': eer_threshold,
-            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001,
-            'mix3': 100. * eer * mindcf_01 * mindcf_001}
+    return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
+            'MinDCF_001': mindcf_001, 'mix3': mix3}
 
 
 def test(model, epoch, writer, xvector_dir):
@@ -713,6 +713,8 @@ def main():
     start_time = time.time()
 
     all_lr = []
+    valid_test_result = []
+
     try:
         for epoch in range(start, end):
             # pdb.set_trace()
@@ -734,6 +736,7 @@ def main():
                 valid_test_dict = {}
 
             valid_test_dict['Valid_Loss'] = valid_loss
+            valid_test_result.append(valid_test_dict)
 
             if args.early_stopping:
                 early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
@@ -760,8 +763,18 @@ def main():
                     test(model, epoch, writer, xvector_dir)
 
             if early_stopping_scheduler.early_stop:
-                print('Best %s in Epoch %d is %.6f.' % (
-                    args.early_meta, early_stopping_scheduler.best_epoch, early_stopping_scheduler.best_loss))
+                print('Best Epoch is %d:' % (early_stopping_scheduler.best_epoch))
+                best_epoch = early_stopping_scheduler.best_epoch
+                best_res = valid_test_result[int(best_epoch - 1)]
+
+                best_str = 'EER(%):       ' + '{:>6.2f} '.format(best_res['EER'])
+                best_str += '   Threshold: ' + '{:>7.4f} '.format(best_res['Threshold'])
+                best_str += ' MinDcf-0.01: ' + '{:.4f} '.format(best_res['MinDCF_01'])
+                best_str += ' MinDcf-0.001: ' + '{:.4f} '.format(best_res['MinDCF_001'])
+                best_str += ' Mix3: ' + '{:.4f}\n'.format(best_res['mix3'])
+
+                print(best_str)
+
                 try:
                     shutil.copy('{}/checkpoint_{}.pth'.format(args.check_path, early_stopping_scheduler.best_epoch),
                                 '{}/best.pth'.format(args.check_path))
