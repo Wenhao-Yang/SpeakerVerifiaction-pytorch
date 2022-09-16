@@ -501,7 +501,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         writer.add_scalar('Train/mindcf-0.001' + wid_str, mindcf_001, epoch)
         writer.add_scalar('Train/mix3' + wid_str, mix3, epoch)
 
-    test_str += eer_str + threshold_str + mindcf_01_str + mindcf_001_str + '. \33[0m'
+    test_str += eer_str + threshold_str + mindcf_01_str + mindcf_001_str + mix_str + '. \33[0m'
     print(test_str)
     torch.cuda.empty_cache()
 

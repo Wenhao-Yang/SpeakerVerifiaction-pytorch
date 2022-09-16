@@ -396,8 +396,7 @@ if [ $stage -le 41 ]; then
       --downsample ${downsample} --fast ${fast} --stride 2,1 \
       --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
       --embedding-size ${embedding_size} \
-      --time-dim 1 --avg-size ${avg_size} \
-      --encoder-type ${encoder_type} \
+      --time-dim 1 --avg-size ${avg_size} --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
