@@ -424,10 +424,10 @@ if [ $stage -le 20 ]; then
   dp=0.1
 
   attention_type=both
-  norm_type=input_weight
+  norm_type=input_mean
 #  _${weight}
-  for kd_type in attention ; do
-  for norm_type in input input_weight ; do
+  for attention_type in both freq time ; do
+  for norm_type in input_mean ; do
   for chn in 16 ; do
   for seed in 123456 ; do
 
