@@ -403,7 +403,7 @@ if [ $stage -le 41 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0,2 \
+      --gpu-id 1,2 \
       --extract \
       --cos-sim \
       --remove-vad
