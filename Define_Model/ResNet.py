@@ -1174,8 +1174,8 @@ class ThinResNet(nn.Module):
             # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
             # pdb.set_trace()
             lamda_beta = np.random.beta(0.2, 0.2)
-            lamda_beta = max(0.2, lamda_beta)
-            lamda_beta = min(0.8, lamda_beta)
+            # lamda_beta = max(0.2, lamda_beta)
+            # lamda_beta = min(0.8, lamda_beta)
 
             half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
             # print(x[:half_batch_size].shape, half_feat.shape)

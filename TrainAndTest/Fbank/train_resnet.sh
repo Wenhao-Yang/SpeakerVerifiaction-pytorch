@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=41
+stage=40
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -238,12 +238,14 @@ if [ $stage -le 40 ]; then
   feat_type=klfb
   model=ThinResNet
   resnet_size=18
-  encoder_type=SAP2
+  encoder_type=ASTP2
   embedding_size=256
-  block_type=cbam
-  downsample=k3
+  block_type=seblock
+  red_ratio=2
+  expansion=1
+  downsample=k1
   kernel=5,5
-  loss=arcsoft
+  loss=proser
   alpha=1
   input_norm=Mean
   mask_layer=baseline
@@ -253,14 +255,24 @@ if [ $stage -le 40 ]; then
   batch_size=256
   fast=none1
 
+  avg_size=5
+
   encoder_type=SAP2
 #  for input_dim in 64 80 ; do
   proser_ratio=0.5
   proser_gamma=0.01
-  dummy=500
+  dummy=100
 
   for input_dim in 40; do
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_dummy${dummy}_beclga${proser_ratio}_gamma${proser_gamma}/${seed}
+    if [ $resnet_size -le 34 ];then
+      expansion=1
+      batch_size=256
+    else
+      expansion=2
+      batch_size=256
+      exp_str=_exp${expansion}
+    fi
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}/${seed}
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -272,11 +284,9 @@ if [ $stage -le 40 ]; then
       --feat-format kaldi --shuffle \
       --random-chunk 200 400 \
       --input-dim ${input_dim} --input-norm ${input_norm} \
-      --patience 3 \
-      --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
-      --nj 12 \
-      --epochs 60 --batch-size ${batch_size} \
-      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --early-stopping --early-patience 15 --early-delta 0.01 --early-meta EER \
+      --nj 6 --epochs 80 --batch-size ${batch_size} \
+      --optimizer ${optimizer} --scheduler ${scheduler} --patience 3 \
       --lr 0.1 --base-lr 0.000001 \
       --mask-layer ${mask_layer} \
       --milestones 10,20,30,40,50 \
@@ -285,20 +295,18 @@ if [ $stage -le 40 ]; then
       --kernel-size ${kernel} --downsample ${downsample} \
       --channels 16,32,64,128 \
       --fast ${fast} --stride 2,1 \
-      --block-type ${block_type} \
+      --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
       --embedding-size ${embedding_size} \
-      --time-dim 1 --avg-size 0 \
+      --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --loss-type ${loss} --margin 0.2 --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --proser-ratio ${proser_ratio} --proser-gamma ${proser_gamma} --num-center ${dummy} \
       --weight-decay 0.0005 \
-      --dropout-p 0.1 \
-      --gpu-id 0,1 \
+      --gpu-id 1,2 \
       --extract \
       --cos-sim \
-      --all-iteraion 0 \
       --remove-vad
   done
   exit
