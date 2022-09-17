@@ -318,6 +318,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                                                                             100. * minibatch_acc)
             pbar.set_description(epoch_str)
 
+    if args.batch_shuffle:
+        train_dir.__shuffle__()
+
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
 

@@ -283,7 +283,7 @@ if [ $stage -le 40 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
-      --feat-format kaldi --shuffle \
+      --feat-format kaldi --shuffle --batch-shuffle \
       --random-chunk 200 400 \
       --input-dim ${input_dim} --input-norm ${input_norm} \
       --early-stopping --early-patience 15 --early-delta 0.01 --early-meta EER \
