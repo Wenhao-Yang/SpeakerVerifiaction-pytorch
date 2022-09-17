@@ -280,7 +280,7 @@ if [ $stage -le 40 ]; then
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
-      --train-trials trials_2w \
+      --train-trials trials \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi --shuffle --batch-shuffle \
