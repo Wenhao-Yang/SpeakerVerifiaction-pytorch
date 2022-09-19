@@ -426,8 +426,8 @@ if [ $stage -le 20 ]; then
   attention_type=both
   norm_type=input_mean
 #  _${weight}
-  for attention_type in both freq time ; do
-  for norm_type in input_mean ; do
+  for attention_type in both ; do
+  for norm_type in input ; do
   for chn in 16 ; do
   for seed in 123456 ; do
 
@@ -454,10 +454,13 @@ if [ $stage -le 20 ]; then
 
     if [[ $kd_type == attention ]];then
         kd_ratio=1000
-#        if [[ $norm_type == input_weight ]]; then
+        if [[ $norm_type == input ]]; then
+          kd_str=_${kd_type}${kd_ratio}${kd_loss}
+        else
 #          kd_ratio=40
-#        fi
-        kd_str=_${kd_type}${kd_ratio}${kd_loss}_${attention_type}_${norm_type}
+          kd_str=_${kd_type}${kd_ratio}${kd_loss}_${attention_type}_${norm_type}
+        fi
+
       else
         kd_ratio=0.4
         kd_str=_${kd_type}${kd_ratio}${kd_loss}
