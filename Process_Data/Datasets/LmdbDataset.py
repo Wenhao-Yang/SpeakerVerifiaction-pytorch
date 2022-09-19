@@ -524,7 +524,7 @@ class EgsDataset(Dataset):
             return feature, label
 
     def __shuffle__(self):
-        dataset_batch = self.dataset.reshape(-1, self.batch_size, 3)
+        dataset_batch = self.dataset.reshape(-1, int(self.batch_size / 2), 3)
         np.random.shuffle(dataset_batch)
 
     def __len__(self):
