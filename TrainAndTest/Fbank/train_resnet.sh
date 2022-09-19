@@ -260,10 +260,10 @@ if [ $stage -le 40 ]; then
   encoder_type=SAP2
 #  for input_dim in 64 80 ; do
   proser_ratio=0.5
-  proser_gamma=0.01
+  proser_gamma=0.1
   dummy=100
 
-  for input_dim in 40; do
+  for proser_gamma in 0.1 1.0 ; do
   for seed in 123456 ; do
 
     if [ $resnet_size -le 34 ];then
