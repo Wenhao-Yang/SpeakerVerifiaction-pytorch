@@ -858,7 +858,7 @@ def main():
                     early_stopping_scheduler.early_stop = True
 
                 if args.scheduler != 'cyclic' and this_lr[0] <= 0.1 ** 3 * args.lr:
-                    if len(all_lr) > 10 and all_lr[-10] == this_lr[0]:
+                    if len(all_lr) > 10 and all_lr[-10] <= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
             if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
