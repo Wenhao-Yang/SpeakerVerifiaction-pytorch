@@ -720,6 +720,7 @@ class MarginLinearDummy(nn.Module):
         costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
 
         if self.dummy_classes > 1:
+            pdb.set_trace()
             costh_dummy = torch.max(costh[:, -self.dummy_classes:], dim=1, keepdim=True)[0]
             costh = torch.cat([costh[:, :-self.dummy_classes], costh_dummy], dim=1)
 
