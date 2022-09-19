@@ -257,13 +257,13 @@ if [ $stage -le 40 ]; then
 
   avg_size=5
 
-  encoder_type=SAP2
+#  encoder_type=SAP2
 #  for input_dim in 64 80 ; do
   proser_ratio=0.5
   proser_gamma=0.1
   dummy=100
 
-  for proser_gamma in 0.1 1.0 ; do
+  for proser_gamma in 1.0 0.1 0.01 ; do
   for seed in 123456 ; do
 
     if [ $resnet_size -le 34 ];then
