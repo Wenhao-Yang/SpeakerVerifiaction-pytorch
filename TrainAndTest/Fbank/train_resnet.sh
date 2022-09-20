@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=41
+stage=41  # skip to stage x
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -415,8 +415,7 @@ if [ $stage -le 41 ]; then
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 1,2 \
-      --extract \
-      --cos-sim \
+      --extract --cos-sim \
       --remove-vad
   done
   done
