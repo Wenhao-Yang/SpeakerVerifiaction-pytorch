@@ -306,7 +306,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
-
+            epoch_str += ' Accuracy: {:>5.2f}%'.format(100. * minibatch_acc)
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
@@ -314,8 +314,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
             if 'arcdist' in args.loss_type:
                 epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
-            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
-                                                                            100. * minibatch_acc)
+            epoch_str += ' Avg Loss: {:.4f} '.format(total_loss / (batch_idx + 1))
             pbar.set_description(epoch_str)
 
     if args.batch_shuffle:
