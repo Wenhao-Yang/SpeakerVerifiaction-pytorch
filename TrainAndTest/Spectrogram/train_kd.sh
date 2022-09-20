@@ -429,7 +429,7 @@ if [ $stage -le 20 ]; then
   for attention_type in both ; do
   for norm_type in input ; do
   for chn in 16 ; do
-  for seed in 123456 ; do
+  for seed in 123457 123458 ; do
 
     if [ $resnet_size -le 34 ];then
       expansion=1
