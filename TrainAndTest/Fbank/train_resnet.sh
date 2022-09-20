@@ -263,7 +263,7 @@ if [ $stage -le 40 ]; then
   proser_gamma=0.01
   dummy=100
 
-  for proser_gamma in 1.0 ; do
+  for proser_gamma in 0.01 ; do
   for seed in 123456 ; do
 
     if [ $resnet_size -le 34 ];then
@@ -307,8 +307,7 @@ if [ $stage -le 40 ]; then
       --proser-ratio ${proser_ratio} --proser-gamma ${proser_gamma} --num-center ${dummy} \
       --weight-decay 0.0005 \
       --gpu-id 1 \
-      --extract \
-      --cos-sim \
+      --extract --cos-sim \
       --remove-vad
   done
   done

@@ -734,7 +734,7 @@ class MarginLinearDummy(nn.Module):
 class ProserLoss(nn.Module):
 
     def __init__(self, margin=0.2, s=64, smooth_ratio=0, class_weight=None,
-                 beta_alpha=0.2, gamma=1.0, beta=1.0):
+                 beta_alpha=0.2, gamma=0.01, beta=1.0):
         super(ProserLoss, self).__init__()
         self.s = s
         self.margin = margin
