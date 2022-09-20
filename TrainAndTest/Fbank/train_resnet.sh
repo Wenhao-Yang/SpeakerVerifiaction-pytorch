@@ -306,7 +306,7 @@ if [ $stage -le 40 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --proser-ratio ${proser_ratio} --proser-gamma ${proser_gamma} --num-center ${dummy} \
       --weight-decay 0.0005 \
-      --gpu-id 1 \
+      --gpu-id 7 \
       --extract --cos-sim \
       --remove-vad
   done
