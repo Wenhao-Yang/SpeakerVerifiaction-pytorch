@@ -344,7 +344,7 @@ if [ $stage -le 41 ]; then
   fast=none1
 
   for resnet_size in 18; do
-  for seed in 123457 123458 ; do
+  for seed in 123456 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
     weight=vox2_rcf
@@ -381,7 +381,7 @@ if [ $stage -le 41 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2/${seed}
     #
 #
     python TrainAndTest/train_egs.py \
@@ -411,9 +411,9 @@ if [ $stage -le 41 ]; then
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
-      --gpu-id 1,2 \
+      --gpu-id 1,3 \
       --extract --cos-sim \
       --remove-vad
   done
