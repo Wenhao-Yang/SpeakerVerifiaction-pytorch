@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=41  # skip to stage x
+stage=40  # skip to stage x
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -264,7 +264,7 @@ if [ $stage -le 40 ]; then
   dummy=100
 
   for proser_gamma in 0.01 ; do
-  for seed in 123456 ; do
+  for seed in 123457 123458 ; do
 
     if [ $resnet_size -le 34 ];then
       expansion=1
