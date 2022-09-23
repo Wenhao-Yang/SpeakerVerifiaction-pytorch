@@ -413,7 +413,7 @@ fi
 
 if [ $stage -le 41 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=vox1
+  datasets=aidata
   feat_type=klfb
   model=ThinResNet
   resnet_size=34
@@ -442,7 +442,7 @@ if [ $stage -le 41 ]; then
   weight_p=0
   scale=0.2
 
-  for resnet_size in 50 ; do
+  for resnet_size in 34 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     for seed in 123456 123457 123458 ;do
     if [ $resnet_size -le 34 ];then
@@ -474,20 +474,20 @@ if [ $stage -le 41 ]; then
       at_str=
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf/${seed}
 
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
       # _${weight}${power_weight}
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --train-trials trials \
       --shuffle --batch-shuffle \
       --seed ${seed} \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb${input_dim} \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim}_valid \
+      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi --nj 8 \
       --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
@@ -511,7 +511,7 @@ if [ $stage -le 41 ]; then
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --extract \
