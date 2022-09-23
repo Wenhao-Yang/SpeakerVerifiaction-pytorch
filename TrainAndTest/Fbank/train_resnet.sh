@@ -474,7 +474,7 @@ if [ $stage -le 41 ]; then
       at_str=
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2/${seed}
 
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
@@ -511,7 +511,7 @@ if [ $stage -le 41 ]; then
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 \
-      --weight-decay 0.0001 \
+      --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
       --extract \
