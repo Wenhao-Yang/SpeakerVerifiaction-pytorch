@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=41  # skip to stage x
+stage=43  # skip to stage x
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -439,7 +439,7 @@ if [ $stage -le 43 ]; then
   scheduler=rop
   optimizer=sgd
   input_dim=40
-  batch_size=256
+  batch_size=170
   power_weight=max
 
   expansion=4
@@ -450,7 +450,7 @@ if [ $stage -le 43 ]; then
   fast=none1
   lamda_beta=0.2
 
-  for resnet_size in 18; do
+  for resnet_size in 34; do
   for seed in 123456 123457 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
@@ -488,7 +488,7 @@ if [ $stage -le 43 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_mixup${lamda_beta}/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2_mixup${lamda_beta}/${seed}
     #
 #
     python TrainAndTest/train_egs_mixup.py \
@@ -518,7 +518,7 @@ if [ $stage -le 43 ]; then
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
-      --weight-decay 0.0005 \
+      --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0,6 \
       --lamda-beta ${lamda_beta} \
