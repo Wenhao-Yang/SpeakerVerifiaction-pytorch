@@ -785,5 +785,25 @@ class ProserLoss(nn.Module):
 
     def __repr__(self):
         return "ProserLoss(margin=%f, s=%d, smooth_ratio=%s, beta_alpha=%s, gamma=%s)" % (
-        self.margin, self.s, self.smooth_ratio,
-        self.beta_alpha, self.gamma)
+            self.margin, self.s, self.smooth_ratio,
+            self.beta_alpha, self.gamma)
+
+
+class MixupLoss(nn.Module):
+
+    def __init__(self, loss):
+        super(MixupLoss, self).__init__()
+        self.loss = loss
+
+    def forward(self, costh, label, half_batch_size, lamda_beta):
+        loss = self.loss(costh[:-half_batch_size], label)
+
+        loss = loss + lamda_beta * self.loss(costh[-half_batch_size:], label[:-half_batch_size]) \
+               + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:])
+
+        return loss / 2
+
+    def __repr__(self):
+        return "MixupLoss(margin=%f, s=%d, smooth_ratio=%s, beta_alpha=%s, gamma=%s)" % (
+            self.margin, self.s, self.smooth_ratio,
+            self.beta_alpha, self.gamma)
