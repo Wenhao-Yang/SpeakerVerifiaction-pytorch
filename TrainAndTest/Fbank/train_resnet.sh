@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=43  # skip to stage x
+stage=41  # skip to stage x
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -343,8 +343,8 @@ if [ $stage -le 41 ]; then
   avg_size=5
   fast=none1
 
-  for resnet_size in 50; do
-  for seed in 123457 123458; do
+  for resnet_size in 34; do
+  for seed in 123456 123457 123458; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
     weight=vox2_rcf
