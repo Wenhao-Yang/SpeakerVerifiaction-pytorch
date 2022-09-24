@@ -960,7 +960,7 @@ class ScriptTrainDataset(data.Dataset):
             utts = self.dataset[spk]
             num_utt = len(utts)
 
-            y = np.array([[]]).reshape(0, self.feat_dim)
+            y = np.array([[]]).reshape(self.feat_shape)
             rand_utt_idx = np.random.randint(0, num_utt)
             rand_idxs.append(rand_utt_idx)
             uid = utts[rand_utt_idx]
@@ -970,7 +970,7 @@ class ScriptTrainDataset(data.Dataset):
                 voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                 feature = feature[voice_idx]
 
-            print(y.shape, feature.shape)
+            # print(y.shape, feature.shape)
             y = np.concatenate((y, feature), axis=self.c_axis)
 
             while len(y) < self.segment_len:
