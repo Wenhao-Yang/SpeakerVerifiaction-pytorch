@@ -60,7 +60,7 @@ parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--downsample', type=int, default=1, metavar='D')
 parser.add_argument('--feat-type', type=str, default='fbank',
-                    choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'wave', 'klfb', 'klsp', 'hst'],
+                    choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'wav', 'klfb', 'klsp', 'hst'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
 
@@ -241,7 +241,7 @@ elif args.feat_format in ['kaldi', 'klfb', 'klsp']:
     file_loader = kaldiio.load_mat
 elif args.feat_format == 'wav':
     file_loader = read_Waveform
-    feat_type = 'wave'
+    feat_type = 'wav'
 
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,

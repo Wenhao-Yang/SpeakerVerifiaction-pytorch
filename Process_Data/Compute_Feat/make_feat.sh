@@ -55,7 +55,7 @@ if [ $stage -le 1 ]; then
   #  feat_type=pyfb
 #  dataset=vox1
   feat=wave
-  feat_type=wave
+  feat_type=wav
   feat_format=wav
 
 

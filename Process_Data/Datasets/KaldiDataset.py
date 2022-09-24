@@ -719,7 +719,7 @@ class ScriptTrainDataset(data.Dataset):
         self.segment_len = segment_len
         self.sample_type = sample_type  # balance or instance
 
-        feat_scp = dir + '/feats.scp' if feat_type != 'wave' else dir + '/wav.scp'
+        feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
         utt2spk = dir + '/utt2spk'
         utt2num_frames = dir + '/utt2num_frames'
@@ -983,7 +983,7 @@ class ScriptTrainDataset(data.Dataset):
                     voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                     feature = feature[voice_idx]
 
-                y = np.concatenate((y, feature), axis=0)
+                y = np.concatenate((y, feature), axis=self.c_axis)
 
                 # transform features if required
                 if self.rand_test:
