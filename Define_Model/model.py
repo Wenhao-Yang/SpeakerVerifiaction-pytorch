@@ -13,11 +13,12 @@ import math
 
 import torch
 import torch.nn as nn
+import torchaudio.transforms
 from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, fDLR
+from Define_Model.FilterLayer import MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
@@ -51,6 +52,8 @@ def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: b
         filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
     elif filter == 'Avg':
         filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
+    elif filter == 'fbank':
+        filter_layer = MelFbankLayer(sr=sr, num_filter=feat_dim)
     else:
         filter_layer = None
 
