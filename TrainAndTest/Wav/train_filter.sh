@@ -158,7 +158,7 @@ if [ $stage -le 10 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
       --feat-format kaldi --nj 6 \
-      --random-chunk 200 400 \
+      --random-chunk 32000 64000 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
       --filter ${filter_layer} --feat-dim ${feat_dim} \
       --epochs 60 --batch-size ${batch_size} \
