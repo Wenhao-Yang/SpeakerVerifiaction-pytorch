@@ -282,7 +282,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             # epoch_str += ' Width: {:.2f}'.format(width_mult)
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
-                epoch_str += ' Batch Len: {:>3d} '.format(data.shape[-2])
+                batch_length = data.shape[-1] if args.feat_format == 'wav' else data.shape[-2]
+                epoch_str += ' Batch Len: {:>3d} '.format(batch_length)
 
             epoch_str += ' Accuracy(%): '
 
