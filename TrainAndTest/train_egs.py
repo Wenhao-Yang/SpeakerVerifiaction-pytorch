@@ -475,7 +475,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         # FLAGS.width_mult = width_mult
 
         this_xvector_dir = "%s/train/epoch_%s_width%s" % (xvector_dir, epoch, width_mult)
-        verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
+        verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input,
+                             verbose=1, )
 
         verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
                                          xvectors_dir=this_xvector_dir,
