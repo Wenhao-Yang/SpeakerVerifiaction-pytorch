@@ -159,6 +159,7 @@ if [ $stage -le 10 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/test_10k \
       --feat-format kaldi --nj 6 \
       --random-chunk 32000 64000 \
+      --chunk-size 48000 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
       --feat-format wav \
       --filter ${filter_layer} --feat-dim ${feat_dim} \
