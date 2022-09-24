@@ -56,6 +56,7 @@ if [ $stage -le 1 ]; then
 #  dataset=vox1
   feat=wave
   feat_type=wav
+  feat_format=wav
 
 
 #  feat=klfb
@@ -77,7 +78,7 @@ if [ $stage -le 1 ]; then
       --train \
       --input-per-spks ${input_per_spks} \
       --num-frames ${num_frames} \
-      --feat-format kaldi \
+      --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --out-set ${s}
@@ -90,7 +91,7 @@ if [ $stage -le 1 ]; then
       --feat-type ${feat_type} \
       --num-frames ${num_frames} \
       --input-per-spks ${input_per_spks} \
-      --feat-format kaldi \
+      --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
       --out-set ${s}_valid
