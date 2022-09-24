@@ -240,10 +240,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
                 loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
 
-            minibatch_correct = lamda_beta * float(
-                (predicted_one_labels.cpu() == label[:len(predicted_one_labels)].cpu()).sum().item()) \
-                (1 - lamda_beta) * float(
-                (predicted_one_labels.cpu() == label[-len(predicted_one_labels):].cpu()).sum().item())
+            minibatch_correct = lamda_beta * predicted_one_labels.eq(
+                label[:len(predicted_one_labels)]).cpu().sum().float() + \
+                                (1 - lamda_beta) * predicted_one_labels.eq(
+                label[-len(predicted_one_labels):]).cpu().sum().float()
             minibatch_acc = minibatch_correct / len(predicted_one_labels)
             batch_accs.append(minibatch_acc)
 
