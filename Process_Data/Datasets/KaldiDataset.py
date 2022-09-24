@@ -527,10 +527,10 @@ class KaldiTupleDataset(data.Dataset):
 
 class KaldiExtractDataset(data.Dataset):
     def __init__(self, dir, transform, filer_loader, trials_file='trials',
-                 extract_trials=True, vad_select=False,
+                 extract_trials=True, vad_select=False, feat_type='kaldi',
                  verbose=0):
 
-        feat_scp = dir + '/feats.scp'
+        feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         trials = dir + '/%s' % trials_file
         vad_scp = dir + '/vad.scp'
 

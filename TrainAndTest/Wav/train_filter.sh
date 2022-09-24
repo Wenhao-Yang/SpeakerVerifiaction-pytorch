@@ -152,14 +152,15 @@ if [ $stage -le 10 ]; then
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train \
-      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
+      --train-test-dir ${lstm_dir}/data/${datasets}/test \
       --train-trials trials \
       --shuffle --batch-shuffle --seed ${seed} \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_valid \
-      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test \
+      --test-dir ${lstm_dir}/data/${datasets}/test \
       --feat-format kaldi --nj 6 \
       --random-chunk 32000 64000 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
+      --feat-format wav \
       --filter ${filter_layer} --feat-dim ${feat_dim} \
       --epochs 60 --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
