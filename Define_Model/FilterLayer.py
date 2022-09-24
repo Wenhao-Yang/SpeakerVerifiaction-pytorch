@@ -211,13 +211,9 @@ class MelFbankLayer(nn.Module):
                                                       window_fn=torch.hamming_window, n_mels=num_filter)
 
     def forward(self, input):
-        pdb.set_trace()
-        output = []
-        for i in input:
-            output.append(self.t(i))
+        output = self.t(input.squeeze(1))
 
-        output = torch.cat(output, dim=0)
-        output = torch.transpose(output, 1, 2)
+        output = torch.transpose(output, 2, 3)
         return torch.log(output + 1e-6)
 
     def __repr__(self):
