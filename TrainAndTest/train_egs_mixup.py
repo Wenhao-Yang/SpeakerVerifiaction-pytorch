@@ -170,8 +170,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         half_data = int(len(data) / 2)
         lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
-        mix_data = lamda_beta * data[:half_data] + (1 - lamda_beta) * data[-half_data:]
-        data = torch.cat((data, mix_data), dim=0)
+
+        rand_idx = torch.randperm(len(data))
+        data = lamda_beta * data + (1 - lamda_beta) * data[rand_idx]
+        label = torch.cat([label, label[rand_idx]], dim=0)
 
         if args.cuda:
             # label = label.cuda(non_blocking=True)
@@ -209,7 +211,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 other_loss += loss_xent
                 loss = loss_xent + loss_cent
             elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
-                loss = xe_criterion(classfier, label, half_data, lamda_beta)
+                loss = xe_criterion(classfier, label, lamda_beta)
             elif 'arcdist' in args.loss_type:
                 # pdb.set_trace()
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
@@ -288,6 +290,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d} '.format(data.shape[-2])
 
+            epoch_str += ' lamda: {4>.2}'.format(lamda_beta)
             epoch_str += ' Accuracy(%): '
 
             for minibatch_acc in batch_accs:
