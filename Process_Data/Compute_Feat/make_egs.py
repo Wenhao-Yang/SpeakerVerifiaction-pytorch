@@ -325,11 +325,11 @@ if __name__ == "__main__":
     lock_i = manager.Lock()
     lock_t = manager.Lock()
 
-    print(train_dir.__getitem__(1)[0].shape)
-    feat_dim = train_dir.__getitem__(1)[0].shape[-1]
+    # print(train_dir.__getitem__(1)[0].shape)
+    feat_shape = train_dir.__getitem__(1)[0].shape
     mem_data = psutil.virtual_memory()
     free_mem = mem_data.available
-    maxsize = int(free_mem / (args.num_frames * feat_dim * 4) * 0.5)
+    maxsize = int(free_mem / (feat_shape[0] * feat_shape[1] * 4) * 0.5)
     maxsize = min(maxsize, 150000)
     maxsize = max(maxsize, 1500)
     print('Maxsize for Queue is %d' % maxsize)
