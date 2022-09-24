@@ -54,13 +54,13 @@ if [ $stage -le 1 ]; then
 
   #  feat_type=pyfb
 #  dataset=vox1
-  feat=klfb
-  feat_type=klfb
+  feat=wave
+  feat_type=wav
 
 
 #  feat=klfb
 #  feat_type=klfb
-  num_frames=400
+  num_frames=64000
   input_per_spks=1024
 #        --remove-vad \
 #--domain \
@@ -70,7 +70,7 @@ if [ $stage -le 1 ]; then
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
   for s in train_fb40 ; do
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
@@ -85,7 +85,7 @@ if [ $stage -le 1 ]; then
 
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \

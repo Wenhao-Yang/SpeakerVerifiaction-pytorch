@@ -34,7 +34,7 @@ from Process_Data.Datasets.KaldiDataset import ScriptValidDataset, ScriptTrainDa
 from Process_Data.Datasets.KaldiDataset import AugTrainDataset, AugValidDataset
 
 from Process_Data.audio_augment.common import RunCommand
-from Process_Data.audio_processing import ConcateNumInput, DownSample
+from Process_Data.audio_processing import ConcateNumInput, DownSample, read_Waveform
 from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
@@ -50,7 +50,7 @@ parser.add_argument('--domain', action='store_true', default=False, help='set do
 
 parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
-parser.add_argument('--feat-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp'],
+parser.add_argument('--feat-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp', 'wav'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--sample-type', type=str, choices=['instance', 'balance', 'half_balance'],
                     default='half_balance', help='sample type for datasets')
@@ -60,7 +60,7 @@ parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--downsample', type=int, default=1, metavar='D')
 parser.add_argument('--feat-type', type=str, default='fbank',
-                    choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'klfb', 'klsp', 'hst'],
+                    choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'wave', 'klfb', 'klsp', 'hst'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
 
@@ -233,16 +233,21 @@ transform = transforms.Compose([
 if args.downsample > 1:
     transform.transforms.append(DownSample(downsample=args.downsample))
 
+feat_type = 'kaldi'
 if args.feat_format == 'npy':
     file_loader = np.load
-elif args.feat_format in ['kaldi', 'klfb']:
+elif args.feat_format in ['kaldi', 'klfb', 'klsp']:
     # file_loader = kaldi_io.read_mat
     file_loader = kaldiio.load_mat
+elif args.feat_format == 'wav':
+    file_loader = read_Waveform
+    feat_type = 'wav'
 
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                    transform=transform, num_valid=args.num_valid, domain=args.domain,
                                    vad_select=args.vad_select, sample_type=args.sample_type,
+                                   feat_type=feat_type,
                                    segment_len=args.num_frames)
     # train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
     #                                transform=transform, num_valid=args.num_valid, domain=args.domain)
@@ -255,7 +260,7 @@ if not args.enhance:
 
 else:
     train_dir = AugTrainDataset(dir=args.data_dir, sets=args.sets, samples_per_speaker=args.input_per_spks,
-                                loader=file_loader,
+                                loader=file_loader, feat_type=feat_type,
                                 transform=transform, num_valid=args.num_valid, domain=args.domain)
     # train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
     #                                transform=transform, num_valid=args.num_valid, domain=args.domain)
