@@ -133,6 +133,7 @@ elif args.feat_format == 'npy':
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
                        batch_size=args.batch_size, random_chunk=args.random_chunk, shuffle=args.batch_shuffle)
+valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
 
 if args.feat_format == 'wav':
     file_loader = read_Waveform
@@ -147,8 +148,6 @@ train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
 
 extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, feat_type=feat_type,
                                   trials_file=args.trials, filer_loader=file_loader)
-
-valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
