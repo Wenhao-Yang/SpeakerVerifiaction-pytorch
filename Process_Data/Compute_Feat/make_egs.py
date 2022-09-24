@@ -226,13 +226,6 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     assert os.path.exists(new_feat_scp)
 
 
-transform = transforms.Compose([
-    ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_vad),
-])
-
-if args.downsample > 1:
-    transform.transforms.append(DownSample(downsample=args.downsample))
-
 feat_type = 'kaldi'
 if args.feat_format == 'npy':
     file_loader = np.load
@@ -242,6 +235,14 @@ elif args.feat_format in ['kaldi', 'klfb', 'klsp']:
 elif args.feat_format == 'wav':
     file_loader = read_Waveform
     feat_type = 'wav'
+
+transform = transforms.Compose([
+    ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_vad,
+                    feat_type=feat_type),
+])
+
+if args.downsample > 1:
+    transform.transforms.append(DownSample(downsample=args.downsample))
 
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
@@ -367,7 +368,7 @@ if __name__ == "__main__":
 
         # valid set
         num_utt = len(valid_dir)
-        for i in tqdm(range(len(valid_dir))):
+        for i in tqdm(range(len(valid_dir)), ncols=60):
             idx_queue.put(i)
 
         print('\n>> Plan to make feats for %d speakers with %d egs in %s with %d jobs.\n' % (
