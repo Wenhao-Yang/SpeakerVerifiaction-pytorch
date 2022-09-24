@@ -970,6 +970,7 @@ class ScriptTrainDataset(data.Dataset):
                 voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                 feature = feature[voice_idx]
 
+            print(y.shape, feature.shape)
             y = np.concatenate((y, feature), axis=self.c_axis)
 
             while len(y) < self.segment_len:
