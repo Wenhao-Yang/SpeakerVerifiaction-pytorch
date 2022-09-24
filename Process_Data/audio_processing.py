@@ -769,7 +769,8 @@ class PadCollate:
         #     self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
         # else:
         # assert num_batch > 0
-        batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1, 20)
+        batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1,
+                              max(int((self.max_chunk_size - self.min_chunk_size) / 20), 20))
 
         if chisquare:
             chi_len = np.random.chisquare(min_chunk_size, 2 * (max_chunk_size - min_chunk_size)).astype(np.int32)
