@@ -293,7 +293,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
                 epoch_str += ' Batch Len: {:>3d} '.format(data.shape[-2])
 
-            epoch_str += ' Lamda: {4>.2}'.format(lamda_beta)
+            epoch_str += ' Lamda: {4>.2f}'.format(lamda_beta)
             epoch_str += ' Accuracy(%): '
 
             for minibatch_acc in batch_accs:
