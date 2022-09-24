@@ -167,7 +167,10 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                     key = ' '.join((str(comm[0]), str(comm[1])))
                 else:
                     key = str(comm[0])
-                feat = comm[-1].astype(np.float32).squeeze()
+                feat = comm[-1].astype(np.float32)
+                if len(feat.shape) > 2:
+                    feat = feat.squeeze()
+                # .squeeze()
 
                 if args.out_format == 'kaldi':
                     kaldi_io.write_mat(feat_ark_f, feat, key='')
