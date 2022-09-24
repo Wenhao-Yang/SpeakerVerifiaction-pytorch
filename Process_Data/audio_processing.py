@@ -833,11 +833,15 @@ class PadCollate:
         if self.split:
             xs = torch.cat(xs.chunk(2, dim=2), dim=1)
             # print(xs.shape)
+        xs_shape = xs.shape
 
-        if frame_len < xs.shape[-2]:
-            start = np.random.randint(low=0, high=xs.shape[-2] - frame_len)
+        if frame_len < xs_shape[self.dim]:
+            start = np.random.randint(low=0, high=xs_shape[self.dim] - frame_len)
             end = start + frame_len
-            xs = xs[:, :, start:end, :].contiguous()
+            if self.dim == 2:
+                xs = xs[:, :, start:end, :].contiguous()
+            elif self.dim == 3:
+                xs = xs[:, :, :, start:end].contiguous()
         else:
             # print(frame_len, xs.shape[-2])
             xs = xs.contiguous()
