@@ -309,8 +309,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             optimizer.step()  # update parameters of net
             optimizer.zero_grad()  # reset gradient
 
-            # if (batch_idx + 1) == 200:
-            #     break
+            if (batch_idx + 1) == 200:
+                break
 
         if args.scheduler == 'cyclic':
             scheduler.step()
