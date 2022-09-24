@@ -15,6 +15,7 @@ import math
 import numpy as np
 import torch
 import torch.nn.functional as F
+import torchaudio
 from python_speech_features import hz2mel, mel2hz
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel
@@ -198,6 +199,28 @@ class fLLayer(nn.Module):
     def __repr__(self):
         return "fLLayer(input_dim=%d, num_filter=%d) without batchnorm2d " % (
             self.input_dim, self.num_filter)
+
+
+class MelFbankLayer(nn.Module):
+    def __init__(self, sr, num_filter, log_scale=True):
+        super(MelFbankLayer, self).__init__()
+        self.num_filter = num_filter
+        self.sr = sr
+        self.t = torchaudio.transforms.MelSpectrogram(n_fft=512, win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
+                                                      window_fn=torch.hamming_window, n_mels=num_filter)
+
+    def forward(self, input):
+        output = []
+        for i in input:
+            output.append(self.t(i))
+
+        output = torch.cat(output, dim=0)
+        output = torch.transpose(output, 1, 2)
+        return torch.log(output + 1e-6)
+
+    def __repr__(self):
+        return "MelFbankLayer(sr=%d, num_filter=%d)" % (self.sr, self.num_filter)
+
 
 # https://github.com/mravanelli/SincNet
 class SincConv_fast(nn.Module):
