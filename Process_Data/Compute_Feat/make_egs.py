@@ -325,7 +325,7 @@ if __name__ == "__main__":
     lock_i = manager.Lock()
     lock_t = manager.Lock()
 
-    # print(train_dir.__getitem__(1).shape)
+    print(train_dir.__getitem__(1).shape)
     feat_dim = train_dir.__getitem__(1)[0].shape[-1]
     mem_data = psutil.virtual_memory()
     free_mem = mem_data.available
