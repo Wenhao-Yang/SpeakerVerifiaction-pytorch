@@ -241,7 +241,7 @@ elif args.feat_format in ['kaldi', 'klfb', 'klsp']:
     file_loader = kaldiio.load_mat
 elif args.feat_format == 'wav':
     file_loader = read_Waveform
-    feat_type = 'wav'
+    feat_type = 'wave'
 
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
