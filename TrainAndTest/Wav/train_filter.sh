@@ -80,7 +80,7 @@ fi
 
 if [ $stage -le 10 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=vox1
+  datasets=aidata
   feat_type=wave
   model=ThinResNet
   resnet_size=18
