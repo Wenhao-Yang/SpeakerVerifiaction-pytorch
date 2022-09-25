@@ -351,10 +351,10 @@ if [ $stage -le 12 ]; then
     python TrainAndTest/train_egs_proser.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train \
-      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
+      --train-test-dir ${lstm_dir}/data/${testset}/test_10k \
       --train-trials trials \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_valid \
-      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
+      --test-dir ${lstm_dir}/data/${testset}/test_10k \
       --feat-format kaldi --shuffle --batch-shuffle \
       --random-chunk 32000 64000 --chunk-size 48000 \
       --feat-format wav \
