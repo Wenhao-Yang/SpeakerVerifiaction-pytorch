@@ -125,7 +125,7 @@ def create_model(name, **kwargs):
         , 'aDCF']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                 normalize=kwargs['normalize'],
-                                                num_classes=kwargs['num_classes'], output_subs=kwargs['output_subs'])
+                                                num_classes=kwargs['num_classes'])
     elif 'sub' in kwargs['loss_type']:
         model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
                                            num_center=kwargs['num_center'], output_subs=kwargs['output_subs'])
