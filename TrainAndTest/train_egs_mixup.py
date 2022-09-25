@@ -46,7 +46,7 @@ from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
 from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
 from Define_Model.TDNN.Slimmable import FLAGS
-from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
+from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
@@ -134,16 +134,22 @@ elif args.feat_format == 'npy':
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
                        batch_size=args.batch_size, random_chunk=args.random_chunk, shuffle=args.batch_shuffle)
+valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
+
+if args.feat_format == 'wav':
+    file_loader = read_Waveform
+    feat_type = 'wav'
+else:
+    feat_type = 'kaldi'
 
 train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         transform=transform_V,
-                                        filer_loader=file_loader,
+                                        filer_loader=file_loader, feat_type=feat_type,
                                         trials_file=args.train_trials)
 
-extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
+extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, feat_type=feat_type,
                                   trials_file=args.trials, filer_loader=file_loader)
 
-valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
@@ -291,7 +297,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             # epoch_str += ' Width: {:.2f}'.format(width_mult)
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
-                epoch_str += ' Batch Len: {:>3d} '.format(data.shape[-2])
+                batch_length = data.shape[-1] if args.feat_format == 'wav' else data.shape[-2]
+                epoch_str += ' Batch Len: {:>3d} '.format(batch_length)
 
             epoch_str += ' Lamda: {:>4.2f}'.format(lamda_beta)
             epoch_str += ' Accuracy(%): '
