@@ -125,7 +125,9 @@ if args.log_scale:
 
 # pdb.set_trace()
 if args.feat_format in ['kaldi', 'wav']:
-    file_loader = read_mat
+    # file_loader = read_mat
+    file_loader = load_mat
+
 elif args.feat_format == 'npy':
     file_loader = np.load
 
