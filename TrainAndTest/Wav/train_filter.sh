@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-stage=12
+stage=11
 waited=0
-while [ $(ps 103374 | wc -l) -eq 2 ]; do
+while [ $(ps 233979 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -221,7 +221,7 @@ if [ $stage -le 11 ]; then
   lamda_beta=0.2
 
 
-  for lamda_beta in 1 2; do
+  for lamda_beta in 1 2 0.5; do
   for seed in 123456 123457 123458; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
