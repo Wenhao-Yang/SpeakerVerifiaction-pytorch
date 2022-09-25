@@ -1102,7 +1102,7 @@ class ThinResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward(self, x, feature_map='', proser=False, label=None):
+    def _forward(self, x, feature_map='', proser=False, label=None, lamda_beta=0.2):
         # pdb.set_trace()
         # print(x.shape)
         # if self.filter_layer != None:
@@ -1173,7 +1173,7 @@ class ThinResNet(nn.Module):
 
             # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
             # pdb.set_trace()
-            lamda_beta = np.random.beta(0.2, 0.2)
+            lamda_beta = np.random.beta(lamda_beta, lamda_beta)
             # lamda_beta = max(0.2, lamda_beta)
             # lamda_beta = min(0.8, lamda_beta)
 
