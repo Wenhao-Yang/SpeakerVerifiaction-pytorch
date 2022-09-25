@@ -111,7 +111,7 @@ class KaldiTrainDataset(data.Dataset):
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
         uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -318,7 +318,7 @@ class TrainDataset(data.Dataset):
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
         uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -417,9 +417,8 @@ class KaldiTupleDataset(data.Dataset):
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-
         uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -527,10 +526,13 @@ class KaldiTupleDataset(data.Dataset):
 
 
 class KaldiExtractDataset(data.Dataset):
-    def __init__(self, dir, transform, filer_loader, trials_file='trials', extract_trials=True, verbose=0):
+    def __init__(self, dir, transform, filer_loader, trials_file='trials',
+                 extract_trials=True, vad_select=False, feat_type='kaldi',
+                 verbose=0):
 
-        feat_scp = dir + '/feats.scp'
+        feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         trials = dir + '/%s' % trials_file
+        vad_scp = dir + '/vad.scp'
 
         if os.path.isfile(trials) and extract_trials:
             assert os.path.exists(feat_scp), feat_scp
@@ -552,18 +554,21 @@ class KaldiExtractDataset(data.Dataset):
             with open(feat_scp, 'r') as u:
                 all_cls = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
                 for line in all_cls:
-                    utt_path = line.split(' ')
+                    # utt_path = line.split(' ')
+                    utt_path = line.split()
                     uid = utt_path[0]
                     if uid in trials_utts:
                         uid2feat[uid] = utt_path[-1]
 
         else:
-            print("    trials not exist!")
+            if verbose > 0:
+                print("    trials not exist, extract xvector for all utterances!")
             uid2feat = {}
             with open(feat_scp, 'r') as u:
-                all_cls = tqdm(u.readlines(), ncols=100)
+                all_cls = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
                 for line in all_cls:
-                    utt_path = line.split(' ')
+                    # utt_path = line.split(' ')
+                    utt_path = line.split()
                     uid = utt_path[0]
                     uid2feat[uid] = utt_path[-1]
 
@@ -687,12 +692,13 @@ class ScriptVerifyDataset(data.Dataset):
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
-                 vad_select=False,
-                 segment_len=c.N_SAMPLES, verbose=1):
+                 vad_select=False, sample_type='instance',
+                 segment_len=c.N_SAMPLES, verbose=1, min_frames=50):
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
         self.segment_len = segment_len
+        self.sample_type = sample_type  # balance or instance
 
         feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
@@ -731,20 +737,24 @@ class ScriptTrainDataset(data.Dataset):
                         num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
                     else:
                         num_frames = int(num_frames)
+                    if num_frames >= min_frames:
+                        total_frames += num_frames
+                        this_numofseg = int(np.ceil(float(num_frames) / segment_len))
 
-                    total_frames += num_frames
-                    this_numofseg = int(np.ceil(float(num_frames) / segment_len))
-
-                    for i in range(this_numofseg):
-                        end = min((i + 1) * segment_len, num_frames)
-                        start = min(end - segment_len, 0)
-                        base_utts.append((uid, start, end))
-            if verbose > 0:
-                print('    There are {} basic segments.'.format(len(base_utts)))
+                        for i in range(this_numofseg):
+                            end = min((i + 1) * segment_len, num_frames)
+                            start = min(end - segment_len, 0)
+                            base_utts.append((uid, start, end))
+                    else:
+                        invalid_uid.append(uid)
 
                 # if int(num_frames) < 50:
                 #     invalid_uid.append(uid)
+        random.shuffle(base_utts)
         self.base_utts = base_utts
+        if verbose > 0:
+            print('    There are {} basic segments.'.format(len(base_utts)))
+
         dataset = {}
         with open(spk2utt, 'r') as u:
             all_cls = u.readlines()
@@ -923,7 +933,7 @@ class ScriptTrainDataset(data.Dataset):
             utts = self.dataset[spk]
             num_utt = len(utts)
 
-            y = np.array([[]]).reshape(0, self.feat_dim)
+            y = np.array([[]]).reshape(self.feat_shape)
             rand_utt_idx = np.random.randint(0, num_utt)
             rand_idxs.append(rand_utt_idx)
             uid = utts[rand_utt_idx]
@@ -933,9 +943,9 @@ class ScriptTrainDataset(data.Dataset):
                 voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                 feature = feature[voice_idx]
 
-            y = np.concatenate((y, feature), axis=0)
+            y = np.concatenate((y, feature), axis=self.c_axis)
 
-            while len(y) < self.segment_len:
+            while y.shape[self.c_axis] < self.segment_len:
                 rand_utt_idx = np.random.randint(0, num_utt)
                 rand_idxs.append(rand_utt_idx)
 
@@ -946,7 +956,7 @@ class ScriptTrainDataset(data.Dataset):
                     voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                     feature = feature[voice_idx]
 
-                y = np.concatenate((y, feature), axis=0)
+                y = np.concatenate((y, feature), axis=self.c_axis)
 
                 # transform features if required
                 if self.rand_test:
