@@ -380,7 +380,7 @@ if [ $stage -le 12 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --proser-ratio ${proser_ratio} --proser-gamma ${proser_gamma} --num-center ${dummy} \
       --weight-decay 0.0005 \
-      --gpu-id 0,6 \
+      --gpu-id 0 \
       --extract --cos-sim \
       --remove-vad
   done
