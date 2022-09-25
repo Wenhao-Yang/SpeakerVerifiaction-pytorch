@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=11
+stage=12
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -221,7 +221,7 @@ if [ $stage -le 11 ]; then
   lamda_beta=0.2
 
 
-  for resnet_size in 18; do
+  for lamda_beta in 1 2; do
   for seed in 123456 123457 123458; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
@@ -295,6 +295,92 @@ if [ $stage -le 11 ]; then
       --dropout-p 0.1 \
       --gpu-id 0,6 \
       --lamda-beta ${lamda_beta} \
+      --extract --cos-sim \
+      --remove-vad
+  done
+  done
+  exit
+fi
+
+if [ $stage -le 12 ]; then
+  datasets=aidata
+  testset=aidata
+  feat_type=wave
+  model=ThinResNet
+  resnet_size=18
+  encoder_type=ASTP2
+  embedding_size=256
+  block_type=seblock
+  red_ratio=2
+  expansion=1
+  downsample=k1
+  kernel=5,5
+  loss=proser
+  alpha=1
+  input_norm=Mean
+  mask_layer=baseline
+  scheduler=rop
+  optimizer=sgd
+  input_dim=40
+  filter_layer=fbank
+  feat_dim=40
+  batch_size=256
+  fast=none1
+
+  avg_size=5
+
+#  encoder_type=SAP2
+#  for input_dim in 64 80 ; do
+  proser_ratio=1
+  proser_gamma=0.01
+  dummy=40
+
+  for proser_gamma in 0.01 ; do
+  for seed in 123456 123457 123458 ; do
+
+    if [ $resnet_size -le 34 ];then
+      expansion=1
+      batch_size=256
+    else
+      expansion=2
+      batch_size=256
+      exp_str=_exp${expansion}
+    fi
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2_${filter_layer}${feat_dim}_dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}/${seed}
+    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    python TrainAndTest/train_egs_proser.py \
+      --model ${model} --resnet-size ${resnet_size} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train \
+      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
+      --train-trials trials \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
+      --feat-format kaldi --shuffle --batch-shuffle \
+      --random-chunk 32000 64000 --chunk-size 48000 \
+      --feat-format wav \
+      --filter ${filter_layer} --feat-dim ${feat_dim} \
+      --input-dim ${input_dim} --input-norm ${input_norm} \
+      --early-stopping --early-patience 20 --early-delta 0.01 --early-meta EER \
+      --nj 6 --epochs 60 --batch-size ${batch_size} \
+      --optimizer ${optimizer} --scheduler ${scheduler} --patience 3 \
+      --lr 0.1 --base-lr 0.000001 \
+      --mask-layer ${mask_layer} \
+      --milestones 10,20,30,40,50 \
+      --check-path Data/checkpoint/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+      --kernel-size ${kernel} --downsample ${downsample} \
+      --channels 16,32,64,128 \
+      --fast ${fast} --stride 2,1 \
+      --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
+      --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
+      --proser-ratio ${proser_ratio} --proser-gamma ${proser_gamma} --num-center ${dummy} \
+      --weight-decay 0.0005 \
+      --gpu-id 0,6 \
       --extract --cos-sim \
       --remove-vad
   done
