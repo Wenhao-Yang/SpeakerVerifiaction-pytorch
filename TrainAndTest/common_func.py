@@ -29,7 +29,7 @@ from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD, SAM
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
-from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear
+from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear, MarginLinearDummy
 from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
@@ -125,11 +125,13 @@ def create_model(name, **kwargs):
         , 'aDCF']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                 normalize=kwargs['normalize'],
-                                                num_classes=kwargs['num_classes'])
+                                                num_classes=kwargs['num_classes'], output_subs=kwargs['output_subs'])
     elif 'sub' in kwargs['loss_type']:
         model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
-                                           num_center=kwargs['num_center'], )
-
+                                           num_center=kwargs['num_center'], output_subs=kwargs['output_subs'])
+    elif kwargs['loss_type'] in ['proser']:
+        model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'], dummy_classes=kwargs['num_center'],
+                                             num_classes=kwargs['num_classes'])
     return model
 
 
@@ -589,7 +591,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='input sample per file for testing (default: 8)')
     parser.add_argument('--test-input-per-file', type=int, default=4, metavar='IPFT',
                         help='input sample per file for testing (default: 8)')
-    parser.add_argument('--test-batch-size', type=int, default=4, metavar='BST',
+    parser.add_argument('--test-batch-size', type=int, default=1, metavar='BST',
                         help='input batch size for testing (default: 64)')
     parser.add_argument('--dropout-p', type=float, default=0.0, metavar='BST',
                         help='input batch size for testing (default: 64)')
@@ -598,6 +600,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--loss-type', type=str, help='path to voxceleb1 test dataset')
     parser.add_argument('--e2e-loss-type', type=str, default='angleproto', help='path to voxceleb1 test dataset')
     parser.add_argument('--num-center', type=int, default=2, help='the num of source classes')
+    parser.add_argument('--output-subs', action='store_true', default=False, help='using Cosine similarity')
+
     parser.add_argument('--source-cls', type=int, default=1951,
                         help='the num of source classes')
     parser.add_argument('--finetune', action='store_true', default=False,
@@ -606,6 +610,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='the ratio softmax loss - triplet loss (default: 2.0')
     parser.add_argument('--alpha-t', type=float, default=1.0, help='the ratio for LNCL')
     parser.add_argument('--beta', type=float, default=1.0, help='the beta ratio for regularize term')
+    parser.add_argument('--lamda-beta', type=float, default=0.2, help='the alpha for beta distribution')
+
     parser.add_argument('--lncl', action='store_true', default=False, help='Label Noise Correct Loss')
     parser.add_argument('--smooth-ratio', type=float, default=0,
                         help='the margin value for the angualr softmax loss function (default: 3.0')
@@ -633,7 +639,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     # num_meta_spks
     parser.add_argument('--most-sim-spk', type=int, default=8, metavar='M',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
-
+    parser.add_argument('--beta-alpha', type=float, default=0.2, metavar='MARGIN',
+                        help='the margin value for the angualr softmax loss function (default: 3.0')
     # args for a-softmax
     parser.add_argument('--all-iteraion', type=int, default=0, metavar='M',
                         help='the margin value for the angualr softmax loss function (default: 3.0')
@@ -734,6 +741,34 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--attention-type', type=str, default='both', help='path to voxceleb1 test dataset')
         parser.add_argument('--norm-type', type=str, default='input', help='path to voxceleb1 test dataset')
 
+    if 'Test' in description:
+        # parser.add_argument('--model-yaml', default='', type=str, help='path to yaml of model for the latest checkpoint')
+        parser.add_argument('--extract-trials', action='store_false', default=True, help='log power spectogram')
+        parser.add_argument('--score-suffix', type=str, default='', help='path to voxceleb1 test dataset')
+        # parser.add_argument('--xvector', action='store_true', default=False, help='need to make mfb file')
+
+        parser.add_argument('--cluster', default='mean', type=str, help='The optimizer to use (default: Adagrad)')
+        parser.add_argument('--skip-test', action='store_false', default=True, help='need to make mfb file')
+
+        parser.add_argument('--mvnorm', action='store_true', default=False,
+                            help='need to make spectrograms file')
+        parser.add_argument('--valid', action='store_true', default=False,
+                            help='need to make spectrograms file')
+        parser.add_argument('--vad-select', action='store_true', default=False, help='using Cosine similarity')
+        parser.add_argument('--test', action='store_false', default=True, help='need to make mfb file')
+
+        # parser.add_argument('--mean-vector', action='store_false', default=True,
+        #                     help='mean for embeddings while extracting')
+        parser.add_argument('--score-norm', type=str, default='', help='score normalization')
+
+        parser.add_argument('--test-mask', action='store_true', default=False, help='need to make spectrograms file')
+        parser.add_argument('--mask-sub', type=str, default='0,1', help='mask input start index')
+        # parser.add_argument('--mask-lenght', type=int, default=1, help='mask input start index')
+
+        parser.add_argument('--n-train-snts', type=int, default=100000,
+                            help='how many batches to wait before logging training status')
+        parser.add_argument('--cohort-size', type=int, default=50000,
+                            help='how many imposters to include in cohort')
     args = parser.parse_args()
 
     return args
@@ -781,7 +816,7 @@ def args_model(args, train_dir):
                     'channels': channels, 'width_mult_list': width_mult_list,
                     'alpha': args.alpha, 'normalize': args.normalize, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
-                    'num_center': args.num_center,
+                    'num_center': args.num_center, 'output_subs': args.output_subs,
                     'iteraion': 0, 'all_iteraion': args.all_iteraion}
 
     return model_kwargs

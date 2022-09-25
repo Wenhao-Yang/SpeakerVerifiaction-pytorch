@@ -20,6 +20,7 @@ https://github.com/CoinCheung/pytorch-loss/blob/master/amsoftmax.py
 """
 import math
 import pdb
+from random import random
 import numpy as np
 import torch
 import torch.nn as nn
@@ -184,35 +185,28 @@ class AdditiveMarginLinear(nn.Module):
 
 
 class SubMarginLinear(nn.Module):
-    def __init__(self, feat_dim, num_classes, num_center=3, use_gpu=False):
+    def __init__(self, feat_dim, num_classes, num_center=3, output_subs=False):
         super(SubMarginLinear, self).__init__()
         self.feat_dim = feat_dim
         self.num_classes = num_classes
         self.num_center = num_center
+        self.output_subs = output_subs
+
         self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes, num_center), requires_grad=True)
-        if use_gpu:
-            self.W.cuda()
+
         nn.init.xavier_normal(self.W, gain=1)
 
     def forward(self, x):
         # assert x.size()[0] == label.size()[0]
         assert x.size()[1] == self.feat_dim
 
-        # pdb.set_trace()
-        # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
-        # x_norm = torch.div(x, x_norm)
-
-#         x_norm = F.normalize(x, dim=1)
-#         w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
-#         costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
-        
         x = x.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, self.num_classes, self.num_center)
         w = self.W.unsqueeze(0).repeat(x.shape[0], 1, 1, 1)
         
         # # w_norm = torch.div(self.W, w_norm)
         costh = torch.cosine_similarity(x, w, dim=1)
         # costh = torch.max(costh, dim=-1).values
-        costh = torch.min(costh, dim=-1).values
+        # costh = torch.min(costh, dim=-1).values
 
         return costh  # .clamp(min=-1.0, max=1.)
 
@@ -343,6 +337,67 @@ class ArcSoftmaxLoss(nn.Module):
                                                                                              self.s, self.iteraion,
                                                                                              self.all_iteraion,
                                                                                              self.focal)
+
+
+class SubArcSoftmaxLoss(nn.Module):
+
+    def __init__(self, margin=0.5, s=64, iteraion=0, all_iteraion=0, smooth_ratio=0, class_weight=None):
+        super(SubArcSoftmaxLoss, self).__init__()
+        self.s = s
+        self.margin = margin
+
+        self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss(weight=class_weight)
+        self.iteraion = iteraion
+        self.all_iteraion = all_iteraion
+        self.smooth_ratio = smooth_ratio
+
+    def forward(self, costh, label):
+        lb_view = label.view(-1, 1)
+        cos_max = costh.max(dim=-1).values
+        cos_min = costh.min(dim=-1).values
+
+        min_costh = torch.zeros(cos_max.size()).scatter_(1, label.view(-1, 1).cpu(), 1)
+        max_costh = torch.zeros(cos_max.size()).scatter_(1, label.view(-1, 1).cpu(), -1) + 1
+
+        if lb_view.is_cuda:
+            min_costh = min_costh.cuda()
+            max_costh = max_costh.cuda()
+
+        costh = cos_max * max_costh + cos_min * min_costh
+
+        theta = costh.acos()
+        # print('theta is ', theta.max())
+
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
+
+        delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+
+        # pdb.set_trace()
+        if costh.is_cuda:
+            delt_theta = Variable(delt_theta.cuda())
+            # print('delt_theta max is ', delt_theta.max())
+            # print('theta + delt_theta max is ', (theta + delt_theta).max())
+
+        costh_m = (theta + delt_theta).cos()
+        # print('costh_m max is ', costh_m.max())
+        if self.iteraion < self.all_iteraion:
+            costh_m = 0.5 * costh + 0.5 * costh_m
+            self.iteraion += 1
+
+        costh_m_s = self.s * costh_m
+        # print('costh_m_s max is ', costh_m_s.max())
+
+        loss = self.ce(costh_m_s, label)
+
+        return loss
+
+    def __repr__(self):
+        return "SubArcSoftmaxLoss(margin=%f, s=%d, iteration=%d, all_iteraion=%s, smooth_ratio=%s)" % (self.margin,
+                                                                                                       self.s,
+                                                                                                       self.iteraion,
+                                                                                                       self.all_iteraion,
+                                                                                                       self.smooth_ratio)
 
 
 class MinArcSoftmaxLoss(nn.Module):
@@ -655,3 +710,105 @@ class EVMClassifier(nn.Module):
 # amsoft = AMSoftmax(in_feats=3)
 # am_a = amsoft(a, a_label)
 # print("amsoftmax loss is {}".format(am_a))
+class MarginLinearDummy(nn.Module):
+    def __init__(self, feat_dim, num_classes, dummy_classes=1):
+        super(MarginLinearDummy, self).__init__()
+        self.feat_dim = feat_dim
+        self.num_classes = num_classes
+        self.dummy_classes = dummy_classes
+        self.W = torch.nn.Parameter(torch.randn(feat_dim, num_classes + dummy_classes), requires_grad=True)
+
+        nn.init.xavier_normal_(self.W, gain=1)
+
+    def forward(self, x):
+        # assert x.size()[0] == label.size()[0]
+        assert x.shape[1] == self.feat_dim
+
+        x_norm = F.normalize(x, dim=1)
+        w_norm = F.normalize(self.W, dim=0)  # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        costh = torch.mm(x_norm, w_norm)  # .clamp_(min=-1., max=1.)
+
+        if self.dummy_classes > 1:
+            # pdb.set_trace() # costh.max()=0.2746 costh.min()=-0.2572
+            costh_dummy = torch.max(costh[:, -self.dummy_classes:], dim=1, keepdim=True)[0]
+            costh = torch.cat([costh[:, :-self.dummy_classes], costh_dummy], dim=1)
+
+        return costh  # .clamp(min=-1.0, max=1.)
+
+    def __repr__(self):
+        return "MarginLinearDummy(feat_dim=%f, num_classes=%d, dummy_classes=%d)" % (
+            self.feat_dim, self.num_classes, self.dummy_classes)
+
+
+class ProserLoss(nn.Module):
+
+    def __init__(self, margin=0.2, s=64, smooth_ratio=0, class_weight=None,
+                 beta_alpha=0.2, gamma=0.01, beta=1.0):
+        super(ProserLoss, self).__init__()
+        self.s = s
+        self.margin = margin
+        # self.dummy_classes = dummy_classes
+        self.beta_alpha = beta_alpha
+        self.gamma = gamma
+        self.beta = beta
+
+        self.ce = LabelSmoothing(smooth_ratio) if smooth_ratio > 0 else nn.CrossEntropyLoss(weight=class_weight)
+        self.smooth_ratio = smooth_ratio
+
+    def forward(self, costh, label, half_batch_size):
+
+        lb_view = label.view(-1, 1)
+
+        # half_batch_size = int(costh.shape[0] / 2)
+        theta = costh.acos()
+
+        if lb_view.is_cuda:
+            lb_view = lb_view.cpu()
+
+        delt_theta = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+
+        # pdb.set_trace()
+        if costh.is_cuda:
+            delt_theta = Variable(delt_theta.cuda())
+
+        costh_sm = self.s * (theta + delt_theta).cos()
+
+        loss = self.ce(costh_sm[:half_batch_size], label[:half_batch_size])
+
+        half_a_costh_m = costh_sm[:half_batch_size].clone()
+        half_b_costh_m = costh_sm[half_batch_size:].clone()
+
+        last_a_label = torch.LongTensor([costh.shape[1] - 1 for i in range(half_batch_size)])
+        last_b_label = torch.LongTensor([costh.shape[1] - 1 for i in range(len(costh) - half_batch_size)])
+        if costh.is_cuda:
+            last_a_label = last_a_label.cuda()
+            last_b_label = last_b_label.cuda()
+            lb_view = lb_view.cuda()
+
+        # pdb.set_trace()
+        loss = loss + self.beta * self.ce(half_a_costh_m.clone().scatter_(1, lb_view[:half_batch_size], 0),
+                                          last_a_label)
+        loss += self.gamma * self.ce(half_b_costh_m.scatter_(1, lb_view[half_batch_size:], 0), last_b_label)
+
+        return loss
+
+    def __repr__(self):
+        return "ProserLoss(margin=%f, s=%d, smooth_ratio=%s, beta_alpha=%s, gamma=%s)" % (
+            self.margin, self.s, self.smooth_ratio,
+            self.beta_alpha, self.gamma)
+
+
+class MixupLoss(nn.Module):
+
+    def __init__(self, loss):
+        super(MixupLoss, self).__init__()
+        self.loss = loss
+
+    def forward(self, costh, label, lamda_beta):
+        loss = lamda_beta * self.loss(costh, label[:len(costh)]) \
+               + (1 - lamda_beta) * self.loss(costh, label[-len(costh):])
+
+        return loss
+
+    def __repr__(self):
+        return "MixupLoss(loss=%s)" % (self.loss)

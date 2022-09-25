@@ -40,13 +40,13 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     VarianceLoss, DistributeLoss, aDCFLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, DAMSoftmaxLoss
+    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, SubArcSoftmaxLoss, DAMSoftmaxLoss
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
-from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate
+from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
@@ -83,7 +83,6 @@ torch.manual_seed(args.seed)
 random.seed(args.seed)
 
 # torch.multiprocessing.set_sharing_strategy('file_system')
-
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -95,8 +94,7 @@ writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-extract_kwargs = {'num_workers': 0, 
-                  'pin_memory': False} if args.cuda else {}
+extract_kwargs = {'num_workers': 0, 'pin_memory': False} if args.cuda else {}
 
 if not os.path.exists(args.check_path):
     print('Making checkpath...')
@@ -127,7 +125,8 @@ if args.log_scale:
 
 # pdb.set_trace()
 if args.feat_format in ['kaldi', 'wav']:
-    file_loader = read_mat
+    # file_loader = read_mat
+    file_loader = load_mat
 elif args.feat_format == 'npy':
     file_loader = np.load
 
@@ -136,15 +135,21 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
                        batch_size=args.batch_size, random_chunk=args.random_chunk)
 
+valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
+
+if args.feat_format == 'wav':
+    file_loader = read_Waveform
+    feat_type = 'wav'
+else:
+    feat_type = 'kaldi'
+
 train_extract_dir = KaldiExtractDataset(dir=args.train_test_dir,
                                         transform=transform_V,
-                                        filer_loader=file_loader,
+                                        filer_loader=file_loader, feat_type=feat_type,
                                         trials_file=args.train_trials)
 
-extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V,
+extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, feat_type=feat_type,
                                   trials_file=args.trials, filer_loader=file_loader)
-
-valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
@@ -175,7 +180,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         classfier, feats = model(data)
         # cos_theta, phi_theta = classfier
-        classfier_label = classfier
+        classfier_label = classfier.clone()
         # print('max logit is ', classfier_label.max())
 
         if args.loss_type == 'soft':
@@ -230,7 +235,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         total_datasize += len(predicted_one_labels)
         total_loss += float(loss.item())
-        writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
+        writer.add_scalar('Train/Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
             pdb.set_trace()
@@ -273,9 +278,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             epoch_str = 'Train Epoch {}: [ {:>5.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
-                epoch_str += ' Batch Len: {:>3d}'.format(data.shape[-2])
+                batch_length = data.shape[-1] if args.feat_format == 'wav' else data.shape[-2]
+                epoch_str += ' Batch Len: {:>3d} '.format(batch_length)
 
-            epoch_str += ' Accuracy: {:>6.2f}%'.format(100. * minibatch_acc)
+            epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
@@ -637,8 +643,7 @@ def main():
         scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
     elif args.scheduler == 'cyclic':
         cycle_momentum = False if args.optimizer == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
-                                          max_lr=args.lr,
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr, max_lr=args.lr,
                                           step_size_up=args.cyclic_epoch * int(
                                               np.ceil(len(train_dir) / args.batch_size)),
                                           cycle_momentum=cycle_momentum,

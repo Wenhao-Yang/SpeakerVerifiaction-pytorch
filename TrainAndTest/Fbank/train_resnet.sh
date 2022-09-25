@@ -504,7 +504,6 @@ if [ $stage -le 41 ]; then
       --kernel-size ${kernel} --channels ${channels} \
       --stride 2,1 --fast ${fast} \
       --block-type ${block_type} --red-ratio ${red_ratio} --downsample ${downsample} --expansion ${expansion} \
-\
       --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size ${avg_size} \
       --encoder-type ${encoder_type} \
