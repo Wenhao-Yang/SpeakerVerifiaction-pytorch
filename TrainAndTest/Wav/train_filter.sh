@@ -107,6 +107,117 @@ if [ $stage -le 10 ]; then
   fast=none1
   filter_layer=fbank
   feat_dim=40
+
+
+  for resnet_size in 18; do
+  for seed in 123456 123457 123458; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    mask_layer=baseline
+    weight=vox2_rcf
+      #     --init-weight ${weight} \
+      # --power-weight ${power_weight} \
+      # _${weight}${power_weight}
+    if [ $resnet_size -le 34 ];then
+      expansion=1
+      batch_size=256
+    else
+      expansion=2
+      batch_size=256
+      exp_str=_exp${expansion}
+    fi
+    if [ $chn -eq 16 ]; then
+      channels=16,32,64,128
+      chn_str=
+    elif [ $chn -eq 32 ]; then
+      channels=32,64,128,256
+      chn_str=chn32_
+    elif [ $chn -eq 64 ]; then
+      channels=64,128,256,512
+      chn_str=chn64_
+    fi
+    if [[ $mask_layer == attention* ]];then
+      at_str=_${weight}
+      if [[ $weight_norm != max ]];then
+        at_str=${at_str}${weight_norm}
+      fi
+    elif [ "$mask_layer" = "drop" ];then
+      at_str=_${weight}_dp${weight_p}s${scale}
+    elif [ "$mask_layer" = "both" ];then
+      at_str=_`echo $mask_len | sed  's/,//g'`
+    else
+      at_str=
+    fi
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}/${seed}
+    #
+#
+    python TrainAndTest/train_egs.py \
+      --model ${model} --resnet-size ${resnet_size} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train \
+      --train-test-dir ${lstm_dir}/data/${datasets}/test_10k \
+      --train-trials trials \
+      --shuffle --batch-shuffle --seed ${seed} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_valid \
+      --test-dir ${lstm_dir}/data/${datasets}/test_10k \
+      --feat-format kaldi --nj 6 \
+      --random-chunk 32000 64000 --chunk-size 48000 \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
+      --feat-format wav \
+      --filter ${filter_layer} --feat-dim ${feat_dim} \
+      --epochs 60 --batch-size ${batch_size} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --lr 0.1 --base-lr 0.000001 \
+      --patience 3 --milestones 10,20,30,40 \
+      --early-stopping --early-patience 20 --early-delta 0.01 --early-meta EER \
+      --check-path Data/checkpoint/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+      --mask-layer ${mask_layer} \
+      --kernel-size ${kernel} --channels ${channels} \
+      --downsample ${downsample} --fast ${fast} --stride 2,1 \
+      --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
+      --embedding-size ${embedding_size} \
+      --time-dim 1 --avg-size ${avg_size} --encoder-type ${encoder_type} \
+      --num-valid 2 \
+      --alpha ${alpha} \
+      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
+      --weight-decay 0.0005 \
+      --dropout-p 0.1 \
+      --gpu-id 0,6 \
+      --extract --cos-sim \
+      --remove-vad
+  done
+  done
+  exit
+fi
+
+if [ $stage -le 11 ]; then
+#  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+  datasets=aidata
+  feat_type=wave
+  model=ThinResNet
+  resnet_size=18
+  encoder_type=ASTP2
+  embedding_size=256
+  block_type=seblock
+  downsample=k1
+  kernel=5,5
+  loss=arcsoft
+  alpha=0
+  input_norm=Mean
+  mask_layer=baseline
+  scheduler=rop
+  optimizer=sgd
+  input_dim=40
+  batch_size=256
+  power_weight=max
+
+  expansion=4
+  chn=16
+  cyclic_epoch=8
+  red_ratio=2
+  avg_size=5
+  fast=none1
+  filter_layer=fbank
+  feat_dim=40
   lamda_beta=0.2
 
 
@@ -151,117 +262,6 @@ if [ $stage -le 10 ]; then
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}_mixup${lamda_beta}_0/${seed}
     #
 #
-    python TrainAndTest/train_egs.py \
-      --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train \
-      --train-test-dir ${lstm_dir}/data/${datasets}/test_10k \
-      --train-trials trials \
-      --shuffle --batch-shuffle --seed ${seed} \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_valid \
-      --test-dir ${lstm_dir}/data/${datasets}/test_10k \
-      --feat-format kaldi --nj 6 \
-      --random-chunk 32000 64000 --chunk-size 48000 \
-      --input-norm ${input_norm} --input-dim ${input_dim} \
-      --feat-format wav \
-      --filter ${filter_layer} --feat-dim ${feat_dim} \
-      --epochs 60 --batch-size ${batch_size} \
-      --optimizer ${optimizer} --scheduler ${scheduler} \
-      --lr 0.1 --base-lr 0.000001 \
-      --patience 3 --milestones 10,20,30,40 \
-      --early-stopping --early-patience 20 --early-delta 0.01 --early-meta EER \
-      --check-path Data/checkpoint/${model_dir} \
-      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
-      --mask-layer ${mask_layer} \
-      --kernel-size ${kernel} --channels ${channels} \
-      --downsample ${downsample} --fast ${fast} --stride 2,1 \
-      --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
-      --embedding-size ${embedding_size} \
-      --time-dim 1 --avg-size ${avg_size} --encoder-type ${encoder_type} \
-      --num-valid 2 \
-      --alpha ${alpha} \
-      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
-      --weight-decay 0.0005 \
-      --dropout-p 0.1 \
-      --gpu-id 0,6 \
-      --lamda-beta ${lamda_beta} \
-      --extract --cos-sim \
-      --remove-vad
-  done
-  done
-  exit
-fi
-
-if [ $stage -le 11 ]; then
-#  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=aidata
-  feat_type=wave
-  model=ThinResNet
-  resnet_size=18
-  encoder_type=ASTP2
-  embedding_size=256
-  block_type=seblock
-  downsample=k1
-  kernel=5,5
-  loss=arcsoft
-  alpha=0
-  input_norm=Mean
-  mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
-  input_dim=40
-  batch_size=256
-  power_weight=max
-
-  expansion=4
-  chn=16
-  cyclic_epoch=8
-  red_ratio=2
-  avg_size=5
-  fast=none1
-  filter_layer=fbank
-  feat_dim=40
-
-  for resnet_size in 18; do
-  for seed in 123456 123457 123458; do
-    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    mask_layer=baseline
-    weight=vox2_rcf
-      #     --init-weight ${weight} \
-      # --power-weight ${power_weight} \
-      # _${weight}${power_weight}
-    if [ $resnet_size -le 34 ];then
-      expansion=1
-      batch_size=256
-    else
-      expansion=2
-      batch_size=256
-      exp_str=_exp${expansion}
-    fi
-    if [ $chn -eq 16 ]; then
-      channels=16,32,64,128
-      chn_str=
-    elif [ $chn -eq 32 ]; then
-      channels=32,64,128,256
-      chn_str=chn32_
-    elif [ $chn -eq 64 ]; then
-      channels=64,128,256,512
-      chn_str=chn64_
-    fi
-    if [[ $mask_layer == attention* ]];then
-      at_str=_${weight}
-      if [[ $weight_norm != max ]];then
-        at_str=${at_str}${weight_norm}
-      fi
-    elif [ "$mask_layer" = "drop" ];then
-      at_str=_${weight}_dp${weight_p}s${scale}
-    elif [ "$mask_layer" = "both" ];then
-      at_str=_`echo $mask_len | sed  's/,//g'`
-    else
-      at_str=
-    fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}/${seed}
-    #
-#
     python TrainAndTest/train_egs_mixup.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train \
@@ -294,6 +294,7 @@ if [ $stage -le 11 ]; then
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,6 \
+      --lamda-beta ${lamda_beta} \
       --extract --cos-sim \
       --remove-vad
   done
