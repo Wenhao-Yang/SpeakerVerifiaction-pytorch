@@ -177,9 +177,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         half_data = int(len(data) / 2)
         lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
 
-        rand_idx = torch.randperm(len(data))
-        data = lamda_beta * data + (1 - lamda_beta) * data[rand_idx]
-        label = torch.cat([label, label[rand_idx]], dim=0)
+        rand_idx = torch.randperm(len(half_data))
+        mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
+        data = torch.cat([data[:half_data], mix_data], dim=0)
+        label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
 
         if args.cuda:
             # label = label.cuda(non_blocking=True)
@@ -217,7 +218,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 other_loss += loss_xent
                 loss = loss_xent + loss_cent
             elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
-                loss = xe_criterion(classfier, label, lamda_beta)
+                loss = xe_criterion(classfier, label, half_data, lamda_beta)
             elif 'arcdist' in args.loss_type:
                 # pdb.set_trace()
                 loss_cent = args.loss_ratio * ce_criterion(classfier, label)
