@@ -796,13 +796,13 @@ class MixupLoss(nn.Module):
         self.loss = loss
 
     def forward(self, costh, label, half_batch_size, lamda_beta):
-        pdb.set_trace()
+        # pdb.set_trace()
         loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
 
         loss = loss + lamda_beta * self.loss(costh[-half_batch_size:], label[half_batch_size:int(2 * half_batch_size)]) \
                + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:])
 
-        return loss
+        return loss / 2
 
     def __repr__(self):
         return "MixupLoss(loss=%s)" % (self.loss)
