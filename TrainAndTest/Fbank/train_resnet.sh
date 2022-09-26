@@ -661,11 +661,11 @@ if [ $stage -le 43 ]; then
     python TrainAndTest/train_egs_mixup.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_10k_fb${input_dim} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_10k_fb${input_dim} \
       --train-trials trials \
       --shuffle --batch-shuffle --seed ${seed} \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim}_valid \
-      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_10k_fb${input_dim} \
+      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_10k_fb${input_dim} \
       --feat-format kaldi --nj 6 \
       --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
