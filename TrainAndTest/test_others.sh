@@ -3160,6 +3160,7 @@ if [ $stage -le 500 ]; then
   fast=none1
   filter_layer=fbank
   feat_dim=40
+  input_dim=40
   lamda_beta=0.2
 
   for testset in aidata ; do
@@ -3212,7 +3213,7 @@ if [ $stage -le 500 ]; then
         --train-trials trials_2w --extract-trials --trials trials \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-        --feat-format kaldi \
+        --feat-format wav \
         --input-norm ${input_norm} --input-dim ${input_dim} \
         --filter ${filter_layer} --feat-dim ${feat_dim} \
         --nj 12 \
