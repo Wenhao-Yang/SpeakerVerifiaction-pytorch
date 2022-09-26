@@ -101,7 +101,7 @@ if not os.path.exists(args.check_path):
     os.makedirs(args.check_path)
 
 opt_kwargs = {'lr': args.lr, 'lr_decay': args.lr_decay, 'weight_decay': args.weight_decay, 'dampening': args.dampening,
-              'momentum': args.momentum, 'nesterov': args.nesterov}
+              'momentum': args.momentum}  # , 'nesterov': args.nesterov}
 
 l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.PairwiseDistance(p=2)
 
