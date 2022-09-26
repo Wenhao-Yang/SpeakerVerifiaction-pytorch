@@ -804,11 +804,13 @@ class MixupLoss(nn.Module):
         super(MixupLoss, self).__init__()
         self.loss = loss
 
-    def forward(self, costh, label, lamda_beta):
-        loss = lamda_beta * self.loss(costh, label[:len(costh)]) \
-               + (1 - lamda_beta) * self.loss(costh, label[-len(costh):])
+    def forward(self, costh, label, half_batch_size, lamda_beta):
+        loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
 
-        return loss
+        loss = loss + lamda_beta * self.loss(costh[-half_batch_size:], label[half_batch_size:int(2 * half_batch_size)]) \
+               + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:])
+
+        return loss / 2
 
     def __repr__(self):
         return "MixupLoss(loss=%s)" % (self.loss)
