@@ -3144,7 +3144,7 @@ if [ $stage -le 500 ]; then
   sname=train #_aug_com
   downsample=k1
   fast=none1
-  test_subset=dev
+  test_subset=test
   chn=16
 #  mask_layer=rvec
   mask_layer=baseline
