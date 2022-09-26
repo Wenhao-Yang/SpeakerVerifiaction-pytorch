@@ -42,7 +42,7 @@ from Define_Model.model import PairwiseDistance
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal
+from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal, read_Waveform
 from TrainAndTest.common_func import create_model, verification_extract, load_model_args, args_model, args_parse
 from logger import NewLogger
 
@@ -325,25 +325,31 @@ if args.test_mask:
         print('Mean set values in frequecy from %d to %d.' % (start, end))
 
 # pdb.set_trace()
+feat_type = 'kaldi'
 if args.feat_format == 'kaldi':
     # file_loader = read_mat
     file_loader = kaldiio.load_mat
     torch.multiprocessing.set_sharing_strategy('file_system')
 elif args.feat_format == 'npy':
     file_loader = np.load
+elif args.feat_format == 'wav':
+    file_loader = read_Waveform
+    feat_type = 'wav'
 
 if not args.valid:
     args.num_valid = 0
 
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
+                               feat_type=feat_type,
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
 
 if args.score_norm != '':
     train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, filer_loader=file_loader,
-                                            verbose=args.verbose, trials_file='')
+                                            feat_type=feat_type, verbose=args.verbose, trials_file='')
 
 verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
                                   vad_select=args.vad_select, extract_trials=args.extract_trials,
+                                  feat_type=feat_type,
                                   verbose=args.verbose)
 
 if args.valid:

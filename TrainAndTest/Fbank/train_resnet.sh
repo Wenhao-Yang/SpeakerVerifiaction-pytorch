@@ -552,7 +552,7 @@ if [ $stage -le 42 ]; then
   for encoder_type in SAP2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
@@ -562,14 +562,10 @@ if [ $stage -le 42 ]; then
       --feat-format kaldi \
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
-      --resnet-size ${resnet_size} \
       --nj 12 \
-      --epochs 60 \
-      --batch-size 128 \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
-      --lr 0.1 \
-      --base-lr 0.000006 \
+      --epochs 60 --batch-size 128 \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --lr 0.1 --base-lr 0.000006 \
       --mask-layer ${mask_layer} \
       --milestones 10,20,30,40,50 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wde4_var \
@@ -577,23 +573,18 @@ if [ $stage -le 42 ]; then
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
-      --fast none1 \
-      --stride 2,1 \
+      --fast none1 --stride 2,1 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
-      --time-dim 1 \
-      --avg-size 5 \
+      --time-dim 1 --avg-size 5 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0001 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
-      --extract \
-      --cos-sim \
-      --all-iteraion 0 \
+      --extract --cos-sim \
       --remove-vad \
       --loss-type ${loss}
   done
