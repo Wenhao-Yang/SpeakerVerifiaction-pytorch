@@ -509,7 +509,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='number of jobs to make feats (default: 10)')
 
     parser.add_argument('--check-path', help='folder to output model checkpoints')
-    parser.add_argument('--check-yaml', type=str, help='path to model yaml')
+    parser.add_argument('--check-yaml', type=str, default='', help='path to model yaml')
 
     parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
     parser.add_argument('--resume', metavar='PATH', help='path to latest checkpoint (default: none)')
