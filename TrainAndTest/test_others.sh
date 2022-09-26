@@ -3230,8 +3230,9 @@ if [ $stage -le 500 ]; then
         --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 0 \
         --verbose 2 \
-        --extract \
         --cos-sim
+#                --extract \
+
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
   done
