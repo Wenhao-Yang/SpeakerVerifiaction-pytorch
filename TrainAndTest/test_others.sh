@@ -3203,7 +3203,9 @@ if [ $stage -le 500 ]; then
         at_str=
       fi
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}_mixup${lamda_beta}_0/${seed}
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}/${seed}
+
+      # _mixup${lamda_beta}_0
 
       python -W ignore TrainAndTest/test_egs.py \
         --model ${model} \
@@ -3228,9 +3230,8 @@ if [ $stage -le 500 ]; then
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
-        --gpu-id 0 \
-        --verbose 2 \
-        --extract \
+        --gpu-id 6 \
+        --verbose 0 \
         --cos-sim
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
