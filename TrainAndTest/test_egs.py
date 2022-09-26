@@ -513,7 +513,11 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     test_set_name = '-'
     for i, dir in enumerate(test_directorys):
         if dir == 'data':
-            test_subset = test_directorys[i + 3].split('_')[0]
+            try:
+                test_subset = test_directorys[i + 3].split('_')[0]
+            except Exception as e:
+                test_subset = test_directorys[i + 2].split('_')[0]
+
             test_set_name = "-".join((test_directorys[i + 1], test_subset))
     if args.score_suffix != '':
         test_set_name = '-'.join((test_set_name, args.score_suffix[:7]))
