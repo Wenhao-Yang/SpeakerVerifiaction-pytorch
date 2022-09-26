@@ -3141,7 +3141,7 @@ if [ $stage -le 500 ]; then
   embedding_size=256
   resnet_size=18
 #  sname=dev #dev_aug_com
-  sname=dev #_aug_com
+  sname=train #_aug_com
   downsample=k1
   fast=none1
   test_subset=dev
@@ -3212,7 +3212,7 @@ if [ $stage -le 500 ]; then
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
         --train-trials trials_2w --extract-trials --trials trials \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
-        --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
+        --test-dir ${lstm_dir}/data/${testset}/${test_subset} \
         --feat-format wav \
         --input-norm ${input_norm} --input-dim ${input_dim} \
         --filter ${filter_layer} --feat-dim ${feat_dim} \
