@@ -500,7 +500,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--frame-shift', type=int, default=300, metavar='CHUNK')
 
     parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-    parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
+    parser.add_argument('--extract', action='store_false', default=True, help='need to make mfb file')
     parser.add_argument('--shuffle', action='store_false', default=True, help='need to shuffle egs')
     parser.add_argument('--batch-shuffle', action='store_true', default=False, help='need to shuffle egs')
 
