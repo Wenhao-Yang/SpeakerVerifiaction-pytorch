@@ -133,7 +133,8 @@ elif args.feat_format == 'npy':
 # torch.multiprocessing.set_sharing_strategy('file_system')
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
-                       batch_size=args.batch_size, random_chunk=args.random_chunk, shuffle=args.batch_shuffle)
+                       batch_size=args.batch_size, random_chunk=args.random_chunk)
+# , shuffle=args.batch_shuffle)
 valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
 
 if args.feat_format == 'wav':
