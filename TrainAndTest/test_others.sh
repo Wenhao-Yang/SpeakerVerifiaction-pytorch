@@ -3164,7 +3164,7 @@ if [ $stage -le 500 ]; then
   lamda_beta=0.2
 
   for testset in aidata ; do
-  for resnet_size in 34 ; do
+  for resnet_size in 18 ; do
   for seed in 123456 123457 123458 ;do
 #  for sub_trials in hard ; do _${sub_trials} --score-suffix ${sub_trials}
 #    for chn in 16 32 64 ; do
