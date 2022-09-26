@@ -177,7 +177,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         half_data = int(len(data) / 2)
         lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
 
-        rand_idx = torch.randperm(len(half_data))
+        rand_idx = torch.randperm(half_data)
         mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
         data = torch.cat([data[:half_data], mix_data], dim=0)
         label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
