@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=500
+stage=203
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2503,35 +2503,58 @@ if [ $stage -le 203 ]; then
   model=ThinResNet
   feat=log
   loss=arcsoft
-  encod=SAP2
+  encod=ASTP2
   alpha=0
   datasets=vox1
   testset=vox1
 #  test_subset=
-  block_type=basic
-  encoder_type=None
-  embedding_size=256
-  resnet_size=34
-#  sname=dev #dev_aug_com
-  sname=dev #_aug_com
-  downsample=k3
-  test_subset=test
+  block_type=seblock
+  red_ratio=2
+  expansion=1
+  downsample=k1
+  kernel=5,5
+  loss=proser
+  alpha=1
+  input_norm=Mean
   mask_layer=baseline
+  scheduler=rop
+  optimizer=sgd
+  input_dim=40
+  batch_size=256
+  fast=none1
+
+  avg_size=5
+
+#  encoder_type=SAP2
+#  for input_dim in 64 80 ; do
+  proser_ratio=1
+  proser_gamma=0.01
+  dummy=100
 #        --downsample ${downsample} \
 #      --trials trials_20w \
 #      --mask-layer attention \
 #      --init-weight vox2_rcf \
 
-  for input_dim in 24 40 64 80 ; do
+  for seed in 123456 123457 123458 ; do
+    if [ $resnet_size -le 34 ];then
+      expansion=1
+      batch_size=256
+    else
+      expansion=2
+      batch_size=256
+      exp_str=_exp${expansion}
+    fi
+
     if [ $input_dim -eq 40 ];then
       valid_dir=valid_fb40
     else
       valid_dir=dev_fb${input_dim}_valid
     fi
+#    Mean_batch256_seblock_downk1_none1_ASTP2_dp01_alpha1_em256_wd5e4_vares_bashuf2_dummy100_beta1_gamma0.01
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2_dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}/${seed}
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
@@ -2539,30 +2562,22 @@ if [ $stage -le 203 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
       --trials trials \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim ${input_dim} \
-      --nj 12 \
-      --embedding-size ${embedding_size} \
-      --loss-type ${loss} \
-      --fast none1 \
-      --encoder-type ${encod} \
-      --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,1 \
+      --input-norm Mean --input-dim ${input_dim} \
+      --nj 8 \
+      --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
+      --kernel-size ${kernel} --downsample ${downsample} \
       --channels 16,32,64,128 \
-      --downsample ${downsample} \
+      --fast ${fast} --stride 2,1 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
-      --time-dim 1 \
-      --avg-size 5 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --embedding-size ${embedding_size} \
+      --encoder-type ${encod} \
+      --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
       --input-length var \
-      --dropout-p 0.1 \
-      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klfb${input_dim}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/${testset}_${test_subset}_var \
-      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klfb${input_dim}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/checkpoint_50.pth \
+      --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
+      --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
-      --extract \
-      --remove-vad \
+      --extract --remove-vad \
       --verbose 2 \
       --cos-sim
   done
