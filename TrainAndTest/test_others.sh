@@ -2516,7 +2516,7 @@ if [ $stage -le 203 ]; then
   expansion=1
   downsample=k1
   kernel=5,5
-  loss=proser
+  loss=arcsoft
   alpha=1
   input_norm=Mean
   mask_layer=baseline
@@ -2532,7 +2532,7 @@ if [ $stage -le 203 ]; then
 #  for input_dim in 64 80 ; do
   proser_ratio=1
   proser_gamma=0.01
-  dummy=100
+  dummy=0
 #        --downsample ${downsample} \
 #      --trials trials_20w \
 #      --mask-layer attention \
@@ -2555,7 +2555,8 @@ if [ $stage -le 203 ]; then
       valid_dir=dev_fb${input_dim}_valid
     fi
 #    Mean_batch256_seblock_downk1_none1_ASTP2_dp01_alpha1_em256_wd5e4_vares_bashuf2_dummy100_beta1_gamma0.01
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2_dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2/${seed}
+#    _dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb${input_dim} \
