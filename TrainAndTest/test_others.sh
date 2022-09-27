@@ -2536,6 +2536,7 @@ if [ $stage -le 203 ]; then
 #      --trials trials_20w \
 #      --mask-layer attention \
 #      --init-weight vox2_rcf \
+  echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
   for seed in 123456 123457 123458 ; do
     if [ $resnet_size -le 34 ];then
@@ -2554,7 +2555,6 @@ if [ $stage -le 203 ]; then
     fi
 #    Mean_batch256_seblock_downk1_none1_ASTP2_dp01_alpha1_em256_wd5e4_vares_bashuf2_dummy100_beta1_gamma0.01
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2_dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}/${seed}
-    echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb${input_dim} \
@@ -2575,7 +2575,7 @@ if [ $stage -le 203 ]; then
       --embedding-size ${embedding_size} \
       --encoder-type ${encoder_type} \
       --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
-      --input-length var \
+      --test-input var \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
