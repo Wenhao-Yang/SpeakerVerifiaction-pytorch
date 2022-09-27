@@ -2507,7 +2507,7 @@ if [ $stage -le 203 ]; then
   alpha=0
   datasets=vox1
   testset=vox1
-#  test_subset=
+  test_subset=test
   block_type=seblock
   encoder_type=ASTP2
   embedding_size=256
