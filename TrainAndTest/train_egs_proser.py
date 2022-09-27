@@ -198,7 +198,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         select_bool = select_bool.reshape(-1, 1, 1, 1).repeat(1, data.shape[1], data.shape[2], data.shape[3])
         # data = torch.masked_select(data, mask=select_bool)
 
-        classfier, feats = model(data, proser=shuf_half_idx_ten, label=select_bool)
+        classfier, feats = model(data, proser=shuf_half_idx_ten, label=select_bool, lamda_beta=args.lamda_beta)
 
         # # torch.repeat_interleave()
         # half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, half_feats.shape[1])
@@ -235,7 +235,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             other_loss += loss_xent
             loss = loss_xent + loss_cent
         elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF', 'proser']:
-            loss = xe_criterion(classfier, label, half_batch_size=half_batch_size, lamda_beta=args.lamda_beta)
+            loss = xe_criterion(classfier, label, half_batch_size=half_batch_size)
         elif 'arcdist' in args.loss_type:
             # pdb.set_trace()
             loss_cent = args.loss_ratio * ce_criterion(classfier, label)

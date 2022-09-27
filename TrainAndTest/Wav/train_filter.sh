@@ -336,7 +336,7 @@ if [ $stage -le 12 ]; then
   dummy=40
 
   for proser_gamma in 0.01 ; do
-  for seed in 123456 123457 123458 ; do
+  for seed in 123458 ; do
 
     if [ $resnet_size -le 34 ];then
       expansion=1
