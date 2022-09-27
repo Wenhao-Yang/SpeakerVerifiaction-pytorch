@@ -2572,7 +2572,7 @@ if [ $stage -le 203 ]; then
       --channels 16,32,64,128 \
       --fast ${fast} --stride 2,1 \
       --alpha ${alpha} \
-      --loss-type ${loss} --margin 0.2 --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 --num-center ${dummy} \
       --embedding-size ${embedding_size} \
       --encoder-type ${encoder_type} \
       --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
