@@ -51,50 +51,37 @@ if [ $stage -le 0 ]; then
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model} in ${datasets}_egs with ${loss} \033[0m\n"
     model_dir=${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
     python TrainAndTest/train_egs.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
       --train-trials trials \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
       --feat-format kaldi \
-      --input-norm ${input_norm} \
-      --input-dim ${input_dim} \
+      --shuffle --batch-shuffle \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
       --batch-size ${batch_size} \
-      --resnet-size ${resnet_size} \
-      --nj 6 \
-      --epochs 80 \
+      --nj 6 --epochs 80 \
       --random-chunk 200 400 \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --patience 2 \
-      --early-stopping \
-      --early-patience 20 \
+      --early-stopping --early-patience 20 --early-delta 0.01 --early-meta EER \
       --cyclic-epoch 4 \
-      --early-delta 0.0001 \
-      --early-meta EER \
       --accu-steps 1 \
-      --lr 0.1 \
-      --base-lr 0.000001 \
+      --lr 0.1 --base-lr 0.000001 \
       --milestones 10,20,40,50 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_21.pth \
       --channels ${channels} \
-      --embedding-size ${embedding_size} \
-      --encoder-type ${encoder_type} \
+      --embedding-size ${embedding_size} --encoder-type ${encoder_type} \
       --alpha ${alpha} \
-      --margin 0.2 \
+      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --grad-clip 0 \
-      --s 30 \
       --lr-ratio 0.01 \
       --weight-decay 0.00002 \
-      --gpu-id 2,3 \
-      --shuffle \
-      --batch-shuffle \
-      --all-iteraion 0 \
+      --gpu-id 0,3 \
       --extract \
-      --cos-sim \
-      --loss-type ${loss}
+      --cos-sim 
   done
   done
   exit
