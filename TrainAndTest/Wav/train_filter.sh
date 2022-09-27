@@ -221,7 +221,7 @@ if [ $stage -le 11 ]; then
   lamda_beta=0.2
 
 
-  for lamda_beta in 0.2; do
+  for lamda_beta in 0.5 1 2; do
   for seed in 123456 123457 123458; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
@@ -293,7 +293,7 @@ if [ $stage -le 11 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
-      --gpu-id 0,6 \
+      --gpu-id 0,2 \
       --lamda-beta ${lamda_beta} \
       --extract --cos-sim \
       --remove-vad
