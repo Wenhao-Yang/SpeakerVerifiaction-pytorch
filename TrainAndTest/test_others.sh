@@ -2504,12 +2504,13 @@ if [ $stage -le 203 ]; then
   resnet_size=18
   feat=log
   loss=arcsoft
-  encod=ASTP2
   alpha=0
   datasets=vox1
   testset=vox1
 #  test_subset=
   block_type=seblock
+  encoder_type=ASTP2
+  embedding_size=256
   red_ratio=2
   expansion=1
   downsample=k1
@@ -2572,7 +2573,7 @@ if [ $stage -le 203 ]; then
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 \
       --embedding-size ${embedding_size} \
-      --encoder-type ${encod} \
+      --encoder-type ${encoder_type} \
       --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
       --input-length var \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
