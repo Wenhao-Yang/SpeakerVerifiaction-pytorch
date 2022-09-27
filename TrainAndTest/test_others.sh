@@ -2501,6 +2501,7 @@ fi
 if [ $stage -le 203 ]; then
   feat_type=klfb
   model=ThinResNet
+  resnet_size=18
   feat=log
   loss=arcsoft
   encod=ASTP2
