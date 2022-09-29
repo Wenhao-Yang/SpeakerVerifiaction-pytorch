@@ -1181,8 +1181,8 @@ class ThinResNet(nn.Module):
             # print(half_batch_size)
             half_feats = x[-half_batch_size:].clone()
             # rand_half_feats = x[-half_batch_size:][shuf_half_idx_ten]
-            print(half_feats.shape, shuf_half_idx_ten.shape)
-            mix_half = lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]
+            # print(half_feats.shape, shuf_half_idx_ten.shape)
+            mix_half = lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten[:half_feats.shape[0]]]
             print(mix_half.shape)
             # print(x[:half_batch_size].device, " ", half_feats.device, " ", rand_half_feats.device)
             # print(x[:half_batch_size].shape, " ", half_feats.shape, " ", rand_half_feats[shuf_half_idx_ten].shape)
