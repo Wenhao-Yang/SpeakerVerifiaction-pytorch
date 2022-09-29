@@ -609,7 +609,7 @@ if [ $stage -le 43 ]; then
 
   for lamda_beta in 0.2 ; do
   for resnet_size in 34; do
-  for seed in 123456 123457 123458 ; do
+  for seed in 123456 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
     weight=vox2_rcf
@@ -677,7 +677,7 @@ if [ $stage -le 43 ]; then
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0005 \
-      --gpu-id 0 \
+      --gpu-id 0,1 \
       --mixup-type ${mixup_type} --lamda-beta ${lamda_beta} \
       --extract --cos-sim \
       --remove-vad
