@@ -259,6 +259,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             predicted_one_labels = predicted_one_labels.cpu()
             label = label.cpu()
             if args.mixup_type == 'manifold':
+                print(predicted_one_labels.shape, label.shape)
                 minibatch_correct = predicted_one_labels[:half_data].eq(
                     label[:half_data]).cpu().sum().float() + \
                                     lamda_beta * predicted_one_labels[half_data:].eq(
