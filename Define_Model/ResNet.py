@@ -1145,6 +1145,7 @@ class ThinResNet(nn.Module):
         if feature_map == 'last':
             return embeddings, x
 
+        pdb.set_trace()
         if proser != None and label != None:
             half_batch_size = int(x.shape[0] / 2)
             half_feats = x[-half_batch_size:]
