@@ -286,7 +286,7 @@ if [ $stage -le 26 ]; then
       --margin 0.3 \
       --s 30 \
       --m 3 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --dropout-p 0.5 \
       --xvector-dir Data/xvector/LoResNet8/timit/spect_egs_log/soft_dp05/epoch_12_var \
@@ -395,7 +395,7 @@ if [ $stage -le 50 ]; then
       --kernel-size 3,3 \
       --stride 1 \
       --mvnorm \
-      --input-length fix \
+      --test-input fix \
       --test-input-per-file 4 \
       --xvector-dir Data/xvectors/${model}/${datasets}/${feat}/${loss} \
       --resume Data/checkpoint/SiResNet34/vox1/fb64_cmvn/soft/checkpoint_21.pth \
@@ -426,7 +426,7 @@ if [ $stage -le 55 ]; then
       --embedding-size 128 \
       --feat-dim 161 \
       --valid \
-      --input-length fix \
+      --test-input fix \
       --test-input-per-file 4 \
       --xvector-dir Data/xvector/GradResNet8_inst/vox1_power/spect_time/soft_dp25 \
       --resume Data/checkpoint/GradResNet8_inst/vox1_power/spect_time/soft_dp25/checkpoint_18.pth \
@@ -455,7 +455,7 @@ if [ $stage -le 56 ]; then
       --embedding-size 128 \
       --feat-dim 161 \
       --valid \
-      --input-length fix \
+      --test-input fix \
       --stride 2 \
       --xvector-dir Data/xvector/GradResNet8/vox1_power/spect_egs/${loss}_dp25 \
       --resume Data/checkpoint/GradResNet8/vox1/spect_egs/${loss}_dp25/checkpoint_24.pth \
@@ -485,7 +485,7 @@ if [ $stage -le 60 ]; then
       --embedding-size 128 \
       --channels 64,128,256,256 \
       --loss-type ${loss} \
-      --input-length fix \
+      --test-input fix \
       --time-dim 1 \
       --test-input-per-file 4 \
       --inst-norm \
@@ -537,7 +537,7 @@ if [ $stage -le 74 ]; then
       --stride 1,1,1,1 \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/${model}/${dataset}/${feat_type}_egs_baseline/${loss}_sgd_exp/input${input_norm}_${encod}_em${embedding_size}_wde4_var/${test_set}_${subset}_epoch_50_var \
       --resume Data/checkpoint/${model}/${dataset}/${feat_type}_egs_baseline/${loss}_sgd_exp/input${input_norm}_${encod}_em${embedding_size}_wde4_var/checkpoint_50.pth \
@@ -600,7 +600,7 @@ if [ $stage -le 75 ]; then
       --stride 1,1,1,1 \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_45_var \
       --resume Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/checkpoint_45.pth \
@@ -668,7 +668,7 @@ if [ $stage -le 76 ]; then
       --channels 512,512,512,512,1500 \
       --margin 0.25 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4_var/${test_set}_${subset}_epoch_40_var \
       --resume Data/checkpoint/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4_var/checkpoint_40.pth \
@@ -723,7 +723,7 @@ if [ $stage -le 77 ]; then
       --stride 1 \
       --margin 0.25 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/aishell2/spect_egs_baseline/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_${subset}_epoch_60_var \
       --resume Data/checkpoint/TDNN_v5/aishell2/spect_egs_baseline/arcsoft_0ce/inputMean_STAP_em512_wde4/checkpoint_60.pth \
@@ -764,7 +764,7 @@ if [ $stage -le 78 ]; then
 #      --stride 1 \
 #      --margin 0.2 \
 #      --s 30 \
-#      --input-length var \
+#      --test-input var \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_40_var \
 #      --resume Data/checkpoint/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_40.pth \
@@ -794,7 +794,7 @@ if [ $stage -le 78 ]; then
 #      --stride 1 \
 #      --margin 0.2 \
 #      --s 30 \
-#      --input-length var \
+#      --test-input var \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_chn256_wd5e4_var/${test_set}_${subset}_epoch_40_var \
 #      --resume Data/checkpoint/TDNN_v5/vox1/klsp_egs_baseline/arcsoft/Mean_STAP_em512_chn256_wd5e4_var/checkpoint_40.pth \
@@ -827,7 +827,7 @@ if [ $stage -le 78 ]; then
       --stride 1 \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/vox1/klsp_egs_attention/arcsoft/Mean_STAP_em512_${weight}_wd5e4_var/${test_set}_${subset}_epoch_40_var \
       --resume Data/checkpoint/TDNN_v5/vox1/klsp_egs_attention/arcsoft/Mean_STAP_em512_${weight}_wd5e4_var/checkpoint_40.pth \
@@ -908,7 +908,7 @@ if [ $stage -le 79 ]; then
       --stride 1,1,1,1 \
       --margin 0.3 \
       --s 15 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/vox2/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em512_wde4_var/${test_set}_${subset}_epoch_50_var \
       --resume Data/checkpoint/TDNN_v5/vox2/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em512_wde4_var/checkpoint_50.pth \
@@ -979,7 +979,7 @@ if [ $stage -le 80 ]; then
       --channels 512,512,512,512,1500 \
       --margin 0.25 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/${test_set}_${subset}_epoch_60_var \
       --resume Data/checkpoint/TDNN_v5/vox2_v2/spect_egs/arcsoft_0ce/inputMean_STAP_em512_wde4/checkpoint_60.pth \
@@ -1019,7 +1019,7 @@ if [ $stage -le 81 ]; then
       --embedding-size 512 \
       --loss-type ${loss} \
       --encoder-type STAP \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/checkpoint/RET/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean_Basic/epoch_25_var \
       --resume Data/checkpoint/RET/vox2/spect_STAP_v2/arcsoft_100ce/emsize512_inputMean_Basic/checkpoint_25.pth \
@@ -1079,7 +1079,7 @@ if [ $stage -le 82 ]; then
       --embedding-size 512 \
       --loss-type ${loss} \
       --encoder-type STAP \
-      --input-length var \
+      --test-input var \
       --xvector-dir Data/xvector/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/${test_set}_test_epoch20_var \
       --resume Data/checkpoint/RET14/vox2/spect_STAP_v2/arcsoft_0ce/em512_inputMean_cbam_bs128_wde4_shuf/checkpoint_20.pth \
       --gpu-id 0 \
@@ -1238,7 +1238,7 @@ if [ $stage -le 83 ]; then
 #      --embedding-size ${embedding_size} \
 #      --loss-type ${loss} \
 #      --encoder-type STAP \
-#      --input-length fix \
+#      --test-input fix \
 #      --remove-vad \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_test_epoch60_fix \
@@ -1272,7 +1272,7 @@ if [ $stage -le 83 ]; then
 #      --embedding-size ${embedding_size} \
 #      --loss-type ${loss} \
 #      --encoder-type STAP \
-#      --input-length fix \
+#      --test-input fix \
 #      --remove-vad \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_baseline/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_var/${test_set}_dev_epoch60_fix \
@@ -1306,7 +1306,7 @@ if [ $stage -le 83 ]; then
 #      --embedding-size ${embedding_size} \
 #      --loss-type ${loss} \
 #      --encoder-type STAP \
-#      --input-length fix \
+#      --test-input fix \
 #      --remove-vad \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
@@ -1342,7 +1342,7 @@ if [ $stage -le 83 ]; then
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type STAP \
-      --input-length fix \
+      --test-input fix \
       --remove-vad \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
@@ -1395,7 +1395,7 @@ if [ $stage -le 84 ]; then
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type STAP \
-      --input-length fix \
+      --test-input fix \
       --remove-vad \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/soft/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2dr1/${test_set}_test_epoch60_fix \
@@ -1439,7 +1439,7 @@ if [ $stage -le 90 ]; then
       --margin 0.3 \
       --s 30 \
       --m 3 \
-      --input-length var \
+      --test-input var \
       --dropout-p 0.5 \
       --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40_var_aidata \
       --resume Data/checkpoint/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/checkpoint_40.pth \
@@ -1484,7 +1484,7 @@ if [ $stage -le 91 ]; then
       --margin 0.3 \
       --s 30 \
       --m 3 \
-      --input-length var \
+      --test-input var \
       --dropout-p 0.25 \
       --xvector-dir Data/xvector/LoResNet8/vox1/spect_egs_None/soft_dp25/epoch_20_var \
       --resume Data/checkpoint/LoResNet8/vox1/spect_egs_None/soft_dp25/checkpoint_20.pth \
@@ -1535,7 +1535,7 @@ if [ $stage -le 92 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --dropout-p 0.25 \
       --time-dim 1 \
       --avg-size 4 \
@@ -1613,7 +1613,7 @@ if [ $stage -le 93 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
@@ -1684,7 +1684,7 @@ if [ $stage -le 94 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --dropout-p 0.2 \
       --time-dim 1 \
       --avg-size 4 \
@@ -1799,7 +1799,7 @@ if [ $stage -le 95 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --dropout-p ${dp} \
       --time-dim 1 \
       --avg-size 4 \
@@ -1892,7 +1892,7 @@ if [ $stage -le 96 ]; then
       --alpha ${alpha} \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --dropout-p 0.12 \
       --time-dim 1 \
       --avg-size 4 \
@@ -1996,7 +1996,7 @@ if [ $stage -le 100 ]; then
       --num-valid 4 \
       --alpha ${alpha} \
       --margin 0.3 \
-      --input-length var \
+      --test-input var \
       --s 30 \
       --m 3 \
       --loss-ratio ${loss_ratio} \
@@ -2036,7 +2036,7 @@ if [ $stage -le 101 ]; then
       --channels 64,128,256,256 \
       --alpha 12 \
       --margin 0.3 --s 30 --m 3 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --dropout-p 0.1 \
       --xvector-dir Data/xvector/LoResNet10/army_v1/spect_egs_mean/soft_dp01/epoch_20_var \
@@ -2086,7 +2086,7 @@ if [ $stage -le 200 ]; then
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 \
       --time-dim 1 --avg-size 5 \
-      --input-length var \
+      --test-input var \
       --dropout-p 0.25 \
       --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
       --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/checkpoint_50.pth \
@@ -2166,7 +2166,7 @@ if [ $stage -le 201 ]; then
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 \
       --time-dim 1 --avg-size 5 \
-      --input-length var \
+      --test-input var \
       --dropout-p 0.1 \
       --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch_60_var \
       --resume Data/checkpoint/${model_dir}/checkpoint_60.pth \
@@ -2201,7 +2201,7 @@ if [ $stage -le 201 ]; then
 #      --s 30 \
 #      --time-dim 1 \
 #      --avg-size 5 \
-#      --input-length var \
+#      --test-input var \
 #      --dropout-p 0.1 \
 #      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
 #      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/checkpoint_50.pth \
@@ -2340,7 +2340,7 @@ if [ $stage -le 202 ]; then
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
-      --remove-vad --input-length var \
+      --remove-vad --test-input var \
       --verbose 0 \
       --cos-sim
   done
@@ -2463,7 +2463,7 @@ if [ $stage -le 203 ]; then
       --s 30 \
       --time-dim 1 \
       --avg-size 5 \
-      --input-length var \
+      --test-input var \
       --dropout-p 0.1 \
       --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klfb${input_dim}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/${testset}_${test_subset}_var \
       --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klfb${input_dim}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/checkpoint_50.pth \
@@ -2571,7 +2571,7 @@ if [ $stage -le 300 ]; then
   #     --embedding-size ${embedding_size} \
   #     --loss-type ${loss} \
   #     --encoder-type STAP \
-  #     --input-length fix \
+  #     --test-input fix \
   #     --remove-vad \
   #     --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcdist/Mean_STAP_em512_lr1_wd5e4_var/checkpoint_50.pth \
   #     --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcdist/Mean_STAP_em512_lr1_wd5e4_var/${test_set}_${subset}_epoch50_fix \
@@ -2602,7 +2602,7 @@ if [ $stage -le 300 ]; then
      --block-type ${block_type} \
      --embedding-size ${embedding_size} \
      --encoder-type STAP \
-     --input-length fix \
+     --test-input fix \
      --remove-vad \
      --frame-shift 300 \
      --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_dev_epoch50_fix \
@@ -2636,7 +2636,7 @@ if [ $stage -le 300 ]; then
 #      --embedding-size ${embedding_size} \
 #      --loss-type ${loss} \
 #      --encoder-type STAP \
-#      --input-length fix \
+#      --test-input fix \
 #      --remove-vad \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
@@ -2672,7 +2672,7 @@ if [ $stage -le 300 ]; then
 #      --embedding-size ${embedding_size} \
 #      --loss-type ${loss} \
 #      --encoder-type STAP \
-#      --input-length fix \
+#      --test-input fix \
 #      --remove-vad \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
@@ -2751,7 +2751,7 @@ if [ $stage -le 301 ]; then
        --loss-type ${loss} \
        --margin 0.2 \
        --s 30 \
-       --input-length fix \
+       --test-input fix \
        --remove-vad \
        --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
        --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${test_subset}_fix \
@@ -2831,7 +2831,7 @@ if [ $stage -le 301 ]; then
 #     --embedding-size ${embedding_size} \
 #     --loss-type ${loss} \
 #     --encoder-type STAP \
-#     --input-length fix \
+#     --test-input fix \
 #     --remove-vad \
 #     --frame-shift 300 \
 #     --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_dev_epoch50_fix \
@@ -2865,7 +2865,7 @@ if [ $stage -le 301 ]; then
 #      --embedding-size ${embedding_size} \
 #      --loss-type ${loss} \
 #      --encoder-type STAP \
-#      --input-length fix \
+#      --test-input fix \
 #      --remove-vad \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
@@ -2901,7 +2901,7 @@ if [ $stage -le 301 ]; then
 #      --embedding-size ${embedding_size} \
 #      --loss-type ${loss} \
 #      --encoder-type STAP \
-#      --input-length fix \
+#      --test-input fix \
 #      --remove-vad \
 #      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
@@ -2957,7 +2957,7 @@ if [ $stage -le 400 ]; then
       --stride 1,1,1,1 \
       --margin 0.2 \
       --s 30 \
-      --input-length var \
+      --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/TDNN_v5/aishell2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch_50_var \
       --resume Data/checkpoint/TDNN_v5/aishell2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_var/checkpoint_50.pth \
@@ -3072,7 +3072,7 @@ if [ $stage -le 500 ]; then
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
-      --remove-vad --input-length var \
+      --remove-vad --test-input var \
       --verbose 0 \
       --cos-sim
   done
