@@ -607,7 +607,7 @@ if [ $stage -le 43 ]; then
   lamda_beta=0.2
   mixup_type=manifold
 
-  for lamda_beta in 0.2 0.5 1 2 ; do
+  for lamda_beta in 0.2 ; do
   for resnet_size in 34; do
   for seed in 123456 123457 123458 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
