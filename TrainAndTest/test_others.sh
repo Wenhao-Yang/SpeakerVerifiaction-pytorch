@@ -3260,4 +3260,10 @@ if [ $stage -le 500 ]; then
 #  done
   done
   exit
+#  resnet18_seblcok_red2_astp2-wav-fbank40-baseline
+#|    aidata-test    |  5.33±0.14  |             | 0.4665±0.0047 | 0.7887±0.0031 |
+#|    aidata-test    |  5.86±0.13  |             | 0.4554±0.0058 | 0.7793±0.0189 | # mixup0_0.2
+#|    aidata-test    |  5.23±0.16  |             | 0.4232±0.0072 | 0.7721±0.0056 | # clean + half_mixup0_0.2
+#|    aidata-test    |  5.14±0.02  |             | 0.4364±0.0147 | 0.7679±0.0181 | # clean + half_mixup0_0.5
+
 fi
