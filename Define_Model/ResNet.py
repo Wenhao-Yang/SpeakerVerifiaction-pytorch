@@ -1174,7 +1174,7 @@ class ThinResNet(nn.Module):
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
         elif proser != None:
-            pdb.set_trace()
+
             shuf_half_idx_ten = proser.to(x.device)
             # print(shuf_half_idx_ten, shuf_half_idx_ten.shape)
             half_batch_size = shuf_half_idx_ten.shape[0]
@@ -1185,6 +1185,7 @@ class ThinResNet(nn.Module):
             print(x[:half_batch_size].device, " ", half_feats.device, " ", half_feats[shuf_half_idx_ten].device)
             print(x[:half_batch_size].shape, " ", half_feats.shape, " ", half_feats[shuf_half_idx_ten].shape)
 
+            pdb.set_trace()
             # pdb.set_trace()
             # x = torch.cat(
             #     [x[:half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
