@@ -1181,9 +1181,9 @@ class ThinResNet(nn.Module):
 
             print(x[:half_batch_size].device, " ", half_feats.device, " ", half_feats[shuf_half_idx_ten].device)
             pdb.set_trace()
-            x = torch.cat(
-                [x[:half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
-                dim=0)
+            # x = torch.cat(
+            #     [x[:half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            #     dim=0)
 
         logits = "" if self.classifier == None else self.classifier(x)
 
