@@ -265,7 +265,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                     label[:half_data]).cpu().sum().float() + \
                                     lamda_beta * predicted_one_labels[half_data:].eq(
                     label[half_data:(half_data + half_data)]).cpu().sum().float() + \
-                                    (1 - lamda_beta) * predicted_one_labels.eq(
+                                    (1 - lamda_beta) * predicted_one_labels[half_data:].eq(
                     label[-half_data:]).cpu().sum().float()
             else:
                 minibatch_correct = lamda_beta * predicted_one_labels.eq(
