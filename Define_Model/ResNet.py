@@ -1179,7 +1179,7 @@ class ThinResNet(nn.Module):
             # print(half_batch_size)
             half_feats = x[-half_batch_size:]
 
-            print(x[:half_batch_size].devie(), half_feats.devie(), half_feats[shuf_half_idx_ten].devie())
+            print(x[:half_batch_size].device, half_feats.device, half_feats[shuf_half_idx_ten].device)
             x = torch.cat(
                 [x[:half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
                 dim=0)
