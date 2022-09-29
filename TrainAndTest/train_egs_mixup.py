@@ -198,6 +198,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             # FLAGS.width_mult = width_mult
             model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
+            rand_idx = torch.randperm(int(half_data / 2)).repeat(2)
             rand_idx = rand_idx if args.mixup_type == 'manifold' else None
             classfier, feats = model(data, proser=rand_idx, lamda_beta=lamda_beta)
 
