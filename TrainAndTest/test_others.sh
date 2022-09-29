@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=203
+stage=500
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -3182,7 +3182,7 @@ if [ $stage -le 500 ]; then
   filter_layer=fbank
   feat_dim=40
   input_dim=40
-  lamda_beta=0.2
+  lamda_beta=0.5
 
   for testset in aidata ; do
   for resnet_size in 18 ; do
@@ -3224,7 +3224,7 @@ if [ $stage -le 500 ]; then
         at_str=
       fi
 
-      model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}_mixup0.2_2/${seed}
+      model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}_mixup${lamda_beta}_2/${seed}
 
       # _mixup${lamda_beta}_0
 
@@ -3251,7 +3251,7 @@ if [ $stage -le 500 ]; then
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
-        --gpu-id 6 \
+        --gpu-id 4 \
         --verbose 0 \
         --cos-sim
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
