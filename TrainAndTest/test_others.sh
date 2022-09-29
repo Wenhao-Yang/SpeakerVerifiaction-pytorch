@@ -2988,7 +2988,7 @@ if [ $stage -le 500 ]; then
   embedding_size=256
 #  resnet_size=18 10
 #  sname=dev #dev_aug_com
-  sname=dev #_aug_com
+  sname=train #_aug_com
   downsample=k3
   test_subset=test
   mask_layer=baseline
