@@ -13,7 +13,7 @@ This file define resnet in 'Deep Residual Learning for Image Recognition'
 For all model, the pre_forward function is for extract vectors and forward for classification.
 """
 import pdb
-
+import random
 import torch
 import numpy as np
 import torch.nn.functional as F
@@ -1096,7 +1096,7 @@ class ThinResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward(self, x, feature_map=''):
+    def _forward(self, x, feature_map='', proser=None, label=None, lamda_beta=0.2):
         # pdb.set_trace()
         # print(x.shape)
         # if self.filter_layer != None:
@@ -1145,6 +1145,42 @@ class ThinResNet(nn.Module):
         if feature_map == 'last':
             return embeddings, x
 
+        if proser != None and label != None:
+            half_batch_size = int(x.shape[0] / 2)
+            half_feats = x[-half_batch_size:]
+            # half_label = label[-half_batch_size:]
+
+            # half_idx = [i for i in range(half_batch_size)]
+            # half_idx_ten = torch.LongTensor(half_idx)
+            # random.shuffle(half_idx)
+            # pdb.set_trace()
+            shuf_half_idx_ten = proser
+            select_bool = label[:, 0, 0, 0]
+            select_bool = select_bool.reshape(-1, 1).repeat_interleave(self.embedding_size, dim=1)
+            select_bool = select_bool.to(device=half_feats.device)
+            # torch.repeat_interleave()
+            half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
+
+            # print(half_feats[shuf_half_idx_ten], select_bool)
+            half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten], mask=select_bool).reshape(-1,
+                                                                                                       self.embedding_size)
+
+            # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
+            # pdb.set_trace()
+            lamda_beta = np.random.beta(lamda_beta, lamda_beta)
+            half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
+            # print(x[:half_batch_size].shape, half_feat.shape)
+            x = torch.cat([x[:half_batch_size], half_feat], dim=0)
+
+        elif proser != None:
+            half_batch_size = int(x.shape[0] / 2)
+            half_feats = x[-half_batch_size:]
+            shuf_half_idx_ten = proser
+            # print(half_feats[shuf_half_idx_ten], select_bool)
+            x = torch.cat(
+                [x[:half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+                dim=0)
+
         logits = "" if self.classifier == None else self.classifier(x)
 
         if feature_map == 'attention':
@@ -1179,7 +1215,10 @@ class ThinResNet(nn.Module):
 
         if self.dropout_p > 0:
             x = self.dropout(x)
-        x = self.avgpool(x)
+
+        if self.avgpool != None:
+            x = self.avgpool(x)
+
         if self.encoder != None:
             x = self.encoder(x)
 

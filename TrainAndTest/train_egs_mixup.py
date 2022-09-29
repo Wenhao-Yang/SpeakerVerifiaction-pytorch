@@ -180,6 +180,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         rand_idx = torch.randperm(half_data)
         mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
+
         data = torch.cat([data[:half_data], mix_data], dim=0)
         label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
 
@@ -197,7 +198,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             # FLAGS.width_mult = width_mult
             model.apply(lambda m: setattr(m, 'width_mult', width_mult))
 
-            classfier, feats = model(data)
+            rand_idx = rand_idx if args.mixup_type == 'manifold' else None
+            classfier, feats = model(data, proser=rand_idx, lamda_beta=lamda_beta)
+
             classfier_label = classfier[:-half_data].clone()
             # print('max logit is ', classfier_label.max())
 
