@@ -206,7 +206,6 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             rand_idx = rand_idx.repeat(2) if args.mixup_type == 'manifold' else None
             classfier, feats = model(data, proser=rand_idx, lamda_beta=lamda_beta)
 
-            classfier_label = classfier[:-half_data].clone()
             # print('max logit is ', classfier_label.max())
 
             if args.loss_type == 'soft':
@@ -255,6 +254,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
 
                 loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
+
+            # classfier_label = classfier[:-half_data].clone()
 
             predicted_one_labels = predicted_one_labels.cpu()
             label = label.cpu()
