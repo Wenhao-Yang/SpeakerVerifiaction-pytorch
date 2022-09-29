@@ -677,7 +677,7 @@ if [ $stage -le 43 ]; then
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0005 \
-      --gpu-id 0,1 \
+      --gpu-id 0 \
       --mixup-type ${mixup_type} --lamda-beta ${lamda_beta} \
       --extract --cos-sim \
       --remove-vad
