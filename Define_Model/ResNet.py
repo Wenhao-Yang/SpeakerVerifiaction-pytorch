@@ -1176,9 +1176,11 @@ class ThinResNet(nn.Module):
         elif proser != None:
             pdb.set_trace()
             shuf_half_idx_ten = proser.to(x.device)
+            print(shuf_half_idx_ten, shuf_half_idx_ten.shape)
             half_batch_size = shuf_half_idx_ten.shape[0]
             print(half_batch_size)
             half_feats = x[-half_batch_size:]
+            print(half_feats.shape)
 
             print(x[:half_batch_size].device, " ", half_feats.device, " ", half_feats[shuf_half_idx_ten].device)
             # pdb.set_trace()
