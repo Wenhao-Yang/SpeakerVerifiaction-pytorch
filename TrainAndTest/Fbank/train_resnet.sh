@@ -605,6 +605,7 @@ if [ $stage -le 43 ]; then
   avg_size=5
   fast=none1
   lamda_beta=0.2
+  mixup_type=manifold
 
   for lamda_beta in 0.2 0.5 1 2 ; do
   for resnet_size in 34; do
@@ -645,7 +646,7 @@ if [ $stage -le 43 ]; then
     else
       at_str=
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_mixup${lamda_beta}_2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_mixup${lamda_beta}_${mixup_type}/${seed}
     #
 #
     python TrainAndTest/train_egs_mixup.py \
@@ -677,7 +678,7 @@ if [ $stage -le 43 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0005 \
       --gpu-id 0,1 \
-      --lamda-beta ${lamda_beta} \
+      --mixup-type ${mixup_type} --lamda-beta ${lamda_beta} \
       --extract --cos-sim \
       --remove-vad
   done
