@@ -1180,11 +1180,11 @@ class ThinResNet(nn.Module):
             half_batch_size = shuf_half_idx_ten.shape[0]
             # print(half_batch_size)
             half_feats = x[-half_batch_size:]
-            rand_half_feats = x[-half_batch_size:][shuf_half_idx_ten]
-            # print(half_feats.shape)
+            # rand_half_feats = x[-half_batch_size:][shuf_half_idx_ten]
+            print(half_feats.shape, shuf_half_idx_ten)
 
             print(x[:half_batch_size].device, " ", half_feats.device, " ", rand_half_feats.device)
-            print(x[:half_batch_size].shape, " ", half_feats.shape, " ", rand_half_feats[shuf_half_idx_ten].shape)
+            # print(x[:half_batch_size].shape, " ", half_feats.shape, " ", rand_half_feats[shuf_half_idx_ten].shape)
 
             pdb.set_trace()
             # pdb.set_trace()
