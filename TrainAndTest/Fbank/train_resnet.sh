@@ -586,7 +586,7 @@ if [ $stage -le 43 ]; then
   encoder_type=ASTP2
   embedding_size=256
   block_type=seblock
-  downsample=k3
+  downsample=k1
   kernel=5,5
   loss=arcsoft
   alpha=0
