@@ -256,6 +256,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
                 loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
 
+            predicted_one_labels = predicted_one_labels.cpu()
+            label = label.cpu()
             if args.mixup_type == 'manifold':
                 minibatch_correct = predicted_one_labels[:half_data].eq(
                     label[:half_data]).cpu().sum().float() + \
