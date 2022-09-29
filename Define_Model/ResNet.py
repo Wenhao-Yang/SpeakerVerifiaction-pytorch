@@ -1175,16 +1175,14 @@ class ThinResNet(nn.Module):
 
         elif proser != None:
             shuf_half_idx_ten = proser
-
             half_batch_size = shuf_half_idx_ten.shape[0]
             # print(half_batch_size)
             half_feats = x[-half_batch_size:]
             # print(half_feats.shape)
-
             # print(half_feats[shuf_half_idx_ten], select_bool)
-            print(x[:half_batch_size], x[:half_batch_size].shape)
-            print("last_half: ", half_feats, half_feats.shape)
-            print("last_half[rand]: ", half_feats[shuf_half_idx_ten], half_feats[shuf_half_idx_ten].shape)
+            print("feat: ", x[:half_batch_size].shape)
+            print("last_half: ", half_feats.shape)
+            print("last_half[rand]: ", half_feats[shuf_half_idx_ten].shape)
 
             x = torch.cat(
                 [x[:half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
