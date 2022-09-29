@@ -611,6 +611,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--alpha-t', type=float, default=1.0, help='the ratio for LNCL')
     parser.add_argument('--beta', type=float, default=1.0, help='the beta ratio for regularize term')
     parser.add_argument('--lamda-beta', type=float, default=0.2, help='the alpha for beta distribution')
+    parser.add_argument('--mixup-type', type=str, default='input', help='the mixup type to linear interplotation')
 
     parser.add_argument('--lncl', action='store_true', default=False, help='Label Noise Correct Loss')
     parser.add_argument('--smooth-ratio', type=float, default=0,
