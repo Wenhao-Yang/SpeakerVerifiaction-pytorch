@@ -625,8 +625,8 @@ if __name__ == '__main__':
         print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
-    if os.path.exists(args.model_yaml):
-        model_kwargs = load_model_args(args.model_yaml)
+    if os.path.exists(args.check_yaml):
+        model_kwargs = load_model_args(args.check_yaml)
     else:
         model_kwargs = args_model(args, train_dir)
 
