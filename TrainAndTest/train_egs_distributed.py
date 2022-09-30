@@ -835,8 +835,17 @@ def main():
             torch.distributed.barrier()
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
-            valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+
+            if config_args['early_stopping'] or (
+                    epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
+                valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+            else:
+                valid_test_dict = {}
+
+            # valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
             valid_test_dict['Valid_Loss'] = valid_loss
+            if torch.distributed.get_rank() == 0:
+                valid_test_result.append(valid_test_dict)
 
             if torch.distributed.get_rank() == 0 and config_args['early_stopping']:
                 early_stopping_scheduler(valid_test_dict[config_args['early_meta']], epoch)
