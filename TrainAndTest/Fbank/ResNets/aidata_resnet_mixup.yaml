@@ -67,7 +67,9 @@ early_delta: 0.01
 early_meta: 'EER'
 
 ## model Setttings
+resnet_size: 34
 embedding_model: !new:Define_Model.ResNet.ThinResNet
+  resnet_size: !ref <resnet_size>
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   block_type: 'seblock'
@@ -111,7 +113,7 @@ mixup_type: input
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_vares_bashuf2_dist/<seed>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_vares_bashuf2_dist/<seed>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_40.pth
 
