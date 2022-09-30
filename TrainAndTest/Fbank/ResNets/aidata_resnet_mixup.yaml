@@ -61,10 +61,17 @@ base_lr: 0.00001
 cos_sim: True
 
 ## model Setttings
-embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
+embedding_model: !new:Define_Model.ResNet.ThinResNet
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
+  block_type: 'seblock'
+  downsample: 'k1'
+  red_ratio: 2
+  fast: none1
+  stride: [ 2, 1 ]
   channels: [ 16, 32, 64, 128 ]
+  dropout_p: 0.1
+  avg_size: 5
   encoder_type: 'ASTP2'
   embedding_size: !ref <embedding_size>
   num_classes: 420
@@ -98,7 +105,7 @@ mixup_type: input
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_vares_mixup<lamda_beta>_<mixup_type>/<seed>
+check_path: !ref Data/checkpoint/<model>_dist/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_vares_mixup<lamda_beta>_<mixup_type>/<seed>
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
