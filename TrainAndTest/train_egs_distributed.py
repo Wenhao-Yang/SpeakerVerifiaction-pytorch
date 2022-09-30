@@ -848,8 +848,9 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
-            if epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
-                    end - 1) or early_stopping_scheduler.best_epoch == epoch:
+            if torch.distributed.get_rank() == 0 and (
+                    epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
+                    end - 1) or early_stopping_scheduler.best_epoch == epoch):
 
                 # if (epoch == 1 or epoch != (end - 2)) and (
                 #     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
@@ -889,6 +890,7 @@ def main():
                     except Exception as e:
                         print(e)
                     end = epoch
+                    torch.distributed.destroy_process_group()
                     break
 
             if config_args['scheduler'] == 'rop':
