@@ -326,7 +326,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 uid2vectors.append((a_uid[0], out[0]))
 
-    uids = list(uid2vectors.keys())
+    # uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
     scp_file = xvector_dir + '/xvectors.scp'
     ark_file = xvector_dir + '/xvectors.ark'
