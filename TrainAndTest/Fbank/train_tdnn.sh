@@ -9,6 +9,7 @@ while [ $(ps 733240 | wc -l) -eq 2 ]; do
 done
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+
 if [ $stage -le 0 ]; then
   model=ETDNN
   for loss in soft; do
@@ -393,8 +394,7 @@ if [ $stage -le 70 ]; then
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 \
       --base-lr 0.00000001 \
       --weight-decay 0.0005 \
@@ -419,8 +419,7 @@ if [ $stage -le 70 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --remove-vad \
       --log-interval 10
   done
@@ -561,8 +560,7 @@ if [ $stage -le 74 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --log-interval 10
   done
   exit
@@ -619,8 +617,7 @@ if [ $stage -le 100 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --log-interval 10
   done
   exit
@@ -654,8 +651,7 @@ if [ $stage -le 101 ]; then
       --patience 3 \
       --milestones 10,20,30 \
       --model ${model} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --weight-decay 0.0001 \
       --lr 0.1 \
       --base-lr 0.000005 \
@@ -678,8 +674,7 @@ if [ $stage -le 101 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --remove-vad \
       --log-interval 10
   done
@@ -734,8 +729,7 @@ if [ $stage -le 105 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --remove-vad \
       --log-interval 10
   done
@@ -934,8 +928,7 @@ if [ $stage -le 109 ]; then
       --block-type ${block_type} \
       --activation ${activation} \
       --weight-decay 0.00005 \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 \
       --base-lr 0.000006 \
       --alpha 0 \
@@ -957,8 +950,7 @@ if [ $stage -le 109 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --all-iteraion 0 \
       --log-interval 10
   done
@@ -1065,8 +1057,7 @@ if [ $stage -le 110 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --all-iteraion 0 \
       --log-interval 10
   done
@@ -1234,8 +1225,7 @@ if [ $stage -le 112 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --remove-vad \
       --all-iteraion 0 \
       --log-interval 10
@@ -1512,8 +1502,7 @@ if [ $stage -le 157 ]; then
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --weight-decay 0.0001 \
       --lr 0.1 \
       --base-lr 0.00001 \
@@ -1538,8 +1527,7 @@ if [ $stage -le 157 ]; then
       --lr-ratio ${lr_ratio} \
       --loss-type ${loss} \
       --num-center ${num_centers} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --remove-vad \
       --log-interval 10
   done
@@ -1630,20 +1618,16 @@ if [ $stage -le 158 ]; then
      --patience 3 \
      --milestones 10,20,30,40 \
      --model ${model} \
-     --optimizer ${optimizer} \
-     --scheduler ${scheduler} \
+     --optimizer ${optimizer} --scheduler ${scheduler} \
      --weight-decay 0.0005 \
-     --lr 0.1 \
-     --base-lr 0.00001 \
+     --lr 0.1 --base-lr 0.00001 \
      --alpha 0 \
      --feat-format kaldi \
      --embedding-size ${embedding_size} \
      --random-chunk 200 400 \
      --input-dim ${input_dim} \
      --channels 512,512,512,512,1500 \
-     --mask-layer ${mask_layer} \
-     --init-weight ${weight} \
-     --weight-p ${weight_p} \
+     --mask-layer ${mask_layer} --init-weight ${weight} --weight-p ${weight_p} \
      --scale ${scale} \
      --encoder-type ${encod} \
      --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_${weight}scale${scale}p${weight_p}_wd5e4_var \
@@ -1653,11 +1637,8 @@ if [ $stage -le 158 ]; then
      --veri-pairs 9600 \
      --gpu-id 0,1 \
      --num-valid 2 \
-     --loss-ratio ${loss_ratio} \
-     --lr-ratio ${lr_ratio} \
-     --loss-type ${loss} \
-     --margin 0.2 \
-     --s 30 \
+     --loss-ratio ${loss_ratio} --lr-ratio ${lr_ratio} \
+     --loss-type ${loss} --margin 0.2 --s 30 \
      --remove-vad \
      --log-interval 10 \
      --test-interval 2
@@ -1694,12 +1675,10 @@ if [ $stage -le 200 ]; then
       --input-norm ${input_norm} \
       --random-chunk 200 400 \
       --nj 12 \
-      --epochs 50 \
-      --patience 3 \
+      --epochs 50 --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
@@ -1718,8 +1697,7 @@ if [ $stage -le 200 ]; then
       --gpu-id 0,1 \
       --num-valid 2 \
       --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --all-iteraion 0 \
       --remove-vad \
       --log-interval 10
@@ -1728,5 +1706,33 @@ if [ $stage -le 200 ]; then
 fi
 
 
+if [ $stage -le 300 ]; then
+  model=TDNN_v5
+  datasets=cnceleb
+  #  feat=fb24
+#  feat_type=pyfb
+  feat_type=klfb
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_dim=40
+  input_norm=Mean
+  lr_ratio=0
+  loss_ratio=10
+  subset=
+  activation=leakyrelu
+  scheduler=cyclic
+  optimizer=adam
+  stat_type=margin1 #margin1sum
+  m=1.0
 
+  # _lrr${lr_ratio}_lsr${loss_ratio}
 
+ for stat_type in margin1 ; do
+   feat=fb${input_dim}
+
+   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py
+  done
+  exit
+fi
