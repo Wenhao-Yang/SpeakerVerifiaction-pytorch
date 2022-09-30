@@ -844,7 +844,7 @@ def main():
                 if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
                     early_stopping_scheduler.early_stop = True
 
-                if args.scheduler != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
+                if config_args['scheduler'] != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
                     if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 

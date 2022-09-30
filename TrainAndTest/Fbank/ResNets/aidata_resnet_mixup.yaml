@@ -111,7 +111,8 @@ mixup_type: input
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model>_dist/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_vares_mixup<lamda_beta>_<mixup_type>/<seed>
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_vares_bashuf2_dist/<seed>
+#_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
