@@ -199,12 +199,17 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     """
     model.eval()
 
-    if not os.path.exists(xvector_dir):
-        os.makedirs(xvector_dir)
+    if isinstance(model, DistributedDataParallel):
+        if torch.distributed.get_rank() == 0:
+            if not os.path.exists(xvector_dir):
+                os.makedirs(xvector_dir)
+    else:
+        if not os.path.exists(xvector_dir):
+            os.makedirs(xvector_dir)
     # pbar =
-    pbar = tqdm(extract_loader, ncols=100) if verbose>0 else extract_loader
+    pbar = tqdm(extract_loader, ncols=100) if verbose > 0 else extract_loader
 
-    uid2vectors = {}
+    uid2vectors = []
     with torch.no_grad():
         if test_input == 'fix':
             data = torch.tensor([])
@@ -260,9 +265,11 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
-                            uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
                         else:
-                            uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+
+                        uid2vectors.append((uid, uid_vec))
 
                     data = torch.tensor([])
                     num_seg_tensor = [0]
@@ -276,7 +283,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
-                if vec_shape[2] > 10 * c.NUM_FRAMES_SPECT:
+                if vec_shape[2] >= 10 * c.NUM_FRAMES_SPECT:
                     num_half = int(vec_shape[2] / 2)
                     half_a = a_data[:, :, :num_half, :]
                     half_b = a_data[:, :, -num_half:, :]
@@ -317,21 +324,38 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     print(a_data.shape, a_uid, out.shape)
                     pdb.set_trace()
 
-                uid2vectors[a_uid[0]] = out[0]
+                uid2vectors.append((a_uid[0], out[0]))
 
     uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
     scp_file = xvector_dir + '/xvectors.scp'
     ark_file = xvector_dir + '/xvectors.ark'
-    # scp = open(scp_file, 'w')
+
+    if torch.distributed.is_initialized():
+
+        all_uid2vectors = [None for _ in range(torch.distributed.get_world_size())]
+        torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
+        if torch.distributed.get_rank() == 0:
+            # pdb.set_trace()
+            writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
+
+            uid2vectors = np.concatenate(all_uid2vectors)
+            # print('uid2vectors:', len(uid2vectors))
+            for uid, uid_vec in uid2vectors:
+                writer(str(uid), uid_vec)
+
+        torch.distributed.barrier()
+    else:
+        writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
+        for uid, uid_vec in uid2vectors:
+            writer(str(uid), uid_vec)
 
     # write scp and ark file
     # vec_norm = [np.sqrt(np.power(uid2vectors[a], 2).sum()) for a in uid2vectors.keys()]
     # pdb.set_trace()
-    writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
-
-    for uid in uids:
-        writer(str(uid), uid2vectors[uid])
+    # writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
+    # for uid in uids:
+    #     writer(str(uid), uid2vectors[uid])
 
     # for set_id in range(int(np.ceil(len(uids) / ark_num))):
     #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
@@ -391,25 +415,50 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
         #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
         #         epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
-    labels = np.array([sublabel for label in labels for sublabel in label])
-    distances = np.array([subdist for dist in distances for subdist in dist])
-    # print(distances.shape)
-    # this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
-    time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
-    with open('%s/scores.%s' % (xvector_dir, time_stamp), 'w') as f:
-        for l in zip(labels, distances):
-            f.write(" ".join([str(i) for i in l]) + '\n')
+    if torch.distributed.is_initialized():
+        all_labels = [None for _ in range(torch.distributed.get_world_size())]
+        all_distances = [None for _ in range(torch.distributed.get_world_size())]
 
-        # for d, l in zip(distances, labels):
-        #     f.write(str(d) + ' ' + int(l) + '\n')
+        torch.distributed.all_gather_object(all_labels, labels)
+        torch.distributed.all_gather_object(all_distances, distances)
 
-    eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
-                                                      cos=True if dist_type == 'cos' else False,
-                                                      re_thre=True)
-    mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
+        # print(len(all_labels), all_distances)
+        if torch.distributed.get_rank() == 0:
+            distances = np.concatenate(all_distances)
+            labels = np.concatenate(all_labels)
+            # print('uid2vectors:', len(uid2vectors))
 
-    if return_dist:
-        return eer, eer_threshold, mindcf_01, mindcf_001, distances
+            labels = np.array([sublabel for label in labels for sublabel in label])
+            distances = np.array([subdist for dist in distances for subdist in dist])
+            # this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
+            time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
+            with open('%s/scores.%s' % (xvector_dir, time_stamp), 'w') as f:
+                for l in zip(labels, distances):
+                    f.write(" ".join([str(i) for i in l]) + '\n')
+
+            eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
+                                                              cos=True if dist_type == 'cos' else False,
+                                                              re_thre=True)
+            mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
+        else:
+            del all_distances, all_labels
+            eer, eer_threshold, mindcf_01, mindcf_001 = 0, 0, 0, 0
+
+        torch.distributed.barrier()
+
+    else:
+        labels = np.array([sublabel for label in labels for sublabel in label])
+        distances = np.array([subdist for dist in distances for subdist in dist])
+        # this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
+        time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
+        with open('%s/scores.%s' % (xvector_dir, time_stamp), 'w') as f:
+            for l in zip(labels, distances):
+                f.write(" ".join([str(i) for i in l]) + '\n')
+
+        eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
+                                                          cos=True if dist_type == 'cos' else False,
+                                                          re_thre=True)
+        mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
     return eer, eer_threshold, mindcf_01, mindcf_001
 
