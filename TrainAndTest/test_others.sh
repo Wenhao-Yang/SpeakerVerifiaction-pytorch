@@ -3182,7 +3182,7 @@ if [ $stage -le 500 ]; then
   filter_layer=fbank
   feat_dim=40
   input_dim=40
-  lamda_beta=0.5
+  lamda_beta=1
 
   for testset in aidata ; do
   for resnet_size in 18 ; do
