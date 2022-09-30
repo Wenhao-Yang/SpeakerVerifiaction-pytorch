@@ -677,7 +677,7 @@ if [ $stage -le 44 ]; then
  for stat_type in margin1 ; do
    
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py --train-config ThinResNet/Fbank/ResNets/aidata_resnet_mixup.yaml
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py --train-config=ThinResNet/Fbank/ResNets/aidata_resnet_mixup.yaml
   done
   exit
 fi
@@ -889,12 +889,9 @@ if [ $stage -le 101 ]; then
       --target-ratio 0.33 \
       --inter-ratio 0.1 \
       --batch-size ${batch_size} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
-      --lr 0.01 \
-      --base-lr 0.00000001 \
-      --mask-layer ${mask_layer} \
-      --init-weight ${weight} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --lr 0.01 --base-lr 0.00000001 \
+      --mask-layer ${mask_layer} --init-weight ${weight} \
       --scale ${scale} \
       --milestones 10,20,30,40,50,60,70,80 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}_hard/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_s10lr01_wd5e4_var2 \
@@ -902,17 +899,13 @@ if [ $stage -le 101 ]; then
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
-      --fast ${fast} \
-      --stride 2,1 \
+      --fast ${fast} --stride 2,1 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
-      --avg-size 5 \
-      --encoder-type ${encoder_type} \
+      --avg-size 5 --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin ${margin} \
-      --m ${m} \
-      --s 30 \
+      --loss-type ${loss} --margin ${margin} --m ${m} -s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
@@ -920,7 +913,6 @@ if [ $stage -le 101 ]; then
       --cos-sim \
       --all-iteraion 0 \
       --remove-vad \
-      --loss-type ${loss} \
       --stat-type ${stat_type} \
       --loss-ratio ${loss_ratio}
 #            --lncl \
@@ -984,7 +976,7 @@ if [ $stage -le 102 ]; then
     fi
 
     python TrainAndTest/train_egs.py \
-       --model ${model} \
+       --model ${model} --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
        --shuffle \
@@ -993,21 +985,14 @@ if [ $stage -le 102 ]; then
        --feat-format kaldi \
        --random-chunk 200 400 \
        --input-norm ${input_norm} \
-       --resnet-size ${resnet_size} \
        --nj 12 \
        --epochs 60 \
        --batch-size ${batch_size} \
-       --optimizer ${optimizer} \
-       --scheduler ${scheduler} \
-       --early-stopping \
-       --early-patience 15 \
-       --early-delta 0.0001 \
-       --early-meta EER \
+       --optimizer ${optimizer} --scheduler ${scheduler} \
+       --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
        --mask-layer ${mask_layer} \
-       --lr 0.1 \
-       --base-lr 0.000006 \
-       --mask-layer ${mask_layer} \
-       --mask-len 5,5 \
+       --lr 0.1 --base-lr 0.000006 \
+       --mask-layer ${mask_layer} --mask-len 5,5 \
        --class-weight ${class_weight} \
        --milestones 10,20,30,40,50 \
        --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_wd5e4_var_es \
@@ -1015,17 +1000,13 @@ if [ $stage -le 102 ]; then
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
-       --fast none1 \
-       --stride 2,1 \
+       --fast none1 --stride 2,1 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
-       --time-dim 1 \
-       --avg-size 5 \
-       --encoder-type ${encoder_type} \
+       --time-dim 1 --avg-size 5 --encoder-type ${encoder_type} \
        --num-valid 2 \
        --alpha ${alpha} \
-       --margin 0.2 \
-       --s 30 \
+       --margin 0.2 --s 30 \
        --weight-decay 0.0005 \
        --dropout-p 0.1 \
        --gpu-id 0,1 \
