@@ -68,19 +68,35 @@ early_meta: 'EER'
 
 ## model Setttings
 resnet_size: 34
+block_type: 'seblock'
+red_ratio: 2
+encoder_type: 'ASTP2'
+downsample: 'k1'
+model: ThinResNet
+kernel_size:
+alpha: 0
+avg_size: 5
+embedding_size: 256
+batch_size: 256
+dropout_p: 0.0
+activation: relu
+channels: 16,32,64,128
+fast: none1
+
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
-  block_type: 'seblock'
-  downsample: 'k1'
-  red_ratio: 2
-  fast: none1
+  block_type: !ref <block_type>
+  downsample: !ref <downsample>
+  red_ratio: !ref <red_ratio>
+  fast: !ref <fast>
+  alpha: !ref <alpha>
   stride: [ 2, 1 ]
   channels: [ 16, 32, 64, 128 ]
   dropout_p: 0.1
-  avg_size: 5
-  encoder_type: 'ASTP2'
+  avg_size: !ref <avg_size>
+  encoder_type: !ref <encoder_type>
   embedding_size: !ref <embedding_size>
   num_classes: 420
   activation: relu
@@ -89,15 +105,6 @@ classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
   feat_dim: !ref <embedding_size>
   num_classes: 420
 
-model: ThinResNet
-kernel_size:
-alpha: 0
-embedding_size: 256
-batch_size: 256
-dropout_p: 0.0
-activation: relu
-channels: 16,32,64,128
-encoder_type: ASTP2
 
 # loss
 loss_ratio: 1
@@ -113,7 +120,7 @@ mixup_type: input
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_vares_bashuf2_dist/<seed>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_vares_bashuf2_dist/<seed>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_40.pth
 
