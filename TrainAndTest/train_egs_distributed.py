@@ -829,7 +829,8 @@ def main():
 
             print('%s \33[0m' % lr_string)
             all_lr.append(this_lr[0])
-            writer.add_scalar('Train/lr', this_lr[0], epoch)
+            if torch.distributed.get_rank() == 0:
+                writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             torch.distributed.barrier()
             train(train_loader, model, ce, optimizer, epoch, scheduler)
