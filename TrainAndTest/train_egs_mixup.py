@@ -177,10 +177,16 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         half_data = int(len(data) / 2)
         lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
 
-        rand_idx = torch.randperm(half_data)
-        mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
-        data = torch.cat([data[:half_data], mix_data], dim=0)
-        label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+        if args.mixup_type != 'manifold':
+            rand_idx = torch.randperm(half_data)
+            mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
+            data = torch.cat([data[:half_data], mix_data], dim=0)
+            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+        else:
+            rand_idx = torch.randperm(int(half_data / 2))
+            label = torch.cat(
+                [label, label[half_data:(half_data + len(rand_idx))][rand_idx], label[-len(rand_idx):][rand_idx]],
+                dim=0)
 
         if args.cuda:
             # label = label.cuda(non_blocking=True)
