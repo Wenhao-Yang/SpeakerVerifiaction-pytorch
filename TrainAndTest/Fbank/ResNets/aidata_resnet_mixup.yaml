@@ -61,6 +61,11 @@ lr: 0.1
 base_lr: 0.00001
 cos_sim: True
 
+early_stopping: True
+early_patience: 20
+early_delta: 0.01
+early_meta: 'EER'
+
 ## model Setttings
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   input_dim: !ref <input_dim>
