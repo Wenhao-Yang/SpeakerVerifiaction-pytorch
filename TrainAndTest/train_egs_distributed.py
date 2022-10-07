@@ -110,6 +110,7 @@ with open(args.train_config, 'r') as f:
 
 # create logger
 # Define visulaize SummaryWriter instance
+global check_path
 check_path = config_args['check_path'] + '/' + str(args.seed)
 
 if torch.distributed.get_rank() == 0:
