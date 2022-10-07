@@ -879,11 +879,11 @@ def main():
                 # if (epoch == 1 or epoch != (end - 2)) and (
                 #     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
                 model.eval()
-                check_path = '{}/checkpoint_{}.pth'.format(check_path, epoch)
+                this_check_path = '{}/checkpoint_{}.pth'.format(check_path, epoch)
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch, 'state_dict': model_state_dict,
-                            'criterion': ce}, check_path)
+                            'criterion': ce}, this_check_path)
 
                 # valid_test(train_extract_loader, model, epoch, xvector_dir)
                 # test(extract_loader, model, epoch, xvector_dir)
