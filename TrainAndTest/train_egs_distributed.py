@@ -861,6 +861,8 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
+            if torch.distributed.get_rank() == 0
+                flag_tensor += 1
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch):
