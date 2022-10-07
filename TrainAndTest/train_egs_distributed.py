@@ -939,7 +939,7 @@ def main():
 
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     # pdb.set_trace()
-    torch.distributed.destroy_process_group()
+    # torch.distributed.destroy_process_group()
     # torch.distributed.des
     # exit(0)
 
