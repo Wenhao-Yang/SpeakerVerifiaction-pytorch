@@ -421,11 +421,13 @@ def valid_class(valid_loader, model, ce, epoch):
     all_total_batch = [None for _ in range(torch.distributed.get_world_size())]
     all_total_datasize = [None for _ in range(torch.distributed.get_world_size())]
 
+
     torch.distributed.all_gather_object(all_total_loss, total_loss)
     torch.distributed.all_gather_object(all_correct, correct)
     torch.distributed.all_gather_object(all_total_batch, total_batch)
     torch.distributed.all_gather_object(all_total_datasize, total_datasize)
 
+    # torch.distributed.all_reduce()
     total_loss = np.sum(all_total_loss)
     correct = np.sum(all_correct)
     total_batch = np.sum(all_total_batch)
