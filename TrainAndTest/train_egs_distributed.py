@@ -547,10 +547,10 @@ def main():
 
     start_epoch = 0
     if 'finetune' not in config_args or not config_args['finetune']:
-        check_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
-                                                      time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
-        if not os.path.exists(check_path):
-            torch.save({'state_dict': model.state_dict()}, check_path)
+        this_check_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
+                                                           time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
+        if not os.path.exists(this_check_path):
+            torch.save({'state_dict': model.state_dict()}, this_check_path)
 
     # Load checkpoint
     iteration = 0  # if args.resume else 0
