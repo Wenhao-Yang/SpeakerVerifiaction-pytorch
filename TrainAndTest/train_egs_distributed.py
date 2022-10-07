@@ -833,6 +833,8 @@ def main():
                 writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             torch.distributed.barrier()
+            if not torch.distributed.is_initialized():
+                break
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
