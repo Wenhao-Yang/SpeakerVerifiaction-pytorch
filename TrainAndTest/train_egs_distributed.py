@@ -912,7 +912,6 @@ def main():
                     except Exception as e:
                         print(e)
 
-                    torch.distributed.destroy_process_group()
                     flag_tensor += 1
 
             dist.all_reduce(flag_tensor, op=dist.ReduceOp.SUM)
@@ -938,8 +937,9 @@ def main():
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
         writer.close()
 
-    print("Rank %d Running %.4f minutes for each epoch.\n" % (
-    torch.distributed.get_rank(), t / 60 / (max(end - start, 1))))
+    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
+    pdb.set_trace()
+    torch.distributed.destroy_process_group()
     # torch.distributed.des
     # exit(0)
 
