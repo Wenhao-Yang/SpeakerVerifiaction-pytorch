@@ -863,6 +863,7 @@ def main():
 
             if torch.distributed.get_rank() == 0:
                 flag_tensor += 1
+
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch):
@@ -909,6 +910,7 @@ def main():
                     flag_tensor += 1
 
             dist.all_reduce(flag_tensor, op=dist.ReduceOp.SUM)
+            torch.distributed.barrier()
             if flag_tensor == 1:
                 break
 
