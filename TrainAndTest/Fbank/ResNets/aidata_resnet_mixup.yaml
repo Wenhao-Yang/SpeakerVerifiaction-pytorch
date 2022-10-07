@@ -62,7 +62,7 @@ base_lr: 0.00001
 cos_sim: True
 
 early_stopping: True
-early_patience: 2
+early_patience: 1
 early_delta: 0.01
 early_meta: 'EER'
 
