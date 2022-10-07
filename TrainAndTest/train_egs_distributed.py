@@ -905,13 +905,15 @@ def main():
                                     '{}/best.pth'.format(config_args['check_path']))
                     except Exception as e:
                         print(e)
-                    end = epoch
-                    # torch.distributed.destroy_process_group()
+
+                    torch.distributed.destroy_process_group()
                     flag_tensor += 1
 
             dist.all_reduce(flag_tensor, op=dist.ReduceOp.SUM)
             torch.distributed.barrier()
-            if flag_tensor == 1:
+            if flag_tensor >= 1:
+                end = epoch
+                print('rank', torch.distributed.get_rank(), ' stopped1')
                 break
 
             if config_args['scheduler'] == 'rop':
