@@ -332,8 +332,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             pbar.set_description(epoch_str)
 
-        if (batch_idx + 1) == 100:
-            break
+        # if (batch_idx + 1) == 100:
+        #     break
 
     if config_args['batch_shuffle']:
         train_dir.__shuffle__()
@@ -917,7 +917,7 @@ def main():
                     flag_tensor += 1
 
             dist.all_reduce(flag_tensor, op=dist.ReduceOp.SUM)
-            torch.distributed.barrier()
+            # torch.distributed.barrier()
             if flag_tensor >= 1:
                 end = epoch
                 # print('Rank      ', torch.distributed.get_rank(), '      stopped')
@@ -938,8 +938,7 @@ def main():
 
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
         writer.close()
-
-    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
+        print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
     # pdb.set_trace()
     # torch.distributed.destroy_process_group()
     # torch.distributed.des
