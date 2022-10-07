@@ -943,7 +943,7 @@ def main():
     # pdb.set_trace()
     # torch.distributed.destroy_process_group()
     # torch.distributed.des
-    # exit(0)
+    exit(0)
 
 
 if __name__ == '__main__':
