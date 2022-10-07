@@ -37,6 +37,7 @@ from torch.autograd import Variable
 from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
+import torch.distributed as dist
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss, DistributeLoss, MMD_Loss
@@ -845,6 +846,7 @@ def main():
                 valid_test_dict = {}
 
             # valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+            flag_tensor = torch.zeros(1).cuda()
             valid_test_dict['Valid_Loss'] = valid_loss
             if torch.distributed.get_rank() == 0:
                 valid_test_result.append(valid_test_dict)
@@ -901,8 +903,12 @@ def main():
                     except Exception as e:
                         print(e)
                     end = epoch
-                    torch.distributed.destroy_process_group()
-                    break
+                    # torch.distributed.destroy_process_group()
+                    flag_tensor += 1
+
+            dist.all_reduce(flag_tensor, op=dist.ReduceOp.SUM)
+            if flag_tensor == 1:
+                break
 
             if config_args['scheduler'] == 'rop':
                 scheduler.step(valid_loss)
