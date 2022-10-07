@@ -110,14 +110,16 @@ with open(args.train_config, 'r') as f:
 
 # create logger
 # Define visulaize SummaryWriter instance
-if torch.distributed.get_rank() == 0:
-    if not os.path.exists(config_args['check_path']):
-        print('Making checkpath...')
-        os.makedirs(config_args['check_path'])
+check_path = config_args['check_path'] + '/' + str(args.seed)
 
-    writer = SummaryWriter(logdir=config_args['check_path'], filename_suffix='SV')
+if torch.distributed.get_rank() == 0:
+    if not os.path.exists(check_path):
+        print('Making checkpath...')
+        os.makedirs(check_path)
+
+    writer = SummaryWriter(logdir=check_path, filename_suffix='SV')
     sys.stdout = NewLogger(
-        os.path.join(config_args['check_path'], 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
+        os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': config_args['nj'], 'pin_memory': False}  # if args.cuda else {}
 extract_kwargs = {'num_workers': 4, 'pin_memory': False}  # if args.cuda else {}
@@ -541,7 +543,7 @@ def main():
 
     start_epoch = 0
     if 'finetune' not in config_args or not config_args['finetune']:
-        check_path = '{}/checkpoint_{}_{}.pth'.format(config_args['check_path'], start_epoch,
+        check_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
                                                       time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
         if not os.path.exists(check_path):
             torch.save({'state_dict': model.state_dict()}, check_path)
@@ -691,7 +693,7 @@ def main():
 
     # Save model config txt
     if torch.distributed.get_rank() == 0:
-        with open(os.path.join(config_args['check_path'],
+        with open(os.path.join(check_path,
                                'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
                   'w') as f:
             f.write('model: ' + str(model) + '\n')
@@ -802,7 +804,7 @@ def main():
     except:
         pass
 
-    xvector_dir = config_args['check_path']
+    xvector_dir = check_path
     xvector_dir = xvector_dir.replace('checkpoint', 'xvector')
     start_time = time.time()
 
@@ -871,7 +873,7 @@ def main():
                 # if (epoch == 1 or epoch != (end - 2)) and (
                 #     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
                 model.eval()
-                check_path = '{}/checkpoint_{}.pth'.format(config_args['check_path'], epoch)
+                check_path = '{}/checkpoint_{}.pth'.format(check_path, epoch)
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch, 'state_dict': model_state_dict,
@@ -900,9 +902,9 @@ def main():
                     print(best_str)
 
                     try:
-                        shutil.copy('{}/checkpoint_{}.pth'.format(config_args['check_path'],
+                        shutil.copy('{}/checkpoint_{}.pth'.format(check_path,
                                                                   early_stopping_scheduler.best_epoch),
-                                    '{}/best.pth'.format(config_args['check_path']))
+                                    '{}/best.pth'.format(check_path))
                     except Exception as e:
                         print(e)
 
