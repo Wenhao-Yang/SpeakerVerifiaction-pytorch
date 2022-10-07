@@ -101,7 +101,8 @@ if torch.cuda.is_available():
 
 torch.distributed.init_process_group(backend='nccl',
                                      init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile',
-                                     rank=args.local_rank)
+                                     rank=args.local_rank,
+                                     world_size=1)
 torch.cuda.set_device(args.local_rank)
 
 # load train config file
