@@ -7,7 +7,7 @@ lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 # echo $(awk '{n += $2} END{print n}' <utt2num_frames)
 
 waited=0
-while [ $(ps 12841 | wc -l) -eq 2 ]; do
+while [ $(ps 174633 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -47,9 +47,9 @@ fi
 #exit
 #stage=1000
 if [ $stage -le 1 ]; then
-#  dataset=vox2
+  dataset=vox2
   # dataset=cnceleb
-  dataset=aidata
+#  dataset=aidata
 #  dataset=aishell2
   #  feat_type=pyfb
 #  dataset=vox1
@@ -63,7 +63,7 @@ if [ $stage -le 1 ]; then
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
-  for s in train_fb40 ; do
+  for s in dev_fb40 ; do
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
