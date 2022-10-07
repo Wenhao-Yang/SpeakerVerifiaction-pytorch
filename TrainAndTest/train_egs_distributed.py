@@ -99,10 +99,7 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(args.seed)
     cudnn.benchmark = True
 
-torch.distributed.init_process_group(backend='nccl',
-                                     init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile',
-                                     rank=args.local_rank,
-                                     world_size=2)
+torch.distributed.init_process_group(backend='nccl')
 torch.cuda.set_device(args.local_rank)
 
 # load train config file
@@ -921,7 +918,7 @@ def main():
             torch.distributed.barrier()
             if flag_tensor >= 1:
                 end = epoch
-                print('rank', torch.distributed.get_rank(), ' stopped1')
+                print('Rank      ', torch.distributed.get_rank(), '      stopped')
                 break
 
             if config_args['scheduler'] == 'rop':
@@ -939,7 +936,9 @@ def main():
 
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
         writer.close()
-        print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
+
+    print("Rank %d Running %.4f minutes for each epoch.\n" % (
+    torch.distributed.get_rank(), t / 60 / (max(end - start, 1))))
     # torch.distributed.des
     # exit(0)
 
