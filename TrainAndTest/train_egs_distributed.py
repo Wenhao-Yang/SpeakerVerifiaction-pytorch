@@ -110,7 +110,6 @@ with open(args.train_config, 'r') as f:
 
 # create logger
 # Define visulaize SummaryWriter instance
-global check_path
 check_path = config_args['check_path'] + '/' + str(args.seed)
 
 if torch.distributed.get_rank() == 0:
@@ -546,6 +545,7 @@ def main():
     # exit(0)
 
     start_epoch = 0
+    check_path = config_args['check_path'] + '/' + str(args.seed)
     if 'finetune' not in config_args or not config_args['finetune']:
         this_check_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
                                                            time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
