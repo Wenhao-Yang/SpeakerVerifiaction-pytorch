@@ -867,8 +867,8 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
-            if torch.distributed.get_rank() == 0:
-                flag_tensor += 1
+            # if torch.distributed.get_rank() == 0:
+            #     flag_tensor += 1
 
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
@@ -918,7 +918,7 @@ def main():
             torch.distributed.barrier()
             if flag_tensor >= 1:
                 end = epoch
-                print('Rank      ', torch.distributed.get_rank(), '      stopped')
+                # print('Rank      ', torch.distributed.get_rank(), '      stopped')
                 break
 
             if config_args['scheduler'] == 'rop':
@@ -938,7 +938,7 @@ def main():
         writer.close()
 
     print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
-    pdb.set_trace()
+    # pdb.set_trace()
     torch.distributed.destroy_process_group()
     # torch.distributed.des
     # exit(0)
