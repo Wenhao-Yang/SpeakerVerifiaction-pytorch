@@ -49,6 +49,7 @@ weight_decay: 0.00001
 dampening: 0
 momentum: 0.9
 accu_steps: 1
+nesterov: False
 
 early_stopping: True
 early_patience: 15
