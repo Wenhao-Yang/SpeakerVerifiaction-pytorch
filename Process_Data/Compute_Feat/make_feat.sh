@@ -84,6 +84,7 @@ if [ $stage -le 1 ]; then
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
+      --remove-vad \
       --out-set ${s}
 
 
@@ -97,6 +98,7 @@ if [ $stage -le 1 ]; then
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
+      --remove-vad \
       --out-set ${s}_valid
   done
   exit
