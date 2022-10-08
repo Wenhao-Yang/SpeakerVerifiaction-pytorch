@@ -1832,7 +1832,7 @@ if [ $stage -le 301 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb40 \
       --feat-format kaldi \
       --shuffle --batch-shuffle \
-      --input-norm ${input_norm} --input-dim ${input_dim} \
+      --input-norm ${input_norm} --input-dim ${input_dim} --remove-vad \
       --batch-size ${batch_size} \
       --nj 6 --epochs 80 \
       --random-chunk 200 400 \
