@@ -674,7 +674,7 @@ if [ $stage -le 44 ]; then
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for seed in 123456 ; do
+ for seed in 123457 ; do
    
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet_mixup.yaml --seed=${seed}
@@ -741,17 +741,14 @@ if [ $stage -le 100 ]; then
        --kernel-size ${kernel} \
        --downsample ${downsample} \
        --channels 16,32,64,128 \
-       --fast none1 \
-       --stride 2,1 \
+       --fast none1 --stride 2,1 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
-       --time-dim 1 \
-       --avg-size 5 \
+       --time-dim 1 --avg-size 5 \
        --encoder-type ${encoder_type} \
        --num-valid 2 \
        --alpha ${alpha} \
-       --margin 0.2 \
-       --s 30 \
+       --margin 0.2 --s 30 \
        --weight-decay 0.0005 \
        --dropout-p 0.1 \
        --gpu-id 0,1 \
