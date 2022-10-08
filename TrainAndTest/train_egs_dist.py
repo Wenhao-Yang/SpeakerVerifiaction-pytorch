@@ -125,7 +125,7 @@ if torch.distributed.get_rank() == 0:
     sys.stdout = NewLogger(
         os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
-kwargs = {'num_workers': config_args['nj'], 'pin_memory': False}  # if args.cuda else {}
+kwargs = {'num_workers': config_args['nj'], 'pin_memory': True}  # if args.cuda else {}
 extract_kwargs = {'num_workers': 4, 'pin_memory': False}  # if args.cuda else {}
 
 opt_kwargs = {'lr': config_args['lr'],
