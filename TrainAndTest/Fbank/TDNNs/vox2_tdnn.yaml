@@ -24,6 +24,9 @@ num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
 trials: trials
 input_norm: Mean
+shuffle: False
+batch_shuffle: True
+
 
 test_input: fix
 log_scale: False
