@@ -5,7 +5,7 @@
 @Author: yangwenhao
 @Contact: 874681044@qq.com
 @Software: PyCharm
-@File: train_egs_distributed.py
+@File: train_egs_dist.py
 @Time: 2022/4/20 16:21
 @Overview:
 """
@@ -43,7 +43,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     VarianceLoss, DistributeLoss, MMD_Loss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
+    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, MixupLoss
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -184,7 +184,6 @@ extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transfo
                                   trials_file=config_args['trials'], filer_loader=file_loader)
 
 
-
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
@@ -196,6 +195,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     other_loss = 0.
 
     ce_criterion, xe_criterion = ce
+    xe_criterion = MixupLoss(xe_criterion)
+
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
     lambda_ = (epoch / config_args['epochs']) ** 2
@@ -203,6 +204,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
+
+        lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
+        half_data = int(len(data) / 2)
+
+        if args.mixup_type != 'manifold':
+            rand_idx = torch.randperm(half_data)
+            mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
+            data = torch.cat([data[:half_data], mix_data], dim=0)
+            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+        else:
+            # rand_idx = torch.randperm(int(half_data / 2))
+            # label = torch.cat(
+            #     [label, label[half_data:(half_data + len(rand_idx))][rand_idx], label[-len(rand_idx):][rand_idx]],
+            #     dim=0)
+            rand_idx = torch.randperm(half_data)
+            # mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
+            # data = torch.cat([data[:half_data], mix_data], dim=0)
+            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+
         if torch.cuda.is_available():
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
@@ -234,7 +254,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             other_loss += loss_xent
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
-            loss = xe_criterion(classfier, label)
+            loss = xe_criterion(classfier, label, half_data, lamda_beta)
         elif 'arcdist' in config_args['loss_type']:
             # pdb.set_trace()
             loss_cent = config_args['loss_ratio'] * ce_criterion(classfier, label)
@@ -260,7 +280,23 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             loss = (1 - alpha_t) * loss + alpha_t * predict_loss + config_args['beta'] * torch.mean(-torch.log(mp))
 
-        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
+        predicted_one_labels = predicted_one_labels.cpu()
+        label = label.cpu()
+        if args.mixup_type == 'manifold':
+            # print(predicted_one_labels.shape, label.shape)
+            minibatch_correct = predicted_one_labels[:half_data].eq(
+                label[:half_data]).cpu().sum().float() + \
+                                lamda_beta * predicted_one_labels[half_data:].eq(
+                label[half_data:(half_data + half_data)]).cpu().sum().float() + \
+                                (1 - lamda_beta) * predicted_one_labels[half_data:].eq(
+                label[-half_data:]).cpu().sum().float()
+        else:
+            minibatch_correct = lamda_beta * predicted_one_labels.eq(
+                label[:len(predicted_one_labels)]).cpu().sum().float() + \
+                                (1 - lamda_beta) * predicted_one_labels.eq(
+                label[-len(predicted_one_labels):]).cpu().sum().float()
+
+        # minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
         correct += minibatch_correct
 
@@ -317,8 +353,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                     config_args['random_chunk'][
                         1]:
                 batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' else data.shape[-2]
-                epoch_str += ' Batch Len: {:>3d}'.format(batch_length)
+                epoch_str += ' Batch Length: {:>3d}'.format(batch_length)
 
+            epoch_str += ' Lamda: {:>4.2f}'.format(lamda_beta)
             epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
 
             if orth_err > 0:
@@ -420,7 +457,6 @@ def valid_class(valid_loader, model, ce, epoch):
     all_correct = [None for _ in range(torch.distributed.get_world_size())]
     all_total_batch = [None for _ in range(torch.distributed.get_world_size())]
     all_total_datasize = [None for _ in range(torch.distributed.get_world_size())]
-
 
     torch.distributed.all_gather_object(all_total_loss, total_loss)
     torch.distributed.all_gather_object(all_correct, correct)

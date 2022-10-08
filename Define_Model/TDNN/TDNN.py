@@ -1084,7 +1084,7 @@ class TDNN_v5(nn.Module):
         self.dropout_p = dropout_p
         self.drop.p = dropout_p
 
-    def forward(self, x):
+    def forward(self, x, feature_map='', proser=None, label=None, lamda_beta=0.2):
         # pdb.set_trace()
         # x_vectors = self.xvector(x)
         # embedding_b = self.segment7(x_vectors)
@@ -1113,6 +1113,38 @@ class TDNN_v5(nn.Module):
         x = self.encoder(x)
         embedding_a = self.segment6(x)
         embedding_b = self.segment7(embedding_a)
+
+        if proser != None and label != None:
+            half_batch_size = int(x.shape[0] / 2)
+            half_feats = x[-half_batch_size:]
+
+            shuf_half_idx_ten = proser
+            select_bool = label[:, 0, 0, 0]
+            select_bool = select_bool.reshape(-1, 1).repeat_interleave(self.embedding_size, dim=1)
+            select_bool = select_bool.to(device=half_feats.device)
+            # torch.repeat_interleave()
+            half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
+
+            # print(half_feats[shuf_half_idx_ten], select_bool)
+            half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten], mask=select_bool).reshape(-1,
+                                                                                                       self.embedding_size)
+
+            # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
+            # pdb.set_trace()
+            lamda_beta = np.random.beta(lamda_beta, lamda_beta)
+            half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
+            # print(x[:half_batch_size].shape, half_feat.shape)
+            x = torch.cat([x[:half_batch_size], half_feat], dim=0)
+
+        elif proser != None:
+            shuf_half_idx_ten = proser
+
+            half_batch_size = shuf_half_idx_ten.shape[0]
+            half_feats = embedding_b[-half_batch_size:]
+            embedding_b = torch.cat(
+                [embedding_b[:half_batch_size],
+                 lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+                dim=0)
 
         if self.alpha:
             embedding_b = self.l2_norm(embedding_b)
