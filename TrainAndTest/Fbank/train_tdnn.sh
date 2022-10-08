@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=70  # skip to stage x
+stage=300  # skip to stage x
 waited=0
 while [ $(ps 18118 | wc -l) -eq 2 ]; do
   sleep 60
@@ -1759,7 +1759,7 @@ fi
 
 if [ $stage -le 300 ]; then
   model=TDNN_v5
-  datasets=cnceleb
+  datasets=vox2
   #  feat=fb24
 #  feat_type=pyfb
   feat_type=klfb
@@ -1779,11 +1779,12 @@ if [ $stage -le 300 ]; then
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for stat_type in margin1 ; do
+ for seed in 123456 ; do
    feat=fb${input_dim}
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py
+#   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
+   CUDA_VISIBLE_DEVICES=0,3 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_tdnn.yaml --seed=${seed}
   done
   exit
 fi
