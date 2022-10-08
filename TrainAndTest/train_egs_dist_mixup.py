@@ -208,7 +208,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         lamda_beta = np.random.beta(config_args['lamda_beta'], config_args['lamda_beta'])
         half_data = int(len(data) / 2)
 
-        if args.mixup_type != 'manifold':
+        if config_args['mixup_type'] != 'manifold':
             rand_idx = torch.randperm(half_data)
             mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
             data = torch.cat([data[:half_data], mix_data], dim=0)
