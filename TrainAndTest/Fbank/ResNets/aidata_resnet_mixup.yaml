@@ -40,7 +40,7 @@ remove_vad: True
 
 
 ### Training settings
-epochs: 60
+epochs: 1
 
 # optimizer
 optimizer: sgd

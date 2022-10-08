@@ -12,6 +12,8 @@
 from __future__ import print_function
 
 import argparse
+import signal
+
 import yaml
 import os
 import os.path as osp
@@ -369,8 +371,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             pbar.set_description(epoch_str)
 
-        # if (batch_idx + 1) == 100:
-        #     break
+        if (batch_idx + 1) == 100:
+            break
 
     if config_args['batch_shuffle']:
         train_dir.__shuffle__()
@@ -978,6 +980,7 @@ def main():
     # pdb.set_trace()
     # torch.distributed.destroy_process_group()
     # torch.distributed.des
+    os.kill(os.getpid(), signal.SIGKILL)
     exit(0)
 
 
