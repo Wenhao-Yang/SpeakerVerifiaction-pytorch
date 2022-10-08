@@ -99,10 +99,11 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(args.seed)
     cudnn.benchmark = True
 
+torch.multiprocessing.set_sharing_strategy('file_system')
 torch.distributed.init_process_group(backend='nccl',
                                      init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile2',
                                      rank=args.local_rank,
-                                     world_size=1)
+                                     world_size=2)
 torch.cuda.set_device(args.local_rank)
 
 # load train config file
