@@ -195,7 +195,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     other_loss = 0.
 
     ce_criterion, xe_criterion = ce
-    xe_criterion = MixupLoss(xe_criterion)
+    xe_criterion = MixupLoss(xe_criterion, gamma=config_args['proser_gamma'])
 
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
