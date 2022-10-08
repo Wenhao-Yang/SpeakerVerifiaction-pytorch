@@ -60,7 +60,7 @@ if [ $stage -le 1 ]; then
 
   feat=klfb
   feat_type=klfb
-  feat_format=klfb
+  feat_format=kaldi
 
 #  num_frames=64000
   num_frames=400
