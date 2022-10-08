@@ -24,8 +24,6 @@ num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
 trials: trials
 input_norm: Mean
-shuffle: False
-batch_shuffle: True
 
 
 test_input: fix
@@ -36,6 +34,7 @@ frame_shift: 300
 extract: True
 nj: 6
 shuffle: False
+batch_shuffle: True
 feat_format: kaldi
 remove_vad: True
 
