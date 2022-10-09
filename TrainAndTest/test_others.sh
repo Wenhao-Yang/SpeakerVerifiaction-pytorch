@@ -2986,6 +2986,7 @@ if [ $stage -le 500 ]; then
   block_type=seblock
 #  encoder_type=None
   embedding_size=256
+  batch_size=128
 #  resnet_size=18 10
 #  sname=dev #dev_aug_com
   sname=train #_aug_com
@@ -3007,10 +3008,10 @@ if [ $stage -le 500 ]; then
 
     if [ $resnet_size -le 34 ];then
       expansion=1
-      batch_size=256
+#      batch_size=256
     else
       expansion=2
-      batch_size=256
+#      batch_size=256
     fi
 
     if [ $expansion -eq 1 ]; then
