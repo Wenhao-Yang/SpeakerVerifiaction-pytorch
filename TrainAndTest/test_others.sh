@@ -2990,7 +2990,7 @@ if [ $stage -le 500 ]; then
 #  resnet_size=18 10
 #  sname=dev #dev_aug_com
   sname=train #_aug_com
-  downsample=k3
+  downsample=k1
   test_subset=test
   mask_layer=baseline
   dp=0.1
