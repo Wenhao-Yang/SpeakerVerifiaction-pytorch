@@ -12,6 +12,8 @@
 from __future__ import print_function
 
 import argparse
+import signal
+
 import yaml
 import os
 import os.path as osp
@@ -942,6 +944,7 @@ def main():
     # pdb.set_trace()
     # torch.distributed.destroy_process_group()
     # torch.distributed.des
+    os.kill(os.getpid(), signal.SIGKILL)
     exit(0)
 
 
