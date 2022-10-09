@@ -3002,7 +3002,9 @@ if [ $stage -le 500 ]; then
   for resnet_size in 34;do
         echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
   for seed in 123456 123457 123458 ; do
-  for lamda_beta in 0.2 0.5 1 2 ; do
+#  for lamda_beta in 0.2 0.5 1 2 ; do
+  for lamda_beta in 1; do
+
     if [ $resnet_size -le 34 ];then
       expansion=1
       batch_size=256
@@ -3046,14 +3048,15 @@ if [ $stage -le 500 ]; then
       dp_str=01
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_mixup${lamda_beta}_2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_dist_manifold_0.01
+    #_mixup${lamda_beta}_2/${seed}
     #${input_dim}
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb40 \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb40/trials_dir \
+      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb40/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb40 \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 --trials trials \
