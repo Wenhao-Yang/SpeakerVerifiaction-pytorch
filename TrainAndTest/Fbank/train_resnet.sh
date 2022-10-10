@@ -22,11 +22,9 @@ if [ $stage -le 0 ]; then
 #    python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
 #      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
 #      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
-#      --nj 10 \
-#      --epochs 30 \
+#      --nj 10 --epochs 30 \
 #      --milestones 12,19,25 \
-#      --model ${model} \
-#      --resnet-size 34 \
+#      --model ${model} --resnet-size 34 \
 #      --stride 2 \
 #      --feat-format kaldi \
 #      --embedding-size 128 \
@@ -34,8 +32,7 @@ if [ $stage -le 0 ]; then
 #      --accu-steps 1 \
 #      --feat-dim 64 \
 #      --remove-vad \
-#      --time-dim 1 \
-#      --avg-size 4 \
+#      --time-dim 1 --avg-size 4 \
 #      --kernel-size 5,5 \
 #      --test-input-per-file 4 \
 #      --lr 0.1 \
@@ -54,21 +51,17 @@ if [ $stage -le 0 ]; then
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_${feat} \
-      --nj 12 \
-      --epochs 25 \
+      --nj 12 --epochs 25 \
       --milestones 10,15,20 \
-      --model ${model} \
-      --resnet-size 34 \
+      --model ${model} --resnet-size 34 \
       --stride 2 \
-      --inst-norm \
-      --filter \
+      --inst-norm --filter \
       --feat-format kaldi \
       --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
       --feat-dim 64 \
-      --time-dim 8 \
-      --avg-size 1 \
+      --time-dim 8 --avg-size 1 \
       --kernel-size 5,5 \
       --test-input-per-file 4 \
       --lr 0.1 \
@@ -94,8 +87,7 @@ if [ $stage -le 1 ]; then
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/dev_noc \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/test_noc \
       --nj 4 \
-      --model ExResNet34 \
-      --resnet-size 34 \
+      --model ExResNet34 --resnet-size 34 \
       --feat-dim 64 \
       --stride 1 \
       --kernel-size 3,3 \
@@ -126,14 +118,12 @@ if [ $stage -le 10 ]; then
       --nj 14 \
       --epochs 20 \
       --milestones 8,12,16 \
-      --model ${model} \
-      --resnet-size 34 \
+      --model ${model} --resnet-size 34 \
       --embedding-size 128 \
       --feat-dim 64 \
       --remove-vad \
       --stride 1 \
-      --time-dim 1 \
-      --avg-size 1 \
+      --time-dim 1 --avg-size 1 \
       --kernel-size 3,3 \
       --batch-size 64 \
       --test-batch-size 32 \
@@ -162,14 +152,12 @@ if [ $stage -le 15 ]; then
       --nj 16 \
       --epochs 13 \
       --milestones 1,5,10 \
-      --model ${model} \
-      --resnet-size 34 \
+      --model ${model} --resnet-size 34 \
       --embedding-size 128 \
       --feat-dim 64 \
       --remove-vad \
       --stride 1 \
-      --time-dim 1 \
-      --avg-size 1 \
+      --time-dim 1 --avg-size 1 \
       --kernel-size 3,3 \
       --batch-size 64 \
       --test-batch-size 4 \
@@ -201,8 +189,7 @@ if [ $stage -le 20 ]; then
       --nj 10 \
       --epochs 22 \
       --milestones 8,13,18 \
-      --model ${model} \
-      --resnet-size 34 \
+      --model ${model} --resnet-size 34 \
       --stride 2 \
       --inst-norm \
       --filter \
@@ -212,8 +199,7 @@ if [ $stage -le 20 ]; then
       --accu-steps 1 \
       --feat-dim 64 \
       --input-dim 257 \
-      --time-dim 8 \
-      --avg-size 1 \
+      --time-dim 8 --avg-size 1 \
       --kernel-size 5,5 \
       --test-input-per-file 4 \
       --lr 0.1 \
@@ -1352,7 +1338,7 @@ if [ $stage -le 301 ]; then
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
-   CUDA_VISIBLE_DEVICES=2,5 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
+   CUDA_VISIBLE_DEVICES=2,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
   done
   exit
 fi
