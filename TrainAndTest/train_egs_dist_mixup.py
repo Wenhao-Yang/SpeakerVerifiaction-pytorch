@@ -44,7 +44,7 @@ from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCe
     VarianceLoss, DistributeLoss, MMD_Loss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
+    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, MixupLoss
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -100,11 +100,7 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(args.seed)
     cudnn.benchmark = True
 
-# torch.multiprocessing.set_sharing_strategy('file_system')
-torch.distributed.init_process_group(backend='nccl')  # ,
-# init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile2',
-# rank=args.local_rank,
-# world_size=2)
+torch.distributed.init_process_group(backend='nccl')
 torch.cuda.set_device(args.local_rank)
 
 # load train config file
@@ -200,6 +196,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     other_loss = 0.
 
     ce_criterion, xe_criterion = ce
+    xe_criterion = MixupLoss(xe_criterion, gamma=config_args['proser_gamma'])
+
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
     lambda_ = (epoch / config_args['epochs']) ** 2
@@ -207,6 +205,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
+
+        lamda_beta = np.random.beta(config_args['lamda_beta'], config_args['lamda_beta'])
+        half_data = int(len(data) / 2)
+
+        if config_args['mixup_type'] != 'manifold':
+            rand_idx = torch.randperm(half_data)
+            mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
+            data = torch.cat([data[:half_data], mix_data], dim=0)
+            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+        else:
+            # rand_idx = torch.randperm(int(half_data / 2))
+            # label = torch.cat(
+            #     [label, label[half_data:(half_data + len(rand_idx))][rand_idx], label[-len(rand_idx):][rand_idx]],
+            #     dim=0)
+            rand_idx = torch.randperm(half_data)
+            # mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
+            # data = torch.cat([data[:half_data], mix_data], dim=0)
+            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+
         if torch.cuda.is_available():
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
@@ -238,7 +255,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             other_loss += loss_xent
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
-            loss = xe_criterion(classfier, label)
+            loss = xe_criterion(classfier, label, half_data, lamda_beta)
         elif 'arcdist' in config_args['loss_type']:
             # pdb.set_trace()
             loss_cent = config_args['loss_ratio'] * ce_criterion(classfier, label)
@@ -264,14 +281,31 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             loss = (1 - alpha_t) * loss + alpha_t * predict_loss + config_args['beta'] * torch.mean(-torch.log(mp))
 
-        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
+        predicted_one_labels = predicted_one_labels.cpu()
+        label = label.cpu()
+        if config_args['mixup_type'] == 'manifold':
+            # print(predicted_one_labels.shape, label.shape)
+            minibatch_correct = predicted_one_labels[:half_data].eq(
+                label[:half_data]).cpu().sum().float() + \
+                                lamda_beta * predicted_one_labels[half_data:].eq(
+                label[half_data:(half_data + half_data)]).cpu().sum().float() + \
+                                (1 - lamda_beta) * predicted_one_labels[half_data:].eq(
+                label[-half_data:]).cpu().sum().float()
+        else:
+            minibatch_correct = lamda_beta * predicted_one_labels.eq(
+                label[:len(predicted_one_labels)]).cpu().sum().float() + \
+                                (1 - lamda_beta) * predicted_one_labels.eq(
+                label[-len(predicted_one_labels):]).cpu().sum().float()
+
+        # minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
         correct += minibatch_correct
 
         total_datasize += len(predicted_one_labels)
         total_loss += float(loss.item())
         if torch.distributed.get_rank() == 0:
-            writer.add_scalar('Train/All_Loss', float(loss.item()), int((epoch - 1) * len(train_loader) + batch_idx + 1))
+            writer.add_scalar('Train/All_Loss', float(loss.item()),
+                              int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
             raise ValueError('Loss value is NaN!')
@@ -320,8 +354,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                     config_args['random_chunk'][
                         1]:
                 batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' else data.shape[-2]
-                epoch_str += ' Batch Len: {:>3d}'.format(batch_length)
+                epoch_str += ' Batch Length: {:>3d}'.format(batch_length)
 
+            epoch_str += ' Lamda: {:>4.2f}'.format(lamda_beta)
             epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
 
             if orth_err > 0:
@@ -334,6 +369,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             epoch_str += ' Avg Loss: {:.4f}'.format(total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
+
+        # if (batch_idx + 1) == 100:
+        #     break
 
     if config_args['batch_shuffle']:
         train_dir.__shuffle__()
@@ -426,6 +464,7 @@ def valid_class(valid_loader, model, ce, epoch):
     torch.distributed.all_gather_object(all_total_batch, total_batch)
     torch.distributed.all_gather_object(all_total_datasize, total_datasize)
 
+    # torch.distributed.all_reduce()
     total_loss = np.sum(all_total_loss)
     correct = np.sum(all_correct)
     total_batch = np.sum(all_total_batch)
@@ -472,8 +511,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
               'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix: {:.4f}. \33[0m'.format(100. * eer,
                                                                                       eer_threshold,
-                                                                                      mindcf_01,
-                                                                                      mindcf_001, mix3))
+                                                                                      mindcf_01, mindcf_001, mix3))
 
         writer.add_scalar('Train/EER', 100. * eer, epoch)
         writer.add_scalar('Train/Threshold', eer_threshold, epoch)
@@ -483,8 +521,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
     torch.cuda.empty_cache()
 
-    return {'EER': 100. * eer, 'Threshold': eer_threshold,
-            'MinDCF_01': mindcf_01, 'MinDCF_001': mindcf_001, 'mix3': mix3}
+    return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
+            'MinDCF_001': mindcf_001, 'mix3': mix3}
 
 
 def test(extract_loader, model, epoch, xvector_dir):
@@ -534,6 +572,7 @@ def main():
         # print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
         print('Testing with %s distance, ' % ('cos' if config_args['cos_sim'] else 'l2'))
+
     # model = create_model(config_args['model'], **model_kwargs)
     model = config_args['embedding_model']
 
@@ -814,6 +853,7 @@ def main():
 
     all_lr = []
     valid_test_result = []
+
     try:
         for epoch in range(start, end):
 
@@ -828,9 +868,11 @@ def main():
             lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate is '.format(torch.distributed.get_rank(),
                                                                                         config_args['optimizer'])
             this_lr = []
+
             for param_group in optimizer.param_groups:
                 this_lr.append(param_group['lr'])
                 lr_string += '{:.10f} '.format(param_group['lr'])
+
             print('%s \33[0m' % lr_string)
             all_lr.append(this_lr[0])
             if torch.distributed.get_rank() == 0:
@@ -841,12 +883,14 @@ def main():
                 break
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
+
             if config_args['early_stopping'] or (
                     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
                 valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
             else:
                 valid_test_dict = {}
 
+            # valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
             flag_tensor = torch.zeros(1).cuda()
             valid_test_dict['Valid_Loss'] = valid_loss
             if torch.distributed.get_rank() == 0:
@@ -862,8 +906,8 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
-                # if torch.distributed.get_rank() == 0:
-                #     flag_tensor += 1
+            # if torch.distributed.get_rank() == 0:
+            #     flag_tensor += 1
 
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
@@ -932,7 +976,10 @@ def main():
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
         writer.close()
         print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
+    # pdb.set_trace()
+    # torch.distributed.destroy_process_group()
     # torch.distributed.des
+    os.kill(os.getpid(), signal.SIGKILL)
     exit(0)
 
 
