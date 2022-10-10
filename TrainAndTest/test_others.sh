@@ -3085,4 +3085,7 @@ if [ $stage -le 500 ]; then
   done
   exit
 
+  #|    aidata-test    |  5.29±0.09  |             | 0.4862±0.0133 | 0.8015±0.0142 | baseline
+  #|    aidata-test    |  5.10±0.06  |             | 0.4740±0.0082 | 0.8181±0.0083 | manifold_mixup 0.01
+
 fi
