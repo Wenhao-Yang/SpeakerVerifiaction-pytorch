@@ -451,7 +451,7 @@ if [ $stage -le 43 ]; then
   lamda_beta=0.2
 
   for resnet_size in 34; do
-  for seed in 123456 123457 ; do
+  for seed in 123456 123457 123458 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
     weight=vox2_rcf
@@ -1175,9 +1175,8 @@ if [ $stage -le 102 ]; then
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 \
+      --margin 0.2 --s 40 \
       --smooth-ratio 0.25 \
-      --s 40 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,3 \
@@ -1221,7 +1220,7 @@ if [ $stage -le 200 ]; then
   for encoder_type in SAP2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w \
@@ -1231,14 +1230,11 @@ if [ $stage -le 200 ]; then
       --feat-format kaldi \
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
-      --resnet-size ${resnet_size} \
       --nj 12 \
       --epochs 60 \
       --batch-size ${batch_size} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
-      --lr 0.1 \
-      --base-lr 0.000006 \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --lr 0.1 --base-lr 0.000006 \
       --mask-layer ${mask_layer} \
       --milestones 10,20,30,40,50 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var \
@@ -1246,17 +1242,14 @@ if [ $stage -le 200 ]; then
       --kernel-size ${kernel} \
       --downsample ${downsample} \
       --channels 16,32,64,128 \
-      --fast ${fast} \
-      --stride 2,1 \
+      --fast ${fast} --stride 2,1 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
-      --time-dim 1 \
-      --avg-size 5 \
+      --time-dim 1 --avg-size 5 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
@@ -1312,6 +1305,38 @@ if [ $stage -le 200 ]; then
     #   --all-iteraion 0 \
     #   --remove-vad \
     #   --loss-type ${loss}
+  done
+  exit
+fi
+
+if [ $stage -le 300 ]; then
+  model=ResNet
+  datasets=vox2
+  #  feat=fb24
+#  feat_type=pyfb
+  feat_type=klfb
+  loss=arcsoft
+  encod=STAP
+  embedding_size=512
+  input_dim=40
+  input_norm=Mean
+  lr_ratio=0
+  loss_ratio=10
+  subset=
+  activation=leakyrelu
+  scheduler=cyclic
+  optimizer=adam
+  stat_type=margin1 #margin1sum
+  m=1.0
+
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+
+ for seed in 123456  ; do
+   feat=fb${input_dim}
+
+   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+#   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox2_resnet.yaml --seed=${seed}
   done
   exit
 fi
