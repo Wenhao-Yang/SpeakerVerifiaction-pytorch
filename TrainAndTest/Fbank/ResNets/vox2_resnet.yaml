@@ -10,6 +10,7 @@ data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 ## Dataset
 seed: 123456
 datasets: vox2
+testset: vox1
 feat_type: klfb
 loss: arcsoft
 input_dim: 40
@@ -17,11 +18,11 @@ feat: !ref fb<input_dim>
 subset: ''
 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>
-train_test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/test<subset>_<feat>
+train_test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test<subset>_<feat>
 train_trials: trials
 valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_<feat>_valid
 num_valid: 2
-test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/test_<feat>
+test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
 trials: trials
 input_norm: Mean
 
