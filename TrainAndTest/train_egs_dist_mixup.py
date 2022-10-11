@@ -796,7 +796,7 @@ def main():
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size,
-                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0),
+                                                                         verbose=0),
                                                    shuffle=False, sampler=valid_sampler, **kwargs)
 
         extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
