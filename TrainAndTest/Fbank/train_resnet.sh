@@ -706,24 +706,20 @@ if [ $stage -le 100 ]; then
   for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs_aug.py \
-       --model ${model} \
+       --model ${model} --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --noise-padding-dir ${lstm_dir}/data/musan/klfb/munoise_fb40 \
-       --train-trials trials_2w \
-       --shuffle \
+       --train-trials trials_2w --shuffle \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
        --random-chunk 200 400 \
        --patience 3 \
        --input-norm ${input_norm} \
-       --resnet-size ${resnet_size} \
-       --nj 12 \
-       --epochs 60 \
+       --nj 12 --epochs 60 \
        --batch-size ${batch_size} \
-       --optimizer ${optimizer} \
-       --scheduler ${scheduler} \
+       --optimizer ${optimizer} --scheduler ${scheduler} \
        --lr 0.1 --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
