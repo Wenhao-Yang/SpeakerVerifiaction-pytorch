@@ -22,21 +22,17 @@ if [ $stage -le 0 ]; then
 #    python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
 #      --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/dev_${feat} \
 #      --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/pydb/test_${feat} \
-#      --nj 10 \
-#      --epochs 30 \
+#      --nj 10 --epochs 30 \
 #      --milestones 12,19,25 \
-#      --model ${model} \
-#      --resnet-size 34 \
-#      --stride 2 \
+#      --model ${model} --resnet-size 34 \
+#      --kernel-size 5,5 --stride 2 \
 #      --feat-format kaldi \
 #      --embedding-size 128 \
 #      --batch-size 128 \
 #      --accu-steps 1 \
 #      --feat-dim 64 \
 #      --remove-vad \
-#      --time-dim 1 \
-#      --avg-size 4 \
-#      --kernel-size 5,5 \
+#      --time-dim 1 --avg-size 4 \
 #      --test-input-per-file 4 \
 #      --lr 0.1 \
 #      --encoder-type ${encod} \
@@ -54,8 +50,7 @@ if [ $stage -le 0 ]; then
     python -W ignore TrainAndTest/Fbank/ResNets/train_exres_kaldi.py \
       --train-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/dev_${feat} \
       --test-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox1/spect/test_${feat} \
-      --nj 12 \
-      --epochs 25 \
+      --nj 12 --epochs 25 \
       --milestones 10,15,20 \
       --model ${model} --resnet-size 34 \
       --stride 2 \
@@ -92,9 +87,7 @@ if [ $stage -le 1 ]; then
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/test_noc \
       --nj 4 \
       --model ExResNet34 --resnet-size 34 \
-      --feat-dim 64 \
-      --stride 1 \
-      --kernel-size 3,3 \
+      --feat-dim 64 --stride 1 --kernel-size 3,3 \
       --batch-size 64 \
       --check-path Data/checkpoint/${model}/spect/${loss} \
       --resume Data/checkpoint/${model}/spect/soft/checkpoint_30.pth \
@@ -160,9 +153,8 @@ if [ $stage -le 15 ]; then
       --embedding-size 128 \
       --feat-dim 64 \
       --remove-vad \
-      --stride 1 \
       --time-dim 1 --avg-size 1 \
-      --kernel-size 3,3 \
+      --kernel-size 3,3 --stride 1 \
       --batch-size 64 \
       --test-batch-size 4 \
       --test-input-per-file 4 \
@@ -196,8 +188,7 @@ if [ $stage -le 20 ]; then
       --model ${model} --resnet-size 34 \
       --stride 2 \
       --inst-norm \
-      --filter \
-      --feat-format kaldi \
+      --filter --feat-format kaldi \
       --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
@@ -733,8 +724,7 @@ if [ $stage -le 100 ]; then
        --batch-size ${batch_size} \
        --optimizer ${optimizer} \
        --scheduler ${scheduler} \
-       --lr 0.1 \
-       --base-lr 0.000006 \
+       --lr 0.1 --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
        --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_noiseaug_var \
@@ -753,8 +743,7 @@ if [ $stage -le 100 ]; then
        --weight-decay 0.0005 \
        --dropout-p 0.1 \
        --gpu-id 0,1 \
-       --extract \
-       --cos-sim \
+       --extract --cos-sim \
        --mean-vector \
        --all-iteraion 0 \
        --remove-vad \
@@ -778,10 +767,8 @@ if [ $stage -le 100 ]; then
 #      --nj 12 \
 #      --epochs 60 \
 #      --batch-size ${batch_size} \
-#      --optimizer ${optimizer} \
-#      --scheduler ${scheduler} \
-#      --lr 0.001 \
-#      --base-lr 0.00000001 \
+#      --optimizer ${optimizer} --scheduler ${scheduler} \
+#      --lr 0.001 --base-lr 0.00000001 \
 #      --mask-layer ${mask_layer} \
 #      --init-weight ${weight} \
 #      --scale ${scale} \
@@ -795,13 +782,11 @@ if [ $stage -le 100 ]; then
 #      --stride 2,1 \
 #      --block-type ${block_type} \
 #      --embedding-size ${embedding_size} \
-#      --time-dim 1 \
-#      --avg-size 5 \
+#      --time-dim 1 --avg-size 5 \
 #      --encoder-type ${encoder_type} \
 #      --num-valid 2 \
 #      --alpha ${alpha} \
-#      --margin 0.2 \
-#      --s 30 \
+#      --margin 0.2 --s 30 \
 #      --weight-decay 0.0005 \
 #      --dropout-p 0.1 \
 #      --gpu-id 0,1 \
@@ -908,8 +893,7 @@ if [ $stage -le 101 ]; then
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
-      --extract \
-      --cos-sim \
+      --extract --cos-sim \
       --all-iteraion 0 \
       --remove-vad \
       --stat-type ${stat_type} \
@@ -984,8 +968,7 @@ if [ $stage -le 102 ]; then
        --feat-format kaldi \
        --random-chunk 200 400 \
        --input-norm ${input_norm} \
-       --nj 12 \
-       --epochs 60 \
+       --nj 12 --epochs 60 \
        --batch-size ${batch_size} \
        --optimizer ${optimizer} --scheduler ${scheduler} \
        --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
@@ -1009,8 +992,7 @@ if [ $stage -le 102 ]; then
        --weight-decay 0.0005 \
        --dropout-p 0.1 \
        --gpu-id 0,1 \
-       --extract \
-       --cos-sim \
+       --extract --cos-sim \
        --all-iteraion 0 \
        --remove-vad \
        --stat-type ${stat_type} \
@@ -1144,7 +1126,7 @@ if [ $stage -le 200 ]; then
       --loss-type ${loss}
 
     # python TrainAndTest/train_egs.py \
-    #   --model ${model} \
+    #   --model ${model} --resnet-size ${resnet_size} \
     #   --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
     #   --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
     #   --train-trials trials_2w \
@@ -1154,14 +1136,10 @@ if [ $stage -le 200 ]; then
     #   --feat-format kaldi \
     #   --random-chunk 200 400 \
     #   --input-norm ${input_norm} \
-    #   --resnet-size ${resnet_size} \
-    #   --nj 12 \
-    #   --epochs 60 \
+    #   --nj 12 --epochs 60 \
     #   --batch-size ${batch_size} \
-    #   --optimizer ${optimizer} \
-    #   --scheduler ${scheduler} \
-    #   --lr 0.1 \
-    #   --base-lr 0.000006 \
+    #   --optimizer ${optimizer} --scheduler ${scheduler} \
+    #   --lr 0.1 --base-lr 0.000006 \
     #   --mask-layer ${mask_layer} \
     #   --init-weight ${weight} \
     #   --milestones 10,20,30 \
@@ -1170,12 +1148,10 @@ if [ $stage -le 200 ]; then
     #   --kernel-size ${kernel} \
     #   --downsample ${downsample} \
     #   --channels 32,64,128,256 \
-    #   --fast ${fast} \
-    #   --stride 2,1 \
+    #   --fast ${fast} --stride 2,1 \
     #   --block-type ${block_type} \
     #   --embedding-size ${embedding_size} \
-    #   --time-dim 1 \
-    #   --avg-size 5 \
+    #   --time-dim 1 --avg-size 5 \
     #   --encoder-type ${encoder_type} \
     #   --num-valid 2 \
     #   --alpha ${alpha} \

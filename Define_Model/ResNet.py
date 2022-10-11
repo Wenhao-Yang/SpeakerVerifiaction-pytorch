@@ -1096,7 +1096,8 @@ class ThinResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward(self, x, feature_map='', proser=None, label=None, lamda_beta=0.2):
+    def _forward(self, x, feature_map='', proser=None, label=None,
+                 lamda_beta=0.2, mixup_alpha=-1):
         # pdb.set_trace()
         # print(x.shape)
         # if self.filter_layer != None:
@@ -1115,11 +1116,26 @@ class ThinResNet(nn.Module):
         if self.maxpool != None:
             x = self.maxpool(x)
 
+        if proser != None and mixup_alpha == 0:
+            x = self.mixup(x, proser, lamda_beta)
+
         # print(x.shape)
         group1 = self.layer1(x)
+        if proser != None and mixup_alpha == 1:
+            group1 = self.mixup(group1, proser, lamda_beta)
+
         group2 = self.layer2(group1)
+        if proser != None and mixup_alpha == 2:
+            group2 = self.mixup(group2, proser, lamda_beta)
+
         group3 = self.layer3(group2)
+        if proser != None and mixup_alpha == 3:
+            group3 = self.mixup(group3, proser, lamda_beta)
+
         group4 = self.layer4(group3)
+        if proser != None and mixup_alpha == 4:
+            group4 = self.mixup(group4, proser, lamda_beta)
+
         # print(x.shape)
 
         if self.dropout_p > 0:
@@ -1137,6 +1153,9 @@ class ThinResNet(nn.Module):
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
+        if proser != None and mixup_alpha == 5:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.fc1(x)
 
         if self.alpha:
@@ -1173,14 +1192,8 @@ class ThinResNet(nn.Module):
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
-        elif proser != None:
-            shuf_half_idx_ten = proser
-
-            half_batch_size = shuf_half_idx_ten.shape[0]
-            half_feats = x[-half_batch_size:]
-            x = torch.cat(
-                [x[:half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
-                dim=0)
+        if proser != None and mixup_alpha == 6:
+            x = self.mixup(x, proser, lamda_beta)
 
         logits = "" if self.classifier == None else self.classifier(x)
 
@@ -1230,6 +1243,15 @@ class ThinResNet(nn.Module):
             embeddings = self.fc1(x)
 
         return embeddings
+
+    def mixup(self, x, shuf_half_idx_ten, lamda_beta):
+        half_batch_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-half_batch_size:]
+        x = torch.cat(
+            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            dim=0)
+
+        return x
 
     # Allow for accessing forward method in a inherited class
     forward = _forward
