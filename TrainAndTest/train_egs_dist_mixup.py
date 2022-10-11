@@ -232,7 +232,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         data, label = Variable(data), Variable(label)
         # pdb.set_trace()
-        classfier, feats = model(data)
+        classfier, feats = model(data, proser=rand_idx, lamda_beta=lamda_beta,
+                                 mixup_alpha=config_args['mixup_layer'])
         # cos_theta, phi_theta = classfier
         classfier_label = classfier
         # print('max logit is ', classfier_label.max())
