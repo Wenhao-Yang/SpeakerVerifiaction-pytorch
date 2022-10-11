@@ -565,8 +565,10 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     torch.distributed.barrier()
+    check_path = config_args['check_path'] + '/' + str(args.seed)
+
     if torch.distributed.get_rank() == 0:
-        print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
+        print('\nCurrent time: \33[91m{}\33[0m.'.format(str(time.asctime())))
         # opts = vars(config_args)
         # keys = list(config_args.keys())
         # keys.sort()
@@ -574,6 +576,7 @@ def main():
         # print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
         print('Testing with %s distance, ' % ('cos' if config_args['cos_sim'] else 'l2'))
+        print('Checkpoint path: ', check_path)
 
     # model = create_model(config_args['model'], **model_kwargs)
     model = config_args['embedding_model']
@@ -586,7 +589,6 @@ def main():
     # exit(0)
 
     start_epoch = 0
-    check_path = config_args['check_path'] + '/' + str(args.seed)
     if 'finetune' not in config_args or not config_args['finetune']:
         this_check_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
                                                            time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
