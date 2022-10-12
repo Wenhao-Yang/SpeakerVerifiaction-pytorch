@@ -1087,7 +1087,8 @@ class TDNN_v5(nn.Module):
         self.dropout_p = dropout_p
         self.drop.p = dropout_p
 
-    def forward(self, x):
+    def forward(self, x, proser=None, label=None,
+                lamda_beta=0.2, mixup_alpha=-1):
         # pdb.set_trace()
         # x_vectors = self.xvector(x)
         # embedding_b = self.segment7(x_vectors)
@@ -1104,18 +1105,40 @@ class TDNN_v5(nn.Module):
             x = self.mask_layer(x)
 
         x = self.frame1(x)
+        if proser != None and mixup_alpha == 0:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.frame2(x)
+        if proser != None and mixup_alpha == 1:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.frame3(x)
+        if proser != None and mixup_alpha == 2:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.frame4(x)
+        if proser != None and mixup_alpha == 3:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.frame5(x)
+        if proser != None and mixup_alpha == 4:
+            x = self.mixup(x, proser, lamda_beta)
 
         if self.dropout_layer:
             x = self.drop(x)
 
         # print(x.shape)
         x = self.encoder(x)
+        if proser != None and mixup_alpha == 5:
+            x = self.mixup(x, proser, lamda_beta)
+
         embedding_a = self.segment6(x)
+        if proser != None and mixup_alpha == 6:
+            x = self.mixup(x, proser, lamda_beta)
+
         embedding_b = self.segment7(embedding_a)
+        if proser != None and mixup_alpha == 7:
+            x = self.mixup(x, proser, lamda_beta)
 
         if self.alpha:
             embedding_b = self.l2_norm(embedding_b)
@@ -1157,6 +1180,15 @@ class TDNN_v5(nn.Module):
         embedding_a = self.segment6[0](x)
 
         return embedding_a
+
+    def mixup(self, x, shuf_half_idx_ten, lamda_beta):
+        half_batch_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-half_batch_size:]
+        x = torch.cat(
+            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            dim=0)
+
+        return x
 
 
 class TDNN_v6(nn.Module):
