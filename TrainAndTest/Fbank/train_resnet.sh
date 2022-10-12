@@ -1333,7 +1333,7 @@ if [ $stage -le 301 ]; then
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for seed in 123456 123457 123458  ; do
+ for seed in 123456  ; do
    feat=fb${input_dim}
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
