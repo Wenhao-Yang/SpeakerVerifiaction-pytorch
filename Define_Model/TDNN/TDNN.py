@@ -14,6 +14,8 @@ https://github.com/jonasvdd/TDNN/blob/master/tdnn.py
 """
 
 import math
+import random
+
 import numpy as np
 import torch
 from torch import Tensor
@@ -1084,10 +1086,16 @@ class TDNN_v5(nn.Module):
         self.dropout_p = dropout_p
         self.drop.p = dropout_p
 
-    def forward(self, x, feature_map='', proser=None, label=None, lamda_beta=0.2):
+    def forward(self, x, feature_map='',
+                proser=None, label=None, lamda_beta=0.2, mixup_alpha=-1):
         # pdb.set_trace()
         # x_vectors = self.xvector(x)
         # embedding_b = self.segment7(x_vectors)
+        if mixup_alpha == -1:
+            layer_mix = random.randint(0, 2)
+        else:
+            layer_mix = mixup_alpha
+
         if self.filter_layer != None:
             x = self.filter_layer(x)
 
@@ -1099,20 +1107,41 @@ class TDNN_v5(nn.Module):
 
         if self.mask_layer != None:
             x = self.mask_layer(x)
+        if proser != None and layer_mix == 0:
+            x = self.mixup(x, proser, lamda_beta)
 
         x = self.frame1(x)
+        if proser != None and layer_mix == 1:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.frame2(x)
+        if proser != None and layer_mix == 2:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.frame3(x)
+        if proser != None and layer_mix == 3:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.frame4(x)
+        if proser != None and layer_mix == 4:
+            x = self.mixup(x, proser, lamda_beta)
+
         x = self.frame5(x)
+        if proser != None and layer_mix == 5:
+            x = self.mixup(x, proser, lamda_beta)
 
         if self.dropout_layer:
             x = self.drop(x)
 
         # print(x.shape)
         x = self.encoder(x)
+        if proser != None and layer_mix == 6:
+            x = self.mixup(x, proser, lamda_beta)
+
         embedding_a = self.segment6(x)
         embedding_b = self.segment7(embedding_a)
+        if proser != None and layer_mix == 7:
+            x = self.mixup(x, proser, lamda_beta)
 
         if proser != None and label != None:
             half_batch_size = int(x.shape[0] / 2)
@@ -1136,15 +1165,15 @@ class TDNN_v5(nn.Module):
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
-        elif proser != None:
-            shuf_half_idx_ten = proser
-
-            half_batch_size = shuf_half_idx_ten.shape[0]
-            half_feats = embedding_b[-half_batch_size:]
-            embedding_b = torch.cat(
-                [embedding_b[:half_batch_size],
-                 lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
-                dim=0)
+        # elif proser != None:
+        #     shuf_half_idx_ten = proser
+        #
+        #     half_batch_size = shuf_half_idx_ten.shape[0]
+        #     half_feats = embedding_b[-half_batch_size:]
+        #     embedding_b = torch.cat(
+        #         [embedding_b[:half_batch_size],
+        #          lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+        #         dim=0)
 
         if self.alpha:
             embedding_b = self.l2_norm(embedding_b)
