@@ -116,7 +116,7 @@ s: 30
 lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
-mixup_layer: 2
+mixup_layer: 3
 mixup_type: manifold
 # stat_type: margin1
 
