@@ -3071,7 +3071,7 @@ if [ $stage -le 400 ]; then
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_epoch_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 4 --extract \
-      --verbose 4 \
+      --verbose 0 \
       --cos-sim
   done
   exit
