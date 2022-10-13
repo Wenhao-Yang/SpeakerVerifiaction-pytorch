@@ -2488,7 +2488,7 @@ if [ $stage -le 203 ]; then
   loss=arcsoft
   alpha=0
 #  datasets=vox1 testset=vox1
-  datasets=vox2 testset=vox1 test_subset=test sname=dev
+  datasets=vox2 testset=vox1 test_subset=dev sname=dev
   block_type=seblock downsample=k1 expansion=1 red_ratio=2
   encoder_type=ASTP2
   embedding_size=256
@@ -2517,8 +2517,8 @@ if [ $stage -le 203 ]; then
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
-
-  for testset in vox1 sitw ; do
+  subname=all
+  for testset in vox1 ; do
     if [ $resnet_size -le 34 ];then
       expansion=1
     else
@@ -2542,7 +2542,7 @@ if [ $stage -le 203 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${valid_dir} \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
-      --trials trials \
+      --trials trials_${subname} \
       --feat-format kaldi --nj 8 \
       --input-norm Mean --input-dim ${input_dim} --remove-vad \
       --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
@@ -2558,6 +2558,7 @@ if [ $stage -le 203 ]; then
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 --verbose 0 \
+      --test \
       --cos-sim
   done
   exit
