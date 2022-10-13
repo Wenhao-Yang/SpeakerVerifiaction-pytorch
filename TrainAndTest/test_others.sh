@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=500
+stage=400
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -3066,7 +3066,7 @@ if [ $stage -le 400 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 \
       --test-input var \
       --frame-shift 300 \
-      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_epoch_50_var \
+      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_epoch_best_var \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --gpu-id 4 \
       --remove-vad \
