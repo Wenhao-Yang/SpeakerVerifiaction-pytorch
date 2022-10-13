@@ -2557,7 +2557,7 @@ if [ $stage -le 203 ]; then
       --test-input var \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 0 --verbose 2 \
+      --gpu-id 0 --verbose 0 \
       --cos-sim
   done
   exit
