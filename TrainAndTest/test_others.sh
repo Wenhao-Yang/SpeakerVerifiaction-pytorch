@@ -3067,7 +3067,7 @@ if [ $stage -le 400 ]; then
       --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_epoch_best_var \
-      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+      --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 4 \
       --remove-vad \
       --cos-sim
