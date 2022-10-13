@@ -14,6 +14,8 @@ https://github.com/jonasvdd/TDNN/blob/master/tdnn.py
 """
 
 import math
+import random
+
 import numpy as np
 import torch
 from torch import Tensor
@@ -1092,6 +1094,11 @@ class TDNN_v5(nn.Module):
         # pdb.set_trace()
         # x_vectors = self.xvector(x)
         # embedding_b = self.segment7(x_vectors)
+        if mixup_alpha == -1:
+            layer_mix = random.randint(0, 2)
+        else:
+            layer_mix = mixup_alpha
+
         if self.filter_layer != None:
             x = self.filter_layer(x)
 
@@ -1103,25 +1110,27 @@ class TDNN_v5(nn.Module):
 
         if self.mask_layer != None:
             x = self.mask_layer(x)
+        if proser != None and layer_mix == 0:
+            x = self.mixup(x, proser, lamda_beta)
 
         x = self.frame1(x)
-        if proser != None and mixup_alpha == 0:
+        if proser != None and layer_mix == 1:
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.frame2(x)
-        if proser != None and mixup_alpha == 1:
+        if proser != None and layer_mix == 2:
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.frame3(x)
-        if proser != None and mixup_alpha == 2:
+        if proser != None and layer_mix == 3:
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.frame4(x)
-        if proser != None and mixup_alpha == 3:
+        if proser != None and layer_mix == 4:
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.frame5(x)
-        if proser != None and mixup_alpha == 4:
+        if proser != None and layer_mix == 5:
             x = self.mixup(x, proser, lamda_beta)
 
         if self.dropout_layer:
@@ -1129,15 +1138,15 @@ class TDNN_v5(nn.Module):
 
         # print(x.shape)
         x = self.encoder(x)
-        if proser != None and mixup_alpha == 5:
+        if proser != None and layer_mix == 6:
             x = self.mixup(x, proser, lamda_beta)
 
         embedding_a = self.segment6(x)
-        if proser != None and mixup_alpha == 6:
-            x = self.mixup(x, proser, lamda_beta)
+        # if proser != None and layer_mix == 7:
+        #     x = self.mixup(x, proser, lamda_beta)
 
         embedding_b = self.segment7(embedding_a)
-        if proser != None and mixup_alpha == 7:
+        if proser != None and layer_mix == 7:
             x = self.mixup(x, proser, lamda_beta)
 
         if self.alpha:
