@@ -3032,7 +3032,7 @@ if [ $stage -le 400 ]; then
   model=TDNN_v5
   encod=STAP
 #  dataset=aishell2 test_set=aishell2 subset=test
-  dataset=vox2 test_set=sitw subset=test
+  dataset=vox2 test_set=vox1 subset=dev
 
   input_dim=40
   input_norm=Mean
@@ -3049,17 +3049,18 @@ if [ $stage -le 400 ]; then
 
   model_dir=TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_STAP_em512_wde5_vares_dist/123456
   echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
-
-  for test_set in sitw; do # 32,128,512; 8,32,128
+#  test_set=vox1
+#easy hard
+  for subname in all ; do # 32,128,512; 8,32,128
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials_2w \
+      --train-trials trials_2w --trials trials_${subname} --score-suffix ${subname} \
       --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi --nj 6 \
-      --input-norm ${input_norm} --input-dim ${input_dim} \
+      --input-norm ${input_norm} --input-dim ${input_dim} --remove-vad \
       --embedding-size ${embedding_size} \
       --encoder-type ${encod} \
       --channels 512,512,512,512,1500 \
@@ -3069,8 +3070,8 @@ if [ $stage -le 400 ]; then
       --frame-shift 300 \
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_epoch_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 4 \
-      --remove-vad \
+      --gpu-id 4 --test \
+      --verbose 4 \
       --cos-sim
   done
   exit
