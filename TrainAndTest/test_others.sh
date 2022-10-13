@@ -2483,7 +2483,7 @@ fi
 
 if [ $stage -le 203 ]; then
   feat_type=klfb
-  model=ThinResNet resnet_size=18
+  model=ThinResNet resnet_size=34
   feat=log
   loss=arcsoft
   alpha=0
@@ -2516,8 +2516,9 @@ if [ $stage -le 203 ]; then
 #      --init-weight vox2_rcf \
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
   valid_dir=dev_fb${input_dim}_valid
+  seed=123456
 
-  for seed in 123456 ; do
+  for testset in vox1 sitw ; do
     if [ $resnet_size -le 34 ];then
       expansion=1
     else
