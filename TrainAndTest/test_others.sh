@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=400
+stage=203
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2129,19 +2129,18 @@ fi
 
 if [ $stage -le 201 ]; then
   feat_type=klsp
-  model=ThinResNet
+  model=ThinResNet resnet_size=10
   feat=log
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox2
-  testset=sitw
+  datasets=vox2 testset=sitw
   input_norm=Mean
 #  test_subset=
   block_type=cbam_v2
   encoder_type=SAP2
   embedding_size=256
-  resnet_size=10
+
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k5
@@ -2150,11 +2149,9 @@ if [ $stage -le 201 ]; then
   chn=16
 #  mask_layer=rvec
 #  mask_layer=baseline
-  mask_layer=rvec
-  mask_len=5,10
+  mask_layer=rvec mask_len=5,10
   weight=rclean_max
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   batch_size=256
   avg_size=5
   weight_norm=max
@@ -2224,16 +2221,13 @@ if [ $stage -le 201 ]; then
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
         --feat-format kaldi \
-        --input-norm ${input_norm} \
-        --input-dim 161 \
+        --input-norm ${input_norm} --input-dim 161 \
         --nj 12 \
-        --mask-layer ${mask_layer} \
-        --init-weight ${weight} \
+        --mask-layer ${mask_layer} --init-weight ${weight} \
         --weight-norm ${weight_norm} \
         --embedding-size ${embedding_size} \
         --loss-type ${loss} \
-        --fast ${fast} \
-        --downsample ${downsample} \
+        --fast ${fast} --downsample ${downsample} \
         --encoder-type ${encoder_type} \
         --block-type ${block_type} \
         --kernel-size 5,5 \
@@ -2241,17 +2235,14 @@ if [ $stage -le 201 ]; then
         --stride 2,2 \
         --channels ${channels} \
         --alpha ${alpha} \
-        --margin 0.2 \
-        --s 30 \
-        --time-dim 1 \
-        --avg-size ${avg_size} \
+        --margin 0.2 --s 30 \
+        --time-dim 1 --avg-size ${avg_size} \
         --input-length var \
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 0 \
-        --verbose 2 \
-        --extract \
+        --verbose  --extract \
         --cos-sim
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
@@ -2378,18 +2369,17 @@ fi
 
 if [ $stage -le 201 ]; then
   feat_type=klfb
-  model=ThinResNet
+  model=ThinResNet resnet_size=34
   feat=log
   loss=arcsoft
   encod=SAP2
   alpha=0
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
 #  test_subset=
   block_type=basic
   encoder_type=None
   embedding_size=256
-  resnet_size=34
+
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=None
@@ -2409,33 +2399,26 @@ if [ $stage -le 201 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 \
       --trials trials \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 40 \
+      --input-norm Mean --input-dim 40 --remove-vad \
       --nj 12 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
-      --mask-layer attention \
-      --init-weight vox2_rcf \
+      --mask-layer attention --init-weight vox2_rcf \
       --fast none1 \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,1 \
+      --kernel-size 5,5 --stride 2,1 \
       --channels 16,32,64,128 \
       --downsample ${downsample} \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
-      --time-dim 1 \
-      --avg-size 5 \
+      --margin 0.2 --s 30 \
+      --time-dim 1 --avg-size 5 \
       --input-length var \
       --dropout-p 0.1 \
       --xvector-dir Data/xvector/ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var/${testset}_${test_subset}_var \
       --resume Data/checkpoint/ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var/checkpoint_50.pth \
       --gpu-id 0 \
-      --extract \
-      --remove-vad \
-      --verbose 2 \
+      --extract --verbose 2 \
       --cos-sim
   done
   exit
@@ -2500,28 +2483,22 @@ fi
 
 if [ $stage -le 203 ]; then
   feat_type=klfb
-  model=ThinResNet
-  resnet_size=18
+  model=ThinResNet resnet_size=18
   feat=log
   loss=arcsoft
   alpha=0
-  datasets=vox1
-  testset=vox1
-  test_subset=test
-  sname=dev
-  block_type=seblock
+#  datasets=vox1 testset=vox1
+  datasets=vox2 testset=vox1 test_subset=test sname=dev
+  block_type=seblock downsample=k1 expansion=1 red_ratio=2
   encoder_type=ASTP2
   embedding_size=256
-  red_ratio=2
-  expansion=1
-  downsample=k1
+
   kernel=5,5
   loss=arcsoft
   alpha=1
   input_norm=Mean
   mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=256
   fast=none1
@@ -2538,26 +2515,24 @@ if [ $stage -le 203 ]; then
 #      --mask-layer attention \
 #      --init-weight vox2_rcf \
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+  valid_dir=dev_fb${input_dim}_valid
 
-  for seed in 123456 123457 123458 ; do
+  for seed in 123456 ; do
     if [ $resnet_size -le 34 ];then
       expansion=1
-      batch_size=256
     else
       expansion=2
-      batch_size=256
       exp_str=_exp${expansion}
     fi
 
-    if [ $input_dim -eq 40 ];then
-      valid_dir=valid_fb40
-    else
-      valid_dir=dev_fb${input_dim}_valid
-    fi
+#    if [ $input_dim -eq 40 ];then
+#      valid_dir=valid_fb40
+#    fi
 #    Mean_batch256_seblock_downk1_none1_ASTP2_dp01_alpha1_em256_wd5e4_vares_bashuf2_dummy100_beta1_gamma0.01
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_vares_bashuf2/${seed}
+#    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_vares_bashuf2/${seed}
 #    _dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}
 #${input_norm}_batch${batch_size}_${block_type}_red2_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2
+    model_dir=Data/checkpoint/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -2567,9 +2542,8 @@ if [ $stage -le 203 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${valid_dir} \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
       --trials trials \
-      --feat-format kaldi \
-      --input-norm Mean --input-dim ${input_dim} \
-      --nj 8 \
+      --feat-format kaldi --nj 8 \
+      --input-norm Mean --input-dim ${input_dim} --remove-vad \
       --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
       --kernel-size ${kernel} --downsample ${downsample} \
       --channels 16,32,64,128 \
@@ -2582,9 +2556,7 @@ if [ $stage -le 203 ]; then
       --test-input var \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 0 \
-      --remove-vad \
-      --verbose 2 \
+      --gpu-id 0 --verbose 2 \
       --cos-sim
   done
   exit
@@ -2791,8 +2763,7 @@ if [ $stage -le 300 ]; then
      --context 5,3,3,5 \
      --nj 12 \
      --alpha 0 \
-     --margin 0.2 \
-     --s 30 \
+     --margin 0.2 --s 30 \
      --stride 1 \
      --block-type ${block_type} \
      --embedding-size ${embedding_size} \
@@ -2809,8 +2780,7 @@ if [ $stage -le 300 ]; then
  done
 
 #  python -W ignore TrainAndTest/test_egs.py \
-#      --model ${model} \
-#      --resnet-size 14 \
+#      --model ${model} --resnet-size 14 \
 #      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
 #      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
 #      --train-trials trials_2w \
@@ -2845,8 +2815,7 @@ if [ $stage -le 300 ]; then
 #  for s in vlog; do
 ##    echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
 #    python -W ignore TrainAndTest/test_egs.py \
-#      --model ${model} \
-#      --resnet-size 14 \
+#      --model ${model} --resnet-size 14 \
 #      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
 #      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
 #      --train-trials trials_2w \
