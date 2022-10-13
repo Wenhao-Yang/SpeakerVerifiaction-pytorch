@@ -3050,7 +3050,7 @@ if [ $stage -le 400 ]; then
   model_dir=TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_STAP_em512_wde5_vares_dist/123456
   echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
 
-  for test_set in vox1 sitw; do # 32,128,512; 8,32,128
+  for test_set in sitw; do # 32,128,512; 8,32,128
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
