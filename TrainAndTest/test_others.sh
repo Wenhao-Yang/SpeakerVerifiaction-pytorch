@@ -3032,7 +3032,7 @@ if [ $stage -le 400 ]; then
   model=TDNN_v5
   encod=STAP
 #  dataset=aishell2 test_set=aishell2 subset=test
-  dataset=vox2 test_set=aishell2 subset=test
+  dataset=vox2 test_set=sitw subset=test
 
   input_dim=40
   input_norm=Mean
