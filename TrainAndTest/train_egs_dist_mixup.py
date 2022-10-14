@@ -309,6 +309,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                               int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
+            print(classfier.max(), classfier.min())
             raise ValueError('Loss value is NaN!')
 
         # compute gradient and update weights
