@@ -1114,7 +1114,14 @@ class ThinResNet(nn.Module):
         #
         # if self.mask_layer != None:
         #     x = self.mask_layer(x)
+        if mixup_alpha == -1:
+            layer_mix = random.randint(0, 2)
+        else:
+            layer_mix = mixup_alpha
+
         x = self.input_mask(x)
+        if proser != None and layer_mix == 0:
+            x = self.mixup(x, proser, lamda_beta)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -1122,29 +1129,27 @@ class ThinResNet(nn.Module):
         if self.maxpool != None:
             x = self.maxpool(x)
 
-        if proser != None and mixup_alpha == 0:
+        if proser != None and layer_mix == 1:
             x = self.mixup(x, proser, lamda_beta)
 
         # print(x.shape)
         group1 = self.layer1(x)
 
-        if proser != None and mixup_alpha == 1:
+        if proser != None and layer_mix == 2:
             group1 = self.mixup(group1, proser, lamda_beta)
 
         group2 = self.layer2(group1)
 
-        if proser != None and mixup_alpha == 2:
+        if proser != None and layer_mix == 3:
             group2 = self.mixup(group2, proser, lamda_beta)
 
         group3 = self.layer3(group2)
 
-        if proser != None and mixup_alpha == 3:
+        if proser != None and layer_mix == 4:
             group3 = self.mixup(group3, proser, lamda_beta)
 
         group4 = self.layer4(group3)
-        # print(x.shape)
-
-        if proser != None and mixup_alpha == 4:
+        if proser != None and layer_mix == 5:
             group4 = self.mixup(group4, proser, lamda_beta)
 
         if self.dropout_p > 0:
@@ -1162,8 +1167,7 @@ class ThinResNet(nn.Module):
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
-
-        if proser != None and mixup_alpha == 5:
+        if proser != None and layer_mix == 6:
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.fc1(x)
@@ -1204,7 +1208,7 @@ class ThinResNet(nn.Module):
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
-        if proser != None and mixup_alpha == 6:
+        if proser != None and mixup_alpha == 7:
             x = self.mixup(x, proser, lamda_beta)
 
         logits = "" if self.classifier == None else self.classifier(x)
