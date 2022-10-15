@@ -46,7 +46,7 @@ epochs: 60
 # optimizer
 optimizer: sgd
 lr_decay: 0
-weight_decay: 0.00001
+weight_decay: 0.0001
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -62,7 +62,7 @@ base_lr: 0.00001
 cos_sim: True
 
 early_stopping: True
-early_patience: 15
+early_patience: 20
 early_delta: 0.01
 early_meta: 'EER'
 
@@ -120,7 +120,7 @@ mixup_type: input
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde5_vares_bashuf2_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde4_vares_bashuf2_dist
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_40.pth
 
