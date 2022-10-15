@@ -295,7 +295,7 @@ class ArcSoftmaxLoss(nn.Module):
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
-        theta = costh.clamp(min=-1.0, max=1.0).acos()
+        theta = costh.clamp(min=-1.0 + 1e-12, max=1.0 - 1e-12).acos()
         # print('theta is ', theta.max())
 
         if lb_view.is_cuda:
