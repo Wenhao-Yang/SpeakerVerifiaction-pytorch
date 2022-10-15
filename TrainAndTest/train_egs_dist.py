@@ -333,8 +333,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             pbar.set_description(epoch_str)
 
-        # if (batch_idx + 1) == 100:
-        #     break
+        if (batch_idx + 1) == 100:
+            break
 
     if config_args['batch_shuffle']:
         train_dir.__shuffle__()
