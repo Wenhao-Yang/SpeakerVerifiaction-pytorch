@@ -1102,7 +1102,7 @@ class ThinResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _forward(self, x, feature_map='', proser=False, label=None,
+    def _forward(self, x, feature_map='', proser=None, label=None,
                  lamda_beta=0.2, mixup_alpha=-1):
         # pdb.set_trace()
         # print(x.shape)
