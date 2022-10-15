@@ -3041,7 +3041,7 @@ if [ $stage -le 400 ]; then
       --frame-shift 300 \
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_epoch_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 4 --extract \
+      --gpu-id 0 \
       --verbose 0 \
       --cos-sim
   done
