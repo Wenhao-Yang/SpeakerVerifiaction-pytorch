@@ -186,7 +186,6 @@ extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transfo
                                   trials_file=config_args['trials'], filer_loader=file_loader)
 
 
-
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # switch to evaluate mode
     model.train()
