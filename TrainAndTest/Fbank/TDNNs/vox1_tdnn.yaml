@@ -5,7 +5,7 @@
 # @Time: 2022/4/21 00:33
 # @Overview:
 
-data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
+data_root_dir: /home/work2020/yangwenhao/project/lstm_speaker_verification
 
 ## Dataset
 datasets: vox1
