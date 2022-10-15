@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=400
+stage=203
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2518,7 +2518,8 @@ if [ $stage -le 203 ]; then
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
-  for testset in vox1 ; do
+#  for testset in vox1 ; do
+  for subname in easy hard; do #  all
     if [ $resnet_size -le 34 ];then
       expansion=1
     else
@@ -2539,10 +2540,9 @@ if [ $stage -le 203 ]; then
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
-      --train-trials trials_2w \
+      --train-trials trials_2w --trials trials_${subname} --score-suffix ${subname} \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${valid_dir} \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
-      --trials trials_${subname} \
       --feat-format kaldi --nj 8 \
       --input-norm Mean --input-dim ${input_dim} --remove-vad \
       --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
