@@ -295,7 +295,7 @@ class ArcSoftmaxLoss(nn.Module):
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
-        theta = costh.acos()
+        theta = costh.clamp(min=-1.0, max=1.0).acos()
         # print('theta is ', theta.max())
 
         if lb_view.is_cuda:
@@ -804,6 +804,7 @@ class MixupLoss(nn.Module):
         loss = loss + self.gamma * (
                 lamda_beta * self.loss(costh[-half_batch_size:], label[half_batch_size:int(2 * half_batch_size)]) \
                 + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:]))
+
         if torch.isnan(loss):
             pdb.set_trace()
             print(loss)
