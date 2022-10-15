@@ -3019,9 +3019,9 @@ if [ $stage -le 400 ]; then
   echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
 #  test_set=vox1
 #easy hard
-#  for subname in easy hard ; do # 32,128,512; 8,32,128
+  for subname in easy hard ; do # 32,128,512; 8,32,128
 #  --trials trials_${subname} --score-suffix ${subname} \
-  for test_set in vox1 sitw ; do # 32,128,512; 8,32,128
+#  for test_set in vox1 sitw ; do # 32,128,512; 8,32,128
 #  for subname in all ;do
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
