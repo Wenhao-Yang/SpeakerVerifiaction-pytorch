@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=203
+stage=400
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2722,15 +2722,12 @@ if [ $stage -le 300 ]; then
   #     --train-trials trials_2w \
   #     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
   #     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
-  #     --feat-format kaldi \
-  #     --input-norm ${input_norm} \
-  #     --input-dim 40 \
+  #     --feat-format kaldi --input-norm ${input_norm} --input-dim 40 \
   #     --channels 512,512,512,512,1500 \
   #     --context 5,3,3,5 \
   #     --nj 10 \
   #     --alpha 0 \
-  #     --margin 0.2 \
-  #     --s 30 \
+  #     --margin 0.2 --s 30 \
   #     --stride 1 \
   #     --block-type ${block_type} \
   #     --embedding-size ${embedding_size} \
@@ -3003,7 +3000,7 @@ if [ $stage -le 400 ]; then
   model=TDNN_v5
   encod=STAP
 #  dataset=aishell2 test_set=aishell2 subset=test
-  dataset=vox2 test_set=vox1 subset=dev
+  dataset=vox2 test_set=vox1 subset=test
 
   input_dim=40
   input_norm=Mean
@@ -3018,16 +3015,19 @@ if [ $stage -le 400 ]; then
 
 #  model_dir=TDNN_v5/aishell2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_var
 
-  model_dir=TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_STAP_em512_wde5_vares_dist/123456
+  model_dir=TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_STAP_em512_wde5_vares_dist_mani-1_lamda2/123456
   echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
 #  test_set=vox1
 #easy hard
-  for subname in easy hard ; do # 32,128,512; 8,32,128
+#  for subname in easy hard ; do # 32,128,512; 8,32,128
+#  --trials trials_${subname} --score-suffix ${subname} \
+  for test_set in vox1 sitw ; do # 32,128,512; 8,32,128
+
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}/trials_dir \
-      --train-trials trials_2w --trials trials_${subname} --score-suffix ${subname} \
+      --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi --nj 6 \
