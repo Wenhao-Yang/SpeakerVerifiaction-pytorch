@@ -632,23 +632,18 @@ if [ $stage -le 50 ]; then
       --nj 8 \
       --epochs 50 \
       --batch-size ${batch_size} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
-      --lr 0.1 \
-      --base-lr 0.000006 \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --lr 0.1 --base-lr 0.000006 \
       --mask-layer ${mask_layer} \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_dp${dp_str}_alpha${alpha}_em${embedding_size}_chn${chn}_wd5e4_var/checkpoint_50.pth \
-      --kernel-size ${kernel} \
-      --downsample ${downsample} \
+      --kernel-size ${kernel} --downsample ${downsample} \
       --channels ${channels} \
-      --fast ${fast} \
-      --stride 2,2 \
+      --fast ${fast} --stride 2,2 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
-      --time-dim 1 \
-      --avg-size 4 \
+      --time-dim 1 --avg-size 4 \
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
