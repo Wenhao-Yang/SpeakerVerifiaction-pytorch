@@ -3021,8 +3021,8 @@ if [ $stage -le 400 ]; then
 #easy hard
 #  for subname in easy hard ; do # 32,128,512; 8,32,128
 #  --trials trials_${subname} --score-suffix ${subname} \
-#  for test_set in vox1 sitw ; do # 32,128,512; 8,32,128
-  for subname in all ;do
+  for test_set in vox1 sitw ; do # 32,128,512; 8,32,128
+#  for subname in all ;do
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat} \
@@ -3042,7 +3042,7 @@ if [ $stage -le 400 ]; then
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_epoch_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
-      --verbose 4 --test \
+      --verbose 4 --extract \
       --cos-sim
   done
   exit
