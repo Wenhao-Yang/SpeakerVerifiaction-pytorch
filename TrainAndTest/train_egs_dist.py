@@ -797,8 +797,8 @@ def main():
         #                                          world_size=1)
         # if args.gain
         # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
-        # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
-        model = DistributedDataParallel(model, device_ids=[args.local_rank])
+        model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+        model = DistributedDataParallel(model.cuda(), device_ids=[args.local_rank])
 
     else:
         model = model.cuda()
