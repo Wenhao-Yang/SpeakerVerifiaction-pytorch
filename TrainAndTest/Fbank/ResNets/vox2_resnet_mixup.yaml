@@ -41,7 +41,7 @@ remove_vad: True
 
 
 ### Training settings
-epochs: 60
+epochs: 47
 
 # optimizer
 optimizer: sgd
@@ -127,7 +127,7 @@ loss_str: ''
 check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde5_vares_bashuf2_dist_mani<mixup_layer>_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 #_chn32
-resume: !ref <check_path>/checkpoint_40.pth
+resume: !ref <check_path>/123456/checkpoint_13.pth
 
 veri_pairs: 9600
 gpu_id: 0,1
