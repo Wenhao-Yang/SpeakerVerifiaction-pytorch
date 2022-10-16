@@ -1216,6 +1216,14 @@ class TDNN_v5(nn.Module):
 
         return embedding_a
 
+    def mixup(self, x, shuf_half_idx_ten, lamda_beta):
+        half_batch_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-half_batch_size:]
+        x = torch.cat(
+            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            dim=0)
+
+        return x
 
 class TDNN_v6(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
