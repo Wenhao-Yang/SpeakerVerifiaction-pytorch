@@ -719,12 +719,13 @@ class ScriptTrainDataset(data.Dataset):
         self.domain = domain
         self.rand_test = rand_test
         self.segment_len = segment_len
+        self.feat_type = feat_type
         self.sample_type = sample_type  # balance or instance
 
         feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
         utt2spk = dir + '/utt2spk'
-        utt2num_frames = dir + '/utt2num_frames'
+        utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         utt2dom = dir + '/utt2dom'
         vad_scp = dir + '/vad.scp'
 
@@ -752,6 +753,9 @@ class ScriptTrainDataset(data.Dataset):
                         uid, num_frames = l.split()
                         if uid in uid2vad:
                             num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
+                        if feat_type == 'wav':
+                            num_frames = float(num_frames) * 16000
+
                         num_frames = int(num_frames)
 
                         if num_frames >= min_frames:
@@ -949,7 +953,10 @@ class ScriptTrainDataset(data.Dataset):
                         y = y[voice_idx]
                         # print(y)
 
-                    y = y[start:end]
+                    if self.feat_type == 'wav':
+                        y = y[:, start:end]
+                    else:
+                        y = y[start:end]
                     sid = self.utt2spk_dict[uid]
                     sid = self.spk_to_idx[sid]
                     break
