@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=11
+stage=20
 waited=0
 while [ $(ps 233979 | wc -l) -eq 2 ]; do
   sleep 60
@@ -38,16 +38,13 @@ if [ $stage -le 0 ]; then
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/spect/test_${feat} \
       --batch-size 128 \
-      --input-norm ${input_norm} \
-      --test-input fix \
+      --input-norm ${input_norm} --test-input fix \
       --feat-format kaldi \
-      --nj 10 \
-      --epochs 40 \
+      --nj 10 --epochs 40 \
       --lr 0.1 \
       --input-dim 161 \
       --filter ${filter} \
-      --time-dim 1 \
-      --exp \
+      --time-dim 1 --exp \
       --feat-dim ${feat_dim} \
       --scheduler rop \
       --patience 3 \
@@ -62,9 +59,7 @@ if [ $stage -le 0 ]; then
       --avg-size ${avgsize} \
       --alpha ${alpha} \
       --num-valid 2 \
-      --margin 0.25 \
-      --s 30 \
-      --m 3 \
+      --margin 0.25 --s 30 --m 3 \
       --lr-ratio ${lr_ratio} \
       --weight-decay 0.0005 \
       --dropout-p ${dropout_p} \
@@ -384,6 +379,30 @@ if [ $stage -le 12 ]; then
       --extract --cos-sim \
       --remove-vad
   done
+  done
+  exit
+fi
+
+
+
+if [ $stage -le 20 ]; then
+  model=ResNet
+  datasets=vox1
+  #  feat=fb24
+#  feat_type=pyfb
+  feat_type=wave
+  loss=arcsoft
+  encod=ASTP2
+  embedding_size=256
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+
+ for seed in 123456  ; do
+   feat=fb${input_dim}
+
+   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+#   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
+#   CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
+   CUDA_VISIBLE_DEVICES=3,6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Wav/vox1_resnet.yaml --seed=${seed}
   done
   exit
 fi
