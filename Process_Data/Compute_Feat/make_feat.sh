@@ -76,7 +76,7 @@ if [ $stage -le 1 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 8 \
+      --nj 12 \
       --feat-type ${feat_type} \
       --train \
       --input-per-spks ${input_per_spks} --num-frames ${num_frames} \
@@ -88,7 +88,7 @@ if [ $stage -le 1 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 8 \
+      --nj 12 \
       --feat-type ${feat_type} \
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} \
       --feat-format ${feat_format} \
