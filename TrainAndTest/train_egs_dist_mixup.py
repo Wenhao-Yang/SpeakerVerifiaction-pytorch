@@ -413,7 +413,7 @@ def valid_class(valid_loader, model, ce, epoch):
             if torch.cuda.is_available():
                 data = data.cuda()
                 label = label.cuda()
-
+            continue
             # compute output
             # pdb.set_trace()
             out, feats = model(data)
