@@ -54,17 +54,16 @@ if [ $stage -le 1 ]; then
 
   #  feat_type=pyfb
 #  dataset=vox1
-#  feat=wave
+  feat=wave
+  feat_format=wav
+  feat_type=wav
+
+#  feat=klfb
 #  feat_type=klfb
-#  feat_format=wav
+#  feat_format=kaldi
 
-  feat=klfb
-  feat_type=klfb
-  feat_format=kaldi
-
-#  num_frames=64000
-  num_frames=400
-
+  num_frames=64000
+#  num_frames=400
   input_per_spks=1280
 #        --remove-vad \
 #--domain \
@@ -72,34 +71,30 @@ if [ $stage -le 1 ]; then
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
-  for s in dev_fb40 ; do
+#/${feat}
+  for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks ${input_per_spks} \
-      --num-frames ${num_frames} \
+      --input-per-spks ${input_per_spks} --num-frames ${num_frames} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --remove-vad \
-      --out-set ${s}_v2
-
+      --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
-      --num-frames ${num_frames} \
-      --input-per-spks ${input_per_spks} \
+      --num-frames ${num_frames} --input-per-spks ${input_per_spks} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --remove-vad \
-      --out-set ${s}_valid_v2
+      --out-set ${s}_valid
   done
   exit
 fi
