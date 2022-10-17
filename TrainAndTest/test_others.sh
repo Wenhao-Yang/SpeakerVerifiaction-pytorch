@@ -2488,7 +2488,7 @@ if [ $stage -le 203 ]; then
   loss=arcsoft
   alpha=0
 #  datasets=vox1 testset=vox1
-  datasets=vox2 testset=vox1 test_subset=dev sname=dev
+  datasets=vox2 testset=vox1 test_subset=test sname=dev
   block_type=seblock downsample=k1 expansion=1 red_ratio=2
   encoder_type=ASTP2
   embedding_size=256
@@ -2518,8 +2518,8 @@ if [ $stage -le 203 ]; then
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
-#  for testset in vox1 ; do
-  for subname in easy hard; do #  all
+  for testset in vox1 ; do
+#  for subname in easy hard; do #  all
     if [ $resnet_size -le 34 ];then
       expansion=1
     else
@@ -2534,13 +2534,14 @@ if [ $stage -le 203 ]; then
 #    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_vares_bashuf2/${seed}
 #    _dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}
 #${input_norm}_batch${batch_size}_${block_type}_red2_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2
-    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
-
+#    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
+    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist_mani-1_lamda2/123456
+#  --trials trials_${subname} --score-suffix ${subname}
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
-      --train-trials trials_2w --trials trials_${subname} --score-suffix ${subname} \
+      --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${valid_dir} \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
       --feat-format kaldi --nj 8 \
@@ -2556,8 +2557,8 @@ if [ $stage -le 203 ]; then
       --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
       --test-input var \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
-      --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 3 --verbose 0 \
+      --resume Data/checkpoint/${model_dir}/checkpoint_30.pth \
+      --gpu-id 1 --verbose 0 \
       --extract \
       --cos-sim
   done
