@@ -298,16 +298,13 @@ if [ $stage -le 11 ]; then
 fi
 
 if [ $stage -le 12 ]; then
-  datasets=aidata
-  testset=aidata
+  datasets=aidata testset=aidata
   feat_type=wave
-  model=ThinResNet
-  resnet_size=18
+  model=ThinResNet resnet_size=18
   encoder_type=ASTP2
   embedding_size=256
   block_type=seblock
-  red_ratio=2
-  expansion=1
+  red_ratio=2 expansion=1
   downsample=k1
   kernel=5,5
   loss=proser

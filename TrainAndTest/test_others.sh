@@ -2379,7 +2379,8 @@ if [ $stage -le 201 ]; then
   alpha=0
   datasets=vox1 testset=vox1
 #  test_subset=
-  block_type=basic
+  block_type=seblock #basic
+  red_ratio=2
   encoder_type=None
   embedding_size=256
 
@@ -2408,7 +2409,7 @@ if [ $stage -le 201 ]; then
       --input-norm Mean --input-dim ${input_dim} --filter ${filter_layer} --feat-dim ${input_dim} \
       --embedding-size ${embedding_size} \
       --mask-layer ${mask_layer} --init-weight vox2_rcf \
-      --block-type ${block_type} --downsample ${downsample} \
+      --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
       --kernel-size 5,5 --stride 2,1 --fast none1 \
       --channels 16,32,64,128 \
       --alpha ${alpha} \
