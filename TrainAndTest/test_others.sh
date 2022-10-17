@@ -2412,7 +2412,7 @@ if [ $stage -le 201 ]; then
       --kernel-size 5,5 --stride 2,1 --fast none1 \
       --channels 16,32,64,128 \
       --alpha ${alpha} \
-      --loss-type ${loss} \ --margin 0.2 --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --encoder-type ${encod} --time-dim 1 --avg-size 5 \
       --test-input var --dropout-p 0.1 \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
