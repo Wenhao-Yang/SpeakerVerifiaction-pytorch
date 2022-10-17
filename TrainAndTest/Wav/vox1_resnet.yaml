@@ -17,10 +17,10 @@ input_dim: 40
 feat: !ref fb<input_dim>
 subset: ''
 
-train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_v2
+train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_v3
 train_test_dir: !ref <data_root_dir>/data/<testset>/test
 train_trials: trials
-valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_valid_v2
+valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_valid_v3
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
@@ -29,8 +29,8 @@ input_norm: Mean
 test_input: fix
 log_scale: False
 random_chunk: [ 32000, 32000 ]
-chunk_size: 32000
-frame_shift: 32000
+chunk_size: 48000
+frame_shift: 48000
 extract: True
 nj: 8
 shuffle: False
