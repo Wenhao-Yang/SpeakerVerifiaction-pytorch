@@ -2518,7 +2518,7 @@ if [ $stage -le 203 ]; then
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
-  for testset in vox1 ; do
+  for testset in vox1 sitw ; do
 #  for subname in easy hard; do #  all
     if [ $resnet_size -le 34 ];then
       expansion=1
@@ -2536,7 +2536,7 @@ if [ $stage -le 203 ]; then
 #${input_norm}_batch${batch_size}_${block_type}_red2_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2
 #    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
     model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist_mani-1_lamda2/123456
-#  --trials trials_${subname} --score-suffix ${subname}
+#  --trials trials_${subname} --score-suffix ${subname}       --extract \
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb${input_dim} \
@@ -2559,7 +2559,6 @@ if [ $stage -le 203 ]; then
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/checkpoint_30.pth \
       --gpu-id 1 --verbose 0 \
-      --extract \
       --cos-sim
   done
   exit
