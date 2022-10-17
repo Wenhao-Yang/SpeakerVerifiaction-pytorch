@@ -1114,10 +1114,11 @@ class ThinResNet(nn.Module):
         #
         # if self.mask_layer != None:
         #     x = self.mask_layer(x)
-        if mixup_alpha == -1:
-            layer_mix = random.randint(0, 2)
-        else:
+        if isinstance(mixup_alpha, float) or isinstance(mixup_alpha, int):
+            # layer_mix = random.randint(0, 2)
             layer_mix = mixup_alpha
+        elif isinstance(mixup_alpha, list):
+            layer_mix = random.choice(mixup_alpha)
 
         if proser != None and layer_mix == 0:
             x = self.mixup(x, proser, lamda_beta)

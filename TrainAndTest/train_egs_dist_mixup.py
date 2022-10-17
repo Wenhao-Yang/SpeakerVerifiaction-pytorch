@@ -112,7 +112,15 @@ with open(args.train_config, 'r') as f:
 
 # create logger
 # Define visulaize SummaryWriter instance
-check_path = config_args['check_path'] + '_lamda' + str(args.lamda_beta) + '/' + str(args.seed)
+if isinstance(config_args['mixup_layer'], list):
+    mixup_layer_str = ''.join([str(s) for s in config_args['mixup_layer']])
+else:
+    mixup_layer_str = str(config_args['mixup_layer'])
+
+lambda_str = '_lamda' + str(args.lamda_beta)
+mixup_str = '_mani' + mixup_layer_str + lambda_str
+
+check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
 if torch.distributed.get_rank() == 0:
     if not os.path.exists(check_path):
@@ -566,7 +574,7 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     torch.distributed.barrier()
-    check_path = config_args['check_path'] + '_lamda' + str(args.lamda_beta) + '/' + str(args.seed)
+    check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time: \33[91m{}\33[0m.'.format(str(time.asctime())))

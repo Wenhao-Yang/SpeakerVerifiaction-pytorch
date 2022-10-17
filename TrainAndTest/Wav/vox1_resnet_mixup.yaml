@@ -120,16 +120,18 @@ s: 30
 lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
-mixup_layer: -1
+mixup_layer: [ 0, 2, 3 ]
 mixup_type: manifold
 
 # stat_type: margin1
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_var2ses_bashuf2_dist_mani<mixup_layer>_lamda<lamda_beta>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_var2ses_bashuf2_dist
+#  _mani<mixup_layer>_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
-resume: !ref <check_path>/checkpoint_40.pth
+resume: ''
+#  !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
 gpu_id: 0,1
