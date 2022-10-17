@@ -28,9 +28,9 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [ 48000, 48000 ]
-chunk_size: 48000
-frame_shift: 48000
+random_chunk: [ 32000, 32000 ]
+chunk_size: 32000
+frame_shift: 32000
 extract: True
 nj: 8
 shuffle: False
