@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=203
+stage=201
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2368,11 +2368,14 @@ fi
 
 
 if [ $stage -le 201 ]; then
-  feat_type=klfb
   model=ThinResNet resnet_size=34
+#  feat_type=klfb # /${feat_type}_fb40  --remove-vad
+#feat-format kaldi
+  feat_type=wave feat_format=wav
+  input_dim=40
   feat=log
   loss=arcsoft
-  encod=SAP2
+  encod=ASTP2
   alpha=0
   datasets=vox1 testset=vox1
 #  test_subset=
@@ -2384,41 +2387,37 @@ if [ $stage -le 201 ]; then
   sname=dev #_aug_com
   downsample=None
   test_subset=test
+  mask_layer=baseline
+  filter_layer=fbank
 #        --downsample ${downsample} \
 #      --trials trials_20w \
+#  model_dir=ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var
 
+  model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456
   for testset in vox1 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb40 \
-      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb40/trials_dir \
-      --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/valid_fb40 \
-      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb40 \
-      --trials trials \
-      --feat-format kaldi \
-      --input-norm Mean --input-dim 40 --remove-vad \
-      --nj 12 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/vox1/test \
+      --train-trials trials_2w --trials trials \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${test_subset} \
+      --feat-format ${feat_format} --nj 12 \
+      --input-norm Mean --input-dim ${input_dim} --filter ${filter_layer} --feat-dim ${input_dim} \
       --embedding-size ${embedding_size} \
-      --loss-type ${loss} \
-      --mask-layer attention --init-weight vox2_rcf \
-      --fast none1 \
-      --encoder-type ${encod} \
-      --block-type ${block_type} \
-      --kernel-size 5,5 --stride 2,1 \
+      --mask-layer ${mask_layer} --init-weight vox2_rcf \
+      --block-type ${block_type} --downsample ${downsample} \
+      --kernel-size 5,5 --stride 2,1 --fast none1 \
       --channels 16,32,64,128 \
-      --downsample ${downsample} \
       --alpha ${alpha} \
-      --margin 0.2 --s 30 \
-      --time-dim 1 --avg-size 5 \
-      --input-length var \
-      --dropout-p 0.1 \
-      --xvector-dir Data/xvector/ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var/${testset}_${test_subset}_var \
-      --resume Data/checkpoint/ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var/checkpoint_50.pth \
-      --gpu-id 0 \
-      --extract --verbose 2 \
+      --loss-type ${loss} \ --margin 0.2 --s 30 \
+      --encoder-type ${encod} --time-dim 1 --avg-size 5 \
+      --test-input var --dropout-p 0.1 \
+      --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
+      --resume Data/checkpoint/${model_dir}/best.pth \
+      --gpu-id 1 --extract --verbose 2 \
       --cos-sim
   done
   exit
