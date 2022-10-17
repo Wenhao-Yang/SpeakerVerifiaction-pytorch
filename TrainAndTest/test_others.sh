@@ -2127,7 +2127,7 @@ if [ $stage -le 200 ]; then
 fi
 
 
-if [ $stage -le 201 ]; then
+if [ $stage -le 200 ]; then
   feat_type=klsp
   model=ThinResNet resnet_size=10
   feat=log
@@ -2398,8 +2398,7 @@ if [ $stage -le 201 ]; then
   for testset in vox1 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/test \
       --train-trials trials_2w --trials trials \
@@ -2418,7 +2417,7 @@ if [ $stage -le 201 ]; then
       --test-input var --dropout-p 0.1 \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 1 --extract --verbose 2 \
+      --gpu-id 1 --verbose 2 \
       --cos-sim
   done
   exit
