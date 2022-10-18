@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=203
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2484,17 +2484,15 @@ if [ $stage -le 203 ]; then
   feat_type=klfb
   model=ThinResNet resnet_size=34
   feat=log
-  loss=arcsoft
   alpha=0
 #  datasets=vox1 testset=vox1
-  datasets=vox2 testset=vox1 test_subset=dev sname=dev
+  datasets=vox2 testset=vox1 test_subset=test sname=dev
   block_type=seblock downsample=k1 expansion=1 red_ratio=2
   encoder_type=ASTP2
   embedding_size=256
 
   kernel=5,5
   loss=arcsoft
-  alpha=1
   input_norm=Mean
   mask_layer=baseline
   scheduler=rop optimizer=sgd
@@ -2503,7 +2501,6 @@ if [ $stage -le 203 ]; then
   fast=none1
 
   avg_size=5
-
 #  encoder_type=SAP2
 #  for input_dim in 64 80 ; do
   proser_ratio=1
@@ -2517,8 +2514,8 @@ if [ $stage -le 203 ]; then
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
-#  for testset in vox1 ; do
-  for subname in easy hard; do #  all
+  for testset in vox1 sitw ; do
+#  for subname in easy hard; do #  all  --trials trials_${subname} --score-suffix ${subname}
     if [ $resnet_size -le 34 ];then
       expansion=1
     else
@@ -2540,7 +2537,7 @@ if [ $stage -le 203 ]; then
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_fb${input_dim}/trials_dir \
-      --train-trials trials_2w --trials trials_${subname} --score-suffix ${subname} \
+      --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${valid_dir} \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset}_fb${input_dim} \
       --feat-format kaldi --nj 8 \
@@ -2556,8 +2553,8 @@ if [ $stage -le 203 ]; then
       --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
       --test-input var \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
-      --resume Data/checkpoint/${model_dir}/checkpoint_30.pth \
-      --gpu-id 1 --verbose 0 --extract \
+      --resume Data/checkpoint/${model_dir}/checkpoint_42.pth \
+      --gpu-id 1 --verbose 0 \
       --cos-sim
   done
   exit
@@ -2745,18 +2742,15 @@ if [ $stage -le 300 ]; then
  # for s in adve_adve adve_spee dram_reci ente_reci inte_sing live_vlog play_sing sing_vlog adve_dram adve_vlog dram_sing ente_sing inte_spee movi_movi play_spee spee_spee adve_ente dram_spee ente_spee inte_vlog movi_play play_vlog spee_vlog adve_inte dram_dram dram_vlog ente_vlog live_live movi_reci reci_reci vlog_vlog adve_live dram_ente ente_ente inte_inte live_movi movi_sing reci_sing adve_movi dram_inte ente_inte inte_live live_play movi_spee reci_spee adve_play dram_live ente_live inte_movi live_reci movi_vlog reci_vlog adve_reci dram_movi ente_movi inte_play live_sing play_play sing_sing adve_sing dram_play ente_play inte_reci live_spee play_reci sing_spee; do
  for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
    python -W ignore TrainAndTest/test_egs.py \
-     --model ${model} \
-     --resnet-size 14 \
+     --model ${model} --resnet-size 14 \
      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-     --train-trials trials_2w \
-     --trials subtrials/trials_${s} \
+     --train-trials trials_2w --trials subtrials/trials_${s} \
      --score-suffix ${s} \
      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
      --feat-format kaldi \
-     --input-norm ${input_norm} \
-     --input-dim 40 \
+     --input-norm ${input_norm} --input-dim 40 \
      --channels 512,512,512,512,1500 \
      --context 5,3,3,5 \
      --nj 12 \
@@ -2793,8 +2787,7 @@ if [ $stage -le 300 ]; then
 #      --context 5,3,3,5 \
 #      --nj 12 \
 #      --alpha 0 \
-#      --margin 0.15 \
-#      --s 30 \
+#      --margin 0.15 --s 30 \
 #      --stride 1 \
 #      --block-type ${block_type} \
 #      --embedding-size ${embedding_size} \
@@ -3130,8 +3123,7 @@ if [ $stage -le 500 ]; then
   avg_size=5
   fast=none1
   filter_layer=fbank
-  feat_dim=40
-  input_dim=40
+  feat_dim=40 input_dim=40
   lamda_beta=1
 
   for testset in aidata ; do
