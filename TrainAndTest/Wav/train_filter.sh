@@ -392,8 +392,8 @@ if [ $stage -le 20 ]; then
   encod=ASTP2
   embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
-  for lamda_beta in 0.2 0.5 1.0 2.0;do
-    for seed in 123456 123457 ; do
+  for lamda_beta in 1.0 2.0;do
+    for seed in 123456 ; do
      feat=fb${input_dim}
 
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
