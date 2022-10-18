@@ -13,7 +13,6 @@ from __future__ import print_function
 
 import argparse
 import signal
-
 import yaml
 import os
 import os.path as osp
@@ -82,6 +81,7 @@ parser.add_argument('--local_rank', default=-1, type=int,
 
 parser.add_argument('--train-config', default='', type=str, help='node rank for distributed training')
 parser.add_argument('--seed', type=int, default=123456, help='random seed (default: 0)')
+parser.add_argument('--lamda-beta', type=float, default=2.0, help='random seed (default: 0)')
 
 args = parser.parse_args()
 
@@ -112,7 +112,15 @@ with open(args.train_config, 'r') as f:
 
 # create logger
 # Define visulaize SummaryWriter instance
-check_path = config_args['check_path'] + '/' + str(args.seed)
+if isinstance(config_args['mixup_layer'], list):
+    mixup_layer_str = ''.join([str(s) for s in config_args['mixup_layer']])
+else:
+    mixup_layer_str = str(config_args['mixup_layer'])
+
+lambda_str = '_lamda' + str(args.lamda_beta)
+mixup_str = '_mani' + mixup_layer_str + lambda_str
+
+check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
 if torch.distributed.get_rank() == 0:
     if not os.path.exists(check_path):
@@ -565,7 +573,7 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     torch.distributed.barrier()
-    check_path = config_args['check_path'] + '/' + str(args.seed)
+    check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time: \33[91m{}\33[0m.'.format(str(time.asctime())))

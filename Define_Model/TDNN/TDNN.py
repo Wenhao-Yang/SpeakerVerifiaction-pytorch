@@ -1107,6 +1107,7 @@ class TDNN_v5(nn.Module):
 
         if self.mask_layer != None:
             x = self.mask_layer(x)
+
         if proser != None and layer_mix == 0:
             x = self.mixup(x, proser, lamda_beta)
 
