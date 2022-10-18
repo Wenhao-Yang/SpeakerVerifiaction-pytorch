@@ -547,7 +547,7 @@ if [ $stage -le 75 ]; then
   feat_type=klfb feat=fb40
   loss=arcsoft
   model=TDNN_v5
-  encod=STAP
+  encod=STAP embedding_size=512
   dataset=vox1 test_set=vox1 subset=test
   input_dim=40 input_norm=Mean
 
@@ -570,9 +570,9 @@ if [ $stage -le 75 ]; then
   #|     vox1-dev      |   0.1552%   |   0.3450    |   0.0147    |    0.0334    | 20211130 17:35:29 | minarcsoft*0.1+arc
   # 20211130 18:08 min seems to be better on dev set
 
-  for embedding_size in 512; do # 32,128,512; 8,32,128
+  for lamda_beta in 0.2 0.5 1.0 2; do # 32,128,512; 8,32,128
 #    model_dir=TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var
-    model_dir=TDNN_v5/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_vares_dist/123456
+    model_dir=TDNN_v5/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_vares_dist_mani-1_lamda${lamda_beta}/123456
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
