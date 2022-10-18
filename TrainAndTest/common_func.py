@@ -182,7 +182,7 @@ class AverageMeter(object):
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
-                         ark_num=50000, gpu=True, mean_vector=True,
+                         ark_num=50000, gpu=True, mean_vector=True, feat_type='kaldi',
                          verbose=0, xvector=False):
     """
 
@@ -276,6 +276,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     uid_lst = []
 
         elif test_input == 'var':
+            max_lenght = 10 * c.NUM_FRAMES_SPECT
+            if feat_type == 'wav':
+                max_lenght *= 160
+
             for batch_idx, (a_data, a_uid) in enumerate(pbar):
                 vec_shape = a_data.shape
 
@@ -283,7 +287,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
-                if vec_shape[2] >= 10 * c.NUM_FRAMES_SPECT:
+                if vec_shape[2] >= max_lenght:
                     num_half = int(vec_shape[2] / 2)
                     half_a = a_data[:, :, :num_half, :]
                     half_b = a_data[:, :, -num_half:, :]
