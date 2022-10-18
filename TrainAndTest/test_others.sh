@@ -2465,7 +2465,6 @@ if [ $stage -le 202 ]; then
     trials=${lstm_dir}/data/${test_set}/test/trials
     ./Score/plda.sh $data_path $train_feat_dir $test_feat_dir $trials
   done
-
 # PLDA ThinResNet34
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   1.903     |    -----    |   0.3710    |    0.6383    | 20211210 15:47:27 |
@@ -2481,7 +2480,7 @@ fi
 
 
 if [ $stage -le 203 ]; then
-  feat_type=klfb
+  feat_type=klfb input_dim=40
   model=ThinResNet resnet_size=34
   feat=log
   alpha=0
@@ -2496,7 +2495,6 @@ if [ $stage -le 203 ]; then
   input_norm=Mean
   mask_layer=baseline
   scheduler=rop optimizer=sgd
-  input_dim=40
   batch_size=256
   fast=none1
 
@@ -2564,19 +2562,18 @@ fi
 
 if [ $stage -le 210 ]; then
   feat_type=klsp
-  model=ThinResNet
+  model=ThinResNet resnet_size=8
   feat=log
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox2
-  testset=sitw
+  datasets=vox2 testset=sitw
   input_norm=Mean
 #  test_subset=
   block_type=basic
   encoder_type=SAP2
   embedding_size=256
-  resnet_size=8
+
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k1
@@ -2586,8 +2583,7 @@ if [ $stage -le 210 ]; then
   mask_layer=rvec
 #  mask_layer=attention
   weight=rclean
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   batch_size=256
   avg_size=5
 
@@ -2639,34 +2635,26 @@ if [ $stage -le 210 ]; then
         --train-trials trials_2w \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-        --feat-format kaldi \
-        --input-norm ${input_norm} \
-        --input-dim 161 \
-        --nj 12 \
-        --mask-layer ${mask_layer} \
-        --init-weight ${weight} \
+        --feat-format kaldi --nj 12 \
+        --input-norm ${input_norm} --input-dim 161 \
+        --mask-layer ${mask_layer} --init-weight ${weight} \
         --embedding-size ${embedding_size} \
-        --loss-type ${loss} \
         --fast ${fast} \
         --downsample ${downsample} \
         --encoder-type ${encoder_type} \
         --block-type ${block_type} \
-        --kernel-size 5,5 \
+        --kernel-size 5,5 --stride 2,2 \
         --expansion ${expansion} \
-        --stride 2,2 \
         --channels ${channels} \
         --alpha ${alpha} \
-        --margin 0.2 \
-        --s 30 \
-        --time-dim 1 \
-        --avg-size ${avg_size} \
+        --loss-type ${loss} --margin 0.2 --s 30 \
+        --time-dim 1 --avg-size ${avg_size} \
         --input-length var \
         --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 4 \
         --cos-sim
-
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
   done
