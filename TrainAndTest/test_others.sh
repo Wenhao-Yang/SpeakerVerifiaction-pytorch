@@ -583,12 +583,10 @@ if [ $stage -le 75 ]; then
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi --nj 8 \
       --input-norm ${input_norm} --input-dim ${input_dim} --remove-vad \
-      --embedding-size ${embedding_size} \
-      --encoder-type ${encod} \
-      --channels 512,512,512,512,1500 \
-      --stride 1,1,1,1 \
+      --encoder-type ${encod} --embedding-size ${embedding_size} \
+      --channels 512,512,512,512,1500 --stride 1,1,1,1 \
       --loss-type ${loss} --margin 0.2 --s 30 \
-      --test-input var --frame-shift 300 \
+      --test-input fix --frame-shift 300 \
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 1 \
@@ -598,14 +596,11 @@ if [ $stage -le 75 ]; then
 fi
 
 if [ $stage -le 76 ]; then
-  feat_type=pyfb
-  feat=fb40
+  feat_type=pyfb feat=fb40
   loss=soft
   model=TDNN_v5
   encod=None
-  dataset=vox1
-  subset=test
-  test_set=sitw
+  dataset=vox1 subset=test test_set=sitw
 
   # Training set: voxceleb 1 40-dimensional log fbanks ws25  Loss: soft
   # Cosine Similarity
@@ -644,22 +639,18 @@ if [ $stage -le 76 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_ws25 \
-      --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 40 \
-      --nj 12 \
+      --feat-format kaldi --nj 12 \
+      --input-norm Mean --input-dim 40 \
       --embedding-size 256 \
       --loss-type ${loss} \
       --encoder-type STAP \
       --channels 512,512,512,512,1500 \
-      --margin 0.25 \
-      --s 30 \
+      --margin 0.25 --s 30 \
       --test-input var \
       --frame-shift 300 \
       --xvector-dir Data/xvector/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4_var/${test_set}_${subset}_epoch_40_var \
       --resume Data/checkpoint/TDNN_v5/vox1/pyfb_egs_baseline/soft/featfb40_ws25_inputMean_STAP_em256_wd5e4_var/checkpoint_40.pth \
-      --gpu-id 1 \
-      --remove-vad \
+      --gpu-id 1 --remove-vad \
       --cos-sim
   done
   exit
