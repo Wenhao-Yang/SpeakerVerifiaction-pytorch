@@ -576,10 +576,10 @@ if [ $stage -le 75 ]; then
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}_v2 \
+      --train-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_v2 \
       --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_${feat}_valid_v2 \
+      --valid-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev_${feat}_valid_v2 \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
       --feat-format kaldi --nj 8 \
       --input-norm ${input_norm} --input-dim ${input_dim} --remove-vad \
