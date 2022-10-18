@@ -418,14 +418,11 @@ if [ $stage -le 55 ]; then
     python -W ignore TrainAndTest/test_vox1.py \
       --train-dir ${lstm_dir}/data/vox1/spect/dev_power \
       --test-dir ${lstm_dir}/data/vox1/spect/test_power \
-      --nj 12 \
-      --epochs 18 \
-      --model ${model} \
-      --resnet-size 8 \
+      --nj 12 --epochs 18 \
+      --model ${model} --resnet-size 8 \
       --inst-norm \
       --embedding-size 128 \
-      --feat-dim 161 \
-      --valid \
+      --feat-dim 161 --valid \
       --test-input fix \
       --test-input-per-file 4 \
       --xvector-dir Data/xvector/GradResNet8_inst/vox1_power/spect_time/soft_dp25 \
@@ -575,7 +572,7 @@ if [ $stage -le 75 ]; then
 
   for embedding_size in 512; do # 32,128,512; 8,32,128
 #    model_dir=TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var
-    model_dir=Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_vares_dist
+    model_dir=Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_vares_dist/123456
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
