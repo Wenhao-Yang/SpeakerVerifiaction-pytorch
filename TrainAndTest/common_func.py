@@ -175,7 +175,7 @@ class AverageMeter(object):
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
-                         ark_num=50000, gpu=True, mean_vector=True,
+                         ark_num=50000, gpu=True, mean_vector=True, feat_type='kaldi',
                          verbose=0, xvector=False, num_utts=50000):
     """
 
@@ -271,6 +271,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     uid_lst = []
 
         elif test_input == 'var':
+            max_lenght = 10 * c.NUM_FRAMES_SPECT
+            if feat_type == 'wav':
+                max_lenght *= 160
+            half_max_length = int(max_lenght / 2)
             for batch_idx, (a_data, a_uid) in enumerate(pbar):
                 vec_shape = a_data.shape
 
@@ -278,16 +282,16 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
-                if vec_shape[2] >= 10 * c.NUM_FRAMES_SPECT:
+                if vec_shape[2] >= max_lenght:
 
-                    num_segments = int(np.ceil(vec_shape[2] / (5. * c.NUM_FRAMES_SPECT)))
+                    num_segments = int(np.ceil(vec_shape[2] / half_max_length))
                     data_as = []
                     for i in range(num_segments):
-                        start = i * 5 * c.NUM_FRAMES_SPECT
-                        end = (i + 1) * 5 * c.NUM_FRAMES_SPECT
+                        start = i * half_max_length
+                        end = (i + 1) * half_max_length
                         end = min(end, vec_shape[2])
                         if end == vec_shape[2]:
-                            start = max(0, end - 5 * c.NUM_FRAMES_SPECT)
+                            start = max(0, end - half_max_length)
 
                         data_as.append(a_data[:, :, start:end, :])
 
@@ -338,7 +342,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 # uid2vectors[a_uid[0]] = out[0]
 
     # uids = list(uid2vectors.keys())
-
     # print('There are %d vectors' % len(uids))
     scp_file = xvector_dir + '/xvectors.scp'
     ark_file = xvector_dir + '/xvectors.ark'
