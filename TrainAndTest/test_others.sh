@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=203
+stage=201
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2377,7 +2377,7 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=ASTP2
   alpha=0
-  datasets=vox1 testset=vox1
+  datasets=vox1 testset=vox1 test_subset=test
 #  test_subset=
   block_type=seblock #basic
   red_ratio=2
@@ -2387,15 +2387,15 @@ if [ $stage -le 201 ]; then
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=None
-  test_subset=test
+
   mask_layer=baseline
   filter_layer=fbank
 #        --downsample ${downsample} \
 #      --trials trials_20w \
 #  model_dir=ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var
-
-  model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456
-  for testset in sitw ; do
+  for testset in vox1 ; do
+  for seed in 123456 123457 ;do
+    model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani023_lamda0.2/${seed}
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -2418,6 +2418,7 @@ if [ $stage -le 201 ]; then
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 1 --verbose 2 \
       --cos-sim
+    done
   done
   exit
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
