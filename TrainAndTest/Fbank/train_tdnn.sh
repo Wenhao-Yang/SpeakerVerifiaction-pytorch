@@ -1713,16 +1713,13 @@ if [ $stage -le 300 ]; then
 #  feat_type=pyfb
   feat_type=klfb feat=fb${input_dim}
   loss=arcsoft
-  encod=STAP
-  embedding_size=512
+  encod=STAP embedding_size=512
   input_dim=40 input_norm=Mean
-  lr_ratio=0
-  loss_ratio=10
+  lr_ratio=0 loss_ratio=10
   subset=
   activation=leakyrelu
   scheduler=cyclic optimizer=adam
-  stat_type=margin1 #margin1sum
-  m=1.0
+  m=1.0 stat_type=margin1 #margin1sum
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
