@@ -47,7 +47,7 @@ fi
 #exit
 #stage=1000
 if [ $stage -le 1 ]; then
-  dataset=vox1
+  dataset=vox2
 #  dataset=cnceleb
 #  dataset=aishell2
 #  dataset=aidata
@@ -83,7 +83,7 @@ if [ $stage -le 1 ]; then
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --out-set ${s}_v3
+      --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
@@ -94,7 +94,7 @@ if [ $stage -le 1 ]; then
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --out-set ${s}_valid_v3
+      --out-set ${s}_valid
   done
   exit
 fi
