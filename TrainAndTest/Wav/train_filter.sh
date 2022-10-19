@@ -394,14 +394,14 @@ if [ $stage -le 20 ]; then
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 2.0;do
     for seed in 123456 ; do
-    for type in 1 2 4 5 ;do
+    for type in 01 67 123 567 ;do
      feat=fb${input_dim}
 
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
     #   CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
     #   CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417430 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Wav/vox1_resnet.yaml --seed=${seed}
-     CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417420 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+     CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
     done
     done
   done
