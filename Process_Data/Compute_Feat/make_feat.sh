@@ -64,7 +64,7 @@ if [ $stage -le 1 ]; then
 
   num_frames=32000
 #  num_frames=400
-  input_per_spks=1280
+  input_per_spks=896
 #        --remove-vad \
 #--domain \
 
