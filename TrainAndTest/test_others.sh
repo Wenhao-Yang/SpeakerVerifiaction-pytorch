@@ -2393,9 +2393,10 @@ if [ $stage -le 201 ]; then
 #        --downsample ${downsample} \
 #      --trials trials_20w \
 #  model_dir=ThinResNet34/vox1/klfb_egs_attention/arcsoft_sgd_rop/Mean_basic_downNone_none1_SAP2_dp125_alpha0_em256_vox2_rcfmax_wd5e4_var
-  for testset in vox1 ; do
+#  for testset in vox1 ; do
+  for lamda_beta in 1.0 2.0 ;do
   for seed in 123456 ;do
-    model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani023_lamda0.5/${seed}
+    model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani023_lamda${lamda_beta}/${seed}
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
