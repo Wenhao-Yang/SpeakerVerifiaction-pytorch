@@ -57,7 +57,7 @@ early_delta: 0.01
 early_meta: 'EER'
 
 # Scheduler
-patience: 3
+patience: 2
 milestones: [ 10,20,30,40 ]
 scheduler: rop
 lr: 0.1
