@@ -65,7 +65,7 @@ base_lr: 0.000001
 cos_sim: True
 
 ## model Setttings
-model: TDNN_v5
+model: ECAPA
 kernel_size:
 alpha: 0
 embedding_size: 192
