@@ -394,7 +394,7 @@ if [ $stage -le 20 ]; then
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 2.0;do
     for seed in 123456 ; do
-    for type in 01 67 123 567 ;do
+    for type in 123 ;do
      feat=fb${input_dim}
 
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
