@@ -44,8 +44,7 @@ if [ $stage -le 0 ]; then
       --lr 0.1 \
       --input-dim 161 \
       --filter ${filter} \
-      --time-dim 1 --exp \
-      --feat-dim ${feat_dim} \
+      --time-dim 1 --exp --feat-dim ${feat_dim} \
       --scheduler rop \
       --patience 3 \
       --milestones 10,20,30 \
@@ -75,10 +74,8 @@ fi
 
 if [ $stage -le 10 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=aidata
-  feat_type=wave
-  model=ThinResNet
-  resnet_size=18
+  datasets=aidata feat_type=wave
+  model=ThinResNet resnet_size=18
   encoder_type=ASTP2
   embedding_size=256
   block_type=seblock
@@ -186,10 +183,8 @@ fi
 
 if [ $stage -le 11 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=aidata
-  feat_type=wave
-  model=ThinResNet
-  resnet_size=18
+  datasets=aidata feat_type=wave
+  model=ThinResNet resnet_size=18
   encoder_type=ASTP2
   embedding_size=256
   block_type=seblock
@@ -199,8 +194,7 @@ if [ $stage -le 11 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=256
   power_weight=max
@@ -393,15 +387,43 @@ if [ $stage -le 20 ]; then
   embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 2.0;do
-    for seed in 123456 ; do
-    for type in 123 ;do
+    for seed in 123457 ; do
+    for type in 023 ;do
+     feat=fb${input_dim}
+
+     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
+    #   CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
+     CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417430 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Wav/vox1_resnet.yaml --seed=${seed}
+
+#     CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417430 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/mani_layers/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+    done
+    done
+  done
+#  exit
+fi
+
+if [ $stage -le 21 ]; then
+  model=ResNet
+  datasets=vox1
+  #  feat=fb24
+#  feat_type=pyfb
+  feat_type=wave
+  loss=arcsoft
+  encod=ASTP2
+  embedding_size=256
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+  for lamda_beta in 2.0;do
+    for seed in 123457 ; do
+    for type in 0 1 01 2 02 7  ;do
+      # 012 023 67 123 234 345 456 567
      feat=fb${input_dim}
 
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
     #   CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
     #   CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417430 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Wav/vox1_resnet.yaml --seed=${seed}
-     CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+     CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417430 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/mani_layers/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
     done
     done
   done
