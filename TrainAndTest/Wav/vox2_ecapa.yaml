@@ -72,7 +72,8 @@ embedding_size: 192
 batch_size: 256
 dropout_p: 0.0
 activation: relu
-channels: 512,512,512,512,1500
+channels: 512,512,512,512,1536
+#channels: 1024,1024,1024,1024,3072
 encoder_type: 'SASP2'
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
@@ -81,7 +82,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
   feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
-  channels: [ 512,512,512,512,1536 ]
+  channels: [ 1024,1024,1024,1024,3072 ]
   encoder_type: 'SASP2'
   embedding_size: !ref <embedding_size>
   num_classes: 5994
@@ -103,7 +104,7 @@ s: 30
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wde5_vares_dist
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_chn1024_wde5_vares_dist
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
