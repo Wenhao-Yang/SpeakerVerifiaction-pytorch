@@ -75,7 +75,7 @@ activation: relu
 channels: 512,512,512,512,1500
 encoder_type: 'SASP2'
 
-embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
+embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
   filter: 'fbank'
   sr: 16000
   feat_dim: !ref <input_dim>
