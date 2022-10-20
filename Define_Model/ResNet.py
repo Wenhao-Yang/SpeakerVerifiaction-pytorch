@@ -878,12 +878,12 @@ class ThinResNet(nn.Module):
     def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
                  input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
                  first_bias=True, kernel_size=5, stride=1, padding=2,
-                 dropout_p=0.0, exp=False, filter_fix=False,
-                 feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
+                 dropout_p=0.0, exp=False, filter_fix=False, feat_dim=64, filter=None,
+                 num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
-                 filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
-                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
-                 weight_p=0.1, weight_norm='max',
+                 replace_stride_with_dilation=None, norm_layer=None, downsample=None,
+                 mask='None', mask_len=[5, 10], red_ratio=8,
+                 init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],

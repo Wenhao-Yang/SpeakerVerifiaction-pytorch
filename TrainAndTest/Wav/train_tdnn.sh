@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=10
 waited=0
 while [ $(ps 103374 | wc -l) -eq 2 ]; do
   sleep 60
@@ -80,6 +80,33 @@ if [ $stage -le 0 ]; then
       --extract \
       --all-iteraion 0 \
       --loss-type ${loss}
+  done
+  exit
+fi
+
+
+if [ $stage -le 10 ]; then
+  model=ECAPA
+  datasets=vox2
+  #  feat=fb24
+#  feat_type=pyfb
+  feat_type=wave
+  loss=arcsoft
+  encod=ASTP2
+  embedding_size=256
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+  for lamda_beta in 2.0;do
+    for seed in 123456 ; do
+    for type in 01 ;do
+     feat=fb${input_dim}
+
+     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
+    #   CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
+       CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417430 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Wav/vox2_ecapa.yaml --seed=${seed}
+#     CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+    done
+    done
   done
   exit
 fi
