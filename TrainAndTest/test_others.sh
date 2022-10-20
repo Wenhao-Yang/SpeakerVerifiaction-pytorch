@@ -1940,8 +1940,7 @@ if [ $stage -le 100 ]; then
       --lr 0.1 \
       --input-dim 81 \
       --fast \
-      --mask-layer freq \
-      --mask-len 20 \
+      --mask-layer freq --mask-len 20 \
       --stride 1 \
       --xvector-dir Data/xvector/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/epoch_36_var_magic \
       --resume Data/checkpoint/MultiResNet18/army_x4/spect_egs_None/soft/dp25_b256_13_fast_None_mask/checkpoint_36.pth \
@@ -1949,14 +1948,11 @@ if [ $stage -le 100 ]; then
       --embedding-size 128 \
       --transform ${transform} \
       --encoder-type ${encod} \
-      --time-dim 1 \
-      --avg-size 4 \
+      --time-dim 1 --avg-size 4 \
       --num-valid 4 \
       --alpha ${alpha} \
-      --margin 0.3 \
+      --margin 0.3 --s 30 --m 3 \
       --input-length var \
-      --s 30 \
-      --m 3 \
       --loss-ratio ${loss_ratio} \
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
@@ -2396,9 +2392,10 @@ if [ $stage -le 201 ]; then
 #  for testset in vox1 ; do
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for lamda_beta in 0.2 0.5 1.0 2.0 ;do
+  for lamda_beta in 2.0 ;do
+  for mani in 012 02 123 234 345 567 67 7;do
   for seed in 123456 ;do
-    model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani0_lamda${lamda_beta}/${seed}
+    model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani${mani}_lamda${lamda_beta}/${seed}
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
@@ -2420,6 +2417,7 @@ if [ $stage -le 201 ]; then
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 1 --verbose 0 \
       --cos-sim
+    done
     done
   done
   exit
