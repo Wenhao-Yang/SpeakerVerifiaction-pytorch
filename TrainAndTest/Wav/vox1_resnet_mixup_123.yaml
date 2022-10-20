@@ -117,7 +117,7 @@ loss_type: !ref <loss>
 margin: 0.2
 # m: 0.2
 s: 30
-all_iteraion: 50
+all_iteraion: 500
 lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
