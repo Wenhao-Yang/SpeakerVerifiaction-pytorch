@@ -2393,7 +2393,7 @@ if [ $stage -le 201 ]; then
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
   for lamda_beta in 2.0 ;do
-  for mani in 012 02 123 234 345 567 67 7;do
+  for mani in 123;do
   for seed in 123456 ;do
     model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani${mani}_lamda${lamda_beta}/${seed}
     python -W ignore TrainAndTest/test_egs.py \
