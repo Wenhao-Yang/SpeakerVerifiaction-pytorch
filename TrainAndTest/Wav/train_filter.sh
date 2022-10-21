@@ -414,9 +414,9 @@ if [ $stage -le 21 ]; then
   embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 2.0;do
-    for seed in 123457 ; do
-#    for type in 0 1 01 2 02 7  ;do
-    for type in 012 023 67 123 234 345 456 567 ;do
+    for seed in 123456 ; do
+    for type in 1 01 2    ;do
+#    for type in 012 02 023 67 123 234 345 456 567 7 ;do
       #
      feat=fb${input_dim}
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
