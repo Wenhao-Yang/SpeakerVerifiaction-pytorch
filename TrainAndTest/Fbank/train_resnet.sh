@@ -646,15 +646,13 @@ fi
 
 if [ $stage -le 44 ]; then
   model=ThinResNet
-  datasets=aidata
+  datasets=cnceleb
   feat_type=klfb
   loss=arcsoft
   encod=ASTP2
   embedding_size=256
-  input_dim=40
-  input_norm=Mean
-  lr_ratio=0
-  loss_ratio=10
+  input_dim=40 input_norm=Mean
+  lr_ratio=0 loss_ratio=10
   subset=
   activation=leakyrelu
   scheduler=cyclic optimizer=adam
@@ -662,13 +660,11 @@ if [ $stage -le 44 ]; then
   m=1.0
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
-
- for seed in 123457 123458 ; do
-   
+ for seed in 123456 ; do
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-#   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet.yaml --seed=${seed}
 
-    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet_mixup.yaml --seed=${seed}
+#    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet_mixup.yaml --seed=${seed}
   done
   exit
 fi
@@ -847,14 +843,11 @@ if [ $stage -le 101 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
-      --input-dim ${input_dim} \
       --random-chunk 200 400 \
-      --input-norm ${input_norm} \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
       --resnet-size ${resnet_size} \
-      --nj 12 \
-      --epochs 60 \
-      --target-ratio 0.33 \
-      --inter-ratio 0.1 \
+      --nj 12 --epochs 60 \
+      --target-ratio 0.33 --inter-ratio 0.1 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.01 --base-lr 0.00000001 \
@@ -863,11 +856,9 @@ if [ $stage -le 101 ]; then
       --milestones 10,20,30,40,50,60,70,80 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}_hard/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_s10lr01_wd5e4_var2 \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch256_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_wd5e4_var/checkpoint_10.pth \
-      --kernel-size ${kernel} \
-      --downsample ${downsample} \
       --channels 16,32,64,128 \
-      --fast ${fast} --stride 2,1 \
-      --block-type ${block_type} \
+      --kernel-size ${kernel} --fast ${fast} --stride 2,1 \
+      --block-type ${block_type} --downsample ${downsample} \
       --embedding-size ${embedding_size} \
       --avg-size 5 --encoder-type ${encoder_type} \
       --num-valid 2 \
@@ -888,68 +879,52 @@ fi
 
 
 if [ $stage -le 102 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=cnceleb
-  testset=cnceleb
+  datasets=cnceleb testset=cnceleb
   feat_type=klfb
-  model=ThinResNet
-  resnet_size=18
-  encoder_type=SAP2
-  embedding_size=512
+  model=ThinResNet resnet_size=18
+  encoder_type=SAP2 embedding_size=512
   block_type=basic
   downsample=k3
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=None
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=both
-  weight=vox2_rcf
-  scale=0.5
-  weight_p=0.1
+  mask_layer=both weight=vox2_rcf scale=0.5 weight_p=0.1
   subset=
-  stat_type=maxmargin
-  class_weight=cnc1_dur_cbl99
-  max_cls_weight=0.8
+  stat_type=maxmargin class_weight=cnc1_dur_cbl99 max_cls_weight=0.8
         # --milestones 15,25,35,45 \
 #               --train-trials trials_2w \
 
-
   for mask_layer in baseline ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+    loss_str=
     if [ "$loss" == "arcdist" ]; then
       loss_str=_${stat_type}lr${loss_ratio}m${m}
-
     elif [ "$loss" == "damsoft" ]; then
       loss_str=_margin${margin}
-    else
-      loss_str=
     fi
 
+    cls_str=
     if [ "$class_weight" == "cnc1" ]; then
       cls_str=_cls${class_weight}${max_cls_weight}
     elif [ "$class_weight" == "cnc1_dur" ]; then
       cls_str=_cls${class_weight}${max_cls_weight}
     elif [ "$class_weight" == "cnc1_dur_cbl99" ]; then
       cls_str=_cls${class_weight}${max_cls_weight}
-    else
-      cls_str=
     fi
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_none1_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}${loss_str}${cls_str}_wd5e4_var_es
     python TrainAndTest/train_egs.py \
        --model ${model} --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
-       --shuffle \
        --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
        --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
        --feat-format kaldi \
-       --random-chunk 200 400 \
+       --random-chunk 200 400 --shuffle \
        --input-norm ${input_norm} \
        --nj 12 --epochs 60 \
        --batch-size ${batch_size} \
@@ -976,16 +951,15 @@ if [ $stage -le 102 ]; then
        --extract --cos-sim \
        --remove-vad
 
-
+#    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}dp${weight_p}_wd5e4_var
 #    python TrainAndTest/train_egs.py \
 #      --model ${model} --resnet-size ${resnet_size} \
 #      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim} \
 #      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
 #      --train-trials trials_2w \
-#      --shuffle \
 #      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_fb${input_dim}_valid \
 #      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
-#      --feat-format kaldi \
+#      --feat-format kaldi --shuffle \
 #      --random-chunk 200 400 \
 #      --input-norm ${input_norm} --input-dim 40 \
 #      --nj 12 --epochs 60 --batch-size ${batch_size} \
@@ -993,10 +967,9 @@ if [ $stage -le 102 ]; then
 #      --lr 0.1 --base-lr 0.00001 \
 #      --mask-layer ${mask_layer} --init-weight ${weight} --scale ${scale} --weight-p ${weight_p} \
 #      --milestones 10,20,30,40,50 \
-#      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}dp${weight_p}_wd5e4_var \
-#      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs${subset}_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp00_alpha${alpha}_em${embedding_size}_${weight}_scale${scale}dp${weight_p}_wd5e4_var/checkpoint_30.pth \
-#      --kernel-size ${kernel} \
-#      --downsample ${downsample} \
+#      --check-path Data/checkpoint/${model_dir} \
+#      --resume Data/checkpoint/${model_dir}/checkpoint_30.pth \
+#      --kernel-size ${kernel} --downsample ${downsample} \
 #      --channels 16,32,64,128 \
 #      --fast ${fast} --stride 2,1 \
 #      --block-type ${block_type} \
@@ -1005,15 +978,14 @@ if [ $stage -le 102 ]; then
 #      --encoder-type ${encoder_type} \
 #      --num-valid 2 \
 #      --alpha ${alpha} \
-#      --margin 0.2 --s 30 \
+#      --loss-type ${loss} --margin 0.2 --s 30 \
 #      --weight-decay 0.0005 \
 #      --dropout-p 0 \
 #      --gpu-id 0,1 \
-#      --extract \
-#      --cos-sim \
+#      --extract --cos-sim \
 #      --all-iteraion 0 \
-#      --remove-vad \
-#      --loss-type ${loss}
+#      --remove-vad
+#
   done
   exit
 fi
@@ -1034,8 +1006,7 @@ if [ $stage -le 200 ]; then
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=baseline
-  weight=vox2_rcf
+  mask_layer=baseline weight=vox2_rcf
         # --milestones 15,25,35,45 \
 
   for encoder_type in SAP2; do
@@ -1045,13 +1016,12 @@ if [ $stage -le 200 ]; then
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev_fb${input_dim}/trials_dir \
-      --train-trials trials_2w \
-      --shuffle \
+      --train-trials trials_2w --shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi \
       --random-chunk 200 400 \
-      --input-norm ${input_norm} \
+      --input-norm ${input_norm} --remove-vad
       --nj 12 --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
@@ -1072,9 +1042,7 @@ if [ $stage -le 200 ]; then
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0,1 \
-      --extract --cos-sim \
-      --remove-vad
-
+      --extract --cos-sim
 
 #    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/chn32_${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var
     # python TrainAndTest/train_egs.py \
@@ -1087,13 +1055,12 @@ if [ $stage -le 200 ]; then
     #   --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
     #   --feat-format kaldi \
     #   --random-chunk 200 400 \
-    #   --input-norm ${input_norm} \
+    #   --input-norm ${input_norm} --remove-vad \
     #   --nj 12 --epochs 60 \
     #   --batch-size ${batch_size} \
     #   --optimizer ${optimizer} --scheduler ${scheduler} \
     #   --lr 0.1 --base-lr 0.000006 \
-    #   --mask-layer ${mask_layer} \
-    #   --init-weight ${weight} \
+    #   --mask-layer ${mask_layer} --init-weight ${weight} \
     #   --milestones 10,20,30 \
     #   --check-path Data/checkpoint/${model_dir} \
     #   --resume Data/checkpoint/${model_dir}/checkpoint_40.pth \
@@ -1110,7 +1077,6 @@ if [ $stage -le 200 ]; then
     #   --dropout-p 0.1 \
     #   --gpu-id 0,1 \
     #   --extract --cos-sim --num-valid 2 \
-    #   --remove-vad \
     #   --loss-type ${loss}
   done
   exit

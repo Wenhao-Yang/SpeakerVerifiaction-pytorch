@@ -13,7 +13,6 @@ from __future__ import print_function
 
 import argparse
 import signal
-
 import yaml
 import os
 import os.path as osp
@@ -867,7 +866,7 @@ def main():
                     early_stopping_scheduler.early_stop = True
 
                 if config_args['scheduler'] != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
-                    if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
+                    if len(all_lr) > 5 and all_lr[-5] >= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
             # if torch.distributed.get_rank() == 0:
