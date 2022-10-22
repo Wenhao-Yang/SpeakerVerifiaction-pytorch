@@ -415,7 +415,7 @@ if [ $stage -le 21 ]; then
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 2.0;do
     for seed in 123456 ; do
-    for type in 1 01 2    ;do
+    for type in 1 01 2 ;do
 #    for type in 012 02 023 67 123 234 345 456 567 7 ;do
       #
      feat=fb${input_dim}
