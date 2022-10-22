@@ -28,11 +28,11 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [ 200, 400 ]
+random_chunk: [ 200, 200 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
-nj: 6
+nj: 8
 shuffle: False
 batch_shuffle: True
 
@@ -41,7 +41,7 @@ remove_vad: True
 
 
 ### Training settings
-epochs: 47
+epochs: 80
 
 # optimizer
 optimizer: sgd
@@ -54,7 +54,7 @@ accu_steps: 1
 
 
 # Scheduler
-patience: 3
+patience: 2
 milestones: [ 10,20,30,40 ]
 scheduler: rop
 lr: 0.1
@@ -77,7 +77,7 @@ kernel_size:
 alpha: 0
 avg_size: 5
 embedding_size: 256
-batch_size: 128
+batch_size: 256
 dropout_p: 0.0
 activation: relu
 channels: 16,32,64,128
@@ -93,7 +93,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   fast: !ref <fast>
   alpha: !ref <alpha>
   stride: [ 2, 1 ]
-  channels: [ 16, 32, 64, 128 ]
+  channels: [ 32, 64, 128, 256 ]
   dropout_p: 0.1
   avg_size: !ref <avg_size>
   encoder_type: !ref <encoder_type>
@@ -114,17 +114,17 @@ loss_type: !ref <loss>
 margin: 0.2
 # m: 0.2
 s: 30
-all_iteraion: 500
+all_iteraion: 0
 lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
-mixup_layer: -1
+mixup_layer: [ 1, 2, 3 ]
 mixup_type: manifold
 # stat_type: margin1
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde5_vares_bashuf2_dist_mani<mixup_layer>_lamda<lamda_beta>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde5_var2ses_bashuf2_dist_mani<mixup_layer>_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 #_chn32
 resume: !ref <check_path>/123456/checkpoint_13.pth

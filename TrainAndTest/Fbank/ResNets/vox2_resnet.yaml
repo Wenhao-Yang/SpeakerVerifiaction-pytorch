@@ -28,7 +28,7 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [ 200, 400 ]
+random_chunk: [ 200, 200 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
@@ -41,7 +41,7 @@ remove_vad: True
 
 
 ### Training settings
-epochs: 60
+epochs: 80
 
 # optimizer
 optimizer: sgd
@@ -54,7 +54,7 @@ accu_steps: 1
 
 
 # Scheduler
-patience: 3
+patience: 2
 milestones: [ 10,20,30,40 ]
 scheduler: rop
 lr: 0.1
@@ -77,7 +77,7 @@ kernel_size:
 alpha: 0
 avg_size: 5
 embedding_size: 256
-batch_size: 128
+batch_size: 256
 dropout_p: 0.0
 activation: relu
 channels: 32,64,128,256
@@ -120,7 +120,7 @@ mixup_type: input
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde5_vares_bashuf2_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde5_var2ses_bashuf2_dist
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_40.pth
 
