@@ -116,7 +116,7 @@ margin: 0.15
 s: 30
 #lamda_beta: 0.2
 #mixup_type: input
-lamda_beta: 2
+lamda_beta: 0.2
 proser_gamma: 1
 #_<proser_gamma>
 mixup_layer: [ 1,2,3 ]
