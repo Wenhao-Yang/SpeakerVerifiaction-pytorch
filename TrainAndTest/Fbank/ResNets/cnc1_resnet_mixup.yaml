@@ -98,12 +98,12 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   avg_size: !ref <avg_size>
   encoder_type: !ref <encoder_type>
   embedding_size: !ref <embedding_size>
-  num_classes: 797
+  num_classes: 800
   activation: relu
 
 classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
   feat_dim: !ref <embedding_size>
-  num_classes: 797
+  num_classes: 800
 
 
 # loss
