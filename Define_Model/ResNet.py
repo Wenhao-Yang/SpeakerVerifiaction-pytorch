@@ -1112,9 +1112,11 @@ class ThinResNet(nn.Module):
             layer_mix = random.randint(0, 2)
         else:
             layer_mix = mixup_alpha
+        if proser != None and layer_mix == 0:
+            x = self.mixup(x, proser, lamda_beta)
 
         x = self.input_mask(x)
-        if proser != None and layer_mix == 0:
+        if proser != None and layer_mix == 1:
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.conv1(x)
@@ -1123,24 +1125,24 @@ class ThinResNet(nn.Module):
         if self.maxpool != None:
             x = self.maxpool(x)
 
-        if proser != None and layer_mix == 1:
+        if proser != None and layer_mix == 2:
             x = self.mixup(x, proser, lamda_beta)
 
         # print(x.shape)
         group1 = self.layer1(x)
-        if proser != None and layer_mix == 2:
+        if proser != None and layer_mix == 3:
             group1 = self.mixup(group1, proser, lamda_beta)
 
         group2 = self.layer2(group1)
-        if proser != None and layer_mix == 3:
+        if proser != None and layer_mix == 4:
             group2 = self.mixup(group2, proser, lamda_beta)
 
         group3 = self.layer3(group2)
-        if proser != None and layer_mix == 4:
+        if proser != None and layer_mix == 5:
             group3 = self.mixup(group3, proser, lamda_beta)
 
         group4 = self.layer4(group3)
-        if proser != None and layer_mix == 5:
+        if proser != None and layer_mix == 6:
             group4 = self.mixup(group4, proser, lamda_beta)
 
         # print(x.shape)
@@ -1160,7 +1162,7 @@ class ThinResNet(nn.Module):
             x = self.encoder(x)
 
         x = x.view(x.size(0), -1)
-        if proser != None and layer_mix == 6:
+        if proser != None and layer_mix == 7:
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.fc1(x)
