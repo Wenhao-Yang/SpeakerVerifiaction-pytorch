@@ -2552,18 +2552,17 @@ if [ $stage -le 210 ]; then
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox2 testset=sitw
+  datasets=vox2 testset=sitw test_subset=test
   input_norm=Mean
 #  test_subset=
   block_type=basic
-  encoder_type=SAP2
-  embedding_size=256
+  encoder_type=SAP2 embedding_size=256
 
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k1
   fast=none1
-  test_subset=test
+
   chn=16
   mask_layer=rvec
 #  mask_layer=attention
@@ -2658,8 +2657,7 @@ if [ $stage -le 300 ]; then
   block_type=basic
   model=TDNN_v5
   embedding_size=512
-  train_set=cnceleb
-  test_set=cnceleb
+  train_set=cnceleb test_set=cnceleb
   subset=dev
   # 20210902 test
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
@@ -2672,14 +2670,12 @@ if [ $stage -le 300 ]; then
   #| cnceleb-test |  14.4973%   |   0.1296    |   0.7453    |    0.8601    | 20210902 12:50:19 | arcdist
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
 
-
   # for test_set in cnceleb; do # 32,128,512; 8,32,128
 #    --trials trials_${s} \
 #      --score-suffix ${s} \
 #      --extract \
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
-
 # --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch50_fix \
   #      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
   #   echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
@@ -2728,11 +2724,10 @@ if [ $stage -le 300 ]; then
      --context 5,3,3,5 \
      --nj 12 \
      --alpha 0 \
-     --margin 0.2 --s 30 \
+     --loss-type ${loss} --margin 0.2 --s 30 \
      --stride 1 \
      --block-type ${block_type} \
      --embedding-size ${embedding_size} \
-     --loss-type ${loss} \
      --encoder-type STAP \
      --input-length fix \
      --remove-vad \
@@ -2845,7 +2840,6 @@ if [ $stage -le 301 ]; then
 #  subset=dev
   subset=test
   epoch=13
-
 
 #       --trials subtrials/trials_${s} \
 #     --score-suffix ${s} \
