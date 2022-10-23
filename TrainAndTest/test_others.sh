@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=203
+stage=201
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2060,10 +2060,8 @@ if [ $stage -le 200 ]; then
       --input-norm Mean \
       --input-dim 161 \
       --nj 12 \
-      --mask-layer attention \
-      --init-weight vox2 \
+      --mask-layer attention --init-weight vox2 \
       --embedding-size ${embedding_size} \
-      --loss-type ${loss} \
       --fast none1 \
       --downsample ${downsample} \
       --encoder-type ${encod} \
@@ -2072,10 +2070,8 @@ if [ $stage -le 200 ]; then
       --stride 2,2 \
       --channels 16,32,64,128 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
-      --time-dim 1 \
-      --avg-size 5 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --time-dim 1 --avg-size 5 \
       --input-length var \
       --dropout-p 0.125 \
       --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
@@ -2210,7 +2206,6 @@ if [ $stage -le 200 ]; then
         --mask-layer ${mask_layer} --init-weight ${weight} \
         --weight-norm ${weight_norm} \
         --embedding-size ${embedding_size} \
-        --loss-type ${loss} \
         --fast ${fast} --downsample ${downsample} \
         --encoder-type ${encoder_type} \
         --block-type ${block_type} \
@@ -2218,7 +2213,7 @@ if [ $stage -le 200 ]; then
         --expansion ${expansion} \
         --channels ${channels} \
         --alpha ${alpha} \
-        --margin 0.2 --s 30 \
+        --loss-type ${loss} --margin 0.2 --s 30 \
         --time-dim 1 --avg-size ${avg_size} \
         --input-length var \
         --dropout-p 0.1 \
@@ -2380,7 +2375,7 @@ if [ $stage -le 201 ]; then
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
   for lamda_beta in 2.0 ;do
-  for mani in 01 1 2;do
+  for mani in 1234;do
   for seed in 123457 ;do
     model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani${mani}_lamda${lamda_beta}/${seed}
     python -W ignore TrainAndTest/test_egs.py \
