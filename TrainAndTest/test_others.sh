@@ -2497,7 +2497,7 @@ if [ $stage -le 203 ]; then
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
-  for testset in aishell2 ; do
+  for testset in cnceleb aishell2 ; do
 #  for subname in easy hard; do #  all  --trials trials_${subname} --score-suffix ${subname}
     if [ $resnet_size -le 34 ];then
       expansion=1
@@ -2514,7 +2514,7 @@ if [ $stage -le 203 ]; then
 #    _dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}
 #${input_norm}_batch${batch_size}_${block_type}_red2_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2
 #    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
-    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist_mani-1_lamda2/123456
+    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
 #         --extract \
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
