@@ -81,7 +81,8 @@ if __name__ == '__main__':
             leng.append(spks_this[idx])
             plt.scatter(group[:, 0], group[:, 1], color=c, s=10)
 
-    plt.legend(leng, loc="best", fontsize=18)
+    # plt.legend(leng, loc="best", fontsize=18)
+    # plt.xlim([])
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
     if args.out_pdf.endswith('pdf'):
