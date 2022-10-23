@@ -73,7 +73,7 @@ if __name__ == '__main__':
         assert len(this_points)>0, 'start:stop is %s:%s' %(start, stop)
         emb_group.append(this_points)
 
-    plt.figure(figsize=(8, 9))
+    plt.figure(figsize=(8, 8))
     leng = []
     for idx, group in enumerate(emb_group):
         if len(group) > 0:
@@ -81,7 +81,9 @@ if __name__ == '__main__':
             leng.append(spks_this[idx])
             plt.scatter(group[:, 0], group[:, 1], color=c, s=10)
 
-    plt.legend(leng, loc="best")
+    plt.legend(leng, loc="best", fontsize=18)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
     if args.out_pdf.endswith('pdf'):
         plt.savefig(args.out_pdf, format="pdf")
 
