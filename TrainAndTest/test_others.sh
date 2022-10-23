@@ -2355,7 +2355,7 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=ASTP2
   alpha=0
-  datasets=vox1 testset=vox1 test_subset=test
+  datasets=vox1 testset=vox1 test_subset=dev
 #  test_subset=
   block_type=seblock #basic
   red_ratio=2
@@ -2375,14 +2375,14 @@ if [ $stage -le 201 ]; then
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
   for lamda_beta in 2.0 ;do
-  for mani in 1234;do
+  for mani in 0 023;do
   for seed in 123456 ;do
     model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani${mani}_lamda${lamda_beta}/${seed}
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/test \
-      --train-trials trials_2w --trials trials \
+      --train-trials trials_2w --trials trials --test \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
       --test-dir ${lstm_dir}/data/${testset}/${test_subset} \
       --feat-format ${feat_format} --nj 12 \
@@ -2397,7 +2397,7 @@ if [ $stage -le 201 ]; then
       --test-input var --dropout-p 0.1 \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 1 --verbose 0 \
+      --gpu-id 0 --verbose 2 \
       --cos-sim
     done
     done
@@ -2465,7 +2465,7 @@ if [ $stage -le 203 ]; then
   feat=log
   alpha=0
 #  datasets=vox1 testset=vox1
-  datasets=vox2 testset=vox1 test_subset=test sname=dev
+  datasets=vox2 testset=vox1 test_subset=dev sname=dev
   block_type=seblock downsample=k1 expansion=1 red_ratio=2
   encoder_type=ASTP2
   embedding_size=256
@@ -2486,13 +2486,12 @@ if [ $stage -le 203 ]; then
   dummy=0
 #        --downsample ${downsample} \
 #      --trials trials_20w \
-#      --mask-layer attention \
-#      --init-weight vox2_rcf \
+#      --mask-layer attention --init-weight vox2_rcf \
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
-  for testset in cnceleb aishell2 ; do
+  for testset in vox1 ; do
 #  for subname in easy hard; do #  all  --trials trials_${subname} --score-suffix ${subname}
     if [ $resnet_size -le 34 ];then
       expansion=1
