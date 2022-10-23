@@ -2497,7 +2497,7 @@ if [ $stage -le 203 ]; then
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
-  for testset in cnceleb aishell2 ; do
+  for testset in aishell2 ; do
 #  for subname in easy hard; do #  all  --trials trials_${subname} --score-suffix ${subname}
     if [ $resnet_size -le 34 ];then
       expansion=1
