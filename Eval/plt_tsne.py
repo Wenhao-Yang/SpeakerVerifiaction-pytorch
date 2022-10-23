@@ -21,13 +21,13 @@ from Process_Data.constants import cValue_1
 
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
-parser.add_argument('--scp-file', type=str,
-                    default='Data/xvector/LoResNet8/vox1/spect_egs/arcsoft_dp25/xvectors.scp',
+parser.add_argument('--scp-file', type=str, default='Data/xvector/LoResNet8/vox1/spect_egs/arcsoft_dp25/xvectors.scp',
                     help='path to scp file for xvectors')
-parser.add_argument('--spk-len', default=7, type=int,
+parser.add_argument('--sid-length', default=7, type=int,
                     help='num of speakers to plot (default: 10)')
-parser.add_argument('--num-spk', default=30, type=int,
+parser.add_argument('--num-spk', default=7, type=int,
                     help='num of speakers to plot (default: 10)')
+parser.add_argument('--out-pdf', default='', type=str, help='num of speakers to plot (default: 10)')
 
 args = parser.parse_args()
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     spks = []
     for key in vects:
-        s = key[:args.spk_len]
+        s = key[:args.sid_length]
         if s not in spks:
             spks.append(s)
 
@@ -50,10 +50,10 @@ if __name__ == '__main__':
     for s in spks_this:
         spk2vec[s] = []
     for key in vects:
-        if key[:args.spk_len] in spks_this:
+        if key[:args.sid_length] in spks_this:
             this_vec = vects[key]
             vec_len = len(this_vec)
-            spk2vec[key[:args.spk_len]].append(this_vec.reshape(1, vec_len))
+            spk2vec[key[:args.sid_length]].append(this_vec.reshape(1, vec_len))
 
     all = []
     all_len = [0]
@@ -73,14 +73,16 @@ if __name__ == '__main__':
         assert len(this_points)>0, 'start:stop is %s:%s' %(start, stop)
         emb_group.append(this_points)
 
-    plt.figure(figsize=(12, 9))
+    plt.figure(figsize=(8, 9))
     leng = []
-    for idx, group in enumerate(emb_group) :
-        if len(group)>0:
+    for idx, group in enumerate(emb_group):
+        if len(group) > 0:
             c = cValue_1[idx]
             leng.append(spks_this[idx])
-            plt.scatter(group[:,0], group[:, 1], color=c, s=10)
+            plt.scatter(group[:, 0], group[:, 1], color=c, s=10)
 
     plt.legend(leng, loc="best")
-    plt.show()
+    if args.out_pdf.endswith('pdf'):
+        plt.savefig(args.out_pdf, format="pdf")
 
+    plt.show()
