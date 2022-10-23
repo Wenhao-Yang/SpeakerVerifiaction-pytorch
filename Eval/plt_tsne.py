@@ -131,7 +131,6 @@ if __name__ == '__main__':
     for spk in spk2vec:
         spk_con = np.concatenate(spk2vec[spk])
         all_vectors.append(spk_con)
-
     all_vectors = np.concatenate(all_vectors, axis=0)
 
     overall_mean = np.mean(all_vectors, axis=0)
