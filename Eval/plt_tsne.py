@@ -127,6 +127,13 @@ if __name__ == '__main__':
     within_var = np.sum(within_var) / np.sum(spk2num_utt)
 
     # between_var = np.var(all_vectors, axis=0).sum() - within_var
+    all_vectors = []
+    for spk in spk2vec:
+        spk_con = np.concatenate(spk2vec[spk])
+        all_vectors.append(spk_con)
+
+    all_vectors = np.concatenate(all_vectors, axis=0)
+
     overall_mean = np.mean(all_vectors, axis=0)
     between_var = 0
     for spk in spk2vec:
