@@ -2536,7 +2536,7 @@ if [ $stage -le 203 ]; then
       --time-dim 1 --avg-size ${avg_size} --dropout-p 0.1 \
       --test-input var \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
-      --resume Data/checkpoint/${model_dir}/checkpoint_42.pth \
+      --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 1 --verbose 0 \
       --cos-sim
   done
