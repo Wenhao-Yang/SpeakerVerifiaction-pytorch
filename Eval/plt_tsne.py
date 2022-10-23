@@ -48,7 +48,7 @@ if __name__ == '__main__':
     spks_this = spks[:args.num_spk] if len(spks) > args.num_spk else spks
 
     spk2vec = {}
-    for s in spks_this:
+    for s in spks:
         spk2vec[s] = []
 
     for key in vects:
