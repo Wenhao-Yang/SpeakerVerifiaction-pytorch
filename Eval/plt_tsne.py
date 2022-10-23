@@ -38,26 +38,28 @@ if __name__ == '__main__':
         for key, numpy_array in reader:
             vects[key] = numpy_array
 
-    spks = []
+    spks = set([])
     for key in vects:
         s = key[:args.sid_length]
-        if s not in spks:
-            spks.append(s)
+        spks.add(s)
 
+    spks = list(spks)
     spks.sort()
     spks_this = spks[:args.num_spk] if len(spks) > args.num_spk else spks
+
     spk2vec = {}
     for s in spks_this:
         spk2vec[s] = []
+
     for key in vects:
-        if key[:args.sid_length] in spks_this:
-            this_vec = vects[key]
-            vec_len = len(this_vec)
-            spk2vec[key[:args.sid_length]].append(this_vec.reshape(1, vec_len))
+        # if key[:args.sid_length] in spks_this:
+        this_vec = vects[key]
+        vec_len = len(this_vec)
+        spk2vec[key[:args.sid_length]].append(this_vec.reshape(1, vec_len))
 
     all_vectors = []
     all_len = [0]
-    for spk in spk2vec:
+    for spk in spks_this:
         spk_con = np.concatenate(spk2vec[spk])
         all_len.append(len(spk_con))
         all_vectors.append(spk_con)
