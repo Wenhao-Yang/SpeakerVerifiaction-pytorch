@@ -23,7 +23,7 @@ if [ $stage -le 1 ]; then
 fi
 
 if [ $stage -le 2 ]; then
-  num_spk=10
+  num_spk=20
   distance=cos
   python Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/vox1_test_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/baseline.v1.pdf \
     --num-spk ${num_spk} --distance ${distance}
