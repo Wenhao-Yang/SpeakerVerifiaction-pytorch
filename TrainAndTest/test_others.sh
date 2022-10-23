@@ -1901,21 +1901,17 @@ if [ $stage -le 97 ]; then
   exit
 fi
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
-
 #|     vox1-test     |   3.3245    |   0.2646    |    0.3348     |    0.4285     | 20220826 17:49:48 |
 #|     vox1-test     |   3.1442    |   0.2583    |    0.2946     |    0.3872     | 20220826 17:52:01 |
 #|     vox1-test     |   3.4464    |   0.2494    |    0.3261     |    0.4060     | 20220826 17:54:15 |
 #
-
-
 
 # ===============================    MultiResNet    ===============================
 
 if [ $stage -le 100 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=army
-  model=MultiResNet
-  resnet_size=18
+  model=MultiResNet resnet_size=18
   #  loss=soft
   encod=None
   transform=None
@@ -1991,9 +1987,7 @@ if [ $stage -le 101 ]; then
       --stride 2 \
       --channels 64,128,256,256 \
       --alpha 12 \
-      --margin 0.3 \
-      --s 30 \
-      --m 3 \
+      --margin 0.3 --s 30 --m 3 \
       --input-length var \
       --frame-shift 300 \
       --dropout-p 0.1 \
@@ -2007,7 +2001,7 @@ fi
 
 if [ $stage -le 200 ]; then
   feat_type=klsp
-  model=ThinResNet
+  model=ThinResNet resnet_size=34
   feat=log
   loss=arcsoft
   encod=AVG
@@ -2018,7 +2012,6 @@ if [ $stage -le 200 ]; then
   block_type=basic_v2
   encoder_type=None
   embedding_size=256
-  resnet_size=34
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k5
@@ -2047,10 +2040,8 @@ if [ $stage -le 200 ]; then
       --stride 2,2 \
       --channels 16,32,64,128 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
-      --time-dim 1 \
-      --avg-size 5 \
+      --margin 0.2 --s 30 \
+      --time-dim 1 --avg-size 5 \
       --input-length var \
       --dropout-p 0.25 \
       --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
@@ -2059,8 +2050,7 @@ if [ $stage -le 200 ]; then
       --cos-sim
 
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
@@ -2119,7 +2109,6 @@ if [ $stage -le 200 ]; then
 #|     vox1-dev      |   0.4600    |   0.3283    |   0.0631    |    0.1092    | 20211221 23:43:06 |
 #|     vox1-test     |   3.5790    |   0.2471    |   0.4012    |    0.5222    | 20211221 23:17:22 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-
 fi
 
 
@@ -2216,9 +2205,8 @@ if [ $stage -le 200 ]; then
         --score-suffix ${sub_trials} \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-        --feat-format kaldi \
+        --feat-format kaldi --nj 12 \
         --input-norm ${input_norm} --input-dim 161 \
-        --nj 12 \
         --mask-layer ${mask_layer} --init-weight ${weight} \
         --weight-norm ${weight_norm} \
         --embedding-size ${embedding_size} \
@@ -2226,9 +2214,8 @@ if [ $stage -le 200 ]; then
         --fast ${fast} --downsample ${downsample} \
         --encoder-type ${encoder_type} \
         --block-type ${block_type} \
-        --kernel-size 5,5 \
+        --kernel-size 5,5 --stride 2,2 \
         --expansion ${expansion} \
-        --stride 2,2 \
         --channels ${channels} \
         --alpha ${alpha} \
         --margin 0.2 --s 30 \
@@ -2473,8 +2460,6 @@ if [ $stage -le 202 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|  aishell2-test    |   12.17     |    -----    |   0.8454    |    0.9474    | 20211210 15:47:27 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-
-
   exit
 fi
 
@@ -2512,7 +2497,7 @@ if [ $stage -le 203 ]; then
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
-  for testset in vox1 sitw ; do
+  for testset in cnceleb aishell2 ; do
 #  for subname in easy hard; do #  all  --trials trials_${subname} --score-suffix ${subname}
     if [ $resnet_size -le 34 ];then
       expansion=1
