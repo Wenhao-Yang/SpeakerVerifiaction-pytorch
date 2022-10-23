@@ -55,22 +55,22 @@ if __name__ == '__main__':
             vec_len = len(this_vec)
             spk2vec[key[:args.sid_length]].append(this_vec.reshape(1, vec_len))
 
-    all = []
+    all_vectors = []
     all_len = [0]
     for spk in spk2vec:
         spk_con = np.concatenate(spk2vec[spk])
         all_len.append(len(spk_con))
-        all.append(spk_con)
+        all_vectors.append(spk_con)
 
-    all = np.concatenate(all, axis=0)
-    S_embedded = TSNE(n_components=2).fit_transform(all)
+    all_vectors = np.concatenate(all_vectors, axis=0)
+    S_embedded = TSNE(n_components=2).fit_transform(all_vectors)
 
     emb_group = []
-    for i in range(len(all_len)-1):
-        start = np.sum(all_len[:(i+1)]).astype(np.int32)
-        stop = np.sum(all_len[:(i+2)]).astype(np.int32)
+    for i in range(len(all_len) - 1):
+        start = np.sum(all_len[:(i + 1)]).astype(np.int32)
+        stop = np.sum(all_len[:(i + 2)]).astype(np.int32)
         this_points = S_embedded[start:stop]
-        assert len(this_points)>0, 'start:stop is %s:%s' %(start, stop)
+        assert len(this_points) > 0, 'start:stop is %s:%s' % (start, stop)
         emb_group.append(this_points)
 
     plt.figure(figsize=(8, 8))
@@ -88,3 +88,21 @@ if __name__ == '__main__':
         plt.savefig(args.out_pdf, format="pdf")
 
     plt.show()
+
+    within_vars = []
+    spk2num_utt = []
+    for spk in spk2vec:
+        within_vars.append(np.var(spk2vec[spk], axis=0).sum())
+        spk2num_utt.append(len(spk2vec[spk]))
+
+    within_var = np.array(within_vars) * np.array(spk2num_utt)
+    within_var = np.sum(within_var) / np.sum(spk2num_utt)
+
+    # between_var = np.var(all_vectors, axis=0).sum() - within_var
+    overall_mean = np.mean(all_vectors, axis=0)
+    between_var = 0
+    for spk in spk2vec:
+        between_var += np.sum((np.mean(spk2vec[spk], axis=0) - overall_mean) ** 2) * len(spk2vec[spk])
+    between_var /= np.sum(spk2num_utt)
+
+    print("Variance Within-Class Between-Class\n", '         {:>7.4f}    {:>7.4f}'.format(within_var, between_var))
