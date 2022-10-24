@@ -2355,7 +2355,7 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=ASTP2
   alpha=0
-  datasets=vox1 testset=vox1 test_subset=dev
+  datasets=vox1 testset=sitw test_subset=test
 #  test_subset=
   block_type=seblock #basic
   red_ratio=2
@@ -2379,12 +2379,12 @@ if [ $stage -le 201 ]; then
   for seed in 123456 ;do
     model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/${seed}
     # _mani${mani}_lamda${lamda_beta}
-    #
+    # _hard --extract
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/test \
-      --train-trials trials_2w --trials trials_hard --extract \
+      --train-trials trials_2w --trials trials \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
       --test-dir ${lstm_dir}/data/${testset}/${test_subset} \
       --feat-format ${feat_format} --nj 12 \
