@@ -126,8 +126,8 @@ if __name__ == '__main__':
                 plt.scatter(group[:, 0], group[:, 1], color=c, s=25)
 
         # plt.legend(leng, loc="best", fontsize=18)
-        plt.xlim([-20, 20])
-        plt.ylim([-20, 20])
+        # plt.xlim([-20, 20])
+        # plt.ylim([-20, 20])
         plt.xticks(fontsize=16, fontproperties=font)
         plt.yticks(fontsize=16, fontproperties=font)
         if args.out_pdf.endswith('pdf'):
