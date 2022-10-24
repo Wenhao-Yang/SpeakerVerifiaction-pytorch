@@ -20,6 +20,7 @@ from sklearn.manifold import TSNE
 
 # Training settings
 from Process_Data.constants import cValue_1
+from matplotlib.font_manager import FontProperties
 
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
@@ -106,6 +107,7 @@ if __name__ == '__main__':
             emb_group.append(this_points)
 
         plt.figure(figsize=(6, 6))
+        font = FontProperties(fname='/home/yangwenhao/font/TimesNewRoman.ttf')
         # plt.rc('font', family='Times New Roman', weight='semibold')
 
         leng = []
@@ -117,8 +119,8 @@ if __name__ == '__main__':
 
         # plt.legend(leng, loc="best", fontsize=18)
         # plt.xlim([])
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16, fontproperties=font)
+        plt.yticks(fontsize=16, fontproperties=font)
         if args.out_pdf.endswith('pdf'):
             plt.savefig(args.out_pdf, format="pdf")
 
