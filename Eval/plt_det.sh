@@ -44,7 +44,7 @@ if [ $stage -le 3 ]; then
   num_spk=20
   distance=cos
   dataset=vox1
-  subset=dev #test
+  subset=test #test
   python -W ignore Eval/filter_vectors.py --score-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/score.2022.10.17.21:43:35 \
     --trials ${lstm_dir}/data/vox1/test/trials \
     --threshold 0.2446 \
