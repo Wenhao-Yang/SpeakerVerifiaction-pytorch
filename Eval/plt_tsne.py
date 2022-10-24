@@ -10,7 +10,7 @@
 @Overview:
 """
 import argparse
-
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 from kaldiio import ReadHelper
@@ -29,6 +29,7 @@ parser.add_argument('--num-spk', default=7, type=int,
                     help='num of speakers to plot (default: 10)')
 parser.add_argument('--out-pdf', default='', type=str, help='num of speakers to plot (default: 10)')
 parser.add_argument('--distance', default='l2', type=str, help='num of speakers to plot (default: 10)')
+parser.add_argument('--hard-vector', default='', type=str, help='num of speakers to plot (default: 10)')
 
 args = parser.parse_args()
 
@@ -58,6 +59,12 @@ if __name__ == '__main__':
     spks.sort()
     spks_this = spks[:args.num_spk] if len(spks) > args.num_spk else spks
 
+    hard_uids = set([])
+    if os.path.exists(args.hard_vector):
+        with open(args.hard_vector, 'r') as f:
+            for uid in f.readlines():
+                hard_uids.add(uid.rstrip('\n'))
+
     spk2vec = {}
     for s in spks:
         spk2vec[s] = []
@@ -66,7 +73,8 @@ if __name__ == '__main__':
         # if key[:args.sid_length] in spks_this:
         this_vec = vects[key]
         vec_len = len(this_vec)
-        spk2vec[key[:args.sid_length]].append(this_vec.reshape(1, vec_len))
+        if (len(hard_uids) > 0 and key in hard_uids) or len(hard_uids) == 0:
+            spk2vec[key[:args.sid_length]].append(this_vec.reshape(1, vec_len))
 
     all_vectors = []
     all_len = [0]
