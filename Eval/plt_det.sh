@@ -55,7 +55,7 @@ if [ $stage -le 3 ]; then
   dataset=vox1
   subset=dev #test
 
-  model_dir=Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist
+  model_dir=Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani023_lamda2.0
 
   python -W ignore Eval/filter_vectors.py --score-file ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/score.2022.10.24.21:49:19 \
     --trials ${lstm_dir}/data/vox1/dev/trials_hard \
