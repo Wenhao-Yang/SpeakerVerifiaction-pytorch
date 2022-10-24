@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from kaldiio import ReadHelper
 from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 
 # Training settings
 from Process_Data.constants import cValue_1
@@ -30,6 +31,7 @@ parser.add_argument('--sid-length', default=7, type=int,
                     help='num of speakers to plot (default: 10)')
 parser.add_argument('--num-spk', default=7, type=int,
                     help='num of speakers to plot (default: 10)')
+parser.add_argument('--pca-dim', default=0, type=int, help='num of speakers to plot (default: 10)')
 parser.add_argument('--out-pdf', default='', type=str, help='num of speakers to plot (default: 10)')
 parser.add_argument('--distance', default='l2', type=str, help='num of speakers to plot (default: 10)')
 parser.add_argument('--hard-vector', type=str, help='num of speakers to plot (default: 10)')
@@ -96,6 +98,11 @@ if __name__ == '__main__':
                 all_vectors.append(spk_con)
 
         all_vectors = np.concatenate(all_vectors, axis=0)
+
+        if args.pca_dim > 0:
+            pca = PCA(n_components=args.pca_dim)
+            all_vectors = pca.fit_transform(all_vectors)
+
         S_embedded = TSNE(n_components=2).fit_transform(all_vectors)
 
         emb_group = []
