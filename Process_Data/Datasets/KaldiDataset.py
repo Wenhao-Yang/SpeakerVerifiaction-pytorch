@@ -556,9 +556,11 @@ class KaldiExtractDataset(data.Dataset):
                 for line in all_cls:
                     # utt_path = line.split(' ')
                     utt_path = line.split()
+                    upath_idx = 11 if len(utt_path) > 2 else 1
+
                     uid = utt_path[0]
                     if uid in trials_utts:
-                        uid2feat[uid] = utt_path[-1]
+                        uid2feat[uid] = utt_path[-upath_idx]
 
         else:
             if verbose > 0:
