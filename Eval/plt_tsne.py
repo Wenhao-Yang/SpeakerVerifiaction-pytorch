@@ -89,9 +89,10 @@ if __name__ == '__main__':
 
     if args.num_spk > 0:
         for spk in spks_this:
-            spk_con = np.concatenate(spk2vec[spk])
-            all_len.append(len(spk_con))
-            all_vectors.append(spk_con)
+            if len(spk2vec[spk]) > 0:
+                spk_con = np.concatenate(spk2vec[spk])
+                all_len.append(len(spk_con))
+                all_vectors.append(spk_con)
 
         all_vectors = np.concatenate(all_vectors, axis=0)
         S_embedded = TSNE(n_components=2).fit_transform(all_vectors)
