@@ -132,7 +132,7 @@ if __name__ == '__main__':
                 leng.append(spks_this[idx])
                 plt.scatter(group[:, 0], group[:, 1], color=c, s=25, alpha=0.4)
 
-        plt.legend(leng, loc="best", fontsize=10)  # , fontproperties=font)
+        plt.legend(leng, loc="best", fontsize=10, bbox_to_anchor=(1, 1.05), borderaxespad=1)  # , fontproperties=font)
         # plt.xlim([-20, 20])
         # plt.ylim([-20, 20])
         plt.xticks(fontsize=16, fontproperties=font)
