@@ -25,19 +25,19 @@ if [ $stage -le 1 ]; then
 fi
 
 if [ $stage -le 2 ]; then
-  num_spk=20
+  num_spk=5
   distance=cos
   dataset=vox1
   subset=test #test
-#  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/baseline.v1.pdf \
-#    --hard-vector Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors \
-#    --num-spk ${num_spk} --distance ${distance}
+  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/baseline.v1.5_0.1.pdf \
+    --hard-vector Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors \
+    --num-spk ${num_spk} --distance ${distance}
 
-  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani0_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold0.v1.pdf \
+  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani0_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold0.v1.5_0.1.pdf \
     --num-spk ${num_spk} --distance ${distance} \
     --hard-vector Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
 #
-  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold023.v1.pdf \
+  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold023.v1.5_0.1.pdf \
     --num-spk ${num_spk} --distance ${distance} \
     --hard-vector Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
   exit
