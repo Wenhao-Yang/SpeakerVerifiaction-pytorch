@@ -838,7 +838,7 @@ def main():
             torch.distributed.barrier()
             if not torch.distributed.is_initialized():
                 break
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
+            # train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
             if config_args['early_stopping'] or (
                     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
