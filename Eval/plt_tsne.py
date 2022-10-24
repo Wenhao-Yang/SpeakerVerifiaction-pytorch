@@ -31,7 +31,7 @@ parser.add_argument('--num-spk', default=7, type=int,
                     help='num of speakers to plot (default: 10)')
 parser.add_argument('--out-pdf', default='', type=str, help='num of speakers to plot (default: 10)')
 parser.add_argument('--distance', default='l2', type=str, help='num of speakers to plot (default: 10)')
-parser.add_argument('--hard-vector', default='', type=str, help='num of speakers to plot (default: 10)')
+parser.add_argument('--hard-vector', type=str, help='num of speakers to plot (default: 10)')
 
 args = parser.parse_args()
 
