@@ -61,7 +61,7 @@ if [ $stage -le 3 ]; then
     --trials ${lstm_dir}/data/vox1/dev/trials_hard \
     --threshold 0.2984 \
     --output-file ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors \
-    --confidence-interval -0.1
+    --confidence-interval 0.0
 
 #  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani0_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold0.v1.pdf \
 #    --num-spk ${num_spk} --distance ${distance}
