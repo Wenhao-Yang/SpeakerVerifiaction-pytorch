@@ -69,12 +69,17 @@ if __name__ == '__main__':
     for s in spks:
         spk2vec[s] = []
 
+    skip = 0
     for key in vects:
         # if key[:args.sid_length] in spks_this:
         this_vec = vects[key]
         vec_len = len(this_vec)
         if (len(hard_uids) > 0 and key in hard_uids) or len(hard_uids) == 0:
             spk2vec[key[:args.sid_length]].append(this_vec.reshape(1, vec_len))
+        else:
+            skip += 1
+
+    print('Skip vectors: ', skip)
 
     all_vectors = []
     all_len = [0]
