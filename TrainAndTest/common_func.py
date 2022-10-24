@@ -386,6 +386,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
         # if batch_idx % log_interval == 0:
         #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
         #         epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
+    torch.distributed.barrier()
 
     if torch.distributed.is_initialized():
         all_labels = [None for _ in range(torch.distributed.get_world_size())]
@@ -396,9 +397,18 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
 
         # print(len(all_labels), all_distances)
         if torch.distributed.get_rank() == 0:
+            # for d in all_distances:
             try:
-                distances = np.concatenate(all_distances)
-                labels = np.concatenate(all_labels)
+                valid_distances = []
+                valid_labels = []
+                for d in range(len(all_distances)):
+                    d_shape = np.array(all_distances[d]).shape
+                    if d_shape[-1] != 0:
+                        valid_distances.append(np.array(all_distances[d]))
+                        valid_labels.append(np.array(all_labels[d]))
+
+                distances = np.concatenate(valid_distances)
+                labels = np.concatenate(valid_labels)
             except Exception as e:
                 print(e)
                 print(all_distances, all_labels)
