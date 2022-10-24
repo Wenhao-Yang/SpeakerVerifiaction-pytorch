@@ -100,6 +100,7 @@ if __name__ == '__main__':
         all_vectors = np.concatenate(all_vectors, axis=0)
 
         if args.pca_dim > 0:
+            print('PCA... dimension is reduced to ', args.pca_dim)
             pca = PCA(n_components=args.pca_dim)
             all_vectors = pca.fit_transform(all_vectors)
 
