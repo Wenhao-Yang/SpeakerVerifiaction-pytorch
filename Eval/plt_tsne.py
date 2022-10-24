@@ -121,7 +121,7 @@ if __name__ == '__main__':
             assert len(this_points) > 0, 'start:stop is %s:%s' % (start, stop)
             emb_group.append(this_points)
 
-        plt.figure(figsize=(6, 6))
+        plt.figure(figsize=(5, 5))
         font = FontProperties(fname='/home/yangwenhao/font/TimesNewRoman.ttf')
         # plt.rc('font', family='Times New Roman', weight='semibold')
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
             if len(group) > 0:
                 c = cValue_1[idx]
                 leng.append(spks_this[idx])
-                plt.scatter(group[:, 0], group[:, 1], color=c, s=30, alpha=0.5)
+                plt.scatter(group[:, 0], group[:, 1], color=c, s=25, alpha=0.5)
 
         # plt.legend(leng, loc="best", fontsize=18)
         # plt.xlim([-20, 20])
