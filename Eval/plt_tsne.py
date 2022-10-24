@@ -69,6 +69,8 @@ if __name__ == '__main__':
             for uid in f.readlines():
                 hard_uids.add(uid.rstrip('\n'))
         print('The number of hard utterances is ', len(hard_uids))
+    else:
+        print('There is no hard samples: ', args.hard_vector)
 
     spk2vec = {}
     for s in spks:
