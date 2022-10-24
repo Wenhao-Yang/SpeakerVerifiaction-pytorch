@@ -104,7 +104,7 @@ if __name__ == '__main__':
             pca = PCA(n_components=args.pca_dim)
             all_vectors = pca.fit_transform(all_vectors)
 
-        S_embedded = TSNE(n_components=2).fit_transform(all_vectors)
+        S_embedded = TSNE(n_components=2, metric='cosine').fit_transform(all_vectors)
 
         emb_group = []
         for i in range(len(all_len) - 1):
