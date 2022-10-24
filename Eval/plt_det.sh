@@ -37,15 +37,15 @@ if [ $stage -le 2 ]; then
     --num-spk ${num_spk} --distance ${distance} \
     --pca-dim 64
 
-  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}_mani0_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/input.pdf \
-    --num-spk ${num_spk} --distance ${distance} \
-    --pca-dim 64 \
-    --hard-vector ${model_dir}_dist_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
-#
-  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold.pdf \
-    --num-spk ${num_spk} --distance ${distance} \
-    --pca-dim 64 \
-    --hard-vector ${model_dir}_dist_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
+#  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}_mani0_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/input.pdf \
+#    --num-spk ${num_spk} --distance ${distance} \
+#    --pca-dim 64 \
+#    --hard-vector ${model_dir}_dist_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
+##
+#  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold.pdf \
+#    --num-spk ${num_spk} --distance ${distance} \
+#    --pca-dim 64 \
+#    --hard-vector ${model_dir}_dist_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
   exit
 fi
 

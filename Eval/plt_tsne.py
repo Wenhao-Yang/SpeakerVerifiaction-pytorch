@@ -111,7 +111,6 @@ if __name__ == '__main__':
             all_vectors = pca.fit_transform(all_vectors)
 
         S_embedded = TSNE(n_components=2, metric='cosine').fit_transform(all_vectors)
-
         emb_group = []
         for i in range(len(all_len) - 1):
             start = np.sum(all_len[:(i + 1)]).astype(np.int32)
@@ -129,7 +128,7 @@ if __name__ == '__main__':
             if len(group) > 0:
                 c = cValue_1[idx]
                 leng.append(spks_this[idx])
-                plt.scatter(group[:, 0], group[:, 1], color=c, s=25)
+                plt.scatter(group[:, 0], group[:, 1], color=c, s=25, alpha=0.5)
 
         # plt.legend(leng, loc="best", fontsize=18)
         # plt.xlim([-20, 20])
