@@ -2355,7 +2355,7 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=ASTP2
   alpha=0
-  datasets=vox1 testset=aishell2 test_subset=dev
+  datasets=vox1 testset=vox1 test_subset=dev
 #  test_subset=
   block_type=seblock #basic
   red_ratio=2
