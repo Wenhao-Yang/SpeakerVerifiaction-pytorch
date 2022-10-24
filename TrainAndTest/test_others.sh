@@ -2377,8 +2377,8 @@ if [ $stage -le 201 ]; then
   for lamda_beta in 2.0 ;do
   for mani in 0;do
   for seed in 123456 ;do
-    model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist
-    #_mani${mani}_lamda${lamda_beta}/${seed}
+    model_dir=ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/${seed}
+    #_mani${mani}_lamda${lamda_beta}
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
