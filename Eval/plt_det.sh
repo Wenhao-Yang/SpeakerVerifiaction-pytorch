@@ -33,7 +33,7 @@ if [ $stage -le 2 ]; then
   model_dir=Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist
 
   python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/baseline.pdf \
-    --hard-vector ${model_dir}_dist_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors \
+    --hard-vector ${model_dir}_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors \
     --num-spk ${num_spk} --distance ${distance} \
     --pca-dim 64
 
