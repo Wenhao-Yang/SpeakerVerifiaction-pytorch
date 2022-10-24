@@ -157,7 +157,7 @@ if __name__ == '__main__':
     for spk in spk2vec:
         if len(spk2vec[spk]) > 0:
         # between_var += np.sum((np.mean(spk2vec[spk], axis=0)-overall_mean)**2) * len(spk2vec[spk])
-        between_var += dist_fn(np.mean(spk2vec[spk], axis=0), overall_mean) ** 2 * len(spk2vec[spk])
+            between_var += dist_fn(np.mean(spk2vec[spk], axis=0), overall_mean) ** 2 * len(spk2vec[spk])
 
     between_var /= np.sum(spk2num_utt)
 
