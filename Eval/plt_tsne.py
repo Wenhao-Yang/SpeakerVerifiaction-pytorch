@@ -11,6 +11,8 @@
 """
 import argparse
 import os
+import pdb
+
 import matplotlib.pyplot as plt
 import numpy as np
 from kaldiio import ReadHelper
@@ -69,6 +71,7 @@ if __name__ == '__main__':
     for s in spks:
         spk2vec[s] = []
 
+    pdb.set_trace()
     skip = 0
     for key in vects:
         # if key[:args.sid_length] in spks_this:
