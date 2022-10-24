@@ -62,7 +62,6 @@ if __name__ == '__main__':
 
     spks = list(spks)
     spks.sort()
-    spks_this = spks[:args.num_spk] if len(spks) > args.num_spk else spks
 
     hard_uids = set([])
     if os.path.exists(args.hard_vector):
@@ -86,7 +85,13 @@ if __name__ == '__main__':
             skip += 1
 
     print('Skip vectors: ', skip)
-
+    spks_this = []
+    for spk in spks:
+        if len(spk2vec[spk]) > 0:
+            spks_this.append(spk)
+            if len(spks_this) >= args.num_spk:
+                break
+    # spks_this = spks[:args.num_spk] if len(spks) > args.num_spk else spks
     all_vectors = []
     all_len = [0]
 
