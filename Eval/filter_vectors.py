@@ -39,6 +39,7 @@ ambigous_uids = set([])
 with open(args.score_file, 'r') as f:
     i = 0
     for l in f.readlines():
+        a, b = pairs[i]
         result, score = l.split()
         score = float(score)
 
@@ -50,6 +51,7 @@ with open(args.score_file, 'r') as f:
             if threshold - score <= Confidence_interval:
                 ambigous_uids.add(a)
                 ambigous_uids.add(b)
+        i += 1
 
 with open(args.output_file, 'w') as f:
     for uid in list(ambigous_uids):
