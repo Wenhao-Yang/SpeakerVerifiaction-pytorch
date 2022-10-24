@@ -68,6 +68,7 @@ if __name__ == '__main__':
         with open(args.hard_vector, 'r') as f:
             for uid in f.readlines():
                 hard_uids.add(uid.rstrip('\n'))
+        print('The number of hard utterances is ', len(hard_uids))
 
     spk2vec = {}
     for s in spks:
