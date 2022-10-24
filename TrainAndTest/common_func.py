@@ -396,8 +396,12 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
 
         # print(len(all_labels), all_distances)
         if torch.distributed.get_rank() == 0:
-            distances = np.concatenate(all_distances)
-            labels = np.concatenate(all_labels)
+            try:
+                distances = np.concatenate(all_distances)
+                labels = np.concatenate(all_labels)
+            except Exception as e:
+                print(e)
+                print(all_distances, all_labels)
             # print('uid2vectors:', len(uid2vectors))
 
             labels = np.array([sublabel for label in labels for sublabel in label])

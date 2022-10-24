@@ -1239,7 +1239,7 @@ if [ $stage -le 300 ]; then
 
      CUDA_VISIBLE_DEVICES=2,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417440 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox2_resnet.yaml --seed=${seed}
 
-     CUDA_VISIBLE_DEVICES=2,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417440 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox2_resnet_mixup.yaml --seed=${seed}
+#     CUDA_VISIBLE_DEVICES=2,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417440 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox2_resnet_mixup.yaml --seed=${seed}
   done
   exit
 fi
