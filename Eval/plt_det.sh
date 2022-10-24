@@ -29,20 +29,23 @@ if [ $stage -le 2 ]; then
   distance=cos
   dataset=vox1
   subset=test #test
-  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/baseline.pdf \
-    --hard-vector Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors \
+
+  model_dir=Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist
+
+  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/baseline.pdf \
+    --hard-vector ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors \
     --num-spk ${num_spk} --distance ${distance} \
     --pca-dim 64
 
-  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani0_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/input.pdf \
+  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}_mani0_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/input.pdf \
     --num-spk ${num_spk} --distance ${distance} \
     --pca-dim 64 \
-    --hard-vector Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
+    --hard-vector ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
 #
-  python -W ignore Eval/plt_tsne.py --scp-file Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold.pdf \
+  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold.pdf \
     --num-spk ${num_spk} --distance ${distance} \
     --pca-dim 64 \
-    --hard-vector Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
+    --hard-vector ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
   exit
 fi
 
@@ -65,3 +68,27 @@ if [ $stage -le 3 ]; then
 
 fi
 
+if [ $stage -le 2 ]; then
+  num_spk=10
+  distance=cos
+  dataset=vox1
+  subset=test #test
+
+  model_dir=Data/xvector/ThinResNet34/vox1/wave_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_var2ses_bashuf2_dist
+
+  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/baseline.pdf \
+    --hard-vector ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors \
+    --num-spk ${num_spk} --distance ${distance} \
+    --pca-dim 64
+
+  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}_mani0_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/input.pdf \
+    --num-spk ${num_spk} --distance ${distance} \
+    --pca-dim 64 \
+    --hard-vector ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
+#
+  python -W ignore Eval/plt_tsne.py --scp-file ${model_dir}_mani023_lamda2.0/123456/${dataset}_${subset}_var/testwidth1.000000/xvectors.scp --out-pdf Misc/data/manifold.pdf \
+    --num-spk ${num_spk} --distance ${distance} \
+    --pca-dim 64 \
+    --hard-vector ${model_dir}/123456/${dataset}_${subset}_var/testwidth1.000000/hard_vectors
+  exit
+fi
