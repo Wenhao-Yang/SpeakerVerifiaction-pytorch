@@ -130,15 +130,16 @@ if __name__ == '__main__':
     within_vars = []
     spk2num_utt = []
     for spk in spk2vec:
-        spk_mean = np.mean(spk2vec[spk], axis=0)
-        within_var = 0
-        for vec in spk2vec[spk]:
-            within_var += dist_fn(vec, spk_mean) ** 2
-        within_var /= len(spk2vec[spk])
+        if len(spk2vec[spk]) > 0:
+            spk_mean = np.mean(spk2vec[spk], axis=0)
+            within_var = 0
+            for vec in spk2vec[spk]:
+                within_var += dist_fn(vec, spk_mean) ** 2
+            within_var /= len(spk2vec[spk])
 
-        # within_var = np.var(spk2vec[spk], axis=0).sum()
-        within_vars.append(within_var)
-        spk2num_utt.append(len(spk2vec[spk]))
+            # within_var = np.var(spk2vec[spk], axis=0).sum()
+            within_vars.append(within_var)
+            spk2num_utt.append(len(spk2vec[spk]))
 
     within_var = np.array(within_vars) * np.array(spk2num_utt)
     within_var = np.sum(within_var) / np.sum(spk2num_utt)
@@ -146,13 +147,15 @@ if __name__ == '__main__':
     # between_var = np.var(all_vectors, axis=0).sum() - within_var
     all_vectors = []
     for spk in spk2vec:
-        spk_con = np.concatenate(spk2vec[spk])
-        all_vectors.append(spk_con)
+        if len(spk2vec[spk]) > 0:
+            spk_con = np.concatenate(spk2vec[spk])
+            all_vectors.append(spk_con)
     all_vectors = np.concatenate(all_vectors, axis=0)
 
     overall_mean = np.mean(all_vectors, axis=0)
     between_var = 0
     for spk in spk2vec:
+        if len(spk2vec[spk]) > 0:
         # between_var += np.sum((np.mean(spk2vec[spk], axis=0)-overall_mean)**2) * len(spk2vec[spk])
         between_var += dist_fn(np.mean(spk2vec[spk], axis=0), overall_mean) ** 2 * len(spk2vec[spk])
 
