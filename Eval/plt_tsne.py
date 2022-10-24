@@ -121,7 +121,7 @@ if __name__ == '__main__':
             assert len(this_points) > 0, 'start:stop is %s:%s' % (start, stop)
             emb_group.append(this_points)
 
-        plt.figure(figsize=(5, 4))
+        plt.figure(figsize=(6, 4))
         font = FontProperties(fname='/home/yangwenhao/font/TimesNewRoman.ttf')
         # plt.rc('font', family='Times New Roman', weight='semibold')
 
