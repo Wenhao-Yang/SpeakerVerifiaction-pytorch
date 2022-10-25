@@ -2384,7 +2384,7 @@ if [ $stage -le 201 ]; then
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/test \
-      --train-trials trials_2w --trials trials --test \
+      --train-trials trials_2w --trials trials_hard --extract \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_valid \
       --test-dir ${lstm_dir}/data/${testset}/${test_subset} \
       --feat-format ${feat_format} --nj 12 \
