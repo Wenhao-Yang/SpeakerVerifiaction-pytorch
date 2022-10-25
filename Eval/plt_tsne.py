@@ -22,7 +22,7 @@ from sklearn.decomposition import PCA
 # Training settings
 from Process_Data.constants import cValue_1
 from matplotlib.font_manager import FontProperties
-
+from matplotlib.font_manager import FontManager
 parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
 # Data options
 parser.add_argument('--scp-file', type=str, default='Data/xvector/LoResNet8/vox1/spect_egs/arcsoft_dp25/xvectors.scp',
@@ -125,7 +125,14 @@ if __name__ == '__main__':
         plot_legend = args.plot_legend
         fig_width = 6 if plot_legend else 5
         plt.figure(figsize=(fig_width, 4))
-        font = FontProperties(fname='/home/yangwenhao/font/TimesNewRoman.ttf')
+        font_manager = FontManager()
+        font_manager.addfont(path='/home/yangwenhao/font/TimesNewRoman.ttf')
+        plt.rcParams['font.sans-serif'] = 'Times New Roman'
+
+        # FontManager.addfont('/home/yangwenhao/font/TimesNewRoman.ttf')
+        #
+        # plt.rcParams['font.sans-serif'] = 'Times New Roman'
+        # font = FontProperties(fname='/home/yangwenhao/font/TimesNewRoman.ttf')
         # plt.rc('font', family='Times New Roman', weight='semibold')
 
         leng = []
@@ -146,8 +153,10 @@ if __name__ == '__main__':
             # plt.ylim([-20, 20])
             plt.subplots_adjust(right=5 / 6)
 
-        plt.xticks(fontsize=16, fontproperties=font)
-        plt.yticks(fontsize=16, fontproperties=font)
+        # plt.xticks(fontsize=16, fontproperties=font)
+        # plt.yticks(fontsize=16, fontproperties=font)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
         if args.out_pdf.endswith('pdf'):
             plt.savefig(args.out_pdf, format="pdf")
 
