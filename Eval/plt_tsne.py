@@ -35,6 +35,7 @@ parser.add_argument('--pca-dim', default=0, type=int, help='num of speakers to p
 parser.add_argument('--out-pdf', default='', type=str, help='num of speakers to plot (default: 10)')
 parser.add_argument('--distance', default='l2', type=str, help='num of speakers to plot (default: 10)')
 parser.add_argument('--hard-vector', type=str, help='num of speakers to plot (default: 10)')
+parser.add_argument('--plot-legend', action='store_true', default=False, help='num of speakers to plot (default: 10)')
 
 args = parser.parse_args()
 
@@ -121,7 +122,9 @@ if __name__ == '__main__':
             assert len(this_points) > 0, 'start:stop is %s:%s' % (start, stop)
             emb_group.append(this_points)
 
-        plt.figure(figsize=(5, 4))
+        plot_legend = args.plot_legend
+        fig_width = 6 if plot_legend else 5
+        plt.figure(figsize=(fig_width, 4))
         font = FontProperties(fname='/home/yangwenhao/font/TimesNewRoman.ttf')
         # plt.rc('font', family='Times New Roman', weight='semibold')
 
@@ -132,9 +135,16 @@ if __name__ == '__main__':
                 leng.append(spks_this[idx])
                 plt.scatter(group[:, 0], group[:, 1], color=c, s=25, alpha=0.4)
 
-        plt.legend(leng, loc="best", fontsize=10, bbox_to_anchor=(1, 1.05), borderaxespad=1)  # , fontproperties=font)
+        # plt.legend(leng, loc="best", fontsize=10, bbox_to_anchor=(1, 1.05), borderaxespad=1)  # , fontproperties=font)
         # plt.xlim([-20, 20])
         # plt.ylim([-20, 20])
+        if plot_legend:
+            plt.legend(leng, loc="best", fontsize=14, bbox_to_anchor=(1, 1.05),
+                       borderaxespad=1)  # , fontproperties=font)
+            # plt.xlim([-20, 20])
+            # plt.ylim([-20, 20])
+            plt.subplots_adjust(right=5 / 6)
+
         plt.xticks(fontsize=16, fontproperties=font)
         plt.yticks(fontsize=16, fontproperties=font)
         if args.out_pdf.endswith('pdf'):
