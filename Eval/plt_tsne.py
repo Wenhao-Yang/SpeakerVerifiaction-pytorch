@@ -139,6 +139,7 @@ if __name__ == '__main__':
         # plt.xlim([-20, 20])
         # plt.ylim([-20, 20])
         if plot_legend:
+            print('Plot legend...')
             plt.legend(leng, loc="best", fontsize=14, bbox_to_anchor=(1, 1.05),
                        borderaxespad=1)  # , fontproperties=font)
             # plt.xlim([-20, 20])
