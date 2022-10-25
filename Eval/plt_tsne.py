@@ -130,7 +130,6 @@ if __name__ == '__main__':
         plt.rcParams['font.sans-serif'] = 'Times New Roman'
 
         # FontManager.addfont('/home/yangwenhao/font/TimesNewRoman.ttf')
-        #
         # plt.rcParams['font.sans-serif'] = 'Times New Roman'
         # font = FontProperties(fname='/home/yangwenhao/font/TimesNewRoman.ttf')
         # plt.rc('font', family='Times New Roman', weight='semibold')
