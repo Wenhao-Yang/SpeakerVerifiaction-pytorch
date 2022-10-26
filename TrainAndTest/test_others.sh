@@ -2483,8 +2483,7 @@ if [ $stage -le 203 ]; then
   avg_size=5
 #  encoder_type=SAP2
 #  for input_dim in 64 80 ; do
-  proser_ratio=1
-  proser_gamma=0.01
+  proser_ratio=1 proser_gamma=0.01
   dummy=0
 #        --downsample ${downsample} \
 #      --trials trials_20w \
@@ -2501,7 +2500,6 @@ if [ $stage -le 203 ]; then
       expansion=2
       exp_str=_exp${expansion}
     fi
-
 #    if [ $input_dim -eq 40 ];then
 #      valid_dir=valid_fb40
 #    fi
@@ -2556,8 +2554,7 @@ if [ $stage -le 210 ]; then
 
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
-  downsample=k1
-  fast=none1
+  downsample=k1 fast=none1
 
   chn=16
   mask_layer=rvec
@@ -2577,7 +2574,6 @@ if [ $stage -le 210 ]; then
       echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
       if [ $resnet_size -le 34 ];then
         expansion=1
-        batch_size=256
       else
         expansion=4
         batch_size=256
@@ -2608,8 +2604,7 @@ if [ $stage -le 210 ]; then
       model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde5_var
 
       python -W ignore TrainAndTest/test_egs.py \
-        --model ${model} \
-        --resnet-size ${resnet_size} \
+        --model ${model} --resnet-size ${resnet_size} \
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
         --train-trials trials_2w \
@@ -2619,11 +2614,10 @@ if [ $stage -le 210 ]; then
         --input-norm ${input_norm} --input-dim 161 \
         --mask-layer ${mask_layer} --init-weight ${weight} \
         --embedding-size ${embedding_size} \
-        --fast ${fast} \
         --downsample ${downsample} \
         --encoder-type ${encoder_type} \
         --block-type ${block_type} \
-        --kernel-size 5,5 --stride 2,2 \
+        --kernel-size 5,5 --stride 2,2 --fast ${fast} \
         --expansion ${expansion} \
         --channels ${channels} \
         --alpha ${alpha} \
@@ -2812,12 +2806,11 @@ if [ $stage -le 301 ]; then
 #  encoder_type=SAP2 embedding_size=512
   encoder_type=ASTP2 embedding_size=256
   block_type=seblock downsample=k1 red_ratio=2
-  kernel=5,5
+  kernel=5,5 fast=none1
   loss=arcsoft
   alpha=0
 
   batch_size=256
-  fast=none1
   mask_layer=baseline mask_len=5,5
   train_set=cnceleb test_set=cnceleb
   train_subset=
@@ -2851,10 +2844,9 @@ if [ $stage -le 301 ]; then
      --kernel-size ${kernel} --fast none1 --stride 2,1 \
      --channels 16,32,64,128 \
      --time-dim 1 --avg-size 5 \
-     --alpha 0 \
      --loss-type ${loss} --margin 0.2 --s 30 \
      --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
-     --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
+     --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha 0 \
      --test-input fix --frame-shift 300 \
      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_${test_input} \
      --resume Data/checkpoint/${model_dir}/best.pth \
