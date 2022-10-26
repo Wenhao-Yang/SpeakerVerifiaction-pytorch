@@ -301,10 +301,10 @@ if args.test_input == 'var':
 
 elif args.test_input == 'fix':
     transform = transforms.Compose([
-        ConcateVarInput(num_frames=args.num_frames, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
+        ConcateVarInput(num_frames=args.chunk_size, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
     ])
     transform_T = transforms.Compose([
-        ConcateVarInput(num_frames=args.num_frames, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
+        ConcateVarInput(num_frames=args.chunk_size, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
     ])
 else:
     raise ValueError('input length must be var or fix.')
