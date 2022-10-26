@@ -338,8 +338,7 @@ if [ $stage -le 40 ]; then
       --feat-dim 64 \
       --kernel-size 3,3 \
       --stride 1 \
-      --time-dim 1 \
-      --avg-size 1 \
+      --time-dim 1 --avg-size 1 \
       --resume Data/checkpoint/ExResNet34/vox1/fb64_wcmvn/soft_14/checkpoint_22.pth \
       --xvector-dir Data/xvectors/ExResNet34/vox1/fb64_wcmvn/soft_14 \
       --input-per-spks 192 \
@@ -1435,28 +1434,22 @@ if [ $stage -le 90 ]; then
   for loss in arcsoft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model LoResNet \
-      --resnet-size 8 \
+      --model LoResNet --resnet-size 8 \
       --train-dir ${lstm_dir}/data/vox2/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/aidata/${feat_type}/dev_${feat} \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
+      --input-norm Mean --input-dim 161 \
       --nj 12 \
       --embedding-size 256 \
-      --loss-type ${loss} \
       --encoder-type None \
       --block-type ${block_type} \
-      --kernel-size 5,7 \
-      --stride 2,3 \
+      --kernel-size 5,7 --stride 2,3 \
       --channels 64,128,256 \
       --alpha 0 \
-      --margin 0.3 \
-      --s 30 \
-      --m 3 \
+      --loss-type ${loss} --margin 0.3 --s 30 --m 3 \
       --input-length var \
       --dropout-p 0.5 \
       --xvector-dir Data/xvector/LoResNet8/vox2/spect_egs/arcsoft/None_cbam_dp05_em256_k57/epoch_40_var_aidata \
@@ -1480,28 +1473,23 @@ if [ $stage -le 91 ]; then
   for loss in soft; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Testing with ${loss} \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size 8 \
+      --model ${model} --resnet-size 8 \
       --train-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev_${feat}/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/vox1/${feat_type}/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_${feat} \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
+      --input-norm Mean --input-dim 161 \
       --nj 12 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 64,128,256 \
       --alpha 0 \
-      --margin 0.3 \
-      --s 30 \
-      --m 3 \
+      --margin 0.3 --s 30 --m 3 \
       --input-length var \
       --dropout-p 0.25 \
       --xvector-dir Data/xvector/LoResNet8/vox1/spect_egs_None/soft_dp25/epoch_20_var \
@@ -1514,21 +1502,20 @@ fi
 
 if [ $stage -le 92 ]; then
   feat_type=klsp
-  model=LoResNet
+  model=LoResNet resnet_size=8
   feat=log
   loss=arcsoft
   encod=None
   alpha=0
-  datasets=vox1
-  testset=sitw
+  datasets=vox1 testset=sitw
 #  test_subset=
   block_type=cbam
   encoder_type=None
   embedding_size=256
-  resnet_size=8
+
 #  sname=dev #dev_aug_com
   sname=dev_aug_com
-
+  model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wd5e4_${sname}_var
   for test_subset in dev test; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
@@ -1540,25 +1527,21 @@ if [ $stage -le 92 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
+      --input-norm Mean --input-dim 161 \
       --nj 12 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 64,128,256 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --input-length var \
       --dropout-p 0.25 \
-      --time-dim 1 \
-      --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wd5e4_${sname}_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp25_wd5e4_${sname}_var/checkpoint_40.pth \
+      --time-dim 1 --avg-size 4 \
+      --xvector-dir Data/xvector/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_40.pth \
       --gpu-id 0 \
       --cos-sim
   done
@@ -1574,7 +1557,7 @@ fi
 
 if [ $stage -le 93 ]; then
   feat_type=klsp
-  model=LoResNet
+  model=LoResNet resnet_size=8
   feat=log
   loss=arcsoft
   encod=SAP2
@@ -1583,9 +1566,9 @@ if [ $stage -le 93 ]; then
   block_type=cbam
   encoder_type=None
   embedding_size=256
-  resnet_size=8
 
   for sname in dev ; do
+    model_dir=LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_SAP2_dp25_alpha0_em256_wd5e4_var
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
@@ -1596,25 +1579,21 @@ if [ $stage -le 93 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
+      --input-norm Mean --input-dim 161 \
       --nj 12 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 64,128,256 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --input-length var \
       --dropout-p 0.25 \
-      --time-dim 1 \
-      --avg-size 4 \
-      --xvector-dir Data/xvector/LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_SAP2_dp25_alpha0_em256_wd5e4_var \
-      --resume Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_SAP2_dp25_alpha0_em256_wd5e4_var/checkpoint_50.pth \
+      --time-dim 1 --avg-size 4 \
+      --xvector-dir Data/xvector/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
@@ -1627,12 +1606,11 @@ if [ $stage -le 93 ]; then
 #|  vox1-test   |   2.8367%   |   0.2615    |   0.2735    |    0.4051    | 20210818 19:11:29 |
 #+--------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-test     |   2.9852%   |   0.2544    |   0.3110    |    0.3925    | 20211129 14:03:34 | SAP2
-
 fi
 
 if [ $stage -le 94 ]; then
   feat_type=klsp
-  model=LoResNet
+  model=LoResNet resnet_size=8
   feat=log
   loss=arcsoft
   encod=None
@@ -1643,38 +1621,32 @@ if [ $stage -le 94 ]; then
   block_type=cbam
   encoder_type=None
   embedding_size=256
-  resnet_size=8
+
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
 
   for test_subset in test; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size 8 \
+      --model ${model} --resnet-size 8 \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-      --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
-      --nj 12 \
+      --feat-format kaldi --nj 12 \
+      --input-norm Mean --input-dim 161 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 32,64,128 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --input-length var \
       --dropout-p 0.2 \
-      --time-dim 1 \
-      --avg-size 4 \
+      --time-dim 1 --avg-size 4 \
       --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/Mean_cbam_None_dp20_alpha0_em256_wd5e4_chn32_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/Mean_cbam_None_dp20_alpha0_em256_wd5e4_chn32_var/checkpoint_50.pth \
       --gpu-id 0 \
@@ -1682,7 +1654,6 @@ if [ $stage -le 94 ]; then
   done
 #  exit
 fi
-
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
@@ -1691,56 +1662,46 @@ fi
 
 if [ $stage -le 95 ]; then
   feat_type=klsp
-  model=LoResNet
+  model=LoResNet resnet_size=8
   feat=log
   loss=arcsoft
   encod=None
   alpha=0
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
 #  test_subset=
   block_type=cbam
   encoder_type=None
   embedding_size=256
-  resnet_size=8
+  
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   test_subset=test
   input_norm=Mean
-
+  model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var
   for weight in mel clean aug vox2 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size 8 \
+      --model ${model} --resnet-size 8 \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
-      --train-trials trials_2w \
+      --train-trials trials_2w --score-suffix ${weight} \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-      --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
-      --nj 12 \
+      --feat-format kaldi --nj 12 \
+      --input-norm Mean --input-dim 161 \
       --embedding-size ${embedding_size} \
-      --loss-type ${loss} \
-      --mask-layer attention \
-      --score-suffix ${weight} \
-      --init-weight ${weight} \
+      --mask-layer attention --init-weight ${weight} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 16,32,64 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --input-length var \
       --dropout-p 0.125 \
-      --time-dim 1 \
-      --avg-size 4 \
-      --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_attention/${loss}/${input_norm}_${block_type}_${encod}_dp125_alpha${alpha}_em${embedding_size}_${weight}42_chn16_wd5e4_var/checkpoint_50.pth \
+      --time-dim 1 --avg-size 4 \
+      --xvector-dir Data/xvector/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --gpu-id 0 \
       --cos-sim
   done
@@ -1748,18 +1709,16 @@ if [ $stage -le 95 ]; then
 fi
 if [ $stage -le 96 ]; then
   feat_type=klsp
-  model=LoResNet
+  model=LoResNet resnet_size=8
   feat=log
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
 #  test_subset=
   block_type=cbam
-  encoder_type=AVG
-  embedding_size=256
-  resnet_size=8
+  encoder_type=AVG embedding_size=256
+  
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   test_subset=test
@@ -1768,31 +1727,25 @@ if [ $stage -le 96 ]; then
   for weight in None ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size 8 \
+      --model ${model} --resnet-size 8 \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-      --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
-      --nj 12 \
+      --feat-format kaldi --nj 12 \
+      --input-norm Mean --input-dim 161 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 32,64,128 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --input-length var \
       --dropout-p 0.125 \
-      --time-dim 1 \
-      --avg-size 4 \
+      --time-dim 1 --avg-size 4 \
       --xvector-dir Data/xvector/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_kd/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var/checkpoint_50.pth \
       --gpu-id 0 \
@@ -1800,7 +1753,6 @@ if [ $stage -le 96 ]; then
   done
   exit
 fi
-
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
@@ -1822,18 +1774,16 @@ fi
 
 if [ $stage -le 97 ]; then
   feat_type=klsp
-  model=LoResNet
+  model=LoResNet resnet_size=8
   feat=log
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
 #  test_subset=
   block_type=cbam
-  encoder_type=AVG
-  embedding_size=256
-  resnet_size=8
+  encoder_type=AVG embedding_size=256
+  
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   test_subset=test
@@ -1841,9 +1791,7 @@ if [ $stage -le 97 ]; then
   avg_size=4
   input_norm=Mean
   mask_layer=baseline
-
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
 
 #  for weight in None ; do
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
@@ -1867,31 +1815,24 @@ if [ $stage -le 97 ]; then
 
 #    Mean_batch256_cbam_avg4_AVG_em256_dp25_alpha0_chn64_wd5e4_vares
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-      --feat-format kaldi \
-      --input-norm ${input_norm} \
-      --input-dim 161 \
-      --nj 4 \
+      --feat-format kaldi --nj 4 \
+      --input-norm ${input_norm} --input-dim 161 \
       --embedding-size ${embedding_size} \
-      --loss-type ${loss} \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels ${channels} \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --input-length var \
       --dropout-p ${dp} \
-      --time-dim 1 \
-      --avg-size ${avg_size} \
+      --time-dim 1 --avg-size ${avg_size} \
       --xvector-dir Data/xvector/${model_dir} \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 1 \
@@ -1921,7 +1862,7 @@ if [ $stage -le 100 ]; then
     echo -e "\n\033[1;4;31m Testing ${model}_${resnet_size} in army with ${loss} kernel 5,5 \033[0m\n"
 
     python TrainAndTest/test_egs_multi.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir-a ${lstm_dir}/data/${datasets}/spect/aishell2_dev_8k_v4 \
       --train-dir-b ${lstm_dir}/data/${datasets}/spect/vox_dev_8k_v4 \
       --train-test-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v2/trials_dir \
@@ -1929,12 +1870,10 @@ if [ $stage -le 100 ]; then
       --valid-dir-b ${lstm_dir}/data/${datasets}/egs/spect/vox_valid_8k_v4 \
       --test-dir ${lstm_dir}/data/magic/spect/test_8k \
       --feat-format kaldi \
-      --resnet-size ${resnet_size} \
-      --input-norm Mean \
+      --input-norm Mean --input-dim 81 \
       --batch-size 128 \
       --nj 10 \
       --lr 0.1 \
-      --input-dim 81 \
       --fast \
       --mask-layer freq --mask-len 20 \
       --stride 1 \
@@ -1953,8 +1892,7 @@ if [ $stage -le 100 ]; then
       --weight-decay 0.0005 \
       --dropout-p 0.1 \
       --gpu-id 0 \
-      --cos-sim \
-      --extract \
+      --cos-sim --extract \
       --loss-type ${loss}
   done
   exit
@@ -1976,18 +1914,15 @@ if [ $stage -le 101 ]; then
       --train-dir ${lstm_dir}/data/army/spect/dev_8k \
       --test-dir ${lstm_dir}/data/army/spect/test_8k \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
+      --input-norm Mean --input-dim 161 \
       --nj 12 \
       --embedding-size 128 \
-      --loss-type ${loss} \
       --encoder-type None \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2 \
+      --kernel-size 5,5 --stride 2 \
       --channels 64,128,256,256 \
       --alpha 12 \
-      --margin 0.3 --s 30 --m 3 \
+      --loss-type ${loss} --margin 0.3 --s 30 --m 3 \
       --input-length var \
       --frame-shift 300 \
       --dropout-p 0.1 \
@@ -2026,21 +1961,17 @@ if [ $stage -le 200 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-      --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
-      --nj 12 \
+      --feat-format kaldi --nj 12 \
+      --input-norm Mean --input-dim 161 \
       --embedding-size ${embedding_size} \
-      --loss-type ${loss} \
       --fast none1 \
       --downsample ${downsample} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 16,32,64,128 \
       --alpha ${alpha} \
-      --margin 0.2 --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --time-dim 1 --avg-size 5 \
       --input-length var \
       --dropout-p 0.25 \
@@ -2057,8 +1988,7 @@ if [ $stage -le 200 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
+      --input-norm Mean --input-dim 161 \
       --nj 12 \
       --mask-layer attention --init-weight vox2 \
       --embedding-size ${embedding_size} \
@@ -2066,8 +1996,7 @@ if [ $stage -le 200 ]; then
       --downsample ${downsample} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 16,32,64,128 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 \
@@ -2119,8 +2048,7 @@ if [ $stage -le 200 ]; then
   input_norm=Mean
 #  test_subset=
   block_type=cbam_v2
-  encoder_type=SAP2
-  embedding_size=256
+  encoder_type=SAP2 embedding_size=256
 
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
@@ -2191,14 +2119,11 @@ if [ $stage -le 200 ]; then
       model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde5_var
 
       python -W ignore TrainAndTest/test_egs.py \
-        --model ${model} \
-        --resnet-size ${resnet_size} \
+        --model ${model} --resnet-size ${resnet_size} \
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
-        --train-trials trials_2w \
-        --extract-trials \
-        --trials trials_${sub_trials} \
-        --score-suffix ${sub_trials} \
+        --train-trials trials_2w --extract-trials \
+        --trials trials_${sub_trials} --score-suffix ${sub_trials} \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
         --feat-format kaldi --nj 12 \
@@ -2245,13 +2170,11 @@ if [ $stage -le 200 ]; then
 #|     vox1-test     |   4.0668    |   0.2217    |   0.3735    |    0.5064    | 20220623 17:45:58 | epoch 33
 #                    |  4.05~0.06  |             |0.3815~0.0057|0.4755~0.0308 |
 
-
 # ResNet 34
 #|     vox1-test     |   3.7381    |   0.2293    |   0.3676    |    0.5141    | 20220623 17:49:39 | epoch 25
 #|     vox1-test     |   3.8706    |   0.2312    |   0.3489    |    0.4994    | 20220623 17:53:07 | epoch 20
 #|     vox1-test     |   3.9343    |   0.2242    |   0.3502    |    0.4836    | 20220623 17:58:38 | epoch 30
 #                    |  3.84~0.08  |             |0.3556±0.0085|0.4990±0.0125 |
-
 
 # ResNet 50
 #|     vox1-test     |   4.3266    |   0.2061    |   0.3992    |    0.4841    | 20220623 18:10:53 | epoch 35
@@ -2281,14 +2204,12 @@ if [ $stage -le 200 ]; then
 #|  sitw-test-rcle   |  7.93±0.12  |             | 0.5740±0.0034 | 0.7664±0.0134 | attention rclean
 #|  sitw-test-rcle   |  7.62±0.22  |             | 0.5684±0.0022 | 0.7555±0.0052 | attention rclean_max
 
-
 # ResNet 18
 #|     vox1-test     |  3.68±0.10  |             | 0.3592±0.0043 | 0.4604±0.0213 |
 #|  vox1-test-rcle   |  3.72±0.07  |             | 0.3650±0.0096 | 0.4555±0.0395 | attention rclean
 
 #|     sitw-test     |  6.97±0.17  |             | 0.5203±0.0099 | 0.7152±0.0083 |
 #|  sitw-test-rcle   |  7.02±0.17  |             | 0.5136±0.0023 | 0.6977±0.0062 | attention rclean
-
 
 # ResNet 34 vox1
 #|     vox1-test     |  3.53±0.05  |             | 0.3498±0.0040 | 0.4261±0.0375 |
@@ -2315,7 +2236,6 @@ if [ $stage -le 200 ]; then
 
 #|  sitw-test-vox2   |  9.53±0.11  |             | 0.6822±0.0101 | 0.8696±0.0194 | attention vox2_rclean
 
-
 #|     sitw-test     |  8.40±0.11  |             | 0.6035±0.0068 | 0.7976±0.0112 | chn32
 #|     sitw-test     |  7.97±0.27  |             | 0.5486±0.0070 | 0.7329±0.0127 | chn64
 
@@ -2340,9 +2260,7 @@ if [ $stage -le 200 ]; then
 # ResNet34
 #|     vox1-test     |  4.07±0.03  |             | 0.4027±0.0124 | 0.5078±0.0588 |
 #|     sitw-test     |  8.57±0.24  |             | 0.5746±0.0072 | 0.7969±0.0228 |
-
 fi
-
 
 
 if [ $stage -le 201 ]; then
@@ -2359,8 +2277,7 @@ if [ $stage -le 201 ]; then
 #  test_subset=
   block_type=seblock #basic
   red_ratio=2
-  encoder_type=None
-  embedding_size=256
+  encoder_type=None embedding_size=256
 
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
@@ -2469,8 +2386,7 @@ if [ $stage -le 203 ]; then
 #  datasets=vox1 testset=vox1
   datasets=vox2 testset=vox1 test_subset=dev sname=dev
   block_type=seblock downsample=k1 expansion=1 red_ratio=2
-  encoder_type=ASTP2
-  embedding_size=256
+  encoder_type=ASTP2 embedding_size=256
 
   kernel=5,5
   loss=arcsoft
@@ -2483,8 +2399,7 @@ if [ $stage -le 203 ]; then
   avg_size=5
 #  encoder_type=SAP2
 #  for input_dim in 64 80 ; do
-  proser_ratio=1 proser_gamma=0.01
-  dummy=0
+  proser_ratio=1 proser_gamma=0.01 dummy=0
 #        --downsample ${downsample} \
 #      --trials trials_20w \
 #      --mask-layer attention --init-weight vox2_rcf \
@@ -2535,7 +2450,6 @@ if [ $stage -le 203 ]; then
       --cos-sim
   done
   exit
-
 fi
 
 
@@ -2610,15 +2524,14 @@ if [ $stage -le 210 ]; then
         --train-trials trials_2w \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-        --feat-format kaldi --nj 12 \
+        --feat-format kaldi --nj 8 \
         --input-norm ${input_norm} --input-dim 161 \
         --mask-layer ${mask_layer} --init-weight ${weight} \
         --embedding-size ${embedding_size} \
         --downsample ${downsample} \
-        --encoder-type ${encoder_type} \
+        --encoder-type ${encoder_type} --expansion ${expansion} \
         --block-type ${block_type} \
         --kernel-size 5,5 --stride 2,2 --fast ${fast} \
-        --expansion ${expansion} \
         --channels ${channels} \
         --alpha ${alpha} \
         --loss-type ${loss} --margin 0.2 --s 30 \
@@ -2701,15 +2614,13 @@ if [ $stage -le 300 ]; then
      --model ${model} --resnet-size 14 \
      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-     --train-trials trials_2w --trials subtrials/trials_${s} \
-     --score-suffix ${s} \
+     --train-trials trials_2w --trials subtrials/trials_${s} --score-suffix ${s} \
      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
-     --feat-format kaldi \
-     --input-norm ${input_norm} --input-dim 40 \
+     --feat-format kaldi --nj 12 \
+     --input-norm ${input_norm} --input-dim 40 --remove-vad \
      --channels 512,512,512,512,1500 \
      --context 5,3,3,5 \
-     --nj 12 \
      --alpha 0 \
      --loss-type ${loss} --margin 0.2 --s 30 \
      --stride 1 \
@@ -2717,7 +2628,6 @@ if [ $stage -le 300 ]; then
      --embedding-size ${embedding_size} \
      --encoder-type STAP \
      --input-length fix \
-     --remove-vad \
      --frame-shift 300 \
      --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_dev_epoch50_fix \
      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
@@ -2877,22 +2787,17 @@ if [ $stage -le 301 ]; then
 #|   cnceleb-test    |  10.2831    |    0.1450   |   0.5341    |    0.6478    | 20220513 21:34:44 |
 #|   cnceleb-test    |   9.9780    |   -1.5883   |   0.5206    |    0.6432    | 20220515 10:37:41 | as-norm
 
-
-
 # for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
+#    model_dir=ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var
 #   python -W ignore TrainAndTest/test_egs.py \
-#     --model ${model} \
-#     --resnet-size ${resnet_size} \
+#     --model ${model} --resnet-size ${resnet_size} \
 #     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
 #     --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-#     --train-trials trials_2w \
-#     --trials subtrials/trials_${s} \
-#     --score-suffix ${s} \
+#     --train-trials trials_2w --trials subtrials/trials_${s} --score-suffix ${s} \
 #     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}_valid \
 #     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
-#     --feat-format kaldi --nj 12 \
-#     --input-norm ${input_norm} \
-#     --input-dim 80 \
+#     --feat-format kaldi --nj 8 \
+#     --input-norm ${input_norm} --input-dim 80 \
 #     --kernel-size ${kernel} \
 #     --downsample ${downsample} \
 #     --channels 32,64,128,256 \
@@ -2906,11 +2811,10 @@ if [ $stage -le 301 ]; then
 #     --input-length fix \
 #     --remove-vad \
 #     --frame-shift 300 \
-#     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_dev_epoch60_fix \
-#     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
+#     --xvector-dir Data/xvector/${model_dir}/${test_set}_dev_epoch60_fix \
+#     --resume Data/checkpoint/${model_dir}/checkpoint_60.pth \
 #     --gpu-id 5 \
-#     --extract \
-#     --cos-sim \
+#     --extract --cos-sim \
 #     --verbose 0
 # done
  exit
@@ -2930,7 +2834,6 @@ if [ $stage -le 400 ]; then
 
   input_dim=40 input_norm=Mean
   embedding_size=512
-
   # Training set: aishell2 40-dimensional log fbanks kaldi  Loss: arcsoft
   # Cosine Similarity
   #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
@@ -2939,7 +2842,6 @@ if [ $stage -le 400 ]; then
   #|   aishell2-test   |   1.5800    |   0.2139    |   0.3112    |    0.5945    | 20211213 16:22:51 |
 
 #  model_dir=TDNN_v5/aishell2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_STAP_em512_wd5e4_var
-
   model_dir=TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_STAP_em512_wde5_vares_dist_mani-1_lamda2/123456
   echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
 #  test_set=vox1
@@ -2966,8 +2868,7 @@ if [ $stage -le 400 ]; then
       --frame-shift 300 \
       --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_epoch_best_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 0 \
-      --verbose 4 --extract \
+      --gpu-id 0 --verbose 4 --extract \
       --cos-sim
   done
   exit
@@ -2994,11 +2895,10 @@ if [ $stage -le 450 ]; then
 
   # Training set: vox2 161-dimensional log spectrogram kaldi  Loss: arcsoft
 #      --remove-vad \
-
   for test_set in vox1 aishell2 sitw; do # 32,128,512; 8,32,128
     echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
-
     model_dir=${model}/${dataset}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
+
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
@@ -3022,7 +2922,6 @@ if [ $stage -le 450 ]; then
   done
   exit
 fi
-
 #|     vox1-test     |   1.5907    |   0.2671    |    0.2124     |    0.2949     | 20220911 17:05:26 |
 #|   aishell2-test   |   6.7900    |   0.3375    |    0.6747     |    0.8591     | 20220911 17:10:06 |
 #|     sitw-test     |   3.4718    |   0.2345    |    0.2884     |    0.4428     | 20220911 17:11:53 |
@@ -3098,7 +2997,6 @@ if [ $stage -le 500 ]; then
       fi
 
       model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}_mixup${lamda_beta}_2/${seed}
-
       # _mixup${lamda_beta}_0
 
       python -W ignore TrainAndTest/test_egs.py \
@@ -3108,10 +3006,9 @@ if [ $stage -le 500 ]; then
         --train-trials trials_2w --extract-trials --trials trials \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${test_subset} \
-        --feat-format wav \
+        --feat-format wav --nj 12 \
         --input-norm ${input_norm} --input-dim ${input_dim} \
         --filter ${filter_layer} --feat-dim ${feat_dim} \
-        --nj 12 \
         --mask-layer ${mask_layer} --init-weight ${weight} --weight-norm ${weight_norm} \
         --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} --expansion ${expansion} \
         --kernel-size 5,5 --fast ${fast} --stride 2,1 \
@@ -3136,5 +3033,4 @@ if [ $stage -le 500 ]; then
 #|    aidata-test    |  5.86±0.13  |             | 0.4554±0.0058 | 0.7793±0.0189 | # mixup0_0.2
 #|    aidata-test    |  5.23±0.16  |             | 0.4232±0.0072 | 0.7721±0.0056 | # clean + half_mixup0_0.2
 #|    aidata-test    |  5.14±0.02  |             | 0.4364±0.0147 | 0.7679±0.0181 | # clean + half_mixup0_0.5
-
 fi
