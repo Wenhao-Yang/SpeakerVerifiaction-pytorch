@@ -2858,7 +2858,7 @@ if [ $stage -le 301 ]; then
      --test-input fix --frame-shift 300 \
      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_${test_input} \
      --resume Data/checkpoint/${model_dir}/best.pth \
-     --gpu-id 4 --verbose 2 \
+     --gpu-id 4 --verbose 0 \
      --cos-sim
 #     --extract \
 #      --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
