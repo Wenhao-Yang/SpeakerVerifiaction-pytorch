@@ -1,0 +1,5 @@
+# resnet34 cnceleb fb40 SASP2 baseline
+|   cnceleb-test    |   14.2833   |   0.1902    |    0.6769     |    0.7745     | 20221026 11:46:48 |
+
+# resnet34 cnceleb fb40 SASP2 manifold [1,2,3]
+|   cnceleb-test    |   14.3793   |   0.1682    |    0.6415     |    0.7336     | 20221026 11:36:13 |
