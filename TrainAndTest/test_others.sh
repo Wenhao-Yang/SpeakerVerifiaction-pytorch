@@ -2674,8 +2674,7 @@ if [ $stage -le 300 ]; then
   #      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
   #   echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
   #   python -W ignore TrainAndTest/test_egs.py \
-  #     --model ${model} \
-  #     --resnet-size 14 \
+  #     --model ${model} --resnet-size 14 \
   #     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
   #     --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
   #     --train-trials trials_2w \
@@ -2821,7 +2820,7 @@ if [ $stage -le 301 ]; then
   fast=none1
   mask_layer=baseline mask_len=5,5
   train_set=cnceleb test_set=cnceleb
-  train_subset=12
+  train_subset=
 #  subset=dev
   subset=test
   test_input=fix
