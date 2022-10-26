@@ -2936,8 +2936,7 @@ if [ $stage -le 400 ]; then
 #  dataset=aishell2 test_set=aishell2 subset=test
   dataset=vox2 test_set=vox1 subset=dev
 
-  input_dim=40
-  input_norm=Mean
+  input_dim=40 input_norm=Mean
   embedding_size=512
 
   # Training set: aishell2 40-dimensional log fbanks kaldi  Loss: arcsoft

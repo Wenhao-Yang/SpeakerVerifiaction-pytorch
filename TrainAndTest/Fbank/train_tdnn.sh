@@ -1720,24 +1720,19 @@ if [ $stage -le 200 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-      --input-norm ${input_norm} \
-      --random-chunk 200 400 \
-      --nj 12 \
-      --epochs 50 \
-      --patience 3 \
+      --input-dim 40 --input-norm ${input_norm} \
+      --random-chunk 200 400 --nj 12 \
+      --epochs 50 --batch-size ${batch_size} --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --weight-decay 0.0005 \
       --lr 0.1 \
       --alpha 0 \
       --feat-format kaldi \
       --channels 512,512,512,512,1500 \
       --embedding-size ${embedding_size} \
-      --batch-size ${batch_size} \
       --accu-steps 1 \
-      --input-dim 40 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var \
       --resume Data/checkpoint/${model}/${datasets}/${feat_type}_egs_baseline/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${encod}_em${embedding_size}_wd5e4_var/checkpoint_53.pth \
@@ -1746,9 +1741,7 @@ if [ $stage -le 200 ]; then
       --veri-pairs 9600 \
       --gpu-id 0,1 \
       --num-valid 2 \
-      --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --all-iteraion 0 \
       --remove-vad \
       --log-interval 10
@@ -1766,8 +1759,7 @@ if [ $stage -le 300 ]; then
   loss=arcsoft
   encod=STAP
   embedding_size=512
-  input_dim=40
-  input_norm=Mean
+  input_norm=Mean input_dim=40
   lr_ratio=0
   loss_ratio=10
   subset=
