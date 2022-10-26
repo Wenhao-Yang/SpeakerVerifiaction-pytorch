@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=301
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2667,9 +2667,7 @@ if [ $stage -le 300 ]; then
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
 
   # for test_set in cnceleb; do # 32,128,512; 8,32,128
-#    --trials trials_${s} \
-#      --score-suffix ${s} \
-#      --extract \
+#    --trials trials_${s} --score-suffix ${s} --extract \
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
 # --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_${subset}_epoch50_fix \
@@ -2730,8 +2728,7 @@ if [ $stage -le 300 ]; then
      --frame-shift 300 \
      --xvector-dir Data/xvector/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/${test_set}_dev_epoch50_fix \
      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
-     --gpu-id 0 \
-     --extract \
+     --gpu-id 0 --extract \
      --cos-sim
  done
 
@@ -2785,8 +2782,7 @@ if [ $stage -le 300 ]; then
 #      --context 5,3,3,5 \
 #      --nj 12 \
 #      --alpha 0 \
-#      --margin 0.15 \
-#      --s 30 \
+#      --margin 0.15 --s 30 \
 #      --stride 1 \
 #      --block-type ${block_type} \
 #      --embedding-size ${embedding_size} \
@@ -2808,75 +2804,61 @@ if [ $stage -le 300 ]; then
 fi
 
 if [ $stage -le 301 ]; then
-  feat_type=klfb
-  input_dim=40
+  model=ThinResNet resnet_size=34
+  input_dim=40 feat_type=klfb
   feat=fb${input_dim}
   input_norm=Mean
   loss=arcsoft
 
-  model=ThinResNet resnet_size=34
-  encoder_type=SAP2
-  embedding_size=512
-  block_type=basic
-  downsample=k1
+#  encoder_type=SAP2 embedding_size=512
+  encoder_type=ASTP2 embedding_size=256
+  block_type=seblock downsample=k1 red_ratio=2
   kernel=5,5
   loss=arcsoft
   alpha=0
-  input_norm=Mean
-  mask_layer=baseline
 
   batch_size=256
   fast=none1
-  mask_len=5,5
-  mask_layer=both
-
-  train_set=cnceleb
-  test_set=cnceleb
+  mask_layer=baseline mask_len=5,5
+  train_set=cnceleb test_set=cnceleb
   train_subset=12
 #  subset=dev
   subset=test
+  test_input=fix
   epoch=13
 
-#       --trials subtrials/trials_${s} \
-#     --score-suffix ${s} \
+#     --trials subtrials/trials_${s} --score-suffix ${s} \
 # Data/checkpoint/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var
 
+#--score-norm as-norm --n-train-snts 100000 --cohort-size 5000 \
+#     --vad-select \
+
   for s in all; do
+#    model_dir=ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es
+    model_dir=ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_vares_bashuf2_dist_mani123_lamda2.0/123456
+
    python -W ignore TrainAndTest/test_egs.py \
-     --model ${model} \
-     --resnet-size ${resnet_size} \
+     --model ${model} --resnet-size ${resnet_size} \
      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat} \
      --train-extract-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat} \
      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
      --train-trials trials_2w \
      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat}_valid \
      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
-     --feat-format kaldi \
+     --feat-format kaldi --nj 12 --remove-vad \
      --input-norm ${input_norm} --input-dim ${input_dim} \
      --mask-layer ${mask_layer} --mask-len ${mask_len} \
-     --kernel-size ${kernel} \
-     --downsample ${downsample} \
+     --kernel-size ${kernel} --fast none1 --stride 2,1 \
      --channels 16,32,64,128 \
-     --score-norm as-norm \
-     --n-train-snts 100000 \
-     --cohort-size 5000 \
-     --vad-select \
-     --fast none1 --stride 2,1 \
-     --time-dim 1 --avg-size 0 \
-     --nj 12 \
+     --time-dim 1 --avg-size 5 \
      --alpha 0 \
-     --margin 0.2 --s 30 \
-     --block-type ${block_type} \
-     --embedding-size ${embedding_size} \
-     --encoder-type ${encoder_type} \
-     --input-length fix \
-     --remove-vad \
-     --frame-shift 300 \
-     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es/${test_set}_${subset}_epoch${epoch}_fix \
-     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es/checkpoint_${epoch}.pth \
-     --gpu-id 3 \
-     --loss-type ${loss} \
-     --verbose 2 \
+     --loss-type ${loss} --margin 0.2 --s 30 \
+     --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
+     --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
+     --test-input fix --frame-shift 300 \
+     --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_${test_input} \
+     --resume Data/checkpoint/${model_dir}/best.pth \
+     --gpu-id 4 --verbose 2 \
      --cos-sim
 #     --extract \
 #      --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
@@ -2916,18 +2898,16 @@ if [ $stage -le 301 ]; then
 #     --score-suffix ${s} \
 #     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}_valid \
 #     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
-#     --feat-format kaldi \
+#     --feat-format kaldi --nj 12 \
 #     --input-norm ${input_norm} \
 #     --input-dim 80 \
 #     --kernel-size ${kernel} \
 #     --downsample ${downsample} \
 #     --channels 32,64,128,256 \
-#     --fast none1 \
-#     --stride 2,2 \
+#     --fast none1 --stride 2,2 \
 #     --time-dim 1 --avg-size 5 \
-#     --nj 12 \
 #     --alpha 0 \
-#     --margin 0.2 --s 30 \
+#     --loss-type ${loss} --margin 0.2 --s 30 \
 #     --block-type ${block_type} \
 #     --embedding-size ${embedding_size} \
 #     --encoder-type ${encoder_type} \
@@ -2937,7 +2917,6 @@ if [ $stage -le 301 ]; then
 #     --xvector-dir Data/xvector/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_dev_epoch60_fix \
 #     --resume Data/checkpoint/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
 #     --gpu-id 5 \
-#     --loss-type ${loss} \
 #     --extract \
 #     --cos-sim \
 #     --verbose 0
