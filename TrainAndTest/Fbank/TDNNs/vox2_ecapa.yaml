@@ -62,7 +62,7 @@ early_meta: 'EER'
 scheduler: cyclic
 patience: 3
 milestones: [ 10,20,30,40 ]
-cyclic_epoch: 4
+cyclic_epoch: 2
 cos_sim: True
 
 ## model Setttings
@@ -70,7 +70,7 @@ model: ECAPA
 kernel_size:
 alpha: 0
 embedding_size: 192
-batch_size: 256
+batch_size: 128
 dropout_p: 0.0
 activation: relu
 channels: 512,512,512,512,1500
