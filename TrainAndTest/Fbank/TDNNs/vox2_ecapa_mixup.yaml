@@ -92,7 +92,7 @@ classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
 # loss
 loss_ratio: 1
 lr_ratio: 0
-#all_iteraion: 500
+all_iteraion: 1000
 
 loss_lambda: False
 loss_type: !ref <loss>
@@ -102,7 +102,7 @@ s: 30
 lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
-mixup_layer: [ 1, 2 ]
+mixup_layer: [ 1, 2, 3 ]
 mixup_type: manifold
 # stat_type: margin1
 
