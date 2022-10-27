@@ -232,7 +232,7 @@ class ECAPA_TDNN(nn.Module):
         out = F.relu(self.conv(out))
         out = self.bn0(self.pooling(out))
         if proser != None and layer_mix == 6:
-            x = self.mixup(x, proser, lamda_beta)
+            out = self.mixup(out, proser, lamda_beta)
 
         embeddings = self.bn1(self.fc1(out))
 
@@ -268,6 +268,14 @@ class ECAPA_TDNN(nn.Module):
 
         return embeddings
 
+    def mixup(self, x, shuf_half_idx_ten, lamda_beta):
+        half_batch_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-half_batch_size:]
+        x = torch.cat(
+            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            dim=0)
+
+        return x
 # if __name__ == '__main__':
 #     # Input size: batch_size * seq_len * feat_dim
 #     x = torch.zeros(2, 200, 80)

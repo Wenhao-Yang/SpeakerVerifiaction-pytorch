@@ -1776,7 +1776,9 @@ if [ $stage -le 300 ]; then
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
-   CUDA_VISIBLE_DEVICES=0,2 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_ecapa.yaml --seed=${seed}
+#   CUDA_VISIBLE_DEVICES=0,2 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_ecapa.yaml --seed=${seed}
+
+   CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417410 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_ecapa_mixup.yaml
 
 #   CUDA_VISIBLE_DEVICES=2,4 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_tdnn_mixup.yaml --seed=${seed}
   done
