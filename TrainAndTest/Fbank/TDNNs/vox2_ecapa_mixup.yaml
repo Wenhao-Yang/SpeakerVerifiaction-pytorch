@@ -92,6 +92,8 @@ classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
 # loss
 loss_ratio: 1
 lr_ratio: 0
+all_iteraion: 500
+
 loss_lambda: False
 loss_type: !ref <loss>
 margin: 0.2
