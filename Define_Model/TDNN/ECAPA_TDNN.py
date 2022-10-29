@@ -214,19 +214,19 @@ class ECAPA_TDNN(nn.Module):
         x = x.transpose(1, 2)
         out1 = self.layer1(x)
         if proser != None and layer_mix == 2:
-            x = self.mixup(x, proser, lamda_beta)
+            out1 = self.mixup(out1, proser, lamda_beta)
 
         out2 = self.layer2(out1) + out1
         if proser != None and layer_mix == 3:
-            x = self.mixup(x, proser, lamda_beta)
+            out2 = self.mixup(out2, proser, lamda_beta)
 
         out3 = self.layer3(out1 + out2) + out1 + out2
         if proser != None and layer_mix == 4:
-            x = self.mixup(x, proser, lamda_beta)
+            out3 = self.mixup(out3, proser, lamda_beta)
 
         out4 = self.layer4(out1 + out2 + out3) + out1 + out2 + out3
         if proser != None and layer_mix == 5:
-            x = self.mixup(x, proser, lamda_beta)
+            out4 = self.mixup(out4, proser, lamda_beta)
 
         out = torch.cat([out2, out3, out4], dim=1)
         out = F.relu(self.conv(out))
