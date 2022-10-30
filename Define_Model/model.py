@@ -6,7 +6,7 @@
 @Contact: 874681044@qq.com
 @Software: PyCharm
 @File: model.py
-@Overview: The deep speaker model is not entirely the same as ResNet, as there are convolutional layers between blocks.
+@Overview: The deep speaker model is not entirely the same as ResNets, as there are convolutional layers between blocks.
 """
 
 import math
@@ -346,7 +346,7 @@ class DeepSpeakerModel(nn.Module):
 
 class ResSpeakerModel(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     """
     def __init__(self, resnet_size, embedding_size, num_classes, feature_dim=64):
         super(ResSpeakerModel, self).__init__()
@@ -562,7 +562,7 @@ class ResSpeakerModel(nn.Module):
 
 class ResCNNSpeaker(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
     def __init__(self, resnet_size, embedding_size, num_classes, block=BasicBlock, feature_dim=64, dropout=False):

@@ -71,11 +71,11 @@ parser.add_argument('--sitw-dir', type=str,
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
 
-parser.add_argument('--check-path', default='Data/checkpoint/ResNet/spect/soft',
+parser.add_argument('--check-path', default='Data/checkpoint/ResNets/spect/soft',
                     help='folder to output model checkpoints')
 parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
 parser.add_argument('--resume',
-                    default='Data/checkpoint/ResNet/spect/soft/checkpoint_10.pth', type=str,
+                    default='Data/checkpoint/ResNets/spect/soft/checkpoint_10.pth', type=str,
                     metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 
@@ -96,7 +96,7 @@ parser.add_argument('--veri-pairs', type=int, default=12800, metavar='VP',
 
 # Training options
 # Model options
-parser.add_argument('--model', type=str, choices=['LoResNet10', 'ResNet20', 'ResNet', 'SiResNet34', 'SuResCNN10'],
+parser.add_argument('--model', type=str, choices=['LoResNet10', 'ResNet20', 'ResNets', 'SiResNet34', 'SuResCNN10'],
                     help='path to voxceleb1 test dataset')
 parser.add_argument('--resnet-size', default=10, type=int,
                     metavar='RES', help='The channels of convs layers)')

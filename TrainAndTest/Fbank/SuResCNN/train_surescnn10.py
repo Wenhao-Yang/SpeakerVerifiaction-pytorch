@@ -244,7 +244,7 @@ def main():
     print('Number of Speakers: {}.\n'.format(len(train_dir.classes)))
 
     # instantiate model and initialize weights
-    # model = ResNet(num_classes=len(train_dir.classes),
+    # model = ResNets(num_classes=len(train_dir.classes),
     #                expansion=8, layers=[1, 1, 1, 0],
     #                embedding=args.embedding_size, channels=[32, 64, 128, 256])
     model = SuperficialResCNN(layers=[1, 1, 1, 0], embedding_size=args.embedding_size, n_classes=len(train_dir.classes),

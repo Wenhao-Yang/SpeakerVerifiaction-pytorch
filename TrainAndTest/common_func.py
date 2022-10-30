@@ -93,7 +93,7 @@ __factory = {
     'SiResNet34': SimpleResNet,
     'ThinResNet': ThinResNet,
     'MultiResNet': MultiResNet,
-    'ResNet': ResNet,
+    'ResNets': ResNet,
     'DTDNN': DTDNN,
     'TDNN': TDNN_v2,
     'TDNN_v4': TDNN_v4,

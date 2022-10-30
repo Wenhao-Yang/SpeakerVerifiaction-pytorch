@@ -5,7 +5,7 @@
 @Author: yangwenhao
 @Contact: 874681044@qq.com
 @Software: PyCharm
-@File: ResNet.py
+@File: ResNets.py
 @Time: 2019/10/10 下午5:09
 @Overview: Deep Speaker using Resnet with CNN, which is not ordinary Resnet.
 This file define resnet in 'Deep Residual Learning for Image Recognition'
@@ -98,7 +98,7 @@ class Bottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
-    # This variant is also known as ResNet V1.5 and improves accuracy according to
+    # This variant is also known as ResNets V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
     expansion: int = 4
@@ -194,7 +194,7 @@ class SEBottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
-    # This variant is also known as ResNet V1.5 and improves accuracy according to
+    # This variant is also known as ResNets V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
     expansion: int = 4
@@ -811,7 +811,7 @@ class Bottleneck_v2(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
-    # This variant is also known as ResNet V1.5 and improves accuracy according to
+    # This variant is also known as ResNets V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
     expansion: int = 4
@@ -1445,7 +1445,7 @@ class ResNet20(nn.Module):
 
 class LocalResNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
@@ -1754,7 +1754,7 @@ class LocalResNet(nn.Module):
 # previoud version for test
 # class LocalResNet(nn.Module):
 #     """
-#     Define the ResNet model with A-softmax and AM-softmax loss.
+#     Define the ResNets model with A-softmax and AM-softmax loss.
 #     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
 #     """
 #
@@ -1934,7 +1934,7 @@ class LocalResNet(nn.Module):
 
 class DomainNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
@@ -1976,7 +1976,7 @@ class DomainNet(nn.Module):
 
 class GradResNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
@@ -2168,7 +2168,7 @@ class GradResNet(nn.Module):
 
 class TimeFreqResNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
@@ -2348,7 +2348,7 @@ class TimeFreqResNet(nn.Module):
 
 class MultiResNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
