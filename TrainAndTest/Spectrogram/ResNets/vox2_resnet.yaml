@@ -19,7 +19,7 @@ subset: ''
 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev #<subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test #<subset>_<feat>
-train_trials: trials_4w
+train_trials: trials
 valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_valid
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test #_<feat>
@@ -67,14 +67,14 @@ early_meta: 'EER'
 
 ## model Setttings
 resnet_size: 34
-block_type: 'seblock'
+block_type: 'cbam_v2'
 red_ratio: 2
 encoder_type: 'SAP2'
-downsample: 'k3'
+downsample: 'k5'
 model: ThinResNet
 kernel_size:
 alpha: 0
-avg_size: 5
+avg_size: 4
 embedding_size: 256
 batch_size: 256
 dropout_p: 0.1
