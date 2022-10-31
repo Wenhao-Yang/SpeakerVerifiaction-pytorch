@@ -28,7 +28,7 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [ 200, 200 ]
+random_chunk: [ 200, 400 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
@@ -45,7 +45,7 @@ epochs: 60
 # optimizer
 optimizer: sgd
 lr_decay: 0
-weight_decay: 0.0001
+weight_decay: 0.00002
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -117,14 +117,14 @@ s: 30
 lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
-mixup_layer: [ 1,2,3 ]
+mixup_layer: [ 1, 2, 3 ]
 mixup_type: ''
 # stat_type: margin1
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_2sres_bashuf2_dist
-#_lamda<lamda_beta>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd2e5_vares_bashuf2_dist
+#_lamda<lamda_beta>_red<red_ratio>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/123456/checkpoint_17.pth
 
