@@ -74,7 +74,7 @@ batch_size: 128
 dropout_p: 0.0
 activation: relu
 channels: 512,512,512,512,1500
-encoder_type: STAP
+encoder_type: 'SASP2'
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
   input_dim: !ref <input_dim>

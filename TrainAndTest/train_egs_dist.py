@@ -664,6 +664,35 @@ def main():
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
 
+    milestones = config_args['milestones']
+    if config_args['scheduler'] == 'exp':
+        gamma = np.power(config_args['base_lr'] / config_args['lr'],
+                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
+    elif config_args['scheduler'] == 'rop':
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=config_args['patience'], min_lr=1e-5)
+    elif config_args['scheduler'] == 'cyclic':
+        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
+                                          max_lr=config_args['lr'],
+                                          step_size_up=config_args['cyclic_epoch'] * int(
+                                              np.ceil(len(train_dir) / config_args['batch_size'])),
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
+    else:
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
+
+    # Save model config txt
+    if torch.distributed.get_rank() == 0:
+        with open(os.path.join(check_path,
+                               'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
+                  'w') as f:
+            f.write('model: ' + str(model) + '\n')
+            f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
+            f.write('Other Loss: ' + str(xe_criterion) + '\n')
+            f.write('Optimizer: ' + str(optimizer) + '\n')
+            f.write('Scheduler: ' + str(scheduler) + '\n')
+
     if 'resume' in config_args:
         if os.path.isfile(config_args['resume']):
             if torch.distributed.get_rank() == 0:
@@ -689,38 +718,16 @@ def main():
                 model_dict = model.state_dict()
                 model_dict.update(filtered)
                 model.load_state_dict(model_dict)
+
+            if 'scheduler' in checkpoint:
+                scheduler.load_state_dict(checkpoint['scheduler'])
+            if 'optimizer' in optimizer:
+                optimizer.load_state_dict(checkpoint['optimizer'])
+
             # model.dropout.p = args.dropout_p
         else:
             if torch.distributed.get_rank() == 0:
                 print('=> no checkpoint found at {}'.format(config_args['resume']))
-
-    # Save model config txt
-    if torch.distributed.get_rank() == 0:
-        with open(os.path.join(check_path,
-                               'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
-                  'w') as f:
-            f.write('model: ' + str(model) + '\n')
-            f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
-            f.write('Other Loss: ' + str(xe_criterion) + '\n')
-            f.write('Optimizer: ' + str(optimizer) + '\n')
-
-    milestones = config_args['milestones']
-    if config_args['scheduler'] == 'exp':
-        gamma = np.power(config_args['base_lr'] / config_args['lr'],
-                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
-    elif config_args['scheduler'] == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=config_args['patience'], min_lr=1e-5)
-    elif config_args['scheduler'] == 'cyclic':
-        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
-                                          max_lr=config_args['lr'],
-                                          step_size_up=config_args['cyclic_epoch'] * int(
-                                              np.ceil(len(train_dir) / config_args['batch_size'])),
-                                          cycle_momentum=cycle_momentum,
-                                          mode='triangular2')
-    else:
-        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
     ce = [ce_criterion, xe_criterion]
 
@@ -875,6 +882,8 @@ def main():
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch, 'state_dict': model_state_dict,
+                            'scheduler': scheduler.state_dict(),
+                            'optimizer': optimizer.state_dict(),
                             'criterion': ce}, this_check_path)
 
                 # valid_test(train_extract_loader, model, epoch, xvector_dir)
