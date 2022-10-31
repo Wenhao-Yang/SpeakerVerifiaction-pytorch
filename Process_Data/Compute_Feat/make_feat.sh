@@ -54,15 +54,15 @@ if [ $stage -le 1 ]; then
 
   #  feat_type=pyfb
 #  dataset=vox1
-  feat=wave
-  feat_format=wav
-  feat_type=wav
+#  feat=wave
+#  feat_format=wav
+#  feat_type=wav
 
-#  feat=klfb
-#  feat_type=klfb
-#  feat_format=kaldi
+  feat=klsp
+  feat_type=klsp
+  feat_format=kaldi
 
-  num_frames=32000
+  num_frames=400
 #  num_frames=400
   input_per_spks=896
 #        --remove-vad \
@@ -74,7 +74,7 @@ if [ $stage -le 1 ]; then
 #/${feat}
   for s in dev ; do
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
@@ -86,7 +86,7 @@ if [ $stage -le 1 ]; then
       --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \

@@ -448,8 +448,7 @@ exit
 fi
 
 if [ $stage -le 41 ]; then
-  datasets=vox1
-  testsets=vox1
+  datasets=vox1 testsets=vox1
   model=ThinResNet
 #  resnet_size=50
   encoder_type=SAP2
@@ -467,8 +466,7 @@ if [ $stage -le 41 ]; then
   mask_layer=rvec
   mask_len=5,10
   weight=rclean_max
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   fast=none1
   expansion=4
   chn=16
@@ -547,11 +545,8 @@ if [ $stage -le 41 ]; then
         --check-path Data/checkpoint/${model_dir} \
         --resume Data/checkpoint/${model_dir}/checkpoint_25.pth \
         --mask-layer ${mask_layer} \
-        --mask-len ${mask_len} \
-        --init-weight ${weight} \
-        --weight-norm ${weight_norm} \
-        --weight-p 0 \
-        --scale 0.2 \
+        --mask-len ${mask_len} --init-weight ${weight} --weight-norm ${weight_norm} \
+        --weight-p 0 --scale 0.2 \
         --kernel-size 5,5 \
         --channels ${channels} \
         --downsample ${downsample} \
@@ -584,8 +579,7 @@ fi
 
 if [ $stage -le 50 ]; then
   datasets=vox2
-  model=ThinResNet
-  resnet_size=50
+  model=ThinResNet resnet_size=50
   encoder_type=SAP2
   alpha=0
   block_type=basic
@@ -606,7 +600,6 @@ if [ $stage -le 50 ]; then
   chn=16
   cyclic_epoch=8
 #  nesterov
-
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for seed in 123456 123457 123458 ;do
@@ -630,7 +623,7 @@ if [ $stage -le 50 ]; then
 
       echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
       python TrainAndTest/train_egs.py \
-        --model ${model} \
+        --model ${model} --resnet-size ${resnet_size} \
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
         --train-trials trials \
@@ -643,7 +636,6 @@ if [ $stage -le 50 ]; then
         --optimizer ${optimizer} \
         --cyclic-epoch ${cyclic_epoch} \
         --scheduler ${scheduler} \
-        --resnet-size ${resnet_size} \
         --nj 12 \
         --epochs 60 \
         --patience 2 \
@@ -690,10 +682,8 @@ exit
 fi
 
 if [ $stage -le 60 ]; then
-  datasets=vox2
-  testset=vox1
-  model=ThinResNet
-  resnet_size=34
+  datasets=vox2 testset=vox1
+  model=ThinResNet resnet_size=34
   encoder_type=SAP2
   alpha=0
   block_type=cbam_v2
@@ -704,8 +694,7 @@ if [ $stage -le 60 ]; then
   sname=dev
 
   mask_layer=rvec
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   fast=none1
   downsample=k5
 
@@ -721,11 +710,9 @@ if [ $stage -le 60 ]; then
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
-      --nj 6 \
-      --epochs 60 \
+      --nj 6 --epochs 60 \
       --random-chunk 200 400 \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
       --patience 3 \
       --accu-steps 1 \
       --lr 0.1 \
@@ -757,6 +744,33 @@ if [ $stage -le 60 ]; then
       --extract \
       --cos-sim \
       --loss-type ${loss}
+  done
+
+  exit
+fi
+
+
+if [ $stage -le 61 ]; then
+  model=ThinResNet
+  datasets=vox2
+  feat_type=klsp
+  loss=arcsoft
+  encod=SAP2
+  embedding_size=256
+  input_dim=40 input_norm=Mean
+  lr_ratio=0 loss_ratio=10
+  subset=
+  activation=leakyrelu
+  scheduler=rop optimizer=sgd
+  stat_type=margin1 #margin1sum
+  m=1.0
+
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+ for seed in 123456 ; do
+   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox2_resnet.yaml --seed=${seed}
+
+#    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet_mixup.yaml --seed=${seed}
   done
   exit
 fi
