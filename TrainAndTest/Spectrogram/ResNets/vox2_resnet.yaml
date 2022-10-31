@@ -56,6 +56,7 @@ accu_steps: 1
 patience: 2
 milestones: [ 10,20,30,40 ]
 scheduler: cyclic
+cyclic_epoch: 2
 lr: 0.001
 base_lr: 0.00000001
 cos_sim: True
