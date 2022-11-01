@@ -421,8 +421,7 @@ if [ $stage -le 43 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=170
   power_weight=max
@@ -519,10 +518,8 @@ if [ $stage -le 42 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
   feat_type=klfb
-  model=ThinResNet
-  resnet_size=50
-  encoder_type=SAP2
-  embedding_size=256
+  model=ThinResNet resnet_size=50
+  encoder_type=SAP2 embedding_size=256
   block_type=basic
   downsample=None
   kernel=5,5

@@ -1787,10 +1787,8 @@ fi
 
 
 if [ $stage -le 301 ]; then
-  datasets=vox2
-  testset=vox1
-  model=TDNN_v5
-  resnet_size=34
+  datasets=vox2 testset=vox1
+  model=TDNN_v5 resnet_size=34
   encoder_type=STAP
   alpha=0
   block_type=res2tdnn
@@ -1801,8 +1799,7 @@ if [ $stage -le 301 ]; then
   sname=dev
 
   mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=256
   chn=512
