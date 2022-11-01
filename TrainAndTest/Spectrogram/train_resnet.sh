@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=61
 
 waited=0
 while [ $(ps 182247 | wc -l) -eq 2 ]; do
@@ -634,10 +634,7 @@ if [ $stage -le 60 ]; then
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --early-stopping --early-patience 15 --early-delta 0.01 --early-meta EER \
       --patience 3 --accu-steps 1 \
-      --lr 0.1 --base-lr 0.000001 \
-      --milestones 10,20,40,50 \
-      --check-path Data/checkpoint/${model_dir} \
-      --resume Data/checkpoint/${model_dir}/checkpoint_10.pth \
+      --lr 0.1 --base-lr 0.000001 --milestones 10,20,40,50 \
       --channels 16,32,64,128 \
       --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
       --kernel-size 5,5 --stride 2 --fast ${fast} \
@@ -646,6 +643,8 @@ if [ $stage -le 60 ]; then
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
+      --check-path Data/checkpoint/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_10.pth \
       --grad-clip 0 --lr-ratio 0.01 \
       --weight-decay 0.00002 \
       --dropout-p 0.1 \

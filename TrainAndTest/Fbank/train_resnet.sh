@@ -515,20 +515,17 @@ fi
 
 
 if [ $stage -le 42 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox2
   feat_type=klfb
   model=ThinResNet resnet_size=50
   encoder_type=SAP2 embedding_size=256
-  block_type=basic
-  downsample=None
+  block_type=basic downsample=None
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
   mask_layer=None
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
 
   for encoder_type in SAP2; do
@@ -541,10 +538,9 @@ if [ $stage -le 42 ]; then
       --shuffle \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test_fb${input_dim} \
-      --feat-format kaldi \
+      --feat-format kaldi --nj 12 \
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
-      --nj 12 \
       --epochs 60 --batch-size 128 \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.000006 \
@@ -575,11 +571,9 @@ fi
 
 if [ $stage -le 50 ]; then
 #  lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
   feat_type=klfb
-  model=LoResNet
-  resnet_size=8
+  model=LoResNet resnet_size=8
 #  encoder_type=SAP2
   embedding_size=256
   block_type=cbam
@@ -589,8 +583,7 @@ if [ $stage -le 50 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=80
   batch_size=128
   fast=none1
@@ -940,8 +933,7 @@ if [ $stage -le 102 ]; then
   model=ThinResNet resnet_size=34
   encoder_type=SAP2
   embedding_size=512
-  block_type=basic
-  downsample=k3
+  block_type=basic downsample=k3
   kernel=5,5
   loss=arcsoft
   alpha=0
