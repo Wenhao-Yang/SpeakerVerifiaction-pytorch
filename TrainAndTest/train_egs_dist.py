@@ -28,8 +28,7 @@ import torchvision.transforms as transforms
 # Version conflict
 import warnings
 from hyperpyyaml import load_hyperpyyaml
-from kaldi_io import read_vec_flt
-from kaldiio import load_mat
+from kaldi_io import read_vec_flt, read_mat
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.nn.parallel import DistributedDataParallel
@@ -152,8 +151,8 @@ if config_args['log_scale']:
 
 # pdb.set_trace()
 if config_args['feat_format'] in ['kaldi', 'wav']:
-    # file_loader = read_mat
-    file_loader = load_mat
+    file_loader = read_mat
+    # file_loader = load_mat
 elif config_args['feat_format'] == 'npy':
     file_loader = np.load
 
