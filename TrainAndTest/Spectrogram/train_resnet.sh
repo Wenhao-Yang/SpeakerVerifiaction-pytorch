@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=61
 
 waited=0
 while [ $(ps 182247 | wc -l) -eq 2 ]; do
@@ -640,7 +640,6 @@ if [ $stage -le 60 ]; then
       --kernel-size 5,5 --stride 2 --fast ${fast} \
       --time-dim 1 --avg-size ${avg_size} \
       --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
-      --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --check-path Data/checkpoint/${model_dir} \
@@ -649,7 +648,7 @@ if [ $stage -le 60 ]; then
       --weight-decay 0.00002 \
       --dropout-p 0.1 \
       --gpu-id 4,5 \
-      --shuffle --extract \
+      --extract --num-valid 2 \
       --cos-sim
   done
   exit
