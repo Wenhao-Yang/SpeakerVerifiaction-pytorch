@@ -43,7 +43,7 @@ remove_vad: True
 epochs: 60
 
 # optimizer
-optimizer: sgd
+optimizer: adam
 lr_decay: 0
 weight_decay: 0.00002
 dampening: 0
@@ -55,9 +55,9 @@ accu_steps: 1
 # Scheduler
 patience: 2
 milestones: [ 10,20,30,40 ]
-scheduler: rop
-lr: 0.1
-base_lr: 0.00001
+scheduler: cyclic
+lr: 0.001
+base_lr: 0.0000001
 cos_sim: True
 
 early_stopping: True
