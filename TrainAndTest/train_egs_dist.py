@@ -11,49 +11,44 @@
 """
 from __future__ import print_function
 
+from collections import OrderedDict
+
 import argparse
-import signal
-import yaml
+import numpy as np
 import os
-import os.path as osp
-import pdb
 import random
 import shutil
 import sys
 import time
-# Version conflict
-import warnings
-from collections import OrderedDict
-
-import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
+import torch.distributed as dist
 import torch.nn as nn
 import torchvision.transforms as transforms
+# Version conflict
+import warnings
 from hyperpyyaml import load_hyperpyyaml
-from kaldi_io import read_mat, read_vec_flt
+from kaldi_io import read_vec_flt
 from kaldiio import load_mat
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.nn.parallel import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
-import torch.distributed as dist
 
+import Process_Data.constants as C
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss, DistributeLoss, MMD_Loss
-from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
+from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, \
     ArcSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
-import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput
-from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
-    args_parse, args_model, save_model_args
+from Process_Data.audio_processing import totensor
+from TrainAndTest.common_func import create_optimizer, verification_test, verification_extract
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -89,7 +84,6 @@ args = parser.parse_args()
 # os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 # os.environ['MASTER_ADDR'] = '127.0.0.1'
 # os.environ['MASTER_PORT'] = '29555'
-
 # args.cuda = not args.no_cuda and torch.cuda.is_available()
 # setting seeds
 np.random.seed(args.seed)
@@ -126,7 +120,7 @@ if torch.distributed.get_rank() == 0:
     sys.stdout = NewLogger(
         os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
-kwargs = {'num_workers': config_args['nj'], 'pin_memory': False}  # if args.cuda else {}
+kwargs = {'num_workers': config_args['nj'], 'pin_memory': True}  # if args.cuda else {}
 extract_kwargs = {'num_workers': 4, 'pin_memory': False}  # if args.cuda else {}
 
 opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
