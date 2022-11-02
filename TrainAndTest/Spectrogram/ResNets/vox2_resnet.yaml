@@ -28,7 +28,7 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [ 150, 250 ]
+random_chunk: [ 160, 240 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
@@ -58,7 +58,7 @@ milestones: [ 10,20,30,40 ]
 scheduler: cyclic
 cyclic_epoch: 2
 lr: 0.001
-base_lr: 0.00000001
+base_lr: 0.0000001
 cos_sim: True
 
 early_stopping: True
