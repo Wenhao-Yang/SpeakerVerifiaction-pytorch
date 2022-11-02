@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=61
+stage=60
 
 waited=0
 while [ $(ps 182247 | wc -l) -eq 2 ]; do
@@ -605,7 +605,7 @@ if [ $stage -le 60 ]; then
   alpha=0
   block_type=seblock_v2 red_ratio=2
   embedding_size=256
-  input_norm=Mean batch_size=256 input_dim=161
+  input_norm=Mean batch_size=512 input_dim=161
   loss=arcsoft
   feat_type=klsp
   sname=dev
