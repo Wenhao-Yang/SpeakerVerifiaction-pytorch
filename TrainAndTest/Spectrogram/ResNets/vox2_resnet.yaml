@@ -28,7 +28,7 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [ 150, 250 ]
+random_chunk: [ 160, 240 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
