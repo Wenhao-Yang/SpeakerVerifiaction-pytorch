@@ -32,7 +32,7 @@ random_chunk: [ 150, 250 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
-nj: 4
+nj: 6
 shuffle: False
 batch_shuffle: True
 
