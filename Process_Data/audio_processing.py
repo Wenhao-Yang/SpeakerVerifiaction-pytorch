@@ -709,7 +709,7 @@ class PadCollate:
 
         self.batch_len = batch_len
         if verbose > 0:
-            print('==> Generating %d different random length with Average length is %d.' % (
+            print('==> Generating %d lengths with Average: %d.' % (
             len(batch_len), np.mean(self.batch_len)))
 
         self.frame_len = random.choice(self.batch_len)
