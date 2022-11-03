@@ -601,7 +601,7 @@ fi
 if [ $stage -le 60 ]; then
   datasets=vox2 testset=vox1
   model=ThinResNet resnet_size=34
-  encoder_type=SAP2
+  encoder_type=ASTP2
   alpha=0
   block_type=seblock_v2 red_ratio=2
   embedding_size=256
@@ -619,7 +619,7 @@ if [ $stage -le 60 ]; then
 
   for sname in dev ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var2ses_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_chn32_wde5_vares_bashuf2/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -630,23 +630,23 @@ if [ $stage -le 60 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
       --feat-format kaldi --nj 6 --batch-size ${batch_size} --shuffle --batch-shuffle \
       --input-norm ${input_norm} --input-dim ${input_dim} \
-      --epochs 80 --random-chunk 140 260 \
+      --epochs 80 --random-chunk 200 400 \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --early-stopping --early-patience 15 --early-delta 0.01 --early-meta EER \
-      --patience 3 --accu-steps 1 \
+      --patience 2 --accu-steps 1 \
       --lr 0.1 --base-lr 0.000001 --milestones 10,20,40,50 \
-      --channels 16,32,64,128 \
+      --channels 32,64,128,256 \
       --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
       --kernel-size 5,5 --stride 2 --fast ${fast} \
       --time-dim 1 --avg-size ${avg_size} \
+      --dropout-p 0.1 \
       --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_10.pth \
       --grad-clip 0 --lr-ratio 0.01 \
-      --weight-decay 0.00002 \
-      --dropout-p 0.1 \
+      --weight-decay 0.00001 \
       --gpu-id 3,5 \
       --extract --num-valid 2 \
       --cos-sim
