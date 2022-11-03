@@ -28,7 +28,7 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [ 200, 200 ]
+random_chunk: [ 200, 400 ]
 chunk_size: 300
 frame_shift: 300
 extract: True
@@ -43,9 +43,9 @@ remove_vad: True
 epochs: 60
 
 # optimizer
-optimizer: adam
-lr: 0.001
-base_lr: 0.00000001
+optimizer: sgd
+lr: 0.1
+base_lr: 0.000001
 lr_decay: 0
 weight_decay: 0.00001
 dampening: 0
@@ -59,8 +59,8 @@ early_delta: 0.01
 early_meta: 'EER'
 
 # Scheduler
-scheduler: cyclic
-patience: 3
+scheduler: rop
+patience: 2
 milestones: [ 10,20,30,40 ]
 cyclic_epoch: 2
 cos_sim: True
@@ -69,8 +69,8 @@ cos_sim: True
 model: ECAPA
 kernel_size:
 alpha: 0
-embedding_size: 192
-batch_size: 128
+embedding_size: 256
+batch_size: 256
 dropout_p: 0.0
 activation: relu
 channels: 512,512,512,512,1500
@@ -101,7 +101,7 @@ s: 30
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wde5_2ses_dist
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wde5_vares_dist
 resume: ''
 #  !ref <check_path>/checkpoint_40.pth
 

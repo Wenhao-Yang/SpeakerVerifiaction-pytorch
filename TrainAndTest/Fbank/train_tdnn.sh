@@ -40,10 +40,9 @@ if [ $stage -le 5 ]; then
       --check-path Data/checkpoint/${model}/${feat}/${loss}_norm \
       --resume Data/checkpoint/${model}/${feat}/${loss}_norm/checkpoint_1.pth \
       --batch-size 64 \
-      --remove-vad \
       --epochs 16 \
       --milestones 8,12 \
-      --feat-dim 40 \
+      --feat-dim 40 --remove-vad \
       --embedding-size 128 \
       --weight-decay 0.0005 \
       --num-valid 2 \
@@ -84,8 +83,7 @@ if [ $stage -le 10 ]; then
       --epochs 18 \
       --batch-size 128 \
       --milestones 9,14 \
-      --feat-dim 40 \
-      --remove-vad \
+      --feat-dim 40 --remove-vad \
       --embedding-size 512 \
       --num-valid 2 \
       --loss-type ${loss} \
@@ -99,8 +97,7 @@ if [ $stage -le 10 ]; then
       --nj 12 \
       --model ASTDNN \
       --embedding-size 512 \
-      --feat-dim 40 \
-      --remove-vad \
+      --feat-dim 40 --remove-vad \
       --resume Data/checkpoint/${model}/${feat}/${loss}_svar/checkpoint_18.pth \
       --loss-type soft \
       --num-valid 2 \
@@ -135,10 +132,9 @@ if [ $stage -le 15 ]; then
       --check-path Data/checkpoint/${model}/${feat}/${loss} \
       --resume Data/checkpoint/${model}/${feat}/${loss}/checkpoint_1.pth \
       --batch-size 128 \
-      --remove-vad \
       --epochs 20 \
       --milestones 10,14 \
-      --feat-dim 80 \
+      --feat-dim 80 --remove-vad \
       --embedding-size 128 \
       --weight-decay 0.0005 \
       --num-valid 2 \
@@ -162,18 +158,14 @@ if [ $stage -le 16 ]; then
       --check-path Data/checkpoint/${model}/${feat}/${loss} \
       --resume Data/checkpoint/ETDNN/fb80/soft/checkpoint_20.pth \
       --batch-size 128 \
-      --remove-vad \
       --epochs 30 \
       --finetune \
       --milestones 6 \
-      --feat-dim 80 \
+      --feat-dim 80 --remove-vad \
       --embedding-size 128 \
       --weight-decay 0.0005 \
       --num-valid 2 \
-      --loss-type ${loss} \
-      --m 4 \
-      --margin 0.35 \
-      --s 15 \
+      --loss-type ${loss} --m 4 --margin 0.35 --s 15 \
       --loss-ratio 0.01 \
       --input-per-spks 224 \
       --gpu-id 1 \
@@ -195,11 +187,9 @@ if [ $stage -le 40 ]; then
       --train-dir ${lstm_dir}/data/vox1/egs/pyfb/dev_${feat} \
       --valid-dir ${lstm_dir}/data/vox1/egs/pyfb/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/pyfb/test_${feat} \
-      --nj 10 \
-      --epochs 20 \
+      --nj 10 --epochs 20 \
       --milestones 10,15 \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --alpha 0 \
       --feat-format kaldi \
       --embedding-size 128 \
@@ -225,7 +215,6 @@ fi
 # VoxCeleb1
 
 if [ $stage -le 50 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   model=TDNN_v4
   datasets=vox1
   feat=fb24_kaldi
@@ -312,8 +301,7 @@ fi
 
 if [ $stage -le 70 ]; then
   model=SlimmableTDNN
-  datasets=vox1
-  testsets=vox1
+  datasets=vox1 testsets=vox1
   #  feat=fb24
   feat_type=klfb
   loss=arcsoft
@@ -321,8 +309,7 @@ if [ $stage -le 70 ]; then
   embedding_size=512
   input_dim=40
   input_norm=Mean
-  optimizer=sgd
-  scheduler=rop
+  optimizer=sgd scheduler=rop
   mask_layer=baseline
 
   alpha=0
@@ -361,12 +348,8 @@ if [ $stage -le 70 ]; then
       --patience 3 \
       --milestones 10,20,30,40 \
       --model ${model} \
-      --optimizer ${optimizer} \
-      --scheduler ${scheduler} \
-      --early-stopping \
-      --early-patience 15 \
-      --early-delta 0.0001 \
-      --early-meta EER \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
       --lr 0.04 \
       --base-lr 0.00000001 \
       --weight-decay 0.0005 \
@@ -386,9 +369,7 @@ if [ $stage -le 70 ]; then
       --veri-pairs 9600 \
       --gpu-id 2,3 \
       --num-valid 2 \
-      --loss-type ${loss} \
-      --margin 0.2 \
-      --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --remove-vad \
       --log-interval 10 \
       --stat-type ${stat_type} \
@@ -1751,13 +1732,13 @@ fi
 
 
 if [ $stage -le 300 ]; then
-  model=TDNN_v5
+  model=ECAPA
   datasets=vox2
   #  feat=fb24
 #  feat_type=pyfb
   feat_type=klfb
   loss=arcsoft
-  encod=STAP
+  encod=SASP2
   embedding_size=512
   input_norm=Mean input_dim=40
   lr_ratio=0
@@ -1776,7 +1757,7 @@ if [ $stage -le 300 ]; then
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
-   CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_ecapa.yaml --seed=${seed}
+   CUDA_VISIBLE_DEVICES=0,2 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_ecapa.yaml --seed=${seed}
 
 #   CUDA_VISIBLE_DEVICES=0,2 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_ecapa_mixup.yaml --lamda-beta 0.2
 
