@@ -112,10 +112,12 @@ check_path = config_args['check_path'] + '/' + str(args.seed)
 
 if torch.distributed.get_rank() == 0:
     if not os.path.exists(check_path):
-        print('Making checkpath...')
+        print('Making checkpath...', check_path)
         os.makedirs(check_path)
 
+    shutil.copy(args.train_config, check_path + '/model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     writer = SummaryWriter(logdir=check_path, filename_suffix='SV')
+
     sys.stdout = NewLogger(
         os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
 
