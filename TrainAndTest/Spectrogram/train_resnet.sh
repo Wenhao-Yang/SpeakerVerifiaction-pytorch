@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=61
+stage=60
 
 waited=0
 while [ $(ps 182247 | wc -l) -eq 2 ]; do
@@ -605,7 +605,7 @@ if [ $stage -le 60 ]; then
   alpha=0
   block_type=seblock_v2 red_ratio=2
   embedding_size=256
-  input_norm=Mean batch_size=512 input_dim=161
+  input_norm=Mean batch_size=256 input_dim=161
   loss=arcsoft
   feat_type=klsp
   sname=dev
@@ -619,7 +619,7 @@ if [ $stage -le 60 ]; then
 
   for sname in dev ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_var2ses_bashuf2/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -630,7 +630,7 @@ if [ $stage -le 60 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
       --feat-format kaldi --nj 6 --batch-size ${batch_size} --shuffle --batch-shuffle \
       --input-norm ${input_norm} --input-dim ${input_dim} \
-      --epochs 60 --random-chunk 200 400 \
+      --epochs 80 --random-chunk 140 260 \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --early-stopping --early-patience 15 --early-delta 0.01 --early-meta EER \
       --patience 3 --accu-steps 1 \
@@ -647,7 +647,7 @@ if [ $stage -le 60 ]; then
       --grad-clip 0 --lr-ratio 0.01 \
       --weight-decay 0.00002 \
       --dropout-p 0.1 \
-      --gpu-id 4,5 \
+      --gpu-id 3,5 \
       --extract --num-valid 2 \
       --cos-sim
   done
