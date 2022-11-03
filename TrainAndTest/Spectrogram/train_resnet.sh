@@ -619,7 +619,7 @@ if [ $stage -le 60 ]; then
 
   for sname in dev ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde5_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_vares_bashuf2/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -646,7 +646,7 @@ if [ $stage -le 60 ]; then
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_10.pth \
       --grad-clip 0 --lr-ratio 0.01 \
-      --weight-decay 0.00001 \
+      --weight-decay 0.00002 \
       --gpu-id 3,5 \
       --extract --num-valid 2 \
       --cos-sim
