@@ -154,8 +154,7 @@ fi
 
 if [ $stage -le 21 ]; then
   datasets=vox1
-  model=ThinResNet
-  resnet_size=34
+  model=ThinResNet resnet_size=34
   encoder_type=AVG
   alpha=0
   block_type=basic_v2
@@ -222,7 +221,7 @@ if [ $stage -le 21 ]; then
   for downsample in k5; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
@@ -231,31 +230,26 @@ if [ $stage -le 21 ]; then
       --feat-format kaldi \
       --input-norm ${input_norm} \
       --random-chunk 200 400 \
-      --resnet-size ${resnet_size} \
       --downsample ${downsample} \
-      --nj 12 \
-      --epochs 50 \
+      --nj 12 --epochs 50 \
       --optimizer sgd --scheduler rop \
       --patience 2 \
-      --mask-layer attention \
-      --init-weight vox2 \
+      --mask-layer attention --init-weight vox2 \
       --accu-steps 1 \
-      --fast none1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec_attention/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_vox2_wd5e4_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec_attention/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_vox2_wd5e4_var/checkpoint_25.pth \
-      --kernel-size 5,5 --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 --fast none1 \
       --channels 16,32,64,128 \
       --input-dim 161 \
       --block-type ${block_type} --red-ratio 8 \
       --batch-size 128 \
-      --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size 5 \
-      --encoder-type ${encoder_type} \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --grad-clip 0 \
       --lr-ratio 0.01 \
       --weight-decay 0.0005 \
@@ -263,8 +257,7 @@ if [ $stage -le 21 ]; then
       --gpu-id 0,1 \
       --shuffle \
       --all-iteraion 0 \
-      --extract --cos-sim \
-      --loss-type ${loss}
+      --extract --cos-sim
   done
 
 #  for sname in dev; do
@@ -280,8 +273,7 @@ if [ $stage -le 21 ]; then
 #      --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
 #      --feat-format kaldi \
 #      --input-norm ${input_norm} \
-#      --mask-layer attention \
-#      --init-weight vox2 \
+#      --mask-layer attention --init-weight vox2 \
 #      --random-chunk 200 400 \
 #      --nj 12 \
 #      --epochs 50 \
@@ -295,9 +287,7 @@ if [ $stage -le 21 ]; then
 #      --kernel-size 5,5 --stride 2 \
 #      --channels 16,32,64,128 \
 #      --input-dim 161 \
-#      --block-type ${block_type} \
-#      --red-ratio 8 \
-#
+#      --block-type ${block_type} --red-ratio 8 \
 #      --batch-size 128 \
 #      --embedding-size ${embedding_size} \
 #      --time-dim 1 --avg-size 5 \
@@ -319,8 +309,7 @@ fi
 
 if [ $stage -le 22 ]; then
   datasets=vox2
-  model=LoResNet
-  resnet_size=8
+  model=LoResNet resnet_size=8
   encoder_type=None
   alpha=0
   block_type=cbam
@@ -363,9 +352,8 @@ if [ $stage -le 22 ]; then
       --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --margin 0.2 \
+      --margin 0.2 --s 30 \
       --grad-clip 0 \
-      --s 30 \
       --lr-ratio 0.01 \
       --weight-decay 0.0001 \
       --dropout-p ${dropout_p} \
@@ -384,7 +372,7 @@ if [ $stage -le 50 ]; then
   encoder_type=SAP2
   alpha=0
   block_type=basic
-  batch_size=128
+  batch_size=256
   chn=16
   embedding_size=256
   input_norm=Mean
@@ -398,7 +386,7 @@ if [ $stage -le 50 ]; then
   scheduler=rop optimizer=sgd
   fast=none1
   dropout_p=0.1
-  avg_size=5
+  avg_size=4
   weight_p=0 scale=0.2
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
@@ -412,10 +400,10 @@ if [ $stage -le 50 ]; then
       batch_size=128
     fi
 
-    if [ $chn -eq 16 ]; then
-      channels=16,32,64,128
-      chn_str=
-    elif [ $chn -eq 32 ]; then
+    chn_str=
+    channels=16,32,64,128
+
+    if [ $chn -eq 32 ]; then
       channels=32,64,128,256
       chn_str=chn32_
     elif [ $chn -eq 64 ]; then
@@ -430,7 +418,7 @@ if [ $stage -le 50 ]; then
       at_str=_${weight}_dp${weight_p}s${scale}
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_var/${seed}
 
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/train_egs.py \
@@ -468,7 +456,7 @@ if [ $stage -le 50 ]; then
       --lr-ratio 0.01 \
       --weight-decay 0.0001 \
       --dropout-p ${dropout_p} \
-      --gpu-id 0,1 \
+      --gpu-id 0,2 \
       --all-iteraion 0 \
       --extract --shuffle --cos-sim
   done
