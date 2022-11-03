@@ -43,7 +43,7 @@ remove_vad: False
 epochs: 60
 
 # optimizer
-optimizer: adam
+optimizer: sgd
 lr_decay: 0
 weight_decay: 0.0001
 dampening: 0
