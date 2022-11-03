@@ -613,7 +613,7 @@ if [ $stage -le 60 ]; then
   mask_layer=rvec
   scheduler=rop optimizer=sgd
   fast=none1
-  downsample=k5
+  downsample=k1
   avg_size=4
   seed=123456
 
