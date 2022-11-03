@@ -601,10 +601,10 @@ fi
 if [ $stage -le 60 ]; then
   datasets=vox2 testset=vox1
   model=ThinResNet resnet_size=34
-  encoder_type=ASTP2
+  encoder_type=SAP2
   alpha=0
   block_type=seblock_v2 red_ratio=2
-  embedding_size=512
+  embedding_size=256
   input_norm=Mean batch_size=256 input_dim=161
   loss=arcsoft
   feat_type=klsp
