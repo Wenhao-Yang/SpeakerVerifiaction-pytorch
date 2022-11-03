@@ -604,7 +604,7 @@ if [ $stage -le 60 ]; then
   encoder_type=ASTP2
   alpha=0
   block_type=seblock_v2 red_ratio=2
-  embedding_size=256
+  embedding_size=512
   input_norm=Mean batch_size=256 input_dim=161
   loss=arcsoft
   feat_type=klsp
@@ -619,7 +619,7 @@ if [ $stage -le 60 ]; then
 
   for sname in dev ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_chn32_wde5_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde5_vares_bashuf2/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -635,7 +635,7 @@ if [ $stage -le 60 ]; then
       --early-stopping --early-patience 15 --early-delta 0.01 --early-meta EER \
       --patience 2 --accu-steps 1 \
       --lr 0.1 --base-lr 0.000001 --milestones 10,20,40,50 \
-      --channels 32,64,128,256 \
+      --channels 16,32,64,128 \
       --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
       --kernel-size 5,5 --stride 2 --fast ${fast} \
       --time-dim 1 --avg-size ${avg_size} \
