@@ -306,9 +306,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         # if torch.distributed.get_rank() == 0:
         if (batch_idx + 1) % config_args['log_interval'] == 0:
-            epoch_str = 'Train Epoch {}: [{:8d}/{:8d} ({:3.0f}%)]'.format(epoch, batch_idx * len(data),
-                                                                          len(train_loader.dataset),
-                                                                          100. * batch_idx / len(train_loader))
+            epoch_str = 'Train Epoch {}: [ {:5>3.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
 
             if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
                     config_args['random_chunk'][
