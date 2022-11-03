@@ -600,6 +600,24 @@ def main():
     early_stopping_scheduler = EarlyStopping(patience=args.early_patience,
                                              min_delta=args.early_delta)
 
+    milestones = args.milestones.split(',')
+    milestones = [int(x) for x in milestones]
+    milestones.sort()
+    if args.scheduler == 'exp':
+        gamma = np.power(args.base_lr / args.lr, 1 / args.epochs) if args.gamma == 0 else args.gamma
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
+    elif args.scheduler == 'rop':
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
+    elif args.scheduler == 'cyclic':
+        cycle_momentum = False if args.optimizer == 'adam' else True
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr, max_lr=args.lr,
+                                          step_size_up=args.cyclic_epoch * int(
+                                              np.ceil(len(train_dir) / args.batch_size)),
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
+    else:
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
+
     if not args.finetune and args.resume:
         if os.path.isfile(args.resume):
             print('=> loading checkpoint {}'.format(args.resume))
@@ -623,6 +641,11 @@ def main():
                 model_dict = model.state_dict()
                 model_dict.update(filtered)
                 model.load_state_dict(model_dict)
+
+            if 'scheduler' in checkpoint:
+                scheduler.load_state_dict(checkpoint['scheduler'])
+            if 'optimizer' in optimizer:
+                optimizer.load_state_dict(checkpoint['optimizer'])
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
@@ -633,24 +656,6 @@ def main():
         f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
         f.write('Optimizer: ' + str(optimizer) + '\n')
-
-    milestones = args.milestones.split(',')
-    milestones = [int(x) for x in milestones]
-    milestones.sort()
-    if args.scheduler == 'exp':
-        gamma = np.power(args.base_lr / args.lr, 1 / args.epochs) if args.gamma == 0 else args.gamma
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
-    elif args.scheduler == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
-    elif args.scheduler == 'cyclic':
-        cycle_momentum = False if args.optimizer == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr, max_lr=args.lr,
-                                          step_size_up=args.cyclic_epoch * int(
-                                              np.ceil(len(train_dir) / args.batch_size)),
-                                          cycle_momentum=cycle_momentum,
-                                          mode='triangular2')
-    else:
-        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
 
     ce = [ce_criterion, xe_criterion]
 
@@ -759,7 +764,10 @@ def main():
                 check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
-                torch.save({'epoch': epoch, 'state_dict': model_state_dict, 'criterion': ce}, check_path)
+                torch.save({'epoch': epoch, 'state_dict': model_state_dict, 'criterion': ce,
+                            'scheduler': scheduler.state_dict(),
+                            'optimizer': optimizer.state_dict(),
+                            }, check_path)
 
                 if args.early_stopping:
                     pass
