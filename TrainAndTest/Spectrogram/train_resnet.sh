@@ -603,7 +603,7 @@ if [ $stage -le 60 ]; then
   model=ThinResNet resnet_size=34
   encoder_type=SAP2
   alpha=0
-  block_type=seblock_v2 red_ratio=2
+  block_type=basic red_ratio=2
   embedding_size=256
   input_norm=Mean batch_size=256 input_dim=161
   loss=arcsoft
@@ -617,9 +617,9 @@ if [ $stage -le 60 ]; then
   avg_size=4
   seed=123456
 
-  for resnet_size in 34 18 ; do
+  for resnet_size in 18 34 ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wd2e5_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde5_vares_bashuf2/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
