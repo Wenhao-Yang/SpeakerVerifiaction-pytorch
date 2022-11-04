@@ -612,14 +612,25 @@ if [ $stage -le 60 ]; then
 
   mask_layer=rvec
   scheduler=rop optimizer=sgd
-  fast=none1
-  downsample=k1
+  fast=avg1
+  downsample=k1 chn=32
   avg_size=4
   seed=123456
 
   for resnet_size in 18 34 ; do
+    if [ $chn -eq 16 ]; then
+      channels=16,32,64,128
+      chn_str=
+    elif [ $chn -eq 32 ]; then
+      channels=32,64,128,256
+      chn_str=chn32_
+    elif [ $chn -eq 64 ]; then
+      channels=64,128,256,512
+      chn_str=chn64_
+    fi
+    
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_wde5_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_vares_bashuf2/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
