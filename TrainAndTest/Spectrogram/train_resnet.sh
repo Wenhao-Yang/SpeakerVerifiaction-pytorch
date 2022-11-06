@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=61
 
 waited=0
 while [ $(ps 182247 | wc -l) -eq 2 ]; do
@@ -18,28 +18,24 @@ if [ $stage -le 0 ]; then
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_257 \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_257 \
       --embedding-size 512 \
-      --batch-size 128 \
-      --test-batch-size 32 \
-      --nj 12 \
-      --epochs 24 \
+      --batch-size 128 --test-batch-size 32 \
+      --nj 12 --epochs 24 \
       --milestones 10,15,20 \
       --lr 0.1 \
-      --margin 0.35 --s 30 --m 4 \
+      --loss-type ${loss} --margin 0.35 --s 30 --m 4 \
       --veri-pairs 12800 \
       --check-path Data/checkpoint/ResNet/18/spect/${loss} \
-      --resume Data/checkpoint/ResNet/18/spect/${loss}/checkpoint_1.pth \
-      --loss-type ${loss}
+      --resume Data/checkpoint/ResNet/18/spect/${loss}/checkpoint_1.pth
+
   done
 fi
 
 if [ $stage -le 20 ]; then
   datasets=vox1
-  model=ThinResNet
-  resnet_size=34
-  encoder_type=STAP
+  model=ThinResNet resnet_size=34
+  encoder_type=STAP embedding_size=256
   alpha=0
   block_type=basic
-  embedding_size=256
   input_norm=Mean
   loss=soft
   feat_type=klsp
@@ -48,7 +44,7 @@ if [ $stage -le 20 ]; then
   for sname in dev dev_aug_com; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
     python TrainAndTest/Spectrogram/train_egs.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
@@ -56,9 +52,7 @@ if [ $stage -le 20 ]; then
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
       --feat-format kaldi \
       --input-norm ${input_norm} \
-      --resnet-size ${resnet_size} \
-      --nj 12 \
-      --epochs 60 \
+      --nj 12 --epochs 60 \
       --scheduler rop \
       --patience 3 \
       --accu-steps 1 \
@@ -603,7 +597,7 @@ if [ $stage -le 60 ]; then
 
   mask_layer=rvec
   scheduler=rop optimizer=sgd
-  fast=avg1
+  fast=av1p1
   downsample=k1 chn=32
   avg_size=4
   seed=123456
