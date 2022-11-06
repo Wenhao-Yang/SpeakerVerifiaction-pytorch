@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=61
+stage=60
 
 waited=0
 while [ $(ps 182247 | wc -l) -eq 2 ]; do
@@ -598,7 +598,7 @@ if [ $stage -le 60 ]; then
   mask_layer=rvec
   scheduler=rop optimizer=sgd
   fast=av1p1
-  downsample=k1 chn=32
+  downsample=k1 chn=16
   avg_size=4
   seed=123456
 
@@ -631,7 +631,7 @@ if [ $stage -le 60 ]; then
       --early-stopping --early-patience 15 --early-delta 0.01 --early-meta EER \
       --patience 2 --accu-steps 1 \
       --lr 0.1 --base-lr 0.000001 --milestones 10,20,40,50 \
-      --channels 16,32,64,128 \
+      --channels ${channels} \
       --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
       --kernel-size 5,5 --stride 2 --fast ${fast} \
       --time-dim 1 --avg-size ${avg_size} \
