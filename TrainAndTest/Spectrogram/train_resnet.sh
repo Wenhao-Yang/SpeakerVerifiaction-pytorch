@@ -586,7 +586,7 @@ if [ $stage -le 60 ]; then
       --train-trials trials \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
-      --feat-format kaldi --nj 6 --batch-size ${batch_size} --shuffle --batch-shuffle \
+      --feat-format kaldi --nj 4 --batch-size ${batch_size} --shuffle --batch-shuffle \
       --input-norm ${input_norm} --input-dim ${input_dim} \
       --epochs 80 --random-chunk 200 400 \
       --optimizer ${optimizer} --scheduler ${scheduler} \
