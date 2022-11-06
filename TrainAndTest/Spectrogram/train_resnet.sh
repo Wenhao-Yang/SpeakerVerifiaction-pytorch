@@ -466,16 +466,12 @@ if [ $stage -le 41 ]; then
         --test-dir ${lstm_dir}/data/${testsets}/${feat_type}/test \
         --feat-format kaldi \
         --input-norm ${input_norm} \
-        --seed ${seed} --shuffle \
-        --random-chunk 200 400 \
+        --seed ${seed} --shuffle --random-chunk 200 400 \
         --batch-size ${batch_size} \
-        --optimizer ${optimizer} \
-        --cyclic-epoch ${cyclic_epoch} \
-        --scheduler ${scheduler} \
+        --optimizer ${optimizer} --cyclic-epoch ${cyclic_epoch} --scheduler ${scheduler} \
         --nj 6 --epochs 60 --patience 3 \
         --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
         --accu-steps 1 \
-        --fast ${fast} \
         --lr ${lr} --base-lr 0.0000005 \
         --milestones 10,20,30,40 \
         --check-path Data/checkpoint/${model_dir} \
@@ -483,26 +479,21 @@ if [ $stage -le 41 ]; then
         --mask-layer ${mask_layer} \
         --mask-len ${mask_len} --init-weight ${weight} --weight-norm ${weight_norm} \
         --weight-p 0 --scale 0.2 \
-        --kernel-size 5,5 --stride 2,2 \
+        --kernel-size 5,5 --stride 2,2 --fast ${fast} \
         --channels ${channels} \
-        --downsample ${downsample} --expansion ${expansion} \
+        --block-type ${block_type} --downsample ${downsample} --expansion ${expansion} \
         --input-dim 161 \
-        --block-type ${block_type} \
-        --embedding-size ${embedding_size} \
         --time-dim 1 --avg-size ${avg_size} \
-        --encoder-type ${encoder_type} \
+        --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
         --num-valid 2 \
         --alpha ${alpha} \
-        --s 30 --margin 0.2 --output-subs --num-center ${num_center}\
+        --loss-type ${loss} --s 30 --margin 0.2 --output-subs --num-center ${num_center}\
         --grad-clip 0 \
-        --lr-ratio 0.01 \
-        --weight-decay 0.0001 \
+        --lr-ratio 0.01 --weight-decay 0.0001 \
         --dropout-p 0.1 \
         --gpu-id 1,6 \
         --all-iteraion 0 \
-        --extract \
-        --cos-sim \
-        --loss-type ${loss}
+        --extract --cos-sim
     done
     done
     done
