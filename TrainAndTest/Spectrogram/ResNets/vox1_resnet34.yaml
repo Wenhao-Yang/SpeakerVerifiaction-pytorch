@@ -68,10 +68,10 @@ early_meta: 'EER'
 
 ## model Setttings
 resnet_size: 34
-block_type: 'seblock_v2'
+block_type: 'seblock'
 red_ratio: 2
 encoder_type: 'SAP2'
-downsample: 'k5'
+downsample: 'k1'
 model: ThinResNet
 kernel_size:
 alpha: 0
@@ -81,7 +81,7 @@ batch_size: 128
 dropout_p: 0.2
 activation: relu
 channels: 32,64,128,256
-fast: none1
+fast: 'av1p1'
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>

@@ -68,7 +68,7 @@ early_meta: 'EER'
 
 ## model Setttings
 resnet_size: 18
-block_type: 'cbam'
+block_type: 'seblock'
 red_ratio: 2
 encoder_type: 'SAP2'
 downsample: 'k1'
