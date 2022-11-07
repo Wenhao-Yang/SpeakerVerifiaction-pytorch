@@ -78,7 +78,7 @@ alpha: 0
 avg_size: 4
 embedding_size: 256
 batch_size: 128
-dropout_p: 0.2
+dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
 fast: 'av1p1'
@@ -124,7 +124,7 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_rvec/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp02_alpha<alpha>_<fast>_wde4_vares_bashuf2_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_rvec/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_vares_bashuf2_dist
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 resume: ''
