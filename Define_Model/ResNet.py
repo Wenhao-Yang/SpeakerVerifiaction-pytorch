@@ -971,6 +971,9 @@ class ThinResNet(nn.Module):
         if self.fast.startswith('avp'):
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
             self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+        elif self.fast.startswith('av1p'):
+            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(1, 3), stride=(1, 2), padding=(0, 1))
         elif self.fast.startswith('mxp'):
             self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
         else:
@@ -980,7 +983,7 @@ class ThinResNet(nn.Module):
         self.layer2 = self._make_layer(block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio)
         self.layer3 = self._make_layer(block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
 
-        last_stride = 1 if self.fast in ['avp1', 'mxp1', 'none1'] else 2
+        last_stride = 1 if self.fast in ['avp1', 'mxp1', 'none1', 'av1p1'] else 2
         self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=last_stride, red_ratio=red_ratio)
 
         self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None

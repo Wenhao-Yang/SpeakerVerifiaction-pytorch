@@ -1,0 +1,61 @@
+- baseline:
+
+    TDNN
+    ResNet
+
+- 代码工具，可使用git下载到本地查看
+
+    ASV-Subtools: https://github.com/Snowdar/asv-subtools
+    
+    my-code in yangwenhao@cca-server01:~/NewAdded
+        >> git clone ssh://yangwenhao211.81.55.156/~/NewAdded/xxx
+
+             lstm_speaker_verification       ... data_processing dir in kaldi way
+                egs:
+                    1.  ./prepare_data/voxceleb.sh 计算vox1的声学特征fbank;
+
+             SpeakerVerification-pytorch     ... training dir
+                Data         数据存储...
+                Define_Model 模型定义...
+                Process_Data 数据处理...
+                egs:
+                    2.  ./Process_Data/Compute_Feat/make_feat.sh 使用1中的fbank准备训练的batch samples;
+
+                TrainAndTest 训练脚本...
+
+                egs:
+                    3.  ./TrainAndTest/Fbank/TDNNs/train_tdnn.sh 修改数据路径、模型定义,开始训练;
+
+
+- 实验室server01:
+    command: ssh yangwenhao@211.81.55.156 
+    passwd:  12345678
+
+
+- 论文:
+    
+    *论文1 Learning Placeholders for open-set recognition              ... cvpr 2021
+    github: https://github.com/zhoudw-zdw/CVPR21-Proser
+    
+        目前Proser方法直接使用到speaker verification里似乎效果并不好，在vox1上训练测试：
+
+           loss = ce1 + beta * ce2 + lamda * ce3 （参照论文中，beta=1, lamda=0.01) 
+
+        baseline：    EER(%):         4.23   MinDcf-0.01: 0.4115  MinDcf-0.001: 0.5672  Mix3: 0.9862
+        + proser：    EER(%):         4.20   MinDcf-0.01: 0.3972  MinDcf-0.001: 0.5249  Mix3: 0.8757
+
+
+    直接使用proser训练，效果变差。我的思路：
+        1.Proser方法在少量类别下有效，大量类别分类下，怎么调整？超参、流程...
+        2.说话人分类网络训练时，类别中心之间的相似度（说话人相似度）是怎么变化的？
+        3.是否需要根据相似度进行说话人embedding mixup，而不是随机？
+
+    可能需要阅读的论文：
+        [39] Mixup： beyond empirical risk minimization                              ... iclr 2018
+        [31] manifold mixup： better representations by interpolating hidden states  ... icml 2019
+
+
+    *论文2 Variational prototype learning for deep face recognition                   ... cvpr 2021
+        ...
+    *论文3 Discrimination-aware mechanism for fine-grained represention learning      ... cvpr 2021
+        ...
