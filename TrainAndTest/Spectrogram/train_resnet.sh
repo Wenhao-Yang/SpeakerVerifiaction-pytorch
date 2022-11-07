@@ -634,3 +634,28 @@ if [ $stage -le 61 ]; then
   done
   exit
 fi
+
+if [ $stage -le 62 ]; then
+  model=ThinResNet
+  datasets=vox1 feat_type=klsp
+  loss=arcsoft
+  encod=SAP2 embedding_size=256
+  input_dim=40 input_norm=Mean
+  lr_ratio=0 loss_ratio=10
+  subset=
+  activation=leakyrelu
+  scheduler=rop optimizer=sgd
+  stat_type=margin1 #margin1sum
+  m=1.0
+
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+ for seed in 123456 ; do
+   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    CUDA_VISIBLE_DEVICES=1,1 OMP_NUM_THREADS=6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417425 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18.yaml --seed=${seed}
+
+    CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417425 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet34.yaml --seed=${seed}
+
+#    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet_mixup.yaml --seed=${seed}
+  done
+  exit
+fi
