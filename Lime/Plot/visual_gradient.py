@@ -69,7 +69,6 @@ def main():
     #         freq_data = pickle.load(f)  # avg on time axis
     #     with open(vis_path + '/time.data.pickle', 'rb') as f:
     #         time_data = pickle.load(f)  # avg on freq axis
-    #
     # else:
     train_lst = list(dir_path.glob('*train*bin'))
     veri_lst = list(dir_path.glob('*ver*bin'))
@@ -94,7 +93,6 @@ def main():
     #     pickle.dump(time_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     freq_data = {}
-
     train_data_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
     train_time_mean = np.zeros((args.feat_dim))  # [data.mean/grad.abssum/grad.var]
     train_time_var = np.zeros((args.feat_dim))
@@ -152,7 +150,6 @@ def main():
 
     print(' Train verification set extracting:')
     veri_data = np.zeros((3, 2, args.feat_dim))  # [data/grad, utt_a, utt_b]
-
     train_veri_data = np.zeros((args.feat_dim))
     train_veri_mean = np.zeros((args.feat_dim))
     train_veri_var = np.zeros((args.feat_dim))
