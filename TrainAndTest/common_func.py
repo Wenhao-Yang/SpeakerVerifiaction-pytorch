@@ -763,6 +763,9 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
         parser.add_argument('--zero-padding', action='store_true', default=False, help='using Cosine similarity')
         parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
+        parser.add_argument('--steps', type=int, default=100, help='Dimensionality of the embedding')
+        parser.add_argument('--softmax', action='store_true', default=False,
+                            help='backward after softmax normalization')
 
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
