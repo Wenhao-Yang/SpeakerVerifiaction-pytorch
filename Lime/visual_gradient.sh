@@ -283,7 +283,7 @@ if [ $stage -le 205 ]; then
             epoch=19 #27 #19
           fi
           # Data/gradient/ThinResNet34/aishell2/klsp_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch}
-          extract_path=Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/123456/epoch_best_var_acc_input_softmax_zero
+          extract_path=Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/123456/epoch_best_var_acc_input_softmax_zero/epoch_${epoch}
           python Lime/Plot/visual_gradient.py \
             --extract-path ${extract_path} \
             --feat-dim 161 \
