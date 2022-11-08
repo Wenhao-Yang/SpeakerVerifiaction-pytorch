@@ -1033,6 +1033,7 @@ if [ $stage -le 351 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
+      --check-yaml Data/checkpoint/${model_dir}/model.2022.07.25.yaml \
       --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax_zero \
       --gpu-id 1 \
       --sample-utt 6000
