@@ -975,7 +975,7 @@ if [ $stage -le 351 ]; then
   datasets=vox2 train_set=vox2 test_set=vox1
 
   feat_type=klsp feat=log
-  mask_layer=baseline #rvec
+  mask_layer=rvec #rvec
   loss=arcsoft
   optimizer=sgd scheduler=rop
   input_norm=Mean
@@ -1011,8 +1011,8 @@ if [ $stage -le 351 ]; then
       epoch=53
     fi
 #      --layer-weight \
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
-    extract_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var
+    extract_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var/${seed}
 
     python Lime/cam_extract.py \
       --model ${model} --resnet-size ${resnet_size} \
