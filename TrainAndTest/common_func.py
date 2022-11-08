@@ -490,10 +490,10 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     # Data options
     parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
-    parser.add_argument('--train-test-dir', type=str, required=True, help='path to dataset')
+    parser.add_argument('--train-test-dir', type=str, help='path to dataset')
     parser.add_argument('--noise-padding-dir', type=str, default='', help='path to dataset')
 
-    parser.add_argument('--valid-dir', type=str, required=True, help='path to dataset')
+    parser.add_argument('--valid-dir', type=str, help='path to dataset')
     parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
     parser.add_argument('--class-weight', type=str, default='', help='path to voxceleb1 test dataset')
     parser.add_argument('--max-cls-weight', default=0.8, type=float, help='replace batchnorm with instance norm')
