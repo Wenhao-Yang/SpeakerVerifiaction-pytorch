@@ -550,7 +550,7 @@ if [ $stage -le 60 ]; then
   model=ThinResNet resnet_size=34
   encoder_type=SAP2
   alpha=0
-  block_type=cbam red_ratio=2
+  block_type=basic red_ratio=2
   embedding_size=256
   input_norm=Mean batch_size=256 input_dim=161
   loss=arcsoft
@@ -559,12 +559,12 @@ if [ $stage -le 60 ]; then
 
   mask_layer=rvec
   scheduler=rop optimizer=sgd
-  fast=av1p1
+  fast=none1
   downsample=k1 chn=16
-  avg_size=4
+  avg_size=5
   seed=123456
 
-  for resnet_size in 18 34 ; do
+  for resnet_size in 34 ; do
     if [ $chn -eq 16 ]; then
       channels=16,32,64,128
       chn_str=
