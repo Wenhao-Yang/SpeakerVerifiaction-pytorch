@@ -564,7 +564,7 @@ if [ $stage -le 60 ]; then
   avg_size=5
   seed=123456
 
-  for resnet_size in 34 ; do
+  for resnet_size in 18 ; do
     if [ $chn -eq 16 ]; then
       channels=16,32,64,128
       chn_str=
