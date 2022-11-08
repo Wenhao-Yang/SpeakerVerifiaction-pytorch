@@ -202,8 +202,8 @@ elif args.test_input == 'fix':
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
-if args.mvnorm:
-    transform.transforms.append(mvnormal())
+# if args.mvnorm:
+#     transform.transforms.append(mvnormal())
 
 file_loader = read_mat
 
