@@ -38,7 +38,7 @@ from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput
-from TrainAndTest.common_func import create_model
+from TrainAndTest.common_func import create_model, load_model_args, args_model, args_parse
 
 # Version conflict
 
@@ -58,121 +58,123 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # Training settings
-parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: Class Activation Mapping')
+args = args_parse('PyTorch Speaker Recognition: Gradient')
+
+# parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: Gradient')
 # Data options
-parser.add_argument('--train-dir', type=str, help='path to dataset')
-parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
-parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
-parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
-parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--check-path', help='folder to output model checkpoints')
-parser.add_argument('--extract-path', help='folder to output model grads, etc')
-
-parser.add_argument('--start-epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
-parser.add_argument('--epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
-
-# Data options
-parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
-parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
-
-parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
-                    help='choose the acoustic features type.')
-parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--mvnorm', action='store_true', default=False,
-                    help='using Cosine similarity')
-# Model options
-parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
-
-parser.add_argument('--layer-weight', action='store_true', default=False, help='backward after softmax normalization')
-parser.add_argument('--steps', type=int, default=100, metavar='ES', help='Dimensionality of the embedding')
-
-parser.add_argument('--softmax', action='store_true', default=False,
-                    help='backward after softmax normalization')
-
-parser.add_argument('--cam-layers',
-                    default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2',
-                             'layer3.5.conv2', 'layer4.2.conv2'],
-                    type=list, metavar='CAML', help='The channels of convs layers)')
-parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
-
-parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
-parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
-parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
-parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
-parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
-
-parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
-parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
-parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
-parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
-parser.add_argument('--encoder-type', type=str, help='path to voxceleb1 test dataset')
-parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
-
-parser.add_argument('--channels', default='64,128,256', type=str,
-                    metavar='CHA', help='The channels of convs layers)')
-parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
-parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
-parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
-                    help='kernel size of conv filters')
-parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
-parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
-parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
-parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
-
-parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
-parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
-                    help='input batch size for testing (default: 64)')
-
-# args for additive margin-softmax
-parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
-                    help='the margin value for the angualr softmax loss function (default: 3.0')
-parser.add_argument('--s', type=float, default=15, metavar='S',
-                    help='the margin value for the angualr softmax loss function (default: 3.0')
-# args for a-softmax
-parser.add_argument('--m', type=int, default=3, metavar='M',
-                    help='the margin value for the angualr softmax loss function (default: 3.0')
-parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
-                    help='random seed (default: 0)')
-parser.add_argument('--lambda-max', type=float, default=0.05, metavar='S',
-                    help='random seed (default: 0)')
-
-parser.add_argument('--alpha', default=0, type=float,
-                    metavar='l2 length', help='acoustic feature dimension')
-parser.add_argument('--cos-sim', action='store_true', default=True, help='using Cosine similarity')
-parser.add_argument('--embedding-size', type=int, metavar='ES', help='Dimensionality of the embedding')
-
-parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
-parser.add_argument('--batch-size', type=int, default=1, metavar='BS',
-                    help='input batch size for training (default: 128)')
-parser.add_argument('--test-batch-size', type=int, default=1, metavar='BST',
-                    help='input batch size for testing (default: 64)')
-parser.add_argument('--input-per-spks', type=int, default=192, metavar='IPFT',
-                    help='input sample per file for testing (default: 8)')
-parser.add_argument('--test-input-per-file', type=int, default=1, metavar='IPFT',
-                    help='input sample per file for testing (default: 8)')
-
-# Device options
-parser.add_argument('--no-cuda', action='store_true', default=False,
-                    help='enables CUDA training')
-parser.add_argument('--gpu-id', default='1', type=str,
-                    help='id(s) for CUDA_VISIBLE_DEVICES')
-parser.add_argument('--seed', type=int, default=123456, metavar='S',
-                    help='random seed (default: 0)')
-parser.add_argument('--log-interval', type=int, default=1, metavar='LI',
-                    help='how many batches to wait before logging training status')
-
-parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
-                    help='choose the acoustic features type.')
-parser.add_argument('--makemfb', action='store_true', default=False,
-                    help='need to make mfb file')
-parser.add_argument('--makespec', action='store_true', default=False,
-                    help='need to make spectrograms file')
-
-args = parser.parse_args()
+# parser.add_argument('--train-dir', type=str, help='path to dataset')
+# parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
+# parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+# parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
+# parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
+# parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
+# parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
+# parser.add_argument('--check-path', help='folder to output model checkpoints')
+# parser.add_argument('--extract-path', help='folder to output model grads, etc')
+#
+# parser.add_argument('--start-epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
+# parser.add_argument('--epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
+#
+# # Data options
+# parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
+# parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
+#
+# parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
+# parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
+#                     help='choose the acoustic features type.')
+# parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
+# parser.add_argument('--mvnorm', action='store_true', default=False,
+#                     help='using Cosine similarity')
+# # Model options
+# parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
+# parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
+#
+# parser.add_argument('--layer-weight', action='store_true', default=False, help='backward after softmax normalization')
+# parser.add_argument('--steps', type=int, default=100, metavar='ES', help='Dimensionality of the embedding')
+#
+# parser.add_argument('--softmax', action='store_true', default=False,
+#                     help='backward after softmax normalization')
+#
+# parser.add_argument('--cam-layers',
+#                     default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2',
+#                              'layer3.5.conv2', 'layer4.2.conv2'],
+#                     type=list, metavar='CAML', help='The channels of convs layers)')
+# parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
+#
+# parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
+# parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
+# parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
+# parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
+# parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
+#
+# parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
+# parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
+# parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
+# parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
+# parser.add_argument('--encoder-type', type=str, help='path to voxceleb1 test dataset')
+# parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
+#
+# parser.add_argument('--channels', default='64,128,256', type=str,
+#                     metavar='CHA', help='The channels of convs layers)')
+# parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
+# parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
+# parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
+#                     help='kernel size of conv filters')
+# parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
+# parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
+# parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
+# parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
+#
+# parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
+# parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
+#                     help='input batch size for testing (default: 64)')
+#
+# # args for additive margin-softmax
+# parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
+#                     help='the margin value for the angualr softmax loss function (default: 3.0')
+# parser.add_argument('--s', type=float, default=15, metavar='S',
+#                     help='the margin value for the angualr softmax loss function (default: 3.0')
+# # args for a-softmax
+# parser.add_argument('--m', type=int, default=3, metavar='M',
+#                     help='the margin value for the angualr softmax loss function (default: 3.0')
+# parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
+#                     help='random seed (default: 0)')
+# parser.add_argument('--lambda-max', type=float, default=0.05, metavar='S',
+#                     help='random seed (default: 0)')
+#
+# parser.add_argument('--alpha', default=0, type=float,
+#                     metavar='l2 length', help='acoustic feature dimension')
+# parser.add_argument('--cos-sim', action='store_true', default=True, help='using Cosine similarity')
+# parser.add_argument('--embedding-size', type=int, metavar='ES', help='Dimensionality of the embedding')
+#
+# parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
+# parser.add_argument('--batch-size', type=int, default=1, metavar='BS',
+#                     help='input batch size for training (default: 128)')
+# parser.add_argument('--test-batch-size', type=int, default=1, metavar='BST',
+#                     help='input batch size for testing (default: 64)')
+# parser.add_argument('--input-per-spks', type=int, default=192, metavar='IPFT',
+#                     help='input sample per file for testing (default: 8)')
+# parser.add_argument('--test-input-per-file', type=int, default=1, metavar='IPFT',
+#                     help='input sample per file for testing (default: 8)')
+#
+# # Device options
+# parser.add_argument('--no-cuda', action='store_true', default=False,
+#                     help='enables CUDA training')
+# parser.add_argument('--gpu-id', default='1', type=str,
+#                     help='id(s) for CUDA_VISIBLE_DEVICES')
+# parser.add_argument('--seed', type=int, default=123456, metavar='S',
+#                     help='random seed (default: 0)')
+# parser.add_argument('--log-interval', type=int, default=1, metavar='LI',
+#                     help='how many batches to wait before logging training status')
+#
+# parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
+#                     help='choose the acoustic features type.')
+# parser.add_argument('--makemfb', action='store_true', default=False,
+#                     help='need to make mfb file')
+# parser.add_argument('--makespec', action='store_true', default=False,
+#                     help='need to make spectrograms file')
+#
+# args = parser.parse_args()
 
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
@@ -191,11 +193,11 @@ if args.cuda:
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
 
-if args.input_length == 'var':
+if args.test_input == 'var':
     transform = transforms.Compose([
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
-elif args.input_length == 'fix':
+elif args.test_input == 'fix':
     transform = transforms.Compose([
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
@@ -334,6 +336,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     softmax = nn.Softmax(dim=1)
 
     baseline = None
+    zeros = nn.ZeroPad2d(1)
+
     for batch_idx, (data, label, uid) in pbar:
 
         # orig = data.detach().numpy().squeeze().astype(np.float32)
@@ -355,7 +359,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
         baseline = None
 
         if len(data) == 1:
-
             if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input']:
                 logit, _ = model(data)
                 classifed = logit[0] if args.loss_type == 'asoft' else logit
@@ -455,10 +458,13 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
                         # print(this_grad.shape, this_feat.shape)
                         # try:
-                        this_grad = ups(out_layer_grad[i] * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
+                        this_grad = out_layer_grad[i] * out_layer_feat[-1 - i]
+                        if args.zero_padding and this_grad.shape[-1]<input_gradient.shape[-1]:
+                            this_grad = zeros(this_grad)
+
+                        this_grad = ups(this_grad).mean(dim=1, keepdim=True)
                         # except Exception as e:
                         #     print(this_grad.shape, this_feat.shape)
-
                         this_grad = this_grad.clamp_min(0)
                         this_grad /= this_grad.max()
 
@@ -476,6 +482,10 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                         if len(this_feat.shape) == 3:
                             this_feat = this_feat.unsqueeze(0)
+
+                        if args.zero_padding and this_feat.shape[-1]<acc_grad.shape[-1]:
+                            this_feat = zeros(this_feat)
+
                         this_grad = ups(this_feat).mean(dim=1, keepdim=True)
                         # except Exception as e:
                         #     print(this_feat.shape)
@@ -787,7 +797,6 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
 
 
 
-
 def main():
     print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
     # print the experiment configuration
@@ -795,34 +804,16 @@ def main():
     print('Parsed options: {}'.format(vars(args)))
 
     # instantiate model and initialize weights
-    kernel_size = args.kernel_size.split(',')
-    kernel_size = [int(x) for x in kernel_size]
-    if args.padding == '':
-        padding = [int((x - 1) / 2) for x in kernel_size]
+    if os.path.exists(args.model_yaml):
+        model_kwargs = load_model_args(args.model_yaml)
     else:
-        padding = args.padding.split(',')
-        padding = [int(x) for x in padding]
+        model_kwargs = args_model(args, train_dir)
 
-    kernel_size = tuple(kernel_size)
-    padding = tuple(padding)
-    stride = args.stride.split(',')
-    stride = [int(x) for x in stride]
-
-    channels = args.channels.split(',')
-    channels = [int(x) for x in channels]
-
-    model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
-                    'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
-                    'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
-                    'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-                    'downsample': args.downsample,
-                    'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                    'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
-                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
-
-    print('Model options: {}'.format(model_kwargs))
+    keys = list(model_kwargs.keys())
+    keys.sort()
+    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    print('Model options: \n{ %s }' % (', '.join(model_options)))
+    print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
 

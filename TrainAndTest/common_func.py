@@ -761,6 +761,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
                             help='number of epochs to train (default: 10)')
         parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
+        parser.add_argument('--zero-padding', action='store_true', default=False, help='using Cosine similarity')
         parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
 
     if 'Knowledge' in description:

@@ -839,20 +839,15 @@ if [ $stage -le 201 ]; then
 fi
 
 if [ $stage -le 202 ]; then
-  model=TDNN_v5
+  model=TDNN_v5 resnet_size=8
   dataset=vox1
-  train_set=vox1
-  test_set=vox1
-  feat_type=klfb
-  feat=fb40
+  train_set=vox1 test_set=vox1
+  feat_type=klfb feat=fb40
   loss=arcsoft
-  resnet_size=8
-  encoder_type=STAP
-  embedding_size=512
+  encoder_type=STAP embedding_size=512
   block_type=basic
   kernel=5,5
   cam=grad_cam
-
 
   echo -e "\n\033[1;4;31m Stage ${stage} Extracting ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
@@ -860,11 +855,9 @@ if [ $stage -le 202 ]; then
       --model ${model} \
       --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --start-epochs 50 \
-      --epochs 50 \
+      --start-epochs 50 --epochs 50 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
-      --train-set-name vox1 \
-      --test-set-name vox1 \
+      --train-set-name vox1 --test-set-name vox1 \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
       --input-norm Mean \
       --input-dim 40 \
@@ -874,13 +867,11 @@ if [ $stage -le 202 ]; then
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --alpha 0 \
-      --loss-type ${loss} \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.0 \
       --check-path Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var \
       --extract-path Data/gradient/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/epoch_50_var_${cam} \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
       --remove-vad \
       --sample-utt 1211
     done
@@ -888,18 +879,15 @@ if [ $stage -le 202 ]; then
 fi
 
 if [ $stage -le 300 ]; then
-  model=ThinResNet
+  model=ThinResNet resnet_size=34
   # dataset=vox1
   dataset=vox2
-
-  train_set=vox2
-  test_set=vox1
+  train_set=vox2 test_set=vox1
   feat_type=klfb
   feat=log
   loss=arcsoft
-  resnet_size=34
-  encoder_type=SAP2
-  embedding_size=256
+
+  encoder_type=SAP2 embedding_size=256
   block_type=basic
   kernel=5,5
   cam=gradient
@@ -939,19 +927,16 @@ if [ $stage -le 300 ]; then
 fi
 
 if [ $stage -le 350 ]; then
-  model=ThinResNet
+  model=ThinResNet resnet_size=18
   # dataset=vox1
 #  dataset=cnceleb
   dataset=aishell2
-
-  train_set=aishell2
-  test_set=aishell2
+  train_set=aishell2 test_set=aishell2
   feat_type=klfb
   feat=log
   loss=arcsoft
-  resnet_size=18
-  encoder_type=SAP2
-  embedding_size=256
+
+  encoder_type=SAP2 embedding_size=256
   block_type=basic
   kernel=5,5
   cam=gradient
@@ -959,33 +944,24 @@ if [ $stage -le 350 ]; then
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
     python Lime/cam_extract.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --start-epochs 60 \
-      --epochs 60 \
+      --start-epochs 60 --epochs 60 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
-      --train-set-name ${train_set} \
-      --test-set-name ${test_set} \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
       --input-norm Mean \
-      --kernel-size ${kernel} \
-      --stride 2,1 \
+      --kernel-size ${kernel} --stride 2,1 \
       --channels 16,32,64,128 \
-      --encoder-type ${encoder_type} \
-      --block-type ${block_type} \
-      --downsample ${downsample} \
-      --time-dim 1 \
-      --avg-size 5 \
-      --embedding-size ${embedding_size} \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
+      --block-type ${block_type} --downsample ${downsample} \
+      --time-dim 1 --avg-size 5 \
       --alpha 0 \
-      --loss-type ${loss} \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var \
       --extract-path Data/gradient/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/epoch_60_var_${cam} \
       --gpu-id 0 \
-      --margin 0.2 \
-      --s 30 \
       --remove-vad \
       --sample-utt 4000
     done
@@ -993,29 +969,22 @@ if [ $stage -le 350 ]; then
 fi
 
 if [ $stage -le 351 ]; then
-  model=ThinResNet
-  datasets=aishell2
+  model=ThinResNet resnet_size=34
+#  datasets=aishell2 train_set=aishell2 test_set=aishell2
 #  dataset=cnceleb
-#  dataset=aishell2
-#  datasets=vox2
-  train_set=aishell2
+  datasets=vox2 train_set=vox2 test_set=vox1
 
-  test_set=aishell2
-  feat_type=klsp
+  feat_type=klsp feat=log
   mask_layer=baseline #rvec
-  feat=log
   loss=arcsoft
-  optimizer=sgd
-  scheduler=rop
-  resnet_size=34
+  optimizer=sgd scheduler=rop
   input_norm=Mean
-  encoder_type=SAP2
+  encoder_type=SAP2 embedding_size=256
   batch_size=256
-  embedding_size=256
-  block_type=basic
+
+  block_type=basic downsample=k1
   kernel=5,5
   cam=gradient
-  downsample=k1
   avg_str=avg5_
   fast=none1
   chn_str=
@@ -1025,58 +994,47 @@ if [ $stage -le 351 ]; then
   for cam in acc_input ;do
   for seed in 123456 ;do
     # vox1
-    if [ $seed -le 123456 ];then
-      epoch=15 #41 # 32 #27
-    elif [ $seed -le 123457 ]; then
-      epoch=31 # 35 #31
-    else
-      epoch=19 #27 #19
-    fi
-
-  # vox2
 #    if [ $seed -le 123456 ];then
-#      epoch=41
+#      epoch=15 #41 # 32 #27
 #    elif [ $seed -le 123457 ]; then
-#      epoch=40
+#      epoch=31 # 35 #31
 #    else
-#      epoch=53
+#      epoch=19 #27 #19
 #    fi
+
+#   vox2
+    if [ $seed -le 123456 ];then
+      epoch=41
+    elif [ $seed -le 123457 ]; then
+      epoch=40
+    else
+      epoch=53
+    fi
 #      --layer-weight \
-
-
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var
     extract_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde4_var/${seed}
+
     python Lime/cam_extract.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
-      --cam ${cam} \
+      --model ${model} --resnet-size ${resnet_size} \
+      --cam ${cam} --softmax --zero-padding \
       --steps 20 \
-      --softmax \
-      --start-epochs ${epoch} \
-      --epochs ${epoch} \
+      --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev \
-      --train-set-name ${train_set} \
-      --test-set-name ${test_set} \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --input-norm Mean \
-      --kernel-size ${kernel} \
-      --fast ${fast} \
-      --stride 2,2 \
+      --kernel-size ${kernel} --fast ${fast} --stride 2,2 \
       --channels 16,32,64,128 \
-      --encoder-type ${encoder_type} \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
       --block-type ${block_type} \
       --downsample ${downsample} \
-      --time-dim 1 \
-      --avg-size 5 \
-      --embedding-size ${embedding_size} \
+      --time-dim 1 --avg-size 5 \
       --alpha 0 \
-      --loss-type ${loss} \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
-      --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax \
+      --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax_zero \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
       --sample-utt 6000
     done
     done

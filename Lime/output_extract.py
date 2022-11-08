@@ -35,7 +35,7 @@ from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput
-from TrainAndTest.common_func import create_model
+from TrainAndTest.common_func import create_model, load_model_args, args_model
 
 # Version conflict
 
@@ -55,7 +55,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # Training settings
-parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
+parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: Gradient')
 # Data options
 parser.add_argument('--train-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
@@ -352,34 +352,16 @@ def main():
     print('Parsed options: {}'.format(vars(args)))
 
     # instantiate model and initialize weights
-    kernel_size = args.kernel_size.split(',')
-    kernel_size = [int(x) for x in kernel_size]
-    if args.padding == '':
-        padding = [int((x - 1) / 2) for x in kernel_size]
+    if os.path.exists(args.model_yaml):
+        model_kwargs = load_model_args(args.model_yaml)
     else:
-        padding = args.padding.split(',')
-        padding = [int(x) for x in padding]
+        model_kwargs = args_model(args, train_dir)
 
-    kernel_size = tuple(kernel_size)
-    padding = tuple(padding)
-    stride = args.stride.split(',')
-    stride = [int(x) for x in stride]
-
-    channels = args.channels.split(',')
-    channels = [int(x) for x in channels]
-
-    model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
-                    'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
-                    'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
-                    'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-                    'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                    'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'downsample': args.downsample,
-                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p,
-                    'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
-
-    print('Model options: {}'.format(model_kwargs))
+    keys = list(model_kwargs.keys())
+    keys.sort()
+    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    print('Model options: \n{ %s }' % (', '.join(model_options)))
+    print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
     # if args.loss_type == 'asoft':
