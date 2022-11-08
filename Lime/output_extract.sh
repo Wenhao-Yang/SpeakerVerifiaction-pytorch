@@ -1019,6 +1019,7 @@ if [ $stage -le 351 ]; then
       --cam ${cam} --softmax --zero-padding \
       --steps 20 \
       --batch-size 1 \
+      --nj 1 \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev \
       --train-set-name ${train_set} --test-set-name ${test_set} \
