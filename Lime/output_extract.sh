@@ -990,7 +990,7 @@ if [ $stage -le 351 ]; then
 
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in acc_input ;do
-  for seed in 123457 123458 ;do
+  for seed in 123457 ;do
     # vox1
 #    if [ $seed -le 123456 ];then
 #      epoch=15 #41 # 32 #27
@@ -999,7 +999,6 @@ if [ $stage -le 351 ]; then
 #    else
 #      epoch=19 #27 #19
 #    fi
-
 #   vox2
     if [ $seed -le 123456 ];then
       epoch=41
@@ -1033,7 +1032,7 @@ if [ $stage -le 351 ]; then
       --check-path Data/checkpoint/${model_dir} \
       --check-yaml Data/checkpoint/${model_dir}/${yaml_file} \
       --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax_zero \
-      --gpu-id 1 \
+      --gpu-id 0 \
       --sample-utt 6000
     done
     done
