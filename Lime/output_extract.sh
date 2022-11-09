@@ -1017,8 +1017,7 @@ if [ $stage -le 351 ]; then
     python Lime/cam_extract.py \
       --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} --softmax --zero-padding \
-      --steps 20 \
-      --batch-size 1 \
+      --steps 20 --batch-size 1 \
       --test-input var \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev \
@@ -1028,8 +1027,7 @@ if [ $stage -le 351 ]; then
       --kernel-size ${kernel} --fast ${fast} --stride 2,2 \
       --channels 16,32,64,128 \
       --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
-      --block-type ${block_type} \
-      --downsample ${downsample} \
+      --block-type ${block_type} --downsample ${downsample} \
       --time-dim 1 --avg-size 5 \
       --alpha 0 \
       --loss-type ${loss} --margin 0.2 --s 30 \
