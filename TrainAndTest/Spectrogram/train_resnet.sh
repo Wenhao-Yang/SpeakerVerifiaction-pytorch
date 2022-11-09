@@ -547,10 +547,10 @@ fi
 
 if [ $stage -le 60 ]; then
   datasets=vox2 testset=vox1
-  model=ThinResNet resnet_size=34
+  model=ThinResNet resnet_size=50
   encoder_type=SAP2
   alpha=0
-  block_type=basic red_ratio=2
+  block_type=basic red_ratio=2 expansion=4
   embedding_size=256
   input_norm=Mean batch_size=256 input_dim=161
   loss=arcsoft
@@ -564,7 +564,7 @@ if [ $stage -le 60 ]; then
   avg_size=5
   seed=123456
 
-  for resnet_size in 18 ; do
+  for resnet_size in 50 ; do
     if [ $chn -eq 16 ]; then
       channels=16,32,64,128
       chn_str=
@@ -577,7 +577,7 @@ if [ $stage -le 60 ]; then
     fi
 
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_exp${expansion}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_vares_bashuf2/${seed}
 
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -595,7 +595,7 @@ if [ $stage -le 60 ]; then
       --lr 0.1 --base-lr 0.000001 --milestones 10,20,40,50 \
       --kernel-size 5,5 --stride 2 --fast ${fast} \
       --channels ${channels} \
-      --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
+      --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} --expansion ${expansion} \
       --time-dim 1 --avg-size ${avg_size} \
       --alpha ${alpha} --dropout-p 0.1 \
       --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
@@ -603,7 +603,7 @@ if [ $stage -le 60 ]; then
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_10.pth \
       --grad-clip 0 --lr-ratio 0.01 \
-      --weight-decay 0.00002 \
+      --weight-decay 0.00001 \
       --gpu-id 3,5 \
       --extract --num-valid 2 \
       --cos-sim
