@@ -873,15 +873,15 @@ class DropweightLayer_v3(nn.Module):
 
 
 class AttentionweightLayer(nn.Module):
-    def __init__(self, input_dim=161, weight='mel', power_weight='none'):
+    def __init__(self, input_dim=161, weight='mel', weight_norm='none'):
         super(AttentionweightLayer, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
-        self.power_weight = power_weight
+        self.weight_norm = weight_norm
 
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
-        self.drop_p = get_weight(weight, input_dim, power_weight)
+        self.drop_p = get_weight(weight, input_dim, weight_norm)
         # self.activation = nn.Tanh()
         # self.activation = nn.Softmax(dim=-1)
         self.activation = nn.Sigmoid()
@@ -940,17 +940,17 @@ class ReweightLayer(nn.Module):
 
 
 class AttentionweightLayer_v2(nn.Module):
-    def __init__(self, input_dim=161, weight='mel', power_weight='none'):
+    def __init__(self, input_dim=161, weight='mel', weight_norm='none'):
         super(AttentionweightLayer_v2, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
-        self.power_weight = power_weight
+        self.weight_norm = weight_norm
 
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
         # self.s = nn.Parameter(torch.tensor(0.5))
         # self.drop_p = ynew  # * dropout_p
-        self.drop_p = nn.Parameter(torch.tensor(get_weight(weight, input_dim, power_weight)).float())
+        self.drop_p = nn.Parameter(torch.tensor(get_weight(weight, input_dim, weight_norm)).float())
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
