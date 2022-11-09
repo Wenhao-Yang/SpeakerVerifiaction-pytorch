@@ -68,7 +68,7 @@ early_meta: 'EER'
 
 ## model Setttings
 resnet_size: 18
-block_type: 'cbam'
+block_type: 'basic'
 red_ratio: 2
 encoder_type: 'SAP2'
 downsample: 'k1'
@@ -81,7 +81,7 @@ batch_size: 128
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
-fast: 'av1p1'
+fast: 'none1'
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
