@@ -604,8 +604,7 @@ if [ $stage -le 61 ]; then
       --train-dir ${lstm_dir}/data/${dataset}/spect/train_log \
       --test-dir ${lstm_dir}/data/${dataset}/spect/test_log \
       --nj 12 \
-      --start-epochs 12 \
-      --epochs 12 \
+      --start-epochs 12 --epochs 12 \
       --model ${model} \
       --embedding-size 128 \
       --sample-utt 2500 \
@@ -662,16 +661,12 @@ fi
 
 
 if [ $stage -le 100 ]; then
-  model=LoResNet
+  model=LoResNet resnet_size=8
   dataset=vox2
-  train_set=vox2
-  test_set=vox1
-  feat_type=klsp
-  feat=log
+  train_set=vox2 test_set=vox1
+  feat_type=klsp feat=log
   loss=arcsoft
-  resnet_size=8
-  encoder_type=None
-  embedding_size=256
+  encoder_type=None embedding_size=256
   block_type=cbam
   kernel=5,5
   cam=grad_cam
@@ -684,8 +679,7 @@ if [ $stage -le 100 ]; then
       --start-epochs 61 \
       --epochs 61 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
-      --train-set-name vox2 \
-      --test-set-name vox1 \
+      --train-set-name vox2 --test-set-name vox1 \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --input-norm Mean \
       --kernel-size ${kernel} \
@@ -711,32 +705,25 @@ if [ $stage -le 100 ]; then
 fi
 
 if [ $stage -le 101 ]; then
-  model=LoResNet
+  model=LoResNet resnet_size=8
   dataset=cnceleb
-  train_set=cnceleb
-  test_set=cnceleb
+  train_set=cnceleb test_set=cnceleb
   feat_type=klsp
   feat=log
   loss=arcsoft
-  resnet_size=8
-  encoder_type=None
-  embedding_size=256
+  encoder_type=None embedding_size=256
   block_type=cbam
   kernel=5,5
   cam=grad_cam
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
     python Lime/cam_extract.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --batch-size 1 \
-      --test-input var \
-      --start-epochs 50 \
-      --epochs 50 \
+      --batch-size 1 --test-input var \
+      --start-epochs 50 --epochs 50 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
-      --train-set-name cnc \
-      --test-set-name cnc \
+      --train-set-name cnc --test-set-name cnc \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --input-norm Mean \
       --kernel-size ${kernel} \
@@ -744,8 +731,7 @@ if [ $stage -le 101 ]; then
       --channels 64,128,256 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
-      --time-dim 1 \
-      --avg-size 4 \
+      --time-dim 1 --avg-size 4 \
       --embedding-size ${embedding_size} \
       --alpha 0 \
       --loss-type ${loss} \
@@ -753,8 +739,7 @@ if [ $stage -le 101 ]; then
       --check-path Data/checkpoint/LoResNet8/cnceleb/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp25_alpha0_em256_wd5e4_var \
       --extract-path Data/gradient/LoResNet8/cnceleb/klsp_egs_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp25_alpha0_em256_wd5e4_var/epoch_50_var_${cam} \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --sample-utt 1600
     done
   exit
@@ -762,48 +747,39 @@ fi
 
 
 if [ $stage -le 200 ]; then
-  model=TDNN_v5
+  model=TDNN_v5 resnet_size=8
   dataset=vox2
-  train_set=vox2
-  test_set=vox1
+  train_set=vox2 test_set=vox1
   feat_type=klfb
   feat=fb40
   loss=arcsoft
-  resnet_size=8
   encoder_type=STAP
   embedding_size=512
   block_type=basic
   kernel=5,5
   cam=grad_cam
 
-
   echo -e "\n\033[1;4;31m Stage ${stage} Extracting ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
     python Lime/cam_extract.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --start-epochs 50 \
-      --epochs 50 \
+      --start-epochs 50 --epochs 50 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
-      --train-set-name vox2 \
-      --test-set-name vox1 \
+      --train-set-name vox2 --test-set-name vox1 \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
-      --input-norm Mean \
-      --input-dim 40 \
+      --input-norm Mean --input-dim 40 \
       --stride 1 \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --alpha 0 \
-      --loss-type ${loss} \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.0 \
       --check-path Data/checkpoint/TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_exp/inputMean_STAP_em512_wde4_var \
       --extract-path Data/gradient/TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_exp/inputMean_STAP_em512_wde4_var/epoch_50_var_${cam} \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
       --remove-vad \
       --sample-utt 5994
     done
@@ -811,61 +787,46 @@ if [ $stage -le 200 ]; then
 fi
 
 if [ $stage -le 201 ]; then
-  model=TDNN_v5
+  model=TDNN_v5 resnet_size=8
   dataset=cnceleb
-  train_set=cnceleb
-  test_set=cnceleb
-  feat_type=klfb
-  feat=fb40
+  train_set=cnceleb test_set=cnceleb
+  feat_type=klfb feat=fb40
   loss=arcsoft
-  resnet_size=8
-  encoder_type=STAP
-  embedding_size=512
+  encoder_type=STAP embedding_size=512
   block_type=basic
   kernel=5,5
   cam=grad_cam
 
-
   echo -e "\n\033[1;4;31m Stage ${stage} Extracting ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
      python Lime/cam_extract.py \
-       --model ${model} \
-       --resnet-size ${resnet_size} \
+       --model ${model} --resnet-size ${resnet_size} \
        --cam ${cam} \
-       --start-epochs 60 \
-       --epochs 60 \
+       --start-epochs 60 --epochs 60 \
        --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev12_fb40 \
-       --train-set-name cnce \
-       --test-set-name cnce \
+       --train-set-name cnce --test-set-name cnce \
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
-       --input-norm Mean \
-       --input-dim 40 \
+       --input-norm Mean --input-dim 40 \
        --stride 1 \
        --channels 512,512,512,512,1500 \
-       --encoder-type ${encoder_type} \
        --block-type ${block_type} \
-       --embedding-size ${embedding_size} \
+       --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
        --alpha 0 \
-       --loss-type ${loss} \
+       --loss-type ${loss} --margin 0.2 --s 30 \
        --dropout-p 0.0 \
        --check-path Data/checkpoint/TDNN_v5/cnceleb/klfb_egs12_baseline/arcsoft/Mean_STAP_em512_wd5e4_var \
        --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs12_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_60_var_${cam} \
        --gpu-id 1 \
-       --margin 0.2 \
-       --s 30 \
        --remove-vad \
        --sample-utt 5600
      # done
 
     python Lime/cam_extract.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --start-epochs 50 \
-      --epochs 50 \
+      --start-epochs 50 --epochs 50 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
-      --train-set-name cnce \
-      --test-set-name cnce \
+      --train-set-name cnce --test-set-name cnce \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
       --input-norm Mean \
       --input-dim 40 \
@@ -875,64 +836,49 @@ if [ $stage -le 201 ]; then
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --alpha 0 \
-      --loss-type ${loss} \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.0 \
       --check-path Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var \
       --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_50_var_${cam} \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
       --remove-vad \
       --sample-utt 3200
     done
-
-
   exit
 fi
 
 if [ $stage -le 202 ]; then
-  model=TDNN_v5
+  model=TDNN_v5 resnet_size=8
   dataset=vox1
-  train_set=vox1
-  test_set=vox1
-  feat_type=klfb
-  feat=fb40
+  train_set=vox1 test_set=vox1
+  feat_type=klfb feat=fb40
   loss=arcsoft
-  resnet_size=8
-  encoder_type=STAP
-  embedding_size=512
+  encoder_type=STAP embedding_size=512
   block_type=basic
   kernel=5,5
   cam=grad_cam
 
-
   echo -e "\n\033[1;4;31m Stage ${stage} Extracting ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
     python Lime/cam_extract.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --start-epochs 50 \
-      --epochs 50 \
+      --start-epochs 50 --epochs 50 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
-      --train-set-name vox1 \
-      --test-set-name vox1 \
+      --train-set-name vox1 --test-set-name vox1 \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
-      --input-norm Mean \
-      --input-dim 40 \
+      --input-norm Mean --input-dim 40 \
       --stride 1 \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
       --alpha 0 \
-      --loss-type ${loss} \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.0 \
       --check-path Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var \
       --extract-path Data/gradient/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/epoch_50_var_${cam} \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
       --remove-vad \
       --sample-utt 1211
     done
@@ -940,50 +886,39 @@ if [ $stage -le 202 ]; then
 fi
 
 if [ $stage -le 300 ]; then
-  model=ThinResNet
+  model=ThinResNet resnet_size=34
   # dataset=vox1
   dataset=vox2
-
-  train_set=vox2
-  test_set=vox1
+  train_set=vox2 test_set=vox1
   feat_type=klfb
   feat=log
   loss=arcsoft
-  resnet_size=34
-  encoder_type=SAP2
-  embedding_size=256
+  encoder_type=SAP2 embedding_size=256
   block_type=basic
   kernel=5,5
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
     python Lime/cam_extract.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --start-epochs 60 \
-      --epochs 60 \
+      --start-epochs 60 --epochs 60 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
-      --train-set-name ${train_set} \
-      --test-set-name ${test_set} \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
       --input-norm Mean \
-      --kernel-size ${kernel} \
-      --stride 2,1 \
+      --kernel-size ${kernel} --stride 2,1 \
       --channels 32,64,128,256 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
-      --time-dim 1 \
-      --avg-size 5 \
+      --time-dim 1 --avg-size 5 \
       --embedding-size ${embedding_size} \
       --alpha 0 \
-      --loss-type ${loss} \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var \
       --extract-path Data/gradient/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/epoch_60_var_${cam} \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
       --remove-vad \
       --sample-utt 5994
     done
@@ -991,26 +926,21 @@ if [ $stage -le 300 ]; then
 fi
 
 if [ $stage -le 350 ]; then
-  model=ThinResNet
+  model=ThinResNet resnet_size=18
   dataset=vox1
 #  dataset=cnceleb
 #  dataset=aishell2
 
-  train_set=vox1
-  test_set=vox1
+  train_set=vox1 test_set=vox1
 #  test_set=aishell2
 #  feat_type=klfb
-  feat_type=klsp
-  feat=log
+  feat_type=klsp feat=log
   loss=arcsoft
-  resnet_size=18
-  encoder_type=SAP2
-  embedding_size=256
+  encoder_type=SAP2 embedding_size=256
   block_type=cbam_v2
-  kernel=5,5
+  kernel=5,5 fast=none1
   cam=gradient
   downsample=k5
-  fast=none1
   mask_layer=rvec
 #  _fb40
 
@@ -1020,33 +950,22 @@ if [ $stage -le 350 ]; then
       --model ${model} \
       --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --batch-size 1 \
-      --test-input var \
-      --start-epochs 60 \
-      --epochs 60 \
+      --batch-size 1 --test-input var \
+      --start-epochs 60 --epochs 60 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
-      --train-set-name ${train_set} \
-      --test-set-name ${test_set} \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --input-norm Mean \
-      --kernel-size ${kernel} \
-      --stride 2 \
+      --kernel-size ${kernel} --stride 2 --fast ${fast} \
       --channels 16,32,64,128 \
-      --fast ${fast} \
-      --encoder-type ${encoder_type} \
-      --block-type ${block_type} \
-      --downsample ${downsample} \
-      --time-dim 1 \
-      --avg-size 5 \
-      --embedding-size ${embedding_size} \
-      --alpha 0 \
-      --loss-type ${loss} \
-      --dropout-p 0.1 \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
+      --block-type ${block_type} --downsample ${downsample} \
+      --time-dim 1 --avg-size 5 \
+      --alpha 0 --dropout-p 0.1 \
       --check-path Data/checkpoint/${model}${resnet_size}/${train_set}/${feat_type}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_dev \
       --extract-path Data/gradient/${model}${resnet_size}/${train_set}/${feat_type}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_dev/epoch_60_var_${cam} \
       --gpu-id 0 \
-      --margin 0.2 \
-      --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
       --sample-utt 2500
     done
   exit

@@ -90,9 +90,11 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
                                              weight_norm=weight_norm)
     elif mask == 'attention':
-        mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+        mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight,
+                                          weight_norm=weight_norm)
     elif mask == 'attention2':
-        mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
+        mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight,
+                                             weight_norm=weight_norm)
     elif mask == 'attention3':
         mask_layer = AttentionweightLayer_v3(input_dim=input_dim, weight=init_weight)
     elif mask == 'drop':
