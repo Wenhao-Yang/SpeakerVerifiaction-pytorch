@@ -114,7 +114,7 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
 
 class PairwiseDistance(Function):
     def __init__(self, p):
-        super(PairwiseDistance, self).__init__()
+        super(PairwiseDistance, self)
         self.norm = p
 
     def forward(self, x1, x2):
