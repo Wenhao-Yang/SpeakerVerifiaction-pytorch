@@ -271,8 +271,7 @@ if [ $stage -le 21 ]; then
     --start-epochs 12 \
     --epochs 12 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/train_${feat} \
-    --train-set-name timit \
-    --test-set-name timit \
+    --train-set-name timit --test-set-name timit \
     --test-dir ${lstm_dir}/data/${dataset}/${feat_type}/test_${feat} \
     --input-norm None \
     --kernel-size ${kernel} \
@@ -280,8 +279,7 @@ if [ $stage -le 21 ]; then
     --channels 4,16,64 \
     --encoder-type ${encoder_type} \
     --block-type ${block_type} \
-    --time-dim 1 \
-    --avg-size 4 \
+    --time-dim 1 --avg-size 4 \
     --embedding-size ${embedding_size} \
     --alpha 10.8 \
     --loss-type ${loss} \
@@ -992,7 +990,7 @@ if [ $stage -le 351 ]; then
 
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in acc_input ;do
-  for seed in 123456 ;do
+  for seed in 123457 123458 ;do
     # vox1
 #    if [ $seed -le 123456 ];then
 #      epoch=15 #41 # 32 #27
@@ -1006,9 +1004,9 @@ if [ $stage -le 351 ]; then
     if [ $seed -le 123456 ];then
       epoch=41
     elif [ $seed -le 123457 ]; then
-      epoch=40
+      epoch=40 yaml_file=model.2022.07.29.yaml
     else
-      epoch=53
+      epoch=53 yaml_file=model.2022.08.01.yaml
     fi
 #      --layer-weight \
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var
@@ -1033,7 +1031,7 @@ if [ $stage -le 351 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
-      --check-yaml Data/checkpoint/${model_dir}/model.2022.07.25.yaml \
+      --check-yaml Data/checkpoint/${model_dir}/${yaml_file} \
       --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax_zero \
       --gpu-id 1 \
       --sample-utt 6000

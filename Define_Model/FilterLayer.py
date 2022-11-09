@@ -614,51 +614,66 @@ class TimeFreqMaskLayer(nn.Module):
         return "TimeFreqMaskLayer(mask_len=%s)" % str(self.mask_len)
 
 
+def get_weight(weight: str, input_dim: int, power_weight: str):
+
+    if weight == 'mel':
+        m = np.arange(0, 2840.0230467083188)
+        m = 700 * (10 ** (m / 2595.0) - 1)
+        n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
+        # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+        f = interpolate.interp1d(m[1:], n)
+        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+        ynew = 1 / f(xnew)
+    elif weight == 'rand':
+        ynew = np.random.uniform(size=input_dim)
+    elif weight == 'one':
+        ynew = np.ones(input_dim)
+    elif weight == 'clean':
+        ynew = c.VOX1_CLEAN
+    elif weight == 'rclean':
+        ynew = c.VOX1_RCLEAN
+    elif weight == 'rclean_max':
+        ynew = c.VOX1_RCLEAN_MAX
+    elif weight == 'vox2_rclean':
+        ynew = c.VOX2_RCLEAN
+    elif weight == 'aug':
+        ynew = c.VOX1_AUG
+    elif weight == 'vox2':
+        ynew = c.VOX2_CLEAN
+    elif weight == 'vox1_cf':
+        ynew = c.VOX1_CFB40
+    elif weight == 'vox2_cf':
+        ynew = c.VOX2_CFB40
+    elif weight == 'vox1_rcf':
+        ynew = c.VOX1_RCFB40
+    elif weight == 'vox2_rcf':
+        ynew = c.VOX2_RCFB40
+    elif weight == 'one':
+        ynew = np.ones(input_dim)
+    else:
+        raise ValueError(weight)
+
+    ynew = np.array(ynew)
+    if 'power' in power_weight:
+        ynew = np.power(ynew, 2)
+
+    if 'mean' in power_weight:
+        ynew /= ynew.mean()
+    else:
+        ynew /= ynew.max()
+
+    return ynew
+
 class DropweightLayer(nn.Module):
-    def __init__(self, dropout_p=0.0, weight='mel', input_dim=161, scale=0.2):
+    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2,
+                 power_weight='none'):
         super(DropweightLayer, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
         self.dropout_p = dropout_p
         self.scale = scale
 
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            ynew = 1 / ynew  # .max()
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'rclean':
-            ynew = c.VOX1_RCLEAN
-        elif weight == 'vox2_rclean':
-            ynew = c.VOX2_RCLEAN
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        elif weight == 'vox1_rcf':
-            ynew = c.VOX1_RCFB40
-        elif weight == 'vox2_rcf':
-            ynew = c.VOX2_RCFB40
-        elif weight == 'one':
-            ynew = np.ones(input_dim)
-        else:
-            raise ValueError(weight)
-
-        ynew = np.array(ynew)
-        ynew /= ynew.max()
-
+        ynew = get_weight(weight, input_dim, power_weight)
         self.drop_p = ynew * self.scale + 1-self.scale - dropout_p
 
     def forward(self, x):
@@ -687,43 +702,14 @@ class DropweightLayer(nn.Module):
 
 
 class DropweightLayer_v2(nn.Module):
-    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2):
+    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161,
+                 scale=0.2, power_weight='mean'):
         super(DropweightLayer_v2, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
         self.dropout_p = dropout_p
         self.scale = scale
-
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            ynew = 1 / ynew  # .max()
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        elif weight == 'vox1_rcf':
-            ynew = c.VOX1_RCFB40
-        elif weight == 'vox2_rcf':
-            ynew = c.VOX2_RCFB40
-        else:
-            raise ValueError(weight)
-
-        ynew = np.array(ynew)
-        ynew /= ynew.max()
+        ynew = get_weight(weight, input_dim, power_weight)
 
         self.drop_p = ynew * self.scale + 1-self.scale - dropout_p
 
@@ -824,62 +810,16 @@ class AttentionweightLayer(nn.Module):
         self.weight = weight
         self.power_weight = power_weight
 
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            # ynew = 1 / ynew  # .max()
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'rclean':
-            ynew = c.VOX1_RCLEAN
-        elif weight == 'rclean_max':
-            ynew = c.VOX1_RCLEAN_MAX
-        elif weight == 'vox2_rclean':
-            ynew = c.VOX2_RCLEAN
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        elif weight == 'vox1_rcf':
-            ynew = c.VOX1_RCFB40
-        elif weight == 'vox2_rcf':
-            ynew = c.VOX2_RCFB40
-        else:
-            raise ValueError(weight)
-
-        ynew = np.array(ynew)
-
-        if 'power' in power_weight:
-            ynew = np.power(ynew, 2)
-
-        if 'mean' in power_weight:
-            ynew /= ynew.mean()
-        else:
-            ynew /= ynew.max()
-
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
-
-        self.drop_p = ynew  # * dropout_p
+        self.drop_p = get_weight(weight, input_dim, power_weight)
         # self.activation = nn.Tanh()
         # self.activation = nn.Softmax(dim=-1)
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
-
-        assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
-
-        if len(x.shape)==4:
+        # assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+        if len(x.shape) == 4:
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
         else:
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
@@ -893,105 +833,84 @@ class AttentionweightLayer(nn.Module):
         return x * drop_weight
 
     def __repr__(self):
-
         return "AttentionweightLayer_v0(input_dim=%d, weight=%s, power_weight=%s)" % (self.input_dim, self.weight, self.power_weight)
 
 
-class AttentionweightLayer_v2(nn.Module):
-    def __init__(self, input_dim=161, weight='mel'):
-        super(AttentionweightLayer_v2, self).__init__()
+class ReweightLayer(nn.Module):
+    def __init__(self, input_dim=161, weight='v1_f2m'):
+        super(ReweightLayer, self).__init__()
         self.input_dim = input_dim
+        self.weight = weight
 
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            # ynew = 1 / ynew  # .max()
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        elif weight == 'vox1_rcf':
-            ynew = c.VOX1_RCFB40
-        elif weight == 'vox2_rcf':
-            ynew = c.VOX2_RCFB40
+        if weight == 'v1_f2m':
+            ynew = c.VOX1_F2M
         else:
             raise ValueError(weight)
 
         ynew = np.array(ynew)
-        ynew /= ynew.max()
-        self.s = nn.Parameter(torch.tensor(0.5))
+        self.weight = nn.Parameter(torch.tensor(ynew), requires_grad=False)
+        # self.drop_p = ynew  # * dropout_p
 
-        self.drop_p = ynew  # * dropout_p
+        # self.activation = nn.Tanh()
+        # self.activation = nn.Softmax(dim=-1)
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
-
-        assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+        assert len(self.weight) == x.shape[-1], print(len(self.weight), x.shape)
 
         if len(x.shape) == 4:
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
+            weight = self.weight.reshape(1, 1, 1, -1).float()
         else:
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
-        if x.is_cuda:
-            drop_weight = drop_weight.cuda()
+            weight = self.weight.reshape(1, 1, -1).float()
 
-        drop_weight = (drop_weight - drop_weight.mean()) / self.s.clamp(min=0.0625, max=2.0)
+        return x * weight
+
+    def __repr__(self):
+        return "ReweightLayer(input_dim=%d, weight=%s)" % (self.input_dim, self.weight)
+
+
+class AttentionweightLayer_v2(nn.Module):
+    def __init__(self, input_dim=161, weight='mel', power_weight='mean'):
+        super(AttentionweightLayer_v2, self).__init__()
+        self.input_dim = input_dim
+        self.weight = weight
+        self.power_weight = power_weight
+
+        self.w = nn.Parameter(torch.tensor(2.0))
+        self.b = nn.Parameter(torch.tensor(-1.0))
+
+        self.drop_p = nn.Parameter(torch.tensor(get_weight(weight, input_dim, power_weight)).float())
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        # assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+
+        if len(x.shape) == 4:
+            drop_weight = self.drop_p.reshape(1, 1, 1, -1).float()
+        else:
+            drop_weight = self.drop_p.reshape(1, 1, -1).float()
+        # if x.is_cuda:
+        #     drop_weight = drop_weight.cuda()
+        drop_weight = self.w * drop_weight + self.b
         drop_weight = self.activation(drop_weight)
 
         return x * drop_weight
 
+    def __repr__(self):
+        return "AttentionweightLayer_Trainable(input_dim=%d, weight=%s, power_weight=%s)" % (
+        self.input_dim, self.weight, self.power_weight)
+
 
 class AttentionweightLayer_v3(nn.Module):
-    def __init__(self, input_dim=161, weight='mel'):
+    def __init__(self, input_dim=161, weight='mel', power_weight='none'):
         super(AttentionweightLayer_v3, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
 
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            # ynew = 1 / ynew  # .max()
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'rclean':
-            ynew = c.VOX1_RCLEAN
-        elif weight == 'vox2_rclean':
-            ynew = c.VOX2_RCLEAN
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        else:
-            raise ValueError(weight)
-
-        ynew = np.array(ynew)
-        ynew /= ynew.max()
         self.s = nn.Parameter(torch.tensor(0.125).float())
         self.b = nn.Parameter(torch.tensor(1.0).float())
 
-        self.drop_p = ynew  # * dropout_p
+        self.drop_p = get_weight(weight, input_dim, power_weight)  # * dropout_p
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
@@ -1005,8 +924,7 @@ class AttentionweightLayer_v3(nn.Module):
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
-        drop_weight = (drop_weight - self.b.clamp(min=0.125, max=1.5) * drop_weight.mean()) / self.s.clamp(min=0.0625,
-                                                                                                           max=0.5)
+        drop_weight = (drop_weight - self.b.clamp(min=0.125, max=1.5) * drop_weight.mean()) / self.s.clamp(min=0.0625,                                                                                            max=0.5)
         drop_weight = self.activation(drop_weight)
 
         return x * drop_weight
@@ -1025,52 +943,13 @@ class AttentionweightLayer_v0(nn.Module):
         self.power_weight = power_weight
         self.weight_norm = weight_norm
         self.weight = weight
-
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            # ynew = 1 / ynew  # .max()
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'rclean':
-            ynew = c.VOX1_RCLEAN
-        elif weight == 'rclean_max':
-            ynew = c.VOX1_RCLEAN_MAX
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        else:
-            raise ValueError(weight)
-
-        ynew = np.array(ynew)
-        if power_weight:
-            ynew = np.power(ynew, 2)
-
-        if weight_norm == 'max':
-            ynew /= ynew.max()
-        else:
-            ynew /= ynew.sum() / input_dim
         # self.s = nn.Parameter(torch.tensor(0.5))
         # self.b = nn.Parameter(torch.tensor(0.75))
-
-        self.drop_p = ynew  # * dropout_p
+        self.drop_p = get_weight(weight, input_dim, power_weight)  # * dropout_p
         # self.activation = nn.Sigmoid()
 
     def forward(self, x):
-
-        assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
-
+        # assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
         if len(x.shape) == 4:
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
         else:
@@ -1082,7 +961,6 @@ class AttentionweightLayer_v0(nn.Module):
         return x * drop_weight
 
     def __repr__(self):
-
         return "AttentionweightLayer_v00(input_dim=%d, weight=%s, power_weight=%s)" % (
         self.input_dim, self.weight, str(self.power_weight))
 
@@ -1095,7 +973,7 @@ class GaussianNoiseLayer(nn.Module):
         m = 700 * (10 ** (m / 2595.0) - 1)
         n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
         n = 1 / n
-        x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+        # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
 
         f = interpolate.interp1d(m[1:], n)
         xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
