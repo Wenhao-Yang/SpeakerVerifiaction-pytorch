@@ -902,8 +902,8 @@ class AttentionweightLayer(nn.Module):
         return x * drop_weight
 
     def __repr__(self):
-        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, power_weight=%s)" % (
-        self.input_dim, self.weight, self.power_weight)
+        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, weight_norm=%s)" % (
+        self.input_dim, self.weight, self.weight_norm)
 
 
 class ReweightLayer(nn.Module):
@@ -968,8 +968,8 @@ class AttentionweightLayer_v2(nn.Module):
         return x * drop_weight
 
     def __repr__(self):
-        return "AttentionweightLayer_Trainable(input_dim=%d, weight=%s, power_weight=%s)" % (
-        self.input_dim, self.weight, self.power_weight)
+        return "AttentionweightLayer_Trainable(input_dim=%d, weight=%s, weight_norm=%s)" % (
+        self.input_dim, self.weight, self.weight_norm)
 
 
 class AttentionweightLayer_v3(nn.Module):
