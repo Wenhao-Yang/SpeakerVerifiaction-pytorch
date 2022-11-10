@@ -273,14 +273,14 @@ if [ $stage -le 205 ]; then
 #  for s in dev ;do
   for cam in acc_input ; do
     for grad_clip in relu ; do
-      for weight in max ; do
-        for seed in 123456;do
+      for weight in mean max ; do
+        for seed in 123457 123458;do
           if [ $seed -le 123456 ];then
             epoch=41 #15 #41 #32 #27
           elif [ $seed -le 123457 ]; then
-            epoch=35 #31 #35 #31
+            epoch=40 #31 #35 #31
           else
-            epoch=27 #19
+            epoch=53 #19
           fi
           # Data/gradient/ThinResNet34/aishell2/klsp_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch}
           extract_path=Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/123456/epoch_best_var_acc_input_softmax_zero/epoch_${epoch}
