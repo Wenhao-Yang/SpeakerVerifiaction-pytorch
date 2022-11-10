@@ -275,9 +275,9 @@ if [ $stage -le 205 ]; then
     for grad_clip in relu ; do
       for weight in mean max ; do
         for seed in 123457 123458;do
-          if [ $seed -le 123456 ];then
+          if [ $seed -eq 123456 ];then
             epoch=41 #15 #41 #32 #27
-          elif [ $seed -le 123457 ]; then
+          elif [ $seed -eq 123457 ]; then
             epoch=40 #31 #35 #31
           else
             epoch=53 #19
