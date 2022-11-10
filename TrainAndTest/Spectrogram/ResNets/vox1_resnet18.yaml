@@ -82,7 +82,7 @@ dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
 fast: 'none1'
-mask: 'attention'
+mask: 'attention2'
 init_weight: 'mel'
 weight_norm: 'mean'
 
