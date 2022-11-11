@@ -386,9 +386,9 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
         # if batch_idx % log_interval == 0:
         #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
         #         epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
-    torch.distributed.barrier()
 
     if torch.distributed.is_initialized():
+        torch.distributed.barrier()
         all_labels = [None for _ in range(torch.distributed.get_world_size())]
         all_distances = [None for _ in range(torch.distributed.get_world_size())]
 
