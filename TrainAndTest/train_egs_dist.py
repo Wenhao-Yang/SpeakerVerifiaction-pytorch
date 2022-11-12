@@ -469,6 +469,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
     mix3 = 100. * eer * mindcf_01 * mindcf_001
+    mix2 = 100. * eer * mindcf_001
 
     if torch.distributed.get_rank() == 0:
         print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, ' \
@@ -481,11 +482,12 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
         writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
         writer.add_scalar('Train/mix3', mix3, epoch)
+        writer.add_scalar('Train/mix2', mix2, epoch)
 
     torch.cuda.empty_cache()
 
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
-            'MinDCF_001': mindcf_001, 'mix3': mix3}
+            'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
 
 
 def test(extract_loader, model, epoch, xvector_dir):
@@ -914,6 +916,7 @@ def main():
                     best_str += '   Threshold: ' + '{:>7.4f} '.format(best_res['Threshold'])
                     best_str += ' MinDcf-0.01: ' + '{:.4f} '.format(best_res['MinDCF_01'])
                     best_str += ' MinDcf-0.001: ' + '{:.4f} '.format(best_res['MinDCF_001'])
+                    best_str += ' Mix2: ' + '{:.4f}\n'.format(best_res['mix2'])
                     best_str += ' Mix3: ' + '{:.4f}\n'.format(best_res['mix3'])
                     print(best_str)
 

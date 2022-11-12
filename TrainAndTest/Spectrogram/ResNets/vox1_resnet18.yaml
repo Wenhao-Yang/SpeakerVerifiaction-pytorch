@@ -64,7 +64,7 @@ cos_sim: True
 early_stopping: True
 early_patience: 15
 early_delta: 0.01
-early_meta: 'EER'
+early_meta: 'mix2'
 
 ## model Setttings
 resnet_size: 18
@@ -130,7 +130,7 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_<mask>/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_vares_bashuf2_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_<mask>/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_varesmix2_bashuf2_dist
 #_<init_weight>_<weight_norm>
 #_red<red_ratio>
 #_lamda<lamda_beta>
