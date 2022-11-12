@@ -2034,16 +2034,14 @@ if [ $stage -le 200 ]; then
   weight_norm=mean
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for seed in 123456 123457 123458;do
-    for mask_layer in rvec ; do
+  for mask_layer in attention ; do
+    for seed in 123456 123457 123458;do
       for test_subset in test ; do
         at_str=
         if [[ $mask_layer == attention* ]];then
           at_str=_${weight}_${weight_norm} #_mel_mean
         fi
-
         model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch128_basic_downk1_avg4_SAP2_em256_dp01_alpha0_none1${at_str}_wde4_vares_bashuf2_dist/${seed}
-
 #        if [ $seed -eq 123456 ]; then
 #          yaml_file=model.2022.11.09.yaml
 #        elif [ $seed -eq 123457 ]; then
