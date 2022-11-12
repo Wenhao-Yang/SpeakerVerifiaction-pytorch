@@ -2071,7 +2071,7 @@ if [ $stage -le 200 ]; then
           --dropout-p 0.1 \
           --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_best_var \
           --resume Data/checkpoint/${model_dir}/best.pth \
-          --model-yaml Data/checkpoint/${model_dir}/model.2022.07.01.yaml \
+          --check-yaml Data/checkpoint/${model_dir}/model.2022.07.01.yaml \
           --gpu-id 0 --verbose 0 \
           --cos-sim
       done
