@@ -2032,11 +2032,11 @@ if [ $stage -le 200 ]; then
 
   weight=mel
   weight_norm=mean
+  echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
   for seed in 123456 123457 123458;do
     for mask_layer in rvec ; do
       for test_subset in test ; do
-        echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
         at_str=
         if [[ $mask_layer == attention* ]];then
           at_str=_${weight}_${weight_norm} #_mel_mean
