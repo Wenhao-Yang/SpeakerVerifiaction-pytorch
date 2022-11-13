@@ -3,7 +3,7 @@
 stage=60
 
 waited=0
-while [ $(ps 10392 | wc -l) -eq 2 ]; do
+while [ $(ps 650766 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -440,9 +440,9 @@ if [ $stage -le 60 ]; then
 #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox2_resnet.yaml --seed=${seed}
 
 #    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet_mixup.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18.yaml --seed=${seed}
+#    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18.yaml --seed=${seed}
 
-#    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18_attention.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18_attention.yaml --seed=${seed}
   done
   exit
 fi
