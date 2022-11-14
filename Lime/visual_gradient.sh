@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=205
+stage=206
 if [ $stage -le 0 ]; then
   for model in LoResNet10; do
     python Lime/visual_gradient.py \
@@ -307,11 +307,16 @@ if [ $stage -le 206 ]; then
     else
       epoch=53
     fi
-
-    python Lime/Plot/visual_gradient.py \
-      --extract-path Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/epoch_best_var_gradient/epoch_${epoch} \
-      --feat-dim 161 \
-      --acoustic-feature spectrogram
+    for grad_clip in relu ; do
+      for weight in mean max ; do
+        python Lime/Plot/visual_gradient.py \
+          --extract-path Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/epoch_best_var_gradient/epoch_${epoch} \
+          --feat-dim 161 \
+          --grad-weight ${weight} \
+          --grad-clip ${grad_clip} \
+          --acoustic-feature spectrogram
+      done
+    done
   done
   exit
 fi
