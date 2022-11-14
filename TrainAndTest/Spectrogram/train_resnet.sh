@@ -604,7 +604,7 @@ if [ $stage -le 60 ]; then
       --resume Data/checkpoint/${model_dir}/checkpoint_13.pth \
       --grad-clip 0 --lr-ratio 0.01 \
       --weight-decay 0.00001 \
-      --gpu-id 5 \
+      --gpu-id 0 \
       --extract --num-valid 2 \
       --cos-sim
   done
