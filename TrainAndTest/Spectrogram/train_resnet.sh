@@ -601,7 +601,7 @@ if [ $stage -le 60 ]; then
       --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --check-path Data/checkpoint/${model_dir} \
-      --resume Data/checkpoint/${model_dir}/checkpoint_10.pth \
+      --resume Data/checkpoint/${model_dir}/checkpoint_13.pth \
       --grad-clip 0 --lr-ratio 0.01 \
       --weight-decay 0.00001 \
       --gpu-id 5 \
