@@ -648,6 +648,14 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
         ynew = c.VOX1_RCFB40
     elif weight == 'vox2_rcf':
         ynew = c.VOX2_RCFB40
+    elif weight == 'v2_rclean_gean':
+        ynew = c.VOX2_RCLEAN_GRAD_MEAN
+    elif weight == 'v2_rclean_iean':
+        ynew = c.VOX2_RCLEAN_INGR_MEAN
+    elif weight == 'v2_rclean_gax':
+        ynew = c.VOX2_RCLEAN_GRAD_MAX
+    elif weight == 'v2_rclean_imax':
+        ynew = c.VOX2_RCLEAN_INGR_MAX
     elif weight == 'one':
         ynew = np.ones(input_dim)
     else:
