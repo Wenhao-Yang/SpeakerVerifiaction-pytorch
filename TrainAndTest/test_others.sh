@@ -1846,29 +1846,24 @@ if [ $stage -le 96 ]; then
 
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_sgd_rop/${input_norm}_${block_type}_${encod}_dp20_alpha${alpha}_em${embedding_size}_wd5e4_chn32_var_vanillakld
     python -W ignore TrainAndTest/test_egs.py \
-      --model ${model} \
-      --resnet-size 8 \
+      --model ${model} --resnet-size 8 \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
       --feat-format kaldi \
-      --input-norm Mean \
-      --input-dim 161 \
-      --mask-layer ${mask_layer} \
-      --init-weight ${weight} \
+      --input-norm Mean --input-dim 161 \
+      --mask-layer ${mask_layer} --init-weight ${weight} \
       --nj 8 \
       --embedding-size ${embedding_size} \
       --loss-type ${loss} \
       --encoder-type ${encod} \
       --block-type ${block_type} \
-      --kernel-size 5,5 \
-      --stride 2,2 \
+      --kernel-size 5,5 --stride 2,2 \
       --channels 32,64,128 \
       --alpha ${alpha} \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --test-input var \
       --dropout-p 0.12 \
       --time-dim 1 \
@@ -2034,14 +2029,14 @@ if [ $stage -le 200 ]; then
   weight_norm=mean
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for mask_layer in attention ; do
+  for mask_layer in rvec attention ; do
     for seed in 123456 123457 123458;do
       for test_subset in test ; do
         at_str=
         if [[ $mask_layer == attention* ]];then
           at_str=_${weight}_${weight_norm} #_mel_mean
         fi
-        model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch128_basic_downk1_avg4_SAP2_em256_dp01_alpha0_none1${at_str}_wde4_vares_bashuf2_dist/${seed}
+        model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch128_basic_downk1_avg4_SAP2_em256_dp01_alpha0_none1${at_str}_wde4_varesmix2_bashuf2_dist/${seed}
 #        if [ $seed -eq 123456 ]; then
 #          yaml_file=model.2022.11.09.yaml
 #        elif [ $seed -eq 123457 ]; then
