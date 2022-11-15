@@ -647,6 +647,14 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
         ynew = c.VOX1_RCFB40
     elif weight == 'vox2_rcf':
         ynew = c.VOX2_RCFB40
+    elif weight == 'v2_rclean_gean':
+        ynew = c.VOX2_RCLEAN_GRAD_MEAN
+    elif weight == 'v2_rclean_iean':
+        ynew = c.VOX2_RCLEAN_INGR_MEAN
+    elif weight == 'v2_rclean_gax':
+        ynew = c.VOX2_RCLEAN_GRAD_MAX
+    elif weight == 'v2_rclean_imax':
+        ynew = c.VOX2_RCLEAN_INGR_MAX
     elif weight == 'one':
         ynew = np.ones(input_dim)
     else:
@@ -664,56 +672,15 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
     return ynew
 
 class DropweightLayer(nn.Module):
-    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2):
+    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2,
+                 power_weight='mean'):
         super(DropweightLayer, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
         self.dropout_p = dropout_p
         self.scale = scale
 
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            ynew = 1 / ynew  # .max()
-        elif weight =='rand':
-            ynew = np.random.uniform(size=input_dim)
-        elif weight == 'one':
-            ynew = np.ones(input_dim)
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'rclean':
-            ynew = c.VOX1_RCLEAN
-        elif weight == 'rclean_max':
-            ynew = c.VOX1_RCLEAN_MAX
-        elif weight == 'vox2_rclean':
-            ynew = c.VOX2_RCLEAN
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        elif weight == 'vox1_rcf':
-            ynew = c.VOX1_RCFB40
-        elif weight == 'vox2_rcf':
-            ynew = c.VOX2_RCFB40
-        elif weight == 'one':
-            ynew = np.ones(input_dim)
-        else:
-            raise ValueError(weight)
-
-        ynew = np.array(ynew)
-        ynew /= ynew.max()
-
+        ynew = get_weight(weight, input_dim, power_weight)
         self.drop_p = ynew * self.scale + 1-self.scale - dropout_p
 
     def forward(self, x):

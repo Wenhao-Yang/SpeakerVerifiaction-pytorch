@@ -83,7 +83,7 @@ activation: relu
 channels: 32,64,128,256
 fast: 'none1'
 mask: 'attention'
-init_weight: 'mel'
+init_weight: 'v2_rclean_gax'
 weight_norm: 'mean'
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
