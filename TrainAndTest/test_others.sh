@@ -2025,7 +2025,7 @@ if [ $stage -le 200 ]; then
   sname=dev #_aug_com
   downsample=k1
 
-  weight=v2_rclean_gax_mean #mel
+  weight=v2_rclean_gax #mel
   weight_norm=mean
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
