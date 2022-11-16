@@ -156,18 +156,16 @@ if [ $stage -le 21 ]; then
       --feat-format kaldi \
       --input-norm ${input_norm} --input-dim 161 \
       --random-chunk 200 400 \
-      --downsample ${downsample} \
       --nj 12 --epochs 50 \
       --optimizer sgd --scheduler rop \
-      --patience 2 \
-      --accu-steps 1 \
+      --patience 2 --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_vox2_wd5e4_var \
       --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_vox2_wd5e4_var/checkpoint_25.pth \
       --kernel-size 5,5 --stride 2,2 --fast none1 \
       --channels 16,32,64,128 \
-      --block-type ${block_type} --red-ratio 8 \
+      --block-type ${block_type} --red-ratio 8 --downsample ${downsample} \
       --batch-size 128 \
       --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size 5 \
@@ -199,9 +197,8 @@ if [ $stage -le 21 ]; then
       --downsample ${downsample} \
       --nj 12 --epochs 50 \
       --optimizer sgd --scheduler rop \
-      --patience 2 \
+      --patience 2 --accu-steps 1 \
       --mask-layer attention --init-weight vox2 \
-      --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_rvec_attention/${loss}/input${input_norm}_${block_type}_down${downsample}_${encoder_type}_em${embedding_size}_dp125_alpha${alpha}_none1_vox2_wd5e4_var \
@@ -424,8 +421,7 @@ if [ $stage -le 60 ]; then
   datasets=vox1
   feat_type=klsp
   loss=arcsoft
-  encod=SAP2
-  embedding_size=256
+  encod=SAP2 embedding_size=256
   input_dim=40 input_norm=Mean
   lr_ratio=0 loss_ratio=10
   subset=
@@ -438,7 +434,6 @@ if [ $stage -le 60 ]; then
  for seed in 123456 123457 123458; do
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox2_resnet.yaml --seed=${seed}
-
 #    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet_mixup.yaml --seed=${seed}
 #    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18.yaml --seed=${seed}
 
