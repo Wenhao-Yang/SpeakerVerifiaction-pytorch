@@ -2025,11 +2025,11 @@ if [ $stage -le 200 ]; then
   sname=dev #_aug_com
   downsample=k1
 
-  weight=mel
+  weight=v2_rclean_gax_mean #mel
   weight_norm=mean
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for mask_layer in rvec attention ; do
+  for mask_layer in attention ; do
     for seed in 123456 123457 123458;do
       for test_subset in test ; do
         at_str=
