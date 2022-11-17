@@ -556,8 +556,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     eer_threshold = np.max([eer_threshold_dict[i] for i in eer_threshold_dict])
     mindcf_01 = np.min([mindcf_01_dict[i] for i in mindcf_01_dict])
     mindcf_001 = np.min([mindcf_001_dict[i] for i in mindcf_001_dict])
-    mix3 = np.min([mix_dict3[i] for i in mix_dict3])
-    mix2 = np.min([mix_dict2[i] for i in mix_dict2])
+    mix3 = np.min([mix3_dict[i] for i in mix3_dict])
+    mix2 = np.min([mix2_dict[i] for i in mix2_dict])
 
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
             'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
