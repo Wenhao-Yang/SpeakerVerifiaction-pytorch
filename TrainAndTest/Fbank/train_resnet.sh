@@ -213,13 +213,11 @@ fi
 
 if [ $stage -le 40 ]; then
   lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
   feat_type=klfb
   model=ThinResNet
   resnet_size=10
-  encoder_type=SAP2
-  embedding_size=256
+  encoder_type=SAP2 embedding_size=256
   block_type=cbam
   downsample=k3
   kernel=5,5

@@ -12,26 +12,21 @@ lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 #if [ $stage -le 0 ]; then
 #
-#
 #fi
 
 if [ $stage -le 0 ]; then
   datasets=vox1
   feat_type=klsp
-  model=LoResNet
-  resnet_size=8
-  encoder_type=AVG
-  embedding_size=256
+  model=LoResNet resnet_size=8
+  encoder_type=AVG embedding_size=256
   block_type=cbam
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  mask_layer=baseline weight=clean
+  scheduler=rop optimizer=sgd
   nj=8
-  weight=clean
   chn=16
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
@@ -40,9 +35,7 @@ if [ $stage -le 0 ]; then
   kd_type=attention #em_l2 vanilla
   kd_ratio=1000
   kd_loss=
-
-  attention_type=freq
-  norm_type=input_weight
+  attention_type=freq norm_type=input_weight
 #  _${weight}
   for kd_type in attention ; do
   for norm_type in input_weight ; do
@@ -79,7 +72,7 @@ if [ $stage -le 0 ]; then
 
      echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
      python TrainAndTest/train_egs_kd.py \
-       --model ${model} \
+       --model ${model} --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
        --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev/trials_dir \
        --train-trials trials_2w \
@@ -89,15 +82,10 @@ if [ $stage -le 0 ]; then
        --seed $seed \
        --random-chunk 200 400 \
        --input-norm ${input_norm} \
-       --resnet-size ${resnet_size} \
-       --nj ${nj} \
-       --shuffle \
-       --epochs 50 \
-       --batch-size 128 \
-       --optimizer ${optimizer} \
-       --scheduler ${scheduler} \
-       --lr 0.1 \
-       --base-lr 0.000006 \
+       --nj ${nj} --shuffle \
+       --epochs 50 --batch-size 128 \
+       --optimizer ${optimizer} --scheduler ${scheduler} \
+       --lr 0.1 --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --init-weight ${weight} \
        --milestones 10,20,30,40 \
@@ -108,25 +96,19 @@ if [ $stage -le 0 ]; then
        --stride 2 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
-       --time-dim 1 \
-       --avg-size 4 \
+       --time-dim 1 --avg-size 4 \
        --encoder-type ${encoder_type} \
        --num-valid 2 \
        --alpha ${alpha} \
-       --margin 0.2 \
-       --s 30 \
+       --margin 0.2 --s 30 \
        --weight-decay 0.0005 \
        --dropout-p ${dp} \
        --gpu-id 0,1 \
-       --extract \
-       --cos-sim \
+       --extract --cos-sim \
        --all-iteraion 0 \
        --loss-type ${loss} \
-       --kd-type ${kd_type} \
-       --attention-type ${attention_type} \
-       --norm-type ${norm_type} \
-       --distil-weight 0.5 \
-       --kd-ratio ${kd_ratio} \
+       --kd-type ${kd_type} --attention-type ${attention_type} --norm-type ${norm_type} \
+       --distil-weight 0.5 --kd-ratio ${kd_ratio} \
        --teacher-model-yaml ${teacher_dir}/model.2022.01.05.yaml \
        --teacher-resume ${teacher_dir}/checkpoint_40.pth \
        --temperature 20
@@ -140,20 +122,16 @@ fi
 if [ $stage -le 5 ]; then
   datasets=vox1
   feat_type=klsp
-  model=LoResNet
-  resnet_size=8
-  encoder_type=AVG
-  embedding_size=256
+  model=LoResNet resnet_size=8
+  encoder_type=AVG embedding_size=256
   block_type=cbam
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=attention
-  scheduler=rop
-  optimizer=sgd
+  mask_layer=attention weight=clean
+  scheduler=rop optimizer=sgd
   nj=8
-  weight=clean
   chn=16
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
@@ -185,7 +163,7 @@ if [ $stage -le 5 ]; then
       model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd2_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp02_alpha${alpha}${at_str}_${chn_str}wd5e4_var
 
       python TrainAndTest/train_egs_kd2.py \
-       --model ${model} \
+       --model ${model} --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
        --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/dev/trials_dir \
        --train-trials trials_2w \
@@ -194,39 +172,27 @@ if [ $stage -le 5 ]; then
        --feat-format kaldi \
        --random-chunk 200 400 \
        --input-norm ${input_norm} \
-       --resnet-size ${resnet_size} \
-       --nj ${nj} \
-       --shuffle \
-       --epochs 50 \
-       --batch-size 128 \
-       --optimizer ${optimizer} \
-       --scheduler ${scheduler} \
-       --lr 0.1 \
-       --base-lr 0.000006 \
-       --mask-layer ${mask_layer} \
-       --init-weight ${weight} \
+       --nj ${nj} --shuffle \
+       --epochs 50 --batch-size 128 \
+       --optimizer ${optimizer} --scheduler ${scheduler} \
+       --lr 0.1 --base-lr 0.000006 \
+       --mask-layer ${mask_layer} --init-weight ${weight} \
        --milestones 10,20,30,40 \
        --check-path Data/checkpoint/${model_dir} \
        --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
-       --kernel-size ${kernel} \
+       --kernel-size ${kernel} --stride 2 \
        --channels ${channels} \
-       --stride 2 \
        --block-type ${block_type} \
-       --embedding-size ${embedding_size} \
-       --time-dim 1 \
-       --avg-size 4 \
-       --encoder-type ${encoder_type} \
+       --time-dim 1 --avg-size 4 \
+       --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
        --num-valid 2 \
        --alpha ${alpha} \
-       --margin 0.2 \
-       --s 30 \
+       --loss-type ${loss} --margin 0.2 --s 30 \
        --weight-decay 0.0005 \
        --dropout-p ${dp} \
        --gpu-id 0,1 \
-       --extract \
-       --cos-sim \
+       --extract --cos-sim \
        --all-iteraion 0 \
-       --loss-type ${loss} \
        --distil-weight 0.5 \
        --teacher-model-yaml ${teacher_dir}/model.2022.01.05.yaml \
        --teacher-resume ${teacher_dir}/checkpoint_40.pth \
@@ -243,7 +209,7 @@ if [ $stage -le 5 ]; then
 ##    mask_layer=baseline
 #    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs_${mask_layer} with ${loss} with ${input_norm} normalization \033[0m\n"
 #    python TrainAndTest/train_egs.py \
-#      --model ${model} \
+#      --model ${model} --resnet-size ${resnet_size} \
 #      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
 #      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
 #      --train-trials trials_2w \
@@ -252,38 +218,28 @@ if [ $stage -le 5 ]; then
 #      --feat-format kaldi \
 #      --random-chunk 200 400 \
 #      --input-norm ${input_norm} \
-#      --resnet-size ${resnet_size} \
 #      --nj ${nj} \
-#      --epochs 50 \
-#      --batch-size 128 \
+#      --epochs 50 --batch-size 128 \
 #      --shuffle \
-#      --optimizer ${optimizer} \
-#      --scheduler ${scheduler} \
-#      --lr 0.1 \
-#      --base-lr 0.000005 \
-#      --mask-layer ${mask_layer} \
-#      --init-weight ${weight} \
-#      --scale ${scale} \
+#      --optimizer ${optimizer} --scheduler ${scheduler} \
+#      --lr 0.1 --base-lr 0.000005 \
+#      --mask-layer ${mask_layer} --init-weight ${weight} --scale ${scale} \
 #      --milestones 10,20,30,40 \
 #      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var \
 #      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_${block_type}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_${weight}_wd5e4_var/checkpoint_50.pth \
-#      --kernel-size ${kernel} \
+#      --kernel-size ${kernel} --stride 2 \
 #      --channels 64,128,256 \
-#      --stride 2 \
 #      --block-type ${block_type} \
 #      --embedding-size ${embedding_size} \
-#      --time-dim 1 \
-#      --avg-size 4 \
+#      --time-dim 1 --avg-size 4 \
 #      --encoder-type ${encoder_type} \
 #      --num-valid 2 \
 #      --alpha ${alpha} \
-#      --margin 0.2 \
-#      --s 30 \
+#      --margin 0.2 --s 30 \
 #      --weight-decay 0.0005 \
 #      --dropout-p 0.1 \
 #      --gpu-id 0,1 \
-#      --extract \
-#      --cos-sim \
+#      --extract --cos-sim \
 #      --all-iteraion 0 \
 #      --loss-type ${loss}
 #  done
@@ -294,8 +250,7 @@ fi
 if [ $stage -le 10 ]; then
   datasets=vox1
   feat_type=klsp
-  model=LoResNet
-  resnet_size=8
+  model=LoResNet resnet_size=8
   encoder_type=AVG
   embedding_size=256
   block_type=cbam
@@ -303,11 +258,9 @@ if [ $stage -le 10 ]; then
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=attention
-  scheduler=rop
-  optimizer=sgd
+  mask_layer=attention weight=vox2
+  scheduler=rop optimizer=sgd
   nj=8
-  weight=vox2
 
   teacher_dir=Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
 
@@ -341,7 +294,7 @@ if [ $stage -le 10 ]; then
 ##    mask_layer=baseline
 #    echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs_${mask_layer} with ${loss} with ${input_norm} normalization \033[0m\n"
 #    python TrainAndTest/train_egs.py \
-#      --model ${model} \
+#      --model ${model} --resnet-size ${resnet_size} \
 #      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev \
 #      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
 #      --train-trials trials_2w \
@@ -350,13 +303,11 @@ if [ $stage -le 10 ]; then
 #      --feat-format kaldi \
 #      --random-chunk 200 400 \
 #      --input-norm ${input_norm} \
-#      --resnet-size ${resnet_size} \
 #      --nj ${nj} \
 #      --epochs 50 \
 #      --batch-size 128 \
 #      --shuffle \
-#      --optimizer ${optimizer} \
-#      --scheduler ${scheduler} \
+#      --optimizer ${optimizer} --scheduler ${scheduler} \
 #      --lr 0.1 \
 #      --base-lr 0.000005 \
 #      --mask-layer ${mask_layer} \
@@ -370,8 +321,7 @@ if [ $stage -le 10 ]; then
 #      --stride 2 \
 #      --block-type ${block_type} \
 #      --embedding-size ${embedding_size} \
-#      --time-dim 1 \
-#      --avg-size 4 \
+#      --time-dim 1 --avg-size 4 \
 #      --encoder-type ${encoder_type} \
 #      --num-valid 2 \
 #      --alpha ${alpha} \
@@ -391,28 +341,22 @@ fi
 
 if [ $stage -le 20 ]; then
   datasets=vox1
-  feat_type=klfb
-  input_dim=40
-  model=ThinResNet
-  resnet_size=10
-  encoder_type=ASTP2
-  embedding_size=256
-  block_type=seblock
-  downsample=k3
-  red_ratio=2
+  feat_type=klfb input_dim=40
+  model=ThinResNet resnet_size=10
+  encoder_type=ASTP2 embedding_size=256
+  block_type=seblock downsample=k3 red_ratio=2
 
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  mask_layer=baseline weight=clean
+  scheduler=rop optimizer=sgd
   nj=8
-  weight=clean
   chn=16
   fast=none1
   avg_size=5
+  batch_size=256
 
   teacher_dir=Data/checkpoint/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk3_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_vares_bashuf/123457
 #  label_dir=Data/label/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var
@@ -433,11 +377,9 @@ if [ $stage -le 20 ]; then
 
     if [ $resnet_size -le 34 ];then
       expansion=1
-      batch_size=256
       exp_str=
     else
       expansion=2
-      batch_size=256
       exp_str=_exp${expansion}
     fi
 
@@ -460,7 +402,6 @@ if [ $stage -le 20 ]; then
 #          kd_ratio=40
           kd_str=_${kd_type}${kd_ratio}${kd_loss}_${attention_type}_${norm_type}
         fi
-
       else
         kd_ratio=0.4
         kd_str=_${kd_type}${kd_ratio}${kd_loss}

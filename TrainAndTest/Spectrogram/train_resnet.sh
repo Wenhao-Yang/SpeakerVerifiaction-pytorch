@@ -325,12 +325,11 @@ fi
 if [ $stage -le 50 ]; then
   datasets=vox1 testsets=vox1
   model=ThinResNet resnet_size=50
-  encoder_type=SAP2
   alpha=0
   block_type=basic downsample=k1
   batch_size=256
   chn=16
-  embedding_size=256
+  encoder_type=SAP2 embedding_size=256
   input_norm=Mean
   loss=arcsoft
   feat_type=klsp

@@ -27,7 +27,7 @@ import Process_Data.constants as c
 
 from Define_Model.CNN import AlexNet
 from Define_Model.Optimizer import SAMSGD, SAM
-from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, ResNet, SimpleResNet, GradResNet, \
+from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, RepeatResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
 from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear, MarginLinearDummy
 from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
@@ -92,6 +92,7 @@ __factory = {
     'ResNet20': ResNet20,
     'SiResNet34': SimpleResNet,
     'ThinResNet': ThinResNet,
+    'RepeatResNet': RepeatResNet,
     'MultiResNet': MultiResNet,
     'ResNets': ResNet,
     'DTDNN': DTDNN,

@@ -872,7 +872,6 @@ class Bottleneck_v2(nn.Module):
 
 
 class ThinResNet(nn.Module):
-
     def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
                  input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
                  kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
@@ -1268,6 +1267,403 @@ class ThinResNet(nn.Module):
     # Allow for accessing forward method in a inherited class
     forward = _forward
 
+
+
+class RepeatResNet(nn.Module):
+    def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
+                 input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
+                 kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
+                 feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
+                 alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
+                 filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
+                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
+                 weight_p=0.1, weight_norm='max',
+                 input_norm='', gain_layer=False, **kwargs):
+        super(RepeatResNet, self).__init__()
+        resnet_type = {8: [1, 1, 1, 0],
+                       10: [1, 1, 1, 1],
+                       14: [2, 2, 2, 0],
+                       18: [2, 2, 2, 2],
+                       34: [3, 4, 6, 3],
+                       50: [3, 4, 6, 3],
+                       101: [3, 4, 23, 3]}
+
+        layers = resnet_type[resnet_size]
+        freq_dim = avg_size  # default 4
+        time_dim = time_dim  # default 1
+        self.input_len = input_len
+        self.input_dim = input_dim
+        self.inst_norm = inst_norm
+        self.filter = filter
+        self._norm_layer = nn.BatchNorm2d
+        self.embedding_size = embedding_size
+        self.dropout_p = dropout_p
+        self.gain_layer = gain_layer
+        self.gain_axis = gain_axis
+        self.mask = mask
+        self.scale = scale
+        self.weight_p = weight_p
+        self.weight_norm = weight_norm
+
+        self.dilation = 1
+        self.fast = str(fast)
+        self.num_filter = channels  # [16, 32, 64, 128]
+        self.inplanes = self.num_filter[0]
+        self.downsample = str(downsample)
+
+        if block_type == "seblock":
+            block = SEBasicBlock if resnet_size < 50 else SEBottleneck
+            # block.reduction_ratio = red_ratio
+        elif block_type == "seblock_v2":
+            block = SEBasicBlock_v2
+        elif block_type == 'cbam':
+            block = CBAMBlock
+        elif block_type == 'cbam_v2':
+            block = CBAMBlock_v2
+        elif block_type in ['basic', 'None']:
+            block = BasicBlock if resnet_size < 50 else Bottleneck
+        elif block_type == 'basic_v2':
+            block = BasicBlock_v2 if resnet_size < 50 else Bottleneck_v2
+        elif block_type == 'se2block':
+            block = SE_Res2Block
+        elif block_type == 'res2block':
+            block = Res2Block
+
+        block.expansion = expansion
+        # num_filter = [32, 64, 128, 256]
+
+        if replace_stride_with_dilation is None:
+            # each element in the tuple indicates if we should replace
+            # the 2x2 stride with a dilated convolution instead
+            replace_stride_with_dilation = [False, False, False]
+        if len(replace_stride_with_dilation) != 3:
+            raise ValueError("replace_stride_with_dilation should be None "
+                             "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
+        self.groups = groups
+        self.base_width = width_per_group
+        self.input_norm = input_norm
+
+        input_mask = []
+        filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
+                                        exp=exp, filter_fix=filter_fix)
+        if filter_layer != None:
+            input_mask.append(filter_layer)
+
+        norm_layer = get_input_norm(input_norm)
+        if norm_layer != None:
+            input_mask.append(norm_layer)
+        mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
+                                    init_weight=init_weight, weight_p=weight_p,
+                                    scale=scale, weight_norm=weight_norm)
+
+        if mask_layer != None:
+            input_mask.append(mask_layer)
+
+        self.input_mask = nn.Sequential(*input_mask)
+
+        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
+        self.bn1 = self._norm_layer(self.num_filter[0])
+        self.relu = nn.ReLU(inplace=True)
+
+        if self.fast.startswith('avp'):
+            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+        elif self.fast.startswith('av1p'):
+            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(1, 3), stride=(1, 2), padding=(0, 1))
+        elif self.fast.startswith('mxp'):
+            self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+        else:
+            self.maxpool = None
+
+        self.layer1 = self._make_layer(block, self.num_filter[0], layers[0], red_ratio=red_ratio)
+        self.layer2 = self._make_layer(block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio)
+        self.layer3 = self._make_layer(block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
+
+        last_stride = 1 if self.fast in ['avp1', 'mxp1', 'none1', 'av1p1'] else 2
+        self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=last_stride, red_ratio=red_ratio)
+
+        self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
+        self.dropout = nn.Dropout(self.dropout_p)
+
+        last_channel = self.num_filter[3] if layers[3] > 0 else self.num_filter[2]
+        # [64, 128, 37, 8]
+        if freq_dim > 0:
+            self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
+            encode_input_dim = int(freq_dim * last_channel * block.expansion)
+        else:
+            self.avgpool = None
+            # print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
+            encode_input_dim = int(
+                np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
+
+        if encoder_type == 'SAP':
+            self.encoder = SelfAttentionPooling(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+            self.encoder_output = encode_input_dim
+
+        elif encoder_type == 'SAP2':
+            self.encoder = SelfAttentionPooling_v2(input_dim=encode_input_dim,
+                                                   hidden_dim=int(embedding_size / 2))
+            self.encoder_output = encode_input_dim
+
+        elif encoder_type in ['ASTP', 'SASP']:
+            self.encoder = AttentionStatisticPooling(input_dim=encode_input_dim,
+                                                     hidden_dim=int(embedding_size / 2))
+            self.encoder_output = encode_input_dim * 2
+
+        elif encoder_type in ['ASTP2', 'SASP2']:
+            self.encoder = AttentionStatisticPooling_v2(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+            self.encoder_output = encode_input_dim * 2
+
+        elif encoder_type == 'STAP':
+            self.encoder = StatisticPooling(input_dim=encode_input_dim)
+            self.encoder_output = encode_input_dim * 2
+        else:
+            self.encoder = nn.AdaptiveAvgPool2d((time_dim, None))
+            self.encoder_output = encode_input_dim * time_dim
+
+        self.fc1 = nn.Sequential(
+            nn.Linear(self.encoder_output, embedding_size),
+            nn.BatchNorm1d(embedding_size)
+        )
+
+        self.alpha = alpha
+        if self.alpha:
+            self.l2_norm = L2_Norm(self.alpha)
+
+        self.classifier = nn.Linear(embedding_size, num_classes)
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.normal_(m.weight, mean=0., std=1.)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
+        # Zero-initialize the last BN in each residual branch, so that the residual branch
+        # starts with zeros, and each residual block behaves like an identity.
+        # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
+        if zero_init_residual:
+            for m in self.modules():
+                if isinstance(m, Bottleneck):
+                    nn.init.constant_(m.bn3.weight, 0)
+                elif isinstance(m, BasicBlock):
+                    nn.init.constant_(m.bn2.weight, 0)
+
+    def _make_layer(self, block, planes, blocks, stride=1, red_ratio=2):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            if self.downsample in ['None', 'k1']:
+                downsample = nn.Sequential(
+                    conv1x1(self.inplanes, planes * block.expansion, stride),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k1avg':
+                downsample = nn.Sequential(
+                    nn.AvgPool2d(kernel_size=3, stride=stride, padding=1),
+                    conv1x1(self.inplanes, planes * block.expansion, 1),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k3':
+                downsample = nn.Sequential(
+                    conv3x3(self.inplanes, planes * block.expansion, stride),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k5':
+                downsample = nn.Sequential(
+                    conv5x5(self.inplanes, planes * block.expansion, stride),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k51':
+                downsample = nn.Sequential(
+                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=self.inplanes),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+            elif self.downsample == 'k52':
+                downsample = nn.Sequential(
+                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=int(self.inplanes / 2)),
+                    nn.BatchNorm2d(planes * block.expansion),
+                )
+
+        layers = []
+        # pdb.set_trace()
+        if blocks > 0:
+            layers.append(block(self.inplanes, planes, stride=stride, downsample=downsample, reduction_ratio=red_ratio))
+            self.inplanes = planes * block.expansion
+            for _ in range(1, blocks):
+                layers.append(block(self.inplanes, planes, reduction_ratio=red_ratio))
+
+        return nn.Sequential(*layers)
+
+    def _forward(self, x, feature_map='', proser=None, label=None,
+                 lamda_beta=0.2, mixup_alpha=-1):
+        # pdb.set_trace()
+        # print(x.shape)
+        # if self.filter_layer != None:
+        #     x = self.filter_layer(x)
+        #
+        # if self.inst_layer != None:
+        #     x = self.inst_layer(x)
+        #
+        # if self.mask_layer != None:
+        #     x = self.mask_layer(x)
+        if mixup_alpha == -1:
+            layer_mix = random.randint(0, 2)
+        else:
+            layer_mix = mixup_alpha
+        if proser != None and layer_mix == 0:
+            x = self.mixup(x, proser, lamda_beta)
+
+        x = self.input_mask(x)
+        if proser != None and layer_mix == 1:
+            x = self.mixup(x, proser, lamda_beta)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        if self.maxpool != None:
+            x = self.maxpool(x)
+
+        if proser != None and layer_mix == 2:
+            x = self.mixup(x, proser, lamda_beta)
+
+        # print(x.shape)
+        group1 = self.layer1(x)
+        if proser != None and layer_mix == 3:
+            group1 = self.mixup(group1, proser, lamda_beta)
+
+        group2 = self.layer2(group1)
+        if proser != None and layer_mix == 4:
+            group2 = self.mixup(group2, proser, lamda_beta)
+
+        group3 = self.layer3(group2)
+        if proser != None and layer_mix == 5:
+            group3 = self.mixup(group3, proser, lamda_beta)
+
+        group4 = self.layer4(group3)
+        if proser != None and layer_mix == 6:
+            group4 = self.mixup(group4, proser, lamda_beta)
+
+        # print(x.shape)
+
+        if self.dropout_p > 0:
+            group4 = self.dropout(group4)
+
+        if feature_map == 'last':
+            embeddings = group4
+        elif feature_map == 'attention':
+            embeddings = (group1, group2, group3, group4)
+
+        if self.avgpool != None:
+            x = self.avgpool(group4)
+
+        if self.encoder != None:
+            x = self.encoder(x)
+
+        x = x.view(x.size(0), -1)
+        if proser != None and layer_mix == 7:
+            x = self.mixup(x, proser, lamda_beta)
+
+        x = self.fc1(x)
+
+        if self.alpha:
+            x = self.l2_norm(x)
+
+        if feature_map == 'last':
+            return embeddings, x
+
+        # pdb.set_trace()
+        if proser != None and label != None:
+            half_batch_size = int(x.shape[0] / 2)
+            half_feats = x[-half_batch_size:]
+            # half_label = label[-half_batch_size:]
+
+            # half_idx = [i for i in range(half_batch_size)]
+            # half_idx_ten = torch.LongTensor(half_idx)
+            # random.shuffle(half_idx)
+            # pdb.set_trace()
+            shuf_half_idx_ten = proser
+            select_bool = label[:, 0, 0, 0]
+            select_bool = select_bool.reshape(-1, 1).repeat_interleave(self.embedding_size, dim=1)
+            select_bool = select_bool.to(device=half_feats.device)
+            # torch.repeat_interleave()
+            half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
+
+            # print(half_feats[shuf_half_idx_ten], select_bool)
+            half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten], mask=select_bool).reshape(-1,
+                                                                                                       self.embedding_size)
+
+            # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
+            # pdb.set_trace()
+            lamda_beta = np.random.beta(lamda_beta, lamda_beta)
+            half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
+            # print(x[:half_batch_size].shape, half_feat.shape)
+            x = torch.cat([x[:half_batch_size], half_feat], dim=0)
+
+        if proser != None and layer_mix == 7:
+            x = self.mixup(x, proser, lamda_beta)
+
+        logits = "" if self.classifier == None else self.classifier(x)
+
+        if feature_map == 'attention':
+            return logits, embeddings
+
+        return logits, x
+
+    def xvector(self, x, embedding_type='near'):
+        # pdb.set_trace()
+        # print(x.shape)
+        if self.filter_layer != None:
+            x = self.filter_layer(x)
+
+        if self.inst_layer != None:
+            x = self.inst_layer(x)
+
+        if self.mask_layer != None:
+            x = self.mask_layer(x)
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        if self.maxpool != None:
+            x = self.maxpool(x)
+
+        # print(x.shape)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        # print(x.shape)
+
+        if self.dropout_p > 0:
+            x = self.dropout(x)
+
+        if self.avgpool != None:
+            x = self.avgpool(x)
+
+        if self.encoder != None:
+            x = self.encoder(x)
+
+        x = x.view(x.size(0), -1)
+        if embedding_type == 'near':
+            embeddings = self.fc1[0](x)
+        else:
+            embeddings = self.fc1(x)
+
+        return embeddings
+
+    def mixup(self, x, shuf_half_idx_ten, lamda_beta):
+        half_batch_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-half_batch_size:]
+        x = torch.cat(
+            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            dim=0)
+
+        return x
+
+    # Allow for accessing forward method in a inherited class
+    forward = _forward
 
 class ResNet(nn.Module):
 
