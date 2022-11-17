@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300  # skip to stage x
+stage=41  # skip to stage x
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -218,29 +218,20 @@ if [ $stage -le 20 ]; then
 fi
 
 if [ $stage -le 40 ]; then
-  lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
   feat_type=klfb
-  model=ThinResNet
-  resnet_size=18
-  encoder_type=ASTP2
-  embedding_size=256
-  block_type=seblock
-  red_ratio=2
-  expansion=1
-  downsample=k1
+  model=ThinResNet resnet_size=18
+  encoder_type=ASTP2 embedding_size=256
+  block_type=seblock red_ratio=2 expansion=1 downsample=k1
   kernel=5,5
   loss=proser
   alpha=1
   input_norm=Mean
   mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=256
   fast=none1
-
   avg_size=5
 
 #  encoder_type=SAP2
@@ -306,30 +297,28 @@ if [ $stage -le 41 ]; then
   datasets=vox1
   feat_type=klfb
   model=ThinResNet resnet_size=18
-  encoder_type=ASTP2
-  embedding_size=256
-  block_type=seblock
-  downsample=k1
+  encoder_type=SAP2 embedding_size=256
+  block_type=basic downsample=k1 red_ratio=2
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
   mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  scheduler=cyclic optimizer=adam
   input_dim=40
   batch_size=256
   power_weight=max
 
-  expansion=4
+  expansion=1
   chn=16
   cyclic_epoch=8
-  red_ratio=2
+  
   avg_size=5
   fast=none1
 
-  for resnet_size in 34; do
-  for seed in 123456 123457 123458; do
+  for model in ThinResNet RepeatResNet; do
+  for resnet_size in 18; do
+  for seed in 123456 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
     weight=vox2_rcf
@@ -380,9 +369,9 @@ if [ $stage -le 41 ]; then
       --feat-format kaldi --nj 6 \
       --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
-      --epochs 60 --batch-size ${batch_size} \
+      --epochs 2 --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
-      --lr 0.1 --base-lr 0.000001 \
+      --lr 0.001 --base-lr 0.00000001 \
       --patience 3 --milestones 10,20,30,40 \
       --early-stopping --early-patience 20 --early-delta 0.01 --early-meta EER \
       --check-path Data/checkpoint/${model_dir} \
@@ -398,9 +387,10 @@ if [ $stage -le 41 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0001 \
       --dropout-p 0.1 \
-      --gpu-id 0,6 \
+      --gpu-id 1 \
       --extract --cos-sim \
       --remove-vad
+  done
   done
   done
   exit
@@ -410,22 +400,19 @@ if [ $stage -le 43 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   feat_type=klfb
-  model=ThinResNet
-  resnet_size=18
-  encoder_type=ASTP2
-  embedding_size=256
+  model=ThinResNet resnet_size=18
+  encoder_type=ASTP2 embedding_size=256
   block_type=seblock
   downsample=k1
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  mask_layer=baseline
+  mask_layer=baseline power_weight=max
   scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=170
-  power_weight=max
-
+  
   expansion=4
   chn=16
   cyclic_epoch=8
