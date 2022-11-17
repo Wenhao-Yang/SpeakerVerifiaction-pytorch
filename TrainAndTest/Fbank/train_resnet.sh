@@ -296,6 +296,7 @@ if [ $stage -le 41 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
   datasets=vox1
   feat_type=klfb
+  batch_size=256
   model=ThinResNet resnet_size=18
   encoder_type=SAP2 embedding_size=256
   block_type=basic downsample=k1 red_ratio=2
@@ -304,7 +305,7 @@ if [ $stage -le 41 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=baseline
-  scheduler=cyclic optimizer=adam
+  scheduler=rop optimizer=adam
   input_dim=40
   batch_size=256
   power_weight=max
@@ -327,15 +328,13 @@ if [ $stage -le 41 ]; then
       # _${weight}${power_weight}
     if [ $resnet_size -le 34 ];then
       expansion=1
-      batch_size=256
     else
       expansion=2
-      batch_size=256
       exp_str=_exp${expansion}
     fi
+    chn_str=
     if [ $chn -eq 16 ]; then
       channels=16,32,64,128
-      chn_str=
     elif [ $chn -eq 32 ]; then
       channels=32,64,128,256
       chn_str=chn32_
@@ -343,6 +342,8 @@ if [ $stage -le 41 ]; then
       channels=64,128,256,512
       chn_str=chn64_
     fi
+
+    at_str=
     if [[ $mask_layer == attention* ]];then
       at_str=_${weight}
       if [[ $weight_norm != max ]];then
@@ -351,9 +352,7 @@ if [ $stage -le 41 ]; then
     elif [ "$mask_layer" = "drop" ];then
       at_str=_${weight}_dp${weight_p}s${scale}
     elif [ "$mask_layer" = "both" ];then
-      at_str=_`echo $mask_len | sed  's/,//g'`
-    else
-      at_str=
+      at_str=_`echo $mask_len | sed  's/,//g'`      
     fi
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2_repeat/${seed}
     #
