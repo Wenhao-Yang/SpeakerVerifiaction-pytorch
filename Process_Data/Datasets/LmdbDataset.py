@@ -49,7 +49,8 @@ class LmdbVerifyDataset(Dataset):
                 uid, feat_offset = line.split()
                 uid2feat[uid] = feat_offset
 
-        print('\n==> There are {} utterances in Verification trials.'.format(len(uid2feat)))
+        print('\n==> There are {} utterances in Verification trials.'.format(
+            len(uid2feat)))
 
         trials_pair = []
         positive_pairs = 0
@@ -111,7 +112,8 @@ class LmdbVerifyDataset(Dataset):
             positive_pairs = self.trials_pair[positive_idx].copy()
             nagative_pairs = self.trials_pair[indices].copy()
 
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = np.concatenate(
+                (positive_pairs, nagative_pairs), axis=0)
         else:
             indices = list(range(self.numofpositive, len(self.trials_pair)))
             random.shuffle(indices)
@@ -124,7 +126,8 @@ class LmdbVerifyDataset(Dataset):
             nagative_pairs = self.trials_pair[indices].copy()
 
             self.numofpositive = len(positive_pairs)
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = np.concatenate(
+                (positive_pairs, nagative_pairs), axis=0)
 
         assert len(self.trials_pair) == num
         num_positive = 0
@@ -132,8 +135,10 @@ class LmdbVerifyDataset(Dataset):
             if z == 'True':
                 num_positive += 1
 
-        assert len(self.trials_pair) == num, '%d != %d' % (len(self.trials_pair), num)
-        assert self.numofpositive == num_positive, '%d != %d' % (self.numofpositive, num_positive)
+        assert len(self.trials_pair) == num, '%d != %d' % (
+            len(self.trials_pair), num)
+        assert self.numofpositive == num_positive, '%d != %d' % (
+            self.numofpositive, num_positive)
         print('%d positive pairs remain.' % num_positive)
 
     def __len__(self):
@@ -183,7 +188,8 @@ class LmdbTrainDataset(Dataset):
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-        print('    There are {} utterances in Train Dataset'.format(len(utt2spk_dict.keys())))
+        print('    There are {} utterances in Train Dataset'.format(
+            len(utt2spk_dict.keys())))
         if num_valid > 0:
             valid_set = {}
             valid_utt2spk_dict = {}
@@ -200,7 +206,8 @@ class LmdbTrainDataset(Dataset):
 
                         valid_utt2spk_dict[utt] = utt2spk_dict[utt]
 
-            print('    Spliting {} utterances for Validation.'.format(len(valid_utt2spk_dict.keys())))
+            print('    Spliting {} utterances for Validation.'.format(
+                len(valid_utt2spk_dict.keys())))
             self.valid_set = valid_set
             self.valid_utt2spk_dict = valid_utt2spk_dict
 
@@ -349,7 +356,8 @@ class LmdbTestDataset(Dataset):
         trials_pair = np.array(trials_pair)
         trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
 
-        print('==>There are {} pairs in test Dataset with {} positive pairs'.format(len(trials_pair), positive_pairs))
+        print('==>There are {} pairs in test Dataset with {} positive pairs'.format(
+            len(trials_pair), positive_pairs))
 
         env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
                         meminit=False)
@@ -398,7 +406,8 @@ class LmdbTestDataset(Dataset):
             positive_pairs = self.trials_pair[positive_idx].copy()
             nagative_pairs = self.trials_pair[indices].copy()
 
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = np.concatenate(
+                (positive_pairs, nagative_pairs), axis=0)
         else:
             indices = list(range(self.numofpositive, len(self.trials_pair)))
             random.shuffle(indices)
@@ -411,7 +420,8 @@ class LmdbTestDataset(Dataset):
             nagative_pairs = self.trials_pair[indices].copy()
 
             self.numofpositive = len(positive_pairs)
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = np.concatenate(
+                (positive_pairs, nagative_pairs), axis=0)
 
         assert len(self.trials_pair) == num
         num_positive = 0
@@ -419,8 +429,10 @@ class LmdbTestDataset(Dataset):
             if z == 'True':
                 num_positive += 1
 
-        assert len(self.trials_pair) == num, '%d != %d' % (len(self.trials_pair), num)
-        assert self.numofpositive == num_positive, '%d != %d' % (self.numofpositive, num_positive)
+        assert len(self.trials_pair) == num, '%d != %d' % (
+            len(self.trials_pair), num)
+        assert self.numofpositive == num_positive, '%d != %d' % (
+            self.numofpositive, num_positive)
         print('    %d positive pairs remain.' % num_positive)
 
     def __len__(self):
@@ -442,7 +454,8 @@ class EgsDataset(Dataset):
         doms = set([])
         self.common_path = ''
         with open(feat_scp, 'r') as u:
-            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
+            all_cls_upath = tqdm(
+                u.readlines(), ncols=100) if verbose > 0 else u.readlines()
             for line in all_cls_upath:
                 try:
                     cls, upath = line.split()
@@ -524,7 +537,10 @@ class EgsDataset(Dataset):
             return feature, label
 
     def __shuffle__(self):
-        dataset_batch = self.dataset.reshape(-1, int(self.batch_size / 2), 3)
+        valid_lenght = len(
+            self.dataset) // (int(self.batch_size / 2)) * (int(self.batch_size / 2))
+        dataset_batch = self.dataset[:valid_lenght].reshape(
+            -1, int(self.batch_size / 2), 3)
         np.random.shuffle(dataset_batch)
 
     def __len__(self):
@@ -548,7 +564,8 @@ class CrossEgsDataset(Dataset):
 
         with open(feat_scp, 'r') as u:
 
-            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
+            all_cls_upath = tqdm(
+                u.readlines(), ncols=100) if verbose > 0 else u.readlines()
 
             for line in all_cls_upath:
                 try:
@@ -678,7 +695,8 @@ class CrossEgsDataset(Dataset):
 
                 if len(this_dom2utt[enroll_dom]) > self.enroll_utt:
                     while len(enroll_utts) < self.enroll_utt:
-                        enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
+                        enroll_utts.add(random.choice(
+                            this_dom2utt[enroll_dom]))
                 else:
                     for i in this_dom2utt[enroll_dom]:
                         enroll_utts.add(i)
@@ -687,8 +705,10 @@ class CrossEgsDataset(Dataset):
                     while len(enroll_utts) < self.enroll_utt:
                         enroll_utts.extend([random.choice(enroll_utts)])
 
-            utts_feat = [self.transform(self.loader(upath)) for upath in test_utt]
-            utts_feat.extend([self.transform(self.loader(upath)) for upath in enroll_utts])
+            utts_feat = [self.transform(self.loader(upath))
+                         for upath in test_utt]
+            utts_feat.extend([self.transform(self.loader(upath))
+                             for upath in enroll_utts])
             features.append(torch.stack(utts_feat, dim=0))
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
@@ -734,7 +754,8 @@ class CrossValidEgsDataset(Dataset):
 
         with open(feat_scp, 'r') as u:
 
-            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
+            all_cls_upath = tqdm(
+                u.readlines(), ncols=100) if verbose > 0 else u.readlines()
 
             for line in all_cls_upath:
                 try:
@@ -851,8 +872,10 @@ class CrossValidEgsDataset(Dataset):
                     while len(enroll_utts) < self.enroll_utt:
                         enroll_utts.extend([random.choice(enroll_utts)])
 
-            utts_feat = [self.transform(self.loader(upath)) for upath in test_utt]
-            utts_feat.extend([self.transform(self.loader(upath)) for upath in enroll_utts])
+            utts_feat = [self.transform(self.loader(upath))
+                         for upath in test_utt]
+            utts_feat.extend([self.transform(self.loader(upath))
+                             for upath in enroll_utts])
             features.append(torch.stack(utts_feat, dim=0))
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
@@ -895,7 +918,8 @@ class CrossMetaEgsDataset(Dataset):
 
         with open(feat_scp, 'r') as u:
 
-            all_cls_upath = tqdm(u.readlines(), ncols=100) if verbose > 0 else u.readlines()
+            all_cls_upath = tqdm(
+                u.readlines(), ncols=100) if verbose > 0 else u.readlines()
 
             for line in all_cls_upath:
                 try:
@@ -974,8 +998,10 @@ class CrossMetaEgsDataset(Dataset):
                 while len(enroll_utts) < self.enroll_utt:
                     enroll_utts.add(random.choice(this_dom2utt[enroll_dom]))
 
-            utts_feat = [self.transform(self.loader(upath)) for upath in test_utt]
-            utts_feat.extend([self.transform(self.loader(upath)) for upath in enroll_utts])
+            utts_feat = [self.transform(self.loader(upath))
+                         for upath in test_utt]
+            utts_feat.extend([self.transform(self.loader(upath))
+                             for upath in enroll_utts])
             features.append(torch.stack(utts_feat, dim=0))
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
