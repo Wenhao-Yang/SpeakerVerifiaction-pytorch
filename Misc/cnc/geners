@@ -1,0 +1,25 @@
+advertisement 100
+drama 6320
+entertainment 18376
+interview 52845
+live_broadcast 6400
+movie 2509
+play 4189
+recitation 2639
+singing 10534
+speech 6263
+vlog 1084
+
+dev2:
+    
+advertisement 1542
+drama 13116
+entertainment 31982
+interview 34024
+live_broadcast 167019
+movie 4449
+play 14992
+recitation 58231
+singing 42157
+speech 36680
+vlog 125293

@@ -3,7 +3,7 @@ from numpy import linalg
 import numpy as np
 from scipy.fftpack import fft
 from scipy.signal import hilbert
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 def fast_svd(x,a):
@@ -94,39 +94,39 @@ def SHT(x,fs,a=0.1, isPlot = False):
     St2 = []
     f0 = f_maxlist[0]
     St0 = St[0,:]
-
-    for i in range(da - 1):
-
-        if abs(f_maxlist[i] - f_maxlist[i + 1]) < 100:
-            St0 = St0 + St[i + 1, :]
+    
+    for i in range(da-1):
+        
+        if abs(f_maxlist[i]-f_maxlist[i+1])<100:
+            St0 = St0 + St[i+1,:]
         else:
             St2.append(St0)
-            St0 = St[i + 1, :]
+            St0 = St[i+1,:]
+            
+    insf, inse = hht(St2,fs)
+    
+#     if isPlot:
+#         num = len(insf)
+#         for i2 in range(num):
 
-    insf, inse = hht(St2, fs)
-
-    # if isPlot:
-    #     num = len(insf)
-    #     for i2 in range(num):
-    #
-    #         insf_draw = insf[i2,:]
-    #         inse_draw = inse[i2,:]/10
-    #         plt.scatter(t, insf_draw, marker='o', s =inse_draw, c=inse_draw, cmap='coolwarm')
-    #         plt.ylim(0,4000)
-    #         plt.xlim(0,t_end)
-
+#             insf_draw = insf[i2,:]
+#             inse_draw = inse[i2,:]/10
+#             plt.scatter(t, insf_draw, marker='o', s =inse_draw, c=inse_draw, cmap='coolwarm')
+#             plt.ylim(0,4000)
+#             plt.xlim(0,t_end)
+    
     return St2, insf, inse
 
+def short_SHT(x, fs, win, a = 0.1, s=50, isPlot = False):
 
-def short_SHT(x, fs, win, a=0.1, s=50, isPlot=False):
-    # 对信号进行加窗，计算SHT
-    # 输入x:原始信号，fs：采样频率，win：窗长度，a:奇异值保留比例，s，保留分量个数（如果分量数不够用0填充）
-    # 输出insf_all：瞬时频率矩阵, inse_all：对应的瞬时能量矩阵, s_list：各个窗里分量的实际个数, t：时间向量
-
+    #对信号进行加窗，计算SHT
+    #输入x:原始信号，fs：采样频率，win：窗长度，a:奇异值保留比例，s，保留分量个数（如果分量数不够用0填充）
+    #输出insf_all：瞬时频率矩阵, inse_all：对应的瞬时能量矩阵, s_list：各个窗里分量的实际个数, t：时间向量
+    
     L = len(x)
-    t_end = L / fs
-    t = np.arange(0, t_end, 1 / fs)
-    iters = int(L / win)
+    t_end = L/fs
+    t = np.arange(0, t_end, 1/fs)
+    iters = int(L/win)
     
     insf_all = np.zeros((s, L))
     inse_all = np.zeros((s, L))
@@ -139,25 +139,27 @@ def short_SHT(x, fs, win, a=0.1, s=50, isPlot=False):
         _, insf, inse = SHT(x_short, fs, a)
         
         s0 = len(insf)
-
-        if s0 > s:
-            insf_all[:, win * i: win * (i + 1)] = insf[0:s]
-            inse_all[:, win * i: win * (i + 1)] = inse[0:s]
+        
+        if s0>s:
+            insf_all[:,win * i : win * (i + 1)] = insf[0:s]
+            inse_all[:,win * i : win * (i + 1)] = inse[0:s]
         else:
-            insf_all[0:s0, win * i: win * (i + 1)] = insf
-            inse_all[0:s0, win * i: win * (i + 1)] = inse
-
+            insf_all[0:s0,win * i : win * (i + 1)] = insf
+            inse_all[0:s0,win * i : win * (i + 1)] = inse
+        
         s_list.append(s0)
-
-    # if isPlot == True:
-    #     for i2 in range(iters):
-    #         for i3 in range(min(s,s_list[i2])):
-    #
-    #             insf_draw = insf_all[i3,win * i2 : win * (i2 + 1)]
-    #             inse_draw = inse_all[i3,win * i2 : win * (i2 + 1)]/100+0.0000001
-    #             t_short = t[win * i2 : win * (i2 + 1)]
-    #             plt.scatter(t_short, insf_draw, marker='o', s =inse_draw, c=inse_draw, cmap='coolwarm')
-    #     plt.ylim(0,4000)
-    #     plt.xlim(0,t_end)
-
+        
+    if isPlot == True:
+        for i2 in range(iters):
+            for i3 in range(min(s,s_list[i2])):
+                
+                insf_draw = insf_all[i3,win * i2 : win * (i2 + 1)]
+                inse_draw = inse_all[i3,win * i2 : win * (i2 + 1)]/100+0.0000001
+                t_short = t[win * i2 : win * (i2 + 1)]
+                plt.scatter(t_short, insf_draw, marker='o', s =inse_draw, c=inse_draw, cmap='coolwarm')
+        
+        plt.ylim(0,4000)
+        plt.xlim(0,t_end)       
+                
+       
     return insf_all, inse_all, s_list, t

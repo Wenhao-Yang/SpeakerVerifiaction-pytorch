@@ -1,0 +1,57 @@
+# resnet18_seblcok_red2_astp2 wav fbank40 baseline
+|    aidata-test    |   5.5100    |   0.2205    |    0.4727     |    0.7931     | 20220926 15:31:16 |
+|    aidata-test    |   5.1600    |   0.2175    |    0.4654     |    0.7863     | 20220926 15:48:34 |
+|    aidata-test    |   5.3100    |   0.2240    |    0.4613     |    0.7867     | 20220926 16:05:47 |
+
+# resnet18_seblcok_red2_astp2 wav fbank40 mixup0_0.2 
+|    aidata-test    |   5.9100    |   0.2400    |    0.4633     |    0.8009     | 20220926 15:04:46 |
+|    aidata-test    |   5.6800    |   0.2725    |    0.4534     |    0.7821     | 20220926 15:06:38 |
+|    aidata-test    |   6.0000    |   0.2297    |    0.4496     |    0.7548     | 20220926 15:08:33 |
+
+# resnet18_seblcok_red2_astp2 wav fbank40 clean+half_mixup0_0.2 
+|    aidata-test    |   5.2700    |   0.2093    |    0.4299     |    0.7654     | 20220927 12:56:55 |
+|    aidata-test    |   5.4000    |   0.2066    |    0.4265     |    0.7717     | 20220927 13:11:12 |
+|    aidata-test    |   5.0100    |   0.2082    |    0.4133     |    0.7792     | 20220927 13:26:52 |
+
+# resnet18_seblcok_red2_astp2 wav fbank40 clean+half_mixup0_0.5 
+|    aidata-test    |   5.1200    |   0.2633    |    0.4534     |    0.7930     | 20220929 10:52:18 |
+|    aidata-test    |   5.1400    |   0.2249    |    0.4175     |    0.7596     | 20220929 11:10:46 |
+|    aidata-test    |   5.1600    |   0.2308    |    0.4383     |    0.7511     | 20220929 11:28:20 |
+
+# resnet34_seblcok_red2_k3_astp2 fbank40 baseline server
+|    aidata-test    |   5.0400    |   0.2254    |    0.4708     |    0.8165     | 20220929 11:02:58 |
+|    aidata-test    |   5.1600    |   0.2242    |    0.4876     |    0.7853     | 20220929 11:08:06 |
+|    aidata-test    |   5.1100    |   0.2298    |    0.4743     |    0.8226     | 20220929 11:13:22 |
+
+# resnet34_seblcok_red2_k3_astp2 fbank40 baseline clean+half_mixup0_0.2 
+|    aidata-test    |   5.7400    |   0.2154    |    0.4795     |    0.7861     | 20220929 11:26:25 |
+|    aidata-test    |   5.4800    |   0.2146    |    0.4984     |    0.8343     | 20220929 11:31:43 |
+|    aidata-test    |   5.6500    |   0.3003    |    0.4982     |    0.8293     | 20220929 11:36:57 |
+
+# resnet34_seblcok_red2_k3_astp2 fbank40 baseline clean+half_mixup0_0.5 
+|    aidata-test    |   30.5700   |   0.9995    |    0.9971     |    0.9992     | 20220929 11:41:57 |
+|    aidata-test    |   5.8300    |   0.2191    |    0.4938     |    0.8072     | 20220929 11:47:14 |
+|    aidata-test    |   5.8000    |   0.2293    |    0.4916     |    0.8204     | 20220929 11:52:28 |
+
+# resnet34_seblcok_red2_k3_astp2 fbank40 baseline clean+half_mixup0_1 
+|    aidata-test    |   5.6600    |   0.2715    |    0.5041     |    0.8018     | 20220929 11:57:43 |
+|    aidata-test    |   28.7600   |   0.9987    |    0.9995     |    0.9997     | 20220929 12:02:44 |
+|    aidata-test    |   27.6800   |   0.9991    |    0.9970     |    0.9989     | 20220929 12:07:49 |
+
+# resnet34_seblcok_red2_k3_astp2 fbank40 baseline clean+half_mixup0_2 
+|    aidata-test    |   5.5800    |   0.2355    |    0.4823     |    0.8026     | 20220929 12:13:09 |
+|    aidata-test    |   5.3500    |   0.2551    |    0.4879     |    0.7829     | 20220929 12:18:23 |
+|    aidata-test    |   5.7400    |   0.4919    |    0.5188     |    0.8100     | 20220929 12:23:32 |
+
+# resnet34_seblcok_red2_k1_astp2 fbank40 baseline dist
+|    aidata-test    |   5.4000    |   0.2431    |    0.5050     |    0.7838     | 20221009 22:35:23 |
+|    aidata-test    |   5.2900    |   0.2379    |    0.4768     |    0.8023     | 20221009 22:40:44 |
+|    aidata-test    |   5.1900    |   0.2251    |    0.4767     |    0.8185     | 20221009 22:48:50 |
+
+# resnet34_seblcok_red2_k1_astp2 fbank40 baseline dist manifold0.2 mani_gamma0.01
+|    aidata-test    |   5.1600    |   0.2435    |    0.4841     |    0.8297     | 20221009 21:52:30 |
+|    aidata-test    |   5.0200    |   0.2375    |    0.4640     |    0.8103     | 20221009 22:02:49 |
+|    aidata-test    |   5.1200    |   0.2489    |    0.4738     |    0.8144     | 20221009 22:13:07 |
+
+# resnet34_seblcok_red2_k1_astp2 fbank40 baseline dist layer_0,2 manifold2 mani_gamma1
+|    aidata-test    |   4.5300    |   0.3447    |    0.4452     |    0.7802     | 20221013 11:45:00 |

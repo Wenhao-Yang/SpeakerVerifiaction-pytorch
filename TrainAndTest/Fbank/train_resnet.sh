@@ -317,7 +317,7 @@ if [ $stage -le 41 ]; then
   avg_size=5
   fast=none1
 
-  for model in RepeatResNet; do
+  for model in RepeatResNet ThinResNet; do
   for resnet_size in 18; do
   for seed in 123456 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
@@ -368,7 +368,7 @@ if [ $stage -le 41 ]; then
       --feat-format kaldi --nj 6 \
       --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
-      --epochs 2 --batch-size ${batch_size} \
+      --epochs 4 --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.001 --base-lr 0.00000001 \
       --patience 3 --milestones 10,20,30,40 \

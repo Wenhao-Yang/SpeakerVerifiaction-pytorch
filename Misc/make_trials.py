@@ -8,6 +8,14 @@
 @File: make_trials.py
 @Time: 2022/3/18 21:52
 @Overview:
+
+python Misc/make_trials.py <num of pairs> <#enroll dir> <#test dir> <trials path:>
+
+        <#num of pairs:>   150000 positive + negative
+        <#enroll dir:  >   /home/yangwenhao/storage/dataset/CN-Celeb/eval/enroll>
+        <#test dir:    >   /home/yangwenhao/storage/dataset/CN-Celeb/eval/test>
+        <#trials path: >   Misc/trials.cnc>
+
 """
 # import os
 import pathlib
@@ -26,8 +34,8 @@ test_roots = sys.argv[3]
 trials_path = sys.argv[4]
 
 # print('Current path: ' + os.getcwd())
-print("Enroll Dirs are: " + '; '.join(enroll_roots))
-print("Test Dirs are: " + '; '.join(test_roots))
+print("Enroll Dirs is: " + enroll_roots)
+print("Test Dirs is: " + test_roots)
 
 enroll_roots = pathlib.Path(enroll_roots)
 test_roots = pathlib.Path(test_roots)
@@ -50,7 +58,7 @@ test_utt2spk_dict = {}
 numofutts = 0
 
 for w in test_wavs:
-    sid, _ = str(w).split('/')[-1].split('-')  # 'enroll/id00884-enroll.wav'
+    sid, _, _, _ = str(w).split('/')[-1].split('-')  # 'enroll/id00884-enroll.wav'
     if sid in test_dict:
         test_dict[sid].append(str(w))
     else:
@@ -76,7 +84,7 @@ with open(trials_path, 'w') as f:
         this_spk_pairs = 0
         if sid in test_dict:
             for uid in test_dict[sid]:
-                positive_pairs.add(' '.join((enroll_spks[sid], uid, 'target\n')))
+                positive_pairs.add(' '.join((enroll_dict[sid], uid, '1\n')))
                 this_spk_pairs += 1
                 if this_spk_pairs > 0.5 * repeats:
                     break
@@ -92,7 +100,7 @@ with open(trials_path, 'w') as f:
                 continue
             else:
                 for uid in test_dict[ne_sid]:
-                    negative_pairs.add(' '.join((enroll_spks[sid], uid, 'nontarget\n')))
+                    negative_pairs.add(' '.join((enroll_dict[sid], uid, '0\n')))
                     i += 1
                     if i > negative_per_spk:
                         break
