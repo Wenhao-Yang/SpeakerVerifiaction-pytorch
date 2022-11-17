@@ -10,6 +10,7 @@
 @Overview:
 """
 from __future__ import print_function
+import torch._utils
 
 import os
 import os.path as osp
@@ -54,13 +55,13 @@ from logger import NewLogger
 
 warnings.filterwarnings("ignore")
 
-import torch._utils
 
 try:
     torch._utils._rebuild_tensor_v2
 except AttributeError:
     def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
-        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
+        tensor = torch._utils._rebuild_tensor(
+            storage, storage_offset, size, stride)
         tensor.requires_grad = requires_grad
         tensor._backward_hooks = backward_hooks
         return tensor
@@ -90,7 +91,8 @@ if args.cuda:
 # create logger
 # Define visulaize SummaryWriter instance
 writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
-sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
+sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' %
+                       time.strftime("%Y.%m.%d", time.localtime())))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 extract_kwargs = {'num_workers': 4, 'pin_memory': False} if args.cuda else {}
@@ -102,7 +104,8 @@ if not os.path.exists(args.check_path):
 opt_kwargs = {'lr': args.lr, 'lr_decay': args.lr_decay, 'weight_decay': args.weight_decay, 'dampening': args.dampening,
               'momentum': args.momentum, 'nesterov': args.nesterov}
 
-l2_dist = nn.CosineSimilarity(dim=1, eps=1e-12) if args.cos_sim else nn.PairwiseDistance(p=2)
+l2_dist = nn.CosineSimilarity(
+    dim=1, eps=1e-12) if args.cos_sim else nn.PairwiseDistance(p=2)
 
 transform = transforms.Compose([
     totensor()
@@ -110,7 +113,8 @@ transform = transforms.Compose([
 
 if args.test_input == 'var':
     transform_V = transforms.Compose([
-        ConcateOrgInput(remove_vad=args.remove_vad, feat_type=args.feat_format),
+        ConcateOrgInput(remove_vad=args.remove_vad,
+                        feat_type=args.feat_format),
     ])
 elif args.test_input == 'fix':
     transform_V = transforms.Compose([
@@ -133,7 +137,8 @@ elif args.feat_format == 'npy':
 
 train_dir = EgsDataset(dir=args.train_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform,
                        batch_size=args.batch_size, random_chunk=args.random_chunk, shuffle=args.batch_shuffle)
-valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim, loader=file_loader, transform=transform)
+valid_dir = EgsDataset(dir=args.valid_dir, feat_dim=args.input_dim,
+                       loader=file_loader, transform=transform)
 
 if args.feat_format == 'wav':
     file_loader = read_Waveform
@@ -161,7 +166,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     other_loss = {'width%s' % i: 0. for i in FLAGS.width_mult_list}
 
     ce_criterion, xe_criterion = ce
-    pbar = tqdm(enumerate(train_loader))  # , total=len(train_loader), ncols=300)
+    # , total=len(train_loader), ncols=300)
+    pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
     lambda_ = (epoch / args.epochs) ** 2
 
@@ -224,16 +230,21 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             if args.lncl:
                 if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist', 'aDCF']:
-                    predict_loss = xe_criterion(classfier, predicted_one_labels)
+                    predict_loss = xe_criterion(
+                        classfier, predicted_one_labels)
                 else:
-                    predict_loss = ce_criterion(classfier, predicted_one_labels)
+                    predict_loss = ce_criterion(
+                        classfier, predicted_one_labels)
 
-                alpha_t = np.clip(args.alpha_t * (epoch / args.epochs) ** 2, a_min=0, a_max=1)
+                alpha_t = np.clip(
+                    args.alpha_t * (epoch / args.epochs) ** 2, a_min=0, a_max=1)
                 mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
 
-                loss = (1 - alpha_t) * loss + alpha_t * predict_loss + args.beta * torch.mean(-torch.log(mp))
+                loss = (1 - alpha_t) * loss + alpha_t * predict_loss + \
+                    args.beta * torch.mean(-torch.log(mp))
 
-            minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
+            minibatch_correct = float(
+                (predicted_one_labels.cpu() == label.cpu()).sum().item())
             minibatch_acc = minibatch_correct / len(predicted_one_labels)
             batch_accs.append(minibatch_acc)
 
@@ -255,15 +266,20 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 this_lr = args.lr
                 for param_group in optimizer.param_groups:
                     this_lr = min(param_group['lr'], this_lr)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
+                torch.nn.utils.clip_grad_norm_(
+                    model.parameters(), args.grad_clip)
 
                 if args.model == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
                     if isinstance(model, DistributedDataParallel):
-                        model.module.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
-                        orth_err['width%s' % width_mult] += model.module.get_orth_errors()
+                        # The key method to constrain the first two convolutions, perform after every SGD step
+                        model.module.step_ftdnn_layers()
+                        orth_err['width%s' %
+                                 width_mult] += model.module.get_orth_errors()
                     else:
-                        model.step_ftdnn_layers()  # The key method to constrain the first two convolutions, perform after every SGD step
-                        orth_err['width%s' % width_mult] += model.get_orth_errors()
+                        # The key method to constrain the first two convolutions, perform after every SGD step
+                        model.step_ftdnn_layers()
+                        orth_err['width%s' %
+                                 width_mult] += model.get_orth_errors()
 
             # optimizer.zero_grad()
             # loss.backward()
@@ -277,7 +293,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         if (batch_idx + 1) % args.log_interval == 0:
             # if (batch_idx + 1) % 500 == 0:
             #     break
-            epoch_str = 'Train Epoch {}: [ {:>5.1f}% ]'.format(epoch, 100. * batch_idx / len(train_loader))
+            epoch_str = 'Train Epoch {}: [ {:>5.1f}% ]'.format(
+                epoch, 100. * batch_idx / len(train_loader))
 
             # epoch_str += ' Width: {:.2f}'.format(width_mult)
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
@@ -300,7 +317,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             epoch_str += '   Loss: '
             for width_mult in FLAGS.width_mult_list:
-                epoch_str += '{:>7.4f} '.format(total_loss['width%s' % width_mult] / (batch_idx + 1))
+                epoch_str += '{:>7.4f} '.format(
+                    total_loss['width%s' % width_mult] / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
 
@@ -331,11 +349,13 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     for width_mult in FLAGS.width_mult_list:  # .25%:
         acc_str += '{:>6.2f} '.format(
             100 * float(correct['width%s' % width_mult]) / total_datasize['width%s' % width_mult])
-        loss_str += '{:>7.4f} '.format(total_loss['width%s' % width_mult] / len(train_loader))
+        loss_str += '{:>7.4f} '.format(total_loss['width%s' %
+                                       width_mult] / len(train_loader))
 
         if other_loss['width%s' % width_mult] != 0:
             add_other = True
-            other_str += '{:2.4f}'.format(other_loss['width%s' % width_mult] / len(train_loader))
+            other_str += '{:2.4f}'.format(
+                other_loss['width%s' % width_mult] / len(train_loader))
 
     this_epoch_str += acc_str + loss_str
     if add_other:
@@ -347,7 +367,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
         writer.add_scalar('Train/Accuracy' + wid_str,
                           correct['width%s' % width_mult] / total_datasize['width%s' % width_mult], epoch)
-        writer.add_scalar('Train/Loss' + wid_str, total_loss['width%s' % width_mult] / len(train_loader), epoch)
+        writer.add_scalar('Train/Loss' + wid_str,
+                          total_loss['width%s' % width_mult] / len(train_loader), epoch)
 
     torch.cuda.empty_cache()
 
@@ -398,7 +419,8 @@ def valid_class(valid_loader, model, ce, epoch):
                 elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'aDCF']:
                     loss = xe_criterion(classfier, label)
                 elif 'arcdist' in args.loss_type:
-                    loss_cent = args.loss_ratio * ce_criterion(classfier, label)
+                    loss_cent = args.loss_ratio * \
+                        ce_criterion(classfier, label)
                     if args.loss_lambda:
                         loss_cent = loss_cent * lambda_
 
@@ -412,19 +434,25 @@ def valid_class(valid_loader, model, ce, epoch):
                 if args.loss_type in ['subarc']:
                     predicted_labels = predicted_labels.max(dim=-1)[0]
                 predicted_one_labels = softmax(predicted_labels)
-                predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+                predicted_one_labels = torch.max(
+                    predicted_one_labels, dim=1)[1]
 
-                batch_correct = (predicted_one_labels.cuda() == label).sum().item()
+                batch_correct = (predicted_one_labels.cuda()
+                                 == label).sum().item()
                 correct['width%s' % width_mult] += batch_correct
-                total_datasize['width%s' % width_mult] += len(predicted_one_labels)
+                total_datasize['width%s' %
+                               width_mult] += len(predicted_one_labels)
 
     for width_mult in FLAGS.width_mult_list:
         wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
 
         valid_loss = total_loss['width%s' % width_mult] / len(valid_loader)
-        valid_accuracy = 100. * correct['width%s' % width_mult] / total_datasize['width%s' % width_mult]
+        valid_accuracy = 100. * \
+            correct['width%s' % width_mult] / \
+            total_datasize['width%s' % width_mult]
         writer.add_scalar('Train/Valid_Loss' + wid_str, valid_loss, epoch)
-        writer.add_scalar('Train/Valid_Accuracy' + wid_str, valid_accuracy, epoch)
+        writer.add_scalar('Train/Valid_Accuracy' +
+                          wid_str, valid_accuracy, epoch)
 
     torch.cuda.empty_cache()
 
@@ -436,11 +464,13 @@ def valid_class(valid_loader, model, ce, epoch):
     for width_mult in FLAGS.width_mult_list:  # .25%:
         acc_str += '{:>6.2f} '.format(
             100 * float(correct['width%s' % width_mult]) / total_datasize['width%s' % width_mult])
-        loss_str += '{:>7.4f} '.format(total_loss['width%s' % width_mult] / len(valid_loader))
+        loss_str += '{:>7.4f} '.format(total_loss['width%s' %
+                                       width_mult] / len(valid_loader))
 
         if other_loss['width%s' % width_mult] != 0:
             add_other = True
-            other_str += '{:2.4f}'.format(other_loss['width%s' % width_mult] / len(valid_loader))
+            other_str += '{:2.4f}'.format(
+                other_loss['width%s' % width_mult] / len(valid_loader))
 
     this_epoch_str += acc_str + loss_str
     if add_other:
@@ -460,46 +490,54 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     eer_threshold_dict = {}
     mindcf_01_dict = {}
     mindcf_001_dict = {}
-    mix_dict = {}
+    mix2_dict = {}
+    mix3_dict = {}
 
     test_str = '          \33[91mTest '
     eer_str = 'EER(%):       '
     threshold_str = '   Threshold: '
     mindcf_01_str = ' MinDcf-0.01: '
     mindcf_001_str = ' MinDcf-0.001: '
-    mix_str = ' Mix3: '
+    mix_str = ' Mix: '
     # global FLAGS
 
     for width_mult in FLAGS.width_mult_list:
         model.apply(lambda m: setattr(m, 'width_mult', width_mult))
         # FLAGS.width_mult = width_mult
 
-        this_xvector_dir = "%s/train/epoch_%s_width%s" % (xvector_dir, epoch, width_mult)
-        verification_extract(train_extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input, )
+        this_xvector_dir = "%s/train/epoch_%s_width%s" % (
+            xvector_dir, epoch, width_mult)
+        verification_extract(train_extract_loader, model,
+                             this_xvector_dir, epoch, test_input=args.test_input, )
         # verbose=1, )
 
         verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
                                          xvectors_dir=this_xvector_dir,
                                          loader=read_vec_flt)
-        verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **kwargs)
+        verify_loader = torch.utils.data.DataLoader(
+            verify_dir, batch_size=128, shuffle=False, **kwargs)
         eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
-                                                                      dist_type=('cos' if args.cos_sim else 'l2'),
+                                                                      dist_type=(
+                                                                          'cos' if args.cos_sim else 'l2'),
                                                                       log_interval=args.log_interval,
                                                                       xvector_dir=this_xvector_dir,
                                                                       epoch=epoch)
         mix3 = 100. * eer * mindcf_01 * mindcf_001
+        mix2 = 100. * eer * mindcf_001
 
         eer_dict['width%s' % width_mult] = eer
         eer_threshold_dict['width%s' % width_mult] = eer_threshold
         mindcf_01_dict['width%s' % width_mult] = mindcf_01
         mindcf_001_dict['width%s' % width_mult] = mindcf_001
-        mix_dict['width%s' % width_mult] = mix3
+        mix3_dict['width%s' % width_mult] = mix3
+        mix2_dict['width%s' % width_mult] = mix2
 
         eer_str += '{:>6.2f} '.format(100. * eer)
         threshold_str += '{:>7.4f} '.format(eer_threshold)
         mindcf_01_str += '{:.4f} '.format(mindcf_01)
         mindcf_001_str += '{:.4f} '.format(mindcf_001)
-        mix_str += '{:.4f} '.format(mix3)
+        mix_str += '{:.4f}, '.format(mix3)
+        mix_str += '{:.4f} '.format(mix2)
 
         wid_str = '' if width_mult == 1.0 else '_%s' % width_mult
         writer.add_scalar('Train/EER' + wid_str, 100. * eer, epoch)
@@ -507,8 +545,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
         writer.add_scalar('Train/mindcf-0.01' + wid_str, mindcf_01, epoch)
         writer.add_scalar('Train/mindcf-0.001' + wid_str, mindcf_001, epoch)
         writer.add_scalar('Train/mix3' + wid_str, mix3, epoch)
+        writer.add_scalar('Train/mix2' + wid_str, mix3, epoch)
 
-    test_str += eer_str + threshold_str + mindcf_01_str + mindcf_001_str + mix_str + '. \33[0m'
+    test_str += eer_str + threshold_str + mindcf_01_str + \
+        mindcf_001_str + mix_str + '. \33[0m'
     print(test_str)
     torch.cuda.empty_cache()
 
@@ -516,25 +556,30 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     eer_threshold = np.max([eer_threshold_dict[i] for i in eer_threshold_dict])
     mindcf_01 = np.min([mindcf_01_dict[i] for i in mindcf_01_dict])
     mindcf_001 = np.min([mindcf_001_dict[i] for i in mindcf_001_dict])
-    mix3 = np.min([mix_dict[i] for i in mix_dict])
+    mix3 = np.min([mix_dict3[i] for i in mix_dict3])
+    mix2 = np.min([mix_dict2[i] for i in mix_dict2])
 
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
-            'MinDCF_001': mindcf_001, 'mix3': mix3}
+            'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
 
 
 def test(model, epoch, writer, xvector_dir):
     this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
 
-    extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
-    verification_extract(extract_loader, model, this_xvector_dir, epoch, test_input=args.test_input)
+    extract_loader = torch.utils.data.DataLoader(
+        extract_dir, batch_size=1, shuffle=False, **extract_kwargs)
+    verification_extract(extract_loader, model,
+                         this_xvector_dir, epoch, test_input=args.test_input)
 
     verify_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials, xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False, **extract_kwargs)
+    verify_loader = torch.utils.data.DataLoader(
+        verify_dir, batch_size=128, shuffle=False, **extract_kwargs)
 
     # pdb.set_trace()
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
-                                                                  dist_type=('cos' if args.cos_sim else 'l2'),
+                                                                  dist_type=(
+                                                                      'cos' if args.cos_sim else 'l2'),
                                                                   log_interval=args.log_interval,
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
@@ -564,7 +609,8 @@ def main():
     # Simmable FLAGS
     global FLAGS
     if 'Slimmable' in args.model:
-        width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
+        width_mult_list = sorted(
+            [float(x) for x in args.width_mult_list.split(',')], reverse=True)
         FLAGS.width_mult_list = width_mult_list
         print('Slimmable width: ', width_mult_list)
     else:
@@ -576,12 +622,14 @@ def main():
 
     keys = list(model_kwargs.keys())
     keys.sort()
-    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    model_options = ["\'%s\': \'%s\'" % (
+        str(k), str(model_kwargs[k])) for k in keys]
     print('Model options: \n{ %s }' % (', '.join(model_options)))
     print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
-    model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
+    model_yaml_path = os.path.join(
+        args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     save_model_args(model_kwargs, model_yaml_path)
 
     start_epoch = 0
@@ -602,11 +650,13 @@ def main():
             checkpoint_state_dict = checkpoint['state_dict']
             if isinstance(checkpoint_state_dict, tuple):
                 checkpoint_state_dict = checkpoint_state_dict[0]
-            filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+            filtered = {k: v for k, v in checkpoint_state_dict.items(
+            ) if 'num_batches_tracked' not in k}
             if list(filtered.keys())[0].startswith('module'):
                 new_state_dict = OrderedDict()
                 for k, v in filtered.items():
-                    name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                    name = k[7:]
                     new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
 
                 model.load_state_dict(new_state_dict)
@@ -623,15 +673,20 @@ def main():
         xe_criterion = None
     elif args.loss_type == 'asoft':
         ce_criterion = None
-        xe_criterion = AngleSoftmaxLoss(lambda_min=args.lambda_min, lambda_max=args.lambda_max)
+        xe_criterion = AngleSoftmaxLoss(
+            lambda_min=args.lambda_min, lambda_max=args.lambda_max)
     elif args.loss_type == 'center':
-        xe_criterion = CenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+        xe_criterion = CenterLoss(
+            num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'variance':
-        xe_criterion = VarianceLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+        xe_criterion = VarianceLoss(
+            num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'gaussian':
-        xe_criterion = GaussianLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+        xe_criterion = GaussianLoss(
+            num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'coscenter':
-        xe_criterion = CenterCosLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
+        xe_criterion = CenterCosLoss(
+            num_classes=train_dir.num_spks, feat_dim=args.embedding_size)
     elif args.loss_type == 'mulcenter':
         xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=args.embedding_size,
                                        num_center=args.num_center)
@@ -683,30 +738,36 @@ def main():
         args.alpha = 0.0
     elif 'arcdist' in args.loss_type:
         ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.m)
-        xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
+        xe_criterion = ArcSoftmaxLoss(
+            margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
 
     model_para = [{'params': model.parameters()}]
     if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert args.lr_ratio > 0
-        model_para.append({'params': xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio})
+        model_para.append(
+            {'params': xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio})
 
     if args.finetune or args.second_wd > 0:
         # if args.loss_type in ['asoft', 'amsoft']:
         classifier_params = list(map(id, model.classifier.parameters()))
-        rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
+        rest_params = filter(lambda p: id(
+            p) not in classifier_params, model.parameters())
         init_lr = args.lr * args.lr_ratio if args.lr_ratio > 0 else args.lr
         init_wd = args.second_wd if args.second_wd > 0 else args.weight_decay
-        print('Set the lr and weight_decay of classifier to %f and %f' % (init_lr, init_wd))
+        print('Set the lr and weight_decay of classifier to %f and %f' %
+              (init_lr, init_wd))
         model_para = [{'params': rest_params},
                       {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
     if hasattr(model, 'filter_layer') and model.filter_layer != None:
         # args.filter in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down', 'wav2down']:
         filter_params = list(map(id, model.filter_layer.parameters()))
-        rest_params = filter(lambda p: id(p) not in filter_params, model_para[0]['params'])
+        rest_params = filter(lambda p: id(
+            p) not in filter_params, model_para[0]['params'])
         init_wd = args.filter_wd if args.filter_wd > 0 else args.weight_decay
         init_lr = args.lr * args.lr_ratio if args.lr_ratio > 0 else args.lr
-        print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
+        print('Set the lr and weight_decay of filter layer to %f and %f' %
+              (init_lr, init_wd))
         model_para[0]['params'] = rest_params
         model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
                            'weight_decay': init_wd})
@@ -714,6 +775,26 @@ def main():
     optimizer = create_optimizer(model_para, args.optimizer, **opt_kwargs)
     early_stopping_scheduler = EarlyStopping(patience=args.early_patience,
                                              min_delta=args.early_delta)
+    milestones = args.milestones.split(',')
+    milestones = [int(x) for x in milestones]
+    milestones.sort()
+    if args.scheduler == 'exp':
+        gamma = np.power(args.base_lr / args.lr, 1 /
+                         args.epochs) if args.gamma == 0 else args.gamma
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
+    elif args.scheduler == 'rop':
+        scheduler = lr_scheduler.ReduceLROnPlateau(
+            optimizer, patience=args.patience, min_lr=1e-5)
+    elif args.scheduler == 'cyclic':
+        cycle_momentum = False if args.optimizer == 'adam' else True
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr, max_lr=args.lr,
+                                          step_size_up=args.cyclic_epoch * int(
+                                              np.ceil(len(train_dir) / args.batch_size)),
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
+    else:
+        scheduler = lr_scheduler.MultiStepLR(
+            optimizer, milestones=milestones, gamma=0.1)
 
     if not args.finetune and args.resume:
         if os.path.isfile(args.resume):
@@ -724,13 +805,15 @@ def main():
             checkpoint_state_dict = checkpoint['state_dict']
             if isinstance(checkpoint_state_dict, tuple):
                 checkpoint_state_dict = checkpoint_state_dict[0]
-            filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+            filtered = {k: v for k, v in checkpoint_state_dict.items(
+            ) if 'num_batches_tracked' not in k}
 
             # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
             if list(filtered.keys())[0].startswith('module'):
                 new_state_dict = OrderedDict()
                 for k, v in filtered.items():
-                    name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                    name = k[7:]
                     new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
 
                 model.load_state_dict(new_state_dict)
@@ -738,6 +821,11 @@ def main():
                 model_dict = model.state_dict()
                 model_dict.update(filtered)
                 model.load_state_dict(model_dict)
+
+            if 'scheduler' in checkpoint:
+                scheduler.load_state_dict(checkpoint['scheduler'])
+            if 'optimizer' in optimizer:
+                optimizer.load_state_dict(checkpoint['optimizer'])
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
@@ -748,24 +836,7 @@ def main():
         f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
         f.write('Other Loss: ' + str(xe_criterion) + '\n')
         f.write('Optimizer: ' + str(optimizer) + '\n')
-
-    milestones = args.milestones.split(',')
-    milestones = [int(x) for x in milestones]
-    milestones.sort()
-    if args.scheduler == 'exp':
-        gamma = np.power(args.base_lr / args.lr, 1 / args.epochs) if args.gamma == 0 else args.gamma
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
-    elif args.scheduler == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
-    elif args.scheduler == 'cyclic':
-        cycle_momentum = False if args.optimizer == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr, max_lr=args.lr,
-                                          step_size_up=args.cyclic_epoch * int(
-                                              np.ceil(len(train_dir) / args.batch_size)),
-                                          cycle_momentum=cycle_momentum,
-                                          mode='triangular2')
-    else:
-        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
+        f.write('Scheduler: ' + str(scheduler) + '\n')
 
     ce = [ce_criterion, xe_criterion]
 
@@ -815,7 +886,8 @@ def main():
                                                      world_size=1)
             # if args.gain
             if 'Slimmable' in args.model:
-                model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
+                model = DistributedDataParallel(
+                    model.cuda(), find_unused_parameters=True)
             else:
                 model = DistributedDataParallel(model.cuda())
 
@@ -839,7 +911,8 @@ def main():
     try:
         for epoch in range(start, end):
             # pdb.set_trace()
-            lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(args.optimizer)
+            lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(
+                args.optimizer)
             this_lr = []
             for param_group in optimizer.param_groups:
                 this_lr.append(param_group['lr'])
@@ -852,7 +925,8 @@ def main():
             valid_loss = valid_class(valid_loader, model, ce, epoch)
             if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1)):
-                valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
+                valid_test_dict = valid_test(
+                    train_extract_loader, model, epoch, xvector_dir)
             else:
                 valid_test_dict = {}
 
@@ -860,23 +934,27 @@ def main():
             valid_test_result.append(valid_test_dict)
 
             if args.early_stopping:
-                early_stopping_scheduler(valid_test_dict[args.early_meta], epoch)
+                early_stopping_scheduler(
+                    valid_test_dict[args.early_meta], epoch)
                 if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
                     early_stopping_scheduler.early_stop = True
 
                 if args.scheduler != 'cyclic' and this_lr[0] <= 0.1 ** 3 * args.lr:
-                    if len(all_lr) > 10 and all_lr[-10] >= this_lr[0]:
+                    if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
             if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
                 model.eval()
-                check_path = '{}/checkpoint_{}.pth'.format(args.check_path, epoch)
+                check_path = '{}/checkpoint_{}.pth'.format(
+                    args.check_path, epoch)
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch,
                             'state_dict': model_state_dict,
-                            'criterion': ce}, check_path)
+                            'criterion': ce,
+                            'scheduler': scheduler.state_dict(),
+                            'optimizer': optimizer.state_dict()}, check_path)
 
                 if args.early_stopping:
                     pass
@@ -884,15 +962,22 @@ def main():
                     test(model, epoch, writer, xvector_dir)
 
             if early_stopping_scheduler.early_stop:
-                print('Best Epoch is %d:' % (early_stopping_scheduler.best_epoch))
+                print('Best Epoch is %d:' %
+                      (early_stopping_scheduler.best_epoch))
                 best_epoch = early_stopping_scheduler.best_epoch
                 best_res = valid_test_result[int(best_epoch - 1)]
 
-                best_str = 'EER(%):       ' + '{:>6.2f} '.format(best_res['EER'])
-                best_str += '   Threshold: ' + '{:>7.4f} '.format(best_res['Threshold'])
-                best_str += ' MinDcf-0.01: ' + '{:.4f} '.format(best_res['MinDCF_01'])
-                best_str += ' MinDcf-0.001: ' + '{:.4f} '.format(best_res['MinDCF_001'])
-                best_str += ' Mix3: ' + '{:.4f}\n'.format(best_res['mix3'])
+                best_str = 'EER(%):       ' + \
+                    '{:>6.2f} '.format(best_res['EER'])
+                best_str += '   Threshold: ' + \
+                    '{:>7.4f} '.format(best_res['Threshold'])
+                best_str += ' MinDcf-0.01: ' + \
+                    '{:.4f} '.format(best_res['MinDCF_01'])
+                best_str += ' MinDcf-0.001: ' + \
+                    '{:.4f} '.format(best_res['MinDCF_001'])
+                best_str += ' Mix: ' + \
+                    '{:.4f}, {:.4f}\n'.format(
+                        best_res['mix3'], best_res['mix2'])
 
                 print(best_str)
 
@@ -917,7 +1002,8 @@ def main():
     writer.close()
     stop_time = time.time()
     t = float(stop_time - start_time)
-    print("Running %.4f minutes for each epoch.\n" % (t / 60 / (max(end - start, 1))))
+    print("Running %.4f minutes for each epoch.\n" %
+          (t / 60 / (max(end - start, 1))))
     exit(0)
 
 

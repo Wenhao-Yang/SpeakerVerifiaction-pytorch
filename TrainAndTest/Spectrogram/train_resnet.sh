@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=60
+stage=70
 
 waited=0
 while [ $(ps 182247 | wc -l) -eq 2 ]; do
@@ -656,6 +656,74 @@ if [ $stage -le 62 ]; then
     CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417425 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet34.yaml --seed=${seed}
 
 #    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet_mixup.yaml --seed=${seed}
+  done
+  exit
+fi
+
+if [ $stage -le 70 ]; then
+  datasets=aishell2 testset=aishell2
+  model=ThinResNet resnet_size=18
+  encoder_type=SAP2
+  alpha=0
+  block_type=basic red_ratio=2 expansion=4
+  embedding_size=256
+  input_norm=Mean batch_size=128 input_dim=161
+  loss=arcsoft
+  feat_type=klsp
+  sname=dev
+
+  mask_layer=rvec
+  scheduler=rop optimizer=sgd
+  fast=none1
+  downsample=k1 chn=16
+  avg_size=5
+  seed=123456
+
+  for resnet_size in 34 ; do
+  for seed in 123456 123457 123458; do 
+    if [ $chn -eq 16 ]; then
+      channels=16,32,64,128
+      chn_str=
+    elif [ $chn -eq 32 ]; then
+      channels=32,64,128,256
+      chn_str=chn32_
+    elif [ $chn -eq 64 ]; then
+      channels=64,128,256,512
+      chn_str=chn64_
+    fi
+
+    echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_varesmix2_bashuf2/${seed}
+    # _exp${expansion}
+    python TrainAndTest/train_egs.py \
+      --model ${model} --resnet-size ${resnet_size} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
+      --train-trials trials \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
+      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test \
+      --feat-format kaldi --nj 4 --batch-size ${batch_size} --shuffle --batch-shuffle \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
+      --epochs 80 --random-chunk 200 400 \
+      --optimizer ${optimizer} --scheduler ${scheduler} \
+      --early-stopping --early-patience 15 --early-delta 0.01 --early-meta mix2 \
+      --patience 2 --accu-steps 1 \
+      --lr 0.1 --base-lr 0.000001 --milestones 10,20,40,50 \
+      --kernel-size 5,5 --stride 2 --fast ${fast} \
+      --channels ${channels} \
+      --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} --expansion ${expansion} \
+      --time-dim 1 --avg-size ${avg_size} \
+      --alpha ${alpha} --dropout-p 0.1 \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
+      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
+      --check-path Data/checkpoint/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_13.pth \
+      --grad-clip 0 --lr-ratio 0.01 \
+      --weight-decay 0.00001 \
+      --gpu-id 0 \
+      --extract --num-valid 2 \
+      --cos-sim
+  done
   done
   exit
 fi
