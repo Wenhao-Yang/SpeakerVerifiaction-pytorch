@@ -317,7 +317,7 @@ if [ $stage -le 41 ]; then
   avg_size=5
   fast=none1
 
-  for model in ThinResNet RepeatResNet; do
+  for model in RepeatResNet; do
   for resnet_size in 18; do
   for seed in 123456 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"

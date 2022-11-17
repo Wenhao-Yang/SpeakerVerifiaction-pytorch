@@ -1630,7 +1630,7 @@ class RepeatResNet(nn.Module):
             group3 = self.mixup(group3, proser, lamda_beta)
 
         group4 = self.layer4(group3)
-        group4 = self.layer4(group4)
+        # group4 = self.layer4(group4)
         if proser != None and layer_mix == 6:
             group4 = self.mixup(group4, proser, lamda_beta)
 
