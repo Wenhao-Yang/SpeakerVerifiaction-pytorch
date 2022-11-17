@@ -667,7 +667,7 @@ if [ $stage -le 70 ]; then
   alpha=0
   block_type=basic red_ratio=2 expansion=1
   embedding_size=256
-  input_norm=Mean batch_size=128 input_dim=161
+  input_norm=Mean batch_size=256 input_dim=161
   loss=arcsoft
   feat_type=klsp
   sname=dev
