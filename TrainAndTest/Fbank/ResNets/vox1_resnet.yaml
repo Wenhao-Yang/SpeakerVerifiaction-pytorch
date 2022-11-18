@@ -75,7 +75,7 @@ kernel_size:
 alpha: 0
 avg_size: 5
 embedding_size: 256
-batch_size: 128
+batch_size: 256
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
@@ -90,9 +90,9 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   red_ratio: !ref <red_ratio>
   fast: !ref <fast>
   alpha: !ref <alpha>
-  kernel_size: [3, 3]
-  stride: [1, 1]
-  channels: [32, 64, 128, 256]
+  kernel_size: [7, 7]
+  stride: [2, 1]
+  channels: [16, 32, 64, 128]
   dropout_p: !ref <dropout_p>
   avg_size: !ref <avg_size>
   encoder_type: !ref <encoder_type>
@@ -123,7 +123,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde4_varesmix2_bashuf2_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_varesmix2_bashuf2_dist
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/123456/checkpoint_17.pth
