@@ -305,7 +305,7 @@ if [ $stage -le 41 ]; then
   alpha=0
   input_norm=Mean
   mask_layer=baseline
-  scheduler=rop optimizer=adam
+  scheduler=rop optimizer=sgd
   input_dim=80
   batch_size=256
   power_weight=max
@@ -319,7 +319,7 @@ if [ $stage -le 41 ]; then
 
   for model in ThinResNet; do
   for resnet_size in 34; do
-  for seed in 123456 ; do
+  for seed in 123456 123457 123458; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
     weight=vox2_rcf
@@ -368,9 +368,9 @@ if [ $stage -le 41 ]; then
       --feat-format kaldi --nj 6 \
       --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
-      --epochs 4 --batch-size ${batch_size} \
+      --epochs 60 --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
-      --lr 0.001 --base-lr 0.00000001 \
+      --lr 0.1 --base-lr 0.000001 \
       --patience 3 --milestones 10,20,30,40 \
       --early-stopping --early-patience 2 --early-delta 0.01 --early-meta mix2 \
       --check-path Data/checkpoint/${model_dir} \
