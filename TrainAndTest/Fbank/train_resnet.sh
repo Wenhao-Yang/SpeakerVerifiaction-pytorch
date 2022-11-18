@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=41  # skip to stage x
+stage=300  # skip to stage x
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -539,9 +539,8 @@ if [ $stage -le 42 ]; then
       --channels 16,32,64,128 \
       --fast none1 --stride 2,1 \
       --block-type ${block_type} \
-      --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size 5 \
-      --encoder-type ${encoder_type} \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
       --num-valid 2 \
       --alpha ${alpha} \
       --margin 0.2 --s 30 --all-iteraion 0 \
@@ -604,8 +603,7 @@ if [ $stage -le 50 ]; then
       --random-chunk 200 400 \
       --input-norm ${input_norm} \
       --resnet-size ${resnet_size} \
-      --nj 8 \
-      --epochs 50 \
+      --nj 8 --epochs 50 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.000006 \
@@ -639,15 +637,11 @@ fi
 
 if [ $stage -le 100 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=cnceleb
-  testset=cnceleb
+  datasets=cnceleb testset=cnceleb
   feat_type=klfb
-  model=ThinResNet
-  resnet_size=50
-  encoder_type=SAP2
-  embedding_size=512
-  block_type=se2block
-  downsample=k3
+  model=ThinResNet resnet_size=50
+  encoder_type=SAP2 embedding_size=512
+  block_type=se2block downsample=k3
   kernel=5,5
 
   alpha=0
@@ -670,7 +664,7 @@ if [ $stage -le 100 ]; then
   for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
-       --model ${model} \
+       --model ${model} --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev${subset}_1p9_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
        --train-trials trials_2w \
@@ -681,14 +675,11 @@ if [ $stage -le 100 ]; then
        --random-chunk 200 400 \
        --patience 3 \
        --input-norm ${input_norm} \
-       --resnet-size ${resnet_size} \
        --nj 8 \
        --epochs 60 \
        --batch-size ${batch_size} \
-       --optimizer ${optimizer} \
-       --scheduler ${scheduler} \
-       --lr 0.1 \
-       --base-lr 0.000006 \
+       --optimizer ${optimizer} --scheduler ${scheduler} \
+       --lr 0.1 --base-lr 0.000006 \
        --mask-layer ${mask_layer} \
        --milestones 10,20,30,40,50 \
        --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs${subset}1p9_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e5_var \
@@ -700,8 +691,7 @@ if [ $stage -le 100 ]; then
        --stride 2,1 \
        --block-type ${block_type} \
        --embedding-size ${embedding_size} \
-       --time-dim 1 \
-       --avg-size 5 \
+       --time-dim 1 --avg-size 5 \
        --encoder-type ${encoder_type} \
        --num-valid 2 \
        --alpha ${alpha} \
@@ -819,29 +809,22 @@ fi
 
 if [ $stage -le 101 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=cnceleb
-  testset=cnceleb
+  datasets=cnceleb testset=cnceleb
   feat_type=klfb
-  model=ThinResNet
-  resnet_size=34
-  encoder_type=SAP2
-  embedding_size=512
-  block_type=basic
-  downsample=k3
+  model=ThinResNet resnet_size=34
+  encoder_type=SAP2 embedding_size=512
+  block_type=basic downsample=k3
   kernel=5,5
   loss=arcdist
 
   alpha=0
   input_norm=Mean
 #  mask_layer=None
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=384
   fast=none1
-  mask_layer=baseline
-  weight=vox2_rcf
-  scale=0.2
+  mask_layer=baseline weight=vox2_rcf scale=0.2
   subset=
   stat_type=maxmargin
   loss_ratio=0
@@ -850,11 +833,9 @@ if [ $stage -le 101 ]; then
 
   for loss in angleproto ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-
+    loss_str=
     if [ "$loss" == "arcdist" ];then
       loss_str=_${stat_type}lr${loss_ratio}
-    else
-      loss_str=
     fi
 
     if [ $chn -eq 16 ]; then
@@ -1198,8 +1179,8 @@ if [ $stage -le 300 ]; then
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 #   CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet.yaml --seed=${seed}
-  CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_mixup.yaml --seed=${seed}
-
+  # CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_mixup.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=1 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet.yaml --seed=${seed}
 #   CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet_mixup.yaml --seed=${seed}
 
 #     CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417440 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox2_resnet.yaml --seed=${seed}
