@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=44
+stage=45
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -667,6 +667,30 @@ if [ $stage -le 44 ]; then
   exit
 fi
 
+if [ $stage -le 45 ]; then
+  model=ThinResNet
+  datasets=vox1
+  feat_type=klfb
+  loss=arcsoft
+  encod=SAP2
+  embedding_size=256
+  input_dim=40 input_norm=Mean
+  lr_ratio=0 loss_ratio=10
+  subset=
+  activation=leakyrelu
+  scheduler=rop optimizer=adam
+  stat_type=margin1 #margin1sum
+  m=1.0
+
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+ for seed in 123456 123457 123458 ; do
+   echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+  #  CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_mixup.yaml --seed=${seed}
+
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet.yaml --seed=${seed}
+  done
+  exit
+fi
 
 if [ $stage -le 100 ]; then
   datasets=cnceleb testset=cnceleb
