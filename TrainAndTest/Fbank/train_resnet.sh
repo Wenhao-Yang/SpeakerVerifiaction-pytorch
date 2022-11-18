@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300  # skip to stage x
+stage=41  # skip to stage x
 waited=0
 while [ `ps 363170 | wc -l` -eq 2 ]; do
   sleep 60
@@ -299,14 +299,14 @@ if [ $stage -le 41 ]; then
   batch_size=256
   model=ThinResNet resnet_size=18
   encoder_type=SAP2 embedding_size=256
-  block_type=basic downsample=k1 red_ratio=2
-  kernel=5,5
+  block_type=seblock downsample=k1 red_ratio=2
+  kernel=7,7
   loss=arcsoft
   alpha=0
   input_norm=Mean
   mask_layer=baseline
   scheduler=rop optimizer=adam
-  input_dim=40
+  input_dim=80
   batch_size=256
   power_weight=max
 
@@ -317,8 +317,8 @@ if [ $stage -le 41 ]; then
   avg_size=5
   fast=none1
 
-  for model in RepeatResNet ThinResNet; do
-  for resnet_size in 18; do
+  for model in ThinResNet; do
+  for resnet_size in 34; do
   for seed in 123456 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     mask_layer=baseline
@@ -354,7 +354,7 @@ if [ $stage -le 41 ]; then
     elif [ "$mask_layer" = "both" ];then
       at_str=_`echo $mask_len | sed  's/,//g'`      
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2_repeat/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_varesmix2_bashuf2/${seed}
     #
 #
     python TrainAndTest/train_egs.py \
@@ -372,12 +372,12 @@ if [ $stage -le 41 ]; then
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.001 --base-lr 0.00000001 \
       --patience 3 --milestones 10,20,30,40 \
-      --early-stopping --early-patience 2 --early-delta 0.01 --early-meta EER \
+      --early-stopping --early-patience 2 --early-delta 0.01 --early-meta mix2 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --mask-layer ${mask_layer} \
-      --kernel-size ${kernel} --channels ${channels} \
-      --downsample ${downsample} --fast ${fast} --stride 2,1 \
+      --kernel-size ${kernel} --channels ${channels} --stride 2,1 \
+      --downsample ${downsample} --fast ${fast} \
       --block-type ${block_type} --red-ratio ${red_ratio} --expansion ${expansion} \
       --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size ${avg_size} --encoder-type ${encoder_type} \
@@ -386,7 +386,7 @@ if [ $stage -le 41 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0001 \
       --dropout-p 0.1 \
-      --gpu-id 1 \
+      --gpu-id 0 \
       --extract --cos-sim \
       --remove-vad
   done
