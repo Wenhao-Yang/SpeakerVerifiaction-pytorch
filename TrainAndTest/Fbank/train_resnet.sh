@@ -534,29 +534,23 @@ fi
 
 if [ $stage -le 43 ]; then
 #  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=aidata
-  feat_type=klfb
-  model=ThinResNet
-  resnet_size=18
-  encoder_type=ASTP2
-  embedding_size=256
-  block_type=seblock
+  datasets=aidata feat_type=klfb
+  model=ThinResNet resnet_size=18
+  encoder_type=ASTP2 embedding_size=256
+  block_type=seblock red_ratio=2 expansion=4
   downsample=k1
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
   mask_layer=baseline
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=256
   power_weight=max
 
-  expansion=4
   chn=16
   cyclic_epoch=8
-  red_ratio=2
   avg_size=5
   fast=none1
   lamda_beta=0.2
@@ -687,7 +681,7 @@ if [ $stage -le 45 ]; then
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
   #  CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_mixup.yaml --seed=${seed}
 
-   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet.yaml --seed=${seed}
+   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet.yaml --seed=${seed}
   done
   exit
 fi
