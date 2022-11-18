@@ -28,7 +28,7 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [200, 400]
+random_chunk: [200, 200]
 chunk_size: 300
 frame_shift: 300
 extract: True
@@ -123,7 +123,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde4_varesmix2_bashuf2_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde4_2sesmix2_bashuf2_dist
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/123456/checkpoint_17.pth
