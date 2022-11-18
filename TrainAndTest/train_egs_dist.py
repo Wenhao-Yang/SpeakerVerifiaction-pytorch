@@ -30,6 +30,7 @@ import torchvision.transforms as transforms
 import warnings
 from hyperpyyaml import load_hyperpyyaml
 from kaldi_io import read_vec_flt, read_mat
+from kaldiio import load_mat
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.nn.parallel import DistributedDataParallel
