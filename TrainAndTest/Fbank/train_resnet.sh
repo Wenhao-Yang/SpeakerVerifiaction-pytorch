@@ -372,7 +372,7 @@ if [ $stage -le 41 ]; then
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.000001 \
       --patience 3 --milestones 10,20,30,40 \
-      --early-stopping --early-patience 2 --early-delta 0.01 --early-meta mix2 \
+      --early-stopping --early-patience 15 --early-delta 0.01 --early-meta mix2 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --mask-layer ${mask_layer} \
