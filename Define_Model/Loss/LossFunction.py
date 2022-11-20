@@ -731,23 +731,23 @@ class AttentionTransferLoss(nn.Module):
                 # loss += (self.min_max(s_map.mean(dim=3, keepdim=True)) - self.min_max(
                 #     t_map.mean(dim=3, keepdim=True))).pow(2).mean()
 
-                loss += (s_map.mean(dim=2, keepdim=True) -
-                         t_map.mean(dim=2, keepdim=True)).pow(2).mean()
-                loss += (s_map.mean(dim=3, keepdim=True) -
-                         t_map.mean(dim=3, keepdim=True)).pow(2).mean()
+                loss += (self.normalize(s_map.mean(dim=2, keepdim=True)) -
+                         self.normalize(t_map.mean(dim=2, keepdim=True))).pow(2).mean()
+                loss += (self.normalize(s_map.mean(dim=3, keepdim=True)) -
+                         self.normalize(t_map.mean(dim=3, keepdim=True))).pow(2).mean()
 
                 loss = loss / 2
 
             elif self.attention_type == 'time':
                 # loss += (self.min_max(s_map.mean(dim=3, keepdim=True)) - self.min_max(
                 #     t_map.mean(dim=3, keepdim=True))).pow(2).mean()
-                loss += (s_map.mean(dim=3, keepdim=True) -
-                         t_map.mean(dim=3, keepdim=True)).pow(2).mean()
+                loss += (self.normalize(s_map.mean(dim=3, keepdim=True)) -
+                         self.normalize(t_map.mean(dim=3, keepdim=True))).pow(2).mean()
 
             elif self.attention_type == 'freq':
                 # loss += (self.min_max(s_map.mean(dim=2, keepdim=True)) - self.min_max(
                 #     t_map.mean(dim=2, keepdim=True))).pow(2).mean()
-                loss += (s_map.mean(dim=2, keepdim=True) -
-                         t_map.mean(dim=2, keepdim=True)).pow(2).mean()
+                loss += (self.normalize(s_map.mean(dim=2, keepdim=True)) -
+                         self.normalize(t_map.mean(dim=2, keepdim=True))).pow(2).mean()
 
         return loss
