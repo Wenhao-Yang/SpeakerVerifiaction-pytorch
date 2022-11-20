@@ -362,25 +362,18 @@ fi
 
 
 if [ $stage -le 41 ]; then
-  lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
-  datasets=aidata
-  feat_type=klfb
-  model=ThinResNet
-  resnet_size=34
-  encoder_type=ASTP2
-  embedding_size=256
-  block_type=seblock
-  red_ratio=2
+  datasets=aidata feat_type=klfb
+  model=ThinResNet resnet_size=34
+  encoder_type=ASTP2 embedding_size=256
+  block_type=seblock red_ratio=2
   kernel=5,5
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   input_dim=40
 
-  mask_layer=baseline
-  weight=vox2_rcf
+  mask_layer=baseline weight=vox2_rcf
   chn=16
   sname=dev
   downsample=k1
@@ -389,19 +382,17 @@ if [ $stage -le 41 ]; then
   fast=none1
 
   avg_size=5
-  weight_p=0
-  scale=0.2
+  weight_p=0 scale=0.2
+  batch_size=256
 
   for resnet_size in 34 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     for seed in 123456 123457 123458 ;do
     if [ $resnet_size -le 34 ];then
       expansion=1
-      batch_size=256
       exp_str=
     else
       expansion=2
-      batch_size=256
       exp_str=_exp${expansion}
     fi
 

@@ -2011,7 +2011,7 @@ fi
 
 
 if [ $stage -le 200 ]; then
-  model=ThinResNet resnet_size=18
+  model=ThinResNet resnet_size=10
   feat_type=klsp feat=log
   loss=arcsoft
   alpha=0
@@ -2029,7 +2029,7 @@ if [ $stage -le 200 ]; then
   weight_norm=mean
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for mask_layer in attention ; do
+  for mask_layer in rvec ; do
     for seed in 123456 123457 123458;do
       for test_subset in test ; do
         at_str=
