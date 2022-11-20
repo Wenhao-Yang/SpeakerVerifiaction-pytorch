@@ -355,7 +355,7 @@ if [ $stage -le 20 ]; then
   nj=8
   chn=16
   fast=none1
-  avg_size=5
+  avg_size=5 dp_str=01 dp=0.1
   batch_size=256
 
   teacher_dir=Data/checkpoint/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk3_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_vares_bashuf/123457
@@ -364,8 +364,6 @@ if [ $stage -le 20 ]; then
   kd_type=attention #em_l2 vanilla
   kd_ratio=1000
   kd_loss=
-  dp_str=01
-  dp=0.1
 
   attention_type=both
   norm_type=input_mean

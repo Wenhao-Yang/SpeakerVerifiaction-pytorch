@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=202
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2211,21 +2211,18 @@ fi
 
 
 if [ $stage -le 202 ]; then
-  feat_type=klfb
+  feat_type=klfb feat=log
   model=ThinResNet
-  feat=log
   loss=arcsoft
   scheduler=rop optimizer=sgd
   input_dim=40 input_norm=Mean
 
-  encoder_type=ASTP2
+  encoder_type=ASTP2 embedding_size=256
   alpha=0
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
 #  test_subset=
-  block_type=seblock
+  block_type=seblock red_ratio=2
 #  encoder_type=None
-  embedding_size=256
 #  resnet_size=18 10
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
@@ -2233,22 +2230,26 @@ if [ $stage -le 202 ]; then
   test_subset=test
   mask_layer=baseline
   dp=0.1
-  red_ratio=2
   avg_size=5
   fast=none1
   chn=16
+  batch_size=256
+
+  kd_type=attention #em_l2 vanilla
+  kd_ratio=1000
+  kd_loss=
+
+  attention_type=both norm_type=input
 #        --downsample ${downsample} \
 #      --trials trials_20w \
-  for resnet_size in 50;do
+  for resnet_size in 10 ;do
         echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
   for seed in 123456 123457 123458 ; do
   for testset in vox1 ; do
     if [ $resnet_size -le 34 ];then
       expansion=1
-      batch_size=256
     else
       expansion=2
-      batch_size=256
     fi
 
     if [ $expansion -eq 1 ]; then
@@ -2268,12 +2269,11 @@ if [ $stage -le 202 ]; then
       chn_str=chn64_
     fi
 
+    at_str=
     if [[ $mask_layer == attention* ]];then
       at_str=_${weight}
     elif [ "$mask_layer" = "drop" ];then
       at_str=_${weight}_dp${weight_p}s${scale}
-    else
-      at_str=
     fi
 
     if [ $dp = 0.25 ];then
@@ -2286,7 +2286,20 @@ if [ $stage -le 202 ]; then
       dp_str=01
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf/${seed}
+    if [[ $kd_type == attention ]];then
+      kd_ratio=1000
+      if [[ $norm_type == input ]]; then
+        kd_str=_${kd_type}${kd_ratio}${kd_loss}
+      else
+#          kd_ratio=40
+        kd_str=_${kd_type}${kd_ratio}${kd_loss}_${attention_type}_${norm_type}
+      fi
+    else
+      kd_ratio=0.4
+      kd_str=_${kd_type}${kd_ratio}${kd_loss}
+    fi
+
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_var${kd_str}_bashuf/${seed}
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
