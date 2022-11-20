@@ -368,10 +368,10 @@ if [ $stage -le 20 ]; then
   attention_type=both
   norm_type=input_mean
 #  _${weight}
-  for attention_type in both ; do
-  for norm_type in input ; do
+  for attention_type in freq time ; do
+  for norm_type in feat ; do
   for chn in 16 ; do
-  for seed in 123457 123458 ; do
+  for seed in 123456 123457 123458 ; do
 
     if [ $resnet_size -le 34 ];then
       expansion=1
