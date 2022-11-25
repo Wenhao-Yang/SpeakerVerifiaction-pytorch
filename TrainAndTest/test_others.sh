@@ -2239,11 +2239,12 @@ if [ $stage -le 202 ]; then
   kd_ratio=1000
   kd_loss=
 
-  attention_type=both norm_type=input
+  attention_type=both norm_type=feat
 #        --downsample ${downsample} \
 #      --trials trials_20w \
   for resnet_size in 10 ;do
         echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+  for attention_type in freq time ; do
   for seed in 123456 123457 123458 ; do
   for testset in vox1 ; do
     if [ $resnet_size -le 34 ];then
@@ -2326,6 +2327,7 @@ if [ $stage -le 202 ]; then
       --remove-vad --test-input var \
       --verbose 0 \
       --cos-sim
+  done
   done
   done
   done
