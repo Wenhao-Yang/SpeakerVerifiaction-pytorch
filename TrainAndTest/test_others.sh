@@ -1282,8 +1282,7 @@ if [ $stage -le 83 ]; then
 #      --context 5,3,3,5 \
 #      --nj 12 \
 #      --alpha 0 \
-#      --margin 0.15 \
-#      --s 30 \
+#      --margin 0.15 --s 30 \
 #      --stride 1 \
 #      --block-type ${block_type} \
 #      --embedding-size ${embedding_size} \
@@ -1352,8 +1351,7 @@ if [ $stage -le 83 ]; then
       --context 5,3,3,5 \
       --nj 12 \
       --alpha 0 \
-      --margin 0.15 \
-      --s 30 \
+      --margin 0.15 --s 30 \
       --stride 1 \
       --block-type ${block_type} \
       --embedding-size ${embedding_size} \
@@ -2670,15 +2668,15 @@ fi
 
 if [ $stage -le 301 ]; then
   model=ThinResNet resnet_size=34
-  input_dim=80 feat_type=klfb
+  input_dim=40 feat_type=klfb
   feat=fb${input_dim}
   input_norm=Mean
   loss=arcsoft
 
 #  encoder_type=SAP2 embedding_size=512
-  encoder_type=SAP2 embedding_size=256
-  block_type=seblock downsample=k1 red_ratio=2
-  kernel=7,7 fast=none1
+  encoder_type=ASTP2 embedding_size=256
+  block_type=seblock downsample=k3 red_ratio=2
+  kernel=5,5 fast=none1
   loss=arcsoft
   alpha=0
 
@@ -2697,12 +2695,15 @@ if [ $stage -le 301 ]; then
 
 #--score-norm as-norm --n-train-snts 100000 --cohort-size 5000 \
 #     --vad-select \
+
 for seed in 123456 123457 123458; do
   for s in all; do
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 #    model_dir=ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es
     # model_dir=ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_vares_bashuf2_dist_mani234_lamda2.0/123456
-    model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
+    # model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
+
+     model_dir=ThinResNet10/vox1/klfb_egs_kd_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk3_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_var_attention1000_time_feat_bashuf/${seed}
 
    python -W ignore TrainAndTest/test_egs.py \
      --model ${model} --resnet-size ${resnet_size} \
