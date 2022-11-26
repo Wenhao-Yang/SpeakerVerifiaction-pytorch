@@ -2667,7 +2667,7 @@ if [ $stage -le 300 ]; then
 fi
 
 if [ $stage -le 301 ]; then
-  model=ThinResNet resnet_size=34
+  model=ThinResNet resnet_size=10
   input_dim=40 feat_type=klfb
   feat=fb${input_dim}
   input_norm=Mean
