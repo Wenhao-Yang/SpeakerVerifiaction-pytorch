@@ -2674,9 +2674,9 @@ if [ $stage -le 301 ]; then
   loss=arcsoft
 
 #  encoder_type=SAP2 embedding_size=512
-  encoder_type=ASTP2 embedding_size=256
-  block_type=seblock downsample=k3 red_ratio=2
-  kernel=5,5 fast=none1
+  encoder_type=SAP2 embedding_size=256
+  block_type=seblock downsample=k1 red_ratio=2
+  kernel=7,7 fast=none1
   loss=arcsoft
   alpha=0
 
