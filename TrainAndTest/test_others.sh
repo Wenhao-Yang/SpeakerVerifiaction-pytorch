@@ -2668,7 +2668,7 @@ fi
 
 if [ $stage -le 301 ]; then
   model=ThinResNet resnet_size=10
-  input_dim=40 feat_type=klfb
+  input_dim=80 feat_type=klfb
   feat=fb${input_dim}
   input_norm=Mean
   loss=arcsoft
@@ -2704,7 +2704,8 @@ for seed in 123456 123457 123458; do
     # model_dir=ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_vares_bashuf2_dist_mani234_lamda2.0/123456
     # model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
 
-     model_dir=ThinResNet10/vox1/klfb_egs_kd_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk3_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_var_attention1000_time_feat_bashuf/${seed}
+    #  model_dir=ThinResNet10/vox1/klfb80_egs_kd_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk3_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_var_attention1000_time_feat_bashuf/${seed}
+     model_dir=ThinResNet10/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
 
    python -W ignore TrainAndTest/test_egs.py \
      --model ${model} --resnet-size ${resnet_size} \
