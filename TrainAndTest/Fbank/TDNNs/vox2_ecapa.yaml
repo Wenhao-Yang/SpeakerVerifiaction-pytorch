@@ -41,7 +41,7 @@ remove_vad: True
 epochs: 60
 
 # optimizer
-optimizer: sgd
+optimizer: adam
 lr: 0.001
 base_lr: 0.00000001
 lr_decay: 0
@@ -57,7 +57,7 @@ early_delta: 0.01
 early_meta: "mix2"
 
 # Scheduler
-scheduler: adam
+scheduler: cyclic
 patience: 2
 milestones: [10, 20, 30, 40]
 cyclic_epoch: 4
