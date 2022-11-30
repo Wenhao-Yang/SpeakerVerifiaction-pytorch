@@ -13,7 +13,7 @@ datasets: vox1
 testset: vox1
 feat_type: klfb
 loss: arcsoft
-input_dim: 80
+input_dim: 40
 feat: !ref fb<input_dim>
 subset: ""
 
@@ -28,7 +28,7 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [200, 200]
+random_chunk: [200, 400]
 chunk_size: 300
 frame_shift: 300
 extract: True
@@ -43,9 +43,9 @@ remove_vad: True
 epochs: 60
 
 # optimizer
-optimizer: adam
+optimizer: sgd
 lr_decay: 0
-weight_decay: 0.0001
+weight_decay: 0.0005
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -55,7 +55,7 @@ accu_steps: 1
 patience: 3
 milestones: [10, 20, 30, 40]
 scheduler: rop
-lr: 0.001
+lr: 0.1
 base_lr: 0.00001
 cos_sim: True
 
@@ -68,14 +68,14 @@ early_meta: "mix2"
 resnet_size: 34
 block_type: "seblock"
 red_ratio: 2
-encoder_type: "SAP2"
-downsample: "k1"
+encoder_type: "ASTP2"
+downsample: "k3"
 model: ThinResNet
 kernel_size:
 alpha: 0
-avg_size: 5
+avg_size: 2
 embedding_size: 256
-batch_size: 64
+batch_size: 256
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
@@ -90,8 +90,8 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   red_ratio: !ref <red_ratio>
   fast: !ref <fast>
   alpha: !ref <alpha>
-  kernel_size: [3, 3]
-  stride: [1, 1]
+  kernel_size: [5, 5]
+  stride: [2, 1]
   channels: [32, 64, 128, 256]
   dropout_p: !ref <dropout_p>
   avg_size: !ref <avg_size>
@@ -123,7 +123,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde4_2sesmix2_bashuf2_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wd5e4_2sesmix2_bashuf2_dist
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/123456/checkpoint_17.pth
