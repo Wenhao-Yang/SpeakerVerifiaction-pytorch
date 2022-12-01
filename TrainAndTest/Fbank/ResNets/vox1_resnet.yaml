@@ -79,7 +79,7 @@ batch_size: 128
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
-fast: none
+fast: none1
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
