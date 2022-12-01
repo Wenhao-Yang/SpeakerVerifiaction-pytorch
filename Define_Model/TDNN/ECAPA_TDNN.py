@@ -38,7 +38,8 @@ class Res2Conv1dReluBn(nn.Module):
         self.convs = []
         self.bns = []
         for i in range(self.nums):
-            self.convs.append(nn.Conv1d(self.width, self.width, kernel_size, stride, padding, dilation, bias=bias))
+            self.convs.append(nn.Conv1d(self.width, self.width,
+                              kernel_size, stride, padding, dilation, bias=bias))
             self.bns.append(nn.BatchNorm1d(self.width))
         self.convs = nn.ModuleList(self.convs)
         self.bns = nn.ModuleList(self.bns)
@@ -68,7 +69,8 @@ class Res2Conv1dReluBn(nn.Module):
 class Conv1dReluBn(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=True):
         super().__init__()
-        self.conv = nn.Conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation, bias=bias)
+        self.conv = nn.Conv1d(in_channels, out_channels,
+                              kernel_size, stride, padding, dilation, bias=bias)
         self.bn = nn.BatchNorm1d(out_channels)
 
     def forward(self, x):
@@ -102,7 +104,8 @@ class SE_Connect(nn.Module):
 def SE_Res2Block(channels, kernel_size, stride, padding, dilation, scale):
     return nn.Sequential(
         Conv1dReluBn(channels, channels, kernel_size=1, stride=1, padding=0),
-        Res2Conv1dReluBn(channels, kernel_size, stride, padding, dilation, scale=scale),
+        Res2Conv1dReluBn(channels, kernel_size, stride,
+                         padding, dilation, scale=scale),
         Conv1dReluBn(channels, channels, kernel_size=1, stride=1, padding=0),
         SE_Connect(channels)
     )
@@ -116,8 +119,10 @@ class AttentiveStatsPool(nn.Module):
     def __init__(self, in_dim, bottleneck_dim):
         super().__init__()
         # Use Conv1d with stride == 1 rather than Linear, then we don't need to transpose inputs.
-        self.linear1 = nn.Conv1d(in_dim, bottleneck_dim, kernel_size=1)  # equals W and b in the paper
-        self.linear2 = nn.Conv1d(bottleneck_dim, in_dim, kernel_size=1)  # equals V and k in the paper
+        # equals W and b in the paper
+        self.linear1 = nn.Conv1d(in_dim, bottleneck_dim, kernel_size=1)
+        # equals V and k in the paper
+        self.linear2 = nn.Conv1d(bottleneck_dim, in_dim, kernel_size=1)
 
     def forward(self, x):
         # DON'T use ReLU here! In experiments, I find ReLU hard to converge.
@@ -179,12 +184,17 @@ class ECAPA_TDNN(nn.Module):
             input_mask.append(mask_layer)
         self.input_mask = nn.Sequential(*input_mask)
 
-        self.layer1 = Conv1dReluBn(input_dim, self.channels[0], kernel_size=5, padding=2)
-        self.layer2 = SE_Res2Block(self.channels[1], kernel_size=3, stride=1, padding=2, dilation=2, scale=8)
-        self.layer3 = SE_Res2Block(self.channels[2], kernel_size=3, stride=1, padding=3, dilation=3, scale=8)
-        self.layer4 = SE_Res2Block(self.channels[3], kernel_size=3, stride=1, padding=4, dilation=4, scale=8)
+        self.layer1 = Conv1dReluBn(
+            input_dim, self.channels[0], kernel_size=5, padding=2)
+        self.layer2 = SE_Res2Block(
+            self.channels[1], kernel_size=3, stride=1, padding=2, dilation=2, scale=8)
+        self.layer3 = SE_Res2Block(
+            self.channels[2], kernel_size=3, stride=1, padding=3, dilation=3, scale=8)
+        self.layer4 = SE_Res2Block(
+            self.channels[3], kernel_size=3, stride=1, padding=4, dilation=4, scale=8)
 
-        self.conv = nn.Conv1d(self.channels[4], self.channels[4], kernel_size=1)
+        self.conv = nn.Conv1d(
+            self.channels[4], self.channels[4], kernel_size=1)
         self.pooling = AttentiveStatsPool(self.channels[4], 128)
         self.bn0 = nn.BatchNorm1d(self.channels[4] * 2)
 
@@ -272,7 +282,8 @@ class ECAPA_TDNN(nn.Module):
         half_batch_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-half_batch_size:]
         x = torch.cat(
-            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            [x[:-half_batch_size], lamda_beta * half_feats +
+                (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
             dim=0)
 
         return x
