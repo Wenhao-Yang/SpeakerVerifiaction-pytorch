@@ -60,7 +60,7 @@ early_meta: "mix2"
 scheduler: cyclic
 patience: 2
 milestones: [10, 20, 30, 40]
-cyclic_epoch: 4
+cyclic_epoch: 2
 cos_sim: True
 
 ## model Setttings
