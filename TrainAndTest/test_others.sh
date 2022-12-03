@@ -2232,8 +2232,8 @@ if [ $stage -le 202 ]; then
   dp=0.1
   avg_size=5
   fast=none1
-  chn=16
-  batch_size=256
+  chn=32
+  batch_size=128
 
   kd_type=attention #em_l2 vanilla
   kd_ratio=1000
@@ -2242,9 +2242,9 @@ if [ $stage -le 202 ]; then
   attention_type=both norm_type=feat
 #        --downsample ${downsample} \
 #      --trials trials_20w \
-  for resnet_size in 10 ;do
+  for resnet_size in 34 ;do
         echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
-  for attention_type in freq time ; do
+  for attention_type in freq ; do
   for seed in 123456 123457 123458 ; do
   for testset in vox1 ; do
     if [ $resnet_size -le 34 ];then
@@ -2280,7 +2280,7 @@ if [ $stage -le 202 ]; then
     if [ $dp = 0.25 ];then
       dp_str=25
     elif [ $dp = 0.2 ];then
-      dp_str=01
+      dp_str=02
     elif [ $dp = 0.125 ];then
       dp_str=125
     elif [ $dp = 0.1 ];then
@@ -2300,7 +2300,9 @@ if [ $stage -le 202 ]; then
       kd_str=_${kd_type}${kd_ratio}${kd_loss}
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_var${kd_str}_bashuf/${seed}
+    # model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_var${kd_str}_bashuf/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_varesmix2_bashuf2_dist/${seed}
+    
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
