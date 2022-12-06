@@ -54,16 +54,17 @@ if [ $stage -le 1 ]; then
 
   #  feat_type=pyfb
 #  dataset=vox1
-#  feat=wave
-#  feat_format=wav
-#  feat_type=wav
+ feat=wave
+ feat_format=wav
+ feat_type=wav
 
-  feat=klsp
-  feat_type=klsp
-  feat_format=kaldi
+  # feat=klsp
+  # feat_type=klsp
+  # feat_format=kaldi
 
 #  num_frames=400
-  num_frames=400 input_per_spks=896
+  num_frames=32000 input_per_spks=896
+  # num_frames=400 input_per_spks=896
 #        --remove-vad \
 #--domain \
 
