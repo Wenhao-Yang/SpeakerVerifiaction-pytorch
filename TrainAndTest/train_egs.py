@@ -530,6 +530,7 @@ def select_samples(train_loader, model, ce):
             for i, (l, sample_loss) in enumerate(zip(label, loss)):
                 score_dict[int(l)].append([float(sample_loss), idx_labels[i]])
 
+    xe_criterion.ce.reduction = 'mean'
     train_dataset = train_dir.dataset
     dataset = []
     rest_dataset = []
