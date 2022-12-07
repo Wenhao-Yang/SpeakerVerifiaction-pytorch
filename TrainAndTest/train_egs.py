@@ -540,11 +540,11 @@ def select_samples(train_loader, model, ce):
         sort_np = sort_np[idx[:, 0]]
         sort_np_len = len(sort_np)
 
-        for _, idx in sort_np[-int(sort_np_len*args.coreset_percent):]:
-            dataset.append(train_dataset[idx])
+        for _, j in sort_np[-int(sort_np_len*args.coreset_percent):]:
+            dataset.append(train_dataset[j])
 
-        for _, idx in sort_np[:-int(sort_np_len*args.coreset_percent)]:
-            rest_dataset.append(train_dataset[idx])
+        for _, k in sort_np[:-int(sort_np_len*args.coreset_percent)]:
+            rest_dataset.append(train_dataset[k])
 
     dataset = np.array(dataset)
     np.random.shuffle(dataset)
