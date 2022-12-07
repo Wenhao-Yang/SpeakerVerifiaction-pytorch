@@ -416,7 +416,7 @@ if [ $stage -le 41 ]; then
       # _${weight}${power_weight}
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} --coreset-percent 0.25 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} --coreset-percent 0.5 \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_10k_fb${input_dim} \
       --train-trials trials \
       --shuffle --batch-shuffle --batch-size ${batch_size} --seed ${seed} \

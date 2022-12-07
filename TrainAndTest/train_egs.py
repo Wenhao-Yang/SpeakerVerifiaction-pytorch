@@ -888,7 +888,7 @@ def main():
 
             train(train_loader, model, ce, optimizer, epoch, scheduler)
 
-            if args.coreset_percent > 0:
+            if args.coreset_percent > 0 and epoch % args.test_interval == 1:
                 select_samples(train_loader, model, ce)
 
             valid_loss = valid_class(valid_loader, model, ce, epoch)
