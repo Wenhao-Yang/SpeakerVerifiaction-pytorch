@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=45
+stage=41
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -373,11 +373,9 @@ if [ $stage -le 41 ]; then
   scheduler=rop optimizer=sgd
   input_dim=40
 
-  mask_layer=baseline weight=vox2_rcf
+  mask_layer=baseline weight=vox2_rcf weight_p=0 scale=0.2
   chn=16
   sname=dev
-
-  weight=rclean weight_p=0 scale=0.2
   avg_size=5
   batch_size=256
 
@@ -393,8 +391,8 @@ if [ $stage -le 41 ]; then
     fi
 
     if [ $chn -eq 16 ]; then
-        channels=16,32,64,128
-        chn_str=
+      channels=16,32,64,128
+      chn_str=
     elif [ $chn -eq 32 ]; then
       channels=32,64,128,256
       chn_str=chn32_
