@@ -305,6 +305,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 total_loss / (batch_idx + 1))
             pbar.set_description(epoch_str)
 
+        if (batch_idx + 1) == 100:
+            break
+
     if args.batch_shuffle:
         train_dir.__shuffle__()
 
@@ -485,7 +488,8 @@ def select_samples(train_loader, model, ce):
             [train_dir.dataset, train_dir.rest_dataset])
 
     with torch.no_grad():
-        for batch_idx, (data, label) in enumerate(train_loader):
+        pbar = tqdm(enumerate(train_loader))
+        for batch_idx, (data, label) in pbar:
             if torch.cuda.is_available():
                 data = data.cuda()
                 label = label.cuda()
@@ -534,6 +538,7 @@ def select_samples(train_loader, model, ce):
         sort_np = np.array(score_dict[i])
         idx = np.argsort(sort_np, axis=0)
         sort_np = sort_np[idx[:, 0]]
+        sort_np_len = len(sort_np)
 
         for _, idx in sort_np[-int(sort_np_len*args.coreset_percent):]:
             dataset.append(train_dataset[idx])
