@@ -540,6 +540,7 @@ def select_samples(train_loader, model, ce):
         sort_np = sort_np[idx[:, 0]]
         sort_np_len = len(sort_np)
 
+        pdb.set_trace()
         for _, j in sort_np[-int(sort_np_len*args.coreset_percent):]:
             dataset.append(train_dataset[j])
 
