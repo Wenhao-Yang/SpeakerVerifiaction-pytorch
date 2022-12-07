@@ -380,8 +380,10 @@ if [ $stage -le 41 ]; then
   batch_size=256
 
   for resnet_size in 34 ; do
+  for coreset_percent in 0.5 0.75 0.25 ; do
+  for select_score in loss random ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    for seed in 123456 ;do
+    for seed in 123456 123457 123458 ;do
     if [ $resnet_size -le 34 ];then
       expansion=1
       exp_str=
@@ -401,22 +403,21 @@ if [ $stage -le 41 ]; then
       chn_str=chn64_
     fi
 
+    at_str=
     if [[ $mask_layer == attention* ]];then
       at_str=_${weight}
     elif [ "$mask_layer" = "drop" ];then
-      at_str=_${weight}_dp${weight_p}s${scale}
-    else
-      at_str=
+      at_str=_${weight}_dp${weight_p}s${scale}      
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_coreset/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_core${coreset_percent}_${select_score}/${seed}
 
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
       # _${weight}${power_weight}
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} --coreset-percent 0.5 \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} --coreset-percent ${coreset_percent} --select-score ${select_score} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_10k_fb${input_dim} \
       --train-trials trials \
       --shuffle --batch-shuffle --batch-size ${batch_size} --seed ${seed} \
@@ -439,13 +440,13 @@ if [ $stage -le 41 ]; then
       --time-dim 1 --avg-size ${avg_size} --encoder-type ${encoder_type} \
       --num-valid 2 \
       --alpha ${alpha} \
-      --loss-type ${loss} --margin 0.2 --s 30 \
+      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0005 \
-      --gpu-id 0,1 \
-      --extract --cos-sim \
-      --all-iteraion 0 \
+      --gpu-id 0,1 --extract --cos-sim \
       --remove-vad
 
+  done
+  done
   done
   done
   exit

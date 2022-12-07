@@ -55,8 +55,8 @@ def create_optimizer(parameters, optimizer, **kwargs):
 
     elif optimizer == 'adam':
         opt = optim.Adam(parameters,
-                               lr=kwargs['lr'],
-                               weight_decay=kwargs['weight_decay'])
+                         lr=kwargs['lr'],
+                         weight_decay=kwargs['weight_decay'])
 
     elif optimizer == 'adagrad':
         opt = optim.Adagrad(parameters,
@@ -122,8 +122,7 @@ def create_model(name, **kwargs):
 
     model = __factory[name](**kwargs)
 
-    if kwargs['loss_type'] in ['asoft', 'amsoft', 'damsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2'
-        , 'aDCF']:
+    if kwargs['loss_type'] in ['asoft', 'amsoft', 'damsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2', 'aDCF']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                 normalize=kwargs['normalize'],
                                                 num_classes=kwargs['num_classes'])
@@ -142,19 +141,24 @@ def create_scheduler(optimizer, args, train_dir):
     milestones.sort()
 
     if args.scheduler == 'exp':
-        gamma = np.power(args.base_lr / args.lr, 1 / args.epochs) if args.gamma == 0 else args.gamma
+        gamma = np.power(args.base_lr / args.lr, 1 /
+                         args.epochs) if args.gamma == 0 else args.gamma
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
     elif args.scheduler == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, min_lr=1e-5)
+        scheduler = lr_scheduler.ReduceLROnPlateau(
+            optimizer, patience=args.patience, min_lr=1e-5)
     elif args.scheduler == 'cyclic':
         cycle_momentum = False if args.optimizer == 'adam' else True
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
                                           max_lr=args.lr,
-                                          step_size_up=5 * int(np.ceil(len(train_dir) / args.batch_size)),
+                                          step_size_up=5 *
+                                          int(np.ceil(
+                                              len(train_dir) / args.batch_size)),
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
     else:
-        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=milestones, gamma=0.1)
+        scheduler = lr_scheduler.MultiStepLR(
+            optimizer, milestones=milestones, gamma=0.1)
 
     return scheduler
 
@@ -221,7 +225,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             for batch_idx, (a_data, a_uid) in enumerate(pbar):
                 vec_shape = a_data.shape
                 if vec_shape[1] != 1:
-                    a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+                    a_data = a_data.reshape(
+                        vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 data = torch.cat((data, a_data), dim=0)
                 num_seg_tensor.append(num_seg_tensor[-1] + len(a_data))
@@ -234,7 +239,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         while i < data.shape[0]:
                             data_part = data[i:(i + batch_size)]
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
-                            model_out = model.xvector(data_part) if xvector else model(data_part)
+                            model_out = model.xvector(
+                                data_part) if xvector else model(data_part)
                             if isinstance(model_out, tuple):
                                 try:
                                     _, out_part, _, _ = model_out
@@ -249,7 +255,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     else:
 
                         data = data.cuda() if next(model.parameters()).is_cuda else data
-                        model_out = model.xvector(data) if xvector else model(data)
+                        model_out = model.xvector(
+                            data) if xvector else model(data)
 
                         if isinstance(model_out, tuple):
                             try:
@@ -266,7 +273,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
+                            # , uid[0])
+                            uid_vec = out[num_seg_tensor[i]                                          :num_seg_tensor[i + 1]].mean(axis=0)
                         else:
                             uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 
@@ -285,7 +293,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 vec_shape = a_data.shape
 
                 if vec_shape[1] != 1:
-                    a_data = a_data.reshape(vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+                    a_data = a_data.reshape(
+                        vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
                 if vec_shape[2] >= max_lenght:
@@ -309,7 +318,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if isinstance(model_out, tuple):
                     if len(model_out) == 4:
                         _, out, _, _ = model_out
-                        
+
                     elif len(model_out) == 2:
                         _, out = model_out
 
@@ -338,11 +347,13 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
     if torch.distributed.is_initialized():
 
-        all_uid2vectors = [None for _ in range(torch.distributed.get_world_size())]
+        all_uid2vectors = [None for _ in range(
+            torch.distributed.get_world_size())]
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
         if torch.distributed.get_rank() == 0:
             # pdb.set_trace()
-            writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
+            writer = kaldiio.WriteHelper(
+                'ark,scp:%s,%s' % (ark_file, scp_file))
 
             uid2vectors = np.concatenate(all_uid2vectors)
             # print('uid2vectors:', len(uid2vectors))
@@ -380,18 +391,23 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     # print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
+
 def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False,
                       verbose=0):
     # switch to evaluate mode
     labels, distances = [], []
-    dist_fn = nn.CosineSimilarity(dim=1).cuda() if dist_type == 'cos' else nn.PairwiseDistance(2)
+    dist_fn = nn.CosineSimilarity(dim=1).cuda(
+    ) if dist_type == 'cos' else nn.PairwiseDistance(2)
 
     # pbar = tqdm(enumerate(test_loader))
     with torch.no_grad():
-        pbar = tqdm(enumerate(test_loader)) if verbose > 0 else enumerate(test_loader)
+        pbar = tqdm(enumerate(test_loader)
+                    ) if verbose > 0 else enumerate(test_loader)
         for batch_idx, (data_a, data_p, label) in pbar:
-            data_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
-            data_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
+            # .view(-1, 4, embedding_size)
+            data_a = torch.tensor(data_a).cuda()
+            # .view(-1, 4, embedding_size)
+            data_p = torch.tensor(data_p).cuda()
             # dists = dist_fn.forward(data_a, data_p).cpu().numpy()
 
             if len(data_a.shape) == 2:
@@ -422,7 +438,8 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
 
     if torch.distributed.is_initialized():
         all_labels = [None for _ in range(torch.distributed.get_world_size())]
-        all_distances = [None for _ in range(torch.distributed.get_world_size())]
+        all_distances = [None for _ in range(
+            torch.distributed.get_world_size())]
 
         torch.distributed.all_gather_object(all_labels, labels)
         torch.distributed.all_gather_object(all_distances, distances)
@@ -433,8 +450,10 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
             labels = np.concatenate(all_labels)
             # print('uid2vectors:', len(uid2vectors))
 
-            labels = np.array([sublabel for label in labels for sublabel in label])
-            distances = np.array([subdist for dist in distances for subdist in dist])
+            labels = np.array(
+                [sublabel for label in labels for sublabel in label])
+            distances = np.array(
+                [subdist for dist in distances for subdist in dist])
             # this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
             time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
             with open('%s/scores.%s' % (xvector_dir, time_stamp), 'w') as f:
@@ -453,7 +472,8 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
 
     else:
         labels = np.array([sublabel for label in labels for sublabel in label])
-        distances = np.array([subdist for dist in distances for subdist in dist])
+        distances = np.array(
+            [subdist for dist in distances for subdist in dist])
         # this_xvector_dir = "%s/epoch_%s" % (xvector_dir, epoch)
         time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime())
         with open('%s/scores.%s' % (xvector_dir, time_stamp), 'w') as f:
@@ -508,49 +528,76 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser = argparse.ArgumentParser(description=description)
 
     # Data options
-    parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
-    parser.add_argument('--coreset-percent', default=0.0, type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--train-dir', type=str,
+                        required=True, help='path to dataset')
+    parser.add_argument('--coreset-percent', default=0.0,
+                        type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--select-score', default='loss',
+                        type=str, help='replace batchnorm with instance norm')
 
     parser.add_argument('--train-test-dir', type=str, help='path to dataset')
-    parser.add_argument('--noise-padding-dir', type=str, default='', help='path to dataset')
+    parser.add_argument('--noise-padding-dir', type=str,
+                        default='', help='path to dataset')
 
     parser.add_argument('--valid-dir', type=str, help='path to dataset')
-    parser.add_argument('--test-dir', type=str, required=True, help='path to voxceleb1 test dataset')
-    parser.add_argument('--class-weight', type=str, default='', help='path to voxceleb1 test dataset')
-    parser.add_argument('--max-cls-weight', default=0.8, type=float, help='replace batchnorm with instance norm')
-    parser.add_argument('--target-ratio', default=0.5, type=float, help='replace batchnorm with instance norm')
-    parser.add_argument('--inter-ratio', default=0.2, type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--test-dir', type=str, required=True,
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--class-weight', type=str, default='',
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--max-cls-weight', default=0.8,
+                        type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--target-ratio', default=0.5,
+                        type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--inter-ratio', default=0.2, type=float,
+                        help='replace batchnorm with instance norm')
 
-    parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
-    parser.add_argument('--exp', action='store_true', default=False, help='exp power spectogram')
+    parser.add_argument('--log-scale', action='store_true',
+                        default=False, help='log power spectogram')
+    parser.add_argument('--exp', action='store_true',
+                        default=False, help='exp power spectogram')
 
-    parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
-    parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
+    parser.add_argument('--trials', type=str, default='trials',
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--train-trials', type=str,
+                        default='trials', help='path to voxceleb1 test dataset')
 
-    parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
-    parser.add_argument('--var-input', action='store_true', default=True, help='need to make mfb file')
+    parser.add_argument('--sitw-dir', type=str,
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--var-input', action='store_true',
+                        default=True, help='need to make mfb file')
     parser.add_argument('--test-input', type=str, default='fix', choices=['var', 'fix'],
                         help='batchnorm with instance norm')
-    parser.add_argument('--random-chunk', nargs='+', type=int, default=[], metavar='MINCHUNK')
+    parser.add_argument('--random-chunk', nargs='+',
+                        type=int, default=[], metavar='MINCHUNK')
     parser.add_argument('--chisquare', action='store_true', default=False,
                         help='need to add chi(min_len) into chunksize')
     parser.add_argument('--chunk-size', type=int, default=300, metavar='CHUNK')
-    parser.add_argument('--frame-shift', type=int, default=300, metavar='CHUNK')
+    parser.add_argument('--frame-shift', type=int,
+                        default=300, metavar='CHUNK')
 
-    parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-    parser.add_argument('--extract', action='store_false', default=True, help='need to make mfb file')
-    parser.add_argument('--shuffle', action='store_false', default=True, help='need to shuffle egs')
-    parser.add_argument('--batch-shuffle', action='store_true', default=False, help='need to shuffle egs')
+    parser.add_argument('--remove-vad', action='store_true',
+                        default=False, help='using Cosine similarity')
+    parser.add_argument('--extract', action='store_false',
+                        default=True, help='need to make mfb file')
+    parser.add_argument('--shuffle', action='store_false',
+                        default=True, help='need to shuffle egs')
+    parser.add_argument('--batch-shuffle', action='store_true',
+                        default=False, help='need to shuffle egs')
 
-    parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
+    parser.add_argument('--nj', default=10, type=int,
+                        metavar='NJOB', help='num of job')
     parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy', 'wav'],
                         help='number of jobs to make feats (default: 10)')
 
-    parser.add_argument('--check-path', help='folder to output model checkpoints')
-    parser.add_argument('--check-yaml', type=str, default='', help='path to model yaml')
+    parser.add_argument(
+        '--check-path', help='folder to output model checkpoints')
+    parser.add_argument('--check-yaml', type=str,
+                        default='', help='path to model yaml')
 
-    parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-    parser.add_argument('--resume', metavar='PATH', help='path to latest checkpoint (default: none)')
+    parser.add_argument('--save-init', action='store_true',
+                        default=True, help='need to make mfb file')
+    parser.add_argument('--resume', metavar='PATH',
+                        help='path to latest checkpoint (default: none)')
 
     parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
@@ -562,12 +609,15 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         metavar='PAT', help='patience for scheduler (default: 4)')
     parser.add_argument('--patience', default=3, type=int,
                         metavar='PAT', help='patience for scheduler (default: 4)')
-    parser.add_argument('--early-stopping', action='store_true', default=False, help='vad layers')
+    parser.add_argument('--early-stopping', action='store_true',
+                        default=False, help='vad layers')
 
     parser.add_argument('--early-patience', default=5, type=int,
                         metavar='PAT', help='patience for scheduler (default: 4)')
-    parser.add_argument('--early-delta', default=0.001, type=float, help='patience for scheduler (default: 4)')
-    parser.add_argument('--early-meta', default='MinDCF_01', type=str, help='patience for scheduler (default: 4)')
+    parser.add_argument('--early-delta', default=0.001,
+                        type=float, help='patience for scheduler (default: 4)')
+    parser.add_argument('--early-meta', default='MinDCF_01',
+                        type=str, help='patience for scheduler (default: 4)')
 
     parser.add_argument('--gamma', default=0, type=float,
                         metavar='GAMMA', help='The optimizer to use (default: Adagrad)')
@@ -580,63 +630,98 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     # Training options
     # Model options
-    parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
+    parser.add_argument('--model', type=str,
+                        help='path to voxceleb1 test dataset')
     parser.add_argument('--resnet-size', default=8, type=int,
                         metavar='RES', help='The channels of convs layers)')
     parser.add_argument('--width-mult-list', default='1', type=str, metavar='WIDTH',
                         help='The channels of convs layers)')
-    parser.add_argument('--activation', type=str, default='relu', help='activation functions')
-    parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
-    parser.add_argument('--init-weight', type=str, default='mel', help='replace batchnorm with instance norm')
-    parser.add_argument('--power-weight', type=str, default='none', help='replace batchnorm with instance norm')
-    parser.add_argument('--weight-p', default=0.1, type=float, help='replace batchnorm with instance norm')
-    parser.add_argument('--weight-norm', type=str, default='max', help='replace batchnorm with instance norm')
-    parser.add_argument('--scale', default=0.2, type=float, metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--activation', type=str,
+                        default='relu', help='activation functions')
+    parser.add_argument('--filter', type=str, default='None',
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--init-weight', type=str, default='mel',
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--power-weight', type=str, default='none',
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--weight-p', default=0.1, type=float,
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--weight-norm', type=str, default='max',
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--scale', default=0.2, type=float,
+                        metavar='FEAT', help='acoustic feature dimension')
 
-    parser.add_argument('--filter-fix', action='store_true', default=False, help='replace batchnorm with instance norm')
-    parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
+    parser.add_argument('--filter-fix', action='store_true',
+                        default=False, help='replace batchnorm with instance norm')
+    parser.add_argument('--input-norm', type=str,
+                        default='Mean', help='batchnorm with instance norm')
 
-    parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
-    parser.add_argument('--mask-len', type=str, default='5,5', help='maximum length of time or freq masking layers')
-    parser.add_argument('--block-type', type=str, default='basic', help='replace batchnorm with instance norm')
-    parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
-    parser.add_argument('--expansion', default=1, type=int, metavar='N', help='acoustic feature dimension')
+    parser.add_argument('--mask-layer', type=str,
+                        default='None', help='time or freq masking layers')
+    parser.add_argument('--mask-len', type=str, default='5,5',
+                        help='maximum length of time or freq masking layers')
+    parser.add_argument('--block-type', type=str, default='basic',
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--downsample', type=str, default='None',
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--expansion', default=1, type=int,
+                        metavar='N', help='acoustic feature dimension')
 
-    parser.add_argument('--red-ratio', default=8, type=int, metavar='N', help='acoustic feature dimension')
-    parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
-    parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
+    parser.add_argument('--red-ratio', default=8, type=int,
+                        metavar='N', help='acoustic feature dimension')
+    parser.add_argument('--relu-type', type=str, default='relu',
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--transform', type=str, default="None",
+                        help='add a transform layer after embedding layer')
 
-    parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
-    parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
-    parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
+    parser.add_argument('--vad', action='store_true',
+                        default=False, help='vad layers')
+    parser.add_argument('--inception', action='store_true',
+                        default=False, help='multi size conv layer')
+    parser.add_argument('--inst-norm', action='store_true',
+                        default=False, help='batchnorm with instance norm')
 
-    parser.add_argument('--encoder-type', type=str, default='None', help='path to voxceleb1 test dataset')
+    parser.add_argument('--encoder-type', type=str,
+                        default='None', help='path to voxceleb1 test dataset')
     parser.add_argument('--channels', default='64,128,256', type=str, metavar='CHA',
                         help='The channels of convs layers)')
     parser.add_argument('--first-2d', action='store_true', default=False,
                         help='replace first tdnn layer with conv2d layers')
-    parser.add_argument('--dilation', default='1,1,1,1', type=str, metavar='CHA', help='The dilation of convs layers)')
-    parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
-    parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
+    parser.add_argument('--dilation', default='1,1,1,1', type=str,
+                        metavar='CHA', help='The dilation of convs layers)')
+    parser.add_argument('--feat-dim', default=64, type=int,
+                        metavar='N', help='acoustic feature dimension')
+    parser.add_argument('--input-dim', default=257, type=int,
+                        metavar='N', help='acoustic feature dimension')
     parser.add_argument('--accu-steps', default=1, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
 
-    parser.add_argument('--alpha', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--alpha', default=12, type=float,
+                        metavar='FEAT', help='acoustic feature dimension')
     parser.add_argument('--normalize', action='store_false', default=True,
                         help='normalize vectors in final layer')
 
-    parser.add_argument('--ring', default=12, type=float, metavar='RING', help='acoustic feature dimension')
+    parser.add_argument('--ring', default=12, type=float,
+                        metavar='RING', help='acoustic feature dimension')
 
-    parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
-    parser.add_argument('--context', default='5,3,3,5', type=str, metavar='KE', help='kernel size of conv filters')
+    parser.add_argument('--kernel-size', default='5,5', type=str,
+                        metavar='KE', help='kernel size of conv filters')
+    parser.add_argument('--context', default='5,3,3,5', type=str,
+                        metavar='KE', help='kernel size of conv filters')
 
-    parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
-    parser.add_argument('--stride', default='1', type=str, metavar='ST', help='stride size of conv filters')
-    parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
+    parser.add_argument('--padding', default='', type=str,
+                        metavar='KE', help='padding size of conv filters')
+    parser.add_argument('--stride', default='1', type=str,
+                        metavar='ST', help='stride size of conv filters')
+    parser.add_argument('--fast', type=str, default='None',
+                        help='max pooling for fast')
 
-    parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
-    parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
-    parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--cos-sim', action='store_true',
+                        default=False, help='using Cosine similarity')
+    parser.add_argument('--avg-size', type=int, default=4,
+                        metavar='ES', help='Dimensionality of the embedding')
+    parser.add_argument('--time-dim', default=1, type=int,
+                        metavar='FEAT', help='acoustic feature dimension')
     parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                         help='Dimensionality of the embedding')
     parser.add_argument('--batch-size', type=int, default=128, metavar='BS',
@@ -653,10 +738,14 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='input batch size for testing (default: 64)')
 
     # loss configure
-    parser.add_argument('--loss-type', type=str, help='path to voxceleb1 test dataset')
-    parser.add_argument('--e2e-loss-type', type=str, default='angleproto', help='path to voxceleb1 test dataset')
-    parser.add_argument('--num-center', type=int, default=2, help='the num of source classes')
-    parser.add_argument('--output-subs', action='store_true', default=False, help='using Cosine similarity')
+    parser.add_argument('--loss-type', type=str,
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--e2e-loss-type', type=str,
+                        default='angleproto', help='path to voxceleb1 test dataset')
+    parser.add_argument('--num-center', type=int, default=2,
+                        help='the num of source classes')
+    parser.add_argument('--output-subs', action='store_true',
+                        default=False, help='using Cosine similarity')
 
     parser.add_argument('--source-cls', type=int, default=1951,
                         help='the num of source classes')
@@ -664,12 +753,17 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='using Cosine similarity')
     parser.add_argument('--lr-ratio', type=float, default=0.0, metavar='LOSSRATIO',
                         help='the ratio softmax loss - triplet loss (default: 2.0')
-    parser.add_argument('--alpha-t', type=float, default=1.0, help='the ratio for LNCL')
-    parser.add_argument('--beta', type=float, default=1.0, help='the beta ratio for regularize term')
-    parser.add_argument('--lamda-beta', type=float, default=0.2, help='the alpha for beta distribution')
-    parser.add_argument('--mixup-type', type=str, default='input', help='the mixup type to linear interplotation')
+    parser.add_argument('--alpha-t', type=float,
+                        default=1.0, help='the ratio for LNCL')
+    parser.add_argument('--beta', type=float, default=1.0,
+                        help='the beta ratio for regularize term')
+    parser.add_argument('--lamda-beta', type=float, default=0.2,
+                        help='the alpha for beta distribution')
+    parser.add_argument('--mixup-type', type=str, default='input',
+                        help='the mixup type to linear interplotation')
 
-    parser.add_argument('--lncl', action='store_true', default=False, help='Label Noise Correct Loss')
+    parser.add_argument('--lncl', action='store_true',
+                        default=False, help='Label Noise Correct Loss')
     parser.add_argument('--smooth-ratio', type=float, default=0,
                         help='the margin value for the angualr softmax loss function (default: 3.0')
 
@@ -707,10 +801,13 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='random seed (default: 0)')
     parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
                         help='random seed (default: 0)')
-    parser.add_argument('--focal', action='store_true', default=False, help='using Cosine similarity')
+    parser.add_argument('--focal', action='store_true',
+                        default=False, help='using Cosine similarity')
 
-    parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.125)')
-    parser.add_argument('--base-lr', type=float, default=1e-8, metavar='LR', help='learning rate (default: 0.125)')
+    parser.add_argument('--lr', type=float, default=0.1,
+                        metavar='LR', help='learning rate (default: 0.125)')
+    parser.add_argument('--base-lr', type=float, default=1e-8,
+                        metavar='LR', help='learning rate (default: 0.125)')
 
     parser.add_argument('--lr-decay', default=0, type=float, metavar='LRD',
                         help='learning rate decay ratio (default: 1e-4')
@@ -755,13 +852,18 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='mean the vectors while extracting')
 
     if 'Extraction' in description:
-        parser.add_argument('--train-extract-dir', type=str, help='path to dev dataset')
-        parser.add_argument('--xvector-dir', type=str, help='path to dev dataset')
+        parser.add_argument('--train-extract-dir', type=str,
+                            help='path to dev dataset')
+        parser.add_argument('--xvector-dir', type=str,
+                            help='path to dev dataset')
 
     if 'Domain' in description:
-        parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
-        parser.add_argument('--domain-steps', default=5, type=int, help='set domain in dataset')
-        parser.add_argument('--speech-dom', default='4,7,9,10', type=str, help='set domain in dataset')
+        parser.add_argument('--domain', action='store_true',
+                            default=False, help='set domain in dataset')
+        parser.add_argument('--domain-steps', default=5,
+                            type=int, help='set domain in dataset')
+        parser.add_argument('--speech-dom', default='4,7,9,10',
+                            type=str, help='set domain in dataset')
 
         parser.add_argument('--dom-ratio', type=float, default=0.1, metavar='DOMAINLOSSRATIO',
                             help='the ratio softmax loss - triplet loss (default: 2.0')
@@ -771,55 +873,83 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='substract center for speaker embeddings')
 
     if 'Gradient' in description:
-        parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
-        parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
-        parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
-        parser.add_argument('--extract-path', help='folder to output model grads, etc')
-        parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
+        parser.add_argument('--train-set-name', type=str,
+                            required=True, help='path to voxceleb1 test dataset')
+        parser.add_argument('--test-set-name', type=str,
+                            required=True, help='path to voxceleb1 test dataset')
+        parser.add_argument('--sample-utt', type=int, default=120,
+                            metavar='SU', help='Dimensionality of the embedding')
+        parser.add_argument(
+            '--extract-path', help='folder to output model grads, etc')
+        parser.add_argument('--cam', type=str, default='gradient',
+                            help='path to voxceleb1 test dataset')
         parser.add_argument('--cam-layers',
-                            default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
+                            default=['conv1', 'layer1.0.conv2', 'conv2',
+                                     'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
                             type=list, metavar='CAML', help='The channels of convs layers)')
         parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
                             help='number of epochs to train (default: 10)')
-        parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
-        parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
+        parser.add_argument('--test-only', action='store_true',
+                            default=False, help='using Cosine similarity')
+        parser.add_argument('--revert', action='store_true',
+                            default=False, help='using Cosine similarity')
 
     if 'Knowledge' in description:
-        parser.add_argument('--kd-type', type=str, default='vanilla', help='path to voxceleb1 test dataset')
-        parser.add_argument('--kd-loss', type=str, default='kld', help='path to voxceleb1 test dataset')
-        parser.add_argument('--kd-ratio', type=float, default=0.4, help='path to voxceleb1 test dataset')
+        parser.add_argument('--kd-type', type=str, default='vanilla',
+                            help='path to voxceleb1 test dataset')
+        parser.add_argument('--kd-loss', type=str, default='kld',
+                            help='path to voxceleb1 test dataset')
+        parser.add_argument('--kd-ratio', type=float,
+                            default=0.4, help='path to voxceleb1 test dataset')
 
-        parser.add_argument('--distil-weight', type=float, default=0.5, help='path to voxceleb1 test dataset')
-        parser.add_argument('--teacher-model-yaml', type=str, required=True, help='path to teacher model')
-        parser.add_argument('--teacher-resume', type=str, required=True, help='path to teacher model')
-        parser.add_argument('--label-dir', type=str, default='', help='path to teacher model')
-        parser.add_argument('--temperature', type=float, default=20, help='path to voxceleb1 test dataset')
-        parser.add_argument('--teacher-model', type=str, default='', help='path to voxceleb1 test dataset')
-        parser.add_argument('--attention-type', type=str, default='both', help='path to voxceleb1 test dataset')
-        parser.add_argument('--norm-type', type=str, default='input', help='path to voxceleb1 test dataset')
+        parser.add_argument('--distil-weight', type=float,
+                            default=0.5, help='path to voxceleb1 test dataset')
+        parser.add_argument('--teacher-model-yaml', type=str,
+                            required=True, help='path to teacher model')
+        parser.add_argument('--teacher-resume', type=str,
+                            required=True, help='path to teacher model')
+        parser.add_argument('--label-dir', type=str,
+                            default='', help='path to teacher model')
+        parser.add_argument('--temperature', type=float,
+                            default=20, help='path to voxceleb1 test dataset')
+        parser.add_argument('--teacher-model', type=str,
+                            default='', help='path to voxceleb1 test dataset')
+        parser.add_argument('--attention-type', type=str,
+                            default='both', help='path to voxceleb1 test dataset')
+        parser.add_argument('--norm-type', type=str, default='input',
+                            help='path to voxceleb1 test dataset')
 
     if 'Test' in description:
         # parser.add_argument('--model-yaml', default='', type=str, help='path to yaml of model for the latest checkpoint')
-        parser.add_argument('--extract-trials', action='store_false', default=True, help='log power spectogram')
-        parser.add_argument('--score-suffix', type=str, default='', help='path to voxceleb1 test dataset')
+        parser.add_argument('--extract-trials', action='store_false',
+                            default=True, help='log power spectogram')
+        parser.add_argument('--score-suffix', type=str,
+                            default='', help='path to voxceleb1 test dataset')
         # parser.add_argument('--xvector', action='store_true', default=False, help='need to make mfb file')
 
-        parser.add_argument('--cluster', default='mean', type=str, help='The optimizer to use (default: Adagrad)')
-        parser.add_argument('--skip-test', action='store_false', default=True, help='need to make mfb file')
+        parser.add_argument('--cluster', default='mean', type=str,
+                            help='The optimizer to use (default: Adagrad)')
+        parser.add_argument('--skip-test', action='store_false',
+                            default=True, help='need to make mfb file')
 
         parser.add_argument('--mvnorm', action='store_true', default=False,
                             help='need to make spectrograms file')
         parser.add_argument('--valid', action='store_true', default=False,
                             help='need to make spectrograms file')
-        parser.add_argument('--vad-select', action='store_true', default=False, help='using Cosine similarity')
-        parser.add_argument('--test', action='store_false', default=True, help='need to make mfb file')
+        parser.add_argument('--vad-select', action='store_true',
+                            default=False, help='using Cosine similarity')
+        parser.add_argument('--test', action='store_false',
+                            default=True, help='need to make mfb file')
 
         # parser.add_argument('--mean-vector', action='store_false', default=True,
         #                     help='mean for embeddings while extracting')
-        parser.add_argument('--score-norm', type=str, default='', help='score normalization')
+        parser.add_argument('--score-norm', type=str,
+                            default='', help='score normalization')
 
-        parser.add_argument('--test-mask', action='store_true', default=False, help='need to make spectrograms file')
-        parser.add_argument('--mask-sub', type=str, default='0,1', help='mask input start index')
+        parser.add_argument('--test-mask', action='store_true',
+                            default=False, help='need to make spectrograms file')
+        parser.add_argument('--mask-sub', type=str,
+                            default='0,1', help='mask input start index')
         # parser.add_argument('--mask-lenght', type=int, default=1, help='mask input start index')
 
         parser.add_argument('--n-train-snts', type=int, default=100000,
@@ -854,8 +984,10 @@ def args_model(args, train_dir):
     dilation = args.dilation.split(',')
     dilation = [int(x) for x in dilation]
 
-    mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
-    width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
+    mask_len = [int(x) for x in args.mask_len.split(',')
+                ] if len(args.mask_len) > 1 else []
+    width_mult_list = sorted(
+        [float(x) for x in args.width_mult_list.split(',')], reverse=True)
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
@@ -888,25 +1020,34 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
 
     parser.add_argument('--valid-dir-a', type=str, help='path to dataset')
     parser.add_argument('--valid-dir-b', type=str, help='path to dataset')
-    parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
-    parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
+    parser.add_argument('--test-dir', type=str,
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--log-scale', action='store_true',
+                        default=False, help='log power spectogram')
 
-    parser.add_argument('--train-trials', type=str, default='trials', help='path to voxceleb1 test dataset')
-    parser.add_argument('--trials', type=str, default='trials', help='path to voxceleb1 test dataset')
+    parser.add_argument('--train-trials', type=str,
+                        default='trials', help='path to voxceleb1 test dataset')
+    parser.add_argument('--trials', type=str, default='trials',
+                        help='path to voxceleb1 test dataset')
     parser.add_argument('--sitw-dir', type=str,
                         default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
                         help='path to voxceleb1 test dataset')
-    parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-    parser.add_argument('--extract', action='store_true', default=True, help='need to make mfb file')
+    parser.add_argument('--remove-vad', action='store_true',
+                        default=False, help='using Cosine similarity')
+    parser.add_argument('--extract', action='store_true',
+                        default=True, help='need to make mfb file')
 
-    parser.add_argument('--nj', default=10, type=int, metavar='NJOB', help='num of job')
+    parser.add_argument('--nj', default=10, type=int,
+                        metavar='NJOB', help='num of job')
     parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
                         help='number of jobs to make feats (default: 10)')
 
     parser.add_argument('--check-path', default='Data/checkpoint/GradResNet8/vox1/spect_egs/soft_dp25',
                         help='folder to output model checkpoints')
-    parser.add_argument('--save-init', action='store_true', default=True, help='need to make mfb file')
-    parser.add_argument('--resume', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
+    parser.add_argument('--save-init', action='store_true',
+                        default=True, help='need to make mfb file')
+    parser.add_argument('--resume', type=str, metavar='PATH',
+                        help='path to latest checkpoint (default: none)')
 
     parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
@@ -927,39 +1068,62 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
 
     # Training options
     # Model options
-    parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
+    parser.add_argument('--model', type=str,
+                        help='path to voxceleb1 test dataset')
     parser.add_argument('--resnet-size', default=8, type=int,
                         metavar='RES', help='The channels of convs layers)')
-    parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
-    parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
-    parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
-    parser.add_argument('--block-type', type=str, default='None', help='resnet block type')
-    parser.add_argument('--transform', type=str, default='None', help='add a transform layer after embedding layer')
+    parser.add_argument('--filter', type=str, default='None',
+                        help='replace batchnorm with instance norm')
+    parser.add_argument('--mask-layer', type=str,
+                        default='None', help='time or freq masking layers')
+    parser.add_argument('--mask-len', type=int, default=20,
+                        help='maximum length of time or freq masking layers')
+    parser.add_argument('--block-type', type=str,
+                        default='None', help='resnet block type')
+    parser.add_argument('--transform', type=str, default='None',
+                        help='add a transform layer after embedding layer')
 
-    parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
-    parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
-    parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
-    parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
-    parser.add_argument('--encoder-type', type=str, default='SAP', help='path to voxceleb1 test dataset')
+    parser.add_argument('--vad', action='store_true',
+                        default=False, help='vad layers')
+    parser.add_argument('--inception', action='store_true',
+                        default=False, help='multi size conv layer')
+    parser.add_argument('--inst-norm', action='store_true',
+                        default=False, help='batchnorm with instance norm')
+    parser.add_argument('--input-norm', type=str,
+                        default='Mean', help='batchnorm with instance norm')
+    parser.add_argument('--encoder-type', type=str,
+                        default='SAP', help='path to voxceleb1 test dataset')
     parser.add_argument('--channels', default='64,128,256', type=str,
                         metavar='CHA', help='The channels of convs layers)')
-    parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
-    parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
-    parser.add_argument('--input-len', default=300, type=int, metavar='N', help='acoustic feature dimension')
+    parser.add_argument('--feat-dim', default=64, type=int,
+                        metavar='N', help='acoustic feature dimension')
+    parser.add_argument('--input-dim', default=257, type=int,
+                        metavar='N', help='acoustic feature dimension')
+    parser.add_argument('--input-len', default=300, type=int,
+                        metavar='N', help='acoustic feature dimension')
 
     parser.add_argument('--accu-steps', default=1, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
 
-    parser.add_argument('--alpha', default=1, type=float, metavar='FEAT', help='acoustic feature dimension')
-    parser.add_argument('--ring', default=12, type=float, metavar='FEAT', help='acoustic feature dimension')
-    parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE', help='kernel size of conv filters')
-    parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
-    parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
-    parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+    parser.add_argument('--alpha', default=1, type=float,
+                        metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--ring', default=12, type=float,
+                        metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--kernel-size', default='5,5', type=str,
+                        metavar='KE', help='kernel size of conv filters')
+    parser.add_argument('--padding', default='', type=str,
+                        metavar='KE', help='padding size of conv filters')
+    parser.add_argument('--stride', default='2', type=str,
+                        metavar='ST', help='stride size of conv filters')
+    parser.add_argument('--fast', action='store_true',
+                        default=False, help='max pooling for fast')
 
-    parser.add_argument('--cos-sim', action='store_true', default=False, help='using Cosine similarity')
-    parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
-    parser.add_argument('--time-dim', default=2, type=int, metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--cos-sim', action='store_true',
+                        default=False, help='using Cosine similarity')
+    parser.add_argument('--avg-size', type=int, default=4,
+                        metavar='ES', help='Dimensionality of the embedding')
+    parser.add_argument('--time-dim', default=2, type=int,
+                        metavar='FEAT', help='acoustic feature dimension')
     parser.add_argument('--embedding-size', type=int, default=128, metavar='ES',
                         help='Dimensionality of the embedding')
     parser.add_argument('--batch-size', type=int, default=128, metavar='BS',
@@ -976,8 +1140,10 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
                         help='input batch size for testing (default: 64)')
 
     # loss configure
-    parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
-    parser.add_argument('--num-center', type=int, default=3, help='the num of source classes')
+    parser.add_argument('--loss-type', type=str, default='soft',
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--num-center', type=int, default=3,
+                        help='the num of source classes')
     parser.add_argument('--source-cls', type=int, default=1951,
                         help='the num of source classes')
 
@@ -1002,7 +1168,8 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
     parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
                         help='random seed (default: 0)')
 
-    parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.125)')
+    parser.add_argument('--lr', type=float, default=0.1,
+                        metavar='LR', help='learning rate (default: 0.125)')
     parser.add_argument('--lr-decay', default=0, type=float, metavar='LRD',
                         help='learning rate decay ratio (default: 1e-4')
     parser.add_argument('--weight-decay', default=5e-4, type=float,

@@ -472,7 +472,7 @@ def test(model, epoch, writer, xvector_dir):
     writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
 
 
-def select_samples(train_loader, model, ce):
+def select_samples(train_loader, model, ce, select_score='loss'):
 
     model.eval()
     ce_criterion, xe_criterion = ce
@@ -490,41 +490,47 @@ def select_samples(train_loader, model, ce):
     with torch.no_grad():
         pbar = tqdm(enumerate(train_loader))
         for batch_idx, (data, label) in pbar:
-            if torch.cuda.is_available():
-                data = data.cuda()
-                label = label.cuda()
 
-            # compute output
-            out, feats = model(data)
-            if args.loss_type == 'asoft':
-                predicted_labels, _ = out
-            else:
-                predicted_labels = out
+            if select_score == 'loss':
+                if torch.cuda.is_available():
+                    data = data.cuda()
+                    label = label.cuda()
 
-            classfier = predicted_labels
-            if args.loss_type == 'soft':
-                loss = ce_criterion(classfier, label)
-            elif args.loss_type == 'asoft':
-                classfier_label, _ = classfier
-                loss = xe_criterion(classfier, label)
-            elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
-                loss_cent = ce_criterion(classfier, label)
-                loss_xent = args.loss_ratio * xe_criterion(feats, label)
-                other_loss += float(loss_xent.item())
+                # compute output
+                out, feats = model(data)
+                if args.loss_type == 'asoft':
+                    predicted_labels, _ = out
+                else:
+                    predicted_labels = out
 
-                loss = loss_xent + loss_cent
-            elif args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam',
-                                    'subdam', 'aDCF']:
-                loss = xe_criterion(classfier, label)
-            elif args.loss_type == 'arcdist':
-                loss_cent = args.loss_ratio * ce_criterion(classfier, label)
-                if args.loss_lambda:
-                    loss_cent = loss_cent * lambda_
+                classfier = predicted_labels
+                if args.loss_type == 'soft':
+                    loss = ce_criterion(classfier, label)
+                elif args.loss_type == 'asoft':
+                    classfier_label, _ = classfier
+                    loss = xe_criterion(classfier, label)
+                elif args.loss_type in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
+                    loss_cent = ce_criterion(classfier, label)
+                    loss_xent = args.loss_ratio * xe_criterion(feats, label)
+                    other_loss += float(loss_xent.item())
 
-                loss_xent = xe_criterion(classfier, label)
+                    loss = loss_xent + loss_cent
+                elif args.loss_type in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam',
+                                        'subdam', 'aDCF']:
+                    loss = xe_criterion(classfier, label)
+                elif args.loss_type == 'arcdist':
+                    loss_cent = args.loss_ratio * \
+                        ce_criterion(classfier, label)
+                    if args.loss_lambda:
+                        loss_cent = loss_cent * lambda_
 
-                other_loss += float(loss_cent.item())
-                loss = loss_xent + loss_cent
+                    loss_xent = xe_criterion(classfier, label)
+
+                    other_loss += float(loss_cent.item())
+                    loss = loss_xent + loss_cent
+
+            elif select_score == 'random':
+                loss = torch.zeros_like(label)
 
             idx_labels = batch_idx * len(data) + np.arange(args.batch_size)
             for i, (l, sample_loss) in enumerate(zip(label, loss)):
@@ -889,7 +895,7 @@ def main():
             train(train_loader, model, ce, optimizer, epoch, scheduler)
 
             if args.coreset_percent > 0 and epoch % args.test_interval == 1:
-                select_samples(train_loader, model, ce)
+                select_samples(train_loader, model, ce, args.select_score)
 
             valid_loss = valid_class(valid_loader, model, ce, epoch)
             if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
