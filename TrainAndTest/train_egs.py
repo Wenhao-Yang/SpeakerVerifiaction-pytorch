@@ -535,17 +535,17 @@ def select_samples(train_loader, model, ce):
     rest_dataset = []
 
     for i in score_dict:
-        sort_np = np.array(score_dict[i])
+        sort_np = np.array(score_dict[i], dtype=np.o)
         idx = np.argsort(sort_np, axis=0)
         sort_np = sort_np[idx[:, 0]]
         sort_np_len = len(sort_np)
 
-        pdb.set_trace()
+        # pdb.set_trace()
         for _, j in sort_np[-int(sort_np_len*args.coreset_percent):]:
-            dataset.append(train_dataset[j])
+            dataset.append(train_dataset[int(j)])
 
         for _, k in sort_np[:-int(sort_np_len*args.coreset_percent)]:
-            rest_dataset.append(train_dataset[k])
+            rest_dataset.append(train_dataset[int(k)])
 
     dataset = np.array(dataset)
     np.random.shuffle(dataset)
