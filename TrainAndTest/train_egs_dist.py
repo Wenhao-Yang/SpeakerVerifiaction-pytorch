@@ -544,6 +544,78 @@ def test(extract_loader, model, epoch, xvector_dir):
         writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
 
 
+def select_samples(train_loader, model, ce):
+
+    model.eval()
+    ce_criterion, xe_criterion = ce
+
+    with torch.no_grad():
+        for batch_idx, (data, label) in enumerate(train_loader):
+            if torch.cuda.is_available():
+                data = data.cuda()
+                label = label.cuda()
+
+            # compute output
+            # pdb.set_trace()
+            out, feats = model(data)
+            if config_args['loss_type'] == 'asoft':
+                predicted_labels, _ = out
+            else:
+                predicted_labels = out
+
+            classfier = predicted_labels
+            if config_args['loss_type'] == 'soft':
+                loss = ce_criterion(classfier, label)
+            elif config_args['loss_type'] == 'asoft':
+                classfier_label, _ = classfier
+                loss = xe_criterion(classfier, label)
+            elif config_args['loss_type'] in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
+                loss_cent = ce_criterion(classfier, label)
+                loss_xent = config_args['loss_ratio'] * \
+                    xe_criterion(feats, label)
+                other_loss += float(loss_xent.item())
+
+                loss = loss_xent + loss_cent
+            elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc']:
+                loss = xe_criterion(classfier, label)
+            elif 'arcdist' in config_args['loss_type']:
+                loss_cent = config_args['loss_ratio'] * \
+                    ce_criterion(classfier, label)
+                if 'loss_lambda' in config_args:
+                    loss_cent = loss_cent * lambda_
+
+                loss_xent = xe_criterion(classfier, label)
+
+                other_loss += float(loss_cent.item())
+                loss = loss_xent + loss_cent
+
+            total_loss += float(loss.item())
+            # pdb.set_trace()
+            predicted_one_labels = softmax(predicted_labels)
+            predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+
+            batch_correct = (predicted_one_labels.cuda() == label).sum().item()
+            correct += batch_correct
+            total_datasize += len(predicted_one_labels)
+
+    train_sampler = torch.utils.data.distributed.DistributedSampler(
+        train_dir)
+    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
+                                               collate_fn=PadCollate(dim=pad_dim,
+                                                                     num_batch=int(
+                                                                         np.ceil(
+                                                                             len(train_dir) / config_args[
+                                                                                 'batch_size'])),
+                                                                     min_chunk_size=min_chunk_size,
+                                                                     max_chunk_size=max_chunk_size,
+                                                                     chisquare=False if 'chisquare' not in config_args else
+                                                                     config_args['chisquare'],
+                                                                     verbose=1 if torch.distributed.get_rank() == 0 else 0),
+                                               shuffle=config_args['shuffle'], sampler=train_sampler, **kwargs)
+
+    return train_loader
+
+
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
