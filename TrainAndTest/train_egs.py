@@ -549,6 +549,8 @@ def select_samples(train_loader, model, ce):
             rest_dataset.append(train_dataset[int(k)])
 
     dataset = np.array(dataset)
+    dataset = dataset[np.argsort(dataset, axis=0)[:, 2]]
+
     np.random.shuffle(dataset)
 
     train_dir.dataset = dataset
