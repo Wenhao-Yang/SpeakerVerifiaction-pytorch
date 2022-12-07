@@ -365,8 +365,8 @@ if [ $stage -le 41 ]; then
   datasets=aidata feat_type=klfb
   model=ThinResNet resnet_size=34
   encoder_type=ASTP2 embedding_size=256
-  block_type=seblock red_ratio=2
-  kernel=5,5
+  block_type=seblock red_ratio=2 downsample=k1
+  kernel=5,5 fast=none1
   loss=arcsoft
   alpha=0
   input_norm=Mean
@@ -376,18 +376,14 @@ if [ $stage -le 41 ]; then
   mask_layer=baseline weight=vox2_rcf
   chn=16
   sname=dev
-  downsample=k1
 
-  weight=rclean
-  fast=none1
-
+  weight=rclean weight_p=0 scale=0.2
   avg_size=5
-  weight_p=0 scale=0.2
   batch_size=256
 
   for resnet_size in 34 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    for seed in 123456 123457 123458 ;do
+    for seed in 123456 ;do
     if [ $resnet_size -le 34 ];then
       expansion=1
       exp_str=
@@ -415,14 +411,14 @@ if [ $stage -le 41 ]; then
       at_str=
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_coreset/${seed}
 
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
       # _${weight}${power_weight}
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} --coreset-percent 0.25 \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_10k_fb${input_dim} \
       --train-trials trials \
       --shuffle --batch-shuffle --batch-size ${batch_size} --seed ${seed} \

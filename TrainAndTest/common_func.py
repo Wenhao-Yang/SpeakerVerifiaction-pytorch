@@ -509,6 +509,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     # Data options
     parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')
+    parser.add_argument('--coreset-percent', default=0.0, type=float, help='replace batchnorm with instance norm')
+
     parser.add_argument('--train-test-dir', type=str, help='path to dataset')
     parser.add_argument('--noise-padding-dir', type=str, default='', help='path to dataset')
 
