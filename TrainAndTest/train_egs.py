@@ -535,7 +535,7 @@ def select_samples(train_loader, model, ce):
     rest_dataset = []
 
     for i in score_dict:
-        sort_np = np.array(score_dict[i], dtype=np.o)
+        sort_np = np.array(score_dict[i])
         idx = np.argsort(sort_np, axis=0)
         sort_np = sort_np[idx[:, 0]]
         sort_np_len = len(sort_np)
