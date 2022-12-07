@@ -578,7 +578,7 @@ class EgsDataset(Dataset):
             self.dataset) // (int(self.batch_size / 2)) * (int(self.batch_size / 2))
         dataset_batch = self.dataset[:valid_lenght].reshape(
             -1, int(self.batch_size / 2), 3)
-            
+
         np.random.shuffle(dataset_batch)
 
     def __len__(self):

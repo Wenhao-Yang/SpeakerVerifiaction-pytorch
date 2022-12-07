@@ -305,8 +305,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 total_loss / (batch_idx + 1))
             pbar.set_description(epoch_str)
 
-        if (batch_idx + 1) == 100:
-            break
+        # if (batch_idx + 1) == 100:
+        #     break
 
     if args.batch_shuffle:
         train_dir.__shuffle__()
