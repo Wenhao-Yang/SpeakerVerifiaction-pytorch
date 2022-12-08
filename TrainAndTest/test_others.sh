@@ -2007,7 +2007,7 @@ if [ $stage -le 201 ]; then
   datasets=vox2 testset=vox1 test_subset=test
   input_norm=Mean
 #  test_subset=
-  block_type=cbam_v2
+  block_type=basic
   encoder_type=SAP2 embedding_size=256
 
 #  sname=dev #dev_aug_com
