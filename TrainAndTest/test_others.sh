@@ -2076,7 +2076,7 @@ if [ $stage -le 201 ]; then
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
         --train-trials trials --mask-sub ${mask_sub} \
         --score-suffix ${mask_sub} --test-mask \
-        --trials trials_${sub_trials} \
+        --trials trials \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
         --feat-format kaldi --nj 12 \
