@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=200
+stage=201
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1997,7 +1997,7 @@ if [ $stage -le 200 ]; then
 fi
 
 
-if [ $stage -le 200 ]; then
+if [ $stage -le 201 ]; then
   feat_type=klsp
   model=ThinResNet resnet_size=10
   feat=log
