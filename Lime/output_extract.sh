@@ -1001,7 +1001,7 @@ if [ $stage -le 351 ]; then
 #    fi
 #   vox2
     if [ $seed -le 123456 ];then
-      epoch=41
+      epoch=41 yaml_file=model.2022.07.25.yaml
     elif [ $seed -le 123457 ]; then
       epoch=40 yaml_file=model.2022.07.29.yaml
     else
