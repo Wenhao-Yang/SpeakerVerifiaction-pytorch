@@ -2090,7 +2090,7 @@ if [ $stage -le 201 ]; then
         --alpha ${alpha} \
         --loss-type ${loss} --margin 0.2 --s 30 \
         --time-dim 1 --avg-size ${avg_size} \
-        --input-length var --dropout-p 0.1 \
+        --test-input var --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
         --gpu-id 4 \
