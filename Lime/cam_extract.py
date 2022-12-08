@@ -46,11 +46,11 @@ try:
     torch._utils._rebuild_tensor_v2
 except AttributeError:
     def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
-        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
+        tensor = torch._utils._rebuild_tensor(
+            storage, storage_offset, size, stride)
         tensor.requires_grad = requires_grad
         tensor._backward_hooks = backward_hooks
         return tensor
-
 
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 import warnings
@@ -191,7 +191,8 @@ if args.cuda:
 
 # Define visulaize SummaryWriter instance
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(
+    dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
 
 if args.test_input == 'var':
     transform = transforms.Compose([
@@ -243,6 +244,7 @@ bias_layers = []
 biases = []
 handlers = []
 
+
 def extract_layer_bias(module):
     # extract bias of each layer
     if isinstance(module, torch.nn.BatchNorm2d):
@@ -255,17 +257,19 @@ def extract_layer_bias(module):
     else:
         return module.bias.data
 
+
 def _extract_layer_grads(module, in_grad, out_grad):
     # function to collect the gradient outputs
     # from each layer
-#     print(module._get_name())
-#     print('Input_grad shape:', in_grad[0].shape)
-#     print('Output_grad shape:', out_grad[0].shape)
+    #     print(module._get_name())
+    #     print('Input_grad shape:', in_grad[0].shape)
+    #     print('Output_grad shape:', out_grad[0].shape)
     global in_feature_grads
     global out_feature_grads
     if not module.bias is None:
         in_feature_grads.append(in_grad[0])
         out_feature_grads.append(out_grad[0])
+
 
 def _extract_layer_feat(module, input, output):
     # function to collect the gradient outputs from each layer
@@ -277,6 +281,7 @@ def _extract_layer_feat(module, input, output):
     global in_layer_feat
     in_layer_feat.append(input[0])
     out_layer_feat.append(output[0])
+
 
 def _extract_layer_grad(module, in_grad, out_grad):
     # function to collect the gradient outputs from each layer
@@ -359,7 +364,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
         baseline = None
 
         if len(data) == 1:
-            if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input']:
+            if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'layer_cam', 'acc_input']:
                 logit, _ = model(data)
                 classifed = logit[0] if args.loss_type == 'asoft' else logit
 
@@ -386,16 +391,18 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     weight /= weight.sum()
                     feat = last_feat  # .copy()
 
-                    T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
+                    T = (feat * weight).clamp_min(0).sum(dim=1,
+                                                         keepdim=True)  # .clamp_min(0)
                     grad += ups(T).abs()
 
                 elif args.cam == 'grad_cam_pp':
                     # grad cam ++ last
                     last_grad = out_layer_grad[0].cpu()
                     last_feat = out_layer_feat[-1].cpu()
-                    first_derivative = classifed[0][label.long()].exp().cpu() * last_grad
+                    first_derivative = classifed[0][label.long()].exp(
+                    ).cpu() * last_grad
                     alpha = last_grad.pow(2) / (
-                            2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
+                        2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
                     # weight = alpha * (first_derivative.clamp_min_(0))
                     weight = alpha * (first_derivative.abs())
 
@@ -424,7 +431,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             # pdb.set_trace()
                             if bias.shape[1] == out_feature_grads[i].shape[-1]:
                                 if bias.shape[1] % model.avgpool.output_size[1] == 0:
-                                    bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
+                                    bias = bias.reshape(
+                                        1, -1, 1, model.avgpool.output_size[1])
                                     grads_shape = out_feature_grads[i].shape
                                     out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
                                                                                         model.avgpool.output_size[1])
@@ -438,7 +446,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             pdb.set_trace()
                         #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
                         #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                        bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
+                        bias_grad = (
+                            out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
                         bias_grad /= bias_grad.max()
                         full_grad += ups(bias_grad)
 
@@ -459,7 +468,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         # print(this_grad.shape, this_feat.shape)
                         # try:
                         this_grad = out_layer_grad[i] * out_layer_feat[-1 - i]
-                        if args.zero_padding and this_grad.shape[-1]<input_gradient.shape[-1]:
+                        if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
                             this_grad = zeros(this_grad)
 
                         this_grad = ups(this_grad).mean(dim=1, keepdim=True)
@@ -470,6 +479,29 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                         acc_grad += this_grad
                     grad = acc_grad / acc_grad.sum()
+
+                elif args.cam == 'layer_cam':
+                    # pdb.set_trace()
+                    input_gradient = (data.grad.clamp_min(0) * data)
+                    acc_grad = input_gradient.clone()  # .cpu()
+                    acc_grad /= acc_grad.max()
+                    # acc_grad = torch.tanh(acc_grad)
+
+                    for i in range(len(out_layer_grad)):
+                        # this_grad = out_layer_grad[i].clone()  # .cpu()
+                        # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
+                        # print(this_grad.shape, this_feat.shape)
+                        # try:
+                        this_grad = out_layer_grad[i].clamp_min(
+                            0) * out_layer_feat[-1 - i]
+                        if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
+                            this_grad = zeros(this_grad)
+
+                        this_grad = ups(this_grad).mean(dim=1, keepdim=True)
+                        acc_grad += this_grad / this_grad.max()
+
+                    acc_grad = acc_grad.clamp_min(0)
+                    grad = torch.tanh(acc_grad * 2 / acc_grad.max())
 
                 elif args.cam == 'acc_input':
                     # pdb.set_trace()
@@ -483,7 +515,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         if len(this_feat.shape) == 3:
                             this_feat = this_feat.unsqueeze(0)
 
-                        if args.zero_padding and this_feat.shape[-1]<acc_grad.shape[-1]:
+                        if args.zero_padding and this_feat.shape[-1] < acc_grad.shape[-1]:
                             this_feat = zeros(this_feat)
 
                         this_grad = ups(this_feat).mean(dim=1, keepdim=True)
@@ -501,7 +533,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                     grad = acc_grad / acc_grad.sum()
 
-
             elif args.cam in ['integrad']:
 
                 if baseline is None:
@@ -510,12 +541,12 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 scaled_inputs = [baseline + (float(i) / args.steps) * (data - baseline) for i in
                                  range(0, args.steps + 1)]
 
-                grads, target_label_idx = calculate_outputs_and_gradients(scaled_inputs, model, target_label_index)
+                grads, target_label_idx = calculate_outputs_and_gradients(
+                    scaled_inputs, model, target_label_index)
                 grads = (grads[:-1] + grads[1:]) / 2.0
                 avg_grads = grads.mean(dim=0)
 
                 grad = (data - baseline) * avg_grads  # shape: <grad.shape>
-
 
         else:
             grad = []
@@ -531,7 +562,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 data_a = data[i].unsqueeze(0)
                 data_a = Variable(data_a.cuda(), requires_grad=True)
 
-                if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input']:
+                if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'layer_cam', 'acc_input']:
                     logit, _ = model(data_a)
 
                     if args.loss_type == 'asoft':
@@ -558,7 +589,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         weight /= weight.sum()
                         feat = last_feat  # .copy()
 
-                        T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
+                        T = (feat * weight).clamp_min(0).sum(dim=1,
+                                                             keepdim=True)  # .clamp_min(0)
 
                         grad_a += ups(T).abs()
 
@@ -566,9 +598,10 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         # grad cam ++ last
                         last_grad = out_layer_grad[0]
                         last_feat = out_layer_feat[-1]
-                        first_derivative = classifed[0][label.long()].exp() * last_grad
+                        first_derivative = classifed[0][label.long()].exp(
+                        ) * last_grad
                         alpha = last_grad.pow(2) / (
-                                2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
+                            2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
                         # weight = alpha * (first_derivative.clamp_min_(0))
                         weight = alpha * (first_derivative.abs())
 
@@ -598,7 +631,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                                 # pdb.set_trace()
                                 if bias.shape[1] == out_feature_grads[j].shape[-1]:
                                     if bias.shape[1] % model.avgpool.output_size[1] == 0:
-                                        bias = bias.reshape(1, -1, 1, model.avgpool.output_size[1])
+                                        bias = bias.reshape(
+                                            1, -1, 1, model.avgpool.output_size[1])
                                         grads_shape = out_feature_grads[j].shape
                                         out_feature_grads[j] = out_feature_grads[j].reshape(1, -1, grads_shape[1],
                                                                                             model.avgpool.output_size[
@@ -611,7 +645,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                             #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
                             #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                            bias_grad = (out_feature_grads[j] * bias).mean(dim=1, keepdim=True).clamp_min(0)
+                            bias_grad = (
+                                out_feature_grads[j] * bias).mean(dim=1, keepdim=True).clamp_min(0)
                             bias_grad /= bias_grad.max()
                             full_grad += ups(bias_grad)
 
@@ -623,7 +658,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     elif args.cam == 'acc_grad':
                         # pdb.set_trace()
                         input_gradient = (data_a.grad * data_a)
-                        acc_grad = input_gradient.clone().clamp_min(0)  #.cpu()
+                        acc_grad = input_gradient.clone().clamp_min(0)  # .cpu()
                         acc_grad /= acc_grad.max()
 
                         for i in range(len(out_layer_grad)):
@@ -631,7 +666,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
                             # print(this_grad.shape, this_feat.shape)
                             # try:
-                            this_grad = ups(out_layer_grad[i] * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
+                            this_grad = ups(
+                                out_layer_grad[i] * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
                             # except Exception as e:
                             #     print(this_grad.shape, this_feat.shape)
 
@@ -640,6 +676,26 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                             acc_grad += this_grad
                         grad_a = acc_grad / acc_grad.sum()
+
+                    elif args.cam == 'layer_cam':
+                        # pdb.set_trace()
+                        input_gradient = (data_a.grad.clamp_min(0) * data_a)
+                        acc_grad = input_gradient.clone()
+                        acc_grad /= acc_grad.max()
+
+                        for i in range(len(out_layer_grad)):
+                            # this_grad = out_layer_grad[i].clone()  # .cpu()
+                            # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
+                            # print(this_grad.shape, this_feat.shape)
+                            # try:
+                            this_grad = ups(out_layer_grad[i].clamp_min(
+                                0) * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
+                            # except Exception as e:
+                            #     print(this_grad.shape, this_feat.shape)
+
+                            acc_grad += this_grad / this_grad.max()
+                        acc_grad = acc_grad.clamp_min(0)
+                        grad = torch.tanh(acc_grad * 2 / acc_grad.max())
 
                     elif args.cam == 'acc_input':
                         # pdb.set_trace()
@@ -652,7 +708,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             if len(this_feat.shape) == 3:
                                 this_feat = this_feat.unsqueeze(0)
                             # try:
-                            this_grad = ups(this_feat).mean(dim=1, keepdim=True)
+                            this_grad = ups(this_feat).mean(
+                                dim=1, keepdim=True)
                             # except Exception as e:
                             #     print(this_feat.shape)
 
@@ -675,11 +732,13 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     scaled_inputs = [baseline + (float(i) / args.steps) * (data_a - baseline) for i in
                                      range(0, args.steps + 1)]
 
-                    grads, target_label_idx = calculate_outputs_and_gradients(scaled_inputs, model, target_label_index)
+                    grads, target_label_idx = calculate_outputs_and_gradients(
+                        scaled_inputs, model, target_label_index)
                     grads = (grads[:-1] + grads[1:]) / 2.0
                     avg_grads = grads.mean(dim=0)
 
-                    grad_a = (data_a - baseline) * avg_grads  # shape: <grad.shape>
+                    grad_a = (data_a - baseline) * \
+                        avg_grads  # shape: <grad.shape>
 
                 if grad_a.shape != data_a.shape:
                     print(grad_a.shape, data_a.shape)
@@ -717,7 +776,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 100. * batch_idx / len(train_loader)))
 
         if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
-            num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
+            num = batch_idx // save_per_num if batch_idx + \
+                1 % save_per_num == 0 else batch_idx // save_per_num + 1
             # checkpoint_dir / extract / < dataset > / < set >.*.bin
 
             filename = file_dir + '/%s.%d.bin' % (set_name, num)
@@ -732,6 +792,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
     print('Saving pairs in %s.\n' % file_dir)
     torch.cuda.empty_cache()
+
 
 def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
     # switch to evaluate mode
@@ -778,7 +839,8 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
                 100. * batch_idx / len(test_loader)))
 
         if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(test_loader.dataset):
-            num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
+            num = batch_idx // save_per_num if batch_idx + \
+                1 % save_per_num == 0 else batch_idx // save_per_num + 1
             # checkpoint_dir / extract / < dataset > / < set >.*.bin
 
             filename = file_dir + '/%s.%d.bin' % (set_name, num)
@@ -796,7 +858,6 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
     torch.cuda.empty_cache()
 
 
-
 def main():
     print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
     # print the experiment configuration
@@ -811,13 +872,15 @@ def main():
 
     keys = list(model_kwargs.keys())
     keys.sort()
-    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    model_options = ["\'%s\': \'%s\'" % (
+        str(k), str(model_kwargs[k])) for k in keys]
     print('Model options: \n{ %s }' % (', '.join(model_options)))
     print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
 
-    train_loader = DataLoader(train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
+    train_loader = DataLoader(
+        train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     # veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     # valid_loader = DataLoader(valid_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     # test_loader = DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
@@ -841,11 +904,13 @@ def main():
             # if e == 0:
             #     filtered = checkpoint.state_dict()
             # else:
-            filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+            filtered = {k: v for k, v in checkpoint_state_dict.items(
+            ) if 'num_batches_tracked' not in k}
             if list(filtered.keys())[0].startswith('module'):
                 new_state_dict = OrderedDict()
                 for k, v in filtered.items():
-                    name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                    name = k[7:]
                     new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
 
                 model.load_state_dict(new_state_dict)
@@ -869,8 +934,10 @@ def main():
             for name, m in model.named_modules():
                 try:
                     if name in cam_layers:
-                        handlers.append(m.register_forward_hook(_extract_layer_feat))
-                        handlers.append(m.register_backward_hook(_extract_layer_grad))
+                        handlers.append(
+                            m.register_forward_hook(_extract_layer_feat))
+                        handlers.append(
+                            m.register_backward_hook(_extract_layer_grad))
                     #         if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear) or isinstance(m, nn.BatchNorm2d):
                     if not ('fc' in name or 'classifier' in name or 'CBAM' in name):
                         #             print(m)
@@ -898,7 +965,8 @@ def main():
             #     model_conv1 = model.conv1.weight.cpu().detach().numpy()
             #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
-            train_extract(train_loader, model, file_dir, '%s_train' % args.train_set_name)
+            train_extract(train_loader, model, file_dir,
+                          '%s_train' % args.train_set_name)
             # train_extract(valid_loader, model, file_dir, '%s_valid' % args.train_set_name)
             # test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
 
