@@ -989,8 +989,8 @@ if [ $stage -le 351 ]; then
   alpha=0
 
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
-  for cam in acc_input ;do
-  for seed in 123457 ;do
+  for cam in acc_grad ;do
+  for seed in 123456 123457 123458 ;do
     # vox1
 #    if [ $seed -le 123456 ];then
 #      epoch=15 #41 # 32 #27
@@ -1009,7 +1009,7 @@ if [ $stage -le 351 ]; then
     fi
 #      --layer-weight \
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var
-    extract_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var/${seed}
+    extract_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}_${chn_str}wde5_var
 
     python Lime/cam_extract.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -1031,8 +1031,8 @@ if [ $stage -le 351 ]; then
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
       --check-yaml Data/checkpoint/${model_dir}/${yaml_file} \
-      --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax_zero \
-      --gpu-id 0 \
+      --extract-path Data/gradient/${extract_dir}/epoch_best_var_${cam}_softmax_zero/${seed} \
+      --gpu-id 3 \
       --sample-utt 6000
     done
     done
