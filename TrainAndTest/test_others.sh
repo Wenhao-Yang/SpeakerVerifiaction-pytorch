@@ -2004,7 +2004,7 @@ if [ $stage -le 200 ]; then
   loss=arcsoft
   encod=AVG
   alpha=0
-  datasets=vox2 testset=sitw
+  datasets=vox2 testset=vox1 test_subset=test
   input_norm=Mean
 #  test_subset=
   block_type=cbam_v2
@@ -2014,17 +2014,14 @@ if [ $stage -le 200 ]; then
   sname=dev #_aug_com
   downsample=k5
   fast=none1
-  test_subset=dev
   chn=16
 #  mask_layer=rvec
 #  mask_layer=baseline
-  mask_layer=rvec mask_len=5,10
+  mask_layer=rvec mask_len=5,10 weight_norm=max
   weight=rclean_max
   scheduler=rop optimizer=sgd
   batch_size=256
   avg_size=5
-  weight_norm=max
-
 #  123456 123457 123458
 #  10 18 34 50
 #  for mask_layer in attention0 ;do
