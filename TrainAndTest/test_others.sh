@@ -2012,7 +2012,7 @@ if [ $stage -le 201 ]; then
 
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
-  downsample=k5
+  downsample=k1
   fast=none1
   chn=16
 #  mask_layer=rvec
