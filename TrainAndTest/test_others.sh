@@ -2067,7 +2067,7 @@ if [ $stage -le 201 ]; then
       elif [ "$mask_layer" = "both" ];then
         at_str=_`echo $mask_len | sed  's/,//g'`
       fi
-
+    #--score-suffix ${sub_trials} \
       model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde5_var
 
       python -W ignore TrainAndTest/test_egs.py \
@@ -2076,7 +2076,7 @@ if [ $stage -le 201 ]; then
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
         --train-trials trials --mask-sub ${mask_sub} \
         --score-suffix ${mask_sub} --test-mask \
-        --trials trials_${sub_trials} \ #--score-suffix ${sub_trials} \
+        --trials trials_${sub_trials} \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
         --feat-format kaldi --nj 12 \
