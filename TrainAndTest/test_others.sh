@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=200
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2031,24 +2031,21 @@ if [ $stage -le 200 ]; then
 #  for weight_norm in max ; do
 #  echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-#  for ((i=68; i<=160; i++)); do
-#    mask_sub="$i,$((i+1))"
-#--test-mask \
-#        --mask-sub ${mask_sub} \
-#        --score-suffix ${mask_sub} \
-
+ for ((i=0; i<=160; i=i+2)); do
+   mask_sub="$i,$((i+2))"
+#
+#        
   for testset in vox1 ; do
   for resnet_size in 34 ; do
-  for seed in 123456 ;do
+  for seed in 123456 123457 123458 ;do
   for sub_trials in hard ; do
+
 #    for chn in 16 32 64 ; do
       epoch=
       if [ $resnet_size -le 34 ];then
         expansion=1
-        batch_size=256
       else
         expansion=4
-        batch_size=256
       fi
       if [ $chn -eq 16 ]; then
         channels=16,32,64,128
@@ -2061,19 +2058,17 @@ if [ $stage -le 200 ]; then
         chn_str=chn64_
       fi
 
+      avg_str=avg${avg_size}_
       if [ $avg_size -eq 0 ]; then
         avg_str=
-      else
-        avg_str=avg${avg_size}_
       fi
 
+      at_str=
       if [[ $mask_layer == attention* ]];then
         at_str=_${weight}
       #        --score-suffix
       elif [ "$mask_layer" = "both" ];then
         at_str=_`echo $mask_len | sed  's/,//g'`
-      else
-        at_str=
       fi
 
       model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${seed}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${avg_str}${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde5_var
@@ -2082,33 +2077,31 @@ if [ $stage -le 200 ]; then
         --model ${model} --resnet-size ${resnet_size} \
         --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
         --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
-        --train-trials trials_2w --extract-trials \
-        --trials trials_${sub_trials} --score-suffix ${sub_trials} \
+        --train-trials trials --mask-sub ${mask_sub} \
+        --score-suffix ${mask_sub} --test-mask \
+        --trials trials_${sub_trials} \ #--score-suffix ${sub_trials} \
         --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
         --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
         --feat-format kaldi --nj 12 \
         --input-norm ${input_norm} --input-dim 161 \
-        --mask-layer ${mask_layer} --init-weight ${weight} \
-        --weight-norm ${weight_norm} \
-        --embedding-size ${embedding_size} \
+        --mask-layer ${mask_layer} --init-weight ${weight} --weight-norm ${weight_norm} \
         --fast ${fast} --downsample ${downsample} \
-        --encoder-type ${encoder_type} \
-        --block-type ${block_type} \
+        --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
+        --block-type ${block_type} --expansion ${expansion} \
         --kernel-size 5,5 --stride 2,2 \
-        --expansion ${expansion} \
         --channels ${channels} \
         --alpha ${alpha} \
         --loss-type ${loss} --margin 0.2 --s 30 \
         --time-dim 1 --avg-size ${avg_size} \
-        --input-length var \
-        --dropout-p 0.1 \
+        --input-length var --dropout-p 0.1 \
         --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch${epoch}_var \
         --resume Data/checkpoint/${model_dir}/best.pth \
-        --gpu-id 0 \
-        --verbose  --extract \
+        --gpu-id 4 \
+        --verbose 0 \
         --cos-sim
 #        Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
     done
+  done
   done
   done
   done
