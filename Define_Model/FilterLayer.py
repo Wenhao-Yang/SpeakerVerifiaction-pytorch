@@ -22,6 +22,7 @@ from torch.nn.parallel import DistributedDataParallel
 from scipy import interpolate
 import Process_Data.constants as c
 
+
 class fDLR(nn.Module):
     def __init__(self, input_dim, sr, num_filter, exp=False, filter_fix=False):
         super(fDLR, self).__init__()
@@ -53,7 +54,8 @@ class fDLR(nn.Module):
             input = torch.exp(input)
 
         # frequency_center = self.frequency_center.sort(dim=0).values
-        new_centers = self.frequency_center.expand(self.num_filter, self.input_dim).clamp(min=0, max=self.sr / 2)
+        new_centers = self.frequency_center.expand(
+            self.num_filter, self.input_dim).clamp(min=0, max=self.sr / 2)
         new_bandwidth = self.bandwidth.clamp(min=1e-12, max=self.sr / 2)
         # if input.is_cuda:
         #     new_centers = new_centers.cuda()
@@ -106,7 +108,8 @@ class fBLayer(nn.Module):
 
         frequency_center = self.frequency_center.clamp(min=0, max=self.sr / 2)
         bandwidth_left = self.bandwidth_left.clamp(min=1e-12, max=self.sr / 2)
-        bandwidth_right = self.bandwidth_right.clamp(min=1e-12, max=self.sr / 2)
+        bandwidth_right = self.bandwidth_right.clamp(
+            min=1e-12, max=self.sr / 2)
         new_centers = frequency_center.expand(self.num_filter, self.input_dim)
 
         dist_center_a = (new_centers - self.input_freq) / bandwidth_left
@@ -153,7 +156,8 @@ class fBPLayer(nn.Module):
             input = torch.exp(input)
 
         bandwidth_low = self.bandwidth_low.clamp(min=1e-12, max=self.sr / 2)
-        bandwidth_high = (bandwidth_low + self.bandwidth.clamp(min=1e-12, max=self.sr / 2)).clamp_max(self.sr / 2)
+        bandwidth_high = (bandwidth_low + self.bandwidth.clamp(min=1e-12,
+                          max=self.sr / 2)).clamp_max(self.sr / 2)
 
         bandwidth_low = bandwidth_low.expand(self.num_filter, self.input_dim)
         bandwidth_high = bandwidth_high.expand(self.num_filter, self.input_dim)
@@ -259,7 +263,8 @@ class SincConv_fast(nn.Module):
         if in_channels != 1:
             # msg = (f'SincConv only support one input channel '
             #       f'(here, in_channels = {in_channels:d}).')
-            msg = "SincConv only support one input channel (here, in_channels = {%i})" % (in_channels)
+            msg = "SincConv only support one input channel (here, in_channels = {%i})" % (
+                in_channels)
             raise ValueError(msg)
 
         # the out_channels is 80 in the paper
@@ -306,7 +311,8 @@ class SincConv_fast(nn.Module):
         # self.window_ = torch.hamming_window(self.kernel_size)
         n_lin = torch.linspace(0, (self.kernel_size / 2) - 1,
                                steps=int((self.kernel_size / 2)))  # computing only half of the window
-        self.window_ = 0.54 - 0.46 * torch.cos(2 * math.pi * n_lin / self.kernel_size);
+        self.window_ = 0.54 - 0.46 * \
+            torch.cos(2 * math.pi * n_lin / self.kernel_size)
 
         # (kernel_size, 1)
         n = (self.kernel_size - 1) / 2.0
@@ -329,18 +335,20 @@ class SincConv_fast(nn.Module):
         self.window_ = self.window_.to(waveforms.device)
 
         low = self.min_low_hz + torch.abs(self.low_hz_)
-        high = torch.clamp(low + self.min_band_hz + torch.abs(self.band_hz_), self.min_low_hz, self.sample_rate / 2)
+        high = torch.clamp(low + self.min_band_hz + torch.abs(self.band_hz_),
+                           self.min_low_hz, self.sample_rate / 2)
         band = (high - low)[:, 0]
 
         f_times_t_low = torch.matmul(low, self.n_)
         f_times_t_high = torch.matmul(high, self.n_)
 
         band_pass_left = ((torch.sin(f_times_t_high) - torch.sin(f_times_t_low)) / (
-                self.n_ / 2)) * self.window_  # Equivalent of Eq.4 of the reference paper (SPEAKER RECOGNITION FROM RAW WAVEFORM WITH SINCNET). I just have expanded the sinc and simplified the terms. This way I avoid several useless computations.
+            self.n_ / 2)) * self.window_  # Equivalent of Eq.4 of the reference paper (SPEAKER RECOGNITION FROM RAW WAVEFORM WITH SINCNET). I just have expanded the sinc and simplified the terms. This way I avoid several useless computations.
         band_pass_center = 2 * band.view(-1, 1)
         band_pass_right = torch.flip(band_pass_left, dims=[1])
 
-        band_pass = torch.cat([band_pass_left, band_pass_center, band_pass_right], dim=1)
+        band_pass = torch.cat(
+            [band_pass_left, band_pass_center, band_pass_right], dim=1)
         band_pass = band_pass / (2 * band[:, None])
 
         # 时域滤波器
@@ -379,6 +387,7 @@ class GRL(nn.Module):
     def forward(self, x):
         return grl_func.apply(x, self.lambda_)
 
+
 class RevGrad(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input_):
@@ -393,6 +402,7 @@ class RevGrad(torch.autograd.Function):
             grad_input = -grad_output
         return grad_input
 
+
 class RevGradLayer(nn.Module):
     def __init__(self, *args, **kwargs):
         """
@@ -405,6 +415,7 @@ class RevGradLayer(nn.Module):
 
     def forward(self, input_):
         return RevGrad.apply(input_)
+
 
 class Inst_Norm(nn.Module):
 
@@ -452,7 +463,8 @@ class SlideMean_Norm(nn.Module):
         for i in range(x.shape[self.dim]):
             s = start[i]
             e = end[i]
-            x_mean.append(torch.mean(x[:, :, s:e, :], dim=self.dim, keepdim=True))
+            x_mean.append(torch.mean(
+                x[:, :, s:e, :], dim=self.dim, keepdim=True))
 
         return x - torch.cat(x_mean, dim=self.dim)
 
@@ -621,7 +633,8 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
         n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
         # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
         f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+        xnew = np.arange(np.min(m[1:]), np.max(
+            m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
         ynew = 1 / f(xnew)
     elif weight == 'rand':
         ynew = np.random.uniform(size=input_dim)
@@ -650,11 +663,17 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
     elif weight == 'v2_rclean_gean':
         ynew = c.VOX2_RCLEAN_GRAD_MEAN
     elif weight == 'v2_rclean_iean':
+        ynew = c.VOX2_RCLEAN_INPT_MEAN
+    elif weight == 'v2_rclean_igean':
         ynew = c.VOX2_RCLEAN_INGR_MEAN
     elif weight == 'v2_rclean_gax':
         ynew = c.VOX2_RCLEAN_GRAD_MAX
     elif weight == 'v2_rclean_imax':
+        ynew = c.VOX2_RCLEAN_INPT_MAX
+    elif weight == 'v2_rclean_igmax':
         ynew = c.VOX2_RCLEAN_INGR_MAX
+    elif weight == 'v2_fratio':
+        ynew = c.VOX2_FRATIO
     elif weight == 'one':
         ynew = np.ones(input_dim)
     else:
@@ -670,6 +689,7 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
         ynew /= ynew.max()
 
     return ynew
+
 
 class DropweightLayer(nn.Module):
     def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2,
@@ -687,12 +707,14 @@ class DropweightLayer(nn.Module):
         if not self.training:
             return x
         else:
-            assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+            assert len(
+                self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
             drop_weight = []
             for i in self.drop_p:
-                drop_weight.append((torch.Tensor(1).uniform_(0, 1) < i).float())
+                drop_weight.append(
+                    (torch.Tensor(1).uniform_(0, 1) < i).float())
 
-            if len(x.shape)==4:
+            if len(x.shape) == 4:
                 drop_weight = torch.tensor(drop_weight).reshape(1, 1, 1, -1)
             else:
                 drop_weight = torch.tensor(drop_weight).reshape(1, 1, -1)
@@ -704,48 +726,19 @@ class DropweightLayer(nn.Module):
 
     def __repr__(self):
 
-        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight, 
-            self.dropout_p, self.scale)
+        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
+                                                                                      self.dropout_p, self.scale)
 
 
 class DropweightLayer_v2(nn.Module):
-    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2):
+    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161,
+                 scale=0.2, power_weight='mean'):
         super(DropweightLayer_v2, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
         self.dropout_p = dropout_p
         self.scale = scale
-
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            ynew = 1 / ynew  # .max()
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        elif weight == 'vox1_rcf':
-            ynew = c.VOX1_RCFB40
-        elif weight == 'vox2_rcf':
-            ynew = c.VOX2_RCFB40
-        else:
-            raise ValueError(weight)
-
-        ynew = np.array(ynew)
-        ynew /= ynew.max()
+        ynew = get_weight(weight, input_dim, power_weight)
 
         self.drop_p = ynew * self.scale + 1-self.scale - dropout_p
 
@@ -753,14 +746,18 @@ class DropweightLayer_v2(nn.Module):
         if not self.training:
             return x
         else:
-            assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+            assert len(
+                self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
             drop_weight = []
             for i in self.drop_p:
-                drop_weight.append((torch.ones(x.shape[-2]).uniform_(0, 1) < i).float())
-            if len(x.shape)==4:
-                drop_weight = torch.stack(drop_weight,dim=0).reshape(1, 1, x.shape[-2], x.shape[-1])
+                drop_weight.append(
+                    (torch.ones(x.shape[-2]).uniform_(0, 1) < i).float())
+            if len(x.shape) == 4:
+                drop_weight = torch.stack(drop_weight, dim=0).reshape(
+                    1, 1, x.shape[-2], x.shape[-1])
             else:
-                drop_weight = torch.stack(drop_weight,dim=0).reshape(1, x.shape[-2], x.shape[-1])
+                drop_weight = torch.stack(drop_weight, dim=0).reshape(
+                    1, x.shape[-2], x.shape[-1])
 
             if x.is_cuda:
                 drop_weight = drop_weight.cuda()
@@ -769,8 +766,8 @@ class DropweightLayer_v2(nn.Module):
 
     def __repr__(self):
 
-        return "DropweightLayer_v2(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight, 
-            self.dropout_p, self.scale)
+        return "DropweightLayer_v2(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
+                                                                                         self.dropout_p, self.scale)
 
 
 class DropweightLayer_v3(nn.Module):
@@ -789,7 +786,8 @@ class DropweightLayer_v3(nn.Module):
             x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
 
             f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+            xnew = np.arange(np.min(m[1:]), np.max(
+                m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
             ynew = f(xnew)
             ynew = 1 / ynew  # .max()
         elif weight == 'clean':
@@ -818,15 +816,19 @@ class DropweightLayer_v3(nn.Module):
         if not self.training:
             return x
         else:
-            assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+            assert len(
+                self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
             drop_weight = []
             for i in self.drop_p:
-                drop_weight.append(torch.nn.functional.dropout(torch.ones(x.shape[-2]), p=i).float())
+                drop_weight.append(torch.nn.functional.dropout(
+                    torch.ones(x.shape[-2]), p=i).float())
 
-            if len(x.shape)==4:
-                drop_weight = torch.stack(drop_weight, dim=0).reshape(1, 1, x.shape[-2], x.shape[-1])
+            if len(x.shape) == 4:
+                drop_weight = torch.stack(drop_weight, dim=0).reshape(
+                    1, 1, x.shape[-2], x.shape[-1])
             else:
-                drop_weight = torch.stack(drop_weight, dim=0).reshape(1, x.shape[-2], x.shape[-1])
+                drop_weight = torch.stack(drop_weight, dim=0).reshape(
+                    1, x.shape[-2], x.shape[-1])
 
             if x.is_cuda:
                 drop_weight = drop_weight.cuda()
@@ -835,8 +837,8 @@ class DropweightLayer_v3(nn.Module):
 
     def __repr__(self):
 
-        return "DropweightLayer_v3(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight, 
-            self.dropout_p, self.scale)
+        return "DropweightLayer_v3(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
+                                                                                         self.dropout_p, self.scale)
 
 
 class AttentionweightLayer(nn.Module):
@@ -856,7 +858,8 @@ class AttentionweightLayer(nn.Module):
     def forward(self, x):
         # assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
         if len(x.shape) == 4:
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
+            drop_weight = torch.tensor(
+                self.drop_p).reshape(1, 1, 1, -1).float()
         else:
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
 
@@ -870,7 +873,7 @@ class AttentionweightLayer(nn.Module):
 
     def __repr__(self):
         return "AttentionweightLayer_v0(input_dim=%d, weight=%s, weight_norm=%s)" % (
-        self.input_dim, self.weight, self.weight_norm)
+            self.input_dim, self.weight, self.weight_norm)
 
 
 class ReweightLayer(nn.Module):
@@ -893,7 +896,8 @@ class ReweightLayer(nn.Module):
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
-        assert len(self.weight) == x.shape[-1], print(len(self.weight), x.shape)
+        assert len(
+            self.weight) == x.shape[-1], print(len(self.weight), x.shape)
 
         if len(x.shape) == 4:
             weight = self.weight.reshape(1, 1, 1, -1).float()
@@ -917,7 +921,8 @@ class AttentionweightLayer_v2(nn.Module):
         self.b = nn.Parameter(torch.tensor(-1.0))
         # self.s = nn.Parameter(torch.tensor(0.5))
         # self.drop_p = ynew  # * dropout_p
-        self.drop_p = nn.Parameter(torch.tensor(get_weight(weight, input_dim, weight_norm)).float())
+        self.drop_p = nn.Parameter(torch.tensor(
+            get_weight(weight, input_dim, weight_norm)).float())
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
@@ -936,7 +941,7 @@ class AttentionweightLayer_v2(nn.Module):
 
     def __repr__(self):
         return "AttentionweightLayer_Trainable(input_dim=%d, weight=%s, weight_norm=%s)" % (
-        self.input_dim, self.weight, self.weight_norm)
+            self.input_dim, self.weight, self.weight_norm)
 
 
 class AttentionweightLayer_v3(nn.Module):
@@ -948,21 +953,25 @@ class AttentionweightLayer_v3(nn.Module):
         self.s = nn.Parameter(torch.tensor(0.125))
         self.b = nn.Parameter(torch.tensor(1.0))
 
-        self.drop_p = get_weight(weight, input_dim, power_weight)  # * dropout_p
+        self.drop_p = get_weight(
+            weight, input_dim, power_weight)  # * dropout_p
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
 
-        assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+        assert len(
+            self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
 
         if len(x.shape) == 4:
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
+            drop_weight = torch.tensor(
+                self.drop_p).reshape(1, 1, 1, -1).float()
         else:
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
-        drop_weight = (drop_weight - self.b * drop_weight.mean()) / self.s.clamp(min=0.0625, max=2.0)
+        drop_weight = (drop_weight - self.b * drop_weight.mean()
+                       ) / self.s.clamp(min=0.0625, max=2.0)
         drop_weight = self.activation(drop_weight)
 
         return x * drop_weight
@@ -983,16 +992,18 @@ class AttentionweightLayer_v0(nn.Module):
         self.weight = weight
         # self.s = nn.Parameter(torch.tensor(0.5))
         # self.b = nn.Parameter(torch.tensor(0.75))
-        self.drop_p = get_weight(weight, input_dim, power_weight)  # * dropout_p
+        self.drop_p = get_weight(
+            weight, input_dim, power_weight)  # * dropout_p
         # self.activation = nn.Sigmoid()
 
     def forward(self, x):
         # assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
         if len(x.shape) == 4:
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, 1, -1).float()
+            drop_weight = torch.tensor(
+                self.drop_p).reshape(1, 1, 1, -1).float()
         else:
             drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
-        
+
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
@@ -1000,7 +1011,7 @@ class AttentionweightLayer_v0(nn.Module):
 
     def __repr__(self):
         return "AttentionweightLayer_v00(input_dim=%d, weight=%s, power_weight=%s)" % (
-        self.input_dim, self.weight, str(self.power_weight))
+            self.input_dim, self.weight, str(self.power_weight))
 
 
 class GaussianNoiseLayer(nn.Module):
@@ -1014,18 +1025,21 @@ class GaussianNoiseLayer(nn.Module):
         # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
 
         f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+        xnew = np.arange(np.min(m[1:]), np.max(
+            m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
         ynew = f(xnew)
         ynew = 1 / ynew  # .max()
         ynew /= ynew.max()
 
-        self.gaussion_weight = torch.tensor(ynew * dropout_p).reshape(1, 1, 1, -1).float()
+        self.gaussion_weight = torch.tensor(
+            ynew * dropout_p).reshape(1, 1, 1, -1).float()
 
     def forward(self, x):
         if not self.training:
             return x
         else:
-            assert self.gaussion_weight.shape[-1] == x.shape[-1], print(len(self.gaussion_weight), x.shape)
+            assert self.gaussion_weight.shape[-1] == x.shape[-1], print(
+                len(self.gaussion_weight), x.shape)
 
             x_mean = torch.mean(x, dim=2, keepdim=True)
             x_std = torch.std(x, dim=2, keepdim=True)
@@ -1051,13 +1065,15 @@ class MusanNoiseLayer(nn.Module):
         if not self.training:
             return x
         else:
-            gaussian_noise = torch.normal(mean=self.mean, std=self.std).reshape(1, 1, 1, x.shape[3])
-            gaussian_noise = gaussian_noise.repeat(1,1,x.shape[2], 1)
+            gaussian_noise = torch.normal(
+                mean=self.mean, std=self.std).reshape(1, 1, 1, x.shape[3])
+            gaussian_noise = gaussian_noise.repeat(1, 1, x.shape[2], 1)
 
             weight = torch.ones(size=(1, 1, x.shape[2], 1))
             torch.nn.init.uniform_(weight, self.weight, 0.4)
             weight = torch.nn.functional.dropout(weight, p=0.5, training=True)
-            weight = torch.where(weight>1.0, torch.tensor((self.weight+1.0)/2), weight)
+            weight = torch.where(weight > 1.0, torch.tensor(
+                (self.weight+1.0)/2), weight)
 
             gaussian_noise *= weight
             noise_weight = gaussian_noise.cuda() if x.is_cuda else gaussian_noise
@@ -1071,10 +1087,12 @@ class CBAM(nn.Module):
         super(CBAM, self).__init__()
         self.time_freq = time_freq
 
-        self.cov_t = nn.Conv2d(inplanes, planes, kernel_size=(7, 1), stride=1, padding=(3, 0))
+        self.cov_t = nn.Conv2d(inplanes, planes, kernel_size=(
+            7, 1), stride=1, padding=(3, 0))
         self.avg_t = nn.AdaptiveAvgPool2d((None, 1))
 
-        self.cov_f = nn.Conv2d(inplanes, planes, kernel_size=(1, 7), stride=1, padding=(0, 3))
+        self.cov_f = nn.Conv2d(inplanes, planes, kernel_size=(
+            1, 7), stride=1, padding=(0, 3))
         self.avg_f = nn.AdaptiveAvgPool2d((1, None))
 
         self.activation = nn.Sigmoid()
@@ -1102,9 +1120,11 @@ class SqueezeExcitation(nn.Module):
         self.reduction_ratio = reduction_ratio
 
         self.glob_avg = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(inplanes, max(int(inplanes / self.reduction_ratio), 1))
+        self.fc1 = nn.Linear(inplanes, max(
+            int(inplanes / self.reduction_ratio), 1))
         self.relu = nn.ReLU(inplace=True)
-        self.fc2 = nn.Linear(max(int(inplanes / self.reduction_ratio), 1), inplanes)
+        self.fc2 = nn.Linear(
+            max(int(inplanes / self.reduction_ratio), 1), inplanes)
         self.activation = nn.Sigmoid()
 
     def forward(self, input):
@@ -1207,8 +1227,10 @@ class Back_GradCAM(object):
 
         for (name, module) in modules:
             if name == self.layer_name:
-                self.handlers.append(module.register_backward_hook(self._get_features_hook))
-                self.handlers.append(module.register_backward_hook(self._get_grads_hook))
+                self.handlers.append(
+                    module.register_backward_hook(self._get_features_hook))
+                self.handlers.append(
+                    module.register_backward_hook(self._get_grads_hook))
 
     def remove_handlers(self):
         for handle in self.handlers:
@@ -1263,6 +1285,8 @@ class Back_GradCAM(object):
     #     return feature, gradient
 
 # https://github.com/mravanelli/SincNet
+
+
 class Sinc2Conv(nn.Module):
     def __init__(self, input_dim, out_dim=60, fs=16000):
         super(Sinc2Conv, self).__init__()
@@ -1275,23 +1299,28 @@ class Sinc2Conv(nn.Module):
         self.sinc_conv = nn.Sequential(
             SincConv_fast(80, 251, self.fs, stride=6),
             nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
-            nn.InstanceNorm1d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
+            # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
+            nn.InstanceNorm1d(80),
             nn.LeakyReLU(),
         )
 
         self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
         self.conv_layer2 = nn.Sequential(
-            nn.Conv1d(in_channels=80, out_channels=60, kernel_size=5, stride=1),
+            nn.Conv1d(in_channels=80, out_channels=60,
+                      kernel_size=5, stride=1),
             nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
-            nn.InstanceNorm1d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
+            # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
+            nn.InstanceNorm1d(60),
             nn.LeakyReLU(),
         )
 
         self.current_input = int((self.current_input - 5 + 1) / 3)
         self.conv_layer3 = nn.Sequential(
-            nn.Conv1d(in_channels=60, out_channels=self.out_dim, kernel_size=5, stride=1),
+            nn.Conv1d(in_channels=60, out_channels=self.out_dim,
+                      kernel_size=5, stride=1),
             nn.MaxPool1d(kernel_size=3),
-            nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            nn.InstanceNorm1d(self.out_dim),
             nn.LeakyReLU(),
         )
 
@@ -1354,36 +1383,44 @@ class Sinc2Down(nn.Module):
         # conv_layers = [(80, 251, 1), (60, 5, 1), (out_dim, 5, 1)]
         self.conv_layers = nn.ModuleList()
         self.conv_layer1 = nn.Sequential(
-            nn.Conv2d(in_channels=int(input_dim / 2), out_channels=80, kernel_size=(1, 31), stride=(1, 4), bias=False),
+            nn.Conv2d(in_channels=int(input_dim / 2), out_channels=80,
+                      kernel_size=(1, 31), stride=(1, 4), bias=False),
             # SincConv_fast(80, 251, self.fs, stride=6),
             # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
-            nn.InstanceNorm2d(80),  # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
+            # nn.LayerNorm([80, int((self.current_input - 251 + 1) / 6 / 3)]),
+            nn.InstanceNorm2d(80),
             nn.LeakyReLU(),
             nn.Dropout2d(0.5)
         )
 
         # self.current_input = int((self.current_input - 251 + 1) / 6 / 3)
         self.conv_layer2 = nn.Sequential(
-            nn.Conv2d(in_channels=80, out_channels=60, kernel_size=(2, 5), stride=(1, 2)),
+            nn.Conv2d(in_channels=80, out_channels=60,
+                      kernel_size=(2, 5), stride=(1, 2)),
             # nn.MaxPool1d(kernel_size=3),  # nn.AvgPool1d(kernel_size=3),
-            nn.InstanceNorm2d(60),  # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
+            # nn.LayerNorm([60, int((self.current_input - 5 + 1) / 3)]),
+            nn.InstanceNorm2d(60),
             nn.LeakyReLU(),
             nn.Dropout2d(0.5)
         )
         #
         # self.current_input = int((self.current_input - 5 + 1) / 3)
         self.conv_layer3 = nn.Sequential(
-            nn.Conv1d(in_channels=60, out_channels=60, kernel_size=5, stride=2),
+            nn.Conv1d(in_channels=60, out_channels=60,
+                      kernel_size=5, stride=2),
             # nn.MaxPool1d(kernel_size=3),
-            nn.InstanceNorm1d(60),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            nn.InstanceNorm1d(60),
             nn.LeakyReLU(),
             nn.Dropout(0.5)
         )
         #
         self.conv_layer4 = nn.Sequential(
-            nn.Conv1d(in_channels=60, out_channels=self.out_dim, kernel_size=5, stride=2),
+            nn.Conv1d(in_channels=60, out_channels=self.out_dim,
+                      kernel_size=5, stride=2),
             # nn.AvgPool1d(kernel_size=3),  # nn.MaxPool1d(kernel_size=3),
-            nn.InstanceNorm1d(self.out_dim),  # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            # nn.LayerNorm([self.out_dim, int((self.current_input - 5 + 1) / 3)]),
+            nn.InstanceNorm1d(self.out_dim),
             nn.LeakyReLU(),
             nn.Dropout(0.5)
         )
@@ -1420,7 +1457,8 @@ class Wav2Conv(nn.Module):
         super(Wav2Conv, self).__init__()
 
         in_d = 1
-        conv_layers = [(40, 10, 5), (200, 5, 4), (300, 3, 2), (512, 3, 2), (out_dim, 3, 2)]
+        conv_layers = [(40, 10, 5), (200, 5, 4), (300, 3, 2),
+                       (512, 3, 2), (out_dim, 3, 2)]
         self.conv_layers = nn.ModuleList()
         for dim, k, stride in conv_layers:
             self.conv_layers.append(self.block(in_d, dim, k, stride))
@@ -1436,7 +1474,8 @@ class Wav2Conv(nn.Module):
     def block(self, n_in, n_out, k, stride):
         return nn.Sequential(
             nn.Conv1d(n_in, n_out, k, stride=stride, bias=False),
-            nn.InstanceNorm1d(n_out),  # nn.GroupNorm(1, n_out), in wav2spk replace group by instance normalization
+            # nn.GroupNorm(1, n_out), in wav2spk replace group by instance normalization
+            nn.InstanceNorm1d(n_out),
             nn.ReLU(),
         )
 
@@ -1473,7 +1512,8 @@ class Wav2Down(nn.Module):
         self.input_dim = input_dim
         in_d = input_dim
         # conv_layers = [(40, 10, 5), (200, 5, 4), (300, 3, 2), (512, 3, 2), (out_dim, 3, 2)]
-        conv_layers = [(40, 10, 4), (200, 5, 2), (300, 3, 2), (512, 3, 2), (out_dim, 3, 1)]
+        conv_layers = [(40, 10, 4), (200, 5, 2), (300, 3, 2),
+                       (512, 3, 2), (out_dim, 3, 1)]
         self.conv_layers = nn.ModuleList()
         for dim, k, stride in conv_layers:
             self.conv_layers.append(self.block(in_d, dim, k, stride))
@@ -1489,7 +1529,8 @@ class Wav2Down(nn.Module):
     def block(self, n_in, n_out, k, stride):
         return nn.Sequential(
             nn.Conv1d(n_in, n_out, k, stride=stride, bias=False),
-            nn.InstanceNorm1d(n_out),  # nn.GroupNorm(1, n_out), in wav2spk replace group by instance normalization
+            # nn.GroupNorm(1, n_out), in wav2spk replace group by instance normalization
+            nn.InstanceNorm1d(n_out),
             nn.ReLU(),
         )
 
