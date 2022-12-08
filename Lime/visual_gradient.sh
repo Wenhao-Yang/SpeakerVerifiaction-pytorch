@@ -310,7 +310,7 @@ if [ $stage -le 206 ]; then
     for grad_clip in relu ; do
       for weight in mean max ; do
         python Lime/Plot/visual_gradient.py \
-          --extract-path Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/${seed}/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/epoch_best_var_gradient/epoch_${epoch} \
+          --extract-path Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/epoch_best_var_acc_grad_softmax_zero/${seed}/epoch_${epoch} \
           --feat-dim 161 \
           --grad-weight ${weight} \
           --grad-clip ${grad_clip} \
