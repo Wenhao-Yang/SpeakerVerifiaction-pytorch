@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=202
+stage=500
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2911,20 +2911,17 @@ if [ $stage -le 500 ]; then
   model=ThinResNet
   feat=log
   loss=arcsoft
-  scheduler=rop
-  optimizer=sgd
-  input_dim=40
-  input_norm=Mean
+  scheduler=rop optimizer=sgd
+  input_dim=40 input_norm=Mean
 
   encoder_type=ASTP2
   alpha=0
-  datasets=aidata
-  testset=aidata
+  datasets=aidata testset=aidata
 #  test_subset=
-  block_type=seblock
+  block_type=seblock red_ratio=2
 #  encoder_type=None
   embedding_size=256
-  batch_size=128
+  batch_size=256
 #  resnet_size=18 10
 #  sname=dev #dev_aug_com
   sname=train #_aug_com
@@ -2932,15 +2929,16 @@ if [ $stage -le 500 ]; then
   test_subset=test
   mask_layer=baseline
   dp=0.1
-  red_ratio=2
   avg_size=5
   fast=none1
   chn=16
 #        --downsample ${downsample} \
 #      --trials trials_20w \
-  for resnet_size in 34;do
+  for resnet_size in 34 ;do
         echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
-  for seed in 123456 ; do
+  for select_score in loss random ; do
+  for coreset_percent in 0.25 0.5 0.75 ; do
+  for seed in 123456 123457 123458; do
 #  for lamda_beta in 0.2 0.5 1 2 ; do
   for lamda_beta in 1; do
 
@@ -2949,7 +2947,6 @@ if [ $stage -le 500 ]; then
 #      batch_size=256
     else
       expansion=2
-#      batch_size=256
     fi
 
     if [ $expansion -eq 1 ]; then
@@ -2969,12 +2966,11 @@ if [ $stage -le 500 ]; then
       chn_str=chn64_
     fi
 
+    at_str=
     if [[ $mask_layer == attention* ]];then
       at_str=_${weight}
     elif [ "$mask_layer" = "drop" ];then
       at_str=_${weight}_dp${weight_p}s${scale}
-    else
-      at_str=
     fi
 
     if [ $dp = 0.25 ];then
@@ -2987,7 +2983,8 @@ if [ $stage -le 500 ]; then
       dp_str=01
     fi
     # ${input_dim}
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_dist_mani-1_lamda2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_core${coreset_percent}_${select_score}/${seed}
+    #_dist_mani-1_lamda2/${seed}
     #_mixup${lamda_beta}_2/${seed}
 #    _manifold_0.01
     #${input_dim}
@@ -3018,6 +3015,8 @@ if [ $stage -le 500 ]; then
       --remove-vad --test-input var \
       --verbose 0 \
       --cos-sim
+  done
+  done
   done
   done
   done
