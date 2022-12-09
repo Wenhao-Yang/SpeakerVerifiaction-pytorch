@@ -2028,8 +2028,8 @@ if [ $stage -le 201 ]; then
 #  for weight_norm in max ; do
 #  echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
- for ((i=0; i<=160; i=i+2)); do
-   mask_sub="$i,$((i+2))"
+ for ((i=0; i<=160; i=i+4)); do
+   mask_sub="$i,$((i+4))"
 #
 #        
   for testset in vox1 ; do
