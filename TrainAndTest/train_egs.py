@@ -549,7 +549,10 @@ def select_samples(train_loader, model, ce, select_score='loss'):
     if select_score == 'loss_mean':
         threshold = np.mean(all_loss)
     elif select_score == 'loss_part':
-        threshold = all_loss[-int(len(all_loss)*args.coreset_percent)]
+        number_samples = int(len(all_loss)*args.coreset_percent)
+        number_samples = int(
+            np.ceil(number_samples / args.batch_size) * args.batch_size)
+        threshold = all_loss[-number_samples]
 
     for i in score_dict:
         sort_np = np.array(score_dict[i])

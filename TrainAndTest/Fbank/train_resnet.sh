@@ -383,7 +383,7 @@ if [ $stage -le 41 ]; then
   for coreset_percent in 0.25 0.5 0.75 ; do
   for select_score in loss_part ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    for seed in 123458 ;do
+    for seed in 123456 123457 123458 ;do
     if [ $resnet_size -le 34 ];then
       expansion=1
       exp_str=
