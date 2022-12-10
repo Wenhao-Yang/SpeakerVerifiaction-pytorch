@@ -487,11 +487,13 @@ def select_samples(train_loader, model, ce, select_score='loss'):
         train_dir.dataset = np.concatenate(
             [train_dir.dataset, train_dir.rest_dataset])
 
+    all_loss = []
+
     with torch.no_grad():
         pbar = tqdm(enumerate(train_loader))
         for batch_idx, (data, label) in pbar:
 
-            if select_score == 'loss':
+            if 'loss' in select_score:
                 if torch.cuda.is_available():
                     data = data.cuda()
                     label = label.cuda()
@@ -535,24 +537,39 @@ def select_samples(train_loader, model, ce, select_score='loss'):
             idx_labels = batch_idx * len(data) + np.arange(args.batch_size)
             for i, (l, sample_loss) in enumerate(zip(label, loss)):
                 score_dict[int(l)].append([float(sample_loss), idx_labels[i]])
+                all_loss.append(float(sample_loss))
 
     xe_criterion.ce.reduction = 'mean'
     train_dataset = train_dir.dataset
     dataset = []
     rest_dataset = []
 
+    all_loss = np.sort(all_loss)
+
+    if select_score == 'loss_mean':
+        threshold = np.mean(all_loss)
+    elif select_score == 'loss_part':
+        threshold = all_loss[-int(len(all_loss)*args.coreset_percent)]
+
     for i in score_dict:
         sort_np = np.array(score_dict[i])
-        idx = np.argsort(sort_np, axis=0)
-        sort_np = sort_np[idx[:, 0]]
-        sort_np_len = len(sort_np)
+        if select_score in ['loss', 'random']:
+            idx = np.argsort(sort_np, axis=0)
+            sort_np = sort_np[idx[:, 0]]
+            sort_np_len = len(sort_np)
 
-        # pdb.set_trace()
-        for _, j in sort_np[-int(sort_np_len*args.coreset_percent):]:
-            dataset.append(train_dataset[int(j)])
+            # pdb.set_trace()
+            for _, j in sort_np[-int(sort_np_len*args.coreset_percent):]:
+                dataset.append(train_dataset[int(j)])
 
-        for _, k in sort_np[:-int(sort_np_len*args.coreset_percent)]:
-            rest_dataset.append(train_dataset[int(k)])
+            for _, k in sort_np[:-int(sort_np_len*args.coreset_percent)]:
+                rest_dataset.append(train_dataset[int(k)])
+        else:
+            for l, j in sort_np:
+                if l >= threshold:
+                    dataset.append(train_dataset[int(j)])
+                else:
+                    rest_dataset.append(train_dataset[int(j)])
 
     dataset = np.array(dataset)
     dataset = dataset[np.argsort(dataset, axis=0)[:, 2]]

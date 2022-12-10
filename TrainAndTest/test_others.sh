@@ -2936,9 +2936,9 @@ if [ $stage -le 500 ]; then
 #      --trials trials_20w \
   for resnet_size in 34 ;do
         echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
-  for select_score in loss random ; do
-  for coreset_percent in 0.25 0.5 0.75 ; do
-  for seed in 123456 123457 123458; do
+  for select_score in random ; do
+  for coreset_percent in 0.25 ; do
+  for seed in 123458; do
 #  for lamda_beta in 0.2 0.5 1 2 ; do
   for lamda_beta in 1; do
 
