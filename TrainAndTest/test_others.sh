@@ -2907,8 +2907,8 @@ if [ $stage -le 451 ]; then
   for test_set in sitw ; do # 32,128,512; 8,32,128 aishell2 sitw
   for seed in 123456 123457 123458; do 
     # model_dir=${model}/${dataset}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
-    # model_dir=ECAPA/vox2/klfb_egs_baseline/arcsoft_adam_cyclic/Mean_batch256_SASP2_em192_wde5_2sesmix2_dist/${seed}
-    model_dir=ECAPA/vox2/klfb_egs_baseline/arcsoft_adam_cyclic/Mean_batch256_SASP2_em192_wde5_2sresmix2_dist_mani12_lamda0.2/${seed}
+    model_dir=ECAPA/vox2/klfb_egs_baseline/arcsoft_adam_cyclic/Mean_batch256_SASP2_em192_wde5_2sesmix2_dist/${seed}
+    # model_dir=ECAPA/vox2/klfb_egs_baseline/arcsoft_adam_cyclic/Mean_batch256_SASP2_em192_wde5_2sresmix2_dist_mani12_lamda0.2/${seed}
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
