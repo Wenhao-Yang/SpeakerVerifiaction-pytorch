@@ -2904,7 +2904,7 @@ if [ $stage -le 451 ]; then
   # Training set: vox2 161-dimensional log spectrogram kaldi  Loss: arcsoft
 #      --remove-vad \
   echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
-  for test_set in vox1 ; do # 32,128,512; 8,32,128 aishell2 sitw
+  for test_set in sitw ; do # 32,128,512; 8,32,128 aishell2 sitw
   for seed in 123456 123457 123458; do 
     # model_dir=${model}/${dataset}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
     # model_dir=ECAPA/vox2/klfb_egs_baseline/arcsoft_adam_cyclic/Mean_batch256_SASP2_em192_wde5_2sesmix2_dist/${seed}
