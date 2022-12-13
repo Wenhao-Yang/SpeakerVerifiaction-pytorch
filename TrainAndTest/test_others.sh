@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=201
+stage=451
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2883,6 +2883,57 @@ fi
 #|     vox1-test     |   1.5907    |   0.2671    |    0.2124     |    0.2949     | 20220911 17:05:26 |
 #|   aishell2-test   |   6.7900    |   0.3375    |    0.6747     |    0.8591     | 20220911 17:10:06 |
 #|     sitw-test     |   3.4718    |   0.2345    |    0.2884     |    0.4428     | 20220911 17:11:53 |
+
+if [ $stage -le 451 ]; then
+  feat_type=klfb feat=klfb
+  loss=arcsoft
+  model=ECAPA
+  encoder_type=SASP2
+  dataset=vox2 test_set=vox1 subset=test
+  input_dim=40
+  input_norm=Mean
+  embedding_size=192
+  block_type=res2tdnn
+
+  mask_layer=baseline
+  scheduler=rop optimizer=sgd
+  input_dim=161
+  batch_size=128
+  chn=512
+  seed=123456
+
+  # Training set: vox2 161-dimensional log spectrogram kaldi  Loss: arcsoft
+#      --remove-vad \
+  for test_set in vox1 ; do # 32,128,512; 8,32,128 aishell2 sitw
+  for seed in 123456 123457 123458; do 
+    echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+    # model_dir=${model}/${dataset}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
+    model_dir=ECAPA/vox2/klfb_egs_baseline/arcsoft_adam_cyclic/Mean_batch256_SASP2_em192_wde5_2sesmix2_dist/${seed}
+
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev/trials_dir \
+      --train-trials trials_2w \
+      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_valid \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset} \
+      --feat-format kaldi --nj 4 \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
+      --embedding-size ${embedding_size} \
+      --encoder-type ${encoder_type} \
+      --channels 512,512,512,512,1536 \
+      --stride 1,1,1,1 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --test-input var --frame-shift 300 \
+      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_var \
+      --resume Data/checkpoint/${model_dir}/best.pth \
+      --check-yaml Data/checkpoint/${model_dir}/model.2022.09.07.yaml \
+      --gpu-id 0 \
+      --cos-sim
+  done
+  done
+  exit
+fi
 
 if [ $stage -le 500 ]; then
   model=ThinResNet resnet_size=18
