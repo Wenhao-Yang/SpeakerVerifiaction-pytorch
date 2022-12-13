@@ -2897,7 +2897,6 @@ if [ $stage -le 451 ]; then
 
   mask_layer=baseline
   scheduler=rop optimizer=sgd
-  input_dim=161
   batch_size=128
   chn=512
   seed=123456
