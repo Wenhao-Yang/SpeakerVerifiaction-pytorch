@@ -72,9 +72,9 @@ if [ $stage -le 1 ]; then
   #  for s in dev_log dev_aug_1m_log ; do
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
 #/${feat}
-  for s in dev ; do
+  for s in dev ; do #${feat}
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
@@ -86,7 +86,7 @@ if [ $stage -le 1 ]; then
       --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 \
       --feat-type ${feat_type} \
