@@ -2928,7 +2928,7 @@ if [ $stage -le 451 ]; then
       --resume Data/checkpoint/${model_dir}/best.pth \
       --check-yaml Data/checkpoint/${model_dir}/model.2022.09.07.yaml \
       --gpu-id 0 \
-      --cos-sim
+      --cos-sim --remove-vad
   done
   done
   exit
