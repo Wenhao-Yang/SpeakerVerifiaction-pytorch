@@ -2912,11 +2912,11 @@ if [ $stage -le 451 ]; then
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
-      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev/trials_dir \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
+      --train-test-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40/trials_dir \
       --train-trials trials_2w \
-      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_valid \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset} \
+      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40_valid \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_fb40 \
       --feat-format kaldi --nj 4 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
       --embedding-size ${embedding_size} \
