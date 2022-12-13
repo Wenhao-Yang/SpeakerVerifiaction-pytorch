@@ -578,6 +578,7 @@ def select_samples(train_loader, model, ce, select_score='loss'):
     dataset = dataset[np.argsort(dataset, axis=0)[:, 2]]
     dataset = dataset[:-(len(dataset) % args.batch_size)]
 
+    pdb.set_trace()
     np.random.shuffle(dataset)
 
     train_dir.dataset = dataset
