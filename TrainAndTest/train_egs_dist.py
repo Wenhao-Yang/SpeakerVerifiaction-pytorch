@@ -383,8 +383,9 @@ def valid_class(valid_loader, model, ce, epoch):
     total_datasize = 0.
     lambda_ = (epoch / config_args['epochs']) ** 2
 
+    pbar = tqdm(enumerate(valid_loader))
     with torch.no_grad():
-        for batch_idx, (data, label) in enumerate(valid_loader):
+        for batch_idx, (data, label) in pbar:
 
             if torch.cuda.is_available():
                 data = data.cuda()
@@ -971,6 +972,7 @@ def main():
             torch.distributed.barrier()
             if not torch.distributed.is_initialized():
                 break
+
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
             if config_args['early_stopping'] or (
