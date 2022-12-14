@@ -14,7 +14,7 @@ feat_type: wave
 loss: arcsoft
 input_dim: 80
 feat: !ref fb<input_dim>
-subset: ''
+subset: ""
 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev
 train_test_dir: !ref <data_root_dir>/data/<testset>/test
@@ -25,10 +25,9 @@ test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
 input_norm: Mean
 
-
 test_input: fix
 log_scale: False
-random_chunk: [ 32000, 32000 ]
+random_chunk: [32000, 32000]
 chunk_size: 48000
 frame_shift: 48000
 extract: True
@@ -44,8 +43,8 @@ epochs: 60
 
 # optimizer
 optimizer: adam
-lr: 0.002
-base_lr: 0.00000002
+lr: 0.001
+base_lr: 0.00000001
 lr_decay: 0
 weight_decay: 0.00001
 dampening: 0
@@ -55,14 +54,14 @@ nesterov: False
 
 early_stopping: True
 early_patience: 15
-early_delta: 0.01
-early_meta: 'EER'
+early_delta: 0.0001
+early_meta: "mix2"
 
 # Scheduler
 patience: 2
-milestones: [ 10,20,30,40 ]
+milestones: [10, 20, 30, 40]
 scheduler: cyclic
-cyclic_epoch: 4
+cyclic_epoch: 2
 cos_sim: True
 
 ## model Setttings
@@ -70,21 +69,21 @@ model: ECAPA
 kernel_size:
 alpha: 0
 embedding_size: 192
-batch_size: 256
+batch_size: 128
 dropout_p: 0.0
 activation: relu
 channels: 512,512,512,512,1536
 #channels: 1024,1024,1024,1024,3072
-encoder_type: 'SASP2'
+encoder_type: "SASP2"
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
-  filter: 'fbank'
+  filter: "fbank"
   sr: 16000
   feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
-  channels: [ 512,512,512,512,1536 ]
-  encoder_type: 'SASP2'
+  channels: [512, 512, 512, 512, 1536]
+  encoder_type: "SASP2"
   embedding_size: !ref <embedding_size>
   num_classes: 5994
   activation: relu
@@ -104,9 +103,9 @@ s: 30
 # stat_type: margin1
 
 # Checkpoints
-loss_str: ''
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wde5_var2ses_dist
-resume: ''
+loss_str: ""
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wde5_2sesmix2_dist
+resume: ""
 #  !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
