@@ -347,8 +347,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             pbar.set_description(epoch_str)
 
-        if (batch_idx + 1) % 100 == 99:
-            break
+        # if (batch_idx + 1) % 100 == 99:
+        #     break
 
     if config_args['batch_shuffle']:
         train_dir.__shuffle__()
@@ -383,9 +383,9 @@ def valid_class(valid_loader, model, ce, epoch):
     total_datasize = 0.
     lambda_ = (epoch / config_args['epochs']) ** 2
 
-    pbar = tqdm(enumerate(valid_loader))
+    # pbar = tqdm(enumerate(valid_loader))
     with torch.no_grad():
-        for batch_idx, (data, label) in pbar:
+        for batch_idx, (data, label) in enumerate(valid_loader):
 
             if torch.cuda.is_available():
                 data = data.cuda()
