@@ -79,7 +79,7 @@ if [ $stage -le 1 ]; then
 #/${feat}
   for s in train_fb40 ; do #${feat}
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 --feat-type ${feat_type} \
       --train \
@@ -90,7 +90,7 @@ if [ $stage -le 1 ]; then
       --out-set ${s}_inst
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 --feat-type ${feat_type} \
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} --sample-type ${sample_type} \
