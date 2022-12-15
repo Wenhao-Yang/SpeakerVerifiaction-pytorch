@@ -86,7 +86,7 @@ if [ $stage -le 1 ]; then
       --input-per-spks ${input_per_spks} --num-frames ${num_frames} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
-      --num-valid 2 \
+      --num-valid 2 --remove-vad \
       --out-set ${s}_inst
 
     python Process_Data/Compute_Feat/make_egs.py \
@@ -96,7 +96,7 @@ if [ $stage -le 1 ]; then
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
-      --num-valid 2 \
+      --num-valid 2 --remove-vad \
       --out-set ${s}_valid_inst
   done
   exit
