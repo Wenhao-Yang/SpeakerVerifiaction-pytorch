@@ -635,7 +635,8 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
         f = interpolate.interp1d(m[1:], n)
         xnew = np.arange(np.min(m[1:]), np.max(
             m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-        ynew = 1 / f(xnew)
+        ynew = f(xnew)
+
     elif weight == 'rand':
         ynew = np.random.uniform(size=input_dim)
     elif weight == 'one':
