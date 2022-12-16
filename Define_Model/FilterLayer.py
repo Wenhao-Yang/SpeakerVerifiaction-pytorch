@@ -636,7 +636,15 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
         xnew = np.arange(np.min(m[1:]), np.max(
             m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
         ynew = f(xnew)
-
+    elif weight == 'amel':
+        m = np.arange(0, 2840.0230467083188)
+        m = 700 * (10 ** (m / 2595.0) - 1)
+        n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
+        # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+        f = interpolate.interp1d(m[1:], n)
+        xnew = np.arange(np.min(m[1:]), np.max(
+            m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+        ynew = 1/f(xnew)
     elif weight == 'rand':
         ynew = np.random.uniform(size=input_dim)
     elif weight == 'one':
