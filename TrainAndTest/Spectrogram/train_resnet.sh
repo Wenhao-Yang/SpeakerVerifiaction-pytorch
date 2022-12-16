@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=70
+stage=62
 
 waited=0
 while [ $(ps 182247 | wc -l) -eq 2 ]; do
@@ -649,9 +649,9 @@ if [ $stage -le 62 ]; then
   m=1.0
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
- for seed in 123456 ; do
+ for seed in 123456 123457 123458  ; do
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    CUDA_VISIBLE_DEVICES=1,1 OMP_NUM_THREADS=6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417425 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=1,1 OMP_NUM_THREADS=6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417425 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18.yaml --seed=${seed}
 
     CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417425 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet34.yaml --seed=${seed}
 
