@@ -731,7 +731,10 @@ class DropweightLayer(nn.Module):
             if x.is_cuda:
                 drop_weight = drop_weight.cuda()
 
-            return x * drop_weight
+            if torch.Tensor(1).uniform_(0, 1) < 0.5:
+                return x * drop_weight
+            else:
+                return x
 
     def __repr__(self):
         return "DropweightLayer(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
