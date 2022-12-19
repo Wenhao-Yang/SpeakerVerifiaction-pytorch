@@ -1080,6 +1080,8 @@ def main():
         print("Running %.4f minutes for each epoch.\n" %
               (t / 60 / (max(end - start, 1))))
     # torch.distributed.des
+    time.sleep(15)
+    os.kill(os.getpid(), signal.SIGKILL)
     exit(0)
 
 
