@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=500
+stage=200
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -1681,18 +1681,15 @@ fi
 
 if [ $stage -le 95 ]; then
   feat_type=klsp
-  model=LoResNet
+  model=LoResNet resnet_size=8
   feat=log
   loss=arcsoft
   encod=None
   alpha=0
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
 #  test_subset=
   block_type=cbam
-  encoder_type=AVG
-  embedding_size=256
-  resnet_size=8
+  encoder_type=AVG embedding_size=256
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   test_subset=test
@@ -1702,8 +1699,7 @@ if [ $stage -le 95 ]; then
   kd_type=embedding_mse #vanilla #em_l2 vanilla
 #  kd_loss=kld
   weight=clean
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
 
   chn=16
   weight_norm=sum
@@ -2029,7 +2025,8 @@ if [ $stage -le 200 ]; then
   weight_norm=mean
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for mask_layer in rvec ; do
+  for mask_layer in attention ; do
+    for weight in amel mel; do
     for seed in 123456 123457 123458;do
       for test_subset in test ; do
         at_str=
@@ -2068,6 +2065,7 @@ if [ $stage -le 200 ]; then
           --gpu-id 0 --verbose 0 \
           --cos-sim
       done
+    done
     done
   done
   exit
@@ -2488,14 +2486,12 @@ fi
 
 
 if [ $stage -le 300 ]; then
-  feat_type=klfb
-  feat=fb40
+  feat_type=klfb feat=fb40
   input_norm=Mean
   loss=arcsoft
-  encod=STAP
   block_type=basic
   model=TDNN_v5
-  embedding_size=512
+  encod=STAP embedding_size=512
   train_set=cnceleb test_set=cnceleb subset=dev
   # 20210902 test
   #+--------------+-------------+-------------+-------------+--------------+-------------------+
