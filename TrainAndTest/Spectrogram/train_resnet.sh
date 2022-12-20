@@ -437,7 +437,7 @@ if [ $stage -le 60 ]; then
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet18_attention.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet10.yaml --seed=${seed}
 
-    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet10/attention_mel.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet10/drop_mel.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet10/attention_v2_rge.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/ResNets/vox1_resnet10/attention_v2_rie.yaml --seed=${seed}
 
