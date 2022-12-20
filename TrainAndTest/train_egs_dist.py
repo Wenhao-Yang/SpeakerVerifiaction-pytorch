@@ -498,9 +498,9 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
     if torch.distributed.get_rank() == 0:
         print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, '
-              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix: {:.4f}. \33[0m'.format(100. * eer,
+              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix2,3: {:.4f}, {:.4f}. \33[0m'.format(100. * eer,
                                                                                       eer_threshold,
-                                                                                      mindcf_01, mindcf_001, mix3))
+                                                                                      mindcf_01, mindcf_001, mix2, mix3))
 
         writer.add_scalar('Train/EER', 100. * eer, epoch)
         writer.add_scalar('Train/Threshold', eer_threshold, epoch)
