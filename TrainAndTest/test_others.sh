@@ -2011,21 +2011,18 @@ if [ $stage -le 200 ]; then
   feat_type=klsp feat=log
   loss=arcsoft
   alpha=0
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=cnceleb
 #  test_subset=
-  block_type=basic
-  encoder_type=SAP2
-  embedding_size=256
+  block_type=basic downsample=k1
+  encoder_type=SAP2 embedding_size=256
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
-  downsample=k1
 
   weight=v2_rclean_gean #v2_rclean_gax #mel
   weight_norm=max scale=0.2 weight_p=0.0
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for mask_layer in drop ; do
+  for mask_layer in rvec attention drop ; do
     for weight in mel; do
     for seed in 123456 123457 123458;do
       for test_subset in test ; do
