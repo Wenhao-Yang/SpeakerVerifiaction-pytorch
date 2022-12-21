@@ -2022,17 +2022,22 @@ if [ $stage -le 200 ]; then
   downsample=k1
 
   weight=v2_rclean_gean #v2_rclean_gax #mel
-  weight_norm=mean
+  weight_norm=max scale=0.2 weight_p=0.0
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for mask_layer in attention ; do
-    for weight in amel mel; do
+  for mask_layer in drop ; do
+    for weight in mel; do
     for seed in 123456 123457 123458;do
       for test_subset in test ; do
         at_str=
         if [[ $mask_layer == attention* ]];then
           at_str=_${weight}_${weight_norm} #_mel_mean
+        elif [[ $mask_layer == drop ]];then
+          at_str=_${weight}_${weight_norm}_scale${scale} #_mel_mean
         fi
+
+        # Mean_batch128_basic_downk1_avg4_SAP2_em256_dp01_alpha0_none1_mel_max_scale0.2_wde4_varesmix2_bashuf2_dist
+        # _<init_weight>_<weight_norm>_scale<scale>
         model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch128_basic_downk1_avg4_SAP2_em256_dp01_alpha0_none1${at_str}_wde4_varesmix2_bashuf2_dist/${seed}
 #        if [ $seed -eq 123456 ]; then
 #          yaml_file=model.2022.11.09.yaml
@@ -2050,15 +2055,14 @@ if [ $stage -le 200 ]; then
           --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
           --feat-format kaldi --nj 8 \
           --input-norm Mean --input-dim 161 \
-          --mask-layer ${mask_layer} --init-weight ${weight} --weight-norm ${weight_norm} \
+          --mask-layer ${mask_layer} --init-weight ${weight} --weight-norm ${weight_norm} --scale ${scale} --weight-p ${weight_p} \
           --kernel-size 5,5 --stride 2,2 --fast none1 \
           --block-type ${block_type} --downsample ${downsample} \
           --channels 16,32,64,128 \
           --loss-type ${loss} --margin 0.2 --s 30 \
           --time-dim 1 --avg-size 4 \
           --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha ${alpha} \
-          --test-input var \
-          --dropout-p 0.1 \
+          --test-input var --dropout-p 0.1 \
           --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_best_var \
           --resume Data/checkpoint/${model_dir}/best.pth \
           --check-yaml Data/checkpoint/${model_dir}/model.2022.07.01.yaml \
