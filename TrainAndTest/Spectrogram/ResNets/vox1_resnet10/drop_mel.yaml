@@ -85,7 +85,7 @@ mask: "drop"
 init_weight: "mel" # v2_rclean_iean
 weight_norm: "max"
 weight_p: 0.0
-scale: 0.2
+scale: 0.5
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
