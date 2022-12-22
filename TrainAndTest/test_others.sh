@@ -2022,7 +2022,7 @@ if [ $stage -le 200 ]; then
   weight_norm=max scale=0.5 weight_p=0.0
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for testset in vox1 magic;do
+  for testset in aishell2;do
   for mask_layer in drop ; do
     for weight in mel; do
     for seed in 123456 123457 123458;do
