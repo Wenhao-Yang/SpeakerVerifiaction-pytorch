@@ -694,6 +694,8 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
 
     if 'mean' in power_weight:
         ynew /= ynew.mean()
+    elif 'norm' in power_weight:
+        ynew = (ynew - ynew.min()) / (ynew.max() - ynew.min())
     else:
         ynew /= ynew.max()
 
