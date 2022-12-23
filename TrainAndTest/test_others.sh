@@ -2963,7 +2963,7 @@ if [ $stage -le 452 ]; then
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/dev \
       --train-test-dir ${lstm_dir}/data/${dataset}/${subset} \
       --train-trials trials \
       --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_valid \
