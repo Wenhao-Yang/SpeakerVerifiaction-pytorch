@@ -751,7 +751,7 @@ def main():
         model_para.append({'params': xe_criterion.parameters(
         ), 'lr': config_args['lr'] * config_args['lr_ratio']})
 
-    if 'second_wd' in config_args and config_args['config_args'] > 0:
+    if 'second_wd' in config_args and config_args['second_wd'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:
         classifier_params = list(map(id, model.classifier.parameters()))
         rest_params = filter(lambda p: id(
