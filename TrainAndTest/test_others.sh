@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=451
+stage=452
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2935,6 +2935,58 @@ if [ $stage -le 451 ]; then
   exit
 fi
 
+if [ $stage -le 452 ]; then
+  feat_type=wave feat=wave
+  loss=arcsoft
+  model=ECAPA
+  encoder_type=SASP2
+  dataset=vox2 test_set=vox1 subset=test
+  input_dim=80
+  input_norm=Mean
+  embedding_size=192
+  block_type=res2tdnn
+
+  mask_layer=baseline
+  filter_layer=fbank feat_dim=80
+  scheduler=rop optimizer=sgd
+  batch_size=128
+  chn=512
+  seed=123456
+
+  # Training set: vox2 161-dimensional log spectrogram kaldi  Loss: arcsoft
+#      --remove-vad \
+  echo -e "\n\033[1;4;31m Stage ${stage}: Testing ${model} in ${test_set} with ${loss} \033[0m\n"
+  for test_set in vox1 sitw ; do # 32,128,512; 8,32,128 aishell2 sitw
+  for seed in 123456 123457 123458; do 
+    # model_dir=${model}/${dataset}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_${encoder_type}_em${embedding_size}_${chn_str}wd2e5_vares_bashuf/${seed}
+    model_dir=ECAPA/vox2/wave_egs_baseline/arcsoft_adam_cyclic/Mean_batch128_SASP2_em192_wde5_2sesmix2_dist/${seed}
+
+    python -W ignore TrainAndTest/test_egs.py \
+      --model ${model} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-test-dir ${lstm_dir}/data/${dataset}/${subset} \
+      --train-trials trials \
+      --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_valid \
+      --test-dir ${lstm_dir}/data/${test_set}/${subset} \
+      --feat-format kaldi --nj 4 \
+      --input-norm ${input_norm} --input-dim ${input_dim} \
+      --filter ${filter_layer} --feat-dim ${feat_dim} \
+      --embedding-size ${embedding_size} \
+      --encoder-type ${encoder_type} \
+      --channels 512,512,512,512,1536 \
+      --stride 1,1,1,1 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --test-input var --frame-shift 300 \
+      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_var \
+      --resume Data/checkpoint/${model_dir}/best.pth \
+      --check-yaml Data/checkpoint/${model_dir}/model.2022.09.07.yaml \
+      --gpu-id 2 \
+      --cos-sim
+  done
+  done
+  exit
+fi
+
 if [ $stage -le 500 ]; then
   model=ThinResNet resnet_size=18
   datasets=aidata testset=aidata
@@ -2943,9 +2995,8 @@ if [ $stage -le 500 ]; then
   alpha=0
   input_norm=Mean
 #  test_subset=
-  block_type=seblock
-  encoder_type=ASTP2
-  embedding_size=256
+  block_type=seblock red_ratio=2
+  encoder_type=ASTP2 embedding_size=256
 #  sname=dev #dev_aug_com
   sname=train #_aug_com
   downsample=k1
@@ -2953,14 +3004,11 @@ if [ $stage -le 500 ]; then
   test_subset=test
   chn=16
 #  mask_layer=rvec
-  mask_layer=baseline
-  mask_len=5,10
-  weight=rclean_max
+  mask_layer=baseline mask_len=5,10
+  weight=rclean_max weight_norm=max
   scheduler=rop optimizer=sgd
   batch_size=256
-  weight_norm=max
-
-  red_ratio=2
+  
   avg_size=5
   fast=none1
   filter_layer=fbank
@@ -2996,13 +3044,12 @@ if [ $stage -le 500 ]; then
         avg_str=avg${avg_size}_
       fi
 
+      at_str=
       if [[ $mask_layer == attention* ]];then
         at_str=_${weight}
       #        --score-suffix
       elif [ "$mask_layer" = "both" ];then
         at_str=_`echo $mask_len | sed  's/,//g'`
-      else
-        at_str=
       fi
 
       model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_${filter_layer}${feat_dim}_mixup${lamda_beta}_2/${seed}
