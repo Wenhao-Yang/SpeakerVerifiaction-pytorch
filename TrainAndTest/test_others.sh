@@ -2968,7 +2968,7 @@ if [ $stage -le 452 ]; then
       --train-trials trials \
       --valid-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_valid \
       --test-dir ${lstm_dir}/data/${test_set}/${subset} \
-      --feat-format kaldi --nj 4 \
+      --feat-format wav --nj 4 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
       --filter ${filter_layer} --feat-dim ${feat_dim} \
       --embedding-size ${embedding_size} \
