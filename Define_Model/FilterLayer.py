@@ -684,7 +684,7 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
     elif weight == 'v2_fratio':
         ynew = c.VOX2_FRATIO
     elif weight == 'v2_eer':
-        ynew = c.VOX2_EER
+        ynew = c.V2_EER
         if len(ynew) != input_dim:
             x = np.arange(0, 8000+8000/(len(ynew)-1), 8000/(len(ynew)-1))
             f = interpolate.interp1d(x, ynew)
