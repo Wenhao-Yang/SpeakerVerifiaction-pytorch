@@ -84,8 +84,7 @@ if [ $stage -le 10 ]; then
 #  feat_type=pyfb
   feat_type=wave
   loss=arcsoft
-  encod=ASTP2
-  embedding_size=256
+  encod=ASTP2 embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 2.0;do
     for seed in 123456 ; do
