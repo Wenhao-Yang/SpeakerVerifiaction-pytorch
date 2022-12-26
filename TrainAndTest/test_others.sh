@@ -2019,13 +2019,13 @@ if [ $stage -le 200 ]; then
   sname=dev #_aug_com
 
   weight=v2_eer #v2_rclean_gax #mel
-  weight_norm=norm scale=0.5 weight_p=0.0
+  weight_norm=mean scale=0.5 weight_p=0.0
   # v2_eer_norm_scale0.5
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
   for testset in vox1 cnceleb aishell2 magic;do
-  for mask_layer in drop ; do
-    for weight in v2_eer; do
+  for mask_layer in attention ; do
+    for weight in v2_rclean_gean v2_fratio ; do
     for seed in 123456 123457 123458;do
       for test_subset in test ; do
         at_str=
