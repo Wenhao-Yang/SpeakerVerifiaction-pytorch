@@ -47,39 +47,34 @@ fi
 #exit
 #stage=1000
 if [ $stage -le 1 ]; then
-  # dataset=vox2
+  dataset=vox2
 #  dataset=cnceleb
 #  dataset=aishell2
- dataset=aidata
+#  dataset=aidata
 
   #  feat_type=pyfb
 #  dataset=vox1
-#  feat=wave
-#  feat_format=wav
-#  feat_type=wav
+  feat=wave
+  feat_format=wav feat_type=wav
 
-  # feat=klsp
-  # feat_type=klsp
-
-  feat=klfb
-  feat_type=klfb
-  feat_format=kaldi
+  # feat=klsp feat_type=klsp
+  # feat=klfb feat_type=klfb
+  # feat_format=kaldi
 
 #  num_frames=400
-  num_frames=400 input_per_spks=896
+  num_frames=64000 input_per_spks=64
   # num_frames=400 input_per_spks=896
 #        --remove-vad \
 #--domain \
 
   sample_type=instance
-
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
 #/${feat}
-  for s in train_fb40 ; do #${feat}
+  for s in dev ; do #${feat}
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 --feat-type ${feat_type} \
       --train \
@@ -90,7 +85,7 @@ if [ $stage -le 1 ]; then
       --out-set ${s}_inst
 
     python Process_Data/Compute_Feat/make_egs.py \
-      --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
+      --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 12 --feat-type ${feat_type} \
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} --sample-type ${sample_type} \
