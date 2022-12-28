@@ -627,75 +627,50 @@ class TimeFreqMaskLayer(nn.Module):
 
 def get_weight(weight: str, input_dim: int, power_weight: str):
 
-    if weight == 'mel':
-        m = np.arange(0, 2840.0230467083188)
-        m = 700 * (10 ** (m / 2595.0) - 1)
-        n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
-        # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-        f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(
-            m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+    m = np.arange(0, 2840.0230467083188)
+    m = 700 * (10 ** (m / 2595.0) - 1)
+    n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
+    # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+    f = interpolate.interp1d(m[1:], n)
+    xnew = np.arange(np.min(m[1:]), np.max(
+        m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+    mel = f(xnew)
+    amel = 1/f(xnew)
+
+    weights = {
+        "mel": mel,
+        "amel": amel,
+        "rand": np.random.uniform(size=input_dim),
+        "one": np.ones(input_dim),
+        "clean": c.VOX1_CLEAN,
+        "rclean": c.VOX1_RCLEAN,
+        "rclean_max": c.VOX1_RCLEAN_MAX,
+        "vox2_rclean": c.VOX2_RCLEAN,
+        "aug": c.VOX1_AUG,
+        "vox2": c.VOX2_CLEAN,
+        "vox1_cf": c.VOX1_CFB40,
+        "vox2_cf": c.VOX2_CFB40,
+        "vox1_rcf": c.VOX1_RCFB40,
+        "vox2_rcf": c.VOX2_RCFB40,
+        "v2_rclean_gean": c.VOX2_RCLEAN_GRAD_MEAN,
+        "v2_rclean_iean": c.VOX2_RCLEAN_INPT_MEAN,
+        "v2_rclean_igean": c.VOX2_RCLEAN_INGR_MEAN,
+        "v2_rclean_gax": c.VOX2_RCLEAN_GRAD_MAX,
+        "v2_rclean_imax": c.VOX2_RCLEAN_INPT_MAX,
+        "v2_rclean_igmax": c.VOX2_RCLEAN_INGR_MAX,
+        "v2_fratio": c.VOX2_FRATIO,
+        "v2_eer": c.V2_EER
+    }
+
+    assert weight in weights.keys()
+    ynew = weights[weight]
+
+    if len(ynew) != input_dim:
+        x = np.arange(0, 8000+8000/(len(ynew)-1), 8000/(len(ynew)-1))
+        f = interpolate.interp1d(x, ynew)
+
+        xnew = np.arange(0, 8000+8000/(input_dim-1), 8000/(input_dim-1))
         ynew = f(xnew)
-    elif weight == 'amel':
-        m = np.arange(0, 2840.0230467083188)
-        m = 700 * (10 ** (m / 2595.0) - 1)
-        n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
-        # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-        f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(
-            m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-        ynew = 1/f(xnew)
-    elif weight == 'rand':
-        ynew = np.random.uniform(size=input_dim)
-    elif weight == 'one':
-        ynew = np.ones(input_dim)
-    elif weight == 'clean':
-        ynew = c.VOX1_CLEAN
-    elif weight == 'rclean':
-        ynew = c.VOX1_RCLEAN
-    elif weight == 'rclean_max':
-        ynew = c.VOX1_RCLEAN_MAX
-    elif weight == 'vox2_rclean':
-        ynew = c.VOX2_RCLEAN
-    elif weight == 'aug':
-        ynew = c.VOX1_AUG
-    elif weight == 'vox2':
-        ynew = c.VOX2_CLEAN
-    elif weight == 'vox1_cf':
-        ynew = c.VOX1_CFB40
-    elif weight == 'vox2_cf':
-        ynew = c.VOX2_CFB40
-    elif weight == 'vox1_rcf':
-        ynew = c.VOX1_RCFB40
-    elif weight == 'vox2_rcf':
-        ynew = c.VOX2_RCFB40
-    elif weight == 'v2_rclean_gean':
-        ynew = c.VOX2_RCLEAN_GRAD_MEAN
-    elif weight == 'v2_rclean_iean':
-        ynew = c.VOX2_RCLEAN_INPT_MEAN
-    elif weight == 'v2_rclean_igean':
-        ynew = c.VOX2_RCLEAN_INGR_MEAN
-    elif weight == 'v2_rclean_gax':
-        ynew = c.VOX2_RCLEAN_GRAD_MAX
-    elif weight == 'v2_rclean_imax':
-        ynew = c.VOX2_RCLEAN_INPT_MAX
-    elif weight == 'v2_rclean_igmax':
-        ynew = c.VOX2_RCLEAN_INGR_MAX
-    elif weight == 'v2_fratio':
-        ynew = c.VOX2_FRATIO
-    elif weight == 'v2_eer':
-        ynew = c.V2_EER
-        if len(ynew) != input_dim:
-            x = np.arange(0, 8000+8000/(len(ynew)-1), 8000/(len(ynew)-1))
-            f = interpolate.interp1d(x, ynew)
-
-            xnew = np.arange(0, 8000+8000/(input_dim-1), 8000/(input_dim-1))
-            ynew = f(xnew)
-
-    elif weight == 'one':
-        ynew = np.ones(input_dim)
-    else:
-        raise ValueError(weight)
 
     ynew = np.array(ynew)
     if 'power' in power_weight:
