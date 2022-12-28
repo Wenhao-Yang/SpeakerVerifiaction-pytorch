@@ -81,9 +81,9 @@ dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
 fast: "none1"
-mask: "attention"
+mask: "drop"
 init_weight: "v2_rclean_gean"
-weight_norm: "mean"
+weight_norm: "norm"
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>

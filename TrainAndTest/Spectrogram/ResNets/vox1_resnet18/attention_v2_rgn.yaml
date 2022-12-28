@@ -66,7 +66,7 @@ early_delta: 0.01
 early_meta: "mix2"
 
 ## model Setttings
-resnet_size: 10
+resnet_size: 18
 block_type: "basic"
 red_ratio: 2
 encoder_type: "SAP2"
@@ -81,8 +81,8 @@ dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
 fast: "none1"
-mask: "attention2"
-init_weight: "v2_rclean_gean" #mel v2_rclean_iean
+mask: "attention"
+init_weight: "v2_rclean_gean"
 weight_norm: "norm"
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
@@ -130,7 +130,7 @@ mixup_type: ""
 # Checkpoints
 loss_str: ""
 check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_<mask>/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_<init_weight>_<weight_norm>_wde4_varesmix2_bashuf2_dist
-#_<init_weight>_<weight_norm>
+#
 #_red<red_ratio>
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
