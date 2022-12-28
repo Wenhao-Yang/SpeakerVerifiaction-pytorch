@@ -81,7 +81,7 @@ dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
 fast: "none1"
-mask: "attention2"
+mask: "attention"
 init_weight: "v2_rclean_gean" #mel v2_rclean_iean
 weight_norm: "norm"
 

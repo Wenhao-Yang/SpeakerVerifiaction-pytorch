@@ -10,6 +10,10 @@
 #|   cnceleb-test    |  15.99±0.40  | 0.7858±0.0404 | 0.9545±0.0167 | ResNet10-attention-v2_rclean_gean_mean-mix2
 #|   aishell2-test   |   9.32±0.26  | 0.8256±0.0010 | 0.9358±0.0152 | ResNet10-attention-v2_rclean_gean_mean-mix2
 #|    magic-test     |  16.10±0.16  | 0.9991±0.0007 | 0.9996±0.0002 | ResNet10-attention-v2_rclean_gean_mean-mix2
+#|     vox1-test     |   4.23±0.06  | 0.3790±0.0104 | 0.5181±0.0412 | ResNet10-attention-v2_rclean_gean_norm-mix2
+#|   aishell2-test   |   8.99±0.39  | 0.8163±0.0098 | 0.9301±0.0067 | ResNet10-attention-v2_rclean_gean_norm-mix2
+#|   cnceleb-test    |  15.77±0.16  | 0.7586±0.0046 | 0.9370±0.0122 | ResNet10-attention-v2_rclean_gean_norm-mix2
+#|    magic-test     |  16.19±0.26  | 0.9995±0.0004 | 0.9997±0.0001 | ResNet10-attention-v2_rclean_gean_norm-mix2
 #|     vox1-test     |   4.22±0.08  | 0.3726±0.0140 | 0.5122±0.0153 | ResNet10-attention-v2_fratio_mean-mix2
 #|   cnceleb-test    |  16.14±0.12  | 0.7624±0.0182 | 0.9340±0.0161 | ResNet10-attention-v2_fratio_mean-mix2
 #|   aishell2-test   |   9.37±0.28  | 0.8282±0.0091 | 0.9437±0.0063 | ResNet10-attention-v2_fratio_mean-mix2
