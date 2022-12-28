@@ -57,8 +57,8 @@ if [ $stage -le 1 ]; then
   feat=wave
   feat_format=wav feat_type=wav
 
-  # feat=klsp feat_type=klsp
-  # feat=klfb feat_type=klfb
+  # feat=klsp feat_type=klsp 
+  # feat=klfb feat_type=klfb --remove-vad 
   # feat_format=kaldi
 
 #  num_frames=400
@@ -67,7 +67,7 @@ if [ $stage -le 1 ]; then
 #        --remove-vad \
 #--domain \
 
-  sample_type=instance
+  sample_type=balance
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
@@ -81,8 +81,8 @@ if [ $stage -le 1 ]; then
       --input-per-spks ${input_per_spks} --num-frames ${num_frames} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
-      --num-valid 2 --remove-vad \
-      --out-set ${s}_inst
+      --num-valid 2 \
+      --out-set ${s}_bala
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
@@ -91,8 +91,8 @@ if [ $stage -le 1 ]; then
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
-      --num-valid 2 --remove-vad \
-      --out-set ${s}_valid_inst
+      --num-valid 2 \
+      --out-set ${s}_valid_bala
   done
   exit
 fi
