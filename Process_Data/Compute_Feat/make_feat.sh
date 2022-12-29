@@ -62,7 +62,7 @@ if [ $stage -le 1 ]; then
   # feat_format=kaldi
 
 #  num_frames=400
-  num_frames=64000 input_per_spks=512
+  num_frames=64000 input_per_spks=640
   # num_frames=400 input_per_spks=896
 #        --remove-vad \
 #--domain \
