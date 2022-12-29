@@ -62,12 +62,12 @@ if [ $stage -le 1 ]; then
   # feat_format=kaldi
 
 #  num_frames=400
-  num_frames=64000 input_per_spks=64
+  num_frames=64000 input_per_spks=512
   # num_frames=400 input_per_spks=896
 #        --remove-vad \
 #--domain \
 
-  sample_type=balance
+  sample_type=half_balance
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
@@ -82,7 +82,7 @@ if [ $stage -le 1 ]; then
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --out-set ${s}_bala
+      --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
@@ -92,7 +92,7 @@ if [ $stage -le 1 ]; then
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --out-set ${s}_valid_bala
+      --out-set ${s}_valid
   done
   exit
 fi
