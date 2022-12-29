@@ -105,7 +105,7 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_varesmix2_dist
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_varesmix2_dist_bala
 resume: ""
 #  !ref <check_path>/checkpoint_40.pth
 
