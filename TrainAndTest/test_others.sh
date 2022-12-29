@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=452
+stage=301
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2657,45 +2657,45 @@ if [ $stage -le 300 ]; then
 fi
 
 if [ $stage -le 301 ]; then
-  model=ThinResNet resnet_size=10
-  input_dim=80 feat_type=klfb
+  model=ThinResNet resnet_size=34
+  input_dim=40 feat_type=klfb
   feat=fb${input_dim}
   input_norm=Mean
   loss=arcsoft
 
 #  encoder_type=SAP2 embedding_size=512
-  encoder_type=SAP2 embedding_size=256
+  encoder_type=ASTP2 embedding_size=256
   block_type=seblock downsample=k1 red_ratio=2
-  kernel=7,7 fast=none1
+  kernel=5,5 fast=none1
   loss=arcsoft
   alpha=0
 
   batch_size=256
   mask_layer=baseline mask_len=5,5
-  # train_set=cnceleb test_set=cnceleb
-  train_set=vox1 test_set=vox1
+  train_set=cnceleb test_set=cnceleb
+  # train_set=vox1 test_set=vox1
   train_subset=
 #  subset=dev
-  subset=test
-  test_input=var
+  subset=test test_input=var
   epoch=13
 
 #     --trials subtrials/trials_${s} --score-suffix ${s} \
 # Data/checkpoint/ThinResNet34/cnceleb/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var
-
 #--score-norm as-norm --n-train-snts 100000 --cohort-size 5000 \
 #     --vad-select \
 
 echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
-for seed in 123456 123457 123458; do
-  for s in all; do    
+for seed in 123456 ; do
+  s=all
+  for epoch in 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41; do    
 #    model_dir=ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es
     # model_dir=ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_vares_bashuf2_dist_mani234_lamda2.0/123456
     # model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
 
     #  model_dir=ThinResNet10/vox1/klfb80_egs_kd_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk3_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_var_attention1000_time_feat_bashuf/${seed}
-     model_dir=ThinResNet10/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
+    #  model_dir=ThinResNet10/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
+    model_dir=Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2_dist/123456
 
    python -W ignore TrainAndTest/test_egs.py \
      --model ${model} --resnet-size ${resnet_size} \
@@ -2711,13 +2711,13 @@ for seed in 123456 123457 123458; do
      --kernel-size ${kernel} --fast none1 --stride 2,1 \
      --channels 16,32,64,128 \
      --time-dim 1 --avg-size 5 \
-     --loss-type ${loss} --margin 0.2 --s 30 \
+     --loss-type ${loss} --margin 0.15 --s 30 \
      --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
      --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha 0 \
      --test-input ${test_input} --frame-shift 300 \
-     --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_${test_input} \
-     --resume Data/checkpoint/${model_dir}/best.pth \
-     --gpu-id 0 --verbose 0 \
+     --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_${epoch}_${test_input} \
+     --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+     --gpu-id 4 --verbose 0 --test \
      --cos-sim
 #     --extract \
 #      --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
@@ -2755,19 +2755,17 @@ done
 #     --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}_valid \
 #     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
 #     --feat-format kaldi --nj 8 \
-#     --input-norm ${input_norm} --input-dim 80 \
+#     --input-norm ${input_norm} --input-dim 80 --remove-vad \
 #     --kernel-size ${kernel} \
-#     --downsample ${downsample} \
 #     --channels 32,64,128,256 \
 #     --fast none1 --stride 2,2 \
 #     --time-dim 1 --avg-size 5 \
 #     --alpha 0 \
 #     --loss-type ${loss} --margin 0.2 --s 30 \
-#     --block-type ${block_type} \
+#     --block-type ${block_type} --downsample ${downsample} \
 #     --embedding-size ${embedding_size} \
 #     --encoder-type ${encoder_type} \
 #     --input-length fix \
-#     --remove-vad \
 #     --frame-shift 300 \
 #     --xvector-dir Data/xvector/${model_dir}/${test_set}_dev_epoch60_fix \
 #     --resume Data/checkpoint/${model_dir}/checkpoint_60.pth \

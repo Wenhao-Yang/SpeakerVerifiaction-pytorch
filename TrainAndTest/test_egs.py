@@ -10,6 +10,7 @@
 @Overview: Train the resnet 10 with asoftmax.
 """
 from __future__ import print_function
+import torch._utils
 import pickle
 import random
 import argparse
@@ -48,17 +49,16 @@ from logger import NewLogger
 
 warnings.filterwarnings("ignore")
 
-import torch._utils
 
 try:
     torch._utils._rebuild_tensor_v2
 except AttributeError:
     def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
-        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
+        tensor = torch._utils._rebuild_tensor(
+            storage, storage_offset, size, stride)
         tensor.requires_grad = requires_grad
         tensor._backward_hooks = backward_hooks
         return tensor
-
 
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
@@ -284,12 +284,14 @@ if args.cuda:
 
 # create logger
 # Define visulaize SummaryWriter instance
-assert os.path.exists(args.resume), print('=> no checkpoint found at {}'.format(args.resume))
+assert os.path.exists(args.resume), print(
+    '=> no checkpoint found at {}'.format(args.resume))
 
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 sys.stdout = NewLogger(os.path.join(os.path.dirname(args.resume), 'test.log'))
 
-l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(
+    dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
 
 if args.test_input == 'var':
     transform = transforms.Compose([
@@ -301,10 +303,12 @@ if args.test_input == 'var':
 
 elif args.test_input == 'fix':
     transform = transforms.Compose([
-        ConcateVarInput(num_frames=args.chunk_size, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
+        ConcateVarInput(num_frames=args.chunk_size,
+                        frame_shift=args.frame_shift, remove_vad=args.remove_vad),
     ])
     transform_T = transforms.Compose([
-        ConcateVarInput(num_frames=args.chunk_size, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
+        ConcateVarInput(num_frames=args.chunk_size,
+                        frame_shift=args.frame_shift, remove_vad=args.remove_vad),
     ])
 else:
     raise ValueError('input length must be var or fix.')
@@ -320,7 +324,8 @@ if args.test_mask:
     start = int(mask_str[0])
     end = int(mask_str[1])
     transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
-    transform_T.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
+    transform_T.transforms.append(
+        FreqMaskIndexLayer(start=start, mask_len=end))
     if args.verbose > 0:
         print('Mean set values in frequecy from %d to %d.' % (start, end))
 
@@ -388,7 +393,8 @@ def valid(valid_loader, model):
         predicted_one_labels = softmax(predicted_labels)
         predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
 
-        batch_correct = (predicted_one_labels.cuda() == true_labels.cuda()).sum().item()
+        batch_correct = (predicted_one_labels.cuda() ==
+                         true_labels.cuda()).sum().item()
         minibatch_acc = float(batch_correct / len(predicted_one_labels))
         correct += batch_correct
         total_datasize += len(predicted_one_labels)
@@ -411,7 +417,8 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     labels, distances = [], []
     l_batch = []
     d_batch = []
-    pbar = tqdm(enumerate(test_loader)) if args.verbose > 0 else enumerate(test_loader)
+    pbar = tqdm(enumerate(test_loader)
+                ) if args.verbose > 0 else enumerate(test_loader)
     for batch_idx, this_batch in pbar:
         if test_cohort_scores != None:
 
@@ -419,7 +426,8 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
         else:
             data_a, data_p, label = this_batch
 
-        data_a = torch.tensor(data_a)  # .cuda()  # .view(-1, 4, embedding_size)
+        # .cuda()  # .view(-1, 4, embedding_size)
+        data_a = torch.tensor(data_a)
         data_p = torch.tensor(data_p)  # .cuda()  # .view(-
 
         # if out_p.shape[-1] != args.embedding_size:
@@ -454,12 +462,14 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
         label = label.numpy()
 
         if test_cohort_scores != None:
-            enroll_mean_std = np.array([test_cohort_scores[uid] for uid in uid_a])
+            enroll_mean_std = np.array(
+                [test_cohort_scores[uid] for uid in uid_a])
 
             mean_e_c = enroll_mean_std[:, 0]
             std_e_c = enroll_mean_std[:, 1]
 
-            test_mean_std = np.array([test_cohort_scores[uid] for uid in uid_b])
+            test_mean_std = np.array(
+                [test_cohort_scores[uid] for uid in uid_b])
 
             mean_t_c = test_mean_std[:, 0]
             std_t_c = test_mean_std[:, 1]
@@ -497,7 +507,8 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
 
-    time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime()) if args.score_suffix == '' else args.score_suffix
+    time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime(
+    )) if args.score_suffix == '' else args.score_suffix
 
     score_file = os.path.join(xvector_dir, 'score.' + time_stamp)
     with open(score_file, 'w') as f:
@@ -505,7 +516,8 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
             f.write(" ".join([str(i) for i in l]) + '\n')
 
     # pdb.set_trace()
-    eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels, cos=args.cos_sim, re_thre=True)
+    eer, eer_threshold, accuracy = evaluate_kaldi_eer(
+        distances, labels, cos=args.cos_sim, re_thre=True)
     mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
 
     dist_type = 'cos' if args.cos_sim else 'l2'
@@ -556,7 +568,8 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
 
     print(result_str)
 
-    result_file = os.path.join(xvector_dir, '%sresult.' % args.score_norm + time_stamp)
+    result_file = os.path.join(xvector_dir, '%sresult.' %
+                               args.score_norm + time_stamp)
     # result_file = os.path.join(xvector_dir, 'result.' + time_stamp)
     with open(result_file, 'w') as f:
         f.write(result_str)
@@ -588,10 +601,12 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
 
     train_vectors = torch.tensor(train_vectors).cuda()
     if args.cos_sim:
-        train_vectors = train_vectors / train_vectors.norm(p=2, dim=1).unsqueeze(1)
+        train_vectors = train_vectors / \
+            train_vectors.norm(p=2, dim=1).unsqueeze(1)
 
     with open(test_xvectors_scp, 'r') as f:
-        pbar = tqdm(f.readlines(), ncols=100) if args.verbose > 0 else f.readlines()
+        pbar = tqdm(f.readlines(),
+                    ncols=100) if args.verbose > 0 else f.readlines()
 
         for l in pbar:
             uid, vpath = l.split()
@@ -600,12 +615,14 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
             # pdb.set_trace()
             if args.cos_sim:
                 test_vector = test_vector.cuda()
-                scores = torch.matmul(train_vectors, test_vector / test_vector.norm(p=2))
+                scores = torch.matmul(
+                    train_vectors, test_vector / test_vector.norm(p=2))
 
                 if args.score_norm == "as-norm":
                     scores = torch.topk(scores, k=args.cohort_size, dim=0)[0]
             else:
-                test_vector = test_vector.repeat(train_vectors.shape[0], 1).cuda()
+                test_vector = test_vector.repeat(
+                    train_vectors.shape[0], 1).cuda()
                 scores = l2_dist(test_vector, train_vectors)
 
                 if args.score_norm == "as-norm":
@@ -645,7 +662,8 @@ if __name__ == '__main__':
 
     global FLAGS
     if 'Slimmable' in args.model:
-        width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
+        width_mult_list = sorted(
+            [float(x) for x in args.width_mult_list.split(',')], reverse=True)
         FLAGS.width_mult_list = width_mult_list
         print('Slimmable width: ', width_mult_list)
     else:
@@ -725,7 +743,8 @@ if __name__ == '__main__':
 
         if isinstance(checkpoint_state_dict, tuple):
             checkpoint_state_dict = checkpoint_state_dict[0]
-        filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
+        filtered = {k: v for k, v in checkpoint_state_dict.items()
+                    if 'num_batches_tracked' not in k}
 
         # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
         if list(filtered.keys())[0].startswith('module'):
@@ -750,7 +769,7 @@ if __name__ == '__main__':
             model.dropout.p = args.dropout_p
         except:
             pass
-        
+
         # print(model)
         if args.cuda:
             model.cuda()
@@ -763,7 +782,8 @@ if __name__ == '__main__':
 
         del train_dir  # , valid_dir
         if args.verbose > 0:
-            print('Memery Usage: %.4f GB' % (psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
+            print('Memery Usage: %.4f GB' % (psutil.Process(
+                os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
 
         if args.extract:
             if args.score_norm != '':
@@ -773,8 +793,12 @@ if __name__ == '__main__':
                 for width_mult in FLAGS.width_mult_list:
                     # FLAGS.width_mult = width_mult
                     model.apply(lambda m: setattr(m, 'width_mult', width_mult))
+
+                    this_xvector_dir = train_xvector_dir + \
+                        'width%f' % width_mult if width_mult != 1.0 else train_xvector_dir
+
                     verification_extract(train_verify_loader, model,
-                                         xvector_dir=train_xvector_dir + 'width%f' % width_mult, epoch=start,
+                                         xvector_dir=this_xvector_dir, epoch=start,
                                          test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                          mean_vector=args.mean_vector,
                                          xvector=args.xvector)
@@ -786,8 +810,10 @@ if __name__ == '__main__':
             for width_mult in FLAGS.width_mult_list:
                 # FLAGS.width_mult = width_mult
                 model.apply(lambda m: setattr(m, 'width_mult', width_mult))
+                this_xvector_dir = test_xvector_dir + \
+                    'width%f' % width_mult if width_mult != 1.0 else test_xvector_dir
 
-                verification_extract(verify_loader, model, xvector_dir=test_xvector_dir + 'width%f' % width_mult,
+                verification_extract(verify_loader, model, xvector_dir=this_xvector_dir,
                                      epoch=start,
                                      test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                      mean_vector=args.mean_vector,
@@ -801,28 +827,34 @@ if __name__ == '__main__':
         for width_mult in FLAGS.width_mult_list:
             # FLAGS.width_mult = width_mult
             # model.apply(lambda m: setattr(m, 'width_mult', width_mult))
+            this_xvector_dir = test_xvector_dir + \
+                'width%f' % width_mult if width_mult != 1.0 else test_xvector_dir
 
             test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
-                                           xvectors_dir=test_xvector_dir + 'width%f' % width_mult,
+                                           xvectors_dir=this_xvector_dir,
                                            loader=file_loader, return_uid=return_uid)
 
             test_loader = torch.utils.data.DataLoader(test_dir,
                                                       batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
                                                       shuffle=False, **kwargs)
 
-            train_stats_pickle = os.path.join(test_xvector_dir + 'width%f' % width_mult,
+            train_stats_pickle = os.path.join(this_xvector_dir,
                                               'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
 
             if os.path.isfile(train_stats_pickle):
                 with open(train_stats_pickle, 'rb') as f:
                     train_stats = pickle.load(f)
             else:
-                train_stats = cohort(+'width%f' % width_mult,
-                                     test_xvector_dir + 'width%f' % width_mult) if args.score_norm != '' else None
+                this_train_xvector_dir = train_xvector_dir + \
+                    'width%f' % width_mult if width_mult != 1.0 else train_xvector_dir
+                train_stats = cohort(
+                    this_train_xvector_dir, this_xvector_dir) if args.score_norm != '' else None
 
             if len(FLAGS.width_mult_list) > 1:
                 print('Model width: ', width_mult)
-            test(test_loader, xvector_dir=test_xvector_dir + 'width%f' % width_mult, test_cohort_scores=train_stats)
+
+            test(test_loader, xvector_dir=this_xvector_dir,
+                 test_cohort_scores=train_stats)
 
     stop_time = time.time()
     t = float(stop_time - start_time)
