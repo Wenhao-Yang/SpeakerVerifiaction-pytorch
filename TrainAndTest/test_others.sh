@@ -2717,7 +2717,7 @@ for seed in 123456 ; do
      --test-input ${test_input} --frame-shift 300 \
      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_${epoch}_${test_input} \
      --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-     --gpu-id 4 --verbose 0 --test \
+     --gpu-id 4 --verbose 1 --test \
      --cos-sim
 #     --extract \
 #      --model-yaml Data/checkpoint/ThinResNet34/cnceleb/klfb40_egs12_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/model.2022.02.22.yaml \
