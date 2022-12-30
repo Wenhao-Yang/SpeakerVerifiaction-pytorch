@@ -87,7 +87,7 @@ if [ $stage -le 10 ]; then
   encod=ASTP2 embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 2.0;do
-    for seed in 123456 ; do
+    for seed in 123456 123457 123458 ; do
     for type in 01 ;do
      feat=fb${input_dim}
 
