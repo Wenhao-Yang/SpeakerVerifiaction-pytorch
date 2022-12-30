@@ -35,7 +35,7 @@ classifier_centers = torch.nn.functional.normalize(classifier_centers, dim=0)
 # classifier_centers = classifier_centers.cpu()
 
 vec_dict = kaldiio.load_scp(args.data_dir + '/xvectors.scp')
-sim_ark = args.data_dir + + '/sim.ark.gz'
+sim_ark = args.data_dir + '/sim.ark.gz'
 
 with kaldiio.WriteHelper('ark:| gzip -c > ' + sim_ark) as writer:
 
