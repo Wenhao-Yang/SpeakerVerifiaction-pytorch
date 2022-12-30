@@ -13,6 +13,7 @@ if [ $stage -le 0 ]; then
     
     python Extraction/compute_dist.py \
         --data-dir ${data_dir} \
-        --checkpoint Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth 
+        --checkpoint Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+        --gpu-id 4
   done
 fi

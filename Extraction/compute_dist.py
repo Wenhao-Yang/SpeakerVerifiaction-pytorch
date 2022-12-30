@@ -17,8 +17,12 @@ parser = argparse.ArgumentParser(
     description='Extract probilities for x-vector during training.')
 parser.add_argument('--data-dir', type=str, help='path to dataset')
 parser.add_argument('--checkpoint', type=str, help='path to dataset')
-
+parser.add_argument('--gpu-id', default='0', type=str,
+                    help='id(s) for CUDA_VISIBLE_DEVICES')
 args = parser.parse_args()
+
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
+
 
 ckp = torch.load(args.checkpoint)
 model_dict = ckp['state_dict']
