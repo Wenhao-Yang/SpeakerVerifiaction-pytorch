@@ -28,7 +28,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 ckp = torch.load(args.checkpoint)
 model_dict = ckp['state_dict']
 # torch.Size([256, 797])
-classifier_centers = model_dict['classifier.W'].copy()
+classifier_centers = model_dict['classifier.W'].clone()
 del model_dict
 
 classifier_centers = torch.nn.functional.normalize(classifier_centers, dim=0)
