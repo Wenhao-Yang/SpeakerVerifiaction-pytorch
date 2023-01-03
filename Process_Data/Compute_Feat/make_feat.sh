@@ -62,7 +62,7 @@ if [ $stage -le 1 ]; then
   # feat_format=kaldi
 
 #  num_frames=400
-  num_frames=64000 input_per_spks=640
+  num_frames=64000 input_per_spks=512
   # num_frames=400 input_per_spks=896
 #        --remove-vad \
 #--domain \
@@ -76,7 +76,7 @@ if [ $stage -le 1 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 16 --feat-type ${feat_type} \
+      --nj 8 --feat-type ${feat_type} \
       --train \
       --input-per-spks ${input_per_spks} --num-frames ${num_frames} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
@@ -87,7 +87,7 @@ if [ $stage -le 1 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 16 --feat-type ${feat_type} \
+      --nj 8 --feat-type ${feat_type} \
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
