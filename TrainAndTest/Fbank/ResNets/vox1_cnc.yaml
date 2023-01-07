@@ -131,5 +131,5 @@ resume: !ref <check_path>/checkpoint_17.pth
 veri_pairs: 9600
 gpu_id: 0,1
 
-test_interval: 4
+test_interval: 1
 log_interval: 10

@@ -499,8 +499,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
     if torch.distributed.get_rank() == 0:
         print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, '
               'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix2,3: {:.4f}, {:.4f}. \33[0m'.format(100. * eer,
-                                                                                      eer_threshold,
-                                                                                      mindcf_01, mindcf_001, mix2, mix3))
+                                                                                                 eer_threshold,
+                                                                                                 mindcf_01, mindcf_001, mix2, mix3))
 
         writer.add_scalar('Train/EER', 100. * eer, epoch)
         writer.add_scalar('Train/Threshold', eer_threshold, epoch)
@@ -938,7 +938,7 @@ def main():
             #     flag_tensor += 1
 
             if torch.distributed.get_rank() == 0 and (
-                    epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
+                    epoch % config_args['test_interval'] == 0 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch):
 
                 # if (epoch == 1 or epoch != (end - 2)) and (
@@ -978,7 +978,7 @@ def main():
                         '{:.4f} '.format(best_res['MinDCF_01'])
                     best_str += ' MinDcf-0.001: ' + \
                         '{:.4f} '.format(best_res['MinDCF_001'])
-                    best_str += ' Mix2: ' + '{:.4f}\n'.format(best_res['mix2'])
+                    best_str += ' Mix2: ' + '{:.4f}'.format(best_res['mix2'])
                     best_str += ' Mix3: ' + '{:.4f}\n'.format(best_res['mix3'])
                     print(best_str)
 
