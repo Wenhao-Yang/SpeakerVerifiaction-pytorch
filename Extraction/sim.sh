@@ -5,7 +5,7 @@ lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
 if [ $stage -le 0 ]; then
-  for epoch in 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41; do
+  for epoch in 10; do
     test_set=cnceleb subset=dev test_input=fix
 
     model_dir=ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2_dist/123456
