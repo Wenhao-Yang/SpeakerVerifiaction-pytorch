@@ -356,7 +356,7 @@ fi
 if [ $stage -le 41 ]; then
   datasets=vox1 feat_type=klfb
   model=ThinResNet resnet_size=34
-  encoder_type=ASTP2 embedding_size=256
+  encoder_type=SAP2 embedding_size=256
   block_type=seblock red_ratio=2 downsample=k1
   kernel=5,5 fast=none1
   loss=arcsoft
@@ -372,7 +372,7 @@ if [ $stage -le 41 ]; then
   batch_size=256
 
   for resnet_size in 34 ; do
-  for coreset_percent in 0.5 ; do
+  for coreset_percent in 0.75 ; do
   for select_score in random ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     for seed in 123456 ;do
@@ -583,7 +583,7 @@ if [ $stage -le 43 ]; then
       --epochs 60 --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.000001 \
-      --patience 3 --milestones 10,20,30,40 \
+      --patience 4 --milestones 10,20,30,40 \
       --early-stopping --early-patience 20 --early-delta 0.01 --early-meta EER \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
