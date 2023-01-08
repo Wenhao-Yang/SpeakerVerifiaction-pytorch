@@ -916,10 +916,10 @@ def main():
             all_lr.append(this_lr[0])
             writer.add_scalar('Train/lr', this_lr[0], epoch)
 
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
-
-            if args.coreset_percent > 0 and epoch % args.test_interval == 1:
+            if args.coreset_percent > 0 and epoch % args.select_interval == 1:
                 select_samples(train_loader, model, ce, args.select_score)
+
+            train(train_loader, model, ce, optimizer, epoch, scheduler)
 
             valid_loss = valid_class(valid_loader, model, ce, epoch)
             if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
