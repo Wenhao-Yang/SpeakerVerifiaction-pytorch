@@ -372,7 +372,7 @@ if [ $stage -le 41 ]; then
   batch_size=256
 
   for resnet_size in 34 ; do
-  for coreset_percent in 0.75 ; do
+  for coreset_percent in 0.5 ; do
   for select_score in random ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     for seed in 123456 ;do
