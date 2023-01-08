@@ -942,7 +942,7 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
-            if epoch % args.test_interval == 1 or epoch in milestones or epoch == (
+            if epoch % args.test_interval == (args.test_interval-1) or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
                 model.eval()
                 check_path = '{}/checkpoint_{}.pth'.format(

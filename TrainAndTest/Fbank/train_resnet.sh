@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=45
+stage=41
 waited=0
 while [ `ps 1141965 | wc -l` -eq 2 ]; do
   sleep 60
@@ -354,7 +354,7 @@ fi
 
 
 if [ $stage -le 41 ]; then
-  datasets=aidata feat_type=klfb
+  datasets=vox1 feat_type=klfb
   model=ThinResNet resnet_size=34
   encoder_type=ASTP2 embedding_size=256
   block_type=seblock red_ratio=2 downsample=k1
@@ -372,8 +372,8 @@ if [ $stage -le 41 ]; then
   batch_size=256
 
   for resnet_size in 34 ; do
-  for coreset_percent in 0.25 0.5 0.75 ; do
-  for select_score in loss_part ; do
+  for coreset_percent in 0.5 ; do
+  for select_score in random ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     for seed in 123456 ;do
     if [ $resnet_size -le 34 ];then
@@ -402,38 +402,36 @@ if [ $stage -le 41 ]; then
       at_str=_${weight}_dp${weight_p}s${scale}      
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_core/percent${coreset_percent}_${select_score}/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2_cnc_core/percent${coreset_percent}_${select_score}/${seed}
 
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
       # _${weight}${power_weight}
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim} --coreset-percent ${coreset_percent} --select-score ${select_score} \
-      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_10k_fb${input_dim} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_cnc --coreset-percent ${coreset_percent} --select-score ${select_score} \
+      --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --train-trials trials \
       --shuffle --batch-shuffle --batch-size ${batch_size} --seed ${seed} \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_fb${input_dim}_valid \
-      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_10k_fb${input_dim} \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_cnc_valid \
+      --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi --nj 8 --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
-      --epochs 60 \
-      --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta EER \
+      --epochs 80 \
+      --early-stopping --early-patience 20 --early-delta 0.0001 --early-meta mix2 \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.0000001 \
       --mask-layer ${mask_layer} --init-weight ${weight} \
       --milestones 15,25,35,45 \
-      --check-path Data/checkpoint/${model_dir} \
-      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --kernel-size ${kernel} --channels ${channels} \
       --stride 2,1 --fast ${fast} \
       --block-type ${block_type} --red-ratio ${red_ratio} --downsample ${downsample} --expansion ${expansion} \
-      --dropout-p 0.1 --embedding-size ${embedding_size} \
+      --dropout-p 0.1 --embedding-size ${embedding_size} --alpha ${alpha} \
       --time-dim 1 --avg-size ${avg_size} --encoder-type ${encoder_type} \
-      --num-valid 2 \
-      --alpha ${alpha} \
-      --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
-      --weight-decay 0.0005 \
+      --loss-type ${loss} --margin 0.15 --s 30 --all-iteraion 0 \
+      --check-path Data/checkpoint/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
+      --weight-decay 0.0001 \
       --gpu-id 0,1 --extract --cos-sim \
       --remove-vad
 
