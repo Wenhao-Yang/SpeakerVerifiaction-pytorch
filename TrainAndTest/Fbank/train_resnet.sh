@@ -354,7 +354,7 @@ fi
 
 
 if [ $stage -le 41 ]; then
-  datasets=vox1 feat_type=klfb
+  datasets=cnceleb_v2 feat_type=klfb
   model=ThinResNet resnet_size=34
   encoder_type=SAP2 embedding_size=256
   block_type=seblock red_ratio=2 downsample=k1
