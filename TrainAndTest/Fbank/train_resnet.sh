@@ -415,7 +415,7 @@ if [ $stage -le 41 ]; then
       --shuffle --batch-shuffle --batch-size ${batch_size} --seed ${seed} \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
-      --feat-format kaldi --nj 8 --random-chunk 200 400 \
+      --feat-format kaldi --nj 6 --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
       --epochs 80 \
       --early-stopping --early-patience 20 --early-delta 0.0001 --early-meta mix2 \
