@@ -98,14 +98,14 @@ loss_ratio: 1
 lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
-margin: 0.2
+margin: 0.25
 # m: 0.2
 s: 30
 # stat_type: margin1
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_varesmix2_dist
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_marg25_varesmix2_dist
 resume: ""
 #  !ref <check_path>/checkpoint_40.pth
 
