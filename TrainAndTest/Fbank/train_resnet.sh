@@ -409,11 +409,11 @@ if [ $stage -le 41 ]; then
       # _${weight}${power_weight}
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_cnc --coreset-percent ${coreset_percent} --select-score ${select_score} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} --coreset-percent ${coreset_percent} --select-score ${select_score} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --train-trials trials \
       --shuffle --batch-shuffle --batch-size ${batch_size} --seed ${seed} \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_cnc_valid \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi --nj 8 --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
