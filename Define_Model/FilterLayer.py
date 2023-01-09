@@ -720,8 +720,8 @@ class DropweightLayer(nn.Module):
             return x
 
     def __repr__(self):
-        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
-                                                                                      self.dropout_p, self.scale)
+        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p=%s, scale=%f)" % (self.input_dim, self.weight,
+                                                                                     self.dropout_p, self.scale)
 
 
 class DropweightLayer_v2(nn.Module):

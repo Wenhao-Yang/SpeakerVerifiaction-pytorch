@@ -2018,11 +2018,11 @@ if [ $stage -le 200 ]; then
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   weight=v2_eer #v2_rclean_gax #mel
-  weight_norm=norm scale=0.5 weight_p=0.0
+  weight_norm=norm scale=0.2 weight_p=0.1
   # v2_eer_norm_scale0.5
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for mask_layer in attention drop; do
+  for mask_layer in drop; do
   for testset in vox1 aishell2 ;do
     for weight in v2_rclean_gean ; do
     for seed in 123456 123457 123458;do
@@ -2031,7 +2031,7 @@ if [ $stage -le 200 ]; then
         if [[ $mask_layer == attention* ]];then
           at_str=_${weight}_${weight_norm} #_mel_mean
         elif [[ $mask_layer == drop ]];then
-          at_str=_${weight}_${weight_norm}_scale${scale} #_mel_mean
+          at_str=_${weight}_${weight_norm} #_scale${scale} #_mel_mean
         fi
         # Mean_batch128_basic_downk1_avg4_SAP2_em256_dp01_alpha0_none1_mel_max_scale0.2_wde4_varesmix2_bashuf2_dist
         # _<init_weight>_<weight_norm>_scale<scale>
