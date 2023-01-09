@@ -23,7 +23,7 @@ valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_valid
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
-input_norm: Mean
+input_norm: None
 
 test_input: fix
 log_scale: False
@@ -54,12 +54,12 @@ accu_steps: 1
 nesterov: False
 
 early_stopping: True
-early_patience: 15
+early_patience: 20
 early_delta: 0.0001
 early_meta: "mix2"
 
 # Scheduler
-patience: 2
+patience: 3
 milestones: [10, 20, 30, 40]
 scheduler: rop
 cyclic_epoch: 2
@@ -69,7 +69,7 @@ cos_sim: True
 model: ECAPA
 kernel_size:
 alpha: 0
-embedding_size: 256
+embedding_size: 192
 batch_size: 128
 dropout_p: 0.0
 activation: relu
