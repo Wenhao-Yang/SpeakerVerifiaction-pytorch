@@ -2007,7 +2007,7 @@ fi
 
 
 if [ $stage -le 200 ]; then
-  model=ThinResNet resnet_size=10
+  model=ThinResNet resnet_size=18
   feat_type=klsp feat=log
   loss=arcsoft
   alpha=0
@@ -2017,14 +2017,13 @@ if [ $stage -le 200 ]; then
   encoder_type=SAP2 embedding_size=256
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
-
   weight=v2_eer #v2_rclean_gax #mel
   weight_norm=norm scale=0.5 weight_p=0.0
   # v2_eer_norm_scale0.5
   echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-  for testset in vox1 aishell2 cnceleb magic;do
-  for mask_layer in attention ; do
+  for mask_layer in attention drop; do
+  for testset in vox1 aishell2 ;do
     for weight in v2_rclean_gean ; do
     for seed in 123456 123457 123458;do
       for test_subset in test ; do
@@ -2034,7 +2033,6 @@ if [ $stage -le 200 ]; then
         elif [[ $mask_layer == drop ]];then
           at_str=_${weight}_${weight_norm}_scale${scale} #_mel_mean
         fi
-
         # Mean_batch128_basic_downk1_avg4_SAP2_em256_dp01_alpha0_none1_mel_max_scale0.2_wde4_varesmix2_bashuf2_dist
         # _<init_weight>_<weight_norm>_scale<scale>
         model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/arcsoft_sgd_rop/Mean_batch128_basic_downk1_avg4_SAP2_em256_dp01_alpha0_none1${at_str}_wde4_varesmix2_bashuf2_dist/${seed}
@@ -2048,8 +2046,7 @@ if [ $stage -le 200 ]; then
         python -W ignore TrainAndTest/test_egs.py \
           --model ${model} --resnet-size ${resnet_size} \
           --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
-          --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
-          --train-trials trials_2w \
+          --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir --train-trials trials_2w \
           --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
           --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
           --feat-format kaldi --nj 8 \
@@ -2076,7 +2073,6 @@ if [ $stage -le 200 ]; then
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     Test Set      |   EER (%)   |  Threshold  | MinDCF-0.01 | MinDCF-0.001 |       Date        |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-
 # ThinResNet18 klfb40
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
 #|     vox1-dev      |   1.0300    |   0.2914    |   0.1291    |    0.2308    | 20211221 22:57:16 |
@@ -2098,7 +2094,6 @@ if [ $stage -le 200 ]; then
 #|     vox1-dev      |   0.4600    |   0.3283    |   0.0631    |    0.1092    | 20211221 23:43:06 |
 #|     vox1-test     |   3.5790    |   0.2471    |   0.4012    |    0.5222    | 20211221 23:17:22 |
 #+-------------------+-------------+-------------+-------------+--------------+-------------------+
-
 fi
 
 
@@ -2109,12 +2104,10 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=SAP2 embedding_size=256
   alpha=0
-  datasets=vox1
-  testset=vox1
+  datasets=vox1 testset=vox1
 #  test_subset=
   block_type=cbam_v2
 #  encoder_type=None
-
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k5
@@ -2149,33 +2142,26 @@ if [ $stage -le 201 ]; then
       --cos-sim
 
 #    python -W ignore TrainAndTest/test_egs.py \
-#      --model ${model} \
-#      --resnet-size ${resnet_size} \
+#      --model ${model} --resnet-size ${resnet_size} \
 #      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
 #      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
 #      --train-trials trials_2w \
 #      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
 #      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
 #      --feat-format kaldi \
-#      --input-norm Mean \
-#      --input-dim 161 \
+#      --input-norm Mean --input-dim 161 \
 #      --nj 12 \
-#      --mask-layer attention \
-#      --init-weight vox2 \
+#      --mask-layer attention --init-weight vox2 \
 #      --embedding-size ${embedding_size} \
-#      --loss-type ${loss} \
 #      --fast none1 \
 #      --downsample ${downsample} \
 #      --encoder-type ${encod} \
 #      --block-type ${block_type} \
-#      --kernel-size 5,5 \
-#      --stride 2,2 \
+#      --kernel-size 5,5 --stride 2,2 \
 #      --channels 16,32,64,128 \
 #      --alpha ${alpha} \
-#      --margin 0.2 \
-#      --s 30 \
-#      --time-dim 1 \
-#      --avg-size 5 \
+#      --loss-type ${loss} --margin 0.2 --s 30 \
+#      --time-dim 1 --avg-size 5 \
 #      --test-input var \
 #      --dropout-p 0.1 \
 #      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
@@ -2197,7 +2183,6 @@ if [ $stage -le 201 ]; then
 #|     vox1-test     |   2.6723    |   0.2723    |   0.2847    |    0.4488    | 20220209 17:07:34 | 34
 #|     vox1-test     |   3.0064    |   0.2658    |   0.2949    |    0.3840    | 20220214 16:54:25 | 18
 #|     vox1-test     |   3.3351    |   0.2662    |   0.3374    |    0.4496    | 20220209 18:13:51 | 10
-
 
 # chn32 dev
 #|     vox1-test     |   3.0859    |   0.2410    |   0.2972    |    0.3885    | 20220209 17:01:16 | 34
@@ -2397,13 +2382,11 @@ if [ $stage -le 203 ]; then
   model=ThinResNet resnet_size=10
   feat=log
   loss=arcsoft
-  encod=SAP2
-  alpha=0
+  encod=SAP2 alpha=0
   datasets=vox1 testset=vox1
 #  test_subset=
   block_type=cbam
-  encoder_type=None
-  embedding_size=256
+  encoder_type=None embedding_size=256
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k3
