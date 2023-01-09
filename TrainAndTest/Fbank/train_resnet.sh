@@ -402,7 +402,7 @@ if [ $stage -le 41 ]; then
       at_str=_${weight}_dp${weight_p}s${scale}      
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2_cnc_core/percent${coreset_percent}_${select_score}/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2_core/percent${coreset_percent}_${select_score}/${seed}
 
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
