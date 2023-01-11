@@ -2,7 +2,7 @@
 
 stage=41
 waited=0
-while [ `ps 1141965 | wc -l` -eq 2 ]; do
+while [ `ps 346751 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -382,7 +382,7 @@ if [ $stage -le 41 ]; then
       --feat-format kaldi --nj 6 --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
       --epochs 80 \
-      --early-stopping --early-patience 20 --early-delta 0.0001 --early-meta mix2 \
+      --early-stopping --early-patience 25 --early-delta 0.0001 --early-meta mix2 \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.0000001 \
       --mask-layer ${mask_layer} --init-weight ${weight} \
@@ -487,10 +487,10 @@ if [ $stage -le 43 ]; then
       batch_size=256
       exp_str=_exp${expansion}
     fi
-    if [ $chn -eq 16 ]; then
-      channels=16,32,64,128
-      chn_str=
-    elif [ $chn -eq 32 ]; then
+
+    channels=16,32,64,128
+    chn_str=
+    if [ $chn -eq 32 ]; then
       channels=32,64,128,256
       chn_str=chn32_
     elif [ $chn -eq 64 ]; then
@@ -644,7 +644,6 @@ if [ $stage -le 100 ]; then
        --gpu-id 0,1 \
        --extract --cos-sim --mean-vector \
        --all-iteraion 0 --remove-vad
-       
 #              --chunk-size 200 \
 
 #    python TrainAndTest/train_egs.py \
