@@ -72,7 +72,7 @@ if [ $stage -le 1 ]; then
   for s in dev_fb40_cnc ; do #${feat}
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat_type}/${s} \
-      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/${feat} \
+      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 8 --feat-type ${feat_type} \
       --train \
       --input-per-spks ${input_per_spks} --num-frames ${num_frames} --sample-type ${sample_type} \
@@ -83,7 +83,7 @@ if [ $stage -le 1 ]; then
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${feat_type}/${s} \
-      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat_type}/${feat} \
+      --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
       --nj 8 --feat-type ${feat_type} \
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
