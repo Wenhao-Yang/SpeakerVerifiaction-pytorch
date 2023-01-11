@@ -19,7 +19,7 @@ subset: ""
 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test<subset>_<feat>
-train_trials: trials_4w
+train_trials: trials
 valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_<feat>_valid
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
