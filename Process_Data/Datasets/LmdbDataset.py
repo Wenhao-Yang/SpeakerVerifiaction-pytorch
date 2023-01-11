@@ -506,6 +506,7 @@ class EgsDataset(Dataset):
             print('    There are {} egs in Dataset'.format(len(dataset)))
 
         self.dataset = np.array(dataset)
+        self.rest_dataset = np.array([])
         self.feat_dim = feat_dim
         self.loader = loader
         self.transform = transform
