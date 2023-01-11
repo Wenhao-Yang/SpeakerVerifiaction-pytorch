@@ -56,8 +56,7 @@ if [ $stage -le 1 ]; then
   # feat=wave feat_format=wav feat_type=wav
 
   # feat=klsp feat_type=klsp 
-  feat=klfb feat_type=klfb 
-  # feat_format=kaldi
+  feat=klfb feat_type=klfb feat_format=kaldi
 
 #  num_frames=400
   # num_frames=64000 input_per_spks=512

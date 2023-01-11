@@ -38,18 +38,24 @@ from Process_Data.audio_processing import ConcateNumInput, DownSample, read_Wave
 from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
-parser.add_argument('--nj', type=int, default=8, metavar='E', help='number of jobs to make feats (default: 10)')
+parser.add_argument('--nj', type=int, default=8, metavar='E',
+                    help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-dir', type=str,
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--sets', nargs='+', default=[], help='number of jobs to make feats (default: 10)')
-parser.add_argument('--enhance', action='store_true', default=False, help='number of jobs to make feats (default: 10)')
+parser.add_argument('--sets', nargs='+', default=[],
+                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--enhance', action='store_true', default=False,
+                    help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
+parser.add_argument('--domain', action='store_true',
+                    default=False, help='set domain in dataset')
 
-parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
-parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
+parser.add_argument('--out-dir', type=str, required=True,
+                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--out-set', type=str, default='dev_reverb',
+                    help='number of jobs to make feats (default: 10)')
 parser.add_argument('--feat-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp', 'wav'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--sample-type', type=str, choices=['instance', 'balance', 'half_balance'],
@@ -60,13 +66,18 @@ parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--downsample', type=int, default=1, metavar='D')
 parser.add_argument('--feat-type', type=str, default='fbank',
-                    choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'wav', 'klfb', 'klsp', 'hst'],
+                    choices=['pyfb', 'fbank', 'spectrogram',
+                             'mfcc', 'wav', 'klfb', 'klsp', 'hst'],
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
+parser.add_argument('--train', action='store_true',
+                    default=False, help='using Cosine similarity')
 
-parser.add_argument('--vad-select', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
+parser.add_argument('--vad-select', action='store_true',
+                    default=False, help='using Cosine similarity')
+parser.add_argument('--remove-vad', action='store_true',
+                    default=False, help='using Cosine similarity')
+parser.add_argument('--compress', action='store_true',
+                    default=False, help='using Cosine similarity')
 parser.add_argument('--input-per-spks', type=int, default=0, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
 parser.add_argument('--num-valid', type=int, default=2, metavar='IPFT',
@@ -118,7 +129,8 @@ def PrepareEgProcess(lock_i, lock_t, train_dir, i_queue, t_queue):
 
             # lock_t.acquire()
             while t_queue.full():
-                print("\rProcess [{:8>s}]: task queue is full...".format(str(os.getpid())), end="")
+                print("\rProcess [{:8>s}]: task queue is full...".format(
+                    str(os.getpid())), end="")
                 time.sleep(10)
 
             # lock_t.acquire()  # 加上锁
@@ -146,7 +158,8 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     if args.out_format == 'kaldi':
         feat_ark_f = open(feat_ark, 'wb')
     if args.out_format == 'kaldi_cmp':
-        writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp), compression_method=1)
+        writer = WriteHelper('ark,scp:%s,%s' %
+                             (feat_ark, feat_scp), compression_method=1)
 
     temp_dir = out_dir + '/temp'
     if not os.path.exists(temp_dir):
@@ -174,13 +187,14 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
                 if args.out_format == 'kaldi':
                     kaldi_io.write_mat(feat_ark_f, feat, key='')
-                    offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
+                    offsets = feat_ark + ':' + \
+                        str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
                     feat_scp_f.write(key + ' ' + offsets + '\n')
 
                 elif args.out_format == 'kaldi_cmp':
                     writer(str(key), feat)
 
-                elif args.feat_format == 'npy':
+                elif args.out_format == 'npy':
                     npy_path = os.path.join(feat_dir, '%s.npy' % key)
                     np.save(npy_path, feat)
                     feat_scp_f.write(key + ' ' + npy_path + '\n')
@@ -362,8 +376,9 @@ if __name__ == "__main__":
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
 
-            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
-                # (lock_i, lock_t, train_dir, idx_queue, t_queue)
+            pool.apply_async(PrepareEgProcess, args=(
+                lock_i, lock_t, train_dir, idx_queue, task_queue))
+            # (lock_i, lock_t, train_dir, idx_queue, t_queue)
             if (i + 1) % 2 == 1:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                       i, task_queue, error_queue, idx_queue))
@@ -390,7 +405,8 @@ if __name__ == "__main__":
                 os.makedirs(ark_dir)
 
             # if (i + 1) % prep_jb != 1:
-            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
+            pool.apply_async(PrepareEgProcess, args=(
+                lock_i, lock_t, valid_dir, idx_queue, task_queue))
             if (i + 1) % 2 == 1:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                       i, task_queue, error_queue, idx_queue))
@@ -413,9 +429,11 @@ if __name__ == "__main__":
         print(e)
 
     Split_dir = os.path.join(out_dir, 'Split%d' % nj)
-    print('   Splited Data root is \n     %s. \n   Concat all scripts together.' % str(Split_dir))
+    print('   Splited Data root is \n     %s. \n   Concat all scripts together.' %
+          str(Split_dir))
 
-    all_scp_path = [os.path.join(Split_dir, '%d/feat.%d.scp' % (i, i)) for i in range(nj)]
+    all_scp_path = [os.path.join(
+        Split_dir, '%d/feat.%d.scp' % (i, i)) for i in range(nj)]
     assert len(all_scp_path) > 0, print(Split_dir)
     feat_scp = os.path.join(out_dir, 'feats.scp')
     numofutt = 0
@@ -437,7 +455,8 @@ if __name__ == "__main__":
     mins = int(all_time % 3600 // 60)
     secs = int(all_time % 60)
 
-    print('Write all files in: \n\t{:s}. \nAnd {:0>2d}:{:0>2d}:{:0>2d}s collapse.\n'.format(out_dir, hours, mins, secs))
+    print('Write all files in: \n\t{:s}. \nAnd {:0>2d}:{:0>2d}:{:0>2d}s collapse.\n'.format(
+        out_dir, hours, mins, secs))
     sys.exit()
 
 """

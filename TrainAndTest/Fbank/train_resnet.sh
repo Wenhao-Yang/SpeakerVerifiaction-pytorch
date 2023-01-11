@@ -186,8 +186,7 @@ if [ $stage -le 20 ]; then
       --train-dir ${lstm_dir}/data/vox1/egs/spect/dev_${feat} \
       --valid-dir ${lstm_dir}/data/vox1/egs/spect/valid_${feat} \
       --test-dir ${lstm_dir}/data/vox1/spect/test_${feat} \
-      --nj 10 \
-      --epochs 22 \
+      --nj 10 --epochs 22 \
       --milestones 8,13,18 \
       --model ${model} --resnet-size 34 \
       --stride 2 \
@@ -197,13 +196,11 @@ if [ $stage -le 20 ]; then
       --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
-      --feat-dim 64 \
-      --input-dim 257 \
+      --feat-dim 64 --input-dim 257 \
       --time-dim 8 --avg-size 1 \
       --kernel-size 5,5 \
       --test-input-per-file 4 \
-      --lr 0.1 \
-      --loss-ratio 0.1 \
+      --lr 0.1 --loss-ratio 0.1 \
       --encoder-type ${encod} \
       --check-path Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean_0.5_0.05 \
       --resume Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean_0.5_0.05/checkpoint_100.pth \
@@ -1128,11 +1125,13 @@ if [ $stage -le 300 ]; then
   m=1.0
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for seed in 123457 123458 ; do # 123456
+ for seed in 123456 ; do # 123456
    feat=fb${input_dim}
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-  CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet.yaml --seed=${seed}
+  # CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet.yaml --seed=${seed}
+
   # CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_mixup.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=1 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet.yaml --seed=${seed}
 #   CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet_mixup.yaml --seed=${seed}
