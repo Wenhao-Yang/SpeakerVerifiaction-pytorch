@@ -436,8 +436,7 @@ if [ $stage -le 20 ]; then
        --num-valid 2 \
        --alpha ${alpha} \
        --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
-       --weight-decay 0.0005 \
-       --dropout-p ${dp} \
+       --weight-decay 0.0005 --dropout-p ${dp} \
        --gpu-id 0,1 \
        --extract --cos-sim \
        --kd-type ${kd_type} --attention-type ${attention_type} --norm-type ${norm_type} \

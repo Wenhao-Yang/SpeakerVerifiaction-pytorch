@@ -133,10 +133,10 @@ fi
 if [ $stage -le 21 ]; then
   datasets=vox1
   model=ThinResNet resnet_size=34
-  encoder_type=AVG
+  
   alpha=0
   block_type=basic_v2
-  embedding_size=256
+  encoder_type=AVG embedding_size=256
   input_norm=Mean
   loss=arcsoft
   feat_type=klsp
@@ -153,9 +153,8 @@ if [ $stage -le 21 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
       --test-dir ${lstm_dir}/data/vox1/${feat_type}/test \
-      --feat-format kaldi \
+      --feat-format kaldi --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim 161 \
-      --random-chunk 200 400 \
       --nj 12 --epochs 50 \
       --optimizer sgd --scheduler rop \
       --patience 2 --accu-steps 1 \
@@ -167,9 +166,8 @@ if [ $stage -le 21 ]; then
       --channels 16,32,64,128 \
       --block-type ${block_type} --red-ratio 8 --downsample ${downsample} \
       --batch-size 128 \
-      --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size 5 \
-      --encoder-type ${encoder_type} \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} --margin 0.2 --s 30 \
@@ -235,8 +233,7 @@ if [ $stage -le 21 ]; then
 #      --input-norm ${input_norm} \
 #      --mask-layer attention --init-weight vox2 \
 #      --random-chunk 200 400 \
-#      --nj 12 \
-#      --epochs 50 \
+#      --nj 12 --epochs 50 \
 #      --optimizer sgd --scheduler rop \
 #      --patience 2 \
 #      --accu-steps 1 \
@@ -282,6 +279,7 @@ if [ $stage -le 22 ]; then
 
   for sname in dev; do
     echo -e "\n\033[1;4;31mStage ${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} \033[0m\n"
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde4_${sname}_var
     python TrainAndTest/train_egs.py \
       --model ${model} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
@@ -298,8 +296,8 @@ if [ $stage -le 22 ]; then
       --accu-steps 1 \
       --lr 0.1 \
       --milestones 10,20,30,40 \
-      --check-path Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde4_${sname}_var \
-      --resume Data/checkpoint/${model}${resnet_size}/${datasets}/${feat_type}_egs_baseline/${loss}/${encoder_type}_${block_type}_em${embedding_size}_alpha${alpha}_dp01_wde4_${sname}_var/checkpoint_5.pth \
+      --check-path Data/checkpoint/${model_dir} \
+      --resume Data/checkpoint/${model_dir}/checkpoint_5.pth \
       --channels 64,128,256 \
       --input-dim 161 \
       --block-type ${block_type} \
@@ -312,8 +310,7 @@ if [ $stage -le 22 ]; then
       --margin 0.2 --s 30 \
       --grad-clip 0 \
       --lr-ratio 0.01 \
-      --weight-decay 0.0001 \
-      --dropout-p ${dropout_p} \
+      --weight-decay 0.0001 --dropout-p ${dropout_p} \
       --gpu-id 0,1 \
       --all-iteraion 0 \
       --extract --cos-sim \
@@ -336,12 +333,11 @@ if [ $stage -le 50 ]; then
   sname=dev
 #  downsample=k3
 
-  mask_layer=rvec weight=rclean
+  mask_layer=rvec weight=rclean weight_p=0 scale=0.2
   scheduler=rop optimizer=sgd
   fast=none1
   dropout_p=0.1
   avg_size=4
-  weight_p=0 scale=0.2
   #        --scheduler cyclic \
 #  for block_type in seblock cbam; do
   for resnet_size in 34 18; do
@@ -411,7 +407,6 @@ if [ $stage -le 50 ]; then
   done
   done
   exit
-
 fi
 
 
