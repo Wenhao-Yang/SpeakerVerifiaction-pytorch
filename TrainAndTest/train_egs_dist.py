@@ -655,7 +655,7 @@ def select_samples(train_loader, model, ce, select_score='loss'):
 
     dataset = np.array(dataset)
     dataset = dataset[np.argsort(dataset, axis=0)[:, 2]]
-    if len(dataset) % args.batch_size > 0:
+    if len(dataset) % config_args['batch_size'] > 0:
         dataset = dataset[:-(len(dataset) % config_args['batch_size'])]
 
     np.random.shuffle(dataset)
