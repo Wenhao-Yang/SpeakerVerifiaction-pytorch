@@ -3,7 +3,6 @@
 stage=1
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
-
 # echo $(awk '{n += $2} END{print n}' <utt2num_frames)
 
 waited=0
@@ -47,23 +46,22 @@ fi
 #exit
 #stage=1000
 if [ $stage -le 1 ]; then
-  dataset=vox2
+  # dataset=vox2
 #  dataset=cnceleb
 #  dataset=aishell2
 #  dataset=aidata
 
   #  feat_type=pyfb
-#  dataset=vox1
-  feat=wave
-  feat_format=wav feat_type=wav
+ dataset=vox1
+  # feat=wave feat_format=wav feat_type=wav
 
   # feat=klsp feat_type=klsp 
-  # feat=klfb feat_type=klfb --remove-vad 
+  feat=klfb feat_type=klfb 
   # feat_format=kaldi
 
 #  num_frames=400
-  num_frames=64000 input_per_spks=512
-  # num_frames=400 input_per_spks=896
+  # num_frames=64000 input_per_spks=512
+  num_frames=600 input_per_spks=1024
 #        --remove-vad \
 #--domain \
 
@@ -72,7 +70,7 @@ if [ $stage -le 1 ]; then
   #  for s in dev_log dev_aug_1m_log ; do
 #  for s in dev_fb24 dev_fb40 dev_f64 dev_fb80; do
 #/${feat}
-  for s in dev ; do #${feat}
+  for s in dev_fb40_cnc ; do #${feat}
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
@@ -81,7 +79,7 @@ if [ $stage -le 1 ]; then
       --input-per-spks ${input_per_spks} --num-frames ${num_frames} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
-      --num-valid 2 \
+      --num-valid 2 --remove-vad \
       --out-set ${s}
 
     python Process_Data/Compute_Feat/make_egs.py \
@@ -91,7 +89,7 @@ if [ $stage -le 1 ]; then
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
-      --num-valid 2 \
+      --num-valid 2 --remove-vad  \
       --out-set ${s}_valid
   done
   exit
