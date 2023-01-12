@@ -613,7 +613,7 @@ def select_samples(train_loader, model, ce, select_score='loss'):
             idx_labels = batch_idx * \
                 len(data) + np.arange(config_args['batch_size'])
             for i, (l, sample_loss) in enumerate(zip(label, loss)):
-                if idx_labels[i] <= len(train_dir):
+                if idx_labels[i] < len(train_dir):
                     score_dict[int(l)].append(
                         [float(sample_loss), idx_labels[i]])
                     all_loss.append(float(sample_loss))
