@@ -37,7 +37,7 @@ shuffle: False
 batch_shuffle: True
 coreset_percent: 0.5
 select_score: random
-select_interval: 4
+select_interval: 1
 
 feat_format: kaldi
 remove_vad: True

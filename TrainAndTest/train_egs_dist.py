@@ -613,8 +613,10 @@ def select_samples(train_loader, model, ce, select_score='loss'):
             idx_labels = batch_idx * \
                 len(data) + np.arange(config_args['batch_size'])
             for i, (l, sample_loss) in enumerate(zip(label, loss)):
-                score_dict[int(l)].append([float(sample_loss), idx_labels[i]])
-                all_loss.append(float(sample_loss))
+                if idx_labels[i] <= len(train_dir):
+                    score_dict[int(l)].append(
+                        [float(sample_loss), idx_labels[i]])
+                    all_loss.append(float(sample_loss))
 
     xe_criterion.ce.reduction = 'mean'
     train_dataset = train_dir.dataset
@@ -631,7 +633,7 @@ def select_samples(train_loader, model, ce, select_score='loss'):
             np.ceil(number_samples / config_args['batch_size']) * config_args['batch_size'])
         threshold = all_loss[-number_samples]
 
-    for i in score_dict:
+    for i in score_dict:  # spk with scores dict
         sort_np = np.array(score_dict[i])
         if select_score in ['loss', 'random']:
             idx = np.argsort(sort_np, axis=0)
@@ -1017,7 +1019,7 @@ def main():
             if not torch.distributed.is_initialized():
                 break
 
-            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
+            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == (config_args['select_interval']-1):
                 select_samples(train_loader, model, ce,
                                config_args['select_score'])
 
