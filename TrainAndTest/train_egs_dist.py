@@ -1019,7 +1019,7 @@ def main():
             if not torch.distributed.is_initialized():
                 break
 
-            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == (config_args['select_interval']-1):
+            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
                 select_samples(train_loader, model, ce,
                                config_args['select_score'])
 
