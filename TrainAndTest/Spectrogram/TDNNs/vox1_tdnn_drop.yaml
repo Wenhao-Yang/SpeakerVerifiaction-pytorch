@@ -10,7 +10,7 @@ data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 ## Dataset
 datasets: vox1
 testset: vox1
-feat_type: klfb
+feat_type: klsp
 loss: arcsoft
 input_dim: 161
 feat: !ref fb<input_dim>
