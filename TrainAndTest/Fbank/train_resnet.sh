@@ -340,7 +340,7 @@ if [ $stage -le 41 ]; then
   for coreset_percent in 0.5 ; do
   for select_score in random ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    for seed in 123457 ;do
+    for seed in 123456 ;do
     if [ $resnet_size -le 34 ];then
       expansion=1
       exp_str=
@@ -370,13 +370,19 @@ if [ $stage -le 41 ]; then
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
       # _${weight}${power_weight}
+    
+    subset_str=
+    if [[ $dataset == vox1 ]];then
+    subset_str=_cnc
+    fi
+
     python TrainAndTest/train_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} --coreset-percent ${coreset_percent} --select-score ${select_score} \
+      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}${subset_str} --coreset-percent ${coreset_percent} --select-score ${select_score} \
       --train-test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --train-trials trials \
       --shuffle --batch-shuffle --batch-size ${batch_size} --seed ${seed} \
-      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
+      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}${subset_str}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi --nj 6 --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
