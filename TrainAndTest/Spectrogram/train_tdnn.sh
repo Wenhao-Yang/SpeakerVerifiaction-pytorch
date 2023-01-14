@@ -107,7 +107,7 @@ if [ $stage -le 10 ]; then
 
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for seed in 123456 123457 123458 ; do
+ for seed in 123456 ; do # 123457 123458 
    feat=fb${input_dim}
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
@@ -115,7 +115,7 @@ if [ $stage -le 10 ]; then
   #  --train-config TrainAndTest/Spectrogram/TDNNs/vox2_ecapa.yaml
 
    CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/TDNNs/vox1_tdnn.yaml --seed=${seed}
-  CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/TDNNs/vox1_tdnn_drop.yaml --seed=${seed}
+  # CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/TDNNs/vox1_tdnn_drop.yaml --seed=${seed}
   done
   exit
 fi
