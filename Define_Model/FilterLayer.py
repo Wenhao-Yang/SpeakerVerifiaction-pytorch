@@ -712,7 +712,7 @@ class DropweightLayer(nn.Module):
         self.drop_p = ynew * self.scale + 1-self.scale - dropout_p
 
     def forward(self, x):
-        if not self.training:
+        if not self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
             return x
         else:
             assert len(
