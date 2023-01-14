@@ -63,6 +63,7 @@ base_lr: 0.000001
 cos_sim: True
 
 mask_layer: "drop"
+init_weight: "v2_rclean_gean"
 weight_norm: "norm"
 scale: 0.5
 weight_p: 0.0
