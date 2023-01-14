@@ -6,7 +6,7 @@
 # time: 2022/5/21 08:55
 # Description: 
 
-stage=0
+stage=10
 
 waited=0
 while [ $(ps 17809 | wc -l) -eq 2 ]; do
@@ -96,16 +96,12 @@ if [ $stage -le 10 ]; then
 #  feat_type=pyfb
   feat_type=klsp
   loss=arcsoft
-  encod=SAP2
-  embedding_size=512
-  input_dim=40
-  input_norm=Mean
-  lr_ratio=0
-  loss_ratio=10
+  encod=SAP2 embedding_size=512
+  input_dim=40 input_norm=Mean
+  lr_ratio=0 loss_ratio=10
   subset=
   activation=leakyrelu
-  scheduler=cyclic
-  optimizer=adam
+  scheduler=cyclic optimizer=adam
   stat_type=margin1 #margin1sum
   m=1.0
 
@@ -115,8 +111,11 @@ if [ $stage -le 10 ]; then
    feat=fb${input_dim}
 
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-   CUDA_VISIBLE_DEVICES=2,3 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py \
-   --train-config TrainAndTest/Spectrogram/TDNNs/vox2_ecapa.yaml
+  #  CUDA_VISIBLE_DEVICES=2,3 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_distributed.py \
+  #  --train-config TrainAndTest/Spectrogram/TDNNs/vox2_ecapa.yaml
+
+   CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/TDNNs/vox1_tdnn.yaml --seed=${seed}
+  CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Spectrogram/TDNNs/vox1_tdnn_drop.yaml --seed=${seed}
   done
   exit
 fi
