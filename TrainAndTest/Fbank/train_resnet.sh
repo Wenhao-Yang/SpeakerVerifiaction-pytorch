@@ -327,7 +327,7 @@ if [ $stage -le 41 ]; then
   loss=arcsoft
   alpha=0
   input_norm=Mean
-  scheduler=rop optimizer=sgd
+  optimizer=sgd scheduler=step
   input_dim=40
 
   mask_layer=baseline weight=vox2_rcf weight_p=0 scale=0.2
@@ -349,10 +349,9 @@ if [ $stage -le 41 ]; then
       exp_str=_exp${expansion}
     fi
 
-    if [ $chn -eq 16 ]; then
-      channels=16,32,64,128
-      chn_str=
-    elif [ $chn -eq 32 ]; then
+    channels=16,32,64,128
+    chn_str=
+    if [ $chn -eq 32 ]; then
       channels=32,64,128,256
       chn_str=chn32_
     elif [ $chn -eq 64 ]; then
@@ -367,7 +366,7 @@ if [ $stage -le 41 ]; then
       at_str=_${weight}_dp${weight_p}s${scale}      
     fi
 
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_vares_bashuf2_core/percent${coreset_percent}_${select_score}/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_vares_bashuf2_core/percent${coreset_percent}_${select_score}/${seed}
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
       # _${weight}${power_weight}
@@ -381,12 +380,12 @@ if [ $stage -le 41 ]; then
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi --nj 6 --random-chunk 200 400 \
       --input-norm ${input_norm} --input-dim ${input_dim} \
-      --epochs 80 \
-      --early-stopping --early-patience 25 --early-delta 0.0001 --early-meta mix2 \
+      --epochs 60 \
+      --early-stopping --early-patience 35 --early-delta 0.0001 --early-meta mix2 \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.0000001 \
       --mask-layer ${mask_layer} --init-weight ${weight} \
-      --milestones 15,25,35,45 \
+      --milestones 20,35,45,55 \
       --kernel-size ${kernel} --channels ${channels} \
       --stride 2,1 --fast ${fast} \
       --block-type ${block_type} --red-ratio ${red_ratio} --downsample ${downsample} --expansion ${expansion} \
@@ -395,7 +394,7 @@ if [ $stage -le 41 ]; then
       --loss-type ${loss} --margin 0.15 --s 30 --all-iteraion 0 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
-      --weight-decay 0.0001 \
+      --weight-decay 0.0005 \
       --gpu-id 0,1 --extract --cos-sim \
       --remove-vad
   done
