@@ -12,16 +12,16 @@ datasets: vox1
 testset: vox1
 feat_type: klfb
 loss: arcsoft
-input_dim: 40
+input_dim: 161
 feat: !ref fb<input_dim>
 subset: ""
 
-train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_v2
-train_test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test<subset>_<feat>
+train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>
+train_test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test<subset>
 train_trials: trials
-valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_v2_valid
+valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_valid
 num_valid: 2
-test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
+test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test
 trials: trials
 input_norm: Mean
 
@@ -35,7 +35,7 @@ nj: 4
 shuffle: False
 batch_shuffle: True
 feat_format: kaldi
-remove_vad: True
+remove_vad: False
 
 ### Training settings
 epochs: 60
@@ -72,6 +72,10 @@ embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   mask: !ref <mask_layer>
+  init_weight: !ref <init_weight>
+  weight_norm: !ref <weight_norm>
+  scale: !ref <scale>
+  weight_p: !ref <weight_p>
   channels: [512, 512, 512, 512, 1500]
   encoder_type: "STAP"
   embedding_size: !ref <embedding_size>
@@ -104,7 +108,7 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<datasets>_v2/<feat_type>_egs<subset>_<mask_layer>/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_varesmix_dist
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_<mask_layer>/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_<init_weight>_<weight_norm>_scale<scale>_wd5e4_varesmix2_dist
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
