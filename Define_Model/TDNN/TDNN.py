@@ -1095,10 +1095,7 @@ class TDNN_v5(nn.Module):
             layer_mix = random.randint(0, 2)
         else:
             layer_mix = mixup_alpha
-        print(x.shape)
         x = self.input_mask(x)
-        print(x.shape)
-
         if len(x.shape) == 4:
             x = x.squeeze(1).float()
 
