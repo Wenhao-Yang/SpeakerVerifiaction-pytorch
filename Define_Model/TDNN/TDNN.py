@@ -1096,17 +1096,8 @@ class TDNN_v5(nn.Module):
         else:
             layer_mix = mixup_alpha
 
-        if self.filter_layer != None:
-            x = self.filter_layer(x)
+        x = self.input_mask(x)
 
-        if len(x.shape) == 4:
-            x = x.squeeze(1).float()
-
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
-        if self.mask_layer != None:
-            x = self.mask_layer(x)
         if proser != None and layer_mix == 0:
             x = self.mixup(x, proser, lamda_beta)
 
