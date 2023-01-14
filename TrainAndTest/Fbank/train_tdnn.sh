@@ -1758,8 +1758,8 @@ if [ $stage -le 300 ]; then
   # CUDA_VISIBLE_DEVICES=0,2 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_ecapa.yaml --seed=${seed}
 
   #  CUDA_VISIBLE_DEVICES=0,2 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_ecapa_mixup.yaml --lamda-beta 0.2 --seed=${seed}
-  CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/TDNNs/vox1_tdnn.yaml --seed=${seed}
-  CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/TDNNs/vox1_tdnn_drop.yaml --seed=${seed}
+  CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/TDNNs/vox1_tdnn.yaml --seed=${seed}
+  CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 --master_port=417420 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/TDNNs/vox1_tdnn_drop.yaml --seed=${seed}
 
 #   CUDA_VISIBLE_DEVICES=2,4 python -m torch.distributed.launch --nproc_per_node=2 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/TDNNs/vox2_tdnn_mixup.yaml --seed=${seed}
   done
