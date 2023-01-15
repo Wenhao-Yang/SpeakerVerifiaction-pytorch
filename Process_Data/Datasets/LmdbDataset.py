@@ -526,7 +526,7 @@ class EgsDataset(Dataset):
         dom_label = int(dom_label)
 
         if self.skip_feature:
-            feature = None
+            feature = torch.ones([1, 1, 1])
         else:
             y = self.loader(self.common_path + upath)
             feature = self.transform(y)
