@@ -36,9 +36,9 @@ nj: 8
 shuffle: False
 batch_shuffle: True
 
-coreset_percent: 0.5
-select_score: random
-select_interval: 4
+# coreset_percent: 0.5
+# select_score: random
+# select_interval: 4
 
 feat_format: kaldi
 remove_vad: True
@@ -56,7 +56,7 @@ momentum: 0.9
 accu_steps: 1
 
 # Scheduler
-patience: 4
+patience: 3
 milestones: [10, 20, 30, 40]
 scheduler: rop
 lr: 0.1
@@ -64,7 +64,7 @@ base_lr: 0.00001
 cos_sim: True
 
 early_stopping: True
-early_patience: 30
+early_patience: 20
 early_delta: 0.0001
 early_meta: "mix2"
 
@@ -127,7 +127,8 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_varesmix2_bashuf2_dist_core/percent<coreset_percent>_<select_score>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_varesmix2_bashuf2_dist
+#_core/percent<coreset_percent>_<select_score>
 # _red<red_ratio>
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
