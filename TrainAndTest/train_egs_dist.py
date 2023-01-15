@@ -550,6 +550,124 @@ def test(extract_loader, model, epoch, xvector_dir):
         writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
 
 
+def select_samples(train_loader, model, ce, select_score='loss'):
+
+    model.eval()
+    ce_criterion, xe_criterion = ce
+
+    xe_criterion.ce.reduction = 'none'
+
+    score_dict = {}
+    for i in range(train_dir.num_spks):
+        score_dict[i] = []
+
+    if len(train_dir.rest_dataset) > 0:
+        train_dir.dataset = np.concatenate(
+            [train_dir.dataset, train_dir.rest_dataset])
+
+    all_loss = []
+
+    with torch.no_grad():
+        pbar = tqdm(enumerate(train_loader))
+        for batch_idx, (data, label) in pbar:
+
+            if 'loss' in select_score:
+                if torch.cuda.is_available():
+                    data = data.cuda()
+                    label = label.cuda()
+
+                # compute output
+                out, feats = model(data)
+                if config_args['loss_type'] == 'asoft':
+                    predicted_labels, _ = out
+                else:
+                    predicted_labels = out
+
+                classfier = predicted_labels
+                if config_args['loss_type'] == 'soft':
+                    loss = ce_criterion(classfier, label)
+                elif config_args['loss_type'] == 'asoft':
+                    classfier_label, _ = classfier
+                    loss = xe_criterion(classfier, label)
+                elif config_args['loss_type'] in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
+                    loss_cent = ce_criterion(classfier, label)
+                    loss_xent = args.loss_ratio * xe_criterion(feats, label)
+                    other_loss += float(loss_xent.item())
+
+                    loss = loss_xent + loss_cent
+                elif config_args['loss_type'] in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'subam',
+                                                  'subdam', 'aDCF']:
+                    loss = xe_criterion(classfier, label)
+                elif config_args['loss_type'] == 'arcdist':
+                    loss_cent = args.loss_ratio * \
+                        ce_criterion(classfier, label)
+                    if args.loss_lambda:
+                        loss_cent = loss_cent * lambda_
+
+                    loss_xent = xe_criterion(classfier, label)
+
+                    other_loss += float(loss_cent.item())
+                    loss = loss_xent + loss_cent
+
+            elif select_score == 'random':
+                loss = torch.zeros_like(label)
+
+            idx_labels = batch_idx * \
+                len(data) + np.arange(config_args['batch_size'])
+            for i, (l, sample_loss) in enumerate(zip(label, loss)):
+                if idx_labels[i] < len(train_dir):
+                    score_dict[int(l)].append(
+                        [float(sample_loss), idx_labels[i]])
+                    all_loss.append(float(sample_loss))
+
+    xe_criterion.ce.reduction = 'mean'
+    train_dataset = train_dir.dataset
+    dataset = []
+    rest_dataset = []
+
+    all_loss = np.sort(all_loss)
+
+    if select_score == 'loss_mean':
+        threshold = np.mean(all_loss)
+    elif select_score == 'loss_part':
+        number_samples = int(len(all_loss)*args.coreset_percent)
+        number_samples = int(
+            np.ceil(number_samples / config_args['batch_size']) * config_args['batch_size'])
+        threshold = all_loss[-number_samples]
+
+    for i in score_dict:  # spk with scores dict
+        sort_np = np.array(score_dict[i])
+        if select_score in ['loss', 'random']:
+            idx = np.argsort(sort_np, axis=0)
+            sort_np = sort_np[idx[:, 0]]
+            sort_np_len = len(sort_np)
+
+            # pdb.set_trace()
+            for _, j in sort_np[-int(sort_np_len*config_args['coreset_percent']):]:
+                dataset.append(train_dataset[int(j)])
+
+            for _, k in sort_np[:-int(sort_np_len*config_args['coreset_percent'])]:
+                rest_dataset.append(train_dataset[int(k)])
+        else:
+            for l, j in sort_np:
+                if l >= threshold:
+                    dataset.append(train_dataset[int(j)])
+                else:
+                    rest_dataset.append(train_dataset[int(j)])
+
+    # pdb.set_trace()
+
+    dataset = np.array(dataset)
+    dataset = dataset[np.argsort(dataset, axis=0)[:, 2]]
+    if len(dataset) % config_args['batch_size'] > 0:
+        dataset = dataset[:-(len(dataset) % config_args['batch_size'])]
+
+    np.random.shuffle(dataset)
+
+    train_dir.dataset = dataset
+    train_dir.rest_dataset = rest_dataset
+
+
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
@@ -682,7 +800,7 @@ def main():
         model_para.append({'params': xe_criterion.parameters(
         ), 'lr': config_args['lr'] * config_args['lr_ratio']})
 
-    if 'second_wd' in config_args and config_args['config_args'] > 0:
+    if 'second_wd' in config_args and config_args['second_wd'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:
         classifier_params = list(map(id, model.classifier.parameters()))
         rest_params = filter(lambda p: id(
@@ -734,6 +852,17 @@ def main():
         scheduler = lr_scheduler.MultiStepLR(
             optimizer, milestones=milestones, gamma=0.1)
 
+    # Save model config txt
+    if torch.distributed.get_rank() == 0:
+        with open(os.path.join(check_path,
+                               'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
+                  'w') as f:
+            f.write('model: ' + str(model) + '\n')
+            f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
+            f.write('Other Loss: ' + str(xe_criterion) + '\n')
+            f.write('Optimizer: ' + str(optimizer) + '\n')
+            f.write('Scheduler: ' + str(scheduler) + '\n')
+
     if 'resume' in config_args:
         if os.path.isfile(config_args['resume']):
             if torch.distributed.get_rank() == 0:
@@ -772,17 +901,6 @@ def main():
             if torch.distributed.get_rank() == 0:
                 print('=> no checkpoint found at {}'.format(
                     config_args['resume']))
-
-    # Save model config txt
-    if torch.distributed.get_rank() == 0:
-        with open(os.path.join(check_path,
-                               'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
-                  'w') as f:
-            f.write('model: ' + str(model) + '\n')
-            f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
-            f.write('Other Loss: ' + str(xe_criterion) + '\n')
-            f.write('Optimizer: ' + str(optimizer) + '\n')
-            f.write('Scheduler: ' + str(scheduler) + '\n')
 
     ce = [ce_criterion, xe_criterion]
 
@@ -907,6 +1025,11 @@ def main():
             torch.distributed.barrier()
             if not torch.distributed.is_initialized():
                 break
+
+            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
+                select_samples(train_loader, model, ce,
+                               config_args['select_score'])
+
             train(train_loader, model, ce, optimizer, epoch, scheduler)
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
@@ -978,8 +1101,9 @@ def main():
                         '{:.4f} '.format(best_res['MinDCF_01'])
                     best_str += ' MinDcf-0.001: ' + \
                         '{:.4f} '.format(best_res['MinDCF_001'])
-                    best_str += ' Mix2: ' + '{:.4f}'.format(best_res['mix2'])
-                    best_str += ' Mix3: ' + '{:.4f}\n'.format(best_res['mix3'])
+                    best_str += ' Mix2,3: ' + \
+                        '{:.4f}, {:.4f}'.format(
+                            best_res['mix2'], best_res['mix3'])
                     print(best_str)
 
                     try:

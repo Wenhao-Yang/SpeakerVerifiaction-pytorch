@@ -9,18 +9,18 @@ data_root_dir: /home/work2020/yangwenhao/project/lstm_speaker_verification
 
 ## Dataset
 seed: 123456
-datasets: vox1
-testset: vox1
+datasets: cnceleb_v2
+testset: cnceleb_v2
 feat_type: klfb
 loss: arcsoft
 input_dim: 40
 feat: !ref fb<input_dim>
 subset: ""
 
-train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_cnc
+train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test<subset>_<feat>
 train_trials: trials
-valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_cnc_valid
+valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_valid
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
 trials: trials
@@ -40,7 +40,7 @@ feat_format: kaldi
 remove_vad: True
 
 ### Training settings
-epochs: 50
+epochs: 60
 
 # optimizer
 optimizer: sgd
@@ -123,7 +123,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist_cnc
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_17.pth
