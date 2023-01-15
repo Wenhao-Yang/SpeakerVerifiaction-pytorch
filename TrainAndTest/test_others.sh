@@ -2664,7 +2664,7 @@ if [ $stage -le 301 ]; then
   loss=arcsoft
 
 #  encoder_type=SAP2 embedding_size=512
-  encoder_type=ASTP2 embedding_size=256
+  encoder_type=SAP2 embedding_size=256
   # block_type=seblock downsample=k1 red_ratio=2
   block_type=cbam downsample=k3 red_ratio=2
   kernel=5,5 fast=none1
@@ -2697,8 +2697,7 @@ for seed in 123456 ; do
     #  model_dir=ThinResNet10/vox1/klfb80_egs_kd_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk3_avg5_ASTP2_em256_dp01_alpha0_none1_wd5e4_var_attention1000_time_feat_bashuf/${seed}
     #  model_dir=ThinResNet10/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
     # model_dir=ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2_dist/123456
-    model_dir=Data/checkpoint/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_avg5_SAP2_em256_dp01_alpha0_none_wde4_varesmix2_bashuf2_
-dist_core/percent0.5_random/123456
+    model_dir=Data/checkpoint/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_avg5_SAP2_em256_dp01_alpha0_none_wde4_varesmix2_bashuf2_dist_core/percent0.5_random/123456
 
    python -W ignore TrainAndTest/test_egs.py \
      --model ${model} --resnet-size ${resnet_size} \
