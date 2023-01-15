@@ -565,6 +565,9 @@ def select_samples(train_loader, model, ce, select_score='loss'):
 
     all_loss = []
 
+    if select_score == 'random':
+        train_dir.skip_feature = True
+
     with torch.no_grad():
         pbar = tqdm(enumerate(train_loader))
         for batch_idx, (data, label) in pbar:
@@ -664,6 +667,8 @@ def select_samples(train_loader, model, ce, select_score='loss'):
 
     train_dir.dataset = dataset
     train_dir.rest_dataset = rest_dataset
+    if select_score == 'random':
+        train_dir.skip_feature = False
 
 
 def main():

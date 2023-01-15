@@ -516,6 +516,7 @@ class EgsDataset(Dataset):
         self.chunk_size = []
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.skip_feature = False
 
     def __getitem__(self, idx):
         # time_s = time.time()
@@ -524,7 +525,11 @@ class EgsDataset(Dataset):
         label = int(label)
         dom_label = int(dom_label)
 
-        y = self.loader(self.common_path + upath)
+        if self.skip_feature:
+            feature = None
+        else:
+            y = self.loader(self.common_path + upath)
+            feature = self.transform(y)
         # if idx == 0:
         #     print(label, upath)
 
