@@ -532,8 +532,6 @@ class EgsDataset(Dataset):
             feature = self.transform(y)
         # if idx == 0:
         #     print(label, upath)
-
-        feature = self.transform(y)
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
 
