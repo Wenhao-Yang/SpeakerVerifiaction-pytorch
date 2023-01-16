@@ -2667,7 +2667,7 @@ if [ $stage -le 301 ]; then
   encoder_type=SAP2 embedding_size=256
   # block_type=seblock downsample=k1 red_ratio=2
   block_type=cbam downsample=k3 red_ratio=2
-  kernel=5,5 fast=none1
+  kernel=5,5 fast=none
   loss=arcsoft
   alpha=0
 
@@ -2720,7 +2720,7 @@ for seed in 123456 ; do
      --test-input ${test_input} --frame-shift 300 \
      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_${test_input} \
      --resume Data/checkpoint/${model_dir}/best.pth \
-     --gpu-id 5 --verbose 2 \
+     --gpu-id 5 --verbose 0 \
      --cos-sim
      # checkpoint_${epoch}.pth _${epoch}
 #     --extract \
