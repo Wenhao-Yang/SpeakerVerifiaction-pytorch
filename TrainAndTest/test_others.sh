@@ -2720,7 +2720,7 @@ for seed in 123456 ; do
      --test-input ${test_input} --frame-shift 300 \
      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_best_${test_input} \
      --resume Data/checkpoint/${model_dir}/best.pth \
-     --gpu-id 5 --verbose 1 \
+     --gpu-id 5 --verbose 2 \
      --cos-sim
      # checkpoint_${epoch}.pth _${epoch}
 #     --extract \
