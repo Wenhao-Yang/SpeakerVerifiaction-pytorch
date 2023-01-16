@@ -17,6 +17,7 @@ from collections import OrderedDict
 import argparse
 import numpy as np
 import os
+import signal
 import random
 import shutil
 import sys
