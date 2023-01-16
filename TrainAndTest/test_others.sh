@@ -2711,7 +2711,7 @@ for seed in 123456 ; do
      --feat-format kaldi --nj 6 --remove-vad \
      --input-norm ${input_norm} --input-dim ${input_dim} \
      --mask-layer ${mask_layer} --mask-len ${mask_len} \
-     --kernel-size ${kernel} --fast none1 --stride 2,1 \
+     --kernel-size ${kernel} --fast ${fast} --stride 2,1 \
      --channels 16,32,64,128 \
      --time-dim 1 --avg-size 5 \
      --loss-type ${loss} --margin 0.2 --s 30 \
