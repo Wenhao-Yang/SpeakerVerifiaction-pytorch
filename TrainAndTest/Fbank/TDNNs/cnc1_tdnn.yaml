@@ -13,7 +13,7 @@ feat_type: klfb
 loss: arcsoft
 input_dim: 40
 feat: !ref fb<input_dim>
-subset: ''
+subset: ""
 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_tmp
 train_test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/dev<subset>_<feat>/trials_dir
@@ -26,7 +26,7 @@ input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [ 200, 400 ]
+random_chunk: [200, 400]
 chunk_size: 300
 frame_shift: 300
 extract: True
@@ -34,7 +34,6 @@ nj: 12
 shuffle: False
 feat_format: kaldi
 remove_vad: True
-
 
 ### Training settings
 
@@ -48,10 +47,9 @@ dampening: 0
 momentum: 0.9
 accu_steps: 1
 
-
 # Scheduler
 patience: 3
-milestones: [ 10,20,30,40 ]
+milestones: [10, 20, 30, 40]
 scheduler: rop
 lr: 0.1
 base_lr: 0.00001
@@ -61,8 +59,8 @@ cos_sim: True
 embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
-  channels: [ 512, 512, 512, 512, 1500 ]
-  encoder_type: 'STAP'
+  channels: [512, 512, 512, 512, 1500]
+  encoder_type: "STAP"
   embedding_size: !ref <embedding_size>
   num_classes: 797
   activation: leakyrelu
@@ -92,13 +90,12 @@ s: 30
 # stat_type: margin1
 
 # Checkpoints
-loss_str: ''
+loss_str: ""
 check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_var_tmp
 resume: !ref <check_path>/checkpoint_40.pth
 
 veri_pairs: 9600
 gpu_id: 0,1
-
 
 test_interval: 4
 log_interval: 10

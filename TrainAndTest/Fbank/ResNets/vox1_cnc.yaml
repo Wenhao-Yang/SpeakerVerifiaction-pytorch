@@ -69,15 +69,15 @@ early_delta: 0.0001
 early_meta: "mix2"
 
 ## model Setttings
-resnet_size: 34
-block_type: "seblock"
+resnet_size: 18
+block_type: "cbam"
 red_ratio: 2
 encoder_type: "SAP2"
 downsample: "k1"
 model: ThinResNet
 kernel_size:
 alpha: 0
-avg_size: 5
+avg_size: 4
 embedding_size: 256
 batch_size: 256
 dropout_p: 0.1
@@ -127,7 +127,8 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist_cnc_core/percent<coreset_percent>_<select_score>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist_cnc_core/percent<coreset_percent>_<select_score>
+# _red<red_ratio>
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_17.pth
