@@ -333,7 +333,7 @@ if [ $stage -le 100 ]; then
 #  encoder_type=SAP2 embedding_size=512
   # encoder_type=SAP2 embedding_size=256
   encoder_type=ASTP2 embedding_size=256
-  # block_type=seblock downsample=k1 red_ratio=2
+  block_type=seblock downsample=k1 red_ratio=2
   # block_type=cbam downsample=k3 red_ratio=2
   kernel=5,5 fast=none1
   loss=arcsoft
