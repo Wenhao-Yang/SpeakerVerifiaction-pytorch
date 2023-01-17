@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=80
+stage=100
 
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
