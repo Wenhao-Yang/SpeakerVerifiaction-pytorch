@@ -797,38 +797,37 @@ def main():
             f.write('Optimizer: ' + str(optimizer) + '\n')
             f.write('Scheduler: ' + str(scheduler) + '\n')
 
-        if 'resume' in config_args:
-        if os.path.isfile(config_args['resume']):
-            if torch.distributed.get_rank() == 0:
-                print('=> loading checkpoint {}'.format(config_args['resume']))
-            checkpoint = torch.load(config_args['resume'])
-            start_epoch = checkpoint['epoch']
+    if 'resume' in config_args and os.path.isfile(config_args['resume']):
+        if torch.distributed.get_rank() == 0:
+            print('=> loading checkpoint {}'.format(config_args['resume']))
+        checkpoint = torch.load(config_args['resume'])
+        start_epoch = checkpoint['epoch']
 
-            checkpoint_state_dict = checkpoint['state_dict']
-            if isinstance(checkpoint_state_dict, tuple):
-                checkpoint_state_dict = checkpoint_state_dict[0]
+        checkpoint_state_dict = checkpoint['state_dict']
+        if isinstance(checkpoint_state_dict, tuple):
+            checkpoint_state_dict = checkpoint_state_dict[0]
 
-            filtered = {k: v for k, v in checkpoint_state_dict.items(
-            ) if 'num_batches_tracked' not in k}
+        filtered = {k: v for k, v in checkpoint_state_dict.items(
+        ) if 'num_batches_tracked' not in k}
 
-            # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-            if list(filtered.keys())[0].startswith('module'):
-                new_state_dict = OrderedDict()
-                for k, v in filtered.items():
-                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                    name = k[7:]
-                    new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+        # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+        if list(filtered.keys())[0].startswith('module'):
+            new_state_dict = OrderedDict()
+            for k, v in filtered.items():
+                # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                name = k[7:]
+                new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
 
-                model.load_state_dict(new_state_dict)
-            else:
-                model_dict = model.state_dict()
-                model_dict.update(filtered)
-                model.load_state_dict(model_dict)
-            # model.dropout.p = args.dropout_p
+            model.load_state_dict(new_state_dict)
         else:
-            if torch.distributed.get_rank() == 0:
-                print('=> no checkpoint found at {}'.format(
-                    config_args['resume']))
+            model_dict = model.state_dict()
+            model_dict.update(filtered)
+            model.load_state_dict(model_dict)
+        # model.dropout.p = args.dropout_p
+    else:
+        if torch.distributed.get_rank() == 0:
+            print('=> no checkpoint found at {}'.format(
+                config_args['resume']))
 
     ce = [ce_criterion, xe_criterion]
 
