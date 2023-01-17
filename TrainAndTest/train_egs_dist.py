@@ -1058,7 +1058,7 @@ def main():
                 #     flag_tensor += 1
 
             if torch.distributed.get_rank() == 0 and (
-                    epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
+                    epoch % config_args['test_interval'] == 0 or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch):
 
                 # if (epoch == 1 or epoch != (end - 2)) and (
