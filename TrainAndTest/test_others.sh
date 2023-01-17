@@ -2589,9 +2589,7 @@ if [ $stage -le 300 ]; then
 #      --model ${model} --resnet-size 14 \
 #      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
 #      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w \
-#      --trials trials_640w \
-#      --score-suffix dev_640w \
+#      --train-trials trials_2w --trials trials_640w --score-suffix dev_640w \
 #      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
 #      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
 #      --feat-format kaldi \
@@ -2601,12 +2599,10 @@ if [ $stage -le 300 ]; then
 #      --context 5,3,3,5 \
 #      --nj 12 \
 #      --alpha 0 \
-#      --margin 0.15 --s 30 \
+#      --loss-type ${loss} --margin 0.15 --s 30 \
 #      --stride 1 \
 #      --block-type ${block_type} \
-#      --embedding-size ${embedding_size} \
-#      --loss-type ${loss} \
-#      --encoder-type STAP \
+#      --encoder-type STAP --embedding-size ${embedding_size} \
 #      --input-length fix \
 #      --remove-vad \
 #      --frame-shift 300 \
