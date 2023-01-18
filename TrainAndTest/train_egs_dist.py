@@ -130,8 +130,7 @@ if torch.distributed.get_rank() == 0:
 
 kwargs = {'num_workers': config_args['nj'],
           'pin_memory': False}  # if args.cuda else {}
-extract_kwargs = {'num_workers': 4,
-                  'pin_memory': True}  # if args.cuda else {}
+extract_kwargs = {'num_workers': 0, 'pin_memory': False}  # if args.cuda else {}
 
 opt_kwargs = {'lr': config_args['lr'],
               'lr_decay': config_args['lr_decay'],
