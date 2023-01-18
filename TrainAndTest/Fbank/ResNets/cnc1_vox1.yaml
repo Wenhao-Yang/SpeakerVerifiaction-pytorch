@@ -10,7 +10,7 @@ data_root_dir: /home/work2020/yangwenhao/project/lstm_speaker_verification
 ## Dataset
 seed: 123456
 datasets: cnceleb_v2
-testset: cnceleb_v2
+testset: vox1
 feat_type: klfb
 loss: arcsoft
 input_dim: 40
