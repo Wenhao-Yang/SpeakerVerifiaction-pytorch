@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=203
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2329,24 +2329,22 @@ fi
 
 
 if [ $stage -le 203 ]; then
-  feat_type=klfb input_dim=40
+  feat_type=klfb input_dim=80 feat=log
   model=ThinResNet resnet_size=34
-  feat=log
-  alpha=0
-#  datasets=vox1 testset=vox1
-  datasets=vox2 testset=vox1 test_subset=dev sname=dev
-  block_type=seblock downsample=k1 expansion=1 red_ratio=2
-  encoder_type=ASTP2 embedding_size=256
-
-  kernel=5,5
+  
+  datasets=vox1 testset=vox1 test_subset=test sname=dev
+  block_type=cbam downsample=k3 expansion=1 red_ratio=2
+  encoder_type=SAP2 embedding_size=256
+  # datasets=vox2 testset=vox1 test_subset=dev sname=dev
+  # block_type=seblock downsample=k1 expansion=1 red_ratio=2
+  # encoder_type=ASTP2 embedding_size=256
+  kernel=5,5 fast=none1
   loss=arcsoft
   input_norm=Mean
   mask_layer=baseline
   scheduler=rop optimizer=sgd
   batch_size=256
-  fast=none1
-
-  avg_size=5
+  avg_size=5 alpha=0
 #  encoder_type=SAP2
 #  for input_dim in 64 80 ; do
   proser_ratio=1 proser_gamma=0.01 dummy=0
@@ -2357,6 +2355,7 @@ if [ $stage -le 203 ]; then
   valid_dir=dev_fb${input_dim}_valid
   seed=123456
   subname=all
+  for seed in 123456 123457 123458 ; do
   for testset in vox1 ; do
 #  for subname in easy hard; do #  all  --trials trials_${subname} --score-suffix ${subname}
     if [ $resnet_size -le 34 ];then
@@ -2373,7 +2372,10 @@ if [ $stage -le 203 ]; then
 #    _dummy${dummy}_beta${proser_ratio}_gamma${proser_gamma}
 #${input_norm}_batch${batch_size}_${block_type}_red2_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_vares_bashuf2
 #    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
-    model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
+    # model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
+    # model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/${seed}
+
+    model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist/${seed}
 #         --extract \
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -2396,26 +2398,24 @@ if [ $stage -le 203 ]; then
       --test-input var \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 1 --verbose 0 \
+      --gpu-id 2 --verbose 0 \
       --cos-sim
+  done
   done
   exit
 fi
 
 
 if [ $stage -le 210 ]; then
-  feat_type=klsp
+  feat_type=klsp feat=log
   model=ThinResNet resnet_size=8
-  feat=log
   loss=arcsoft
-  encod=AVG
-  alpha=0
+  encod=AVG alpha=0
   datasets=vox2 testset=sitw test_subset=test
   input_norm=Mean
 #  test_subset=
   block_type=basic
   encoder_type=SAP2 embedding_size=256
-
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k1 fast=none1
@@ -2987,7 +2987,8 @@ fi
 
 if [ $stage -le 500 ]; then
   model=ThinResNet resnet_size=18
-  datasets=aidata testset=aidata
+  # datasets=aidata testset=aidata
+  datasets=vox1 testset=vox1
   feat_type=wave feat=log
   loss=arcsoft
   alpha=0
