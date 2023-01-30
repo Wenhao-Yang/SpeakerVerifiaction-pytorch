@@ -2375,7 +2375,9 @@ if [ $stage -le 203 ]; then
     # model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/123456
     # model_dir=ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch128_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde5_vares_bashuf2_dist/${seed}
 
-    model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_cbam_downk3_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist/${seed}
+    model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_cbam_red2_downk3_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_vares_bashuf2_dist_mani123_mani123_lamda2.0/${seed}
+    # Mean_batch256_cbam_downk3_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist
+    
 #         --extract \
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
