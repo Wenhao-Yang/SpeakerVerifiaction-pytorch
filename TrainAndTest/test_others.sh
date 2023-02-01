@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
 stage=301
+waited=0
+while [ `ps 99278 | wc -l` -eq 2 ]; do
+  sleep 60
+  waited=$(expr $waited + 1)
+  echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
+done
+#stage=10
+
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2670,8 +2678,8 @@ if [ $stage -le 301 ]; then
 
   batch_size=256
   mask_layer=baseline mask_len=5,5
-  # train_set=cnceleb test_set=cnceleb
-  train_set=vox1 test_set=vox1
+  train_set=cnceleb test_set=cnceleb
+  # train_set=vox1 test_set=vox1
   train_subset=
 #  subset=dev
   subset=dev test_input=fix
@@ -2698,17 +2706,17 @@ for seed in 123456 ; do
     #_core/percent0.5_random/123456
 
     # center extract
-    model_dir=ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_step/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist_cnc_core/percent0.5_random/123456
-    # Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_step/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist_core/percent0.5_random/123456
+    # model_dir=ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_step/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist_cnc_core/percent0.5_random/123456 # _cnc
+    model_dir=Data/checkpoint/ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_step/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist_core/percent0.5_random/123456
 
    python -W ignore TrainAndTest/test_egs.py \
      --model ${model} --resnet-size ${resnet_size} \
-     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat}_cnc \
+     --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat} \
      --train-extract-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat} \
      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
      --train-trials trials_2w \
      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat}_valid \
-     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat}_cnc \
+     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${subset}_${feat} \
      --feat-format kaldi --nj 6 --remove-vad \
      --input-norm ${input_norm} --input-dim ${input_dim} \
      --mask-layer ${mask_layer} --mask-len ${mask_len} \
@@ -2721,7 +2729,7 @@ for seed in 123456 ; do
      --test-input ${test_input} --frame-shift 300 \
      --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_${epoch}_${test_input} \
      --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-     --gpu-id 2 --verbose 0 --test \
+     --gpu-id 2 --verbose 1 --test \
      --cos-sim
      # checkpoint_${epoch}.pth _${epoch}
 #     --extract \
