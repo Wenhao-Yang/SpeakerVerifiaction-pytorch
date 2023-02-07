@@ -170,12 +170,15 @@ if config_args['feat_format'] in ['kaldi', 'wav']:
 elif config_args['feat_format'] == 'npy':
     file_loader = np.load
 
+return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
+
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                        transform=transform,
                        batch_size=config_args['batch_size'], random_chunk=config_args['random_chunk'],
-                       verbose=1 if torch.distributed.get_rank() == 0 else 0)
+                       verbose=1 if torch.distributed.get_rank() == 0 else 0,
+                       domain=return_domain)
 valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                        transform=transform,
                        verbose=1 if torch.distributed.get_rank() == 0 else 0)
@@ -212,7 +215,19 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
     # start_time = time.time()
     # pdb.set_trace()
-    for batch_idx, (data, label) in pbar:
+    for batch_idx, data_cols in pbar:
+
+        if return_domain:
+            data, label = data_cols
+            batch_weight = None
+        else:
+            data, domain_label, label = data_cols
+            domain_weight = torch.Tensor(C.DOMAIN_WEIGHT).cuda()
+            domain_weight = torch.exp(4*(-domain_weight+0.75))
+
+            batch_weight = domain_weight[domain_label]
+            xe_criterion.ce.reduction = 'none'
+
         if torch.cuda.is_available():
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
@@ -245,6 +260,11 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
             loss = xe_criterion(classfier, label)
+            if batch_weight != None:
+                loss = loss * batch_weight
+                loss = loss.mean()
+                xe_criterion.ce.reduction = 'mean'
+
         elif 'arcdist' in config_args['loss_type']:
             # pdb.set_trace()
             loss_cent = config_args['loss_ratio'] * \

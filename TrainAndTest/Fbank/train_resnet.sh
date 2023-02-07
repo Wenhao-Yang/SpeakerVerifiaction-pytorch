@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=44
+stage=103
 waited=0
 while [ `ps 346751 | wc -l` -eq 2 ]; do
   sleep 60
@@ -720,12 +720,11 @@ if [ $stage -le 101 ]; then
   for loss in arcsoft ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
+    loss_str=
     if [ "$loss" == "arcdist" ]; then
       loss_str=_${stat_type}lr${loss_ratio}m${m}
     elif [ "$loss" == "damsoft" ]; then
       loss_str=_margin${margin}
-    else
-      loss_str=
     fi
 
     if [ "$class_weight" == "cnc1" ]; then
@@ -875,6 +874,29 @@ if [ $stage -le 102 ]; then
   exit
 fi
 
+if [ $stage -le 103 ]; then
+  model=ThinResNet
+  datasets=cnceleb_v2 feat_type=klfb
+  encod=SAP2 embedding_size=256
+  input_dim=40 input_norm=Mean
+  lr_ratio=0 loss_ratio=10
+  subset=
+  activation=leakyrelu
+  scheduler=rop optimizer=sgd
+  stat_type=margin1 #margin1sum
+  loss=arcsoft m=1.0
+
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+ for seed in 123456 ; do
+    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+    # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple.yaml --seed=${seed}
+
+    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_domain.yaml --seed=${seed}
+
+  done
+  exit
+fi
+
 
 if [ $stage -le 200 ]; then
   datasets=aishell2 testset=aishell2
@@ -892,7 +914,6 @@ if [ $stage -le 200 ]; then
   fast=none1
   mask_layer=baseline weight=vox2_rcf
         # --milestones 15,25,35,45 \
-
   for encoder_type in SAP2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_down${downsample}_${fast}_${encoder_type}_dp01_alpha${alpha}_em${embedding_size}_wd5e4_var
@@ -904,7 +925,7 @@ if [ $stage -le 200 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim}_valid \
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi --random-chunk 200 400 \
-      --input-norm ${input_norm} --remove-vad
+      --input-norm ${input_norm} --remove-vad \
       --nj 12 --epochs 60 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
