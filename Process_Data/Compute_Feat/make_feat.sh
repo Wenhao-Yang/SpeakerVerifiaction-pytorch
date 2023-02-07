@@ -61,12 +61,12 @@ if [ $stage -le 1 ]; then
 #  feat=klfb
 #  feat_type=klfb
 #        --remove-vad \
-  input_per_spks=1024
+  input_per_spks=512
   num_frames=400
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
-  for dataset in vox1; do
+  for dataset in cnceleb_v2; do
     subset_str=
     if [[ $dataset == vox1 ]];then
     subset_str=_cnc
@@ -79,9 +79,8 @@ if [ $stage -le 1 ]; then
         --train \
         --input-per-spks ${input_per_spks} --num-frames ${num_frames} \
         --feat-format kaldi --out-format kaldi_cmp \
-        --num-valid 2 \
-        --remove-vad \
-        --out-set ${s}
+        --num-valid 2 --remove-vad --domain \
+        --out-set ${s}_domain
 
       python Process_Data/Compute_Feat/make_egs.py \
         --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
@@ -90,9 +89,8 @@ if [ $stage -le 1 ]; then
         --feat-type ${feat_type} \
         --num-frames ${num_frames} --input-per-spks ${input_per_spks} \
         --feat-format kaldi --out-format kaldi_cmp \
-        --num-valid 2 \
-        --remove-vad \
-        --out-set ${s}_valid
+        --num-valid 2 --remove-vad --domain \
+        --out-set ${s}_domain_valid
     done
   done
   exit
