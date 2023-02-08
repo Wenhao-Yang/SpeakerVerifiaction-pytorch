@@ -217,7 +217,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
 
-        if return_domain:
+        if not return_domain:
             data, label = data_cols
             batch_weight = None
         else:
