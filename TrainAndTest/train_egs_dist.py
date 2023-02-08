@@ -52,7 +52,7 @@ from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
 from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput
+from Process_Data.audio_processing import toMFB, totensor, truncatedinput, PadCollate3d
 from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
 from logger import NewLogger
@@ -223,7 +223,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             data, label = data_cols
             batch_weight = None
         else:
-            data, domain_label, label = data_cols
+            data, label, domain_label = data_cols
             domain_weight = torch.Tensor(C.DOMAIN_WEIGHT).cuda()
             domain_weight = torch.exp(4*(-domain_weight+0.75))
 
@@ -939,17 +939,22 @@ def main():
 
         train_sampler = torch.utils.data.distributed.DistributedSampler(
             train_dir)
+
+        if return_domain:
+            train_paddfunc = PadCollate3d
+        else:
+            train_paddfunc = PadCollate
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
-                                                   collate_fn=PadCollate(dim=pad_dim,
-                                                                         num_batch=int(
-                                                                             np.ceil(
-                                                                                 len(train_dir) / config_args[
-                                                                                     'batch_size'])),
-                                                                         min_chunk_size=min_chunk_size,
-                                                                         max_chunk_size=max_chunk_size,
-                                                                         chisquare=False if 'chisquare' not in config_args else
-                                                                         config_args['chisquare'],
-                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0),
+                                                   collate_fn=train_paddfunc(dim=pad_dim,
+                                                                             num_batch=int(
+                                                                                 np.ceil(
+                                                                                     len(train_dir) / config_args[
+                                                                                         'batch_size'])),
+                                                                             min_chunk_size=min_chunk_size,
+                                                                             max_chunk_size=max_chunk_size,
+                                                                             chisquare=False if 'chisquare' not in config_args else
+                                                                             config_args['chisquare'],
+                                                                             verbose=1 if torch.distributed.get_rank() == 0 else 0),
                                                    shuffle=config_args['shuffle'], sampler=train_sampler, **kwargs)
 
         valid_sampler = torch.utils.data.distributed.DistributedSampler(
