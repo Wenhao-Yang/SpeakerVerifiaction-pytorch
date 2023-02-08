@@ -171,6 +171,8 @@ elif config_args['feat_format'] == 'npy':
     file_loader = np.load
 
 return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
+if torch.distributed.get_rank() == 0:
+    print('Domain weight: ', return_domain)
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
