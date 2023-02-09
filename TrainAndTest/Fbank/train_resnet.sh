@@ -2,7 +2,7 @@
 
 stage=300  # skip to stage x
 waited=0
-while [ `ps 363170 | wc -l` -eq 2 ]; do
+while [ `ps 177992 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -858,15 +858,13 @@ if [ $stage -le 102 ]; then
   datasets=cnceleb testset=cnceleb
   feat_type=klfb
   model=ThinResNet resnet_size=34
-  encoder_type=SAP2
-  embedding_size=512
+  encoder_type=SAP2 embedding_size=512
   block_type=basic downsample=k3
   kernel=5,5
   loss=arcsoft
   alpha=0
-  input_norm=Mean
+  input_norm=Mean input_dim=40
   scheduler=rop optimizer=sgd
-  input_dim=40
   batch_size=256
   fast=none1
   mask_layer=both mask_len=5,5
@@ -945,16 +943,14 @@ if [ $stage -le 102 ]; then
   kernel=5,5
   loss=arcsoft
   alpha=0
-  input_norm=Mean
-  mask_layer=None
+  input_norm=Mean mask_layer=None
   scheduler=rop optimizer=sgd
   input_dim=40
   batch_size=256
   fast=none1
-  mask_layer=both
+  mask_layer=both mask_len=5,5
   weight=one scale=0.2 weight_p=0.1584
   subset=12
-  mask_len=5,5
   stat_type=maxmargin
   chn=16
   loss_ratio=1
@@ -1026,10 +1022,9 @@ if [ $stage -le 200 ]; then
   kernel=5,5
   loss=arcsoft
   alpha=0
-  input_norm=Mean
+  input_norm=Mean input_dim=40
   mask_layer=baseline
   scheduler=rop optimizer=sgd
-  input_dim=40
   batch_size=256
   fast=none1
   mask_layer=baseline weight=vox2_rcf
@@ -1124,16 +1119,16 @@ if [ $stage -le 300 ]; then
   m=1.0
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for lamda_beta in 0.2 0.5 1.0 ; do
- for seed in 123456 123457 123458 ; do # 123456
+ for lamda_beta in 0 ; do
+ for seed in 123456 ; do # 123456
     feat=fb${input_dim}
 
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=2,4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet_mixup.yaml --seed=${seed} --lamda-beta ${lamda_beta} 
+    # CUDA_VISIBLE_DEVICES=2,4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox1_resnet_mixup.yaml --seed=${seed} --lamda-beta ${lamda_beta} 
 
   # CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet.yaml --seed=${seed}
-    # CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_vox1.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=2,4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_vox1.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox1_cnc1.yaml --seed=${seed}
 
   # CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_mixup.yaml --seed=${seed}
