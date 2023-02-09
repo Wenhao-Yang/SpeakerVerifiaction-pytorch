@@ -1537,8 +1537,7 @@ fi
 if [ $stage -le 158 ]; then
   model=TDNN_v5
   datasets=cnceleb
-  embedding_size=512
-  encod=STAP
+  encod=STAP embedding_size=512
   block_type=basic
   input_norm=Mean
   mask_layer=drop
@@ -1549,8 +1548,7 @@ if [ $stage -le 158 ]; then
 
   weight=vox2_cf
   loss=arcsoft
-  scheduler=rop
-  optimizer=sgd
+  scheduler=rop optimizer=sgd
   feat=fb${input_dim}
   batch_size=256
 
