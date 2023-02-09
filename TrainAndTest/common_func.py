@@ -437,6 +437,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
         #         epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
     if torch.distributed.is_initialized():
+        torch.distributed.barrier()
         all_labels = [None for _ in range(torch.distributed.get_world_size())]
         all_distances = [None for _ in range(
             torch.distributed.get_world_size())]
@@ -446,11 +447,21 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
 
         # print(len(all_labels), all_distances)
         if torch.distributed.get_rank() == 0:
+            # for d in all_distances:
             try:
-                distances = np.concatenate(all_distances)
-                labels = np.concatenate(all_labels)
-            except:
-                pdb.set_trace()
+                valid_distances = []
+                valid_labels = []
+                for d in range(len(all_distances)):
+                    d_shape = np.array(all_distances[d]).shape
+                    if d_shape[-1] != 0:
+                        valid_distances.append(np.array(all_distances[d]))
+                        valid_labels.append(np.array(all_labels[d]))
+
+                distances = np.concatenate(valid_distances)
+                labels = np.concatenate(valid_labels)
+            except Exception as e:
+                print(e)
+                print(all_distances)  # , all_labels)
             # print('uid2vectors:', len(uid2vectors))
 
             labels = np.array(
@@ -1035,7 +1046,6 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
     parser.add_argument('--trials', type=str, default='trials',
                         help='path to voxceleb1 test dataset')
     parser.add_argument('--sitw-dir', type=str,
-                        default='/home/yangwenhao/local/project/lstm_speaker_verification/data/sitw',
                         help='path to voxceleb1 test dataset')
     parser.add_argument('--remove-vad', action='store_true',
                         default=False, help='using Cosine similarity')
