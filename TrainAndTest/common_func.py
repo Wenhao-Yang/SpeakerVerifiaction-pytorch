@@ -461,7 +461,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
                 labels = np.concatenate(valid_labels)
             except Exception as e:
                 print(e)
-                print(all_distances)  # , all_labels)
+                # print(all_distances)  # , all_labels)
             # print('uid2vectors:', len(uid2vectors))
 
             labels = np.array(
