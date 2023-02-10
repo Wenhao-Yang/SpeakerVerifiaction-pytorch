@@ -347,7 +347,7 @@ class ArcSoftmaxLoss(nn.Module):
             max_cos = costh.max(dim=1, keepdim=True).values
             costh_m_s = costh_m_s * torch.exp(-max_cos*max_cos*max_cos*max_cos)
         # print('costh_m_s max is ', costh_m_s.max())
-        print(torch.exp(-max_cos*max_cos*max_cos*max_cos))
+        # print(torch.exp(-max_cos*max_cos*max_cos*max_cos))
         loss = self.ce(costh_m_s, label)
 
         return loss
