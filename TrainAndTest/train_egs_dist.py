@@ -788,13 +788,16 @@ def main():
                 class_weight = None
         else:
             class_weight = None
+        if 'dynamic_s' in config_args:
+            dynamic_s = config_args['dynamic_s']
+        else:
+            dynamic_s = False
 
         all_iteraion = 0 if 'all_iteraion' not in config_args else config_args['all_iteraion']
         smooth_ratio = 0 if 'smooth_ratio' not in config_args else config_args['smooth_ratio']
         xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                      all_iteraion=all_iteraion,
-                                      smooth_ratio=smooth_ratio,
-                                      class_weight=class_weight)
+                                      all_iteraion=all_iteraion, smooth_ratio=smooth_ratio,
+                                      class_weight=class_weight, dynamic_s=dynamic_s)
     elif config_args['loss_type'] == 'minarcsoft':
         ce_criterion = None
         xe_criterion = MinArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
