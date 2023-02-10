@@ -345,9 +345,9 @@ class ArcSoftmaxLoss(nn.Module):
         costh_m_s = self.s * costh_m
         if self.dynamic_s:
             max_cos = costh_m_s.max(dim=1, keepdim=True).values
-            costh_m_s = costh_m_s * 1 / torch.exp(max_cos*max_cos*max_cos*1.5)
+            costh_m_s = costh_m_s * torch.exp(-max_cos*max_cos*max_cos*max_cos)
         # print('costh_m_s max is ', costh_m_s.max())
-        print(costh_m_s)
+        # print(costh_m_s)
         loss = self.ce(costh_m_s, label)
 
         return loss
