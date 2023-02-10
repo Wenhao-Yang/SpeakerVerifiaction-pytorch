@@ -886,15 +886,15 @@ if [ $stage -le 103 ]; then
   stat_type=margin1 #margin1sum
   loss=arcsoft m=1.0
 
-  # _lrr${lr_ratio}_lsr${loss_ratio}
+  # _lrr${lr_ratio}_lsr${loss_ratio} --master_port=417420 
   seed=123457
-  CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_domain.yaml --seed=${seed}
+  # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_domain.yaml --seed=${seed}
 
  for seed in 123458 ; do
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --master_port=417420 --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple.yaml --seed=${seed}
 
-    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_domain.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_domain.yaml --seed=${seed}
 
   done
   exit
