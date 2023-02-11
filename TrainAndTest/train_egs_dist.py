@@ -225,7 +225,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         else:
             data, label, domain_label = data_cols
             domain_weight = torch.Tensor(C.DOMAIN_WEIGHT).cuda()
-            domain_weight = torch.exp(4*(-domain_weight+0.75))
+            domain_weight = torch.exp(6*(-domain_weight+0.75))
+            domain_weight /= domain_weight.min()
 
             batch_weight = domain_weight[domain_label]
             xe_criterion.ce.reduction = 'none'
