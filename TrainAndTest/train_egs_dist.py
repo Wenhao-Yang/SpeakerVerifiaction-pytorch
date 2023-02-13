@@ -780,7 +780,6 @@ def main():
         ce_criterion = None
         xe_criterion = AMSoftmaxLoss(
             margin=config_args['margin'], s=config_args['s'])
-
     elif config_args['loss_type'] in ['arcsoft', 'subarc']:
         ce_criterion = None
         if 'class_weight' in config_args and config_args['class_weight'] == 'cnc1':
@@ -818,7 +817,7 @@ def main():
         ce_criterion = DistributeLoss(
             stat_type=config_args['stat_type'], margin=config_args['m'])
         xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                      all_iteraion=config_args['all_iteraion'])
+                                      all_iteraion=0 if 'all_iteraion' not in config_args else config_args['all_iteraion'])
 
     model_para = [{'params': model.parameters()}]
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
