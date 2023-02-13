@@ -113,7 +113,7 @@ lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
 margin: 0.15
-# m: 0.2
+m: 0.1
 s: 30
 #lamda_beta: 0.2
 #mixup_type: input
