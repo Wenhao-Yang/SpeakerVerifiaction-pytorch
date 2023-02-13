@@ -360,7 +360,7 @@ class DistributeLoss(nn.Module):
 
             kurtoses = torch.mean(torch.pow(z_scores, 4.0)) - 3.0
             # skewness = torch.mean(torch.pow(z_scores, 3.0))
-            loss = (-kurtoses).clamp_min(0)
+            loss = (kurtoses).clamp_min(0)
         elif self.stat_type == "margin":
             positive_theta = torch.acos(positive_dist)
             loss = (2 * positive_theta - self.margin).clamp_min(0).mean()
