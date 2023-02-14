@@ -11,4 +11,4 @@ Train EER: 13.0536%, Threshold: 0.1643, mindcf-0.01: 0.7088, mindcf-0.001: 0.771
 # kurtoses
 Train EER: 11.6279%, Threshold: 0.1714, mindcf-0.01: 0.6883, mindcf-0.001: 0.7349, mix2,3: 8.5452, 5.8815.
 Train EER: 11.3953%, Threshold: 0.1726, mindcf-0.01: 0.6917, mindcf-0.001: 0.7256, mix2,3: 8.2683, 5.7190.
-Train EER: 12.7907%, Threshold: 0.1636, mindcf-0.01: 0.6840, mindcf-0.001: 0.7507, mix2,3: 9.6019, 6.5672.
+Train EER: 12.7907%, Threshold: 0.1636, mindcf-0.01: 0.6840, mindcf-0.001: 0.7507, misx2,3: 9.6019, 6.5672.
