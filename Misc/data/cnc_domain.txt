@@ -1,8 +1,14 @@
-# ThinResNet18 cnceleb_v2 Mean_batch256_cbam_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2_dist
+# ThinResNet18 cnceleb_v2 cbam_downk1_avg5_SAP2_em256_dp01_none1_wde4
 Train EER: 13.7209%, Threshold: 0.1533, mindcf-0.01: 0.6851, mindcf-0.001: 0.7460, mix2,3: 10.2364, 7.0133. 
 Train EER: 12.5581%, Threshold: 0.1646, mindcf-0.01: 0.7150, mindcf-0.001: 0.7349, mix2,3: 9.2288, 6.5986. 
+Train EER: 12.5874%, Threshold: 0.1684, mindcf-0.01: 0.7304, mindcf-0.001: 0.7617, mix2,3: 9.5881, 7.0031. 
 
-# ThinResNet18 cnceleb_v2 Mean_batch256_cbam_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2_dist domain 
+# domain weight4 
 Train EER: 11.6279%, Threshold: 0.1719, mindcf-0.01: 0.6858, mindcf-0.001: 0.7229, mix2,3: 8.4055, 5.7644. 
 Train EER: 10.4651%, Threshold: 0.1837, mindcf-0.01: 0.7173, mindcf-0.001: 0.7535, mix2,3: 7.8853, 5.6558. 
 Train EER: 13.0536%, Threshold: 0.1643, mindcf-0.01: 0.7088, mindcf-0.001: 0.7716, mix2,3: 10.0717, 7.1391. 
+
+# kurtoses
+Train EER: 11.6279%, Threshold: 0.1714, mindcf-0.01: 0.6883, mindcf-0.001: 0.7349, mix2,3: 8.5452, 5.8815.
+Train EER: 11.3953%, Threshold: 0.1726, mindcf-0.01: 0.6917, mindcf-0.001: 0.7256, mix2,3: 8.2683, 5.7190.
+Train EER: 12.7907%, Threshold: 0.1636, mindcf-0.01: 0.6840, mindcf-0.001: 0.7507, mix2,3: 9.6019, 6.5672.
