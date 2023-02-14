@@ -65,7 +65,7 @@ early_delta: 0.0001
 early_meta: "mix2"
 
 ## model Setttings
-resnet_size: 18
+resnet_size: 34
 block_type: "cbam"
 red_ratio: 2
 encoder_type: "SAP2"
