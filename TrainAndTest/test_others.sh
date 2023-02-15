@@ -2509,7 +2509,7 @@ for s in all; do #--trials subtrials/trials_${s} --score-suffix ${s}
      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
      --feat-format kaldi --nj 12 \
      --input-norm ${input_norm} --input-dim 40 --remove-vad \
-     --channels 512,512,512,512,1500 --context 5,3,3,5 --stride 1 \     
+     --channels 512,512,512,512,1500 --context 5,3,3,5 --stride 1 \
      --loss-type ${loss} --margin 0.2 --s 30 \
      --block-type ${block_type} \
      --encoder-type STAP --embedding-size ${embedding_size} --alpha 0 \
