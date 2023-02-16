@@ -28,7 +28,7 @@ def compute_optimal_transport(M, r, c, lam, epsilon=1e-5):
     """
     n, m = M.shape
     P = np.exp(- lam * M)
-    P /= P.sum()
+    P /= P.sum() + 1e-6
     u = np.zeros(n)
     # normalize this matrix
     while np.max(np.abs(u - P.sum(1))) > epsilon:

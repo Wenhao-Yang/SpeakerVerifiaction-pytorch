@@ -30,19 +30,13 @@ class OptimalTransport(object):
         self.X2 = X2
         n2, p2 = X2.shape
         self.lam = lam
-        if r is None:  # uniform weights
-            self.r = np.ones(n1) / n1
-        else:
-            self.r = r
-        if c is None:  # uniform weights
-            self.c = np.ones(n2) / n2
-        else:
-            self.c = c
+        
+        self.r = np.ones(n1) / n1 if r is None else r # uniform weights 
+        self.c = np.ones(n2) / n2 if c is None else c # uniform weights
+
         # compute the distance matrix
-        if M is None:  # compute distance matrix
-            self.M = pairwise_distances(X1, X2, metric=distance_metric)
-        else:
-            self.M = M
+        self.M = pairwise_distances(X1, X2, metric=distance_metric) if M is None else M  # compute distance matrix
+
         # compute the optimal transport mapping
         self.compute_optimal_transport(lam, fit_mapping)
         if fit_mapping:
@@ -74,13 +68,14 @@ class OptimalTransport(object):
         P = self.P
         c = self.c
         r = self.r
-        reg_mapping = self.reg_mapping
+        # reg_mapping = self.reg_mapping
         # mapping from X1 to X2
         self.model1to2 = RidgeCV(alphas=np.logspace(-3, 3, 7))
-        self.model1to2.fit(X1, (P * c.reshape((-1, 1))) @ X2)
+        # self.model1to2.fit(X1, (P * c.reshape((-1, 1))) @ X2)
+        self.model1to2.fit(X1, (P * c.reshape((1, -1))) @ X2)
         # mapping from X2 to X1
         self.model2to1 = RidgeCV(alphas=np.logspace(-3, 3, 7))
-        self.model2to1.fit(X2, (P.T * r.reshape((-1, 1))) @ X2)
+        self.model2to1.fit(X2, (P.T * r.reshape((1, -1))) @ X1)
 
     def interpolate(self, alpha):
         """
@@ -103,10 +98,10 @@ class OptimalTransport(object):
         """
         Map the first distribution to the second
         """
-        return model1to2.predict(X)
+        return self.model1to2.predict(X)
 
     def mapX2toX1(self, X):
         """
         Map the second distribution to the first
         """
-        return model2to1.predict(X)
+        return self.model2to1.predict(X)
