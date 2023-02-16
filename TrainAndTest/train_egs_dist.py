@@ -896,7 +896,7 @@ def main():
 
             if 'scheduler' in checkpoint:
                 scheduler.load_state_dict(checkpoint['scheduler'])
-            if 'optimizer' in optimizer:
+            if 'optimizer' in checkpoint:
                 optimizer.load_state_dict(checkpoint['optimizer'])
 
             # model.dropout.p = args.dropout_p
