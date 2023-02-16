@@ -2547,22 +2547,31 @@ for s in all; do #--trials subtrials/trials_${s} --score-suffix ${s}
 #      --model ${model} --resnet-size 14 \
 #      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
 #      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w --trials subtrials/trials_vlog_${s} --score-suffix vl${s} \
+#      --train-trials trials_2w \
+#      --trials subtrials/trials_vlog_${s} \
+#      --score-suffix vl${s} \
 #      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
 #      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
-#      --feat-format kaldi --input-norm ${input_norm} --input-dim 40 \
+#      --feat-format kaldi \
+#      --input-norm ${input_norm} \
+#      --input-dim 40 \
 #      --channels 512,512,512,512,1500 \
-#      --context 5,3,3,5 --stride 1 \
+#      --context 5,3,3,5 \
 #      --nj 12 \
 #      --alpha 0 \
-#      --loss-type ${loss} --margin 0.15 --s 30 \
+#      --margin 0.15 --s 30 \
+#      --stride 1 \
 #      --block-type ${block_type} \
-#      --encoder-type STAP --embedding-size ${embedding_size} \
-#      --test-input fix --frame-shift 300 \
+#      --embedding-size ${embedding_size} \
+#      --loss-type ${loss} \
+#      --encoder-type STAP \
+#      --test-input fix \
 #      --remove-vad \
+#      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
 #      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/checkpoint_60.pth \
-#      --gpu-id 1 --extract \
+#      --gpu-id 1 \
+#      --extract \
 #      --cos-sim
 #  done
   exit
@@ -2599,7 +2608,8 @@ if [ $stage -le 301 ]; then
   #      --resume Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/checkpoint_50.pth \
      echo -e "\n\033[1;4;31m Stage${stage}: Testing with ${loss} \033[0m\n"
      python -W ignore TrainAndTest/test_egs.py \
-       --model ${model} --resnet-size ${resnet_size} \
+       --model ${model} \
+       --resnet-size ${resnet_size} \
        --train-dir ${lstm_dir}/data/${train_set}/egs/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-extract-dir ${lstm_dir}/data/${train_set}/${feat_type}/${dev_subset}_fb${input_dim} \
        --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_fb${input_dim}/trials_dir \
@@ -2608,12 +2618,15 @@ if [ $stage -le 301 ]; then
        --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/${test_subset}_${feat} \
        --feat-format kaldi --nj 4 \
        --input-norm ${input_norm} --input-dim ${input_dim} --remove-vad \
-       --kernel-size ${kernel} --downsample ${downsample} \
+       --kernel-size ${kernel} \
+       --downsample ${downsample} \
        --channels 16,32,64,128 \
        --fast none1 --stride 2,1 \
        --block-type ${block_type} \
+       --embedding-size ${embedding_size} \
        --time-dim 1 --avg-size 5 \
-       --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha 0 \
+       --encoder-type ${encoder_type} \
+       --alpha 0 \
        --loss-type ${loss} --margin 0.2 --s 30 \
        --resume Data/checkpoint/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/checkpoint_60.pth \
        --xvector-dir Data/xvector/ThinResNet18/cnceleb/klfb_egs_baseline/arcdist_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_wd5e4_var/${test_set}_${test_subset}_fix \
@@ -2662,6 +2675,8 @@ if [ $stage -le 301 ]; then
 
        # --verbose 2 \
 #              --extract \
+
+
  # for s in adve_adve adve_spee dram_reci ente_reci inte_sing live_vlog play_sing sing_vlog adve_dram adve_vlog dram_sing ente_sing inte_spee movi_movi play_spee spee_spee adve_ente dram_spee ente_spee inte_vlog movi_play play_vlog spee_vlog adve_inte dram_dram dram_vlog ente_vlog live_live movi_reci reci_reci vlog_vlog adve_live dram_ente ente_ente inte_inte live_movi movi_sing reci_sing adve_movi dram_inte ente_inte inte_live live_play movi_spee reci_spee adve_play dram_live ente_live inte_movi live_reci movi_vlog reci_vlog adve_reci dram_movi ente_movi inte_play live_sing play_play sing_sing adve_sing dram_play ente_play inte_reci live_spee play_reci sing_spee; do
 # for s in adad adpl drdr drre enli envl insi lire more plsi revl vlvl addr adre dren drsi enmo inin insp lisi mosi plsp sisi aden adsi drin drsp enpl inli invl lisp mosp plvl sisp adin adsp drli drvl enre inmo lili livl movl rere sivl adli advl drmo enen ensi inpl limo momo plpl resi spsp admo drpl enin ensp inre lipl mopl plre resp spvl; do
 #   python -W ignore TrainAndTest/test_egs.py \
@@ -2700,24 +2715,31 @@ if [ $stage -le 301 ]; then
 #      --model ${model} --resnet-size 14 \
 #      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat} \
 #      --train-test-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev_${feat}/trials_dir \
-#      --train-trials trials_2w --trials trials_640w --score-suffix dev_640w \
+#      --train-trials trials_2w \
+#      --trials trials_640w \
+#      --score-suffix dev_640w \
 #      --valid-dir ${lstm_dir}/data/${train_set}/${feat_type}/valid_${feat} \
 #      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/dev_${feat} \
 #      --feat-format kaldi \
 #      --input-norm ${input_norm} \
 #      --input-dim 40 \
 #      --channels 512,512,512,512,1500 \
-#      --context 5,3,3,5 --stride 1 \
+#      --context 5,3,3,5 \
 #      --nj 12 \
 #      --alpha 0 \
-#      --loss-type ${loss} --margin 0.15 --s 30 \
+#      --margin 0.15 --s 30 \
+#      --stride 1 \
 #      --block-type ${block_type} \
-#      --encoder-type STAP --embedding-size ${embedding_size} \
-#      --test-input fix --frame-shift 300 \
+#      --embedding-size ${embedding_size} \
+#      --loss-type ${loss} \
+#      --encoder-type STAP \
+#      --test-input fix \
 #      --remove-vad \
+#      --frame-shift 300 \
 #      --xvector-dir Data/xvector/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/${test_set}_dev_epoch60_fix \
 #      --resume Data/checkpoint/TDNN_v5/cnceleb/pyfb_egs_revg/${loss}/featfb40_ws25_inputMean_STAP_em256_wde3_step5_domain2/checkpoint_60.pth \
-#      --gpu-id 1 --verbose 2 \
+#      --gpu-id 1 \
+#      --verbose 2 \
 #      --cos-sim
 
 #  for s in advertisement drama entertainment interview live_broadcast movie play recitation singing speech vlog; do
@@ -2808,16 +2830,18 @@ if [ $stage -le 500 ]; then
   scheduler=rop optimizer=sgd
   input_dim=40 input_norm=Mean
 
-  encoder_type=ASTP2 embedding_size=256
+  encoder_type=ASTP2
   alpha=0
   datasets=aidata testset=aidata
 #  test_subset=
-  block_type=seblock red_ratio=2 downsample=k1
+  block_type=seblock red_ratio=2
 #  encoder_type=None
+  embedding_size=256
   batch_size=256
 #  resnet_size=18 10
 #  sname=dev #dev_aug_com
   sname=train #_aug_com
+  downsample=k1
   test_subset=test
   mask_layer=baseline
   dp=0.1
@@ -2847,9 +2871,10 @@ if [ $stage -le 500 ]; then
       exp_str=_exp${expansion}
     fi
 
-    channels=16,32,64,128
-    chn_str=
-    if [ $chn -eq 32 ]; then
+    if [ $chn -eq 16 ]; then
+        channels=16,32,64,128
+        chn_str=
+    elif [ $chn -eq 32 ]; then
       channels=32,64,128,256
       chn_str=chn32_
     elif [ $chn -eq 64 ]; then
@@ -2902,8 +2927,9 @@ if [ $stage -le 500 ]; then
       --dropout-p ${dp} \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/best.pth \
-      --gpu-id 0 --verbose 0 \
+      --gpu-id 0 \
       --remove-vad --test-input var \
+      --verbose 0 \
       --cos-sim
   done
   done
