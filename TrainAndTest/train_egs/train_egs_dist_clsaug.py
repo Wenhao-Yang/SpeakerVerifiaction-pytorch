@@ -205,7 +205,7 @@ global index_list
 index_list = {}
 idx = train_dir.num_spks
 for i in range(train_dir.num_spks):
-    for j in range(i, train_dir.num_spks):
+    for j in range(i+1, train_dir.num_spks):
         index_list['%d_%d' % (i, j)] = idx
         idx += 1
 
