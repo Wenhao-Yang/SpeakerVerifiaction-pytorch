@@ -270,7 +270,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         #     uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
                         if mean_vector:
                             # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]                                          :num_seg_tensor[i + 1]].mean(axis=0)
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
                         else:
                             uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 

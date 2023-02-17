@@ -2694,8 +2694,8 @@ echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set
 
 for seed in 123456 ; do
   s=all
-  # for epoch in 13 ; do     #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-  for ((epoch=1; epoch<=46; epoch=epoch+1)); do
+  for epoch in 46 ; do     #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+  # for ((epoch=1; epoch<=46; epoch=epoch+1)); do
 #    model_dir=ThinResNet34/cnceleb/klfb40_egs12_both_binary/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em512_dom1_wd5e4_var_es
     # model_dir=ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_vares_bashuf2_dist_mani234_lamda2.0/123456
     # model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2/${seed}
@@ -2726,10 +2726,10 @@ for seed in 123456 ; do
      --loss-type ${loss} --margin 0.15 --s 30 \
      --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
      --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha 0 \
-     --test-input ${test_input} --frame-shift 300 \
-     --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_${epoch}_${test_input} \
+     --test-input ${test_input} --frame-shift 300 --mean-vector \
+     --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_${epoch}_${test_input}_nomean \
      --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-     --gpu-id 2 --verbose 1 --test \
+     --gpu-id 5 --verbose 1 --test \
      --cos-sim
      # checkpoint_${epoch}.pth _${epoch}
 #     --extract \
