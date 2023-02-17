@@ -330,7 +330,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         predicted_one_labels = predicted_one_labels.cpu()
         label = label.cpu()
-        minibatch_correct = (predicted_one_labels.cuda() == label).sum().item()
+        minibatch_correct = (predicted_one_labels == label.cpu()).sum().item()
 
         # if config_args['mixup_type'] == 'manifold':
         #     # print(predicted_one_labels.shape, label.shape)
