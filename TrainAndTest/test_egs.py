@@ -10,7 +10,7 @@
 @Overview: Train the resnet 10 with asoftmax.
 """
 from __future__ import print_function
-import torch._utils
+# import torch._utils
 import pickle
 import random
 import argparse
@@ -50,17 +50,17 @@ from logger import NewLogger
 warnings.filterwarnings("ignore")
 
 
-try:
-    torch._utils._rebuild_tensor_v2
-except AttributeError:
-    def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
-        tensor = torch._utils._rebuild_tensor(
-            storage, storage_offset, size, stride)
-        tensor.requires_grad = requires_grad
-        tensor._backward_hooks = backward_hooks
-        return tensor
+# try:
+#     torch._utils._rebuild_tensor_v2
+# except AttributeError:
+#     def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
+#         tensor = torch._utils._rebuild_tensor(
+#             storage, storage_offset, size, stride)
+#         tensor.requires_grad = requires_grad
+#         tensor._backward_hooks = backward_hooks
+#         return tensor
 
-    torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
+#     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 # Training settings
 # parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition TEST')
