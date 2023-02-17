@@ -252,7 +252,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
 
             half_label = label[half_data:]
-            rand_label = half_label.copy()[rand_idx]
+            rand_label = half_label.clone()[rand_idx]
 
             relabel = []
             for x, y in zip(half_label, rand_label):
