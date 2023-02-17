@@ -41,7 +41,11 @@ with kaldiio.WriteHelper('ark:| gzip -c > ' + sim_ark) as writer:
 
     pbar = tqdm(vec_dict, ncols=100)
     for k in pbar:
-        this_vec = torch.tensor(vec_dict[k]).reshape(1, -1).cuda()
+        if len(vec_dict[k].shape) == 1:
+            this_vec = torch.tensor(vec_dict[k]).reshape(1, -1).cuda()
+        else:
+            this_vec = torch.tensor(vec_dict[k]).cuda()
+
         this_vec = torch.nn.functional.normalize(this_vec, dim=1)
         similarities = torch.matmul(
             this_vec, classifier_centers).squeeze().cpu()

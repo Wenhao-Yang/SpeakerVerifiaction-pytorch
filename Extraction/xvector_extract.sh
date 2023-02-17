@@ -358,8 +358,8 @@ echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set
 for seed in 123456 ; do
 for train_set in cnceleb vox1 ; do
   s=all
-  for ((epoch=0; epoch<=49; i=i+1)); do
-  # for epoch in 13 ; do     #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 4
+  # for ((epoch=0; epoch<=49; i=i+1)); do
+  for epoch in 46 ; do     #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 4
 
     model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_seblock_red2_downk1_avg5_ASTP2_em256_dp01_alpha0_none1_wde4_varesmix2_bashuf2_dist_core/percent0.5_random/123456
     
@@ -381,7 +381,7 @@ for train_set in cnceleb vox1 ; do
      --block-type ${block_type} --downsample ${downsample} --red-ratio ${red_ratio} \
      --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha 0 \
      --test-input ${test_input} --frame-shift 300 \
-     --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_${epoch}_${test_input} \
+     --xvector-dir Data/xvector/${model_dir}/${test_set}_${subset}_${epoch}_${test_input}_nomean \
      --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
      --gpu-id 2 --verbose 0 \
      --cos-sim
