@@ -1088,6 +1088,8 @@ def main():
     # torch.distributed.destroy_process_group()
     # torch.distributed.des
     # exit(0)
+    torch.distributed.barrier()
+    time.sleep(10)
     os.kill(os.getpid(), signal.SIGKILL)
 
 

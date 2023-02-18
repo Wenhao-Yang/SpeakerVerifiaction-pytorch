@@ -44,7 +44,7 @@ feat_format: kaldi
 remove_vad: True
 
 ### Training settings
-epochs: 60
+epochs: 80
 
 # optimizer
 optimizer: sgd
