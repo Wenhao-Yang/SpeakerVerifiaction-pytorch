@@ -69,7 +69,7 @@ if [ $stage -le 1 ]; then
   for dataset in vox1; do
     subset_str=
     if [[ $dataset == vox1 ]];then
-      subset_str=_20
+      subset_str=_40
     fi
     for s in dev_fb40${subset_str} ; do
       python Process_Data/Compute_Feat/make_egs.py \
