@@ -44,7 +44,7 @@ feat_format: kaldi
 remove_vad: True
 
 ### Training settings
-epochs: 50
+epochs: 60
 
 # optimizer
 optimizer: sgd
@@ -64,7 +64,7 @@ base_lr: 0.000001
 cos_sim: True
 
 early_stopping: True
-early_patience: 35
+early_patience: 40
 early_delta: 0.0001
 early_meta: "mix2"
 
@@ -76,9 +76,9 @@ encoder_type: "SAP2"
 downsample: "k1"
 model: ThinResNet
 kernel_size:
-alpha: 0
+alpha: 1
 avg_size: 4
-embedding_size: 64
+embedding_size: 128
 batch_size: 64
 dropout_p: 0.1
 activation: relu
