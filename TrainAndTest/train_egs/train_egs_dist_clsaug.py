@@ -1046,7 +1046,9 @@ def main():
                         '{:.4f} '.format(best_res['MinDCF_01'])
                     best_str += ' MinDcf-0.001: ' + \
                         '{:.4f} '.format(best_res['MinDCF_001'])
-                    best_str += ' Mix2,3: ' + '{:.4f}, {:.4f}\n'.format(best_res['mix2'], best_res['mix3'])
+                    best_str += ' Mix2,3: ' + \
+                        '{:.4f}, {:.4f}\n'.format(
+                            best_res['mix2'], best_res['mix3'])
                     print(best_str)
 
                     try:

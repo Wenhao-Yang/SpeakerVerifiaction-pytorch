@@ -63,9 +63,11 @@ class BasicBlock(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
-            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+            raise ValueError(
+                'BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+            raise NotImplementedError(
+                "Dilation > 1 not supported in BasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = norm_layer(planes)
@@ -153,9 +155,11 @@ class SEBasicBlock(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
-            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+            raise ValueError(
+                'BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+            raise NotImplementedError(
+                "Dilation > 1 not supported in BasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = norm_layer(planes)
@@ -167,7 +171,8 @@ class SEBasicBlock(nn.Module):
         self.reduction_ratio = reduction_ratio
 
         # Squeeze-and-Excitation
-        self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
+        self.se_layer = SqueezeExcitation(
+            inplanes=planes, reduction_ratio=reduction_ratio)
 
     def forward(self, x):
         identity = x
@@ -219,7 +224,8 @@ class SEBottleneck(nn.Module):
         self.reduction_ratio = reduction_ratio
 
         # Squeeze-and-Excitation
-        self.se_layer = SqueezeExcitation(inplanes=planes * self.expansion, reduction_ratio=reduction_ratio)
+        self.se_layer = SqueezeExcitation(
+            inplanes=planes * self.expansion, reduction_ratio=reduction_ratio)
 
     def forward(self, x: Tensor) -> Tensor:
         identity = x
@@ -255,9 +261,11 @@ class SEBasicBlock_v2(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
-            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+            raise ValueError(
+                'BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+            raise NotImplementedError(
+                "Dilation > 1 not supported in BasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         if stride == 1:
             self.conv1 = conv3x3(inplanes, planes, stride)
@@ -273,7 +281,8 @@ class SEBasicBlock_v2(nn.Module):
         self.reduction_ratio = reduction_ratio
 
         # Squeeze-and-Excitation
-        self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
+        self.se_layer = SqueezeExcitation(
+            inplanes=planes, reduction_ratio=reduction_ratio)
 
     def forward(self, x):
         identity = x
@@ -305,9 +314,11 @@ class CBAMBlock(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
-            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+            raise ValueError(
+                'BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+            raise NotImplementedError(
+                "Dilation > 1 not supported in BasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = norm_layer(planes)
@@ -351,9 +362,11 @@ class CBAMBlock_v2(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
-            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+            raise ValueError(
+                'BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+            raise NotImplementedError(
+                "Dilation > 1 not supported in BasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         if stride == 1:
             self.conv1 = conv3x3(inplanes, planes, stride)
@@ -407,7 +420,8 @@ class Res2Conv2dReluBn(nn.Module):
         self.convs = []
         self.bns = []
         for i in range(self.nums):
-            self.convs.append(nn.Conv2d(self.width, self.width, kernel_size, stride, padding, dilation, bias=bias))
+            self.convs.append(nn.Conv2d(self.width, self.width,
+                              kernel_size, stride, padding, dilation, bias=bias))
             self.bns.append(nn.BatchNorm2d(self.width))
         self.convs = nn.ModuleList(self.convs)
         self.bns = nn.ModuleList(self.bns)
@@ -433,7 +447,8 @@ class Res2Conv2dReluBn(nn.Module):
 class Conv2dReluBn(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=False):
         super().__init__()
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, bias=bias)
+        self.conv = nn.Conv2d(in_channels, out_channels,
+                              kernel_size, stride, padding, dilation, bias=bias)
         self.bn = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
@@ -443,6 +458,8 @@ class Conv2dReluBn(nn.Module):
 ''' SE-Res2Block.
     Note: residual connection is implemented in the ECAPA_TDNN model, not here.
 '''
+
+
 class SE_Res2Block(nn.Module):
 
     def __init__(self, inplanes, planes, kernel_size, padding, stride=1, dilation=1,
@@ -453,12 +470,16 @@ class SE_Res2Block(nn.Module):
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.downsample = downsample
-        self.conv1 = Conv2dReluBn(inplanes, planes, kernel_size=1, stride=1, padding=0),
-        self.conv2 = Res2Conv2dReluBn(planes, kernel_size, padding, dilation, stride=1, scale=scale),
-        self.conv3 = Conv2dReluBn(planes, planes, kernel_size=1, stride=1, padding=0),
+        self.conv1 = Conv2dReluBn(
+            inplanes, planes, kernel_size=1, stride=1, padding=0),
+        self.conv2 = Res2Conv2dReluBn(
+            planes, kernel_size, padding, dilation, stride=1, scale=scale),
+        self.conv3 = Conv2dReluBn(
+            planes, planes, kernel_size=1, stride=1, padding=0),
 
         # Squeeze-and-Excitation
-        self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
+        self.se_layer = SqueezeExcitation(
+            inplanes=planes, reduction_ratio=reduction_ratio)
 
     def forward(self, x):
         identity = x
@@ -488,9 +509,12 @@ class Res2Block(nn.Module):
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.downsample = downsample
-        self.conv1 = Conv2dReluBn(inplanes, planes, kernel_size=1, stride=stride, padding=0)
-        self.conv2 = Res2Conv2dReluBn(planes, kernel_size, padding, dilation, stride=1, scale=scale)
-        self.conv3 = Conv2dReluBn(planes, planes, kernel_size=1, stride=1, padding=0)
+        self.conv1 = Conv2dReluBn(
+            inplanes, planes, kernel_size=1, stride=stride, padding=0)
+        self.conv2 = Res2Conv2dReluBn(
+            planes, kernel_size, padding, dilation, stride=1, scale=scale)
+        self.conv3 = Conv2dReluBn(
+            planes, planes, kernel_size=1, stride=1, padding=0)
 
         # Squeeze-and-Excitation
         # self.se_layer = SqueezeExcitation(inplanes=planes, reduction_ratio=reduction_ratio)
@@ -601,16 +625,20 @@ class VarSizeConv(nn.Module):
         super(VarSizeConv, self).__init__()
         self.stide = stride
 
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
+        self.conv1 = nn.Conv2d(
+            inplanes, planes, kernel_size=kernel_size[0], stride=stride, padding=1)
         self.bn1 = nn.InstanceNorm2d(planes)
 
-        self.conv2 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
+        self.conv2 = nn.Conv2d(
+            inplanes, planes, kernel_size=kernel_size[1], stride=stride, padding=2)
         self.bn2 = nn.InstanceNorm2d(planes)
 
-        self.conv3 = nn.Conv2d(inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=4)
+        self.conv3 = nn.Conv2d(
+            inplanes, planes, kernel_size=kernel_size[2], stride=stride, padding=4)
         self.bn3 = nn.InstanceNorm2d(planes)
 
-        self.avg = nn.AvgPool2d(kernel_size=int(stride * 2 + 1), stride=stride, padding=stride)
+        self.avg = nn.AvgPool2d(kernel_size=int(
+            stride * 2 + 1), stride=stride, padding=stride)
 
     def forward(self, x):
         x1 = self.conv1(x)
@@ -644,7 +672,7 @@ class SimpleResNet(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
-        self.embedding_size=embedding_size
+        self.embedding_size = embedding_size
         self.inplanes = 16
         self.dilation = 1
         num_filter = [16, 32, 64, 128]
@@ -658,7 +686,8 @@ class SimpleResNet(nn.Module):
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
-        self.conv1 = nn.Conv2d(1, num_filter[0], kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(
+            1, num_filter[0], kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = norm_layer(num_filter[0])
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=1, padding=1)
@@ -666,9 +695,12 @@ class SimpleResNet(nn.Module):
         # num_filter = [16, 32, 64, 128]
 
         self.layer1 = self._make_layer(block, num_filter[0], layers[0])
-        self.layer2 = self._make_layer(block, num_filter[1], layers[1], stride=2)
-        self.layer3 = self._make_layer(block, num_filter[2], layers[2], stride=2)
-        self.layer4 = self._make_layer(block, num_filter[3], layers[3], stride=2)
+        self.layer2 = self._make_layer(
+            block, num_filter[1], layers[1], stride=2)
+        self.layer3 = self._make_layer(
+            block, num_filter[2], layers[2], stride=2)
+        self.layer4 = self._make_layer(
+            block, num_filter[3], layers[3], stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(128 * block.expansion, embedding_size)
@@ -773,9 +805,11 @@ class BasicBlock_v2(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
-            raise ValueError('BasicBlock only supports groups=1 and base_width=64')
+            raise ValueError(
+                'BasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+            raise NotImplementedError(
+                "Dilation > 1 not supported in BasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         if stride == 1:
             self.conv1 = conv3x3(inplanes, planes, stride)
@@ -963,29 +997,39 @@ class ThinResNet(nn.Module):
 
         self.input_mask = nn.Sequential(*input_mask)
 
-        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
+        self.conv1 = nn.Conv2d(
+            1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(self.num_filter[0])
         self.relu = nn.ReLU(inplace=True)
 
         if self.fast.startswith('avp'):
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
-            self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(
+                3, 3), stride=(1, 2), padding=(1, 1))
         elif self.fast.startswith('av1p'):
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
-            self.maxpool = nn.AvgPool2d(kernel_size=(1, 3), stride=(1, 2), padding=(0, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(
+                1, 3), stride=(1, 2), padding=(0, 1))
         elif self.fast.startswith('mxp'):
-            self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+            self.maxpool = nn.MaxPool2d(kernel_size=(
+                3, 3), stride=(1, 2), padding=(1, 1))
         else:
             self.maxpool = None
 
-        self.layer1 = self._make_layer(block, self.num_filter[0], layers[0], red_ratio=red_ratio)
-        self.layer2 = self._make_layer(block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio)
-        self.layer3 = self._make_layer(block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
+        self.layer1 = self._make_layer(
+            block, self.num_filter[0], layers[0], red_ratio=red_ratio)
+        self.layer2 = self._make_layer(
+            block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio)
+        self.layer3 = self._make_layer(
+            block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
 
-        last_stride = 1 if self.fast in ['avp1', 'mxp1', 'none1', 'av1p1'] else 2
-        self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=last_stride, red_ratio=red_ratio)
+        last_stride = 1 if self.fast in [
+            'avp1', 'mxp1', 'none1', 'av1p1'] else 2
+        self.layer4 = self._make_layer(
+            block, self.num_filter[3], layers[3], stride=last_stride, red_ratio=red_ratio)
 
-        self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
+        self.gain = GAIN(time=self.input_len,
+                         freq=self.input_dim) if self.gain_layer else None
         self.dropout = nn.Dropout(self.dropout_p)
 
         last_channel = self.num_filter[3] if layers[3] > 0 else self.num_filter[2]
@@ -1000,7 +1044,8 @@ class ThinResNet(nn.Module):
                 np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
 
         if encoder_type == 'SAP':
-            self.encoder = SelfAttentionPooling(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+            self.encoder = SelfAttentionPooling(
+                input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim
 
         elif encoder_type == 'SAP2':
@@ -1014,7 +1059,8 @@ class ThinResNet(nn.Module):
             self.encoder_output = encode_input_dim * 2
 
         elif encoder_type in ['ASTP2', 'SASP2']:
-            self.encoder = AttentionStatisticPooling_v2(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+            self.encoder = AttentionStatisticPooling_v2(
+                input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim * 2
 
         elif encoder_type == 'STAP':
@@ -1079,22 +1125,26 @@ class ThinResNet(nn.Module):
                 )
             elif self.downsample == 'k51':
                 downsample = nn.Sequential(
-                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=self.inplanes),
+                    conv5x5(self.inplanes, planes * block.expansion,
+                            stride, groups=self.inplanes),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
             elif self.downsample == 'k52':
                 downsample = nn.Sequential(
-                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=int(self.inplanes / 2)),
+                    conv5x5(self.inplanes, planes * block.expansion,
+                            stride, groups=int(self.inplanes / 2)),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
 
         layers = []
         # pdb.set_trace()
         if blocks > 0:
-            layers.append(block(self.inplanes, planes, stride=stride, downsample=downsample, reduction_ratio=red_ratio))
+            layers.append(block(self.inplanes, planes, stride=stride,
+                          downsample=downsample, reduction_ratio=red_ratio))
             self.inplanes = planes * block.expansion
             for _ in range(1, blocks):
-                layers.append(block(self.inplanes, planes, reduction_ratio=red_ratio))
+                layers.append(block(self.inplanes, planes,
+                              reduction_ratio=red_ratio))
 
         return nn.Sequential(*layers)
 
@@ -1110,10 +1160,12 @@ class ThinResNet(nn.Module):
         #
         # if self.mask_layer != None:
         #     x = self.mask_layer(x)
-        if mixup_alpha == -1:
-            layer_mix = random.randint(0, 2)
-        else:
+        if isinstance(mixup_alpha, float) or isinstance(mixup_alpha, int):
+            # layer_mix = random.randint(0, 2)
             layer_mix = mixup_alpha
+        elif isinstance(mixup_alpha, list):
+            layer_mix = random.choice(mixup_alpha)
+
         if proser != None and layer_mix == 0:
             x = self.mixup(x, proser, lamda_beta)
 
@@ -1187,10 +1239,12 @@ class ThinResNet(nn.Module):
             # pdb.set_trace()
             shuf_half_idx_ten = proser
             select_bool = label[:, 0, 0, 0]
-            select_bool = select_bool.reshape(-1, 1).repeat_interleave(self.embedding_size, dim=1)
+            select_bool = select_bool.reshape(
+                -1, 1).repeat_interleave(self.embedding_size, dim=1)
             select_bool = select_bool.to(device=half_feats.device)
             # torch.repeat_interleave()
-            half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
+            half_a_feat = torch.masked_select(
+                half_feats, mask=select_bool).reshape(-1, self.embedding_size)
 
             # print(half_feats[shuf_half_idx_ten], select_bool)
             half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten], mask=select_bool).reshape(-1,
@@ -1199,7 +1253,8 @@ class ThinResNet(nn.Module):
             # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
             # pdb.set_trace()
             lamda_beta = np.random.beta(lamda_beta, lamda_beta)
-            half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
+            half_feat = lamda_beta * half_a_feat + \
+                (1 - lamda_beta) * half_b_feat
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
@@ -1259,14 +1314,14 @@ class ThinResNet(nn.Module):
         half_batch_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-half_batch_size:]
         x = torch.cat(
-            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            [x[:-half_batch_size], lamda_beta * half_feats +
+                (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
             dim=0)
 
         return x
 
     # Allow for accessing forward method in a inherited class
     forward = _forward
-
 
 
 class RepeatResNet(nn.Module):
@@ -1361,29 +1416,39 @@ class RepeatResNet(nn.Module):
 
         self.input_mask = nn.Sequential(*input_mask)
 
-        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
+        self.conv1 = nn.Conv2d(
+            1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(self.num_filter[0])
         self.relu = nn.ReLU(inplace=True)
 
         if self.fast.startswith('avp'):
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
-            self.maxpool = nn.AvgPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(
+                3, 3), stride=(1, 2), padding=(1, 1))
         elif self.fast.startswith('av1p'):
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
-            self.maxpool = nn.AvgPool2d(kernel_size=(1, 3), stride=(1, 2), padding=(0, 1))
+            self.maxpool = nn.AvgPool2d(kernel_size=(
+                1, 3), stride=(1, 2), padding=(0, 1))
         elif self.fast.startswith('mxp'):
-            self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2), padding=(1, 1))
+            self.maxpool = nn.MaxPool2d(kernel_size=(
+                3, 3), stride=(1, 2), padding=(1, 1))
         else:
             self.maxpool = None
 
-        self.layer1 = self._make_layer(block, self.num_filter[0], layers[0], red_ratio=red_ratio)
-        self.layer2 = self._make_layer(block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio)
-        self.layer3 = self._make_layer(block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
+        self.layer1 = self._make_layer(
+            block, self.num_filter[0], layers[0], red_ratio=red_ratio)
+        self.layer2 = self._make_layer(
+            block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio)
+        self.layer3 = self._make_layer(
+            block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
 
-        last_stride = 1 if self.fast in ['avp1', 'mxp1', 'none1', 'av1p1'] else 2
-        self.layer4 = self._make_layer(block, self.num_filter[3], layers[3], stride=last_stride, red_ratio=red_ratio)
+        last_stride = 1 if self.fast in [
+            'avp1', 'mxp1', 'none1', 'av1p1'] else 2
+        self.layer4 = self._make_layer(
+            block, self.num_filter[3], layers[3], stride=last_stride, red_ratio=red_ratio)
 
-        self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
+        self.gain = GAIN(time=self.input_len,
+                         freq=self.input_dim) if self.gain_layer else None
         self.dropout = nn.Dropout(self.dropout_p)
 
         last_channel = self.num_filter[3] if layers[3] > 0 else self.num_filter[2]
@@ -1398,7 +1463,8 @@ class RepeatResNet(nn.Module):
                 np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
 
         if encoder_type == 'SAP':
-            self.encoder = SelfAttentionPooling(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+            self.encoder = SelfAttentionPooling(
+                input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim
 
         elif encoder_type == 'SAP2':
@@ -1412,7 +1478,8 @@ class RepeatResNet(nn.Module):
             self.encoder_output = encode_input_dim * 2
 
         elif encoder_type in ['ASTP2', 'SASP2']:
-            self.encoder = AttentionStatisticPooling_v2(input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+            self.encoder = AttentionStatisticPooling_v2(
+                input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim * 2
 
         elif encoder_type == 'STAP':
@@ -1477,22 +1544,26 @@ class RepeatResNet(nn.Module):
                 )
             elif self.downsample == 'k51':
                 downsample = nn.Sequential(
-                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=self.inplanes),
+                    conv5x5(self.inplanes, planes * block.expansion,
+                            stride, groups=self.inplanes),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
             elif self.downsample == 'k52':
                 downsample = nn.Sequential(
-                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=int(self.inplanes / 2)),
+                    conv5x5(self.inplanes, planes * block.expansion,
+                            stride, groups=int(self.inplanes / 2)),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
 
         layers = []
         # pdb.set_trace()
         if blocks > 0:
-            layers.append(block(self.inplanes, planes, stride=stride, downsample=downsample, reduction_ratio=red_ratio))
+            layers.append(block(self.inplanes, planes, stride=stride,
+                          downsample=downsample, reduction_ratio=red_ratio))
             self.inplanes = planes * block.expansion
             for _ in range(1, blocks):
-                layers.append(block(self.inplanes, planes, reduction_ratio=red_ratio))
+                layers.append(block(self.inplanes, planes,
+                              reduction_ratio=red_ratio))
 
         return nn.Sequential(*layers)
 
@@ -1585,10 +1656,12 @@ class RepeatResNet(nn.Module):
             # pdb.set_trace()
             shuf_half_idx_ten = proser
             select_bool = label[:, 0, 0, 0]
-            select_bool = select_bool.reshape(-1, 1).repeat_interleave(self.embedding_size, dim=1)
+            select_bool = select_bool.reshape(
+                -1, 1).repeat_interleave(self.embedding_size, dim=1)
             select_bool = select_bool.to(device=half_feats.device)
             # torch.repeat_interleave()
-            half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
+            half_a_feat = torch.masked_select(
+                half_feats, mask=select_bool).reshape(-1, self.embedding_size)
 
             # print(half_feats[shuf_half_idx_ten], select_bool)
             half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten], mask=select_bool).reshape(-1,
@@ -1597,7 +1670,8 @@ class RepeatResNet(nn.Module):
             # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
             # pdb.set_trace()
             lamda_beta = np.random.beta(lamda_beta, lamda_beta)
-            half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
+            half_feat = lamda_beta * half_a_feat + \
+                (1 - lamda_beta) * half_b_feat
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
@@ -1657,13 +1731,15 @@ class RepeatResNet(nn.Module):
         half_batch_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-half_batch_size:]
         x = torch.cat(
-            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            [x[:-half_batch_size], lamda_beta * half_feats +
+                (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
             dim=0)
 
         return x
 
     # Allow for accessing forward method in a inherited class
     forward = _forward
+
 
 class ResNet(nn.Module):
 
@@ -1684,15 +1760,19 @@ class ResNet(nn.Module):
         self.avg_size = avg_size
         self.channels = channels
         self.inplanes = self.channels[0]
-        self.conv1 = nn.Conv2d(1, self.channels[0], kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv1 = nn.Conv2d(
+            1, self.channels[0], kernel_size=5, stride=2, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(self.channels[0])
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layer1 = self._make_layer(block, self.channels[0], layers[0])
-        self.layer2 = self._make_layer(block, self.channels[1], layers[1], stride=2)
-        self.layer3 = self._make_layer(block, self.channels[2], layers[2], stride=2)
-        self.layer4 = self._make_layer(block, self.channels[3], layers[3], stride=2)
+        self.layer2 = self._make_layer(
+            block, self.channels[1], layers[1], stride=2)
+        self.layer3 = self._make_layer(
+            block, self.channels[2], layers[2], stride=2)
+        self.layer4 = self._make_layer(
+            block, self.channels[3], layers[3], stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, avg_size))
 
@@ -1711,7 +1791,8 @@ class ResNet(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
@@ -1772,6 +1853,7 @@ class ResNet(nn.Module):
 # M. Hajibabaei and D. Dai, “Unified hypersphere embedding for speaker recognition,”
 # arXiv preprint arXiv:1807.08312, 2018.
 
+
 class ResNet20(nn.Module):
     def __init__(self, num_classes=1000, embedding_size=128, dropout_p=0.0,
                  block=BasicBlock, input_frames=300, **kwargs):
@@ -1781,19 +1863,22 @@ class ResNet20(nn.Module):
         self.layer1 = self._make_layer(Block3x3, planes=64, blocks=1, stride=2)
 
         self.inplanes = 64
-        self.layer2 = self._make_layer(Block3x3, planes=128, blocks=1, stride=2)
+        self.layer2 = self._make_layer(
+            Block3x3, planes=128, blocks=1, stride=2)
 
         self.inplanes = 128
         self.layer3 = self._make_layer(BasicBlock, 128, 1)
 
         self.inplanes = 128
-        self.layer4 = self._make_layer(Block3x3, planes=256, blocks=1, stride=2)
+        self.layer4 = self._make_layer(
+            Block3x3, planes=256, blocks=1, stride=2)
 
         self.inplanes = 256
         self.layer5 = self._make_layer(BasicBlock, 256, 3)
 
         self.inplanes = 256
-        self.layer6 = self._make_layer(Block3x3, planes=512, blocks=1, stride=2)
+        self.layer6 = self._make_layer(
+            Block3x3, planes=512, blocks=1, stride=2)
 
         self.inplanes = 512
         self.avgpool = nn.AdaptiveAvgPool2d((1, None))
@@ -1918,7 +2003,8 @@ class LocalResNet(nn.Module):
         self.input_mask = nn.Sequential(*input_mask)
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=kernal_size, stride=stride, padding=padding)
+        self.conv1 = nn.Conv2d(
+            1, channels[0], kernel_size=kernal_size, stride=stride, padding=padding)
         self.bn1 = nn.BatchNorm2d(channels[0])
         if self.fast.startswith('avp'):
             # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
@@ -1953,9 +2039,11 @@ class LocalResNet(nn.Module):
             self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=stride,
                                    padding=padding, bias=False)
             self.bn4 = nn.BatchNorm2d(channels[3])
-            self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
+            self.layer4 = self._make_layer(
+                block=block, planes=channels[3], blocks=layers[3])
 
-        self.gain = GAIN(time=self.input_len, freq=self.input_dim) if self.gain_layer else None
+        self.gain = GAIN(time=self.input_len,
+                         freq=self.input_dim) if self.gain_layer else None
         self.dropout = nn.Dropout(self.dropout_p)
 
         last_conv_chn = channels[-1]
@@ -1963,7 +2051,8 @@ class LocalResNet(nn.Module):
 
         if encoder_type == 'SAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            self.encoder = SelfAttentionPooling(input_dim=last_conv_chn * freq_dim, hidden_dim=int(embedding_size / 2))
+            self.encoder = SelfAttentionPooling(
+                input_dim=last_conv_chn * freq_dim, hidden_dim=int(embedding_size / 2))
             self.encoder_output = last_conv_chn * freq_dim
         elif encoder_type == 'SAP2':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
@@ -1977,11 +2066,13 @@ class LocalResNet(nn.Module):
             self.encoder_output = last_conv_chn * freq_dim
         elif encoder_type == 'SASP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            self.encoder = AttentionStatisticPooling(input_dim=last_conv_chn, hidden_dim=int(embedding_size / 2))
+            self.encoder = AttentionStatisticPooling(
+                input_dim=last_conv_chn, hidden_dim=int(embedding_size / 2))
             self.encoder_output = last_conv_chn * 2 * freq_dim
         elif encoder_type == 'SASP2':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
-            self.encoder = AttentionStatisticPooling_v2(input_dim=last_conv_chn, hidden_dim=int(embedding_size / 2))
+            self.encoder = AttentionStatisticPooling_v2(
+                input_dim=last_conv_chn, hidden_dim=int(embedding_size / 2))
             self.encoder_output = last_conv_chn * 2 * freq_dim
         elif encoder_type == 'STAP':
             self.avgpool = nn.AdaptiveAvgPool2d((None, freq_dim))
@@ -2018,7 +2109,8 @@ class LocalResNet(nn.Module):
                 nn.BatchNorm1d(embedding_size)
             )
         elif self.transform == 'GhostVLAD':
-            self.trans_layer = GhostVLAD_v2(num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
+            self.trans_layer = GhostVLAD_v2(
+                num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
         else:
             self.trans_layer = None
 
@@ -2032,7 +2124,8 @@ class LocalResNet(nn.Module):
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
                 # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 # m.weight.data.normal_(0, math.sqrt(2. / n))
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -2358,7 +2451,8 @@ class DomainNet(nn.Module):
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
                 # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 # m.weight.data.normal_(0, math.sqrt(2. / n))
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -2410,9 +2504,11 @@ class GradResNet(nn.Module):
 
         if self.ince:
             self.pre_conv = VarSizeConv(1, 1)
-            self.conv1 = nn.Conv2d(4, channels[0], kernel_size=5, stride=2, padding=2)
+            self.conv1 = nn.Conv2d(
+                4, channels[0], kernel_size=5, stride=2, padding=2)
         else:
-            self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=2, padding=2)
+            self.conv1 = nn.Conv2d(
+                1, channels[0], kernel_size=5, stride=2, padding=2)
 
         self.bn1 = nn.BatchNorm2d(channels[0])
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -2438,7 +2534,8 @@ class GradResNet(nn.Module):
             self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernal_size, stride=2,
                                    padding=padding, bias=False)
             self.bn4 = nn.BatchNorm2d(channels[3])
-            self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
+            self.layer4 = self._make_layer(
+                block=block, planes=channels[3], blocks=layers[3])
 
         self.dropout = nn.Dropout(self.dropout_p)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
@@ -2462,7 +2559,8 @@ class GradResNet(nn.Module):
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
                 # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 # m.weight.data.normal_(0, math.sqrt(2. / n))
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -2605,7 +2703,6 @@ class TimeFreqResNet(nn.Module):
                                              padding=(0, 2)),
                                    )
 
-
         self.bn1 = nn.BatchNorm2d(channels[0])
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
@@ -2617,11 +2714,12 @@ class TimeFreqResNet(nn.Module):
         # self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernal_size,
         #                        stride=2, padding=padding, bias=False)
         self.conv2 = nn.Sequential(
-            nn.Conv2d(channels[0], channels[1], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+            nn.Conv2d(channels[0], channels[1], kernel_size=(
+                5, 1), stride=(2, 1), padding=(2, 0)),
             nn.BatchNorm2d(channels[1]),
             nn.Conv2d(channels[1], channels[1], kernel_size=(1, 5), stride=(1, 2),
                       padding=(0, 2)),
-            )
+        )
 
         self.bn2 = nn.BatchNorm2d(channels[1])
         self.layer2 = self._make_layer(block, channels[1], layers[1])
@@ -2630,9 +2728,11 @@ class TimeFreqResNet(nn.Module):
         # self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernal_size,
         #                        stride=2, padding=padding, bias=False)
         self.conv3 = nn.Sequential(
-            nn.Conv2d(channels[1], channels[2], kernel_size=(5, 1), stride=(2, 1), padding=(2, 0)),
+            nn.Conv2d(channels[1], channels[2], kernel_size=(
+                5, 1), stride=(2, 1), padding=(2, 0)),
             nn.BatchNorm2d(channels[2]),
-            nn.Conv2d(channels[2], channels[2], kernel_size=(1, 5), stride=(1, 2), padding=(0, 2)),
+            nn.Conv2d(channels[2], channels[2], kernel_size=(
+                1, 5), stride=(1, 2), padding=(0, 2)),
         )
 
         self.bn3 = nn.BatchNorm2d(channels[2])
@@ -2644,7 +2744,8 @@ class TimeFreqResNet(nn.Module):
             self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernal_size, stride=2,
                                    padding=padding, bias=False)
             self.bn4 = nn.BatchNorm2d(channels[3])
-            self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
+            self.layer4 = self._make_layer(
+                block=block, planes=channels[3], blocks=layers[3])
 
         self.dropout = nn.Dropout(self.dropout_p)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
@@ -2660,7 +2761,8 @@ class TimeFreqResNet(nn.Module):
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
                 # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 # m.weight.data.normal_(0, math.sqrt(2. / n))
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -2797,7 +2899,8 @@ class MultiResNet(nn.Module):
             self.mask_layer = None
 
         self.inplanes = channels[0]
-        self.conv1 = nn.Conv2d(1, channels[0], kernel_size=5, stride=stride, padding=2, bias=False)
+        self.conv1 = nn.Conv2d(
+            1, channels[0], kernel_size=5, stride=stride, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(channels[0])
 
         # fast v3
@@ -2832,7 +2935,8 @@ class MultiResNet(nn.Module):
             self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernal_size, stride=2,
                                    padding=padding, bias=False)
             self.bn4 = nn.BatchNorm2d(channels[3])
-            self.layer4 = self._make_layer(block=block, planes=channels[3], blocks=layers[3])
+            self.layer4 = self._make_layer(
+                block=block, planes=channels[3], blocks=layers[3])
 
         self.dropout = nn.Dropout(self.dropout_p)
         self.avg_pool = nn.AdaptiveAvgPool2d((1, avg_size))
@@ -2847,7 +2951,8 @@ class MultiResNet(nn.Module):
                 nn.ReLU(),
                 nn.BatchNorm1d(embedding_size))
         elif self.transform == 'GhostVLAD':
-            self.trans_layer = GhostVLAD_v2(num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
+            self.trans_layer = GhostVLAD_v2(
+                num_clusters=8, gost=1, dim=embedding_size, normalize_input=True)
         else:
             self.trans_layer = None
         if self.alpha:
@@ -2860,7 +2965,8 @@ class MultiResNet(nn.Module):
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布
                 # n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 # m.weight.data.normal_(0, math.sqrt(2. / n))
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm)):  # weight设置为1，bias为0
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()

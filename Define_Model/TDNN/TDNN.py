@@ -60,12 +60,14 @@ class TimeDelayLayer_v1(nn.Module):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.check_valid_context(context)
-        self.kernel_width, context = self.get_kernel_width(context, full_context)
-        self.register_buffer('context',torch.LongTensor(context))
+        self.kernel_width, context = self.get_kernel_width(
+            context, full_context)
+        self.register_buffer('context', torch.LongTensor(context))
         self.full_context = full_context
         stdv = 1./math.sqrt(input_dim)
-        self.kernel = nn.Parameter(torch.Tensor(output_dim, input_dim, self.kernel_width).normal_(0,stdv))
-        self.bias = nn.Parameter(torch.Tensor(output_dim).normal_(0,stdv))
+        self.kernel = nn.Parameter(torch.Tensor(
+            output_dim, input_dim, self.kernel_width).normal_(0, stdv))
+        self.bias = nn.Parameter(torch.Tensor(output_dim).normal_(0, stdv))
         # self.cuda_flag = False
 
     def forward(self, x):
@@ -79,7 +81,8 @@ class TimeDelayLayer_v1(nn.Module):
         # if type(self.bias.data) == torch.cuda.FloatTensor and self.cuda_flag == False:
         #     self.context = self.context.cuda()
         #     self.cuda_flag = True
-        conv_out = self.special_convolution(x, self.kernel, self.context, self.bias)
+        conv_out = self.special_convolution(
+            x, self.kernel, self.context, self.bias)
         return conv_out
 
     def special_convolution(self, x, kernel, context, bias):
@@ -90,9 +93,10 @@ class TimeDelayLayer_v1(nn.Module):
         x = x.squeeze(1)
         input_size = x.size()
 
-        assert len(input_size) == 3, 'Input tensor dimensionality is incorrect. Should be a 3D tensor'
+        assert len(
+            input_size) == 3, 'Input tensor dimensionality is incorrect. Should be a 3D tensor'
         [batch_size, input_dim, input_sequence_length] = input_size
-        #x = x.transpose(1,2).contiguous() # [batch_size, input_dim, input_length]
+        # x = x.transpose(1,2).contiguous() # [batch_size, input_dim, input_length]
 
         # Allocate memory for output
         valid_steps = self.get_valid_steps(self.context, input_sequence_length)
@@ -109,19 +113,19 @@ class TimeDelayLayer_v1(nn.Module):
             # Returns a new tensor which indexes the input tensor along dimension dim using the entries in index which is a LongTensor.
             # The returned tensor has the same number of dimensions as the original tensor (input). The dim th dimension has the same
             # size as the length of index; other dimensions have the same size as in the original tensor.
-            xs[:,:,c] = F.conv1d(features, kernel, bias=bias)[:,:,0]
+            xs[:, :, c] = F.conv1d(features, kernel, bias=bias)[:, :, 0]
 
         return xs
 
     @staticmethod
-    def check_valid_context(context): #检查context是否合理
+    def check_valid_context(context):  # 检查context是否合理
         # here context is still a list
         assert context[0] <= context[-1], 'Input tensor dimensionality is incorrect. Should be a 3D tensor'
 
     @staticmethod
     def get_kernel_width(context, full_context):
         if full_context:
-            context = range(context[0],context[-1]+1) #确定一个context的范围
+            context = range(context[0], context[-1]+1)  # 确定一个context的范围
         return len(context), context
 
     @staticmethod
@@ -366,6 +370,8 @@ class TimeDelayLayer_v4(nn.Module):
         return x.transpose(1, 3)
 
 # My implement TDNN using 1dConv Layer
+
+
 class TimeDelayLayer_v5(nn.Module):
 
     def __init__(self, input_dim=23, output_dim=512, context_size=5, stride=1, dilation=1,
@@ -464,7 +470,8 @@ class MaxTimeDelayLayer_v5(nn.Module):
         self.kernel = nn.Conv1d(self.input_dim, self.output_dim, self.context_size, stride=self.stride,
                                 padding=self.padding, dilation=self.dilation, groups=self.groups)
 
-        self.max_kernel = nn.MaxPool1d(kernel_size=3, stride=1, padding=1, dilation=1)
+        self.max_kernel = nn.MaxPool1d(
+            kernel_size=3, stride=1, padding=1, dilation=1)
 
         if activation == 'relu':
             self.nonlinearity = nn.ReLU(inplace=True)
@@ -509,7 +516,8 @@ class Conv2DLayer(nn.Module):
         self.conv1 = nn.Sequential(nn.Conv2d(1, 32, kernel_size=5, stride=(2, 1), padding=(2, 2)),
                                    nn.BatchNorm2d(32),
                                    nn.ReLU(),
-                                   nn.Conv2d(32, 64, kernel_size=5, stride=(2, stride), padding=(2, 2)),
+                                   nn.Conv2d(32, 64, kernel_size=5, stride=(
+                                       2, stride), padding=(2, 2)),
                                    nn.BatchNorm2d(64),
                                    nn.ReLU())
         concat_channels = int(np.ceil(input_dim / 4) * 64)
@@ -519,7 +527,8 @@ class Conv2DLayer(nn.Module):
             groups = min(int(2 ** np.ceil(np.log2(real_group))), 64)
             print('number of Group is set to %d' % groups)
         self.conv2 = nn.Sequential(
-            nn.Conv1d(concat_channels, output_dim, kernel_size=1, stride=1, groups=groups, bias=False),
+            nn.Conv1d(concat_channels, output_dim, kernel_size=1,
+                      stride=1, groups=groups, bias=False),
             nn.BatchNorm1d(output_dim),
             nn.ReLU(),
         )
@@ -567,7 +576,8 @@ class ShuffleTDLayer(nn.Module):
                 self.depthwise_conv(self.input_dim, self.input_dim, kernel_size=3, stride=self.stride, padding=1,
                                     dilation=dilation),
                 nn.BatchNorm1d(self.input_dim),
-                nn.Conv1d(self.input_dim, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.Conv1d(self.input_dim, branch_features,
+                          kernel_size=1, stride=1, padding=0, bias=False),
                 nn.BatchNorm1d(branch_features),
                 nonlinearity(inplace=True),
             )
@@ -582,7 +592,8 @@ class ShuffleTDLayer(nn.Module):
             self.depthwise_conv(branch_features, branch_features, kernel_size=self.context_size,
                                 dilation=self.dilation, stride=self.stride, padding=1),
             nn.BatchNorm1d(branch_features),
-            nn.Conv1d(branch_features, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv1d(branch_features, branch_features,
+                      kernel_size=1, stride=1, padding=0, bias=False),
             nn.BatchNorm1d(branch_features),
             nonlinearity(inplace=True),
         )
@@ -647,7 +658,8 @@ class MixDLayer(nn.Module):
             self.depthwise_conv(input_branch, input_branch, kernel_size=3, stride=self.stride, padding=1,
                                 dilation=dilation),
             nn.BatchNorm1d(input_branch),
-            nn.Conv1d(input_branch, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv1d(input_branch, branch_features, kernel_size=1,
+                      stride=1, padding=0, bias=False),
             nn.BatchNorm1d(branch_features),
             nonlinearity(inplace=True),
         )
@@ -690,11 +702,16 @@ class MixDLayer(nn.Module):
 class TDNN_v1(nn.Module):
     def __init__(self, context, input_dim, output_dim, node_num, full_context):
         super(TDNN_v1, self).__init__()
-        self.tdnn1 = TimeDelayLayer_v1(context[0], input_dim, node_num[0], full_context[0])
-        self.tdnn2 = TimeDelayLayer_v1(context[1], node_num[0], node_num[1], full_context[1])
-        self.tdnn3 = TimeDelayLayer_v1(context[2], node_num[1], node_num[2], full_context[2])
-        self.tdnn4 = TimeDelayLayer_v1(context[3], node_num[2], node_num[3], full_context[3])
-        self.tdnn5 = TimeDelayLayer_v1(context[4], node_num[3], node_num[4], full_context[4])
+        self.tdnn1 = TimeDelayLayer_v1(
+            context[0], input_dim, node_num[0], full_context[0])
+        self.tdnn2 = TimeDelayLayer_v1(
+            context[1], node_num[0], node_num[1], full_context[1])
+        self.tdnn3 = TimeDelayLayer_v1(
+            context[2], node_num[1], node_num[2], full_context[2])
+        self.tdnn4 = TimeDelayLayer_v1(
+            context[3], node_num[2], node_num[3], full_context[3])
+        self.tdnn5 = TimeDelayLayer_v1(
+            context[4], node_num[3], node_num[4], full_context[4])
         self.fc1 = nn.Linear(node_num[5], node_num[6])
         self.fc2 = nn.Linear(node_num[6], node_num[7])
         self.fc3 = nn.Linear(node_num[7], output_dim)
@@ -754,16 +771,22 @@ class TDNN_v2(nn.Module):
         else:
             self.inst_layer = None
 
-        self.frame1 = TimeDelayLayer_v2(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
-        self.frame2 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=2)
-        self.frame3 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=3, dilation=3)
-        self.frame4 = TimeDelayLayer_v2(input_dim=512, output_dim=512, context_size=1, dilation=1)
-        self.frame5 = TimeDelayLayer_v2(input_dim=512, output_dim=1500, context_size=1, dilation=1)
+        self.frame1 = TimeDelayLayer_v2(
+            input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
+        self.frame2 = TimeDelayLayer_v2(
+            input_dim=512, output_dim=512, context_size=3, dilation=2)
+        self.frame3 = TimeDelayLayer_v2(
+            input_dim=512, output_dim=512, context_size=3, dilation=3)
+        self.frame4 = TimeDelayLayer_v2(
+            input_dim=512, output_dim=512, context_size=1, dilation=1)
+        self.frame5 = TimeDelayLayer_v2(
+            input_dim=512, output_dim=1500, context_size=1, dilation=1)
         self.drop = nn.Dropout(p=self.dropout_p)
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=1500)
         elif encoder_type == 'SASP':
-            self.encoder = AttentionStatisticPooling(input_dim=1500, hidden_dim=512)
+            self.encoder = AttentionStatisticPooling(
+                input_dim=1500, hidden_dim=512)
         else:
             raise ValueError(encoder_type)
 
@@ -791,7 +814,8 @@ class TDNN_v2(nn.Module):
                 m.bias.data.zero_()
             elif isinstance(m, TimeDelayLayer_v2):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.kernel.weight, mode='fan_out', nonlinearity='relu')
 
     def set_global_dropout(self, dropout_p):
         self.dropout_p = dropout_p
@@ -842,16 +866,22 @@ class TDNN_v4(nn.Module):
         else:
             self.inst_layer = None
 
-        self.frame1 = TimeDelayLayer_v4(input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
-        self.frame2 = TimeDelayLayer_v4(input_dim=512, output_dim=512, context_size=3, dilation=2)
-        self.frame3 = TimeDelayLayer_v4(input_dim=512, output_dim=512, context_size=3, dilation=3)
-        self.frame4 = TimeDelayLayer_v4(input_dim=512, output_dim=512, context_size=1, dilation=1)
-        self.frame5 = TimeDelayLayer_v4(input_dim=512, output_dim=1500, context_size=1, dilation=1)
+        self.frame1 = TimeDelayLayer_v4(
+            input_dim=self.input_dim, output_dim=512, context_size=5, dilation=1)
+        self.frame2 = TimeDelayLayer_v4(
+            input_dim=512, output_dim=512, context_size=3, dilation=2)
+        self.frame3 = TimeDelayLayer_v4(
+            input_dim=512, output_dim=512, context_size=3, dilation=3)
+        self.frame4 = TimeDelayLayer_v4(
+            input_dim=512, output_dim=512, context_size=1, dilation=1)
+        self.frame5 = TimeDelayLayer_v4(
+            input_dim=512, output_dim=1500, context_size=1, dilation=1)
         self.drop = nn.Dropout(p=self.dropout_p)
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=1500)
         elif encoder_type == 'SASP':
-            self.encoder = AttentionStatisticPooling(input_dim=1500, hidden_dim=512)
+            self.encoder = AttentionStatisticPooling(
+                input_dim=1500, hidden_dim=512)
         else:
             raise ValueError(encoder_type)
 
@@ -879,7 +909,8 @@ class TDNN_v4(nn.Module):
                 m.bias.data.zero_()
             elif isinstance(m, TimeDelayLayer_v2):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.kernel.weight, mode='fan_out', nonlinearity='relu')
 
     def set_global_dropout(self, dropout_p):
         self.dropout_p = dropout_p
@@ -948,14 +979,17 @@ class TDNN_v5(nn.Module):
         nonlinearity = get_activation(activation)
 
         if self.filter == 'fDLR':
-            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+            self.filter_layer = fDLR(
+                input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
         elif self.filter == 'fBLayer':
-            self.filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+            self.filter_layer = fBLayer(
+                input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
         elif self.filter == 'fBPLayer':
             self.filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
                                          filter_fix=filter_fix)
         elif self.filter == 'fLLayer':
-            self.filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
+            self.filter_layer = fLLayer(
+                input_dim=input_dim, num_filter=feat_dim, exp=exp)
         elif self.filter == 'Avg':
             self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
         else:
@@ -983,15 +1017,17 @@ class TDNN_v5(nn.Module):
             self.mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
                                                       power_weight=power_weight)
         elif self.mask == 'attention':
-            self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+            self.mask_layer = AttentionweightLayer(
+                input_dim=input_dim, weight=init_weight)
         elif self.mask == 'attention2':
-            self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
+            self.mask_layer = AttentionweightLayer_v2(
+                input_dim=input_dim, weight=init_weight)
         elif self.mask == 'drop':
             self.mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=self.weight_p,
                                               weight=init_weight, scale=self.scale)
         elif self.mask == 'drop_v2':
             self.mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=self.weight_p,
-                                              weight=init_weight, scale=self.scale)
+                                                 weight=init_weight, scale=self.scale)
         else:
             self.mask_layer = None
 
@@ -1033,23 +1069,27 @@ class TDNN_v5(nn.Module):
             self.encoder = MaxStatisticPooling(input_dim=self.channels[4])
             self.encoder_output = self.channels[4] * 2
         elif encoder_type in ['ASTP']:
-            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
+            self.encoder = AttentionStatisticPooling(
+                input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
             self.encoder_output = self.channels[4] * 2
         elif encoder_type in ['ASTP2', 'SASP2']:
-            self.encoder = AttentionStatisticPooling_v2(input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
+            self.encoder = AttentionStatisticPooling_v2(
+                input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
             self.encoder_output = self.channels[4] * 2
         elif encoder_type == 'SAP':
-            self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
+            self.encoder = SelfAttentionPooling(
+                input_dim=self.channels[4], hidden_dim=self.channels[4])
             self.encoder_output = self.channels[4]
         elif encoder_type == 'SAP2':
-            self.encoder = SelfAttentionPooling_v2(input_dim=self.channels[4], hidden_dim=self.channels[4])
+            self.encoder = SelfAttentionPooling_v2(
+                input_dim=self.channels[4], hidden_dim=self.channels[4])
             self.encoder_output = self.channels[4]
         elif encoder_type == 'Ghos_v3':
-            self.encoder = GhostVLAD_v3(num_clusters=self.num_center, gost=1, dim=self.channels[4])
+            self.encoder = GhostVLAD_v3(
+                num_clusters=self.num_center, gost=1, dim=self.channels[4])
             self.encoder_output = self.channels[4] * 2
         else:
             raise ValueError(encoder_type)
-
 
         self.segment6 = nn.Sequential(
             nn.Linear(self.encoder_output, 512),
@@ -1080,7 +1120,8 @@ class TDNN_v5(nn.Module):
             elif isinstance(m, TimeDelayLayer_v5):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
                 nonlinear = 'leaky_relu' if self.activation == 'leakyrelu' else self.activation
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity=nonlinear)
+                nn.init.kaiming_normal_(
+                    m.kernel.weight, mode='fan_out', nonlinearity=nonlinear)
 
     def set_global_dropout(self, dropout_p):
         self.dropout_p = dropout_p
@@ -1091,11 +1132,14 @@ class TDNN_v5(nn.Module):
         # pdb.set_trace()
         # x_vectors = self.xvector(x)
         # embedding_b = self.segment7(x_vectors)
-        if mixup_alpha == -1:
-            layer_mix = random.randint(0, 2)
-        else:
+        if isinstance(mixup_alpha, float) or isinstance(mixup_alpha, int):
+            # layer_mix = random.randint(0, 2)
             layer_mix = mixup_alpha
+        elif isinstance(mixup_alpha, list):
+            layer_mix = random.choice(mixup_alpha)
 
+        if proser != None and layer_mix == 0:
+            x = self.mixup(x, proser, lamda_beta)
         if self.filter_layer != None:
             x = self.filter_layer(x)
 
@@ -1108,27 +1152,27 @@ class TDNN_v5(nn.Module):
         if self.mask_layer != None:
             x = self.mask_layer(x)
 
-        if proser != None and layer_mix == 0:
-            x = self.mixup(x, proser, lamda_beta)
-
-        x = self.frame1(x)
         if proser != None and layer_mix == 1:
             x = self.mixup(x, proser, lamda_beta)
 
-        x = self.frame2(x)
+        x = self.frame1(x)
         if proser != None and layer_mix == 2:
             x = self.mixup(x, proser, lamda_beta)
 
-        x = self.frame3(x)
+        x = self.frame2(x)
         if proser != None and layer_mix == 3:
             x = self.mixup(x, proser, lamda_beta)
 
-        x = self.frame4(x)
+        x = self.frame3(x)
         if proser != None and layer_mix == 4:
             x = self.mixup(x, proser, lamda_beta)
 
-        x = self.frame5(x)
+        x = self.frame4(x)
         if proser != None and layer_mix == 5:
+            x = self.mixup(x, proser, lamda_beta)
+
+        x = self.frame5(x)
+        if proser != None and layer_mix == 6:
             x = self.mixup(x, proser, lamda_beta)
 
         if self.dropout_layer:
@@ -1136,12 +1180,15 @@ class TDNN_v5(nn.Module):
 
         # print(x.shape)
         x = self.encoder(x)
-        if proser != None and layer_mix == 6:
+        if proser != None and layer_mix == 7:
             x = self.mixup(x, proser, lamda_beta)
 
         embedding_a = self.segment6(x)
+        if proser != None and layer_mix == 8:
+            embedding_a = self.mixup(embedding_a, proser, lamda_beta)
+
         embedding_b = self.segment7(embedding_a)
-        if proser != None and layer_mix == 7:
+        if proser != None and layer_mix == 9:
             x = self.mixup(x, proser, lamda_beta)
 
         if proser != None and label != None:
@@ -1150,10 +1197,12 @@ class TDNN_v5(nn.Module):
 
             shuf_half_idx_ten = proser
             select_bool = label[:, 0, 0, 0]
-            select_bool = select_bool.reshape(-1, 1).repeat_interleave(self.embedding_size, dim=1)
+            select_bool = select_bool.reshape(
+                -1, 1).repeat_interleave(self.embedding_size, dim=1)
             select_bool = select_bool.to(device=half_feats.device)
             # torch.repeat_interleave()
-            half_a_feat = torch.masked_select(half_feats, mask=select_bool).reshape(-1, self.embedding_size)
+            half_a_feat = torch.masked_select(
+                half_feats, mask=select_bool).reshape(-1, self.embedding_size)
 
             # print(half_feats[shuf_half_idx_ten], select_bool)
             half_b_feat = torch.masked_select(half_feats[shuf_half_idx_ten], mask=select_bool).reshape(-1,
@@ -1162,7 +1211,8 @@ class TDNN_v5(nn.Module):
             # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
             # pdb.set_trace()
             lamda_beta = np.random.beta(lamda_beta, lamda_beta)
-            half_feat = lamda_beta * half_a_feat + (1 - lamda_beta) * half_b_feat
+            half_feat = lamda_beta * half_a_feat + \
+                (1 - lamda_beta) * half_b_feat
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
@@ -1221,10 +1271,12 @@ class TDNN_v5(nn.Module):
         half_batch_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-half_batch_size:]
         x = torch.cat(
-            [x[:-half_batch_size], lamda_beta * half_feats + (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            [x[:-half_batch_size], lamda_beta * half_feats +
+                (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
             dim=0)
 
         return x
+
 
 class TDNN_v6(nn.Module):
     def __init__(self, num_classes, embedding_size, input_dim, alpha=0., input_norm='',
@@ -1273,7 +1325,8 @@ class TDNN_v6(nn.Module):
         if encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=1500)
         elif encoder_type == 'SASP':
-            self.encoder = AttentionStatisticPooling(input_dim=1500, hidden_dim=512)
+            self.encoder = AttentionStatisticPooling(
+                input_dim=1500, hidden_dim=512)
         else:
             raise ValueError(encoder_type)
 
@@ -1301,7 +1354,8 @@ class TDNN_v6(nn.Module):
                 m.bias.data.zero_()
             elif isinstance(m, TimeDelayLayer_v6):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
-                nn.init.kaiming_normal_(m.kernel[0].weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(
+                    m.kernel[0].weight, mode='fan_out', nonlinearity='relu')
 
     def set_global_dropout(self, dropout_p):
         self.dropout_p = dropout_p
@@ -1372,14 +1426,17 @@ class MixTDNN_v5(nn.Module):
         nonlinearity = get_activation(activation)
 
         if self.filter == 'fDLR':
-            self.filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+            self.filter_layer = fDLR(
+                input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
         elif self.filter == 'fBLayer':
-            self.filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+            self.filter_layer = fBLayer(
+                input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
         elif self.filter == 'fBPLayer':
             self.filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
                                          filter_fix=filter_fix)
         elif self.filter == 'fLLayer':
-            self.filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
+            self.filter_layer = fLLayer(
+                input_dim=input_dim, num_filter=feat_dim, exp=exp)
         elif self.filter == 'Avg':
             self.filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
         else:
@@ -1404,9 +1461,11 @@ class MixTDNN_v5(nn.Module):
                 FreqMaskLayer(mask_len=mask_len[1])
             )
         elif self.mask == 'attention':
-            self.mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+            self.mask_layer = AttentionweightLayer(
+                input_dim=input_dim, weight=init_weight)
         elif self.mask == 'attention2':
-            self.mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
+            self.mask_layer = AttentionweightLayer_v2(
+                input_dim=input_dim, weight=init_weight)
         else:
             self.mask_layer = None
 
@@ -1449,13 +1508,16 @@ class MixTDNN_v5(nn.Module):
             self.encoder = StatisticPooling(input_dim=self.channels[4])
             self.encoder_output = self.channels[4] * 2
         elif encoder_type in ['ASTP']:
-            self.encoder = AttentionStatisticPooling(input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
+            self.encoder = AttentionStatisticPooling(
+                input_dim=self.channels[4], hidden_dim=int(embedding_size / 2))
             self.encoder_output = self.channels[4] * 2
         elif encoder_type == 'SAP':
-            self.encoder = SelfAttentionPooling(input_dim=self.channels[4], hidden_dim=self.channels[4])
+            self.encoder = SelfAttentionPooling(
+                input_dim=self.channels[4], hidden_dim=self.channels[4])
             self.encoder_output = self.channels[4]
         elif encoder_type == 'Ghos_v3':
-            self.encoder = GhostVLAD_v3(num_clusters=self.num_classes_b, gost=1, dim=self.channels[4])
+            self.encoder = GhostVLAD_v3(
+                num_clusters=self.num_classes_b, gost=1, dim=self.channels[4])
             self.encoder_output = self.channels[4] * 2
         else:
             raise ValueError(encoder_type)
@@ -1489,7 +1551,8 @@ class MixTDNN_v5(nn.Module):
             elif isinstance(m, TimeDelayLayer_v5):
                 # nn.init.normal(m.kernel.weight, mean=0., std=1.)
                 nonlinear = 'leaky_relu' if self.activation == 'leakyrelu' else self.activation
-                nn.init.kaiming_normal_(m.kernel.weight, mode='fan_out', nonlinearity=nonlinear)
+                nn.init.kaiming_normal_(
+                    m.kernel.weight, mode='fan_out', nonlinearity=nonlinear)
 
     def set_global_dropout(self, dropout_p):
         self.dropout_p = dropout_p
@@ -1521,12 +1584,14 @@ class MixTDNN_v5(nn.Module):
                 )
             elif self.downsample == 'k51':
                 downsample = nn.Sequential(
-                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=self.inplanes),
+                    conv5x5(self.inplanes, planes * block.expansion,
+                            stride, groups=self.inplanes),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
             elif self.downsample == 'k52':
                 downsample = nn.Sequential(
-                    conv5x5(self.inplanes, planes * block.expansion, stride, groups=int(self.inplanes / 2)),
+                    conv5x5(self.inplanes, planes * block.expansion,
+                            stride, groups=int(self.inplanes / 2)),
                     nn.BatchNorm2d(planes * block.expansion),
                 )
 
