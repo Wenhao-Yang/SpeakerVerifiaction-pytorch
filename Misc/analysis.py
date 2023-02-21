@@ -71,15 +71,15 @@ def format_eer_file_train(file_path):
                 eer.append(float(ls[1]))
                 mindcf01.append(float(ls[5]))
                 mindcf001.append(float(ls[7]))
-                mix2.append(float(ls[9].rstrip(',))
-                mix3.append(float(ls[10]))
+                mix2.append(float(ls[9].rstrip(',')))
+                mix3.append(float(ls[10].rstrip('.')))
                 test_set=''# ls[1]
 
             if len(eer)==3:
                 print("#|{: ^19s}".format(test_set)+"|  {:>5.2f}±{:<.2f}  |".format(np.mean(eer), np.std(eer)), end=' ')
                 print("%.4f±%.4f"%(np.mean(mindcf01), np.std(mindcf01)), end=' ')
-                print("| %.4f±%.4f | %s"%(np.mean(mindcf001), np.std(mindcf001)), end=' ') 
-                print("| %.4f±%.4f | %s"%(np.mean(mix2), np.std(mix2)), end=' ') 
+                print("| %.4f±%.4f"%(np.mean(mindcf001), np.std(mindcf001)), end=' ') 
+                print("| %.4f±%.4f"%(np.mean(mix2), np.std(mix2)), end=' ') 
                 print("| %.4f±%.4f | %s"%(np.mean(mix3), np.std(mix3), model_str)) 
                 
                 eer = []
