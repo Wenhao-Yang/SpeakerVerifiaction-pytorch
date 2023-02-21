@@ -1,4 +1,4 @@
-# Mean_batch64_cbam_downk1_avg4_SAP2_em128_dp01_alpha1_none1_wd5e4_varesmix2_bashuf2_dist_40 baseline
+# batch64_cbam_k1_avg4_SAP2_em128_dp01_alpha1_none1_wd5e4_40 baseline
 EER(%):        17.29    Threshold:  0.2572  mindcf-0.01  0.9278  mindcf-0.001: 0.9490  mix2,3: 16.4086, 15.2245. 
 EER(%):        17.02    Threshold:  0.2540  MinDcf-0.01: 0.9389  MinDcf-0.001: 0.9549  Mix2,3: 16.2506, 15.2574
 EER(%):        17.47    Threshold:  0.2606  MinDcf-0.01: 0.9088  MinDcf-0.001: 0.9247  Mix2,3: 16.1499, 14.6774
