@@ -1135,6 +1135,8 @@ def main():
                         '{:.4f}, {:.4f}'.format(
                             best_res['mix2'], best_res['mix3'])
                     print(best_str)
+                    with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
+                        f.write(best_str + '\n')
 
                     try:
                         shutil.copy('{}/checkpoint_{}.pth'.format(check_path,

@@ -962,8 +962,8 @@ def main():
 
             # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
-            lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate is '.format(torch.distributed.get_rank(),
-                                                                                        config_args['optimizer'])
+            lr_string = '\33[1;34m Ranking {}: Current \'{}\' lr is '.format(torch.distributed.get_rank(),
+                                                                             config_args['optimizer'])
             this_lr = []
 
             for param_group in optimizer.param_groups:
@@ -1051,6 +1051,9 @@ def main():
                             best_res['mix2'], best_res['mix3'])
                     print(best_str)
 
+                    with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
+                        f.write(best_str + '\n')
+
                     try:
                         shutil.copy('{}/checkpoint_{}.pth'.format(check_path,
                                                                   early_stopping_scheduler.best_epoch),
@@ -1080,7 +1083,7 @@ def main():
     stop_time = time.time()
     t = float(stop_time - start_time)
 
-    if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
+    if torch.distributed.get_rank() == 0:  # not torch.distributed.is_initialized() or
         writer.close()
         print("Running %.4f minutes for each epoch.\n" %
               (t / 60 / (max(end - start, 1))))

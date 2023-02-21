@@ -1220,9 +1220,11 @@ class ThinResNet(nn.Module):
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.fc1(x)
-
         if self.alpha:
             x = self.l2_norm(x)
+
+        if proser != None and layer_mix == 8:
+            x = self.mixup(x, proser, lamda_beta)
 
         if feature_map == 'last':
             return embeddings, x
@@ -1258,7 +1260,7 @@ class ThinResNet(nn.Module):
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
-        if proser != None and layer_mix == 7:
+        if proser != None and layer_mix == 9:
             x = self.mixup(x, proser, lamda_beta)
 
         logits = "" if self.classifier == None else self.classifier(x)

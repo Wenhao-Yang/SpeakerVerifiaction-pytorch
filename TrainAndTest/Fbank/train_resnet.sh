@@ -565,9 +565,9 @@ if [ $stage -le 44 ]; then
   scheduler=cyclic optimizer=adam
   stat_type=margin1 #margin1sum
   m=1.0
-  seed=123456
+  seed=123457
   # _lrr${lr_ratio}_lsr${loss_ratio}
- for layer in 5 6 ; do
+ for layer in 8 7 6 5 ; do
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
   #  CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_mixup.yaml --seed=${seed}
 
