@@ -276,6 +276,10 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                 loss_cent = loss_cent * lambda_
 
             loss_xent = xe_criterion(classfier, label)
+            if batch_weight != None:
+                loss_xent = loss_xent * batch_weight
+                loss_xent = loss_xent.mean()
+                xe_criterion.ce.reduction = 'mean'
 
             other_loss += loss_cent
             loss = loss_xent + loss_cent
@@ -302,7 +306,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         correct += minibatch_correct
 
         total_datasize += len(predicted_one_labels)
-        print(loss.shape)
+        # print(loss.shape)
         total_loss += float(loss.item())
         if torch.distributed.get_rank() == 0:
             writer.add_scalar('Train/All_Loss', float(loss.item()),
