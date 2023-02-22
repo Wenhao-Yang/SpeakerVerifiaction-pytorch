@@ -76,7 +76,7 @@ def format_eer_file_train(file_path):
                 test_set=''# ls[1]
 
             if len(eer)==3:
-                print("#|{: ^19s}".format(test_set)+"|  {:>5.2f}±{:<.2f}  |".format(np.mean(eer), np.std(eer)), end=' ')
+                print("#| {:>5.2f}±{:<.2f} |".format(np.mean(eer), np.std(eer)), end=' ')
                 print("%.4f±%.4f"%(np.mean(mindcf01), np.std(mindcf01)), end=' ')
                 print("| %.4f±%.4f"%(np.mean(mindcf001), np.std(mindcf001)), end=' ') 
                 print("| %.4f±%.4f"%(np.mean(mix2), np.std(mix2)), end=' ') 
