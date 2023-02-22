@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=44
+stage=103
 waited=0
 while [ `ps 1412981 | wc -l` -eq 2 ]; do
   sleep 60
@@ -27,15 +27,13 @@ if [ $stage -le 0 ]; then
 #      --model ${model} --resnet-size 34 \
 #      --kernel-size 5,5 --stride 2 \
 #      --feat-format kaldi \
-#      --embedding-size 128 \
 #      --batch-size 128 \
 #      --accu-steps 1 \
-#      --feat-dim 64 \
-#      --remove-vad \
+#      --feat-dim 64 --remove-vad \
 #      --time-dim 1 --avg-size 4 \
 #      --test-input-per-file 4 \
 #      --lr 0.1 \
-#      --encoder-type ${encod} \
+#      --encoder-type ${encod} --embedding-size 128 \
 #      --check-path Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss} \
 #      --resume Data/checkpoint/${model}34/${datasets}_${encod}/${feat}/${loss}/checkpoint_100.pth \
 #      --input-per-spks 384 \
@@ -54,15 +52,13 @@ if [ $stage -le 0 ]; then
       --model ${model} --resnet-size 34 \
       --stride 2 --kernel-size 5,5 \
       --inst-norm --filter --feat-format kaldi \
-      --embedding-size 128 \
       --batch-size 128 \
       --accu-steps 1 \
       --feat-dim 64 \
       --time-dim 8 --avg-size 1 \
       --test-input-per-file 4 \
-      --lr 0.1 \
-      --loss-ratio 0.1 \
-      --encoder-type ${encod} \
+      --lr 0.1 --loss-ratio 0.1 \
+      --encoder-type ${encod} --embedding-size 128 \
       --check-path Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean \
       --resume Data/checkpoint/${model}34_filter/${datasets}_${encod}/${feat}/${loss}_mean/checkpoint_100.pth \
       --input-per-spks 384 --veri-pairs 9600 \
@@ -205,10 +201,9 @@ if [ $stage -le 40 ]; then
   kernel=5,5
   loss=arcsoft
   alpha=0
-  input_norm=Mean
   mask_layer=baseline
   scheduler=rop optimizer=sgd
-  input_dim=40 batch_size=256
+  input_norm=Mean input_dim=40 batch_size=256
   fast=none1
 
 #  loss=soft
@@ -326,9 +321,9 @@ if [ $stage -le 41 ]; then
   kernel=5,5 fast=none1
   loss=arcsoft
   alpha=0
-  input_norm=Mean
+  
   optimizer=sgd scheduler=step
-  input_dim=40
+  input_dim=40 input_norm=Mean
 
   mask_layer=baseline weight=vox2_rcf weight_p=0 scale=0.2
   chn=16
@@ -419,10 +414,9 @@ if [ $stage -le 42 ]; then
   kernel=5,5
   loss=arcsoft
   alpha=0
-  input_norm=Mean
   mask_layer=None
   scheduler=rop optimizer=sgd
-  input_dim=40
+  input_dim=40 input_norm=Mean
 
   for encoder_type in SAP2; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
@@ -466,10 +460,9 @@ if [ $stage -le 43 ]; then
   block_type=seblock red_ratio=2 expansion=4 downsample=k1
   kernel=5,5 fast=none1
   loss=arcsoft
-  input_norm=Mean
   mask_layer=baseline power_weight=max
   scheduler=rop optimizer=sgd
-  input_dim=40
+  input_dim=40 input_norm=Mean
   batch_size=256
   
   chn=16
@@ -904,10 +897,10 @@ if [ $stage -le 103 ]; then
  for seed in 123456 123457 123458 ; do
     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple.yaml --seed=${seed}
+    sleep 5
+    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_ddist.yaml --seed=${seed}
 
-    # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_domain.yaml --seed=${seed}
-
-    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_distance.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_simple_distance.yaml --seed=${seed}
 
   done
   exit
