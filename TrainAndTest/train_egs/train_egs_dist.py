@@ -302,6 +302,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         correct += minibatch_correct
 
         total_datasize += len(predicted_one_labels)
+        print(loss.shape)
         total_loss += float(loss.item())
         if torch.distributed.get_rank() == 0:
             writer.add_scalar('Train/All_Loss', float(loss.item()),
