@@ -34,6 +34,8 @@ parser.add_argument('--config-yaml', type=str,
                     default='TrainAndTest/Fbank/ResNets/cnc1_resnet.yaml')
 parser.add_argument('--seed', type=int, default=123456,
                     help='random seed (default: 0)')
+parser.add_argument('--gpus', type=str, default='0,1',
+                    help='random seed (default: 0)')
 args = parser.parse_args()
 
 # seed
@@ -54,7 +56,7 @@ def main():
     # Model
     model = SpeakerModule(config_args)
 
-    trainer = Trainer(max_epochs=config_args['epochs'])
+    trainer = Trainer(max_epochs=config_args['epochs'], gpus=args.gpus)
     trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=valid_loader)
 
