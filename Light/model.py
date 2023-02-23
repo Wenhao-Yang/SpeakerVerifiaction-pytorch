@@ -21,7 +21,8 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSo
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 import Process_Data.constants as C
 
-from TrainAndTest.common_func import create_optimizer
+from TrainAndTest.common_func import create_optimizer, create_scheduler
+
 
 
 class SpeakerLoss(nn.Module):
@@ -328,6 +329,7 @@ class SpeakerModule(LightningModule):
 
         optimizer = create_optimizer(
             self.parameters(), config_args['optimizer'], **opt_kwargs)
+        scheduler = create_scheduler(optimizer, config_args)
 
         # torch.optim.Adam(self.parameters(), lr=1e-3)
-        return optimizer
+        return [optimizer], [scheduler]

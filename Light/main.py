@@ -57,7 +57,7 @@ def main():
     model = SpeakerModule(config_args)
 
     trainer = Trainer(max_epochs=config_args['epochs'], gpus=args.gpus,
-                      accelerator='ddp',)
+                      accelerator='ddp', )
     trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=valid_loader)
 

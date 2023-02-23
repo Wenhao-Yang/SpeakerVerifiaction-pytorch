@@ -84,7 +84,31 @@ def create_optimizer(parameters, optimizer, **kwargs):
     return opt
 
 
+def create_scheduler(optimizer, config_args):
+    milestones = config_args['milestones']
+    if config_args['scheduler'] == 'exp':
+        gamma = np.power(config_args['base_lr'] / config_args['lr'],
+                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
+    elif config_args['scheduler'] == 'rop':
+        scheduler = lr_scheduler.ReduceLROnPlateau(
+            optimizer, patience=config_args['patience'], min_lr=1e-5)
+    elif config_args['scheduler'] == 'cyclic':
+        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
+                                          max_lr=config_args['lr'],
+                                          step_size_up=config_args['cyclic_epoch'] * int(
+                                              np.ceil(len(train_dir) / config_args['batch_size'])),
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
+    else:
+        scheduler = lr_scheduler.MultiStepLR(
+            optimizer, milestones=milestones, gamma=0.1)
+
+    return scheduler
+
 # ALSTM  ASiResNet34  ExResNet34  LoResNet  ResNet20  SiResNet34  SuResCNN10  TDNN
+
 
 __factory = {
     'AlexNet': AlexNet,
@@ -274,9 +298,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
                             # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]                                          :num_seg_tensor[i + 1]].mean(axis=0)
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
                         else:
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+                            uid_vec = out[num_seg_tensor[i]
+                                :num_seg_tensor[i + 1]]
 
                         uid2vectors.append((uid, uid_vec))
 
