@@ -24,7 +24,6 @@ import Process_Data.constants as C
 from TrainAndTest.common_func import create_optimizer, create_scheduler
 
 
-
 class SpeakerLoss(nn.Module):
 
     def __init__(self, config_args):
@@ -332,4 +331,4 @@ class SpeakerModule(LightningModule):
         scheduler = create_scheduler(optimizer, config_args)
 
         # torch.optim.Adam(self.parameters(), lr=1e-3)
-        return [optimizer], [scheduler]
+        return ({'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'},)
