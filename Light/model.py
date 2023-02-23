@@ -174,7 +174,20 @@ class SpeakerModule(LightningModule):
         # logits = self.decoder(embeddings)
         loss = self.loss(logits, embeddings, label)
 
+        predicted_one_labels = self.softmax(logits)
+        predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+        batch_correct = (predicted_one_labels == label).sum().item()
+
+        train_batch_accuracy = 100. * batch_correct / len(predicted_one_labels)
+        self.log("train_batch_loss", loss)
+        self.log("train_batch_accu", train_batch_accuracy)
+
         return loss
+
+    def on_train_epoch_end(self, outputs) -> None:
+
+        print("Loss: {:>7.4f}".format(torch.mean(outputs)))
+        return super().on_train_epoch_end(outputs)
 
     def on_validation_epoch_start(self) -> None:
         self.valid_total_loss = 0.
