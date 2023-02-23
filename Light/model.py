@@ -192,7 +192,7 @@ class SpeakerModule(LightningModule):
 
         logits, embeddings = self.encoder(data)
         # logits = self.decoder(embeddings)
-        val_loss = self.loss(logits, label)
+        val_loss = self.loss(logits, embeddings, label)
 
         self.valid_total_loss += float(val_loss.item())
         predicted_one_labels = self.softmax(logits)
