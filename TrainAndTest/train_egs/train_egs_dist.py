@@ -948,10 +948,7 @@ def main():
         train_sampler = torch.utils.data.distributed.DistributedSampler(
             train_dir)
 
-        if return_domain:
-            train_paddfunc = PadCollate3d
-        else:
-            train_paddfunc = PadCollate
+        train_paddfunc = PadCollate3d if return_domain else PadCollate
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
                                                    collate_fn=train_paddfunc(dim=pad_dim,
                                                                              num_batch=int(
