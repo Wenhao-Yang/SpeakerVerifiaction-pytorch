@@ -13,6 +13,7 @@ import torch
 import os
 from kaldiio import WriteHelper
 from pytorch_lightning import LightningModule
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss, DistributeLoss, MMD_Loss
