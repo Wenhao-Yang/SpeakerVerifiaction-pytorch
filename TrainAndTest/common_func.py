@@ -98,7 +98,7 @@ def create_scheduler(optimizer, config_args):
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
                                           max_lr=config_args['lr'],
                                           step_size_up=config_args['cyclic_epoch'] * int(
-                                              np.ceil(len(train_dir) / config_args['batch_size'])),
+                                              np.ceil(config_args['num_classes'] / config_args['batch_size'])),
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
     else:
@@ -159,7 +159,7 @@ def create_model(name, **kwargs):
     return model
 
 
-def create_scheduler(optimizer, args, train_dir):
+def create_scheduler_de(optimizer, args, train_dir):
     milestones = args.milestones.split(',')
     milestones = [int(x) for x in milestones]
     milestones.sort()
