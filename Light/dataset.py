@@ -69,9 +69,9 @@ def SubDatasets(config_args):
 
 
 def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
-    kwargs = {'num_workers': config_args['nj'],
+    kwargs = {'num_workers': 0,  # config_args['nj'],
               'pin_memory': False}  # if args.cuda else {}
-    extract_kwargs = {'num_workers': 4,
+    extract_kwargs = {'num_workers': 0,  # 4,
                       'pin_memory': False}  # if args.cuda else {}
 
     min_chunk_size = int(config_args['random_chunk'][0])
