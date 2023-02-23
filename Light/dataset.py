@@ -47,12 +47,13 @@ def SubDatasets(config_args):
     train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                            transform=transform, batch_size=config_args['batch_size'],
                            random_chunk=config_args['random_chunk'],
-                           verbose=1 if torch.distributed.get_rank() == 0 else 0,
+                           #    verbose=1 if torch.distributed.get_rank() == 0 else 0,
                            domain=return_domain)
 
     valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                            transform=transform,
-                           verbose=1 if torch.distributed.get_rank() == 0 else 0)
+                           #    verbose=1 if torch.distributed.get_rank() == 0 else 0
+                           )
 
     feat_type = 'kaldi'
     if config_args['feat_format'] == 'wav':
@@ -89,7 +90,8 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                                          max_chunk_size=max_chunk_size,
                                                                          chisquare=False if 'chisquare' not in config_args else
                                                                          config_args['chisquare'],
-                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0),
+                                                                         #  verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                         ),
                                                shuffle=config_args['shuffle'],  **kwargs)  # sampler=train_sampler,
 
     # valid_sampler = torch.utils.data.distributed.DistributedSampler(
@@ -98,7 +100,8 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                      min_chunk_size=min_chunk_size,
                                                                      max_chunk_size=max_chunk_size,
-                                                                     verbose=1 if torch.distributed.get_rank() == 0 else 0),
+                                                                     #  verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                     ),
                                                shuffle=False, **kwargs)  # , sampler=valid_sampler
 
     # extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
