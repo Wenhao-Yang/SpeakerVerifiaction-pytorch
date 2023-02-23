@@ -208,6 +208,8 @@ class SpeakerModule(LightningModule):
         # self.log("val_loss: {:>5.2f} val_accuracy: {}{:>5.2f}%".format(
         # val_loss, batch_correct/len(predicted_one_labels)*100))
 
+        return val_loss
+
     def validation_epoch_end(self, outputs: List[Any]) -> None:
         valid_loss = self.valid_total_loss / self.valid_batch
         valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
