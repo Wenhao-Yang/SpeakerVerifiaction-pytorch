@@ -60,7 +60,7 @@ def main():
                       gpus=args.gpus,
                       accelerator='ddp',
                       default_root_dir=config_args['check_path'],
-                      val_check_interval=len(train_loader),
+                      val_check_interval=0.25,
                       )
 
     trainer.fit(model=model, train_dataloader=train_loader,
