@@ -158,7 +158,7 @@ class SpeakerModule(LightningModule):
 
         self.config_args = config_args
         self.encoder = config_args['embedding_model']
-        self.classifier = config_args['classifier']
+        self.encoder.classifier = config_args['classifier']
 
         self.loss = SpeakerLoss(config_args)
         self.batch_size = config_args['batch_size']
@@ -170,25 +170,51 @@ class SpeakerModule(LightningModule):
         # it is independent of forward
         data, label = batch
 
-        embeddings = self.encoder(data)
-        logits = self.decoder(embeddings)
-
+        logits, embeddings = self.encoder(data)
+        # logits = self.decoder(embeddings)
         loss = self.loss(logits, label)
 
         return loss
+
+    def on_validation_epoch_start(self) -> None:
+        self.valid_total_loss = 0.
+        self.valid_other_loss = 0.
+        self.softmax = nn.Softmax(dim=1)
+
+        self.valid_correct = 0.
+        self.valid_total_datasize = 0.
+
+        return super().on_validation_epoch_start()
 
     def validation_step(self, batch, batch_idx):
         # this is the validation loop
         data, label = batch
 
-        embeddings = self.encoder(data)
-        logits = self.decoder(embeddings)
-
-        accuracy = logits, label
+        logits, embeddings = self.encoder(data)
+        # logits = self.decoder(embeddings)
         val_loss = self.loss(logits, label)
 
+        self.valid_total_loss += float(val_loss.item())
+        predicted_one_labels = self.softmax(logits)
+        predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+        batch_correct = (predicted_one_labels == label).sum().item()
+
+        self.valid_correct += batch_correct
+        self.valid_total_datasize += len(predicted_one_labels)
+
+        # accuracy = logits, label
+
+        # self.log("val_loss: {:>5.2f} val_accuracy: {}{:>5.2f}%".format(
+        # val_loss, batch_correct/len(predicted_one_labels)*100))
+
+    def validation_epoch_end(self, outputs: List[Any]) -> None:
+        valid_loss = self.valid_total_loss / self.valid_total_batch
+        valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
+
         self.log("val_loss: {:>5.2f} val_accuracy: {}{:>5.2f}%".format(
-            val_loss, accuracy))
+            valid_loss, valid_accuracy))
+
+        return super().validation_epoch_end(outputs)
 
     def on_test_epoch_start(self) -> None:
         self.test_xvector_dir = "%s/train/epoch_%s" % (
