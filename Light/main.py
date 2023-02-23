@@ -56,7 +56,9 @@ def main():
 
     trainer = Trainer(max_epochs=config_args['epochs'])
     trainer.fit(model=model, train_dataloader=train_loader,
-                val_dataloaders=[valid_loader, train_extract_loader])
+                val_dataloaders=valid_loader)
+
+    # val_dataloaders=[valid_loader, train_extract_loader])
 
     # return 0
 
