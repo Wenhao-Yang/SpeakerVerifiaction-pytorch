@@ -56,8 +56,10 @@ def main():
     # Model
     model = SpeakerModule(config_args)
 
-    trainer = Trainer(max_epochs=config_args['epochs'], gpus=args.gpus,
-                      accelerator='ddp', )
+    trainer = Trainer(max_epochs=config_args['epochs'],
+                      gpus=args.gpus,
+                      accelerator='ddp',
+                      default_root_dir=config_args['check_path'])
     trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=valid_loader)
 
