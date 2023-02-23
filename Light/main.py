@@ -40,11 +40,11 @@ args = parser.parse_args()
 pl.seed_everything(args.seed)
 
 # load train config file
-with open(args.config_yaml, 'r') as f:
-    config_args = load_hyperpyyaml(f)
 
 
 def main():
+    with open(args.config_yaml, 'r') as f:
+        config_args = load_hyperpyyaml(f)
 
     # Dataset
     train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
