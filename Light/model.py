@@ -172,7 +172,7 @@ class SpeakerModule(LightningModule):
 
         logits, embeddings = self.encoder(data)
         # logits = self.decoder(embeddings)
-        loss = self.loss(logits, label)
+        loss = self.loss(logits, embeddings, label)
 
         return loss
 
