@@ -29,7 +29,7 @@ class SpeakerLoss(nn.Module):
     def __init__(self, config_args):
         super().__init__()
 
-        self.config_args = self.config_args
+        self.config_args = config_args
         iteration = 0
 
         ce_criterion = nn.CrossEntropyLoss()
