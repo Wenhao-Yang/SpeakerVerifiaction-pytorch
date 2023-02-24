@@ -176,6 +176,7 @@ class SpeakerModule(LightningModule):
         self.train_dir = train_dir
         self.encoder = config_args['embedding_model']
         self.encoder.classifier = config_args['classifier']
+        self.softmax = nn.Softmax(dim=1)
 
         self.loss = SpeakerLoss(config_args)
         self.batch_size = config_args['batch_size']
@@ -209,7 +210,6 @@ class SpeakerModule(LightningModule):
     def on_validation_epoch_start(self) -> None:
         self.valid_total_loss = 0.
         self.valid_other_loss = 0.
-        self.softmax = nn.Softmax(dim=1)
 
         self.valid_correct = 0.
         self.valid_total_datasize = 0.
