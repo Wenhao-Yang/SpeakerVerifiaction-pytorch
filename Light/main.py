@@ -35,7 +35,7 @@ parser.add_argument('--config-yaml', type=str,
                     default='TrainAndTest/Fbank/ResNets/cnc1_resnet_light.yaml')
 parser.add_argument('--seed', type=int, default=123456,
                     help='random seed (default: 0)')
-parser.add_argument('--gpus', type=str, default='0',
+parser.add_argument('--gpus', type=str, default='0,1',
                     help='random seed (default: 0)')
 args = parser.parse_args()
 
@@ -65,7 +65,7 @@ def main():
 
     trainer = Trainer(max_epochs=config_args['epochs'],
                       gpus=args.gpus,
-                      accelerator='ddp', num_sanity_val_steps=10000,
+                      accelerator='ddp', num_sanity_val_steps=5000,
                       default_root_dir=config_args['check_path'], callbacks=[
                           checkpoint_callback],
                       val_check_interval=0.25,)
