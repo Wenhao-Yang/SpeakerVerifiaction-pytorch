@@ -214,9 +214,9 @@ class SpeakerModule(LightningModule):
         self.valid_correct = 0.
         self.valid_total_datasize = 0.
         self.valid_batch = 0.
-        self.valid_data = torch.tensor([])
-        self.valid_num_seg = [0]
-        self.valid_uid_lst = []
+        # self.valid_data = torch.tensor([])
+        # self.valid_num_seg = [0]
+        # self.valid_uid_lst = []
 
         return super().on_validation_epoch_start()
 
@@ -257,11 +257,9 @@ class SpeakerModule(LightningModule):
 
     def validation_epoch_end(self, outputs: List[Any]) -> None:
         # pdb.set_trace()
-        for dataloader_output_result in outputs:
+        for dataloader_outs in outputs:
             # pdb.set_trace()
-
-            dataloader_outs = dataloader_output_result  # .dataloader_i_outputs
-
+            # dataloader_outs = dataloader_output_result  # .dataloader_i_outputs
             if isinstance(dataloader_outs[0], tuple):
                 uid2embedding = {
                     uid[0]: embedding for embedding, uid in dataloader_outs}
