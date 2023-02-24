@@ -251,15 +251,17 @@ class SpeakerModule(LightningModule):
         pdb.set_trace()
 
         if isinstance(outputs[0], tuple):
-            uid2embedding = {uid: embedding for embedding, uid in outputs}
+            uid2embedding = {uid[0]: embedding for embedding, uid in outputs}
             distances = []
             labels = []
+
             for a_uid, b_uid, l in self.test_trials:
                 try:
                     a = uid2embedding[a_uid]
                     b = uid2embedding[b_uid]
                 except Exception as e:
                     continue
+
                 a_norm = a/a.norm(2)
                 b_norm = b/b.norm(2)
 
