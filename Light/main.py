@@ -18,6 +18,7 @@ import numpy as np
 
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 from Light.dataset import SubDatasets, SubLoaders
 from Light.model import SpeakerModule
@@ -55,12 +56,19 @@ def main():
 
     # Model
     model = SpeakerModule(config_args=config_args, train_dir=train_dir)
+    checkpoint_callback = ModelCheckpoint(monitor='val_loss',
+                                          filename='%s-%s-{epoch:02d}-{val_loss:.2f}' % (
+                                              config_args['datasets'], config_args['loss']),
+                                          save_top_k=3,
+                                          mode='min',
+                                          save_last=True)
+
     trainer = Trainer(max_epochs=config_args['epochs'],
                       gpus=args.gpus,
                       accelerator='ddp',
-                      default_root_dir=config_args['check_path'],
-                      val_check_interval=0.25,
-                      )
+                      default_root_dir=config_args['check_path'], callbacks=[
+                          checkpoint_callback],
+                      val_check_interval=0.25,)
 
     trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=valid_loader)
