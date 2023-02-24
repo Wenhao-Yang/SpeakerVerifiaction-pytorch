@@ -56,18 +56,18 @@ def main():
 
     # Model
     model = SpeakerModule(config_args=config_args, train_dir=train_dir)
-    checkpoint_callback = ModelCheckpoint(monitor='val_batch_loss',
-                                          filename='%s-%s-{epoch:02d}-{val_loss:.2f}' % (
-                                              config_args['datasets'], config_args['loss']),
-                                          save_top_k=3,
-                                          mode='min',
-                                          save_last=True)
-
+    # checkpoint_callback = ModelCheckpoint(monitor='val_batch_loss',
+    #                                       filename='%s-%s-{epoch:02d}-{val_loss:.2f}' % (
+    #                                           config_args['datasets'], config_args['loss']),
+    #                                       save_top_k=3,
+    #                                       mode='min',
+    #                                       save_last=True)
+    # , callbacks=[
+    #                       checkpoint_callback],
     trainer = Trainer(max_epochs=config_args['epochs'],
                       gpus=args.gpus,
                       accelerator='ddp', num_sanity_val_steps=0,
-                      default_root_dir=config_args['check_path'], callbacks=[
-                          checkpoint_callback],
+                      default_root_dir=config_args['check_path']
                       val_check_interval=0.25,)
 
     trainer.fit(model=model, train_dataloader=train_loader,
