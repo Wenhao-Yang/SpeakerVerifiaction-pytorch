@@ -265,7 +265,7 @@ class SpeakerModule(LightningModule):
                 a_norm = a/a.norm(2)
                 b_norm = b/b.norm(2)
 
-                distances.append(a_norm.matmul(b_norm.T).mean())
+                distances.append(float(a_norm.matmul(b_norm.T).mean()))
                 labels.append(l)
 
             eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
