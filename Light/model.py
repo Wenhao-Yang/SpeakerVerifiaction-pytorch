@@ -217,7 +217,6 @@ class SpeakerModule(LightningModule):
         # self.valid_data = torch.tensor([])
         # self.valid_num_seg = [0]
         # self.valid_uid_lst = []
-
         return super().on_validation_epoch_start()
 
     def validation_step(self, batch, batch_idx, dataloader_idx):
@@ -230,16 +229,15 @@ class SpeakerModule(LightningModule):
         # self.valid_data = torch.cat((self.valid_data, data), dim=0)
         # self.valid_num_seg.append(self.valid_num_seg[-1] + len(data))
         # self.valid_uid_lst.append(label[0])
-
-        # if data.shape[0] >= batch_size or batch_idx + 1 == len(extract_loader)
-
+        # if self.valid_data.shape[0] >= self.batch_size or batch_idx+1 == len(self.val_dataloader[0]):
+        #     logits, embeddings = self.encoder(self.valid_data)
+        #     label = self.valid_uid_lst
+        #     return embeddings, label
         logits, embeddings = self.encoder(data)
         # logits = self.decoder(embeddings)
-
         # ipdb.set_trace()
         if isinstance(label[0], str):
             return embeddings, label
-
         else:
             val_loss = self.loss(logits, embeddings, label)
             self.valid_total_loss += float(val_loss.item())

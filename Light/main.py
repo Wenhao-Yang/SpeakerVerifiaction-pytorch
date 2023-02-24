@@ -57,8 +57,8 @@ def main():
     # Model
     model = SpeakerModule(config_args=config_args, train_dir=train_dir)
     checkpoint_callback = ModelCheckpoint(monitor='val_eer',
-                                          filename='%s-%s-{epoch:02d}-{val_eer:.2f}' % (
-                                              config_args['datasets'], config_args['loss']),
+                                          filename='%s-{epoch:02d}-{val_eer:.2f}' % (
+                                              config_args['loss']),
                                           save_top_k=3,
                                           mode='min',
                                           save_last=True)
@@ -68,7 +68,7 @@ def main():
                       accelerator='ddp', num_sanity_val_steps=0,
                       callbacks=[checkpoint_callback],
                       default_root_dir=config_args['check_path'],
-                      val_check_interval=0.05,)
+                      val_check_interval=0.5,)
 
     trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=[train_extract_loader, valid_loader])
