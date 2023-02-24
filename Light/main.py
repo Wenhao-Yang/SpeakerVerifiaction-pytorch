@@ -65,7 +65,7 @@ def main():
 
     trainer = Trainer(max_epochs=config_args['epochs'],
                       gpus=args.gpus,
-                      accelerator='ddp', num_sanity_val_steps=5000,
+                      accelerator='ddp', num_sanity_val_steps=0,
                       default_root_dir=config_args['check_path'], callbacks=[
                           checkpoint_callback],
                       val_check_interval=0.25,)
