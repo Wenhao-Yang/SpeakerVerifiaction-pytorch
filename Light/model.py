@@ -266,12 +266,12 @@ class SpeakerModule(LightningModule):
                 b_norm = b/b.norm(2)
 
                 distances.append(a_norm.matmul(b_norm.T).mean())
-                labels.append(l[0])
+                labels.append(l)
 
             eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
                                                               cos=True, re_thre=True)
             mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
-
+            pdb.set_trace()
             self.log("val_eer", eer*100)
             self.log("val_mindcf_01", mindcf_01)
             self.log("val_mindcf_001", mindcf_001)
