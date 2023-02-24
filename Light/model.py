@@ -248,7 +248,7 @@ class SpeakerModule(LightningModule):
             return val_loss
 
     def validation_epoch_end(self, outputs: List[Any]) -> None:
-        # pdb.set_trace()
+        pdb.set_trace()
 
         if isinstance(outputs[0], tuple):
             uid2embedding = {}
