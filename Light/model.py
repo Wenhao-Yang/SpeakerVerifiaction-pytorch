@@ -217,7 +217,7 @@ class SpeakerModule(LightningModule):
 
         return super().on_validation_epoch_start()
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx, dataloader_idx):
         # this is the validation loop
         data, label = batch
 
