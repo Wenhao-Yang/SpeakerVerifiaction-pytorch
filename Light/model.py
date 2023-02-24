@@ -11,7 +11,7 @@
 import torch.nn as nn
 import torch
 import os
-import ipdb
+import pdb
 from kaldiio import WriteHelper
 from pytorch_lightning import LightningModule
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -213,24 +213,27 @@ class SpeakerModule(LightningModule):
         logits, embeddings = self.encoder(data)
         # logits = self.decoder(embeddings)
 
-        ipdb.set_trace()
-        val_loss = self.loss(logits, embeddings, label)
-        self.valid_total_loss += float(val_loss.item())
-        predicted_one_labels = self.softmax(logits)
-        predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
-        batch_correct = (predicted_one_labels == label).sum().item()
+        # ipdb.set_trace()
+        if isinstance(label[0], str):
+            return embeddings, label
 
-        self.valid_correct += batch_correct
-        self.valid_total_datasize += len(predicted_one_labels)
-        self.valid_batch += 1
-        # accuracy = logits, label
-        # self.log("val_loss: {:>5.2f} val_accuracy: {}{:>5.2f}%".format(
-        # val_loss, batch_correct/len(predicted_one_labels)*100))
-        self.log("val_batch_loss", val_loss)
+        else:
+            val_loss = self.loss(logits, embeddings, label)
+            self.valid_total_loss += float(val_loss.item())
+            predicted_one_labels = self.softmax(logits)
+            predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+            batch_correct = (predicted_one_labels == label).sum().item()
 
-        return val_loss
+            self.valid_correct += batch_correct
+            self.valid_total_datasize += len(predicted_one_labels)
+            self.valid_batch += 1
+
+            self.log("val_batch_loss", val_loss)
+
+            return val_loss
 
     def validation_epoch_end(self, outputs: List[Any]) -> None:
+        pdb.set_trace()
         valid_loss = self.valid_total_loss / self.valid_batch
         valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
 
