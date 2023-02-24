@@ -243,7 +243,7 @@ class SpeakerModule(LightningModule):
             self.valid_total_datasize += len(predicted_one_labels)
             self.valid_batch += 1
 
-            self.log("val_batch_loss", val_loss)
+            # self.log("val_batch_loss", val_loss)
 
             return val_loss
 
