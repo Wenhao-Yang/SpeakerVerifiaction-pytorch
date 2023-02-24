@@ -67,7 +67,7 @@ def main():
     trainer = Trainer(max_epochs=config_args['epochs'],
                       gpus=args.gpus,
                       accelerator='ddp', num_sanity_val_steps=0,
-                      default_root_dir=config_args['check_path']
+                      default_root_dir=config_args['check_path'],
                       val_check_interval=0.25,)
 
     trainer.fit(model=model, train_dataloader=train_loader,
