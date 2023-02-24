@@ -58,6 +58,7 @@ def main():
     # Model
     model = SpeakerModule(config_args=config_args)
     # model._set_hparams(config_args=config_args, train_dir=train_dir)
+    model._set_hparams({'config_args': config_args})
 
     checkpoint_callback = ModelCheckpoint(monitor='val_eer',
                                           filename='%s-{epoch:02d}-{val_eer:.2f}' % (

@@ -574,7 +574,7 @@ class EgsDataset(Dataset):
         return feature
 
     def __shuffle__(self):
-        shuf_size = min(int(self.batch_size / 4), 16)
+        shuf_size = min(int(self.batch_size / 4), 32)
         valid_lenght = len(self.dataset) // shuf_size * shuf_size
         dataset_batch = self.dataset[:valid_lenght].reshape(-1, shuf_size, 3)
 
