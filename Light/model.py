@@ -169,11 +169,11 @@ def get_trials(trials):
 
 class SpeakerModule(LightningModule):
 
-    def __init__(self, config_args, train_dir) -> None:
+    def __init__(self, config_args) -> None:
         super().__init__()
 
         self.config_args = config_args
-        self.train_dir = train_dir
+        # self.train_dir = train_dir
         self.encoder = config_args['embedding_model']
         self.encoder.classifier = config_args['classifier']
         self.softmax = nn.Softmax(dim=1)
@@ -204,7 +204,7 @@ class SpeakerModule(LightningModule):
 
     def on_train_epoch_end(self, outputs) -> None:
         # print("Loss: {:>7.4f}".format(torch.mean(outputs)))
-        self.train_dir.__shuffle__()
+        # self.train_dir.__shuffle__()
         return super().on_train_epoch_end(outputs)
 
     def on_validation_epoch_start(self) -> None:
