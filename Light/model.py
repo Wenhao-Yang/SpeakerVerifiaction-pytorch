@@ -249,42 +249,46 @@ class SpeakerModule(LightningModule):
 
     def validation_epoch_end(self, outputs: List[Any]) -> None:
         # pdb.set_trace()
+        for dataloader_output_result in outputs:
+            dataloader_outs = dataloader_output_result.dataloader_i_outputs
 
-        if isinstance(outputs[0], tuple):
-            uid2embedding = {uid[0]: embedding for embedding, uid in outputs}
-            distances = []
-            labels = []
+            if isinstance(dataloader_outs[0], tuple):
+                uid2embedding = {
+                    uid[0]: embedding for embedding, uid in dataloader_outs}
+                distances = []
+                labels = []
 
-            for a_uid, b_uid, l in self.test_trials:
-                try:
-                    a = uid2embedding[a_uid]
-                    b = uid2embedding[b_uid]
-                except Exception as e:
-                    continue
+                for a_uid, b_uid, l in self.test_trials:
+                    try:
+                        a = uid2embedding[a_uid]
+                        b = uid2embedding[b_uid]
+                    except Exception as e:
+                        continue
 
-                a_norm = a/a.norm(2)
-                b_norm = b/b.norm(2)
+                    a_norm = a/a.norm(2)
+                    b_norm = b/b.norm(2)
 
-                distances.append(float(a_norm.matmul(b_norm.T).mean()))
-                labels.append(l)
+                    distances.append(float(a_norm.matmul(b_norm.T).mean()))
+                    labels.append(l)
 
-            eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
-                                                              cos=True, re_thre=True)
-            mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(distances, labels)
-            # pdb.set_trace()
-            self.log("val_eer", eer*100)
-            self.log("val_mindcf_01", mindcf_01)
-            self.log("val_mindcf_001", mindcf_001)
+                eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
+                                                                  cos=True, re_thre=True)
+                mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
+                    distances, labels)
+                # pdb.set_trace()
+                self.log("val_eer", eer*100)
+                self.log("val_mindcf_01", mindcf_01)
+                self.log("val_mindcf_001", mindcf_001)
 
-        else:
-            # self.log("val_accuracy", valid_accuracy)
-            valid_loss = self.valid_total_loss / self.valid_batch
-            valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
-            # print(valid_loss, valid_accuracy)
-            self.log("val_loss", valid_loss)
-            self.log("val_accuracy", valid_accuracy)
-            # print('val_loss: {:>8.4f} val_accuracy: {:>6.2f}%'.format(
-            #     valid_loss, valid_accuracy))
+            else:
+                # self.log("val_accuracy", valid_accuracy)
+                valid_loss = self.valid_total_loss / self.valid_batch
+                valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
+                # print(valid_loss, valid_accuracy)
+                self.log("val_loss", valid_loss)
+                self.log("val_accuracy", valid_accuracy)
+                # print('val_loss: {:>8.4f} val_accuracy: {:>6.2f}%'.format(
+                #     valid_loss, valid_accuracy))
         return super().validation_epoch_end(outputs)
 
     def on_test_epoch_start(self) -> None:
