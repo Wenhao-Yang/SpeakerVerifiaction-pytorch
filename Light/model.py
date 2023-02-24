@@ -11,6 +11,7 @@
 import torch.nn as nn
 import torch
 import os
+import ipdb
 from kaldiio import WriteHelper
 from pytorch_lightning import LightningModule
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -205,10 +206,15 @@ class SpeakerModule(LightningModule):
         # this is the validation loop
         data, label = batch
 
+        if data.shape[1] != 1:
+            data_shape = data.shape
+            data = data.reshape(-1, 1, data_shape[2], data_shape[3])
+
         logits, embeddings = self.encoder(data)
         # logits = self.decoder(embeddings)
-        val_loss = self.loss(logits, embeddings, label)
 
+        ipdb.set_trace()
+        val_loss = self.loss(logits, embeddings, label)
         self.valid_total_loss += float(val_loss.item())
         predicted_one_labels = self.softmax(logits)
         predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
