@@ -54,8 +54,7 @@ def main():
         train_dir, valid_dir, train_extract_dir, config_args)
 
     # Model
-    model = SpeakerModule(config_args)
-
+    model = SpeakerModule(config_args=config_args, train_dir=train_dir)
     trainer = Trainer(max_epochs=config_args['epochs'],
                       gpus=args.gpus,
                       accelerator='ddp',

@@ -153,10 +153,11 @@ class SpeakerLoss(nn.Module):
 
 class SpeakerModule(LightningModule):
 
-    def __init__(self, config_args) -> None:
+    def __init__(self, config_args, train_dir) -> None:
         super().__init__()
 
         self.config_args = config_args
+        self.train_dir = train_dir
         self.encoder = config_args['embedding_model']
         self.encoder.classifier = config_args['classifier']
 
@@ -186,6 +187,7 @@ class SpeakerModule(LightningModule):
 
     def on_train_epoch_end(self, outputs) -> None:
         # print("Loss: {:>7.4f}".format(torch.mean(outputs)))
+        self.train_dir.__shuffle__()
         return super().on_train_epoch_end(outputs)
 
     def on_validation_epoch_start(self) -> None:
