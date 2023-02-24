@@ -71,7 +71,7 @@ def main():
                       val_check_interval=0.25,)
 
     trainer.fit(model=model, train_dataloader=train_loader,
-                val_dataloaders=[valid_loader, train_extract_loader])
+                val_dataloaders=[train_extract_loader])
 
     # val_dataloaders=[valid_loader, train_extract_loader])
 
