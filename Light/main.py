@@ -25,6 +25,7 @@ from Light.dataset import SubDatasets, SubLoaders
 from Light.model import SpeakerModule
 from argparse import ArgumentParser
 from hyperpyyaml import load_hyperpyyaml
+from pytorch_lightning.strategies import DDPStrategy
 
 # torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -69,7 +70,7 @@ def main():
     shuf_train_callback = ShufTrainset(train_dir=train_dir)
 
     trainer = Trainer(max_epochs=config_args['epochs'],
-                      strategy='ddp',
+                      strategy=DDPStrategy(find_unused_parameters=False),
                       accelerator='gpu', devices=args.gpus, num_sanity_val_steps=0,
                       callbacks=[checkpoint_callback, shuf_train_callback],
                       default_root_dir=config_args['check_path'],
