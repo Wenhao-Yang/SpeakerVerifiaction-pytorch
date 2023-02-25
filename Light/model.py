@@ -293,9 +293,9 @@ class SpeakerModule(LightningModule):
                 mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
                     distances, labels)
                 # pdb.set_trace()
-                self.log("val_eer", eer*100)
-                self.log("val_mindcf_01", mindcf_01)
-                self.log("val_mindcf_001", mindcf_001)
+                self.log("val_eer", eer*100,  sync_dist=True)
+                self.log("val_mindcf_01", mindcf_01,  sync_dist=True)
+                self.log("val_mindcf_001", mindcf_001,  sync_dist=True)
 
             else:
                 # self.log("val_accuracy", valid_accuracy)
