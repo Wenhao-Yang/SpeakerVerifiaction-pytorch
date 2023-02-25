@@ -36,7 +36,7 @@ parser.add_argument('--config-yaml', type=str,
                     default='TrainAndTest/Fbank/ResNets/cnc1_resnet_light.yaml')
 parser.add_argument('--seed', type=int, default=123456,
                     help='random seed (default: 0)')
-parser.add_argument('--gpus', type=str, default='0,1',
+parser.add_argument('--gpus', type=str, default='0',
                     help='random seed (default: 0)')
 args = parser.parse_args()
 
