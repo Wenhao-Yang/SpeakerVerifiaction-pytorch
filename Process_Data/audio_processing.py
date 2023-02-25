@@ -480,6 +480,7 @@ class ConcateVarInput(object):
             else:
                 network_inputs.append(output[:, start:end])
 
+        network_inputs = np.array(network_inputs)
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
         if self.remove_vad:
             network_inputs = network_inputs[:, :, 1:]
