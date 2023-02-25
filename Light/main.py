@@ -76,7 +76,7 @@ def main():
                       default_root_dir=config_args['check_path'],
                       val_check_interval=0.5,)
 
-    trainer.fit(model=model, train_dataloaders=train_loader,
+    trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=[train_extract_loader, valid_loader])
 
     # val_dataloaders=[valid_loader, train_extract_loader])
