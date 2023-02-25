@@ -69,8 +69,8 @@ def main():
     shuf_train_callback = ShufTrainset(train_dir=train_dir)
 
     trainer = Trainer(max_epochs=config_args['epochs'],
-                      gpus=args.gpus, strategy='ddp',
-                      accelerator='cuda', num_sanity_val_steps=0,
+                      strategy='ddp',
+                      accelerator='gpu', devices=args.gpus, num_sanity_val_steps=0,
                       callbacks=[checkpoint_callback, shuf_train_callback],
                       default_root_dir=config_args['check_path'],
                       val_check_interval=0.5,)
