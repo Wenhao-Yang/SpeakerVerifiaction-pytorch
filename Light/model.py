@@ -8,6 +8,7 @@
 @Time: 2023/02/23 18:23
 @Overview:
 '''
+import numpy as np
 import torch.nn as nn
 import torch
 import os
@@ -183,6 +184,10 @@ class SpeakerModule(LightningModule):
         self.test_trials = get_trials(config_args['train_trials_path'])
         # self.optimizer = optimizer
 
+    def on_train_epoch_start(self) -> None:
+        self.train_accuracy = []
+        return super().on_train_epoch_start()
+
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
@@ -197,13 +202,16 @@ class SpeakerModule(LightningModule):
         batch_correct = (predicted_one_labels == label).sum().item()
 
         train_batch_accuracy = 100. * batch_correct / len(predicted_one_labels)
+        self.train_accuracy.append(train_batch_accuracy)
+
         self.log("train_batch_loss", loss)
         self.log("train_batch_accu", train_batch_accuracy)
 
         return loss
 
     def on_train_epoch_end(self, outputs) -> None:
-        # print("Loss: {:>7.4f}".format(torch.mean(outputs)))
+        print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
+            self.current_epoch, torch.cat(outputs).mean()), np.mean(self.train_accuracy))
         # self.train_dir.__shuffle__()
         return super().on_train_epoch_end(outputs)
 
