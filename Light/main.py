@@ -19,6 +19,7 @@ import numpy as np
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.profiler.profilers import AdvancedProfiler
 from Light.callback import ShufTrainset
 
 from Light.dataset import SubDatasets, SubLoaders
@@ -69,13 +70,16 @@ def main():
                                           save_last=True)
     shuf_train_callback = ShufTrainset(train_dir=train_dir)
 
+    profiler = AdvancedProfiler(
+        output_filename=config_args['check_path']+'/profilers')
+
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='ddp', gpus=args.gpus,
                       num_sanity_val_steps=0,
                       callbacks=[checkpoint_callback, shuf_train_callback],
                       default_root_dir=config_args['check_path'],
                       val_check_interval=0.5,
-                      profiler="advanced", weights_summary='full')
+                      profiler=profiler, weights_summary='full')
 
     trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=[train_extract_loader, valid_loader])
