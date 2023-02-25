@@ -74,7 +74,8 @@ def main():
                       num_sanity_val_steps=0,
                       callbacks=[checkpoint_callback, shuf_train_callback],
                       default_root_dir=config_args['check_path'],
-                      val_check_interval=0.5,)
+                      val_check_interval=0.5,
+                      profiler="advanced")
 
     trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=[train_extract_loader, valid_loader])
