@@ -209,6 +209,7 @@ class SpeakerModule(LightningModule):
         return loss
 
     def on_train_epoch_end(self, outputs) -> None:
+        pdb.set_trace()
         print(self.current_epoch)
         self.print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
             self.current_epoch, torch.cat(outputs).mean()), np.mean(self.train_accuracy))
