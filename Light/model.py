@@ -191,13 +191,9 @@ class SpeakerModule(LightningModule):
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
-        if batch_idx == 50:
-            break
-
         data, label = batch
 
         logits, embeddings = self.encoder(data)
-        # logits = self.decoder(embeddings)
         loss = self.loss(logits, embeddings, label)
 
         predicted_one_labels = self.softmax(logits)
