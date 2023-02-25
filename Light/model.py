@@ -419,4 +419,9 @@ class SpeakerModule(LightningModule):
         scheduler = create_scheduler(optimizer, config_args)
 
         # torch.optim.Adam(self.parameters(), lr=1e-3)
-        return ({'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'},)
+        # return ({'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'},)
+        return ({'optimizer': optimizer,
+                 'lr_scheduler': {
+                     "scheduler": scheduler,
+                     "monitor": "val_loss",
+                 }, })
