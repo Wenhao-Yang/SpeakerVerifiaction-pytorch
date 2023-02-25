@@ -186,6 +186,7 @@ class SpeakerModule(LightningModule):
 
     def on_train_epoch_start(self) -> None:
         self.train_accuracy = []
+        self.train_loss = []
         return super().on_train_epoch_start()
 
     def training_step(self, batch, batch_idx):
@@ -202,6 +203,7 @@ class SpeakerModule(LightningModule):
 
         train_batch_accuracy = 100. * batch_correct / len(predicted_one_labels)
         self.train_accuracy.append(train_batch_accuracy)
+        self.train_loss.append(float(loss))
 
         self.log("train_batch_loss", loss)
         self.log("train_batch_accu", train_batch_accuracy)
@@ -209,10 +211,10 @@ class SpeakerModule(LightningModule):
         return loss
 
     def on_train_epoch_end(self, outputs) -> None:
-        pdb.set_trace()
-        print(self.current_epoch)
+        # pdb.set_trace()
+        # print(self.current_epoch)
         self.print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
-            self.current_epoch, torch.cat(outputs).mean()), np.mean(self.train_accuracy))
+            self.current_epoch, np.mean(self.train_loss), np.mean(self.train_accuracy)))
         # self.train_dir.__shuffle__()
         return super().on_train_epoch_end(outputs)
 
