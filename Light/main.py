@@ -27,7 +27,7 @@ from argparse import ArgumentParser
 from hyperpyyaml import load_hyperpyyaml
 # from pytorch_lightning.strategies import DDPStrategy
 
-# torch.multiprocessing.set_sharing_strategy('file_system')
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 parser = ArgumentParser()
 # Trainer arguments
@@ -75,7 +75,7 @@ def main():
                       callbacks=[checkpoint_callback, shuf_train_callback],
                       default_root_dir=config_args['check_path'],
                       val_check_interval=0.5,
-                      profiler="advanced")
+                      profiler="advanced", weights_summary='full')
 
     trainer.fit(model=model, train_dataloader=train_loader,
                 val_dataloaders=[train_extract_loader, valid_loader])
