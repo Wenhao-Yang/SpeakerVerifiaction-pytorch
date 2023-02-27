@@ -56,6 +56,7 @@ from Process_Data.audio_processing import toMFB, totensor, truncatedinput, PadCo
 from TrainAndTest.common_func import create_optimizer, create_scheduler, create_model, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
 from logger import NewLogger
+# import pytorch_lightning as pl
 
 warnings.filterwarnings("ignore")
 
@@ -95,10 +96,11 @@ args = parser.parse_args()
 
 # args.cuda = not args.no_cuda and torch.cuda.is_available()
 # setting seeds
+# pl.seed_everything(args.seed)
+
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
 random.seed(args.seed)
-
 if torch.cuda.is_available():
     torch.cuda.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
