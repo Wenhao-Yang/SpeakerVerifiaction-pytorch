@@ -21,5 +21,6 @@ class ShufTrainset(Callback):
 
     def on_train_epoch_end(self, trainer, pl_module: LightningModule, outputs: Any) -> None:
         self.train_dir.__shuffle__()
+
         # pl_module.print('Shuffle Training set!')
         return super().on_train_epoch_end(trainer, pl_module, outputs)

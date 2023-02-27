@@ -21,6 +21,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.profiler.profilers import AdvancedProfiler
 from Light.callback import ShufTrainset
+from pytorch_lightning.callbacks import LearningRateMonitor
 
 from Light.dataset import SubDatasets, SubLoaders
 from Light.model import SpeakerModule
@@ -68,6 +69,8 @@ def main():
                                           save_top_k=3,
                                           mode='min',
                                           save_last=True)
+    lr_monitor = LearningRateMonitor(logging_interval='epoch')
+
     shuf_train_callback = ShufTrainset(train_dir=train_dir)
 
     # profiler = AdvancedProfiler(
@@ -76,7 +79,8 @@ def main():
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='ddp', gpus=args.gpus,
                       num_sanity_val_steps=0,
-                      callbacks=[checkpoint_callback, shuf_train_callback],
+                      callbacks=[checkpoint_callback,
+                                 shuf_train_callback, lr_monitor],
                       default_root_dir=config_args['check_path'],
                       val_check_interval=0.5,
                       weights_summary='full')
