@@ -1096,7 +1096,7 @@ class CBAM(nn.Module):
         t_output = self.cov_t(t_output)
         t_output = self.activation(t_output)
         # t_output = input * t_output
-        f_output = input.mean(dim=1, keepdim=True)
+        f_output = input.mean(dim=3, keepdim=True)
         f_output = self.cov_f(f_output)
         f_output = self.activation(f_output)
         # f_output = input * f_output
