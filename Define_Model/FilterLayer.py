@@ -1092,17 +1092,15 @@ class CBAM(nn.Module):
         self.activation = nn.Sigmoid()
 
     def forward(self, input):
-        t_output = self.avg_t(input)
+        t_output = input.mean(dim=2, keepdim=True)
         t_output = self.cov_t(t_output)
         t_output = self.activation(t_output)
-        t_output = input * t_output
-
-        f_output = self.avg_f(input)
+        # t_output = input * t_output
+        f_output = input.mean(dim=1, keepdim=True)
         f_output = self.cov_f(f_output)
         f_output = self.activation(f_output)
-        f_output = input * f_output
-
-        output = (t_output + f_output) / 2
+        # f_output = input * f_output
+        output = (t_output + f_output) / 2 * input
 
         return output
 
