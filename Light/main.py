@@ -82,7 +82,7 @@ def main():
                       callbacks=[checkpoint_callback,
                                  shuf_train_callback, lr_monitor],
                       default_root_dir=config_args['check_path'],
-                      val_check_interval=0.5,
+                      val_check_interval=0.5, gradient_clip_val=1.0,
                       weights_summary='full')
 
     trainer.fit(model=model, train_dataloader=train_loader,
