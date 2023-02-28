@@ -863,7 +863,7 @@ def main():
         model_para, config_args['optimizer'], **opt_kwargs)
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
-
+    
     scheduler = create_scheduler(optimizer, config_args)
 
     # Save model config txt
@@ -1050,7 +1050,7 @@ def main():
             valid_loss = valid_class(valid_loader, model, ce, epoch)
 
             if config_args['early_stopping'] or (
-                    epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
+                    epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):
                 valid_test_dict = valid_test(
                     train_extract_loader, model, epoch, xvector_dir)
             else:
@@ -1077,7 +1077,7 @@ def main():
             #     flag_tensor += 1
 
             if torch.distributed.get_rank() == 0 and (
-                    epoch % config_args['test_interval'] == 0 or epoch in milestones or epoch == (
+                    epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch):
 
                 # if (epoch == 1 or epoch != (end - 2)) and (
