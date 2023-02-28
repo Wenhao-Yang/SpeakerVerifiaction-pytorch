@@ -12,7 +12,7 @@ seed: 123456
 datasets: cnceleb
 testset: cnceleb
 feat_type: klfb
-loss: arcdist
+loss: arcsoft
 input_dim: 40
 feat: !ref fb<input_dim>
 subset: ""
@@ -107,7 +107,7 @@ classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
   num_classes: 797
 
 # loss
-loss_ratio: 2
+loss_ratio: 1
 stat_type: kurtoses
 lr_ratio: 0
 loss_lambda: False
@@ -115,6 +115,7 @@ loss_type: !ref <loss>
 margin: 0.15
 m: 0.1
 s: 30
+grad_clip: 1.0
 #lamda_beta: 0.2
 #mixup_type: input
 lamda_beta: 2
@@ -126,7 +127,9 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/cnceleb/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist_core_<stat_type><loss_ratio>
+check_path: !ref Data/checkpoint/<model><resnet_size>/cnceleb/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist_core_clip<grad_clip>
+
+#_<stat_type><loss_ratio>
 # /percent<coreset_percent>_<select_score>
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
