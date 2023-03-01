@@ -53,7 +53,7 @@ from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, PadCollate3d
-from TrainAndTest.common_func import create_optimizer, create_scheduler, create_model, verification_test, verification_extract, \
+from TrainAndTest.common_func import create_classifier, create_optimizer, create_scheduler, create_model, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
 from logger import NewLogger
 # import pytorch_lightning as pl
@@ -711,14 +711,21 @@ def main():
         # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
         # print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
+        if train_dir.num_spks != config_args['num_classes']:
+            print('Number of Speakers in training set is not equal to the asigned number.\n'.format(
+                train_dir.num_spks))
+
         print('Testing with %s distance, ' %
               ('cos' if config_args['cos_sim'] else 'l2'))
 
     # model = create_model(config_args['model'], **model_kwargs)
-    model = config_args['embedding_model']
+    if 'embedding_model' in config_args:
+        model = config_args['embedding_model']
 
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
+    else:
+        create_classifier(model, config_args)
 
     # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     # save_model_args(model_kwargs, model_yaml_path)
@@ -863,7 +870,7 @@ def main():
         model_para, config_args['optimizer'], **opt_kwargs)
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
-    
+
     scheduler = create_scheduler(optimizer, config_args)
 
     # Save model config txt

@@ -53,7 +53,7 @@ from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
-from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
+from TrainAndTest.common_func import create_optimizer, create_classifier, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
 from logger import NewLogger
 
@@ -211,8 +211,7 @@ for i in range(train_dir.num_spks):
         merge_spks.add(int(np.floor(idx)))
         idx += 0.2
 
-    # idx = int(np.ceil(idx))
-    
+    idx = int(np.ceil(idx-0.2))
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
@@ -634,6 +633,8 @@ def main():
     # print the experiment configuration
     torch.distributed.barrier()
     check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
+    new_num_spks = train_dir.num_spks + len(merge_spks)
+    config_args['num_classes'] = new_num_spks
 
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time: \33[91m{}\33[0m.'.format(str(time.asctime())))
@@ -642,8 +643,6 @@ def main():
         # keys.sort()
         # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
         # print('Parsed options: \n{ %s }' % (', '.join(options)))
-
-        new_num_spks = train_dir.num_spks + len(merge_spks)
 
         print('Number of Speakers: {} -> {}.\n'.format(train_dir.num_spks, new_num_spks))
         print('Testing with %s distance, ' %
@@ -655,6 +654,8 @@ def main():
 
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
+    else:
+        create_classifier(model, config_args)
 
     # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     # save_model_args(model_kwargs, model_yaml_path)

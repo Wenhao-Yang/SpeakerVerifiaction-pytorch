@@ -145,7 +145,11 @@ def create_model(name, **kwargs):
         raise KeyError("Unknown model: {}".format(name))
 
     model = __factory[name](**kwargs)
+    create_classifier(model, kwargs)
+    
+    return model
 
+def create_classifier(model, **kwargs):
     if kwargs['loss_type'] in ['asoft', 'amsoft', 'damsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2', 'aDCF']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                 normalize=kwargs['normalize'],
@@ -156,8 +160,7 @@ def create_model(name, **kwargs):
     elif kwargs['loss_type'] in ['proser']:
         model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'], dummy_classes=kwargs['num_center'],
                                              num_classes=kwargs['num_classes'])
-    return model
-
+        
 
 def create_scheduler_de(optimizer, args, train_dir):
     milestones = args.milestones.split(',')
@@ -298,10 +301,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
                             # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
-                        else:
                             uid_vec = out[num_seg_tensor[i]
-                                :num_seg_tensor[i + 1]]
+                                :num_seg_tensor[i + 1]].mean(axis=0)
+                        else:
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 
                         uid2vectors.append((uid, uid_vec))
 
@@ -1258,3 +1261,9 @@ def load_model_args(model_yaml):
         model_args['normalize'] = True
 
     return model_args
+
+
+class ModelArgs(object):
+    def __init__(self, config_args):
+        for i in config_args:
+            self.__setattr__(i, config_args[i])
