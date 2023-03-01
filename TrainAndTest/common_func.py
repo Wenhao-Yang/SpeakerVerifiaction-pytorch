@@ -146,21 +146,25 @@ def create_model(name, **kwargs):
 
     model = __factory[name](**kwargs)
     create_classifier(model, kwargs)
-    
+
     return model
 
-def create_classifier(model, **kwargs):
+
+def create_classifier(encode_model, **kwargs):
     if kwargs['loss_type'] in ['asoft', 'amsoft', 'damsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2', 'aDCF']:
-        model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
-                                                normalize=kwargs['normalize'],
-                                                num_classes=kwargs['num_classes'])
+        encode_model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
+                                                       normalize=kwargs['normalize'] if 'normalize' in kwargs else True,
+                                                       num_classes=kwargs['num_classes'])
     elif 'sub' in kwargs['loss_type']:
-        model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'], num_classes=kwargs['num_classes'],
-                                           num_center=kwargs['num_center'], output_subs=kwargs['output_subs'])
+        encode_model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'],
+                                                  num_classes=kwargs['num_classes'],
+                                                  num_center=kwargs['num_center'],
+                                                  output_subs=kwargs['output_subs'])
     elif kwargs['loss_type'] in ['proser']:
-        model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'], dummy_classes=kwargs['num_center'],
-                                             num_classes=kwargs['num_classes'])
-        
+        encode_model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'],
+                                                    dummy_classes=kwargs['num_center'],
+                                                    num_classes=kwargs['num_classes'])
+
 
 def create_scheduler_de(optimizer, args, train_dir):
     milestones = args.milestones.split(',')
@@ -301,10 +305,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
                             # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]
-                                :num_seg_tensor[i + 1]].mean(axis=0)
+                            uid_vec = out[num_seg_tensor[i]                                          :num_seg_tensor[i + 1]].mean(axis=0)
                         else:
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+                            uid_vec = out[num_seg_tensor[i]
+                                :num_seg_tensor[i + 1]]
 
                         uid2vectors.append((uid, uid_vec))
 
