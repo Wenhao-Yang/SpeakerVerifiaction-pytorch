@@ -543,23 +543,25 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
                                                                   xvector_dir=this_xvector_dir,
                                                                   epoch=epoch)
     mix3 = 100. * eer * mindcf_01 * mindcf_001
+    mix2 = 100. * eer * mindcf_001
 
     if torch.distributed.get_rank() == 0:
         print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, '
-              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix: {:.4f}. \33[0m'.format(100. * eer,
-                                                                                      eer_threshold,
-                                                                                      mindcf_01, mindcf_001, mix3))
+              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix2,3: {:.4f}, {:.4f}. \33[0m'.format(100. * eer,
+                                                                                                 eer_threshold,
+                                                                                                 mindcf_01, mindcf_001, mix2, mix3))
 
         writer.add_scalar('Train/EER', 100. * eer, epoch)
         writer.add_scalar('Train/Threshold', eer_threshold, epoch)
         writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
         writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
+        writer.add_scalar('Train/mix2', mix2, epoch)
         writer.add_scalar('Train/mix3', mix3, epoch)
 
     torch.cuda.empty_cache()
 
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
-            'MinDCF_001': mindcf_001, 'mix3': mix3}
+            'MinDCF_001': mindcf_001, 'mix2': mix2, 'mix3': mix3}
 
 
 def test(extract_loader, model, epoch, xvector_dir):
