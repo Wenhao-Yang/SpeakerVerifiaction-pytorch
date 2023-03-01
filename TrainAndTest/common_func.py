@@ -525,6 +525,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         type=float, help='replace batchnorm with instance norm')
     parser.add_argument('--inter-ratio', default=0.2, type=float,
                         help='replace batchnorm with instance norm')
+    parser.add_argument('--coreset-percent', default=0, type=float,
+                        help='replace batchnorm with instance norm')
 
     parser.add_argument('--log-scale', action='store_true',
                         default=False, help='log power spectogram')

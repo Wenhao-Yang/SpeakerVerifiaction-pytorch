@@ -707,6 +707,7 @@ def select_samples(train_loader, model, ce, select_score='loss'):
     train_dir.dataset = dataset
     train_dir.rest_dataset = rest_dataset
 
+
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
@@ -1039,7 +1040,7 @@ def main():
                 select_samples(train_loader, model, ce, args.select_score)
 
             train(train_loader, model, ce, optimizer, epoch, scheduler)
-            
+
             valid_loss = valid_class(valid_loader, model, ce, epoch)
             if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1)):
@@ -1061,7 +1062,7 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
-            if epoch % args.test_interval ==  (args.test_interval-1) or epoch in milestones or epoch == (
+            if epoch % args.test_interval == (args.test_interval-1) or epoch in milestones or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
                 model.eval()
                 check_path = '{}/checkpoint_{}.pth'.format(
