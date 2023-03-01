@@ -84,7 +84,7 @@ dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
 fast: none1
-num_classes: 207
+num_classes: 210
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
