@@ -564,7 +564,7 @@ if [ $stage -le 44 ]; then
 
   # seed=123456
   for lamda_beta in 2.0  ; do
-  for seed in 123456 ; do
+  for seed in 123456 123457 123458 ; do
    for layer in 4  ; do
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
   #  CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/cnc1_resnet_mixup.yaml --seed=${seed}
