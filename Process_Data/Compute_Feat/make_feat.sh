@@ -66,7 +66,7 @@ if [ $stage -le 1 ]; then
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
-  dataset=vox2
+  dataset=vox1
   for subset_str in vox1; do
     # subset_str=
     # if [[ $dataset == vox1 ]];then
