@@ -913,7 +913,7 @@ class ThinResNet(nn.Module):
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
                  filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
                  mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
-                 weight_p=0.1, weight_norm='max',
+                 weight_p=0.1, weight_norm='max', mix='mixup',
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -946,6 +946,8 @@ class ThinResNet(nn.Module):
         self.num_filter = channels  # [16, 32, 64, 128]
         self.inplanes = self.num_filter[0]
         self.downsample = str(downsample)
+        self.mix_type = mix
+        self.mix = self.mixup if mix == 'mixup' else self.addup
 
         if block_type == "seblock":
             block = SEBasicBlock if resnet_size < 50 else SEBottleneck
@@ -1167,11 +1169,11 @@ class ThinResNet(nn.Module):
             layer_mix = random.choice(mixup_alpha)
 
         if proser != None and layer_mix == 0:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         x = self.input_mask(x)
         if proser != None and layer_mix == 1:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -1180,7 +1182,7 @@ class ThinResNet(nn.Module):
             x = self.maxpool(x)
 
         if proser != None and layer_mix == 2:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         # print(x.shape)
         group1 = self.layer1(x)
@@ -1217,14 +1219,14 @@ class ThinResNet(nn.Module):
 
         x = x.view(x.size(0), -1)
         if proser != None and layer_mix == 7:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         x = self.fc1(x)
         if self.alpha:
             x = self.l2_norm(x)
 
         if proser != None and layer_mix == 8:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         if feature_map == 'last':
             return embeddings, x
@@ -1261,7 +1263,7 @@ class ThinResNet(nn.Module):
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
         if proser != None and layer_mix == 9:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         logits = "" if self.classifier == None else self.classifier(x)
 
@@ -1318,6 +1320,16 @@ class ThinResNet(nn.Module):
         x = torch.cat(
             [x[:-half_batch_size], lamda_beta * half_feats +
                 (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            dim=0)
+
+        return x
+
+    def addup(self, x, shuf_half_idx_ten, lamda_beta):
+        half_batch_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-half_batch_size:]
+        x = torch.cat(
+            [x[:-half_batch_size], -lamda_beta * half_feats +
+                (1 + lamda_beta) * half_feats[shuf_half_idx_ten]],
             dim=0)
 
         return x

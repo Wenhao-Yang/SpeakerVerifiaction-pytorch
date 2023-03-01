@@ -122,7 +122,7 @@ else:
     mixup_layer_str = str(config_args['mixup_layer'])
 
 lambda_str = '_lamda' + str(args.lamda_beta)
-mixup_str = '_mani' + mixup_layer_str + lambda_str
+mixup_str = '/clsaug_mani' + mixup_layer_str + lambda_str
 
 check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
