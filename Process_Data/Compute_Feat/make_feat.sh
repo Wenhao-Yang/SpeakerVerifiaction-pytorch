@@ -66,12 +66,13 @@ if [ $stage -le 1 ]; then
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
-  for dataset in vox1; do
-    subset_str=
-    if [[ $dataset == vox1 ]];then
-      subset_str=_40
-    fi
-    for s in dev_fb40${subset_str} ; do
+  dataset=vox2
+  for subset_str in vox1; do
+    # subset_str=
+    # if [[ $dataset == vox1 ]];then
+    #   subset_str=_40
+    # fi
+    for s in dev_fb40_128 dev_fb40_256 ; do
       python Process_Data/Compute_Feat/make_egs.py \
         --data-dir ${lstm_dir}/data/${dataset}/${feat}/${s} \
         --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
