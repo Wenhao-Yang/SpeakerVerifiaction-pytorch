@@ -204,9 +204,11 @@ extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transfo
 global index_list
 index_list = {}
 idx = train_dir.num_spks
+merge_spks = set([])
 for i in range(train_dir.num_spks):
     for j in range(i+1, train_dir.num_spks):
-        index_list['%d_%d' % (i, j)] = np.floor(idx)
+        index_list['%d_%d' % (i, j)] = int(np.floor(idx))
+        merge_spks.add(int(np.floor(idx)))
         idx += 0.5
 
 
@@ -638,7 +640,7 @@ def main():
         # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
         # print('Parsed options: \n{ %s }' % (', '.join(options)))
 
-        new_num_spks = train_dir.num_spks + len(index_list)
+        new_num_spks = train_dir.num_spks + len(merge_spks)
 
         print('Number of Speakers: {} -> {}.\n'.format(train_dir.num_spks, new_num_spks))
         print('Testing with %s distance, ' %
