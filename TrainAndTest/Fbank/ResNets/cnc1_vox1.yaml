@@ -115,7 +115,7 @@ loss_type: !ref <loss>
 margin: 0.15
 m: 0.1
 s: 30
-grad_clip: 1.0
+# grad_clip: 1.0
 #lamda_beta: 0.2
 #mixup_type: input
 lamda_beta: 2

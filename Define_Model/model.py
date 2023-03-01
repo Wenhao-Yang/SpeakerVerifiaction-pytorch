@@ -25,6 +25,7 @@ from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcita
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, AttentionweightLayer_v0
 
+
 def get_layer_param(model):
     return sum([torch.numel(param) for param in model.parameters()])
 
@@ -42,14 +43,17 @@ def get_activation(activation):
 
 def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool):
     if filter == 'fDLR':
-        filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        filter_layer = fDLR(input_dim=input_dim, sr=sr,
+                            num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
     elif filter == 'fBLayer':
-        filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        filter_layer = fBLayer(input_dim=input_dim, sr=sr,
+                               num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
     elif filter == 'fBPLayer':
         filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
                                 filter_fix=filter_fix)
     elif filter == 'fLLayer':
-        filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
+        filter_layer = fLLayer(input_dim=input_dim,
+                               num_filter=feat_dim, exp=exp)
     elif filter == 'Avg':
         filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
     elif filter == 'fbank':
@@ -60,13 +64,15 @@ def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: b
     return filter_layer
 
 
-def get_input_norm(input_norm: str):
+def get_input_norm(input_norm: str, dim=None):
     if input_norm == 'Mean':
         inst_layer = Mean_Norm()
     elif input_norm == 'SMean':
         inst_layer = SlideMean_Norm()
     elif input_norm == 'Mstd':
         inst_layer = MeanStd_Norm()
+    elif input_norm == 'Inst':
+        inst_layer = Inst_Norm(dim=dim)
     else:
         inst_layer = None
 
@@ -90,11 +96,14 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
                                              weight_norm=weight_norm)
     elif mask == 'attention':
-        mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight)
+        mask_layer = AttentionweightLayer(
+            input_dim=input_dim, weight=init_weight)
     elif mask == 'attention2':
-        mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight)
+        mask_layer = AttentionweightLayer_v2(
+            input_dim=input_dim, weight=init_weight)
     elif mask == 'attention3':
-        mask_layer = AttentionweightLayer_v3(input_dim=input_dim, weight=init_weight)
+        mask_layer = AttentionweightLayer_v3(
+            input_dim=input_dim, weight=init_weight)
     elif mask == 'drop':
         mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=weight_p,
                                      weight=init_weight, scale=scale)
@@ -123,9 +132,11 @@ class PairwiseDistance(Function):
         out = torch.pow(diff, self.norm).sum(dim=1)
         return torch.pow(out + eps, 1. / self.norm)
 
+
 class TripletMarginLoss(Function):
     """Triplet loss function.
     """
+
     def __init__(self, margin):
         super(TripletMarginLoss, self).__init__()
         self.margin = margin
@@ -139,9 +150,11 @@ class TripletMarginLoss(Function):
         loss = torch.mean(dist_hinge)
         return loss
 
+
 class TripletMarginCosLoss(Function):
     """Triplet loss function.
     """
+
     def __init__(self, margin):
         super(TripletMarginCosLoss, self).__init__()
         self.margin = margin
@@ -165,12 +178,14 @@ class ReLU20(nn.Hardtanh):
     def __repr__(self):
         inplace_str = 'inplace' if self.inplace else ''
         return self.__class__.__name__ + ' (' \
-               + inplace_str + ')'
+            + inplace_str + ')'
+
 
 def conv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
                      padding=1, bias=False)
+
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -203,6 +218,7 @@ class BasicBlock(nn.Module):
 
         return out
 
+
 class myResNet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000):
@@ -211,24 +227,27 @@ class myResNet(nn.Module):
 
         self.relu = ReLU20(inplace=True)
         self.inplanes = 64
-        self.conv1 = nn.Conv2d(1, 64, kernel_size=5, stride=2, padding=2,bias=False)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.layer1 = self._make_layer(block, 64, layers[0])
 
         self.inplanes = 128
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=5, stride=2, padding=2,bias=False)
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn2 = nn.BatchNorm2d(128)
         self.layer2 = self._make_layer(block, 128, layers[1])
         self.inplanes = 256
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=5, stride=2, padding=2,bias=False)
+        self.conv3 = nn.Conv2d(128, 256, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn3 = nn.BatchNorm2d(256)
         self.layer3 = self._make_layer(block, 256, layers[2])
         self.inplanes = 512
-        self.conv4 = nn.Conv2d(256, 512, kernel_size=5, stride=2, padding=2,bias=False)
+        self.conv4 = nn.Conv2d(256, 512, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn4 = nn.BatchNorm2d(512)
         self.layer4 = self._make_layer(block, 512, layers[3])
 
-        
         self.avgpool = nn.AdaptiveAvgPool2d((4, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
@@ -267,14 +286,15 @@ class myResNet(nn.Module):
 
         return x
 
+
 class DeepSpeakerModel(nn.Module):
     def __init__(self, resnet_size, embedding_size, num_classes, feature_dim=64):
         super(DeepSpeakerModel, self).__init__()
-        resnet_type = {10:[1, 1, 1, 1],
-                       18:[2, 2, 2, 2],
-                       34:[3, 4, 6, 3],
-                       50:[3, 4, 6, 3],
-                       101:[3, 4, 23, 3]}
+        resnet_type = {10: [1, 1, 1, 1],
+                       18: [2, 2, 2, 2],
+                       34: [3, 4, 6, 3],
+                       50: [3, 4, 6, 3],
+                       101: [3, 4, 23, 3]}
         self.embedding_size = embedding_size
         self.resnet_size = resnet_size
         self.num_classes = num_classes
@@ -289,7 +309,7 @@ class DeepSpeakerModel(nn.Module):
         #self.norm = nn.BatchNorm1d(512)
         self.model.classifier = nn.Linear(self.embedding_size, num_classes)
 
-    def l2_norm(self,input):
+    def l2_norm(self, input):
         input_size = input.size()
         buffer = torch.pow(input, 2)
 
@@ -344,17 +364,19 @@ class DeepSpeakerModel(nn.Module):
         res = self.model.classifier(x)
         return res
 
+
 class ResSpeakerModel(nn.Module):
     """
     Define the ResNet model with A-softmax and AM-softmax loss.
     """
+
     def __init__(self, resnet_size, embedding_size, num_classes, feature_dim=64):
         super(ResSpeakerModel, self).__init__()
-        resnet_type = {10:[1, 1, 1, 1],
-                       18:[2, 2, 2, 2],
-                       34:[3, 4, 6, 3],
-                       50:[3, 4, 6, 3],
-                       101:[3, 4, 23, 3]}
+        resnet_type = {10: [1, 1, 1, 1],
+                       18: [2, 2, 2, 2],
+                       34: [3, 4, 6, 3],
+                       50: [3, 4, 6, 3],
+                       101: [3, 4, 23, 3]}
         self.embedding_size = embedding_size
 
         self.resnet_size = resnet_size
@@ -368,7 +390,8 @@ class ResSpeakerModel(nn.Module):
         elif feature_dim == 257:
             self.model.fc = nn.Linear(256 * 5, self.embedding_size)
 
-        self.model.classifier = nn.Linear(self.embedding_size, self.num_classes)
+        self.model.classifier = nn.Linear(
+            self.embedding_size, self.num_classes)
 
         # TAP Encoding Layer
         self.model.encodinglayer = nn.AdaptiveAvgPool2d((1, 512))
@@ -376,8 +399,8 @@ class ResSpeakerModel(nn.Module):
         # TODO: SAP, LDE Encoding Layer after the embedding layers
         # SAP Encoding Layer
 
-
-        self.model.W = torch.nn.Parameter(torch.randn(self.embedding_size, num_classes))
+        self.model.W = torch.nn.Parameter(
+            torch.randn(self.embedding_size, num_classes))
         nn.init.xavier_normal(self.model.W, gain=1)
 
         # self.model.classifier = nn.Softmax(self.embedding_size, num_classes)
@@ -411,7 +434,7 @@ class ResSpeakerModel(nn.Module):
         self.margin = 0.4
         self.s = 30
 
-    def l2_norm(self,input):
+    def l2_norm(self, input):
         input_size = input.size()
         buffer = torch.pow(input, 2)
 
@@ -541,14 +564,16 @@ class ResSpeakerModel(nn.Module):
         # pdb.set_trace()
         x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
         x_norm = torch.div(x, x_norm)
-        w_norm = torch.norm(self.model.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+        w_norm = torch.norm(self.model.W, p=2, dim=0,
+                            keepdim=True).clamp(min=1e-12)
         w_norm = torch.div(self.model.W, w_norm)
         costh = torch.mm(x_norm, w_norm)
         lb_view = label.view(-1, 1)
 
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
-        delt_costh = torch.zeros(costh.size()).scatter_(1, lb_view.data, self.margin)
+        delt_costh = torch.zeros(costh.size()).scatter_(
+            1, lb_view.data, self.margin)
 
         if x.is_cuda:
             delt_costh = Variable(delt_costh.cuda())
@@ -560,18 +585,20 @@ class ResSpeakerModel(nn.Module):
 
         return loss
 
+
 class ResCNNSpeaker(nn.Module):
     """
     Define the ResNet model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
+
     def __init__(self, resnet_size, embedding_size, num_classes, block=BasicBlock, feature_dim=64, dropout=False):
         super(ResCNNSpeaker, self).__init__()
-        resnet_type = {10:[1, 1, 1, 1],
-                       18:[2, 2, 2, 2],
-                       34:[3, 4, 6, 3],
-                       50:[3, 4, 6, 3],
-                       101:[3, 4, 23, 3]}
+        resnet_type = {10: [1, 1, 1, 1],
+                       18: [2, 2, 2, 2],
+                       34: [3, 4, 6, 3],
+                       50: [3, 4, 6, 3],
+                       101: [3, 4, 23, 3]}
 
         layers = resnet_type[resnet_size]
 
@@ -579,22 +606,26 @@ class ResCNNSpeaker(nn.Module):
         self.relu = ReLU20(inplace=True)
 
         self.in_planes = 64
-        self.conv1 = nn.Conv2d(1, 64, kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.layer1 = self._make_layer(block, 64, layers[0])
 
         self.in_planes = 128
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn2 = nn.BatchNorm2d(128)
         self.layer2 = self._make_layer(block, 128, layers[1])
 
         self.in_planes = 256
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv3 = nn.Conv2d(128, 256, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn3 = nn.BatchNorm2d(256)
         self.layer3 = self._make_layer(block, 256, layers[2])
 
         self.in_planes = 512
-        self.conv4 = nn.Conv2d(256, 512, kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv4 = nn.Conv2d(256, 512, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn4 = nn.BatchNorm2d(512)
         self.layer4 = self._make_layer(block, 512, layers[3])
 
@@ -621,7 +652,7 @@ class ResCNNSpeaker(nn.Module):
         # self.weight = nn.Parameter(torch.Tensor(embedding_size, num_classes))  # 本层权重
         # self.weight.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)  # 初始化权重，在第一维度上做normalize
 
-    def l2_norm(self,input):
+    def l2_norm(self, input):
         input_size = input.size()
         buffer = torch.pow(input, 2)
 
@@ -639,7 +670,6 @@ class ResCNNSpeaker(nn.Module):
         for i in range(1, blocks):
             layers.append(block(self.in_planes, planes))
         return nn.Sequential(*layers)
-
 
     def forward(self, x):
         x = self.conv1(x)
@@ -680,6 +710,7 @@ class ResCNNSpeaker(nn.Module):
         # res = self.model.classifier(features)
         return logits, feature
 
+
 class SuperficialResCNN(nn.Module):  # 定义resnet
     def __init__(self, embedding_size, layers=[1, 1, 1, 0], block=BasicBlock, n_classes=1000,
                  m=3):  # block类型，embedding大小，分类数，maigin大小
@@ -689,17 +720,20 @@ class SuperficialResCNN(nn.Module):  # 定义resnet
         self.relu = ReLU(inplace=True)
 
         self.in_planes = 64
-        self.conv1 = nn.Conv2d(1, 64, kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.layer1 = self._make_layer(block, 64, layers[0])
 
         self.in_planes = 128
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn2 = nn.BatchNorm2d(128)
         self.layer2 = self._make_layer(block, 128, layers[1])
 
         self.in_planes = 256
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=5, stride=2, padding=2, bias=False)
+        self.conv3 = nn.Conv2d(128, 256, kernel_size=5,
+                               stride=2, padding=2, bias=False)
         self.bn3 = nn.BatchNorm2d(256)
         self.layer3 = self._make_layer(block, 256, layers[2])
 
@@ -720,7 +754,8 @@ class SuperficialResCNN(nn.Module):  # 定义resnet
         # self.W.data.uniform_(-1, 1).renorm_(2, 1, 1e-5).mul_(1e5)
         # nn.init.xavier_normal(self.W, gain=1)
 
-        self.angle_linear = AngleLinear(in_features=embedding_size, out_features=n_classes, m=m)
+        self.angle_linear = AngleLinear(
+            in_features=embedding_size, out_features=n_classes, m=m)
 
         for m in self.modules():  # 对于各层参数的初始化
             if isinstance(m, nn.Conv2d):  # 以2/n的开方为标准差，做均值为0的正态分布

@@ -1107,14 +1107,14 @@ class CBAM(nn.Module):
         t_output = self.avg_t(input)
         t_output = self.cov_t(t_output)
         t_output = self.activation(t_output)
-        t_output = input * t_output
+        # t_output = input * t_output
 
         f_output = self.avg_f(input)
         f_output = self.cov_f(f_output)
         f_output = self.activation(f_output)
-        f_output = input * f_output
+        # f_output = input * f_output
 
-        output = (t_output + f_output) / 2
+        output = (t_output + f_output) / 2 * input
 
         return output
 

@@ -24,7 +24,7 @@ valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_<feat>_valid
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
 trials: trials
-input_norm: Mean
+input_norm: Inst
 
 test_input: fix
 log_scale: False
@@ -39,7 +39,6 @@ batch_shuffle: True
 # coreset_percent: 0.5
 # select_score: random
 # select_interval: 4
-
 feat_format: kaldi
 remove_vad: True
 
