@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300  # skip to stage x
+stage=41  # skip to stage x
 waited=0
 while [ `ps 177992 | wc -l` -eq 2 ]; do
   sleep 60
@@ -295,29 +295,28 @@ if [ $stage -le 41 ]; then
   batch_size=256
   model=ThinResNet resnet_size=18
   encoder_type=SAP2 embedding_size=256
-  block_type=seblock downsample=k1 red_ratio=2
-  kernel=7,7
+  block_type=cbam downsample=k3 red_ratio=2 expansion=1
+  kernel=7,7 fast=none1
   loss=arcsoft
   alpha=0
-  input_norm=Mean
+  input_norm=Inst input_dim=80
   mask_layer=baseline
   scheduler=rop optimizer=sgd
-  input_dim=80
   batch_size=256
   power_weight=max
 
-  expansion=1
   chn=16
   cyclic_epoch=8
   avg_size=5
-  fast=none1
+  
+  mask_layer=baseline
+  weight=vox2_rcf
 
   for model in ThinResNet; do
-  for resnet_size in 10; do
+  for resnet_size in 34; do
   for seed in 123456 123457 123458; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-    mask_layer=baseline
-    weight=vox2_rcf
+    
       #     --init-weight ${weight} \
       # --power-weight ${power_weight} \
       # _${weight}${power_weight}
@@ -326,6 +325,11 @@ if [ $stage -le 41 ]; then
     else
       expansion=2
       exp_str=_exp${expansion}
+    fi
+
+    block_str=
+    if [[ $block_type == seblock* ]];then
+      block_str=_red${red_ratio}
     fi
     chn_str=
     if [ $chn -eq 16 ]; then
@@ -349,7 +353,7 @@ if [ $stage -le 41 ]; then
     elif [ "$mask_layer" = "both" ];then
       at_str=_`echo $mask_len | sed  's/,//g'`      
     fi
-    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_varesmix2_bashuf2/${seed}
+    model_dir=${model}${resnet_size}/${datasets}/${feat_type}${input_dim}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}${block_str}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wde4_varesmix2_bashuf2/baseline/${seed}
     #
 #
     python TrainAndTest/train_egs.py \
@@ -367,7 +371,7 @@ if [ $stage -le 41 ]; then
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --lr 0.1 --base-lr 0.000001 \
       --patience 3 --milestones 10,20,30,40 \
-      --early-stopping --early-patience 15 --early-delta 0.01 --early-meta mix2 \
+      --early-stopping --early-patience 15 --early-delta 0.0001 --early-meta mix2 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_50.pth \
       --mask-layer ${mask_layer} \
@@ -381,7 +385,7 @@ if [ $stage -le 41 ]; then
       --loss-type ${loss} --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0001 \
       --dropout-p 0.1 \
-      --gpu-id 0 \
+      --gpu-id 0,4 \
       --extract --cos-sim \
       --remove-vad
   done
@@ -580,7 +584,7 @@ if [ $stage -le 50 ]; then
 #  for input_dim in 80 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
     python TrainAndTest/train_egs.py \
-      --model ${model} \
+      --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/dev_fb${input_dim} \
       --train-test-dir ${lstm_dir}/data/${testset}/${feat_type}/dev_fb${input_dim}/trials_dir \
       --train-trials trials_2w --shuffle \
@@ -588,7 +592,6 @@ if [ $stage -le 50 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/test_fb${input_dim} \
       --feat-format kaldi --random-chunk 200 400 \
       --input-norm ${input_norm} \
-      --resnet-size ${resnet_size} \
       --nj 8 --epochs 50 \
       --batch-size ${batch_size} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
@@ -601,19 +604,17 @@ if [ $stage -le 50 ]; then
       --channels ${channels} \
       --fast ${fast} --stride 2,2 \
       --block-type ${block_type} \
-      --embedding-size ${embedding_size} \
       --time-dim 1 --avg-size 4 \
-      --encoder-type ${encoder_type} \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
       --num-valid 2 \
       --alpha ${alpha} \
       --loss-type ${loss} \
-      --margin 0.2 --s 30 \
+      --margin 0.2 --s 30 --all-iteraion 0 \
       --weight-decay 0.0005 \
       --dropout-p ${dp} \
       --gpu-id 2,3 \
       --extract \
       --cos-sim \
-      --all-iteraion 0 \
       --remove-vad
   done
   exit
