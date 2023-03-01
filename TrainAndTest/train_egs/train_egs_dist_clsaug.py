@@ -209,7 +209,10 @@ for i in range(train_dir.num_spks):
     for j in range(i+1, train_dir.num_spks):
         index_list['%d_%d' % (i, j)] = int(np.floor(idx))
         merge_spks.add(int(np.floor(idx)))
-        idx += 0.5
+        idx += 0.2
+
+    idx = int(np.ceil(idx))
+    
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
