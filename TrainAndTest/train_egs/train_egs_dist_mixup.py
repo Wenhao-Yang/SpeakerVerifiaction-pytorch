@@ -53,7 +53,7 @@ from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
-from TrainAndTest.common_func import create_optimizer, create_model, verification_test, verification_extract, \
+from TrainAndTest.common_func import create_optimizer, create_classifier, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
 from logger import NewLogger
 
@@ -331,6 +331,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
                               int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
+            pdb.set_trace()
             raise ValueError('Loss value is NaN!')
 
         # compute gradient and update weights
@@ -620,10 +621,11 @@ def main():
 
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
-
-    # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
-    # save_model_args(model_kwargs, model_yaml_path)
-    # exit(0)
+    else:
+        create_classifier(model, **config_args)
+        # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
+        # save_model_args(model_kwargs, model_yaml_path)
+        # exit(0)
 
     start_epoch = 0
     if 'finetune' not in config_args or not config_args['finetune']:
