@@ -206,8 +206,8 @@ index_list = {}
 idx = train_dir.num_spks
 for i in range(train_dir.num_spks):
     for j in range(i+1, train_dir.num_spks):
-        index_list['%d_%d' % (i, j)] = idx
-        idx += 1
+        index_list['%d_%d' % (i, j)] = np.floor(idx)
+        idx += 0.5
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
