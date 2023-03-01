@@ -1,5 +1,6 @@
 gpustat
 kaldi-io
+kaldiio
 matplotlib
 numpy
 python-speech-features
