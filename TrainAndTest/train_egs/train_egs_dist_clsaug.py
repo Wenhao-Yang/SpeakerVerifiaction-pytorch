@@ -655,7 +655,7 @@ def main():
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
     else:
-        create_classifier(model, config_args)
+        create_classifier(model, **config_args)
 
     # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     # save_model_args(model_kwargs, model_yaml_path)
