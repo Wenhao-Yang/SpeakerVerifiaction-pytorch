@@ -211,7 +211,7 @@ for i in range(train_dir.num_spks):
         merge_spks.add(int(np.floor(idx)))
         idx += 0.2
 
-    idx = int(np.ceil(idx))
+    # idx = int(np.ceil(idx))
     
 
 
