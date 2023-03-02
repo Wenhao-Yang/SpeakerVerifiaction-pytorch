@@ -1120,7 +1120,7 @@ if [ $stage -le 300 ]; then
   m=1.0
   # _lrr${lr_ratio}_lsr${loss_ratio}
 
- for lamda_beta in 0 ; do
+ for lamda_beta in 2.0 ; do
  for seed in 123456 123457 123458 ; do # 123456
     feat=fb${input_dim}
 
