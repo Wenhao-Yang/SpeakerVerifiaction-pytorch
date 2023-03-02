@@ -807,6 +807,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='the alpha for beta distribution')
     parser.add_argument('--mixup-type', type=str, default='input',
                         help='the mixup type to linear interplotation')
+    parser.add_argument('--mix-type', type=str, default='mixup',
+                        help='the mixup type to linear interplotation')
 
     parser.add_argument('--lncl', action='store_true',
                         default=False, help='Label Noise Correct Loss')

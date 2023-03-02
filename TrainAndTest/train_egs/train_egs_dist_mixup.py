@@ -1019,11 +1019,13 @@ def main():
                         '{:.4f} '.format(best_res['MinDCF_01'])
                     best_str += ' MinDcf-0.001: ' + \
                         '{:.4f} '.format(best_res['MinDCF_001'])
-                    best_str += ' Mix3: ' + '{:.4f}\n'.format(best_res['mix3'])
+                    best_str += ' Mix2,3: ' + \
+                        '{:.4f}, {:.4f}\n'.format(
+                            best_res['mix2'], best_res['mix3'])
                     print(best_str)
                     with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
                         f.write(best_str + '\n')
-                        
+
                     try:
                         shutil.copy('{}/checkpoint_{}.pth'.format(check_path,
                                                                   early_stopping_scheduler.best_epoch),

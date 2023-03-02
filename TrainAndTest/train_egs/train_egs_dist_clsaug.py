@@ -124,6 +124,9 @@ else:
 lambda_str = '_lamda' + str(args.lamda_beta)
 mixup_str = '/clsaug_mani' + mixup_layer_str + lambda_str
 
+if 'mix_type' in config_args and config_args['mix_type'] == 'addup':
+    mixup_str += 'addup'
+
 check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
 if torch.distributed.get_rank() == 0:
@@ -205,13 +208,26 @@ global index_list
 index_list = {}
 idx = train_dir.num_spks
 merge_spks = set([])
-for i in range(train_dir.num_spks):
-    for j in range(i+1, train_dir.num_spks):
-        index_list['%d_%d' % (i, j)] = int(np.floor(idx))
-        merge_spks.add(int(np.floor(idx)))
-        idx += 0.2
 
-    idx = int(np.ceil(idx-0.2))
+if 'mix_type' in config_args and config_args['mix_type'] == 'addup':
+    for i in range(train_dir.num_spks):
+        for j in range(train_dir.num_spks):
+            if i != j:
+                index_list['%d_%d' % (i, j)] = int(np.floor(idx))
+                merge_spks.add(int(np.floor(idx)))
+                idx += 0.2
+        idx = int(np.ceil(idx-0.2))
+
+else:
+    for i in range(train_dir.num_spks):
+        for j in range(i+1, train_dir.num_spks):
+            index_list['%d_%d' % (i, j)] = int(np.floor(idx))
+            index_list['%d_%d' % (j, i)] = int(np.floor(idx))
+
+            merge_spks.add(int(np.floor(idx)))
+            idx += 0.2
+
+        idx = int(np.ceil(idx-0.2))
 
 
 def train(train_loader, model, ce, optimizer, epoch, scheduler):
@@ -262,10 +278,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             for x, y in zip(half_label, rand_label):
                 if x == y:
                     relabel.append(int(x))
-                elif x < y:
-                    relabel.append(index_list['%d_%d' % (x, y)])
                 else:
-                    relabel.append(index_list['%d_%d' % (y, x)])
+                    relabel.append(index_list['%d_%d' % (x, y)])
 
             relabel = torch.LongTensor(relabel)
             label = torch.cat([label[:half_data], relabel], dim=0)
@@ -576,9 +590,9 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir):
 
     if torch.distributed.get_rank() == 0:
         print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, '
-              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix: {:.4f}. \33[0m'.format(100. * eer,
-                                                                                      eer_threshold,
-                                                                                      mindcf_01, mindcf_001, mix3))
+              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix2,3: {:.4f}. \33[0m'.format(100. * eer,
+                                                                                         eer_threshold,
+                                                                                         mindcf_01, mindcf_001, mix2, mix3))
 
         writer.add_scalar('Train/EER', 100. * eer, epoch)
         writer.add_scalar('Train/Threshold', eer_threshold, epoch)

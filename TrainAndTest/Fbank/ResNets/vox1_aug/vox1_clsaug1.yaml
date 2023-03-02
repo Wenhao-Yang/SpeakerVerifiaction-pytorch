@@ -85,6 +85,7 @@ activation: relu
 channels: 32,64,128,256
 fast: none1
 num_classes: 128
+mix_type: addup
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
@@ -104,6 +105,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   embedding_size: !ref <embedding_size>
   num_classes: !ref <num_classes>
   activation: relu
+  mix: !ref <mix_type>
 
 # loss
 loss_ratio: 1
