@@ -122,7 +122,7 @@ else:
     mixup_layer_str = str(config_args['mixup_layer'])
 
 lambda_str = '_lamda' + str(args.lamda_beta)
-mixup_str = '_mani' + mixup_layer_str + lambda_str
+mixup_str = '/mani' + mixup_layer_str + lambda_str
 
 check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
@@ -1023,6 +1023,8 @@ def main():
                         '{:.4f}, {:.4f}\n'.format(
                             best_res['mix2'], best_res['mix3'])
                     print(best_str)
+                    with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
+                        f.write(best_str + '\n')
 
                     try:
                         shutil.copy('{}/checkpoint_{}.pth'.format(check_path,

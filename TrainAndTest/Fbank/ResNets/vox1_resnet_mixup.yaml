@@ -24,7 +24,7 @@ valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_<feat>_valid
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
 trials: trials
-input_norm: Mean
+input_norm: Inst
 
 test_input: fix
 log_scale: False
@@ -32,7 +32,7 @@ random_chunk: [200, 400]
 chunk_size: 300
 frame_shift: 300
 extract: True
-nj: 6
+nj: 4
 shuffle: False
 batch_shuffle: True
 
@@ -40,7 +40,7 @@ feat_format: kaldi
 remove_vad: True
 
 ### Training settings
-epochs: 60
+epochs: 80
 
 # optimizer
 optimizer: sgd
@@ -123,7 +123,9 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>80_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_vares_bashuf2_dist_mani123
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>80_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_vares_bashuf2_dist
+
+#_mani123
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_40.pth
