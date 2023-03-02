@@ -577,9 +577,9 @@ if [ $stage -le 44 ]; then
   # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox1_aug/vox1_clsaug5.yaml --seed=${seed}
 
   sleep 5
-  CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox1_aug/vox1_clsaug${layer}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+  # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist_mixup.py --train-config=TrainAndTest/Fbank/ResNets/vox1_aug/vox1_clsaug${layer}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
-  # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist_clsaug.py --train-config=TrainAndTest/Fbank/ResNets/vox1_aug/vox1_clsaug${layer}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+  CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist_clsaug.py --train-config=TrainAndTest/Fbank/ResNets/vox1_aug/vox1_clsaug${layer}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
   # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/vox1_aug/vox1_clsaug_base.yaml --seed=${seed}
 
