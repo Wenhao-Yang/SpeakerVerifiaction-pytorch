@@ -223,8 +223,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
 
-        lamda_beta = np.random.beta(
-            config_args['lamda_beta'], config_args['lamda_beta'])
+        lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
         half_data = int(len(data) / 2)
 
         if config_args['mixup_type'] != 'manifold':
