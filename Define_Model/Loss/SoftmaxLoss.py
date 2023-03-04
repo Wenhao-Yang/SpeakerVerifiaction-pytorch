@@ -869,6 +869,7 @@ class MixupLoss(nn.Module):
             return loss / (1 + self.gamma)
         else:
             loss = self.loss(costh, label)
+            return loss
 
     def __repr__(self):
         return "MixupLoss(loss=%s)" % (self.loss)
