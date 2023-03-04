@@ -553,33 +553,24 @@ if [ $stage -le 50 ]; then
   feat_type=klfb
   model=LoResNet resnet_size=8
 #  encoder_type=SAP2
-  embedding_size=256
+  encoder_type=AVG embedding_size=256
   block_type=cbam downsample=None
   kernel=5,5
   loss=arcsoft
   alpha=0
-  input_norm=Mean
+  input_norm=Mean input_dim=80
   mask_layer=baseline
   scheduler=rop optimizer=sgd
-  input_dim=80
   batch_size=128
   fast=none1
-
-#  loss=soft
-  encoder_type=AVG
+  
   for chn in 32 16 ; do
     if [ $chn -eq 64 ];then
-      channels=64,128,256
-      dp=0.25
-      dp_str=25
+      channels=64,128,256 dp=0.25 dp_str=25
     elif [ $chn -eq 32 ];then
-      channels=32,64,128
-      dp=0.2
-      dp_str=20
+      channels=32,64,128 dp=0.2 dp_str=20
     elif [ $chn -eq 16 ];then
-      channels=16,32,64
-      dp=0.125
-      dp_str=125
+      channels=16,32,64 dp=0.125 dp_str=125
     fi
 #  for input_dim in 80 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Training ${model}${resnet_size} in ${datasets}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
@@ -631,18 +622,14 @@ if [ $stage -le 100 ]; then
   kernel=5,5
 
   alpha=0
-  input_norm=Mean
-  mask_layer=baseline
+  input_norm=Mean input_dim=40
   scheduler=rop optimizer=sgd
-  input_dim=40
   batch_size=256
   fast=none1
   mask_layer=baseline
-  weight=vox2_rcf
-  scale=0.2
+  weight=vox2_rcf scale=0.2
   subset=
-  loss=arcdist
-  stat_type=maxmargin
+  loss=arcdist stat_type=maxmargin
         # --milestones 15,25,35,45 \
 #        _${stat_type}
 
