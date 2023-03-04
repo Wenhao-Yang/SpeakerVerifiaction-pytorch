@@ -99,7 +99,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
         predicted_labels = output_softmax(classfier.clone())
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
-        minibatch_correct = float(predicted_one_labels.cpu() == label.cpu()).sum().item())
+        minibatch_correct = float(predicted_one_labels.cpu() == label.cpu()).sum().item()
         minibatch_acc=minibatch_correct / len(predicted_one_labels)
 
         correct += minibatch_correct
