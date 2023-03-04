@@ -147,7 +147,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         predicted_labels = output_softmax(classfier)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
-        loss, other_loss = model.loss(classfier, feats, label, 
+        loss, other_loss = model.module.loss(classfier, feats, label, 
                                       half_data=half_data, lamda_beta=lamda_beta)
 
         predicted_one_labels = predicted_one_labels.cpu()
@@ -215,7 +215,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         if config_args['loss_ratio'] != 0:
             if config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter']:
-                for param in model.loss.xe_criterion.parameters():
+                for param in model.module.loss.xe_criterion.parameters():
                     param.grad.data *= (1. / config_args['loss_ratio'])
 
         # optimizer.step()
