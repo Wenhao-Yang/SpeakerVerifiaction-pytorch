@@ -296,8 +296,11 @@ def main():
 
     lambda_str = '_lamda' + str(args.lamda_beta)
     config_args['lamda_beta'] = args.lamda_beta
+    if 'mix_class' in config_args and config_args['mix_class'] == True:
+        mixup_str = '/clsaug_mani' + mixup_layer_str + lambda_str
+    else:
+        mixup_str = '/mani' + mixup_layer_str + lambda_str
 
-    mixup_str = '/clsaug_mani' + mixup_layer_str + lambda_str
     if 'mix_ratio'in config_args and config_args['mix_ratio'] < 1:
         mixup_str += '_mix_ratio_' + str(config_args['mix_ratio'])
 
