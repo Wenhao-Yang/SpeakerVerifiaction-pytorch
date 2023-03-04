@@ -30,6 +30,9 @@ import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
+from Light.dataset import Sampler_Loaders, SubDatasets
+from Light.model import SpeakerLoss
+from TrainAndTest.train_egs.train_egs_dist import all_seed
 import torchvision.transforms as transforms
 from hyperpyyaml import load_hyperpyyaml
 from kaldi_io import read_mat, read_vec_flt
@@ -53,8 +56,9 @@ from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput
-from TrainAndTest.common_func import create_optimizer, create_classifier, verification_test, verification_extract, \
+from TrainAndTest.common_func import create_optimizer, create_classifier, create_scheduler, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
+from TrainAndTest.train_egs.train_egs_dist import valid_class, valid_test
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -72,139 +76,13 @@ except AttributeError:
 
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
-# Training settings
-# args = args_parse('PyTorch Speaker Recognition: Classification')
-
-parser = argparse.ArgumentParser(
-    description='PyTorch ( Distributed ) Speaker Recognition: Classification')
-parser.add_argument('--local_rank', default=-1, type=int,
-                    help='node rank for distributed training')
-parser.add_argument('--train-config', default='', type=str,
-                    help='node rank for distributed training')
-parser.add_argument('--seed', type=int, default=123456,
-                    help='random seed (default: 0)')
-parser.add_argument('--lamda-beta', type=float, default=2.0,
-                    help='random seed (default: 0)')
-
-args = parser.parse_args()
-
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
 # os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 # os.environ['MASTER_ADDR'] = '127.0.0.1'
 # os.environ['MASTER_PORT'] = '29555'
 
-# args.cuda = not args.no_cuda and torch.cuda.is_available()
-# setting seeds
-np.random.seed(args.seed)
-torch.manual_seed(args.seed)
-random.seed(args.seed)
-
-if torch.cuda.is_available():
-    torch.cuda.manual_seed_all(args.seed)
-    cudnn.benchmark = True
-
-torch.distributed.init_process_group(backend='nccl')
-torch.cuda.set_device(args.local_rank)
-
-# load train config file
-# args.train_config
-with open(args.train_config, 'r') as f:
-    # config_args = yaml.load(f, Loader=yaml.FullLoader)
-    config_args = load_hyperpyyaml(f)
-
-# create logger
-# Define visulaize SummaryWriter instance
-if isinstance(config_args['mixup_layer'], list):
-    mixup_layer_str = ''.join([str(s) for s in config_args['mixup_layer']])
-else:
-    mixup_layer_str = str(config_args['mixup_layer'])
-
-lambda_str = '_lamda' + str(args.lamda_beta)
-mixup_str = '/mani' + mixup_layer_str + lambda_str
-
-if 'mix_ratio'in config_args and config_args['mix_ratio'] < 1:
-    mixup_str += '_mix_ratio_' + str(config_args['mix_ratio'])
-
-check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
-
-if torch.distributed.get_rank() == 0:
-    if not os.path.exists(check_path):
-        print('Making checkpath...')
-        os.makedirs(check_path)
-
-    writer = SummaryWriter(logdir=check_path, filename_suffix='SV')
-    sys.stdout = NewLogger(
-        os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
-
-kwargs = {'num_workers': config_args['nj'],
-          'pin_memory': False}  # if args.cuda else {}
-extract_kwargs = {'num_workers': 4,
-                  'pin_memory': False}  # if args.cuda else {}
-
-opt_kwargs = {'lr': config_args['lr'],
-              'lr_decay': config_args['lr_decay'],
-              'weight_decay': config_args['weight_decay'],
-              'dampening': config_args['dampening'],
-              'momentum': config_args['momentum'],
-              'nesterov': config_args['nesterov']}
-
-l2_dist = nn.CosineSimilarity(
-    dim=1, eps=1e-12) if config_args['cos_sim'] else nn.PairwiseDistance(p=2)
-
-transform = transforms.Compose([
-    totensor()
-])
-
-if config_args['test_input'] == 'var':
-    transform_V = transforms.Compose([
-        ConcateOrgInput(
-            remove_vad=config_args['remove_vad'], feat_type=config_args['feat_format']),
-    ])
-elif config_args['test_input'] == 'fix':
-    transform_V = transforms.Compose([
-        ConcateVarInput(remove_vad=config_args['remove_vad'], num_frames=config_args['chunk_size'],
-                        frame_shift=config_args['chunk_size'],
-                        feat_type=config_args['feat_format']),
-    ])
-
-if config_args['log_scale']:
-    transform.transforms.append(tolog())
-    transform_V.transforms.append(tolog())
-
-# pdb.set_trace()
-if config_args['feat_format'] in ['kaldi', 'wav']:
-    # file_loader = read_mat
-    file_loader = load_mat
-elif config_args['feat_format'] == 'npy':
-    file_loader = np.load
-
-torch.multiprocessing.set_sharing_strategy('file_system')
-
-train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
-                       transform=transform,
-                       batch_size=config_args['batch_size'], random_chunk=config_args['random_chunk'],
-                       verbose=1 if torch.distributed.get_rank() == 0 else 0)
-valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
-                       transform=transform,
-                       verbose=1 if torch.distributed.get_rank() == 0 else 0)
-
-if config_args['feat_format'] == 'wav':
-    file_loader = read_Waveform
-    feat_type = 'wav'
-else:
-    feat_type = 'kaldi'
-
-train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
-                                        transform=transform_V,
-                                        filer_loader=file_loader, feat_type=feat_type,
-                                        trials_file=config_args['train_trials'])
-
-extract_dir = KaldiExtractDataset(dir=config_args['test_dir'], transform=transform_V, feat_type=feat_type,
-                                  trials_file=config_args['trials'], filer_loader=file_loader)
-
-
-def train(train_loader, model, ce, optimizer, epoch, scheduler):
+def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer):
     # switch to evaluate mode
     model.train()
 
@@ -212,21 +90,21 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     total_datasize = 0.
     total_loss = 0.
     orth_err = 0
-    other_loss = 0.
+    total_other_loss = 0.
 
-    ce_criterion, xe_criterion = ce
-    xe_criterion = MixupLoss(xe_criterion, gamma=config_args['proser_gamma'])
+    # ce_criterion, xe_criterion = ce
+    model.loss.xe_criterion = MixupLoss(model.loss.xe_criterion, gamma=config_args['proser_gamma'])
 
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
-    lambda_ = (epoch / config_args['epochs']) ** 2
+    # lambda_ = (epoch / config_args['epochs']) ** 2
 
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
 
         if 'mix_ratio'in config_args and np.random.uniform(0,1) <= config_args['mix_ratio']:
-            lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
+            lamda_beta = np.random.beta(config_args['lamda_beta'], config_args['lamda_beta'])
             half_data = int(len(data) / 2)
 
             if config_args['mixup_type'] != 'manifold':
@@ -256,60 +134,15 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         classfier, feats = model(data, proser=rand_idx, lamda_beta=lamda_beta,
                                  mixup_alpha=config_args['mixup_layer'])
 
-        classfier_label = classfier
-        # print('max logit is ', classfier_label.max())
-
-        if config_args['loss_type'] == 'soft':
-            loss = ce_criterion(classfier, label)
-        elif config_args['loss_type'] == 'asoft':
-            classfier_label, _ = classfier
-            loss = xe_criterion(classfier, label)
-        elif config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = config_args['loss_ratio'] * xe_criterion(feats, label)
-            other_loss += loss_xent
-
-            loss = loss_xent + loss_cent
-        elif config_args['loss_type'] == 'ring':
-            loss_cent = ce_criterion(classfier, label)
-            loss_xent = config_args['loss_ratio'] * xe_criterion(feats)
-
-            other_loss += loss_xent
-            loss = loss_xent + loss_cent
-        elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
-            loss = xe_criterion(classfier, label, half_data, lamda_beta)
-
-        elif 'arcdist' in config_args['loss_type']:
-            # pdb.set_trace()
-            loss_cent = config_args['loss_ratio'] * \
-                ce_criterion(classfier, label)
-            if 'loss_lambda' in config_args and config_args['loss_lambda']:
-                loss_cent = loss_cent * lambda_
-
-            loss_xent = xe_criterion(classfier, label)
-
-            other_loss += loss_cent
-            loss = loss_xent + loss_cent
-
-        predicted_labels = output_softmax(classfier_label)
+        predicted_labels = output_softmax(classfier)
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
-        if 'lncl' in config_args and config_args['lncl']:
-            if config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
-                predict_loss = xe_criterion(classfier, predicted_one_labels)
-            else:
-                predict_loss = ce_criterion(classfier, predicted_one_labels)
-
-            alpha_t = np.clip(
-                config_args['alpha_t'] * (epoch / config_args['epochs']) ** 2, a_min=0, a_max=1)
-            mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
-
-            loss = (1 - alpha_t) * loss + alpha_t * predict_loss + \
-                config_args['beta'] * torch.mean(-torch.log(mp))
+        loss, other_loss = model.loss(classfier, feats, label, 
+                                      half_data=half_data, lamda_beta=lamda_beta)
 
         predicted_one_labels = predicted_one_labels.cpu()
         label = label.cpu()
-
+        
         if half_data == 0:
             minibatch_correct = predicted_one_labels.eq(label).cpu().sum().float()
         elif config_args['mixup_type'] == 'manifold':
@@ -332,6 +165,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         total_datasize += len(predicted_one_labels)
         total_loss += float(loss.item())
+        total_other_loss += other_loss
+
         if torch.distributed.get_rank() == 0:
             writer.add_scalar('Train/All_Loss', float(loss.item()),
                               int((epoch - 1) * len(train_loader) + batch_idx + 1))
@@ -370,7 +205,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         if config_args['loss_ratio'] != 0:
             if config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter']:
-                for param in xe_criterion.parameters():
+                for param in model.loss.xe_criterion.parameters():
                     param.grad.data *= (1. / config_args['loss_ratio'])
 
         # optimizer.step()
@@ -392,30 +227,20 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             epoch_str += ' Lamda: {:>4.2f}'.format(lamda_beta)
             epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
 
-            if orth_err > 0:
-                epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
+            if other_loss != 0:
+                epoch_str += ' Other Loss: {:.4f}'.format(other_loss)
 
-            if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
-            if 'arcdist' in config_args['loss_type']:
-                epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
             epoch_str += ' Avg Loss: {:.4f}'.format(
                 total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
 
-        # if (batch_idx + 1) == 100:
-        #     break
-
-    if config_args['batch_shuffle']:
-        train_dir.__shuffle__()
-
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
 
-    if other_loss != 0:
+    if total_other_loss != 0:
         this_epoch_str += ' {} Loss: {:6f}'.format(
-            config_args['loss_type'], other_loss / len(train_loader))
+            config_args['loss_type'], total_other_loss / len(train_loader))
 
     this_epoch_str += '.\33[0m'
 
@@ -427,188 +252,64 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     torch.cuda.empty_cache()
 
 
-def valid_class(valid_loader, model, ce, epoch):
-    # switch to evaluate mode
-    model.eval()
-
-    total_loss = 0.
-    other_loss = 0.
-    ce_criterion, xe_criterion = ce
-    softmax = nn.Softmax(dim=1)
-
-    correct = 0.
-    total_datasize = 0.
-    lambda_ = (epoch / config_args['epochs']) ** 2
-
-    with torch.no_grad():
-        for batch_idx, (data, label) in enumerate(valid_loader):
-
-            if torch.cuda.is_available():
-                data = data.cuda()
-                label = label.cuda()
-
-            # compute output
-            # pdb.set_trace()
-            out, feats = model(data)
-            if config_args['loss_type'] == 'asoft':
-                predicted_labels, _ = out
-            else:
-                predicted_labels = out
-
-            classfier = predicted_labels
-            if config_args['loss_type'] == 'soft':
-                loss = ce_criterion(classfier, label)
-            elif config_args['loss_type'] == 'asoft':
-                classfier_label, _ = classfier
-                loss = xe_criterion(classfier, label)
-            elif config_args['loss_type'] in ['variance', 'center', 'mulcenter', 'gaussian', 'coscenter']:
-                loss_cent = ce_criterion(classfier, label)
-                loss_xent = config_args['loss_ratio'] * \
-                    xe_criterion(feats, label)
-                other_loss += float(loss_xent.item())
-
-                loss = loss_xent + loss_cent
-            elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc']:
-                loss = xe_criterion(classfier, label)
-            elif 'arcdist' in config_args['loss_type']:
-                loss_cent = config_args['loss_ratio'] * \
-                    ce_criterion(classfier, label)
-                if 'loss_lambda' in config_args:
-                    loss_cent = loss_cent * lambda_
-
-                loss_xent = xe_criterion(classfier, label)
-
-                other_loss += float(loss_cent.item())
-                loss = loss_xent + loss_cent
-
-            total_loss += float(loss.item())
-            # pdb.set_trace()
-            predicted_one_labels = softmax(predicted_labels)
-            predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
-
-            batch_correct = (predicted_one_labels.cuda() == label).sum().item()
-            correct += batch_correct
-            total_datasize += len(predicted_one_labels)
-
-    total_batch = len(valid_loader)
-    all_total_loss = [None for _ in range(torch.distributed.get_world_size())]
-    all_correct = [None for _ in range(torch.distributed.get_world_size())]
-    all_total_batch = [None for _ in range(torch.distributed.get_world_size())]
-    all_total_datasize = [None for _ in range(
-        torch.distributed.get_world_size())]
-
-    torch.distributed.all_gather_object(all_total_loss, total_loss)
-    torch.distributed.all_gather_object(all_correct, correct)
-    torch.distributed.all_gather_object(all_total_batch, total_batch)
-    torch.distributed.all_gather_object(all_total_datasize, total_datasize)
-
-    # torch.distributed.all_reduce()
-    total_loss = np.sum(all_total_loss)
-    correct = np.sum(all_correct)
-    total_batch = np.sum(all_total_batch)
-    total_datasize = np.sum(all_total_datasize)
-
-    valid_loss = total_loss / total_batch
-    valid_accuracy = 100. * correct / total_datasize
-
-    if torch.distributed.get_rank() == 0:
-        writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
-        writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
-        torch.cuda.empty_cache()
-
-        this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(
-            valid_accuracy, valid_loss)
-
-        if other_loss != 0:
-            this_epoch_str += ' {} Loss: {:6f}'.format(
-                config_args['loss_type'], other_loss / len(valid_loader))
-
-        this_epoch_str += '.\33[0m'
-        print(this_epoch_str)
-
-    return valid_loss
-
-
-def valid_test(train_extract_loader, model, epoch, xvector_dir):
-    # switch to evaluate mode
-    model.eval()
-
-    this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
-    verification_extract(train_extract_loader, model, this_xvector_dir,
-                         epoch, test_input=config_args['test_input'])
-
-    verify_dir = ScriptVerifyDataset(dir=config_args['train_test_dir'], trials_file=config_args['train_trials'],
-                                     xvectors_dir=this_xvector_dir,
-                                     loader=read_vec_flt)
-    verify_loader = torch.utils.data.DataLoader(
-        verify_dir, batch_size=128, shuffle=False, **kwargs)
-    eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
-                                                                  dist_type=(
-                                                                      'cos' if config_args['cos_sim'] else 'l2'),
-                                                                  log_interval=config_args['log_interval'],
-                                                                  xvector_dir=this_xvector_dir,
-                                                                  epoch=epoch)
-    mix3 = 100. * eer * mindcf_01 * mindcf_001
-    mix2 = 100. * eer * mindcf_001
-
-    if torch.distributed.get_rank() == 0:
-        print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, '
-              'mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}, mix2,3: {:.4f}, {:.4f}. \33[0m'.format(100. * eer,
-                                                                                                 eer_threshold,
-                                                                                                 mindcf_01, mindcf_001, mix2, mix3))
-
-        writer.add_scalar('Train/EER', 100. * eer, epoch)
-        writer.add_scalar('Train/Threshold', eer_threshold, epoch)
-        writer.add_scalar('Train/mindcf-0.01', mindcf_01, epoch)
-        writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
-        writer.add_scalar('Train/mix2', mix2, epoch)
-        writer.add_scalar('Train/mix3', mix3, epoch)
-
-    torch.cuda.empty_cache()
-
-    return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
-            'MinDCF_001': mindcf_001, 'mix2': mix2, 'mix3': mix3}
-
-
-def test(extract_loader, model, epoch, xvector_dir):
-    this_xvector_dir = "%s/test/epoch_%s" % (xvector_dir, epoch)
-
-    verification_extract(extract_loader, model, this_xvector_dir,
-                         epoch, test_input=config_args['test_input'])
-
-    verify_dir = ScriptVerifyDataset(dir=config_args['test_dir'], trials_file=config_args['trials'],
-                                     xvectors_dir=this_xvector_dir,
-                                     loader=read_vec_flt)
-
-    verify_sampler = torch.utils.data.distributed.DistributedSampler(
-        verify_dir)
-    # sampler = verify_sampler,
-    verify_loader = torch.utils.data.DataLoader(verify_dir, batch_size=128, shuffle=False,
-                                                **extract_kwargs)
-
-    # pdb.set_trace()
-    eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
-                                                                  dist_type='cos' if config_args[
-                                                                      'cos_sim'] else 'l2',
-                                                                  log_interval=config_args['log_interval'],
-                                                                  xvector_dir=this_xvector_dir,
-                                                                  epoch=epoch)
-
-    if torch.distributed.get_rank() == 0:
-        print(
-            '          \33[91mTest  ERR: {:.4f}%, Threshold: {:.4f}, mindcf-0.01: {:.4f}, mindcf-0.001: {:.4f}.\33[0m\n'.format(
-                100. * eer, eer_threshold, mindcf_01, mindcf_001))
-
-        writer.add_scalar('Test/EER', 100. * eer, epoch)
-        writer.add_scalar('Test/Threshold', eer_threshold, epoch)
-        writer.add_scalar('Test/mindcf-0.01', mindcf_01, epoch)
-        writer.add_scalar('Test/mindcf-0.001', mindcf_001, epoch)
-
-
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
-    # test_display_triplet_distance = False
-    # print the experiment configuration
+    # Training settings
+    parser = argparse.ArgumentParser(
+        description='PyTorch ( Distributed ) Speaker Recognition: Classification')
+    parser.add_argument('--local_rank', default=-1, type=int,
+                        help='node rank for distributed training')
+    parser.add_argument('--train-config', default='', type=str,
+                        help='node rank for distributed training')
+    parser.add_argument('--seed', type=int, default=123456,
+                        help='random seed (default: 0)')
+    parser.add_argument('--lamda-beta', type=float, default=2.0,
+                        help='random seed (default: 0)')
+
+    args = parser.parse_args()
+
+    all_seed(args.seed)
+    torch.distributed.init_process_group(backend='nccl')
+    torch.cuda.set_device(args.local_rank)
+
+    # load train config file
+    # args.train_config
+    with open(args.train_config, 'r') as f:
+        # config_args = yaml.load(f, Loader=yaml.FullLoader)
+        config_args = load_hyperpyyaml(f)
+
+    # create logger
+    # Define visulaize SummaryWriter instance
+    if isinstance(config_args['mixup_layer'], list):
+        mixup_layer_str = ''.join([str(s) for s in config_args['mixup_layer']])
+    else:
+        mixup_layer_str = str(config_args['mixup_layer'])
+
+    lambda_str = '_lamda' + str(args.lamda_beta)
+    config_args['lamda_beta'] = args.lamda_beta
+
+    mixup_str = '/clsaug_mani' + mixup_layer_str + lambda_str
+    if 'mix_ratio'in config_args and config_args['mix_ratio'] < 1:
+        mixup_str += '_mix_ratio_' + str(config_args['mix_ratio'])
+
+    if 'mix_type' in config_args and config_args['mix_type'] == 'addup':
+        mixup_str += 'addup'
+
+    check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
+    if torch.distributed.get_rank() == 0:
+        if not os.path.exists(check_path):
+            print('Making checkpath...')
+            os.makedirs(check_path)
+
+        writer = SummaryWriter(logdir=check_path, filename_suffix='SV')
+        sys.stdout = NewLogger(
+            os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
+
+    # Dataset
+    train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
+    train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
+        train_dir, valid_dir, train_extract_dir, config_args)
+        
     torch.distributed.barrier()
     check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
@@ -671,73 +372,11 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
-    ce_criterion = nn.CrossEntropyLoss()
-    if config_args['loss_type'] == 'soft':
-        xe_criterion = None
-    elif config_args['loss_type'] == 'asoft':
-        ce_criterion = None
-        xe_criterion = AngleSoftmaxLoss(
-            lambda_min=config_args['lambda_min'], lambda_max=config_args['lambda_max'])
-    elif config_args['loss_type'] == 'center':
-        xe_criterion = CenterLoss(
-            num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'variance':
-        xe_criterion = VarianceLoss(
-            num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'gaussian':
-        xe_criterion = GaussianLoss(
-            num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'coscenter':
-        xe_criterion = CenterCosLoss(
-            num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'mulcenter':
-        xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'],
-                                       num_center=config_args['num_center'])
-    elif config_args['loss_type'] == 'amsoft':
-        ce_criterion = None
-        xe_criterion = AMSoftmaxLoss(
-            margin=config_args['margin'], s=config_args['s'])
-
-    elif config_args['loss_type'] in ['arcsoft', 'subarc']:
-        ce_criterion = None
-        if 'class_weight' in config_args and config_args['class_weight'] == 'cnc1':
-            class_weight = torch.tensor(C.CNC1_WEIGHT)
-            if len(class_weight) != train_dir.num_spks:
-                class_weight = None
-        else:
-            class_weight = None
-
-        all_iteraion = 0 if 'all_iteraion' not in config_args else config_args['all_iteraion']
-        smooth_ratio = 0 if 'smooth_ratio' not in config_args else config_args['smooth_ratio']
-        xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                      all_iteraion=all_iteraion,
-                                      smooth_ratio=smooth_ratio,
-                                      class_weight=class_weight)
-    elif config_args['loss_type'] == 'minarcsoft':
-        ce_criterion = None
-        xe_criterion = MinArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                         all_iteraion=config_args['all_iteraion'])
-    elif config_args['loss_type'] == 'minarcsoft2':
-        ce_criterion = None
-        xe_criterion = MinArcSoftmaxLoss_v2(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                            all_iteraion=config_args['all_iteraion'])
-    elif config_args['loss_type'] == 'wasse':
-        xe_criterion = Wasserstein_Loss(source_cls=config_args['source_cls'])
-    elif config_args['loss_type'] == 'mmd':
-        xe_criterion = MMD_Loss()
-    elif config_args['loss_type'] == 'ring':
-        xe_criterion = RingLoss(ring=config_args['ring'])
-        args.alpha = 0.0
-    elif 'arcdist' in config_args['loss_type']:
-        ce_criterion = DistributeLoss(
-            stat_type=config_args['stat_type'], margin=config_args['m'])
-        xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                      all_iteraion=config_args['all_iteraion'])
-
+    model.loss = SpeakerLoss(config_args)
     model_para = [{'params': model.parameters()}]
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert config_args['lr_ratio'] > 0
-        model_para.append({'params': xe_criterion.parameters(
+        model_para.append({'params': model.loss.xe_criterion.parameters(
         ), 'lr': config_args['lr'] * config_args['lr_ratio']})
 
     if 'second_wd' in config_args and config_args['config_args'] > 0:
@@ -767,8 +406,15 @@ def main():
             model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
                                'weight_decay': init_wd})
 
+    opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
+                    'weight_decay': config_args['weight_decay'],
+                    'dampening': config_args['dampening'],
+                    'momentum': config_args['momentum'],
+                    'nesterov': config_args['nesterov']}
+
     optimizer = create_optimizer(
         model_para, config_args['optimizer'], **opt_kwargs)
+    scheduler = create_scheduler(optimizer, config_args)
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
 
@@ -791,8 +437,7 @@ def main():
                 new_state_dict = OrderedDict()
                 for k, v in filtered.items():
                     # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                    name = k[7:]
-                    new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
+                    new_state_dict[k[7:]] = v  # 新字典的key值对应的value为一一对应的值。
 
                 model.load_state_dict(new_state_dict)
             else:
@@ -811,31 +456,7 @@ def main():
                                'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
                   'w') as f:
             f.write('model: ' + str(model) + '\n')
-            f.write('CrossEntropy: ' + str(ce_criterion) + '\n')
-            f.write('Other Loss: ' + str(xe_criterion) + '\n')
             f.write('Optimizer: ' + str(optimizer) + '\n')
-
-    milestones = config_args['milestones']
-    if config_args['scheduler'] == 'exp':
-        gamma = np.power(config_args['base_lr'] / config_args['lr'],
-                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
-    elif config_args['scheduler'] == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(
-            optimizer, patience=config_args['patience'], min_lr=1e-5)
-    elif config_args['scheduler'] == 'cyclic':
-        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
-                                          max_lr=config_args['lr'],
-                                          step_size_up=config_args['cyclic_epoch'] * int(
-                                              np.ceil(len(train_dir) / config_args['batch_size'])),
-                                          cycle_momentum=cycle_momentum,
-                                          mode='triangular2')
-    else:
-        scheduler = lr_scheduler.MultiStepLR(
-            optimizer, milestones=milestones, gamma=0.1)
-
-    ce = [ce_criterion, xe_criterion]
 
     start = 1 + start_epoch
     if torch.distributed.get_rank() == 0:
@@ -843,81 +464,14 @@ def main():
     # start = 0
     end = start + config_args['epochs']
 
-    if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= config_args['random_chunk'][1]:
-        min_chunk_size = int(config_args['random_chunk'][0])
-        max_chunk_size = int(config_args['random_chunk'][1])
-        pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
-
-        train_sampler = torch.utils.data.distributed.DistributedSampler(
-            train_dir)
-        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
-                                                   collate_fn=PadCollate(dim=pad_dim,
-                                                                         num_batch=int(
-                                                                             np.ceil(
-                                                                                 len(train_dir) / config_args[
-                                                                                     'batch_size'])),
-                                                                         min_chunk_size=min_chunk_size,
-                                                                         max_chunk_size=max_chunk_size,
-                                                                         chisquare=False if 'chisquare' not in config_args else
-                                                                         config_args['chisquare'],
-                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0),
-                                                   shuffle=config_args['shuffle'], sampler=train_sampler, **kwargs)
-
-        valid_sampler = torch.utils.data.distributed.DistributedSampler(
-            valid_dir)
-        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
-                                                   collate_fn=PadCollate(dim=pad_dim, fix_len=True,
-                                                                         min_chunk_size=min_chunk_size,
-                                                                         max_chunk_size=max_chunk_size,
-                                                                         verbose=0),
-                                                   shuffle=False, sampler=valid_sampler, **kwargs)
-
-        extract_sampler = torch.utils.data.distributed.DistributedSampler(
-            extract_dir)
-        # sampler = extract_sampler,
-        extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
-                                                     sampler=extract_sampler, **extract_kwargs)
-
-    else:
-        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
-                                                   shuffle=config_args['shuffle'],
-                                                   **kwargs)
-        valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
-                                                   shuffle=False,
-                                                   **kwargs)
-        extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
-                                                     **extract_kwargs)
-
-    train_extract_sampler = torch.utils.data.distributed.DistributedSampler(
-        train_extract_dir)
-    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
-                                                       sampler=train_extract_sampler, **extract_kwargs)
-
     # if config_args['cuda']:
     if len(config_args['gpu_id']) > 1:
         print("Continue with gpu: %s ..." % str(args.local_rank))
-        # torch.distributed.init_process_group(backend="nccl",
-        #                                      init_method='file:///home/yangwenhao/lstm_speaker_verification/data/sharedfile',
-        #                                      rank=0,
-        #                                      world_size=1)
-        #
-        # try:
-        #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
-        #                                          world_size=1)
-        # except RuntimeError as r:
-        #     torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32454', rank=0,
-        #                                          world_size=1)
-        # if args.gain
-        # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
         model = DistributedDataParallel(
             model.cuda(), device_ids=[args.local_rank])
-
     else:
         model = model.cuda()
 
-    for i in range(len(ce)):
-        if ce[i] != None:
-            ce[i] = ce[i].cuda()
     try:
         print('Dropout is {}.'.format(model.dropout_p))
     except:
@@ -937,7 +491,7 @@ def main():
             train_sampler.set_epoch(epoch)
             valid_sampler.set_epoch(epoch)
             train_extract_sampler.set_epoch(epoch)
-            extract_sampler.set_epoch(epoch)
+            # extract_sampler.set_epoch(epoch)
 
             # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
@@ -957,13 +511,16 @@ def main():
             torch.distributed.barrier()
             if not torch.distributed.is_initialized():
                 break
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
-            valid_loss = valid_class(valid_loader, model, ce, epoch)
+            train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
+            if config_args['batch_shuffle']:
+                train_dir.__shuffle__()
+
+            valid_loss = valid_class(valid_loader, model, epoch, config_args, writer)
 
             if config_args['early_stopping'] or (
-                    epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
+                    epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):
                 valid_test_dict = valid_test(
-                    train_extract_loader, model, epoch, xvector_dir)
+                    train_extract_loader, model, epoch, xvector_dir, config_args, writer)
             else:
                 valid_test_dict = {}
 
@@ -988,7 +545,7 @@ def main():
             #     flag_tensor += 1
 
             if torch.distributed.get_rank() == 0 and (
-                    epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (
+                    epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch):
 
                 # if (epoch == 1 or epoch != (end - 2)) and (
@@ -999,17 +556,17 @@ def main():
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch, 'state_dict': model_state_dict,
-                            'criterion': ce}, this_check_path)
+                            }, this_check_path)
 
                 # valid_test(train_extract_loader, model, epoch, xvector_dir)
                 # test(extract_loader, model, epoch, xvector_dir)
 
-                if config_args['early_stopping']:
-                    pass
+                # if config_args['early_stopping']:
+                #     pass
                 # elif early_stopping_scheduler.best_epoch == epoch or (
                 #         args.early_stopping == False and epoch % args.test_interval == 1):
-                elif epoch % config_args['test_interval'] == 1:
-                    test(extract_loader, model, epoch, xvector_dir)
+                # elif epoch % config_args['test_interval'] == 1:
+                #     test(extract_loader, model, epoch, xvector_dir)
 
                 if early_stopping_scheduler.early_stop:
                     print('Best Epoch is %d:' %

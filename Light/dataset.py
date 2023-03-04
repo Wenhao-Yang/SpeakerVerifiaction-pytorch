@@ -47,12 +47,12 @@ def SubDatasets(config_args):
     train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                            transform=transform, batch_size=config_args['batch_size'],
                            random_chunk=config_args['random_chunk'],
-                           #    verbose=1 if torch.distributed.get_rank() == 0 else 0,
+                           verbose=1 if torch.distributed.get_rank() == 0 else 0,
                            domain=return_domain)
 
     valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                            transform=transform,
-                           #    verbose=1 if torch.distributed.get_rank() == 0 else 0
+                           verbose=1 if torch.distributed.get_rank() == 0 else 0
                            )
 
     feat_type = 'kaldi'
@@ -94,8 +94,6 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                                          ),
                                                shuffle=config_args['shuffle'],  **kwargs)  # sampler=train_sampler,
 
-    # valid_sampler = torch.utils.data.distributed.DistributedSampler(
-    #     valid_dir)
     valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
                                                collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                      min_chunk_size=min_chunk_size,
@@ -104,13 +102,6 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                                      ),
                                                shuffle=False, **kwargs)  # , sampler=valid_sampler
 
-    # extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
-    # sampler = extract_sampler,
-    # extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
-    #                                                 sampler=extract_sampler, **extract_kwargs)
-
-    # train_extract_sampler = torch.utils.data.distributed.DistributedSampler(train_extract_dir)
-    # sampler=train_extract_sampler,
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
                                                        **extract_kwargs)
 

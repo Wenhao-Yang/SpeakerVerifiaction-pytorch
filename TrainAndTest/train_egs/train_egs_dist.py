@@ -35,8 +35,7 @@ import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torchvision.transforms as transforms
 from hyperpyyaml import load_hyperpyyaml
-from kaldi_io import read_mat, read_vec_flt
-from kaldiio import load_mat
+from kaldi_io import read_vec_flt
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.nn.parallel import DistributedDataParallel
@@ -44,25 +43,16 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 import torch.distributed as dist
 
-from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss, DistributeLoss, MMD_Loss
-from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
-    ArcSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset
 import Process_Data.constants as C
-from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput, PadCollate3d
 from TrainAndTest.common_func import create_classifier, create_optimizer, create_scheduler, create_model, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
 from logger import NewLogger
 # import pytorch_lightning as pl
 
 warnings.filterwarnings("ignore")
-
 
 try:
     torch._utils._rebuild_tensor_v2
@@ -73,12 +63,10 @@ except AttributeError:
         tensor.requires_grad = requires_grad
         tensor._backward_hooks = backward_hooks
         return tensor
-
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 # Training settings
 # args = args_parse('PyTorch Speaker Recognition: Classification')
-
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
 # os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
@@ -225,7 +213,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
 
-    if other_loss != 0:
+    if total_other_loss != 0:
         this_epoch_str += ' {} Loss: {:6f}'.format(
             config_args['loss_type'], total_other_loss / len(train_loader))
 
@@ -324,7 +312,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
                                      xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
 
-    kwargs = {'num_workers': args.nj, 'pin_memory': False} 
+    kwargs = {'num_workers': config_args['nj'], 'pin_memory': False} 
     verify_loader = torch.utils.data.DataLoader(
         verify_dir, batch_size=128, shuffle=False, **kwargs)
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
@@ -614,16 +602,16 @@ def main():
             if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
                 select_samples(train_loader, model, config_args, config_args['select_score'])
 
-            train(train_loader, model, ce, optimizer, epoch, scheduler)
+            train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             if config_args['batch_shuffle']:
                 train_dir.__shuffle__()
 
-            valid_loss = valid_class(valid_loader, model, epoch)
+            valid_loss = valid_class(valid_loader, model, epoch, config_args, writer)
 
             if config_args['early_stopping'] or (
                     epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):
                 valid_test_dict = valid_test(
-                    train_extract_loader, model, epoch, xvector_dir)
+                    train_extract_loader, model, epoch, xvector_dir, config_args, writer)
             else:
                 valid_test_dict = {}
 
