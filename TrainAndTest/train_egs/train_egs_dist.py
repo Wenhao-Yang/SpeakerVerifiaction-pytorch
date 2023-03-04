@@ -367,13 +367,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
 
-            if orth_err > 0:
-                epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
+            if other_loss != 0:
+                epoch_str += ' Other Loss: {:.4f}'.format(other_loss)
 
-            if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
-                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
-            if 'arcdist' in config_args['loss_type']:
-                epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
             epoch_str += ' Avg Loss: {:.4f}'.format(
                 total_loss / (batch_idx + 1))
 

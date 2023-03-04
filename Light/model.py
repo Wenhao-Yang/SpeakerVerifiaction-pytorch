@@ -18,8 +18,8 @@ from pytorch_lightning import LightningModule
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss, DistributeLoss, MMD_Loss
-from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSoftmaxLoss, \
+    VarianceLoss, DistributeLoss, MMD_Loss, aDCFLoss
+from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSoftmaxLoss, DAMSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
 import Process_Data.constants as C
 
@@ -33,9 +33,14 @@ class SpeakerLoss(nn.Module):
         super().__init__()
 
         self.config_args = config_args
+        self.lncl = True if 'lncl' in config_args and config_args['lncl'] == True else False
         iteration = 0
 
         ce_criterion = nn.CrossEntropyLoss()
+        loss_type = set(['soft', 'asoft', 'center', 'variance', 'gaussian', 'coscenter', 'mulcenter',
+                         'amsoft', 'subam',  'damsoft', 'subdam',
+                         'arcsoft', 'subarc', 'minarcsoft', 'minarcsoft2', 'wasse', 'mmd', 'ring', 'arcdist',
+                         'aDCF', ])
         if config_args['loss_type'] == 'soft':
             xe_criterion = None
         elif config_args['loss_type'] == 'asoft':
@@ -59,10 +64,19 @@ class SpeakerLoss(nn.Module):
             xe_criterion = MultiCenterLoss(num_classes=config_args['num_classes'], feat_dim=config_args['embedding_size'],
                                            num_center=config_args['num_center'])
 
-        elif config_args['loss_type'] == 'amsoft':
+        elif config_args['loss_type'] in ['amsoft', 'subam']:
             ce_criterion = None
             xe_criterion = AMSoftmaxLoss(
                 margin=config_args['margin'], s=config_args['s'])
+        elif config_args['loss_type'] in ['damsoft', 'subdam']:
+            ce_criterion = None
+            xe_criterion = DAMSoftmaxLoss(
+                margin=config_args['margin'], s=config_args['s'])
+        elif config_args['loss_type'] in ['aDCF']:
+            ce_criterion = None
+            xe_criterion = aDCFLoss(alpha=config_args['s'], beta=(
+                1 - config_args['smooth_ratio']), gamma=config_args['smooth_ratio'], omega=config_args['margin'])
+
         elif config_args['loss_type'] in ['arcsoft', 'subarc']:
             ce_criterion = None
             if 'class_weight' in config_args and config_args['class_weight'] == 'cnc1':
@@ -100,19 +114,19 @@ class SpeakerLoss(nn.Module):
         elif config_args['loss_type'] == 'ring':
             xe_criterion = RingLoss(ring=config_args['ring'])
             # args.alpha = 0.0
-
         elif 'arcdist' in config_args['loss_type']:
             ce_criterion = DistributeLoss(
                 stat_type=config_args['stat_type'], margin=config_args['m'])
             xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
                                           all_iteraion=0 if 'all_iteraion' not in config_args else config_args['all_iteraion'])
-
+        self.softmax = nn.Softmax(dim=1)
         self.ce_criterion = ce_criterion
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']
 
-    def forward(self, classfier, feats, label, batch_weight=None):
+    def forward(self, classfier, feats, label, batch_weight=None, epoch=0):
         config_args = self.config_args
+        other_loss = 0.
 
         if config_args['loss_type'] in ['soft', 'asoft']:
             loss = self.ce_criterion(classfier, label)
@@ -120,14 +134,14 @@ class SpeakerLoss(nn.Module):
         elif config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
             loss_cent = self.ce_criterion(classfier, label)
             loss_xent = self.loss_ratio * self.xe_criterion(feats, label)
-            other_loss += loss_xent
+            other_loss += float(loss_xent)
 
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] == 'ring':
             loss_cent = self.ce_criterion(classfier, label)
-            loss_xent = self.loss_ratio * xe_criterion(feats)
+            loss_xent = self.loss_ratio * self.xe_criterion(feats)
 
-            other_loss += loss_xent
+            other_loss += float(loss_xent)
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
             loss = self.xe_criterion(classfier, label)
@@ -148,10 +162,30 @@ class SpeakerLoss(nn.Module):
                 loss_xent = loss_xent.mean()
                 self.xe_criterion.ce.reduction = 'mean'
 
-            other_loss += loss_cent
+            other_loss += float(loss_xent)
             loss = loss_xent + loss_cent
 
-        return loss
+        if self.lncl:
+
+            predicted_labels = self.softmax(classfier.clone())
+            predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+
+            if config_args['loss_type'] in ['amsoft', 'damsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2',
+                                            'aDCF', 'subarc', 'arcdist']:
+                predict_loss = self.xe_criterion(
+                    classfier, predicted_one_labels)
+            else:
+                predict_loss = self.ce_criterion(
+                    classfier, predicted_one_labels)
+
+            alpha_t = np.clip(
+                config_args['alpha_t'] * (epoch / config_args['epochs']) ** 2, a_min=0, a_max=1)
+            mp = predicted_labels.mean(dim=0) * predicted_labels.shape[1]
+
+            loss = (1 - alpha_t) * loss + alpha_t * predict_loss + \
+                config_args['beta'] * torch.mean(-torch.log(mp))
+
+        return loss, other_loss
 
 
 def get_trials(trials):
@@ -195,7 +229,7 @@ class SpeakerModule(LightningModule):
         data, label = batch
 
         logits, embeddings = self.encoder(data)
-        loss = self.loss(logits, embeddings, label)
+        loss, other_loss = self.loss(logits, embeddings, label)
 
         predicted_one_labels = self.softmax(logits)
         predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
