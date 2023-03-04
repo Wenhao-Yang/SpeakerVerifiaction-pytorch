@@ -124,7 +124,7 @@ lambda_str = '_lamda' + str(args.lamda_beta)
 mixup_str = '/mani' + mixup_layer_str + lambda_str
 
 if 'mix_ratio'in config_args and config_args['mix_ratio'] < 1:
-    mixup_str += 'mix_ratio_' + str(config_args['mix_ratio'])
+    mixup_str += '_mix_ratio_' + str(config_args['mix_ratio'])
 
 check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
@@ -278,6 +278,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
             loss = xe_criterion(classfier, label, half_data, lamda_beta)
+
         elif 'arcdist' in config_args['loss_type']:
             # pdb.set_trace()
             loss_cent = config_args['loss_ratio'] * \
@@ -308,9 +309,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         predicted_one_labels = predicted_one_labels.cpu()
         label = label.cpu()
+
         if half_data == 0:
             minibatch_correct = predicted_one_labels.eq(label).cpu().sum().float()
-
         elif config_args['mixup_type'] == 'manifold':
             # print(predicted_one_labels.shape, label.shape)
             minibatch_correct = predicted_one_labels[:half_data].eq(
