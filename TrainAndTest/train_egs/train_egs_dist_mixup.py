@@ -79,7 +79,6 @@ parser = argparse.ArgumentParser(
     description='PyTorch ( Distributed ) Speaker Recognition: Classification')
 parser.add_argument('--local_rank', default=-1, type=int,
                     help='node rank for distributed training')
-
 parser.add_argument('--train-config', default='', type=str,
                     help='node rank for distributed training')
 parser.add_argument('--seed', type=int, default=123456,
@@ -223,24 +222,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
 
-        lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
-        half_data = int(len(data) / 2)
+        if 'mix_ratio'in config_args and np.random.uniform(0,1) <= config_args['mix_ratio']:
+            lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
+            half_data = int(len(data) / 2)
 
-        if config_args['mixup_type'] != 'manifold':
-            rand_idx = torch.randperm(half_data)
-            mix_data = lamda_beta * data[half_data:] + \
-                (1 - lamda_beta) * data[half_data:][rand_idx]
-            data = torch.cat([data[:half_data], mix_data], dim=0)
-            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+            if config_args['mixup_type'] != 'manifold':
+                rand_idx = torch.randperm(half_data)
+                mix_data = lamda_beta * data[half_data:] + \
+                    (1 - lamda_beta) * data[half_data:][rand_idx]
+                data = torch.cat([data[:half_data], mix_data], dim=0)
+                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+            else:
+                rand_idx = torch.randperm(half_data)
+                # mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
+                # data = torch.cat([data[:half_data], mix_data], dim=0)
+                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
         else:
-            # rand_idx = torch.randperm(int(half_data / 2))
-            # label = torch.cat(
-            #     [label, label[half_data:(half_data + len(rand_idx))][rand_idx], label[-len(rand_idx):][rand_idx]],
-            #     dim=0)
-            rand_idx = torch.randperm(half_data)
-            # mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
-            # data = torch.cat([data[:half_data], mix_data], dim=0)
-            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+            lamda_beta = 0
+            rand_idx = None
+            half_data = 0
 
         if torch.cuda.is_available():
             # label = label.cuda(non_blocking=True)
@@ -252,7 +252,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # pdb.set_trace()
         classfier, feats = model(data, proser=rand_idx, lamda_beta=lamda_beta,
                                  mixup_alpha=config_args['mixup_layer'])
-        # cos_theta, phi_theta = classfier
+
         classfier_label = classfier
         # print('max logit is ', classfier_label.max())
 
