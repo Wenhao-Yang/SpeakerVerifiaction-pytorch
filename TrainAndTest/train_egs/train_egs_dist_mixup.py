@@ -407,7 +407,7 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
-    model.module.loss = SpeakerLoss(config_args)
+    model.loss = SpeakerLoss(config_args)
     model.loss.xe_criterion = MixupLoss(model.loss.xe_criterion, gamma=config_args['proser_gamma'])
 
     model_para = [{'params': model.parameters()}]
