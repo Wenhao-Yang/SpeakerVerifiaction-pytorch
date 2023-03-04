@@ -753,7 +753,7 @@ class AttentionTransferLoss(nn.Module):
         return loss
 
 
-class TripletMarginLoss(Function):
+class TripletMarginLoss(nn.Module):
     """Triplet loss function.
     """
     def __init__(self, margin):
@@ -769,7 +769,7 @@ class TripletMarginLoss(Function):
         loss = torch.mean(dist_hinge)
         return loss
 
-class TripletMarginCosLoss(Function):
+class TripletMarginCosLoss(nn.Module):
     """Triplet loss function.
     """
     def __init__(self, margin):
