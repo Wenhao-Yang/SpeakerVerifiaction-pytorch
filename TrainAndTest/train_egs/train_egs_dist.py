@@ -79,18 +79,6 @@ except AttributeError:
 # Training settings
 # args = args_parse('PyTorch Speaker Recognition: Classification')
 
-parser = argparse.ArgumentParser(
-    description='PyTorch ( Distributed ) Speaker Recognition: Classification')
-parser.add_argument('--local_rank', default=-1, type=int,
-                    help='node rank for distributed training')
-
-parser.add_argument('--train-config', default='', type=str,
-                    help='node rank for distributed training')
-parser.add_argument('--seed', type=int, default=123456,
-                    help='random seed (default: 0)')
-
-args = parser.parse_args()
-
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
 # os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
@@ -367,6 +355,17 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
             'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
 
 def main():
+    parser = argparse.ArgumentParser(
+    description='PyTorch ( Distributed ) Speaker Recognition: Classification')
+    parser.add_argument('--local_rank', default=-1, type=int,
+                        help='node rank for distributed training')
+
+    parser.add_argument('--train-config', default='', type=str,
+                        help='node rank for distributed training')
+    parser.add_argument('--seed', type=int, default=123456,
+                        help='random seed (default: 0)')
+
+    args = parser.parse_args()
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
     # print the experiment configuration

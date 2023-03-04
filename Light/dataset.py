@@ -139,9 +139,10 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                                          max_chunk_size=max_chunk_size,
                                                                          chisquare=False if 'chisquare' not in config_args else
                                                                          config_args['chisquare'],
-                                                                         #  verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0
                                                                          ),
-                                               shuffle=config_args['shuffle'],  **kwargs)  # sampler=train_sampler,
+                                               sampler=train_sampler,
+                                               shuffle=config_args['shuffle'],  **kwargs)  # 
 
     valid_sampler = torch.utils.data.distributed.DistributedSampler(
         valid_dir)
@@ -149,9 +150,10 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                      min_chunk_size=min_chunk_size,
                                                                      max_chunk_size=max_chunk_size,
-                                                                     #  verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                     verbose=1 if torch.distributed.get_rank() == 0 else 0
                                                                      ),
-                                               shuffle=False, **kwargs)  # , sampler=valid_sampler
+                                               sampler=valid_sampler,
+                                               shuffle=False, **kwargs)  # , 
 
     # extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
     # sampler = extract_sampler,
@@ -159,10 +161,10 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
     #                                                 sampler=extract_sampler, **extract_kwargs)
 
     train_extract_sampler = torch.utils.data.distributed.DistributedSampler(train_extract_dir)
-    # sampler=train_extract_sampler,
+    # 
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
-                                                       **extract_kwargs)
+                                                       sampler=train_extract_sampler, **extract_kwargs)
 
-    return train_loader, valid_loader, train_extract_loader
+    return train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler
 
 
