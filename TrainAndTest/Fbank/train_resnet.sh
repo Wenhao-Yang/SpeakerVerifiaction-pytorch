@@ -713,9 +713,8 @@ if [ $stage -le 101 ]; then
   kernel=5,5
 
   alpha=0
-  input_norm=Mean
+  input_norm=Mean input_dim=40
   scheduler=rop optimizer=sgd
-  input_dim=40
   batch_size=512
   fast=none1
   mask_layer=baseline weight=vox2_rcf scale=0.2

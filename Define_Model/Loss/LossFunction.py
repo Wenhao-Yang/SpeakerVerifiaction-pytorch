@@ -751,3 +751,37 @@ class AttentionTransferLoss(nn.Module):
                          self.normalize(t_map.mean(dim=2, keepdim=True))).pow(2).mean()
 
         return loss
+
+
+class TripletMarginLoss(Function):
+    """Triplet loss function.
+    """
+    def __init__(self, margin):
+        super(TripletMarginLoss, self).__init__()
+        self.margin = margin
+        self.pdist = PairwiseDistance(2)  # norm 2
+
+    def forward(self, anchor, positive, negative):
+        d_p = self.pdist.forward(anchor, positive)
+        d_n = self.pdist.forward(anchor, negative)
+
+        dist_hinge = torch.clamp(self.margin + d_p - d_n, min=0.0)
+        loss = torch.mean(dist_hinge)
+        return loss
+
+class TripletMarginCosLoss(Function):
+    """Triplet loss function.
+    """
+    def __init__(self, margin):
+        super(TripletMarginCosLoss, self).__init__()
+        self.margin = margin
+        self.pdist = CosineSimilarity(dim=1, eps=1e-6)  # norm 2
+
+    def forward(self, anchor, positive, negative):
+        d_p = self.pdist.forward(anchor, positive)
+        d_n = self.pdist.forward(anchor, negative)
+
+        dist_hinge = torch.clamp(self.margin - d_p + d_n, min=0.0)
+        # loss = torch.sum(dist_hinge)
+        loss = torch.mean(dist_hinge)
+        return loss

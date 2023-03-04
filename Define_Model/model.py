@@ -60,13 +60,15 @@ def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: b
     return filter_layer
 
 
-def get_input_norm(input_norm: str):
+def get_input_norm(input_norm: str, input_dim=None):
     if input_norm == 'Mean':
         inst_layer = Mean_Norm()
     elif input_norm == 'SMean':
         inst_layer = SlideMean_Norm()
     elif input_norm == 'Mstd':
         inst_layer = MeanStd_Norm()
+    elif input_norm == 'inst':
+        inst_layer = Inst_Norm(dim=input_dim)
     else:
         inst_layer = None
 
@@ -110,53 +112,6 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = None
 
     return mask_layer
-
-
-class PairwiseDistance(Function):
-    def __init__(self, p):
-        super(PairwiseDistance, self)
-        self.norm = p
-
-    def forward(self, x1, x2):
-        assert x1.size() == x2.size()
-        eps = 1e-4 / x1.size(1)
-        diff = torch.abs(x1 - x2)
-        # The distance will be (Sum(|x1-x2|**p)+eps)**1/p
-        out = torch.pow(diff, self.norm).sum(dim=1)
-        return torch.pow(out + eps, 1. / self.norm)
-
-class TripletMarginLoss(Function):
-    """Triplet loss function.
-    """
-    def __init__(self, margin):
-        super(TripletMarginLoss, self).__init__()
-        self.margin = margin
-        self.pdist = PairwiseDistance(2)  # norm 2
-
-    def forward(self, anchor, positive, negative):
-        d_p = self.pdist.forward(anchor, positive)
-        d_n = self.pdist.forward(anchor, negative)
-
-        dist_hinge = torch.clamp(self.margin + d_p - d_n, min=0.0)
-        loss = torch.mean(dist_hinge)
-        return loss
-
-class TripletMarginCosLoss(Function):
-    """Triplet loss function.
-    """
-    def __init__(self, margin):
-        super(TripletMarginCosLoss, self).__init__()
-        self.margin = margin
-        self.pdist = CosineSimilarity(dim=1, eps=1e-6)  # norm 2
-
-    def forward(self, anchor, positive, negative):
-        d_p = self.pdist.forward(anchor, positive)
-        d_n = self.pdist.forward(anchor, negative)
-
-        dist_hinge = torch.clamp(self.margin - d_p + d_n, min=0.0)
-        # loss = torch.sum(dist_hinge)
-        loss = torch.mean(dist_hinge)
-        return loss
 
 
 class ReLU20(nn.Hardtanh):
@@ -772,6 +727,7 @@ class SuperficialResCNN(nn.Module):  # 定义resnet
         return logit, x  # 返回倒数第二层
 
 
+# convert dict attribute to object attribute
 class AttrDict(dict):
     """Dict as attribute trick.
     """

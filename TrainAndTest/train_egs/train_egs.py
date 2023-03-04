@@ -55,7 +55,6 @@ from logger import NewLogger
 
 warnings.filterwarnings("ignore")
 
-
 try:
     torch._utils._rebuild_tensor_v2
 except AttributeError:
@@ -90,7 +89,7 @@ if args.cuda:
 
 # create logger
 # Define visulaize SummaryWriter instance
-writer = SummaryWriter(logdir=args.check_path, filename_suffix='_first')
+writer = SummaryWriter(logdir=args.check_path)
 sys.stdout = NewLogger(osp.join(args.check_path, 'log.%s.txt' %
                        time.strftime("%Y.%m.%d", time.localtime())))
 
@@ -157,8 +156,8 @@ extract_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_V, feat
                                   trials_file=args.trials, filer_loader=file_loader)
 
 
-def train(train_loader, model, ce, optimizer, epoch, scheduler):
-    # switch to evaluate mode
+def train(train_loader, model, ce, optimizer, epoch, scheduler, args):
+    # switch to train mode
     model.train()
 
     correct = 0.
@@ -182,9 +181,8 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
-
         classfier, feats = model(data)
-        # cos_theta, phi_theta = classfier
+
         classfier_label = classfier.clone()
         # print('max logit is ', classfier_label.max())
 
