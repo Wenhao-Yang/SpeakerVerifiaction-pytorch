@@ -267,17 +267,20 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
     all_total_batch = [None for _ in range(torch.distributed.get_world_size())]
     all_total_datasize = [None for _ in range(
         torch.distributed.get_world_size())]
+    all_other_loss = [None for _ in range(torch.distributed.get_world_size())]
 
     torch.distributed.all_gather_object(all_total_loss, total_loss)
     torch.distributed.all_gather_object(all_correct, correct)
     torch.distributed.all_gather_object(all_total_batch, total_batch)
     torch.distributed.all_gather_object(all_total_datasize, total_datasize)
+    torch.distributed.all_gather_object(all_other_loss, total_other_loss)
 
     # torch.distributed.all_reduce()
     total_loss = np.sum(all_total_loss)
     correct = np.sum(all_correct)
     total_batch = np.sum(all_total_batch)
     total_datasize = np.sum(all_total_datasize)
+    all_other_loss = np.sum(all_other_loss)
 
     valid_loss = total_loss / total_batch
     valid_accuracy = 100. * correct / total_datasize
@@ -290,9 +293,9 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
         this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(
             valid_accuracy, valid_loss)
 
-        if all_total_loss != 0:
+        if all_other_loss != 0:
             this_epoch_str += ' {} Loss: {:6f}'.format(
-                config_args['loss_type'], all_total_loss / len(valid_loader))
+                config_args['loss_type'], all_other_loss / len(valid_loader))
 
         this_epoch_str += '.\33[0m'
         print(this_epoch_str)
