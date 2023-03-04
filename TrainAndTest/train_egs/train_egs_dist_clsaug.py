@@ -31,6 +31,7 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 from Light.dataset import Sampler_Loaders, SubDatasets
+from Light.model import SpeakerLoss
 import torchvision.transforms as transforms
 from hyperpyyaml import load_hyperpyyaml
 from kaldi_io import read_mat, read_vec_flt
@@ -78,20 +79,6 @@ except AttributeError:
 # Training settings
 # args = args_parse('PyTorch Speaker Recognition: Classification')
 
-parser = argparse.ArgumentParser(
-    description='PyTorch ( Distributed ) Speaker Recognition: Classification')
-parser.add_argument('--local_rank', default=-1, type=int,
-                    help='node rank for distributed training')
-
-parser.add_argument('--train-config', default='', type=str,
-                    help='node rank for distributed training')
-parser.add_argument('--seed', type=int, default=123456,
-                    help='random seed (default: 0)')
-parser.add_argument('--lamda-beta', type=float, default=2.0,
-                    help='random seed (default: 0)')
-
-args = parser.parse_args()
-
 # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
 # order to prevent any memory allocation on unused GPUs
 # os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
@@ -101,11 +88,23 @@ args = parser.parse_args()
 # args.cuda = not args.no_cuda and torch.cuda.is_available()
 # setting seeds
 
-
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
     # print the experiment configuration
+    parser = argparse.ArgumentParser(
+    description='PyTorch ( Distributed ) Speaker Recognition: Classification')
+    parser.add_argument('--local_rank', default=-1, type=int,
+                        help='node rank for distributed training')
+
+    parser.add_argument('--train-config', default='', type=str,
+                        help='node rank for distributed training')
+    parser.add_argument('--seed', type=int, default=123456,
+                        help='random seed (default: 0)')
+    parser.add_argument('--lamda-beta', type=float, default=2.0,
+                        help='random seed (default: 0)')
+
+    args = parser.parse_args()
 
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
@@ -233,74 +232,13 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
-    ce_criterion = nn.CrossEntropyLoss()
-    if config_args['loss_type'] == 'soft':
-        xe_criterion = None
-    elif config_args['loss_type'] == 'asoft':
-        ce_criterion = None
-        xe_criterion = AngleSoftmaxLoss(
-            lambda_min=config_args['lambda_min'], lambda_max=config_args['lambda_max'])
-    elif config_args['loss_type'] == 'center':
-        xe_criterion = CenterLoss(
-            num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'variance':
-        xe_criterion = VarianceLoss(
-            num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'gaussian':
-        xe_criterion = GaussianLoss(
-            num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'coscenter':
-        xe_criterion = CenterCosLoss(
-            num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'])
-    elif config_args['loss_type'] == 'mulcenter':
-        xe_criterion = MultiCenterLoss(num_classes=train_dir.num_spks, feat_dim=config_args['embedding_size'],
-                                       num_center=config_args['num_center'])
-    elif config_args['loss_type'] == 'amsoft':
-        ce_criterion = None
-        xe_criterion = AMSoftmaxLoss(
-            margin=config_args['margin'], s=config_args['s'])
-
-    elif config_args['loss_type'] in ['arcsoft', 'subarc']:
-        ce_criterion = None
-        if 'class_weight' in config_args and config_args['class_weight'] == 'cnc1':
-            class_weight = torch.tensor(C.CNC1_WEIGHT)
-            # if len(class_weight) != train_dir.num_spks:
-            if len(class_weight) != new_num_spks:
-                class_weight = None
-        else:
-            class_weight = None
-
-        all_iteraion = 0 if 'all_iteraion' not in config_args else config_args['all_iteraion']
-        smooth_ratio = 0 if 'smooth_ratio' not in config_args else config_args['smooth_ratio']
-        xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                      all_iteraion=all_iteraion,
-                                      smooth_ratio=smooth_ratio,
-                                      class_weight=class_weight)
-    elif config_args['loss_type'] == 'minarcsoft':
-        ce_criterion = None
-        xe_criterion = MinArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                         all_iteraion=config_args['all_iteraion'])
-    elif config_args['loss_type'] == 'minarcsoft2':
-        ce_criterion = None
-        xe_criterion = MinArcSoftmaxLoss_v2(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                            all_iteraion=config_args['all_iteraion'])
-    elif config_args['loss_type'] == 'wasse':
-        xe_criterion = Wasserstein_Loss(source_cls=config_args['source_cls'])
-    elif config_args['loss_type'] == 'mmd':
-        xe_criterion = MMD_Loss()
-    elif config_args['loss_type'] == 'ring':
-        xe_criterion = RingLoss(ring=config_args['ring'])
-        args.alpha = 0.0
-    elif 'arcdist' in config_args['loss_type']:
-        ce_criterion = DistributeLoss(
-            stat_type=config_args['stat_type'], margin=config_args['m'])
-        xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                      all_iteraion=config_args['all_iteraion'])
+    model.loss = SpeakerLoss(config_args)
+    model.loss.xe_criterion = MixupLoss(model.loss.xe_criterion, gamma=config_args['proser_gamma'])
 
     model_para = [{'params': model.parameters()}]
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert config_args['lr_ratio'] > 0
-        model_para.append({'params': xe_criterion.parameters(
+        model_para.append({'params': model.loss.xe_criterion.parameters(
         ), 'lr': config_args['lr'] * config_args['lr_ratio']})
 
     if 'second_wd' in config_args and config_args['config_args'] > 0:

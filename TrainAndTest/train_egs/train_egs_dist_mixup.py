@@ -229,8 +229,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                                                                           100. * batch_idx / len(train_loader))
 
             if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
-                    config_args['random_chunk'][
-                        1]:
+                    config_args['random_chunk'][1]:
                 batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' else data.shape[-2]
                 epoch_str += ' Batch Length: {:>3d}'.format(batch_length)
 
