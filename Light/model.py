@@ -125,7 +125,7 @@ class SpeakerLoss(nn.Module):
         self.loss_ratio = config_args['loss_ratio']
 
     def forward(self, classfier, feats, label, batch_weight=None, epoch=0,
-                half_data=None, lamda_beta=0):
+                half_data=0, lamda_beta=0):
 
         config_args = self.config_args
         other_loss = 0.
