@@ -124,7 +124,9 @@ class SpeakerLoss(nn.Module):
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']
 
-    def forward(self, classfier, feats, label, batch_weight=None, epoch=0):
+    def forward(self, classfier, feats, label, batch_weight=None, epoch=0,
+                half_data=None, lamda_beta=0):
+
         config_args = self.config_args
         other_loss = 0.
 
@@ -144,7 +146,7 @@ class SpeakerLoss(nn.Module):
             other_loss += float(loss_xent)
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
-            loss = self.xe_criterion(classfier, label)
+            loss = self.xe_criterion(classfier, label, half_data=half_data, lamda_beta=lamda_beta)
 
             if batch_weight != None:
                 loss = loss * batch_weight

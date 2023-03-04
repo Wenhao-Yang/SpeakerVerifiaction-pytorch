@@ -93,8 +93,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     total_other_loss = 0.
 
     # ce_criterion, xe_criterion = ce
-    model.loss.xe_criterion = MixupLoss(model.loss.xe_criterion, gamma=config_args['proser_gamma'])
-
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
     # lambda_ = (epoch / config_args['epochs']) ** 2
@@ -115,13 +113,25 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
             else:
                 rand_idx = torch.randperm(half_data)
-                # mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
-                # data = torch.cat([data[:half_data], mix_data], dim=0)
-                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+                if 'index_list' not in config_args:
+                    label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+                else:
+                    half_label = label[half_data:]
+                    rand_label = half_label.clone()[rand_idx]
+                    relabel = []
+                    for x, y in zip(half_label, rand_label):
+                        if x == y:
+                            relabel.append(int(x))
+                        else:
+                            relabel.append(config_args['index_list']['%d_%d' % (x, y)])
+
+                    relabel = torch.LongTensor(relabel)
+                    label = torch.cat([label[:half_data], relabel], dim=0)
         else:
             lamda_beta = 0
             rand_idx = None
             half_data = 0
+
 
         if torch.cuda.is_available():
             # label = label.cuda(non_blocking=True)
@@ -143,7 +153,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         predicted_one_labels = predicted_one_labels.cpu()
         label = label.cpu()
         
-        if half_data == 0:
+        if half_data == 0 or 'index_list' in config_args:
             minibatch_correct = predicted_one_labels.eq(label).cpu().sum().float()
         elif config_args['mixup_type'] == 'manifold':
             # print(predicted_one_labels.shape, label.shape)
@@ -309,7 +319,31 @@ def main():
     train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
     train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
         train_dir, valid_dir, train_extract_dir, config_args)
-        
+    
+    if 'mix_class' in config_args and config_args['mix_class'] == True:
+        index_list = {}
+        idx = train_dir.num_spks
+        merge_spks = set([])
+
+        if 'mix_type' in config_args and config_args['mix_type'] == 'addup':
+            for i in range(train_dir.num_spks):
+                for j in range(train_dir.num_spks):
+                    if i != j:
+                        index_list['%d_%d' % (i, j)] = int(np.floor(idx))
+                        merge_spks.add(int(np.floor(idx)))
+                        idx += 0.2
+                idx = int(np.ceil(idx-0.2))
+        else:
+            for i in range(train_dir.num_spks):
+                for j in range(i+1, train_dir.num_spks):
+                    index_list['%d_%d' % (i, j)] = int(np.floor(idx))
+                    index_list['%d_%d' % (j, i)] = int(np.floor(idx))
+
+                    merge_spks.add(int(np.floor(idx)))
+                    idx += 0.2
+                idx = int(np.ceil(idx-0.2))
+        config_args['index_list'] = index_list
+
     torch.distributed.barrier()
     check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
 
@@ -373,6 +407,8 @@ def main():
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
     model.loss = SpeakerLoss(config_args)
+    model.loss.xe_criterion = MixupLoss(model.loss.xe_criterion, gamma=config_args['proser_gamma'])
+
     model_para = [{'params': model.parameters()}]
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert config_args['lr_ratio'] > 0

@@ -180,12 +180,6 @@ def main():
 
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time: \33[91m{}\33[0m.'.format(str(time.asctime())))
-        # opts = vars(config_args)
-        # keys = list(config_args.keys())
-        # keys.sort()
-        # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
-        # print('Parsed options: \n{ %s }' % (', '.join(options)))
-
         print('Number of Speakers: {} -> {}.\n'.format(train_dir.num_spks, new_num_spks))
         print('Testing with %s distance, ' %
               ('cos' if config_args['cos_sim'] else 'l2'))
