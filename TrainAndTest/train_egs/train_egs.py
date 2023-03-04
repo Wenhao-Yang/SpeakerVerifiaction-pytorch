@@ -280,8 +280,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, args, writer):
 
 def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     model.eval()
-
     model.loss.xe_criterion.ce.reduction = 'none'
+
+    if isinstance(args, dict):
+        args = AttrDict(args)
 
     score_dict = {}
     for i in range(train_dir.num_spks):

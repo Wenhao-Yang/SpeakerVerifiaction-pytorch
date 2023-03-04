@@ -115,3 +115,54 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                        **extract_kwargs)
 
     return train_loader, valid_loader, train_extract_loader
+
+
+def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
+    kwargs = {'num_workers': config_args['nj'],
+              'pin_memory': False}  # if args.cuda else {}
+    extract_kwargs = {'num_workers': 4,
+                      'pin_memory': False}  # if args.cuda else {}
+
+    min_chunk_size = int(config_args['random_chunk'][0])
+    max_chunk_size = int(config_args['random_chunk'][1])
+    pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
+
+    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dir)
+    return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
+    train_paddfunc = PadCollate3d if return_domain else PadCollate
+
+    train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
+                                               collate_fn=train_paddfunc(dim=pad_dim,
+                                                                         num_batch=int(
+                                                                             np.ceil(len(train_dir) / config_args['batch_size'])),
+                                                                         min_chunk_size=min_chunk_size,
+                                                                         max_chunk_size=max_chunk_size,
+                                                                         chisquare=False if 'chisquare' not in config_args else
+                                                                         config_args['chisquare'],
+                                                                         #  verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                         ),
+                                               shuffle=config_args['shuffle'],  **kwargs)  # sampler=train_sampler,
+
+    valid_sampler = torch.utils.data.distributed.DistributedSampler(
+        valid_dir)
+    valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=int(config_args['batch_size'] / 2),
+                                               collate_fn=PadCollate(dim=pad_dim, fix_len=True,
+                                                                     min_chunk_size=min_chunk_size,
+                                                                     max_chunk_size=max_chunk_size,
+                                                                     #  verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                     ),
+                                               shuffle=False, **kwargs)  # , sampler=valid_sampler
+
+    # extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
+    # sampler = extract_sampler,
+    # extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
+    #                                                 sampler=extract_sampler, **extract_kwargs)
+
+    train_extract_sampler = torch.utils.data.distributed.DistributedSampler(train_extract_dir)
+    # sampler=train_extract_sampler,
+    train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
+                                                       **extract_kwargs)
+
+    return train_loader, valid_loader, train_extract_loader
+
+
