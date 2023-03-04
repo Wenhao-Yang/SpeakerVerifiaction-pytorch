@@ -1,0 +1,101 @@
+# @Author: yangwenhao
+# @Contact: 874681044@qq.com
+# @Software: PyCharm
+# @File: cnc1_tdnn.yaml
+# @Time: 2022/4/21 00:33
+# @Overview:
+
+data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
+
+## Dataset
+datasets: cnceleb
+feat_type: klfb
+loss: arcsoft
+input_dim: 40
+feat: !ref fb<input_dim>
+subset: ""
+
+train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_tmp
+train_test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/test<subset>_<feat>
+train_trials: trials_4w
+valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/valid_<feat>_tmp
+num_valid: 2
+test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/test_<feat>
+trials: trials
+input_norm: Mean
+
+test_input: fix
+log_scale: False
+random_chunk: [200, 400]
+chunk_size: 300
+frame_shift: 300
+extract: True
+nj: 12
+shuffle: False
+feat_format: kaldi
+remove_vad: True
+
+### Training settings
+
+epochs: 60
+
+# optimizer
+optimizer: sgd
+lr_decay: 0
+weight_decay: 0.0005
+dampening: 0
+momentum: 0.9
+accu_steps: 1
+
+# Scheduler
+patience: 3
+milestones: [10, 20, 30, 40]
+scheduler: rop
+lr: 0.1
+base_lr: 0.00001
+cos_sim: True
+
+## model Setttings
+embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
+  input_dim: !ref <input_dim>
+  input_norm: !ref <input_norm>
+  channels: [512, 512, 512, 512, 1500]
+  encoder_type: "STAP"
+  embedding_size: !ref <embedding_size>
+  num_classes: 797
+  activation: leakyrelu
+
+classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
+  feat_dim: !ref <embedding_size>
+  num_classes: 797
+
+model: TDNN_v5
+kernel_size:
+alpha: 0
+embedding_size: 512
+batch_size: 128
+dropout_p: 0.0
+activation: leakyrelu
+channels: 512,512,512,512,1500
+encoder_type: STAP
+
+# loss
+loss_ratio: 1
+lr_ratio: 0
+loss_lambda: False
+loss_type: !ref <loss>
+margin: 0.2
+# m: 0.2
+s: 30
+# stat_type: margin1
+
+# Checkpoints
+loss_str: ""
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd5e4_var_tmp
+resume: !ref <check_path>/checkpoint_40.pth
+
+veri_pairs: 9600
+gpu_id: 0,1
+
+test_interval: 4
+log_interval: 10
