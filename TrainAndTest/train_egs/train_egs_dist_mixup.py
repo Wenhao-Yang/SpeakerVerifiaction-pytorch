@@ -313,6 +313,8 @@ def main():
         writer = SummaryWriter(logdir=check_path, filename_suffix='SV')
         sys.stdout = NewLogger(
             os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
+    else:
+        writer = None
 
     # Dataset
     train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
@@ -405,7 +407,7 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
-    model.loss = SpeakerLoss(config_args)
+    model.module.loss = SpeakerLoss(config_args)
     model.loss.xe_criterion = MixupLoss(model.loss.xe_criterion, gamma=config_args['proser_gamma'])
 
     model_para = [{'params': model.parameters()}]
