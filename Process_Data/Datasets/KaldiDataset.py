@@ -556,9 +556,11 @@ class KaldiExtractDataset(data.Dataset):
                 for line in all_cls:
                     # utt_path = line.split(' ')
                     utt_path = line.split()
+                    upath_idx = 11 if len(utt_path) > 2 else 1
+
                     uid = utt_path[0]
                     if uid in trials_utts:
-                        uid2feat[uid] = utt_path[-1]
+                        uid2feat[uid] = utt_path[-upath_idx]
 
         else:
             if verbose > 0:
@@ -571,6 +573,18 @@ class KaldiExtractDataset(data.Dataset):
                     utt_path = line.split()
                     uid = utt_path[0]
                     uid2feat[uid] = utt_path[-1]
+                    
+        uid2vad = {}
+        if vad_select:
+            if verbose > 0:
+                print("    Select voiced frames to extracting xvectors!")
+            assert os.path.exists(vad_scp), vad_scp
+            # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+            with open(vad_scp, 'r') as f:
+                for line in f.readlines():
+                    uid_vad = line.split()
+                    uid, vad_offset = uid_vad
+                    uid2vad[uid] = vad_offset
 
         # pdb.set_trace()
         utts = list(uid2feat.keys())
@@ -580,6 +594,7 @@ class KaldiExtractDataset(data.Dataset):
             print('==> There are {} utterances in Verifcation set to extract vectors.'.format(len(utts)))
 
         self.uid2feat = uid2feat
+        self.uid2vad = uid2vad
         self.transform = transform
         self.uids = utts
         self.file_loader = filer_loader
@@ -587,6 +602,11 @@ class KaldiExtractDataset(data.Dataset):
     def __getitem__(self, index):
         uid = self.uids[index]
         y = self.file_loader(self.uid2feat[uid])
+
+        if uid in self.uid2vad:
+            voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+            y = y[voice_idx]
+
         feature = self.transform(y)
 
         return feature, uid
@@ -698,12 +718,13 @@ class ScriptTrainDataset(data.Dataset):
         self.domain = domain
         self.rand_test = rand_test
         self.segment_len = segment_len
+        self.feat_type = feat_type
         self.sample_type = sample_type  # balance or instance
 
         feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
         utt2spk = dir + '/utt2spk'
-        utt2num_frames = dir + '/utt2num_frames'
+        utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         utt2dom = dir + '/utt2dom'
         vad_scp = dir + '/vad.scp'
 
@@ -728,28 +749,31 @@ class ScriptTrainDataset(data.Dataset):
                     uid2vad[uid] = vad_offset
 
         total_frames = 0
-        if os.path.exists(utt2num_frames):
-            with open(utt2num_frames, 'r') as f:
-                for l in f.readlines():
-                    uid, num_frames = l.split()
+        if self.sample_type != 'balance':
+            if os.path.exists(utt2num_frames):
+                with open(utt2num_frames, 'r') as f:
+                    for l in f.readlines():
+                        uid, num_frames = l.split()
+                        if uid in uid2vad:
+                            num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
+                        if feat_type == 'wav':
+                            num_frames = float(num_frames) * 16000
 
-                    if uid in uid2vad:
-                        num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
-                    else:
                         num_frames = int(num_frames)
-                    if num_frames >= min_frames:
-                        total_frames += num_frames
-                        this_numofseg = int(np.ceil(float(num_frames) / segment_len))
 
-                        for i in range(this_numofseg):
-                            end = min((i + 1) * segment_len, num_frames)
-                            start = min(end - segment_len, 0)
-                            base_utts.append((uid, start, end))
-                    else:
-                        invalid_uid.append(uid)
+                        if num_frames >= min_frames:
+                            total_frames += num_frames
+                            this_numofseg = int(np.ceil(float(num_frames) / segment_len))
 
-                # if int(num_frames) < 50:
-                #     invalid_uid.append(uid)
+                            for i in range(this_numofseg):
+                                end = min((i + 1) * segment_len, num_frames)
+                                start = min(end - segment_len, 0)
+                                base_utts.append((uid, start, end))
+                        else:
+                            invalid_uid.append(uid)
+
+                    # if int(num_frames) < 50:
+                    #     invalid_uid.append(uid)
         random.shuffle(base_utts)
         self.base_utts = base_utts
         if verbose > 0:
@@ -871,7 +895,12 @@ class ScriptTrainDataset(data.Dataset):
         self.loader = loader
         self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[-1]
         self.transform = transform
-        if samples_per_speaker == 0:
+
+        if sample_type == 'instance':
+            if verbose > 1:
+                print('    The number of sampling utterances is euqal to the number of total utterance.')
+
+        elif samples_per_speaker == 0:
             samples_per_speaker = np.power(2, np.ceil(np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
             if verbose > 1:
                 print(
@@ -917,7 +946,9 @@ class ScriptTrainDataset(data.Dataset):
                     if uid in self.uid2vad:
                         voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                         y = y[voice_idx]
-                        y = y[start:end]
+                        
+                    if self.feat_type == 'wav':
+                        y = y[:, start:end]
                     else:
                         y = y[start:end]
 
@@ -975,7 +1006,12 @@ class ScriptTrainDataset(data.Dataset):
         return feature, label
 
     def __len__(self):
-        return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
+        if self.sample_type == 'instance':
+            return len(self.base_utts)
+        # elif self.sample_type == 'half_balance':
+        #     return max(len(self.base_utts), self.samples_per_speaker * len(self.speakers))
+        else:
+            return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
 
 
 class ScriptValidDataset(data.Dataset):

@@ -381,6 +381,7 @@ def Make_MFCC(filename,
     return feats
 
 
+
 def conver_to_wav(filename, write_path, format='m4a'):
     """
     Convert other formats into wav.
@@ -420,7 +421,6 @@ def read_WaveInt(filename):
     # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
     # audio = audio.flatten()
     audio, sample_rate = sf.read(filename, dtype='int16')
-
     return audio.astype(np.float32).reshape(1, -1)
 
 def read_WaveFloat(filename):
@@ -432,8 +432,10 @@ def read_WaveFloat(filename):
     # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
     # audio = audio.flatten()
     audio, sample_rate = sf.read(filename, dtype='float32')
-
+    
     return audio.astype(np.float32).reshape(1, -1)
+
+
 
 def read_from_npy(filename):
     """
@@ -508,7 +510,6 @@ class ConcateInput(object):
     size: size of the exactly size or the smaller edge
     interpolation: Default: PIL.Image.BILINEAR
     """
-
     def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
 
         super(ConcateInput, self).__init__()
@@ -539,6 +540,42 @@ class ConcateInput(object):
             network_inputs = network_inputs[:, :, 1:]
 
         return torch.tensor(network_inputs.squeeze())
+
+
+class DownSample(object):
+    """Rescales the input PIL.Image to the given 'size'.
+    If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
+    If 'size' is a number, it will indicate the size of the smaller edge.
+    For example, if height > width, then image will be
+    rescaled to (size * height / width, size)
+    size: size of the exactly size or the smaller edge
+    interpolation: Default: PIL.Image.BILINEAR
+    """
+
+    def __init__(self, downsample=2):
+        super(DownSample, self).__init__()
+        self.downsample = downsample
+
+    def __call__(self, input):
+        """
+        Args:
+            pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
+
+        Returns:
+            Tensor: Converted image.
+        """
+        input_length = input.shape[-2]
+        start = np.random.randint(self.downsample)
+        idxs = np.arange(start=start, stop=input_length, step=self.downsample)
+
+        if len(input.shape) == 2:
+            input = input[idxs, :]
+        elif len(input.shape) == 3:
+            input = input[:, idxs, :]
+        elif len(input.shape) == 4:
+            input = input[:, :, idxs, :]
+
+        return input
 
 
 class ConcateNumInput(object):

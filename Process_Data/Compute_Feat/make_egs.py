@@ -22,47 +22,66 @@ import traceback
 from multiprocessing import Pool, Manager
 
 import kaldi_io
+import kaldiio
 import numpy as np
 import psutil
 import torch
 from kaldiio import WriteHelper
 from tqdm import tqdm
+import torchvision.transforms as transforms
 
 from Process_Data.Datasets.KaldiDataset import ScriptValidDataset, ScriptTrainDataset
 from Process_Data.Datasets.KaldiDataset import AugTrainDataset, AugValidDataset
 
 from Process_Data.audio_augment.common import RunCommand
-from Process_Data.audio_processing import ConcateNumInput, read_WaveFloat, read_WaveInt
+from Process_Data.audio_processing import ConcateNumInput, DownSample, read_WaveFloat, read_WaveInt
 from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
-parser.add_argument('--nj', type=int, default=8, metavar='E', help='number of jobs to make feats (default: 10)')
+parser.add_argument('--nj', type=int, default=8, metavar='E',
+                    help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-dir', type=str,
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--sets', nargs='+', default=[], help='number of jobs to make feats (default: 10)')
-parser.add_argument('--enhance', action='store_true', default=False, help='number of jobs to make feats (default: 10)')
-
-parser.add_argument('--domain', action='store_true', default=False, help='set domain in dataset')
-
-parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
-parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
-parser.add_argument('--feat-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp'],
+parser.add_argument('--sets', nargs='+', default=[],
                     help='number of jobs to make feats (default: 10)')
+parser.add_argument('--enhance', action='store_true', default=False,
+                    help='number of jobs to make feats (default: 10)')
+
+parser.add_argument('--domain', action='store_true',
+                    default=False, help='set domain in dataset')
+
+parser.add_argument('--out-dir', type=str, required=True,
+                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--out-set', type=str, default='dev_reverb',
+                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--feat-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp', 'wav'],
+                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--sample-type', type=str, choices=['instance', 'balance', 'half_balance'],
+                    default='half_balance', help='sample type for datasets')
 parser.add_argument('--out-format', type=str, choices=['kaldi', 'npy', 'kaldi_cmp'], default='kaldi_cmp',
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
-
-parser.add_argument('--feat-type', type=str, default='fbank', choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'klfb', 'klsp'],
+parser.add_argument('--downsample', type=int, default=1, metavar='D')
+parser.add_argument('--feat-type', type=str, default='fbank',
+                    choices=['pyfb', 'fbank', 'spectrogram',
+                             'mfcc', 'wav', 'klfb', 'klsp'],
                     help='number of jobs to make feats (default: 10)')
+parser.add_argument('--train', action='store_true',
+                    default=False, help='using Cosine similarity')
+parser.add_argument('--train', action='store_true',
+                    default=False, help='using Cosine similarity')
+
 parser.add_argument('--wav-type', type=str, default='float', choices=['int', 'float'],
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
-
-parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
+parser.add_argument('--vad-select', action='store_true',
+                    default=False, help='using Cosine similarity')
+parser.add_argument('--remove-vad', action='store_true',
+                    default=False, help='using Cosine similarity')
+parser.add_argument('--compress', action='store_true',
+                    default=False, help='using Cosine similarity')
 parser.add_argument('--input-per-spks', type=int, default=0, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
 parser.add_argument('--num-valid', type=int, default=2, metavar='IPFT',
@@ -163,7 +182,9 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                     key = ' '.join((str(comm[0]), str(comm[1])))
                 else:
                     key = str(comm[0])
-                feat = comm[-1].astype(np.float32).squeeze()
+                feat = comm[-1].astype(np.float32)
+                if len(feat.shape) > 2:
+                    feat = feat.squeeze()
 
                 if args.out_format == 'kaldi':
                     kaldi_io.write_mat(feat_ark_f, feat, key='')
@@ -173,7 +194,7 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
                 elif args.out_format == 'kaldi_cmp':
                     writer(str(key), feat)
 
-                elif args.feat_format == 'npy':
+                elif args.out_format == 'npy':
                     npy_path = os.path.join(feat_dir, '%s.npy' % key)
                     np.save(npy_path, feat)
                     feat_scp_f.write(key + ' ' + npy_path + '\n')
@@ -222,8 +243,6 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
     assert os.path.exists(new_feat_scp)
 
 
-transform = ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_vad)
-
 feat_type = 'kaldi'
 if args.feat_format == 'npy':
     file_loader = np.load
@@ -234,9 +253,19 @@ elif args.feat_format == 'wav':
     file_loader = read_WaveInt if args.wav_type == 'int' else read_WaveFloat
     feat_type = 'wav'
 
+transform = transforms.Compose([
+    ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_vad,
+                    feat_type=feat_type),
+])
+
+if args.downsample > 1:
+    transform.transforms.append(DownSample(downsample=args.downsample))
+
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                    transform=transform, num_valid=args.num_valid, domain=args.domain,
+                                   vad_select=args.vad_select, sample_type=args.sample_type,
+                                   feat_type=feat_type,
                                    segment_len=args.num_frames)
     # train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
     #                                transform=transform, num_valid=args.num_valid, domain=args.domain)
@@ -249,7 +278,7 @@ if not args.enhance:
 
 else:
     train_dir = AugTrainDataset(dir=args.data_dir, sets=args.sets, samples_per_speaker=args.input_per_spks,
-                                loader=file_loader,
+                                loader=file_loader, feat_type=feat_type,
                                 transform=transform, num_valid=args.num_valid, domain=args.domain)
     # train_dir = LoadScriptDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
     #                                transform=transform, num_valid=args.num_valid, domain=args.domain)
@@ -326,7 +355,7 @@ if __name__ == "__main__":
 
         random.seed(args.seed)
         random.shuffle(utts)
-        for i in tqdm(utts):
+        for i in tqdm(utts, ncols=100):
             idx_queue.put(i)
 
         num_utt = len(utts)
@@ -344,7 +373,8 @@ if __name__ == "__main__":
             if not os.path.exists(ark_dir):
                 os.makedirs(ark_dir)
 
-            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, train_dir, idx_queue, task_queue))
+            pool.apply_async(PrepareEgProcess, args=(
+                lock_i, lock_t, train_dir, idx_queue, task_queue))
                 # (lock_i, lock_t, train_dir, idx_queue, t_queue)
             if (i + 1) % 2 == 1:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
@@ -355,7 +385,7 @@ if __name__ == "__main__":
 
         # valid set
         num_utt = len(valid_dir)
-        for i in tqdm(range(len(valid_dir))):
+        for i in tqdm(range(len(valid_dir)), ncols=60):
             idx_queue.put(i)
 
         print('\n>> Plan to make feats for %d speakers with %d egs in %s with %d jobs.\n' % (
@@ -372,7 +402,8 @@ if __name__ == "__main__":
                 os.makedirs(ark_dir)
 
             # if (i + 1) % prep_jb != 1:
-            pool.apply_async(PrepareEgProcess, args=(lock_i, lock_t, valid_dir, idx_queue, task_queue))
+            pool.apply_async(PrepareEgProcess, args=(
+                lock_i, lock_t, valid_dir, idx_queue, task_queue))
             if (i + 1) % 2 == 1:
                 pool.apply_async(SaveEgProcess, args=(lock_t, write_dir, ark_dir, args.out_set,
                                                       i, task_queue, error_queue, idx_queue))
