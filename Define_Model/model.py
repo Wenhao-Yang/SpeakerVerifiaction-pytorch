@@ -67,7 +67,7 @@ def get_input_norm(input_norm: str, input_dim=None):
         inst_layer = SlideMean_Norm()
     elif input_norm == 'Mstd':
         inst_layer = MeanStd_Norm()
-    elif input_norm == 'inst':
+    elif input_norm == 'Inst':
         inst_layer = Inst_Norm(dim=input_dim)
     else:
         inst_layer = None

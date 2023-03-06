@@ -23,7 +23,7 @@ train_trials: trials
 valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/train_valid_<feat>
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
-input_norm: Mean
+input_norm: Inst
 
 test_input: fix
 log_scale: False
@@ -82,8 +82,11 @@ fast: none1
 num_classes: 420
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
-  resnet_size: !ref <resnet_size>
+  filter: "fbank"
+  sr: 16000
+  feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
+  resnet_size: !ref <resnet_size>
   input_norm: !ref <input_norm>
   block_type: !ref <block_type>
   downsample: !ref <downsample>
