@@ -10,59 +10,56 @@ data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 ## Dataset
 datasets: vox2
 testset: vox1
-feat_type: wave
+feat_type: klfb
 loss: arcsoft
-input_dim: 80
+input_dim: 40
 feat: !ref fb<input_dim>
 subset: ""
 
-train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev
-train_test_dir: !ref <data_root_dir>/data/<testset>/test
+train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>
+train_test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test<subset>_<feat>
 train_trials: trials
-valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_valid
+valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_valid
 num_valid: 2
-test_dir: !ref <data_root_dir>/data/<testset>/test
+test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
 trials: trials
-input_norm: None
+input_norm: Mean
 
 test_input: fix
 log_scale: False
-random_chunk: [32000, 32000]
-chunk_size: 48000
-frame_shift: 48000
+random_chunk: [200, 200]
+chunk_size: 300
+frame_shift: 300
 extract: True
-nj: 6
+nj: 4
 shuffle: False
 batch_shuffle: True
-
-feat_format: wav
-remove_vad: False
+feat_format: kaldi
+remove_vad: True
 
 ### Training settings
-epochs: 15
+epochs: 60
 
 # optimizer
 optimizer: adam
 lr: 0.001
 base_lr: 0.00000001
 lr_decay: 0
-weight_decay: 0.00002
-second_wd: 0.0002
+weight_decay: 0.00001
 dampening: 0
 momentum: 0.9
 accu_steps: 1
 nesterov: False
 
 early_stopping: True
-early_patience: 10
-early_delta: 0.0001
+early_patience: 15
+early_delta: 0.01
 early_meta: "mix2"
 
 # Scheduler
+scheduler: cyclic
 patience: 3
 milestones: [10, 20, 30, 40]
-scheduler: cyclic
-step_size: 65000
 cyclic_epoch: 2
 cos_sim: True
 
@@ -71,17 +68,13 @@ model: ECAPA
 kernel_size:
 alpha: 0
 embedding_size: 192
-batch_size: 192
+batch_size: 256
 dropout_p: 0.0
 activation: relu
-channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
-#channels: [1024,1024,1024,1024,3072]
-encoder_type: "SASP2"
+channels: 512,512,512,512,1500
+encoder_type: SASP2
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
-  filter: "fbank"
-  sr: 16000
-  feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   channels: [512, 512, 512, 512, 1536]
@@ -97,23 +90,26 @@ classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
 # loss
 loss_ratio: 1
 lr_ratio: 0
+#all_iteraion: 1000
+
 loss_lambda: False
 loss_type: !ref <loss>
 margin: 0.2
 # m: 0.2
 s: 30
-mixup_layer: [1, 2, 3]
-mixup_type: manifold
+lamda_beta: 0.2
 proser_gamma: 1
+#_<proser_gamma>
+mixup_layer: [1, 2]
+mixup_type: manifold
 # stat_type: margin1
 
 # Checkpoints
 loss_str: ""
-# check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_2sesmix2_dist/baseline
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2sesmix2_dist
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wde5_2sresmix2_dist
+#_mani<mixup_layer>_lamda<lamda_beta>
 resume: ""
 #  !ref <check_path>/checkpoint_40.pth
-
 veri_pairs: 9600
 gpu_id: 0,1
 

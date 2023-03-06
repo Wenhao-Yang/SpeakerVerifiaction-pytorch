@@ -79,7 +79,6 @@ parser = argparse.ArgumentParser(
     description='PyTorch ( Distributed ) Speaker Recognition: Classification')
 parser.add_argument('--local_rank', default=-1, type=int,
                     help='node rank for distributed training')
-
 parser.add_argument('--train-config', default='', type=str,
                     help='node rank for distributed training')
 parser.add_argument('--seed', type=int, default=123456,
@@ -223,8 +222,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
 
-        lamda_beta = np.random.beta(
-            config_args['lamda_beta'], config_args['lamda_beta'])
+        lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
         half_data = int(len(data) / 2)
 
         if config_args['mixup_type'] != 'manifold':
@@ -234,10 +232,6 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             data = torch.cat([data[:half_data], mix_data], dim=0)
             label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
         else:
-            # rand_idx = torch.randperm(int(half_data / 2))
-            # label = torch.cat(
-            #     [label, label[half_data:(half_data + len(rand_idx))][rand_idx], label[-len(rand_idx):][rand_idx]],
-            #     dim=0)
             rand_idx = torch.randperm(half_data)
             # mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
             # data = torch.cat([data[:half_data], mix_data], dim=0)
@@ -614,8 +608,7 @@ def main():
         # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
         # print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
-        print('Testing with %s distance, ' %
-              ('cos' if config_args['cos_sim'] else 'l2'))
+        print('Testing with %s distance, ' % ('cos' if config_args['cos_sim'] else 'l2'))
         print('Checkpoint path: ', check_path)
 
     # model = create_model(config_args['model'], **model_kwargs)
@@ -623,7 +616,8 @@ def main():
 
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
-
+    else:
+        pass
     # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     # save_model_args(model_kwargs, model_yaml_path)
     # exit(0)
