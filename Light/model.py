@@ -146,7 +146,11 @@ class SpeakerLoss(nn.Module):
             other_loss += float(loss_xent)
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
-            loss = self.xe_criterion(classfier, label, half_batch_size=half_data, lamda_beta=lamda_beta)
+            if isinstance(self.xe_criterion, MixupLoss):
+
+                loss = self.xe_criterion(classfier, label, half_batch_size=half_data, lamda_beta=lamda_beta)
+            else:
+                loss = self.xe_criterion(classfier, label)
 
             if batch_weight != None:
                 loss = loss * batch_weight
