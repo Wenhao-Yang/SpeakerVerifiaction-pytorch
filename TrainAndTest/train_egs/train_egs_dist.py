@@ -125,7 +125,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
-        print(data.shape)
+        # print(data.shape)
         # pdb.set_trace()
         classfier, feats = model(data)
         # print('max logit is ', classfier_label.max())
