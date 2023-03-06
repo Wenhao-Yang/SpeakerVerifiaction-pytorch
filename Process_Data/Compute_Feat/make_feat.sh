@@ -54,7 +54,7 @@ if [ $stage -le 1 ]; then
 #  dataset=aishell2
   # dataset=vox1
 #  feat=klfb feat_type=klfb ${feat} --remove-vad \
-  feat=wave feat_type=wave feat_format=wav
+  feat=wave feat_type=wav feat_format=wav
   input_per_spks=512 num_frames=48000
 
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
