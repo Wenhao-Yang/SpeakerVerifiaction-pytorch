@@ -500,7 +500,7 @@ def main():
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
 
-    scheduler = create_scheduler(optimizer, config_args)
+    # scheduler = create_scheduler(optimizer, config_args)
 
     # Save model config txt
     if torch.distributed.get_rank() == 0:
