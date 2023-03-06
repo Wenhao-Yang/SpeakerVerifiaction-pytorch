@@ -1,0 +1,118 @@
+# @Author: yangwenhao
+# @Contact: 874681044@qq.com
+# @Software: PyCharm
+# @File: vox2_ecapa.yaml
+# @Time: 2022/5/21 09:29
+# @Overview:
+
+# @Author: yangwenhao
+# @Contact: 874681044@qq.com
+# @Software: PyCharm
+# @File: cnc1_tdnn.yaml
+# @Time: 2022/4/21 00:33
+# @Overview:
+
+data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
+
+## Dataset
+seed: 123456
+datasets: vox2
+test_datasets: vox1
+feat_type: klsp
+loss: arcsoft
+input_dim: 161
+feat: !ref fb<input_dim>
+subset: ''
+
+train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>
+train_test_dir: !ref <data_root_dir>/data/<test_datasets>/<feat_type>/test
+train_trials: trials
+valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_valid
+num_valid: 2
+test_dir: !ref <data_root_dir>/data/<test_datasets>/<feat_type>/test
+trials: trials
+input_norm: Mean
+
+test_input: fix
+log_scale: False
+random_chunk: [ 200, 400 ]
+chunk_size: 300
+frame_shift: 300
+extract: True
+nj: 4
+shuffle: False
+feat_format: kaldi
+remove_vad: False
+
+
+### Training settings
+
+epochs: 60
+
+# optimizer
+optimizer: adam
+lr_decay: 0
+weight_decay: 0.00002
+dampening: 0
+momentum: 0.9
+accu_steps: 1
+nesterov: False
+
+# Scheduler
+patience: 3
+milestones: [ 10,20,30,40 ]
+scheduler: cyclic
+cyclic_epoch: 4
+lr: 0.001
+base_lr: 0.00000001
+cos_sim: True
+
+early_stopping: True
+early_patience: 15
+early_delta: 0.0001
+early_meta: EER
+
+## model Setttings
+model: ECAPA_TDNN
+kernel_size:
+alpha: 0
+embedding_size: 192
+batch_size: 128
+dropout_p: 0.0
+activation: leakyrelu
+channels: 512,512,512,512,1500
+encoder_type: STAP
+
+embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
+  input_dim: !ref <input_dim>
+  input_norm: !ref <input_norm>
+  channels: [ 512, 512, 512, 512, 1536 ]
+  encoder_type: 'SAP2'
+  embedding_size: !ref <embedding_size>
+  num_classes: 5994
+  activation: leakyrelu
+
+classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
+  feat_dim: !ref <embedding_size>
+  num_classes: 5994
+
+# loss
+loss_ratio: 1
+lr_ratio: 0
+loss_lambda: False
+loss_type: !ref <loss>
+margin: 0.2
+# m: 0.2
+s: 30
+# stat_type: margin1
+
+# Checkpoints
+loss_str: ''
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_<encoder_type>_em<embedding_size><loss_str>_wd2e5_var2/<seed>
+resume: !ref <check_path>/checkpoint_40.pth
+
+veri_pairs: 9600
+gpu_id: 0,1
+
+test_interval: 4
+log_interval: 10
