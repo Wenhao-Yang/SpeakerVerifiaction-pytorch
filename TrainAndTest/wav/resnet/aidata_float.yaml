@@ -45,7 +45,7 @@ epochs: 60
 # optimizer
 optimizer: adam
 lr_decay: 0
-weight_decay: 0.0005
+weight_decay: 0.0001
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -66,7 +66,7 @@ early_delta: 0.0001
 early_meta: "mix2"
 
 ## model Setttings
-resnet_size: 18
+resnet_size: 10
 block_type: "cbam"
 red_ratio: 2
 encoder_type: "SAP2"
@@ -128,7 +128,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist/baseline_<feat>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_varesmix2_bashuf2_dist/baseline_<feat>
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
