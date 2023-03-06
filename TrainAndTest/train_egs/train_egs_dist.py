@@ -496,7 +496,7 @@ def main():
 
     optimizer = create_optimizer(
         model_para, config_args['optimizer'], **opt_kwargs)
-    scheduler = create_scheduler(optimizer, config_args)
+    scheduler = create_scheduler(optimizer, config_args, train_dir)
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
 

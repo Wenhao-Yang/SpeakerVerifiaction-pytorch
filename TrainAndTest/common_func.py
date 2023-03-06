@@ -84,7 +84,7 @@ def create_optimizer(parameters, optimizer, **kwargs):
     return opt
 
 
-def create_scheduler(optimizer, config_args):
+def create_scheduler(optimizer, config_args, train_dir=None):
     milestones = config_args['milestones']
     if config_args['scheduler'] == 'exp':
         gamma = np.power(config_args['base_lr'] / config_args['lr'],
@@ -99,7 +99,7 @@ def create_scheduler(optimizer, config_args):
             step_size= config_args['step_size']
         else:
             step_size = config_args['cyclic_epoch'] * int(
-                                              np.ceil(config_args['num_classes'] / config_args['batch_size']))
+                                              np.ceil(len(train_dir) / config_args['batch_size']))
 
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
                                           max_lr=config_args['lr'],
