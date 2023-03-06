@@ -39,22 +39,22 @@ feat_format: wav
 remove_vad: False
 
 ### Training settings
-epochs: 60
+epochs: 15
 
 # optimizer
 optimizer: adam
 lr: 0.001
 base_lr: 0.00000001
 lr_decay: 0
-weight_decay: 0.00001
-# second_wd: 0.0002
+weight_decay: 0.00002
+second_wd: 0.0002
 dampening: 0
 momentum: 0.9
 accu_steps: 1
 nesterov: False
 
 early_stopping: True
-early_patience: 15
+early_patience: 10
 early_delta: 0.0001
 early_meta: "mix2"
 
@@ -62,6 +62,7 @@ early_meta: "mix2"
 patience: 3
 milestones: [10, 20, 30, 40]
 scheduler: cyclic
+step_size: 65000
 cyclic_epoch: 2
 cos_sim: True
 
@@ -70,7 +71,7 @@ model: ECAPA
 kernel_size:
 alpha: 0
 embedding_size: 192
-batch_size: 128
+batch_size: 192
 dropout_p: 0.0
 activation: relu
 channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
@@ -108,8 +109,8 @@ proser_gamma: 1
 
 # Checkpoints
 loss_str: ""
-# check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_2sesmix2_dist
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wde5_2sesmix2_dist
+# check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_2sesmix2_dist/baseline
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2sesmix2_dist
 resume: ""
 #  !ref <check_path>/checkpoint_40.pth
 
