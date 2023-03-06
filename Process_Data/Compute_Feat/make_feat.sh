@@ -46,12 +46,12 @@ fi
 #exit
 #stage=1000
 if [ $stage -le 1 ]; then
-  dataset=vox2
+  # dataset=vox2
 #  dataset=cnceleb
 #  dataset=aishell2
 #  dataset=aidata
 
-#  dataset=vox1
+ dataset=vox1
   feat=wave feat_format=wav feat_type=wav
 
   # feat=klsp feat_type=klsp 
@@ -59,7 +59,7 @@ if [ $stage -le 1 ]; then
 
 #  num_frames=400
   # num_frames=64000 input_per_spks=512
-  num_frames=32000 input_per_spks=896
+  num_frames=32000 input_per_spks=1280
   # num_frames=600 input_per_spks=1024
 #        --remove-vad \
 #--domain \
@@ -73,23 +73,23 @@ if [ $stage -le 1 ]; then
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 8 --feat-type ${feat_type} \
+      --nj 12 --feat-type ${feat_type} \
       --train \
       --input-per-spks ${input_per_spks} --num-frames ${num_frames} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --out-set ${s}
+      --out-set ${s}_v4
 
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/egs/${feat} \
-      --nj 8 --feat-type ${feat_type} \
+      --nj 12 --feat-type ${feat_type} \
       --num-frames ${num_frames} --input-per-spks ${input_per_spks} --sample-type ${sample_type} \
       --feat-format ${feat_format} \
       --out-format kaldi_cmp \
       --num-valid 2 \
-      --out-set ${s}_valid
+      --out-set ${s}_valid_v4
   done
   exit
 fi
