@@ -20,7 +20,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss, DistributeLoss, MMD_Loss, aDCFLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSoftmaxLoss, DAMSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2
+    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, MixupLoss
 import Process_Data.constants as C
 
 from TrainAndTest.common_func import create_optimizer, create_scheduler
