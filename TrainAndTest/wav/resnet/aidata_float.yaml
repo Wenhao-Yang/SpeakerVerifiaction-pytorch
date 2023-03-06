@@ -62,11 +62,11 @@ cos_sim: True
 
 early_stopping: True
 early_patience: 20
-early_delta: 0.01
+early_delta: 0.0001
 early_meta: "mix2"
 
 ## model Setttings
-resnet_size: 10
+resnet_size: 18
 block_type: "cbam"
 red_ratio: 2
 encoder_type: "SAP2"
