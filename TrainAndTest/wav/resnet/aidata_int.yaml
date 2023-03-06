@@ -35,7 +35,7 @@ nj: 6
 shuffle: False
 batch_shuffle: True
 
-feat_format: kaldi
+feat_format: wav
 remove_vad: True
 
 ### Training settings
