@@ -411,7 +411,7 @@ def read_MFB(filename):
     return audio
 
 
-def read_Waveform(filename):
+def read_WaveInt(filename):
     """
     read features from npy files
     :param filename: the path of wav files.
@@ -423,6 +423,17 @@ def read_Waveform(filename):
 
     return audio.astype(np.float32).reshape(1, -1)
 
+def read_WaveFloat(filename):
+    """
+    read features from npy files
+    :param filename: the path of wav files.
+    :return:
+    """
+    # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
+    # audio = audio.flatten()
+    audio, sample_rate = sf.read(filename, dtype='float32')
+
+    return audio.astype(np.float32).reshape(1, -1)
 
 def read_from_npy(filename):
     """
