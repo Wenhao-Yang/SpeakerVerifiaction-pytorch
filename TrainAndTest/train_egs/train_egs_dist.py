@@ -116,7 +116,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             domain_weight /= domain_weight.min()
 
             batch_weight = domain_weight[domain_label]
-            model.loss.xe_criterion.ce.reduction = 'none'
+            model.module.loss.xe_criterion.ce.reduction = 'none'
 
         if torch.cuda.is_available():
             # label = label.cuda(non_blocking=True)
@@ -129,7 +129,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         classfier, feats = model(data)
         # print('max logit is ', classfier_label.max())
 
-        loss, other_loss = model.loss(classfier, feats, label, 
+        loss, other_loss = model.module.loss(classfier, feats, label, 
                                       batch_weight=batch_weight, epoch=epoch)
 
         predicted_labels = output_softmax(classfier.clone())
@@ -179,7 +179,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         if config_args['loss_ratio'] != 0:
             if config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter']:
-                for param in model.loss.xe_criterion.parameters():
+                for param in model.module.loss.xe_criterion.parameters():
                     param.grad.data *= (1. / config_args['loss_ratio'])
 
         # optimizer.step()
