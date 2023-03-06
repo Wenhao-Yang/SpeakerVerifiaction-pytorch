@@ -28,7 +28,7 @@ input_norm: Inst
 
 test_input: fix
 log_scale: False
-random_chunk: [32000, 32000]
+random_chunk: [48000, 48000]
 chunk_size: 48000
 frame_shift: 48000
 extract: True
