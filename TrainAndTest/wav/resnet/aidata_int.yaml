@@ -19,7 +19,7 @@ subset: ""
 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/train<subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
-train_trials: trials
+train_trials: trials_4w
 valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/train_valid_<feat>
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
@@ -42,7 +42,7 @@ remove_vad: True
 epochs: 60
 
 # optimizer
-optimizer: sgd
+optimizer: adam
 lr_decay: 0
 weight_decay: 0.0005
 dampening: 0
@@ -53,9 +53,11 @@ accu_steps: 1
 # Scheduler
 patience: 3
 milestones: [10, 20, 30, 40]
-scheduler: rop
-lr: 0.1
-base_lr: 0.00001
+scheduler: cyclic
+lr: 0.001
+base_lr: 0.0000001
+cyclic_epoch: 3
+# step_size: 
 cos_sim: True
 
 early_stopping: True
@@ -74,7 +76,7 @@ kernel_size:
 alpha: 0
 avg_size: 4
 embedding_size: 256
-batch_size: 128
+batch_size: 256
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
