@@ -40,18 +40,9 @@ from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 from Light.dataset import SubDatasets, SubLoaders
-from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
-    VarianceLoss, DistributeLoss, aDCFLoss
-from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AngleLinear, AdditiveMarginLinear, AMSoftmaxLoss, \
-    ArcSoftmaxLoss, \
-    GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, SubArcSoftmaxLoss, DAMSoftmaxLoss
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset
-import Process_Data.constants as C
-from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput
 from TrainAndTest.common_func import create_classifier, create_optimizer, create_model, create_scheduler, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
 from logger import NewLogger
