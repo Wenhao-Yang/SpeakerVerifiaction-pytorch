@@ -88,6 +88,7 @@ if [ $stage -le 1 ]; then
         --out-set ${s}_valid_${wav_type}
     done
   done
+  done
   exit
 fi
 #exit
