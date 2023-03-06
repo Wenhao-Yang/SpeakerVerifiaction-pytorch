@@ -71,8 +71,6 @@ parser.add_argument('--feat-type', type=str, default='fbank',
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--train', action='store_true',
                     default=False, help='using Cosine similarity')
-parser.add_argument('--train', action='store_true',
-                    default=False, help='using Cosine similarity')
 
 parser.add_argument('--wav-type', type=str, default='float', choices=['int', 'float'],
                     help='number of jobs to make feats (default: 10)')
