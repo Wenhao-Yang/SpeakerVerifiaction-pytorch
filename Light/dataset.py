@@ -13,7 +13,7 @@ from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
 
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, PadCollate3d
-from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_Waveform
+from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_WaveInt, read_WaveFloat
 import torchvision.transforms as transforms
 from kaldiio import load_mat
 import numpy as np
@@ -57,7 +57,7 @@ def SubDatasets(config_args):
 
     feat_type = 'kaldi'
     if config_args['feat_format'] == 'wav':
-        file_loader = read_Waveform
+        file_loader = read_WaveInt if config_args['feat'] == 'int' else read_WaveFloat
         feat_type = 'wav'
 
     train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
