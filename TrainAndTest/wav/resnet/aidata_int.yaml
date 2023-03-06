@@ -17,13 +17,12 @@ input_dim: 40
 feat: int
 subset: ""
 
-train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>
-train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>_<feat>
+train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/train<subset>_<feat>
+train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
 train_trials: trials
-valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/valid_<feat>
+valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/train_valid_<feat>
 num_valid: 2
-test_dir: !ref <data_root_dir>/data/<testset>/test_<feat>
-trials: trials
+test_dir: !ref <data_root_dir>/data/<testset>/test
 input_norm: Mean
 
 test_input: fix
