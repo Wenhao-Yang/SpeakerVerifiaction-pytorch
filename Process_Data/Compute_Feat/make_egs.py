@@ -32,7 +32,7 @@ from Process_Data.Datasets.KaldiDataset import ScriptValidDataset, ScriptTrainDa
 from Process_Data.Datasets.KaldiDataset import AugTrainDataset, AugValidDataset
 
 from Process_Data.audio_augment.common import RunCommand
-from Process_Data.audio_processing import ConcateNumInput
+from Process_Data.audio_processing import ConcateNumInput, read_WaveFloat, read_WaveInt
 from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
@@ -56,6 +56,8 @@ parser.add_argument('--num-frames', type=int, default=300, metavar='E',
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--feat-type', type=str, default='fbank', choices=['pyfb', 'fbank', 'spectrogram', 'mfcc', 'klfb', 'klsp'],
+                    help='number of jobs to make feats (default: 10)')
+parser.add_argument('--wav-type', type=str, default='float', choices=['int', 'float'],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--train', action='store_true', default=False, help='using Cosine similarity')
 
@@ -222,10 +224,15 @@ def SaveEgProcess(lock_t, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue,
 
 transform = ConcateNumInput(num_frames=args.num_frames, remove_vad=args.remove_vad)
 
+feat_type = 'kaldi'
 if args.feat_format == 'npy':
     file_loader = np.load
-elif args.feat_format in ['kaldi', 'klfb']:
-    file_loader = kaldi_io.read_mat
+elif args.feat_format in ['kaldi', 'klfb', 'klsp']:
+    # file_loader = kaldi_io.read_mat
+    file_loader = kaldiio.load_mat
+elif args.feat_format == 'wav':
+    file_loader = read_WaveInt if args.wav_type == 'int' else read_WaveFloat
+    feat_type = 'wav'
 
 if not args.enhance:
     train_dir = ScriptTrainDataset(dir=args.data_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
