@@ -986,8 +986,9 @@ class ThinResNet(nn.Module):
                                         exp=exp, filter_fix=filter_fix)
         if filter_layer != None:
             input_mask.append(filter_layer)
+            input_dim = feat_dim
 
-        norm_layer = get_input_norm(input_norm)
+        norm_layer = get_input_norm(input_norm, input_dim)
         if norm_layer != None:
             input_mask.append(norm_layer)
         mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
