@@ -439,7 +439,8 @@ def read_Waveform(filename):
     """
     # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
     # audio = audio.flatten()
-    audio, sample_rate = sf.read(filename, dtype='int16')
+    # audio, sample_rate = sf.read(filename, dtype='int16')
+    audio, sample_rate = sf.read(filename, dtype='float32')
 
     return audio.astype(np.float32).reshape(1, -1)
 

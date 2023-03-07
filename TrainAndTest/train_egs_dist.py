@@ -846,10 +846,15 @@ def main():
             optimizer, patience=config_args['patience'], min_lr=1e-5)
     elif config_args['scheduler'] == 'cyclic':
         cycle_momentum = False if config_args['optimizer'] == 'adam' else True
+        if 'step_size' in config_args:
+            step_size = config_args['step_size']
+        else:
+            step_size= config_args['cyclic_epoch'] * int(
+                                              np.ceil(len(train_dir) / config_args['batch_size']))
+            
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
                                           max_lr=config_args['lr'],
-                                          step_size_up=config_args['cyclic_epoch'] * int(
-                                              np.ceil(len(train_dir) / config_args['batch_size'])),
+                                          step_size_up=step_size,
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
     else:

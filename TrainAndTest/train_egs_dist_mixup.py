@@ -79,7 +79,6 @@ parser = argparse.ArgumentParser(
     description='PyTorch ( Distributed ) Speaker Recognition: Classification')
 parser.add_argument('--local_rank', default=-1, type=int,
                     help='node rank for distributed training')
-
 parser.add_argument('--train-config', default='', type=str,
                     help='node rank for distributed training')
 parser.add_argument('--seed', type=int, default=123456,
@@ -233,9 +232,6 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             data = torch.cat([data[:half_data], mix_data], dim=0)
             label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
         else:
-            # rand_idx = torch.randperm(int(half_data / 2))
-            # label = torch.cat([label, label[half_data:(half_data + len(rand_idx))][rand_idx], label[-len(rand_idx):][rand_idx]],
-            #     dim=0)
             rand_idx = torch.randperm(half_data)
             # mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
             # data = torch.cat([data[:half_data], mix_data], dim=0)
@@ -621,7 +617,7 @@ def main():
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
     else:
-        
+        pass
     # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
     # save_model_args(model_kwargs, model_yaml_path)
     # exit(0)
