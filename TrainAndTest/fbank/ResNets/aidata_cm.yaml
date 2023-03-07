@@ -28,7 +28,7 @@ input_per_spks: 512
 
 test_input: fix
 log_scale: False
-random_chunk: [200, 400]
+random_chunk: [300, 300]
 chunk_size: 300
 frame_shift: 300
 num_frames: 300
