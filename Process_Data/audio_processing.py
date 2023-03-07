@@ -28,7 +28,8 @@ def mk_MFB(filename, sample_rate=c.SAMPLE_RATE, use_delta=c.USE_DELTA, use_scale
     audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
     #audio = audio.flatten()
 
-    filter_banks, energies = fbank(audio, samplerate=sample_rate, nfilt=c.FILTER_BANK, winlen=0.025)
+    filter_banks, energies = fbank(
+        audio, samplerate=sample_rate, nfilt=c.FILTER_BANK, winlen=0.025)
 
     if use_logscale:
         filter_banks = 20 * np.log10(np.maximum(filter_banks, 1e-5))
@@ -65,7 +66,8 @@ def resample_wav(in_wav, out_wav, sr):
 
 def butter_bandpass(cutoff, fs, order=15):
     nyq = 0.5 * fs
-    sos = butter(order, np.array(cutoff) / nyq, btype='bandpass', analog=False, output='sos')
+    sos = butter(order, np.array(cutoff) / nyq,
+                 btype='bandpass', analog=False, output='sos')
     return sos
 
 
@@ -82,6 +84,7 @@ def butter_bandpass_filter(data, cutoff, fs, order=15):
     if int2float:
         y = (y * 32768).astype(np.int16)
     return y  # Filter requirements.
+
 
 def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
                use_delta=c.USE_DELTA,
@@ -137,6 +140,7 @@ def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
     # np.save(filename.replace('.wav', '.npy'), frames_features)
     return
 
+
 def compute_fbank_feat(filename, nfilt=c.FILTER_BANK, use_logscale=c.USE_LOGSCALE, use_energy=True, add_energy=True, normalize=c.CMVN, vad=c.VAD):
     """
     Making feats more like in kaldi.
@@ -154,11 +158,13 @@ def compute_fbank_feat(filename, nfilt=c.FILTER_BANK, use_logscale=c.USE_LOGSCAL
         raise ValueError('Wav file does not exist.')
 
     sample_rate, audio = wavfile.read(filename)
-    pad_size = np.ceil((len(audio) - 0.025 * sample_rate) / (0.01 * sample_rate)) * 0.01 * sample_rate - len(audio) + 0.025 * sample_rate
+    pad_size = np.ceil((len(audio) - 0.025 * sample_rate) / (0.01 * sample_rate)
+                       ) * 0.01 * sample_rate - len(audio) + 0.025 * sample_rate
 
     audio = np.lib.pad(audio, (0, int(pad_size)), 'symmetric')
 
-    filter_banks, energies = mfe(audio, sample_rate, frame_length=0.025, frame_stride=0.01, num_filters=nfilt, fft_length=512, low_frequency=0, high_frequency=None)
+    filter_banks, energies = mfe(audio, sample_rate, frame_length=0.025, frame_stride=0.01,
+                                 num_filters=nfilt, fft_length=512, low_frequency=0, high_frequency=None)
 
     if use_energy:
         if add_energy:
@@ -168,23 +174,24 @@ def compute_fbank_feat(filename, nfilt=c.FILTER_BANK, use_logscale=c.USE_LOGSCAL
         else:
             # replace the 1st dim as energy
             energies = energies.reshape(energies.shape[0], 1)
-            filter_banks[:, 0]=energies[:, 0]
+            filter_banks[:, 0] = energies[:, 0]
 
     if use_logscale:
         filter_banks = np.log(np.maximum(filter_banks, 1e-5))
         # filter_banks = np.log(filter_banks)
 
-    if normalize=='cmvn':
+    if normalize == 'cmvn':
         # vec(array): input_feature_matrix (size:(num_observation, num_features))
         norm_fbank = cmvn(vec=filter_banks, variance_normalization=True)
-    elif normalize=='cmvnw':
-        norm_fbank = cmvnw(vec=filter_banks, win_size=301, variance_normalization=True)
+    elif normalize == 'cmvnw':
+        norm_fbank = cmvnw(vec=filter_banks, win_size=301,
+                           variance_normalization=True)
 
     if use_energy and vad:
         voiced = []
         ComputeVadEnergy(filter_banks, voiced)
         voiced = np.array(voiced)
-        voiced_index = np.argwhere(voiced==1).squeeze()
+        voiced_index = np.argwhere(voiced == 1).squeeze()
         norm_fbank = norm_fbank[voiced_index]
 
         return norm_fbank, voiced
@@ -204,12 +211,13 @@ def GenerateSpect(wav_path, write_path, windowsize=25, stride=10, nfft=c.NUM_FFT
     """
     if not os.path.exists(wav_path):
         raise ValueError('wav file does not exist.')
-    #pdb.set_trace()
+    # pdb.set_trace()
 
     # samples, sample_rate = wavfile.read(wav_path)
     sample_rate, samples = sf.read(wav_path, dtype='int16')
     sample_rate_norm = int(sample_rate / 1e3)
-    frequencies, times, spectrogram = signal.spectrogram(x=samples, fs=sample_rate, window=signal.hamming(windowsize * sample_rate_norm), noverlap=(windowsize-stride) * sample_rate_norm, nfft=nfft)
+    frequencies, times, spectrogram = signal.spectrogram(x=samples, fs=sample_rate, window=signal.hamming(
+        windowsize * sample_rate_norm), noverlap=(windowsize-stride) * sample_rate_norm, nfft=nfft)
 
     # Todo: store the whole spectrogram
     # spectrogram = spectrogram[:, :300]
@@ -255,10 +263,12 @@ def Make_Spect(wav_path, windowsize, stride, window=np.hamming,
         raise ValueError('wav file is empty?')
 
     if bandpass and highfreq > lowfreq:
-        samples = butter_bandpass_filter(data=samples, cutoff=[lowfreq, highfreq], fs=samplerate)
+        samples = butter_bandpass_filter(
+            data=samples, cutoff=[lowfreq, highfreq], fs=samplerate)
 
     signal = sigproc.preemphasis(samples, preemph)
-    frames = sigproc.framesig(signal, windowsize * samplerate, stride * samplerate, winfunc=window)
+    frames = sigproc.framesig(
+        signal, windowsize * samplerate, stride * samplerate, winfunc=window)
 
     if nfft == None:
         nfft = int(windowsize * samplerate)
@@ -395,7 +405,8 @@ def Make_HST(filename, winlen=0.125, winstep=0.1, numcep=20, duration=False):
                                               win=int(winlen * sample_rate),
                                               a=winstep, s=numcep)
 
-    feats = np.stack((insf_all, inse_all)).transpose((2, 1, 0)).reshape(-1, int(numcep * 2))
+    feats = np.stack((insf_all, inse_all)).transpose(
+        (2, 1, 0)).reshape(-1, int(numcep * 2))
     if duration:
         return (feats, s_list), len(audio) / sample_rate
     # np.save(filename.replace('.wav', '.npy'), frames_features)
@@ -419,6 +430,7 @@ def conver_to_wav(filename, write_path, format='m4a'):
     sound = AudioSegment.from_file(filename, format=format)
     sound.export(write_path, format="wav")
 
+
 def read_MFB(filename):
     #audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
     #audio = audio.flatten()
@@ -431,7 +443,7 @@ def read_MFB(filename):
     return audio
 
 
-def read_Waveform(filename):
+def read_WaveInt(filename, start=0, stop=None):
     """
     read features from npy files
     :param filename: the path of wav files.
@@ -439,11 +451,23 @@ def read_Waveform(filename):
     """
     # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
     # audio = audio.flatten()
-    # audio, sample_rate = sf.read(filename, dtype='int16')
-    audio, sample_rate = sf.read(filename, dtype='float32')
-
+    audio, sample_rate = sf.read(
+        filename, dtype='int16', start=start, stop=stop)
     return audio.astype(np.float32).reshape(1, -1)
 
+
+def read_WaveFloat(filename, start=0, stop=None):
+    """
+    read features from npy files
+    :param filename: the path of wav files.
+    :return:
+    """
+    # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
+    # audio = audio.flatten()
+    audio, sample_rate = sf.read(
+        filename, dtype='float32', start=start, stop=stop)
+
+    return audio.astype(np.float32).reshape(1, -1)
 
 
 def read_from_npy(filename):
@@ -483,9 +507,11 @@ class ConcateVarInput(object):
         network_inputs = []
         output = frames_features
         while output.shape[self.c_axis] < self.num_frames:
-            output = np.concatenate((output, frames_features), axis=self.c_axis)
+            output = np.concatenate(
+                (output, frames_features), axis=self.c_axis)
 
-        input_this_file = int(np.ceil(output.shape[self.c_axis] / self.frame_shift))
+        input_this_file = int(
+            np.ceil(output.shape[self.c_axis] / self.frame_shift))
 
         for i in range(input_this_file):
             start = i * self.frame_shift
@@ -516,6 +542,7 @@ class ConcateInput(object):
     size: size of the exactly size or the smaller edge
     interpolation: Default: PIL.Image.BILINEAR
     """
+
     def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
 
         super(ConcateInput, self).__init__()
@@ -532,7 +559,8 @@ class ConcateInput(object):
 
         for i in range(self.input_per_file):
             try:
-                start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
+                start = np.random.randint(
+                    low=0, high=len(output) - self.num_frames + 1)
                 frames_slice = output[start:start + self.num_frames]
                 network_inputs.append(frames_slice)
             except Exception as e:
@@ -606,21 +634,23 @@ class ConcateNumInput(object):
 
         output = frames_features
         while output.shape[self.c_axis] < self.num_frames:
-            output = np.concatenate((output, frames_features), axis=self.c_axis)
+            output = np.concatenate(
+                (output, frames_features), axis=self.c_axis)
 
         if len(output) / self.num_frames >= self.input_per_file:
             for i in range(self.input_per_file):
                 start = i * self.num_frames
                 frames_slice = output[start:start + self.num_frames] if self.c_axis == 0 else output[:,
-                                                                                              start:start + self.num_frames]
+                                                                                                     start:start + self.num_frames]
                 network_inputs.append(frames_slice)
         else:
             for i in range(self.input_per_file):
                 try:
-                    start = np.random.randint(low=0, high=output.shape[self.c_axis] - self.num_frames + 1)
+                    start = np.random.randint(
+                        low=0, high=output.shape[self.c_axis] - self.num_frames + 1)
 
                     frames_slice = output[start:start + self.num_frames] if self.c_axis == 0 else output[:,
-                                                                                                  start:start + self.num_frames]
+                                                                                                         start:start + self.num_frames]
                     network_inputs.append(frames_slice)
                 except Exception as e:
                     print(len(output))
@@ -659,7 +689,8 @@ class ConcateNumInput_Test(object):
         while len(output) < self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
 
-        start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
+        start = np.random.randint(
+            low=0, high=len(output) - self.num_frames + 1)
 
         return start, len(output)
 
@@ -690,7 +721,8 @@ class concateinputfromMFB(object):
 
         for i in range(self.input_per_file):
             try:
-                start = np.random.randint(low=0, high=len(output) - self.num_frames + 1)
+                start = np.random.randint(
+                    low=0, high=len(output) - self.num_frames + 1)
                 frames_slice = output[start:start + self.num_frames]
                 network_inputs.append(frames_slice)
             except Exception as e:
@@ -703,6 +735,7 @@ class concateinputfromMFB(object):
             network_inputs = network_inputs[:, :, 1:]
 
         return network_inputs
+
 
 class ConcateOrgInput(object):
     """
@@ -726,6 +759,7 @@ class ConcateOrgInput(object):
 
         return network_inputs
 
+
 def pad_tensor(vec, pad, dim):
     """
     args:
@@ -735,11 +769,12 @@ def pad_tensor(vec, pad, dim):
     return:
         a new tensor padded itself to 'pad' in dimension 'dim'
     """
-    while vec.shape[dim]<pad:
+    while vec.shape[dim] < pad:
         vec = torch.cat([vec, vec], dim=dim)
 
     start = np.random.randint(low=0, high=vec.shape[dim]-pad+1)
     return torch.Tensor.narrow(vec, dim=dim, start=start, length=pad)
+
 
 class PadCollate:
     """
@@ -774,13 +809,14 @@ class PadCollate:
                               max(int((self.max_chunk_size - self.min_chunk_size) / 10), 20))
 
         if chisquare:
-            chi_len = np.random.chisquare(min_chunk_size, 2 * (max_chunk_size - min_chunk_size)).astype(np.int32)
+            chi_len = np.random.chisquare(
+                min_chunk_size, 2 * (max_chunk_size - min_chunk_size)).astype(np.int32)
             batch_len = np.concatenate((chi_len, batch_len))
 
         self.batch_len = batch_len
         if verbose > 0:
-            print('==> Generating %d different random length...' % (len(batch_len)))
-            print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
+            print('==> Generating %d lengths with Average: %d.' % (
+                len(batch_len), np.mean(self.batch_len)))
 
         self.frame_len = random.choice(self.batch_len)
         self.memory_len = memory_len
@@ -814,18 +850,22 @@ class PadCollate:
 
             # noise_len = np.random.randint(0, int(frame_len * 0.25))
             if self.augment:
-                noise_len = np.random.randint(int(frame_len * 0.1), int(frame_len * 0.4))
+                noise_len = np.random.randint(
+                    int(frame_len * 0.1), int(frame_len * 0.4))
             else:
                 noise_len = np.random.randint(0, int(frame_len * 0.25))
 
             if noise_len > 0:
                 if noise_len < noise_features_len:
-                    start = np.random.randint(low=0, high=noise_features_len - noise_len)
-                    noise_features = noise_features[:, start:(start + noise_len)]
+                    start = np.random.randint(
+                        low=0, high=noise_features_len - noise_len)
+                    noise_features = noise_features[:, start:(
+                        start + noise_len)]
                 else:
                     noise_len = noise_features_len
 
-                noise_features = noise_features.unsqueeze(0).repeat(len(batch), 1, 1, 1)
+                noise_features = noise_features.unsqueeze(
+                    0).repeat(len(batch), 1, 1, 1)
                 frame_len -= noise_len
         else:
             noise_len = 0
@@ -838,7 +878,8 @@ class PadCollate:
         xs_shape = xs.shape
 
         if frame_len < xs_shape[self.dim]:
-            start = np.random.randint(low=0, high=xs_shape[self.dim] - frame_len)
+            start = np.random.randint(
+                low=0, high=xs_shape[self.dim] - frame_len)
             end = start + frame_len
             if self.dim == 2:
                 xs = xs[:, :, start:end, :].contiguous()
@@ -854,9 +895,11 @@ class PadCollate:
             # print(xs.shape)
             noise_features = noise_features[:, :, :, -xs.shape[-1]:]
             if self.augment:
-                xs = (xs, torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2))
+                xs = (xs, torch.cat(
+                    (xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2))
             else:
-                xs = torch.cat((xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
+                xs = torch.cat(
+                    (xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
         # pdb.set_trace()
         if isinstance(batch[0][1], torch.Tensor) and len(batch[0][1]) > 1:
@@ -884,7 +927,7 @@ class PadCollate3d:
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
                  num_batch=0,
-                 fix_len=False):
+                 fix_len=False, augment=False, verbose=1):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
@@ -897,14 +940,17 @@ class PadCollate3d:
         self.normlize = normlize
 
         if self.fix_len:
-            self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+            self.frame_len = np.random.randint(
+                low=self.min_chunk_size, high=self.max_chunk_size)
         else:
             assert num_batch > 0
-            batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1)
-
-            print('==> Generating %d different random length...' % (len(batch_len)))
+            batch_len = np.arange(self.min_chunk_size,
+                                  self.max_chunk_size + 1, 20)
             self.batch_len = np.array(batch_len)
-            print('==> Average of utterance length is %d. ' % (np.mean(self.batch_len)))
+
+            if verbose > 0:
+                print('==> Generating %d lengths with Average: %d.' %
+                      (len(batch_len), np.mean(self.batch_len)))
 
     def pad_collate(self, batch):
         """
@@ -930,7 +976,8 @@ class PadCollate3d:
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
 
         if frame_len < batch[0][0].shape[-2]:
-            start = np.random.randint(low=0, high=batch[0][0].shape[-2] - frame_len)
+            start = np.random.randint(
+                low=0, high=batch[0][0].shape[-2] - frame_len)
             end = start + frame_len
             xs = xs[:, :, start:end, :].contiguous()
         else:
@@ -990,11 +1037,12 @@ class RNNPadCollate:
         sort_label = torch.LongTensor(sort_label)
 
         data_length = [len(sq) for sq in sort_data]
-        p_data = rnn_utils.pad_sequence(sort_data, batch_first=True, padding_value=0)
-        batch_x_pack = rnn_utils.pack_padded_sequence(p_data, data_length, batch_first=True)
+        p_data = rnn_utils.pad_sequence(
+            sort_data, batch_first=True, padding_value=0)
+        batch_x_pack = rnn_utils.pack_padded_sequence(
+            p_data, data_length, batch_first=True)
 
         return batch_x_pack, sort_label, data_length
-
 
     def __call__(self, batch):
         return self.pad_collate(batch)
@@ -1014,7 +1062,8 @@ class TripletPadCollate:
         self.dim = dim
         self.min_chunk_size = 300
         self.max_chunk_size = 500
-        self.num_chunk = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+        self.num_chunk = np.random.randint(
+            low=self.min_chunk_size, high=self.max_chunk_size)
 
     def pad_collate(self, batch):
         """
@@ -1031,8 +1080,10 @@ class TripletPadCollate:
         frame_len = self.num_chunk
         # pad according to max_len
         map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim),
-                                     pad_tensor(x_y[1], pad=frame_len, dim=self.dim),
-                                     pad_tensor(x_y[2], pad=frame_len, dim=self.dim),
+                                     pad_tensor(
+                                         x_y[1], pad=frame_len, dim=self.dim),
+                                     pad_tensor(
+                                         x_y[2], pad=frame_len, dim=self.dim),
                                      x_y[3],
                                      x_y[4]), batch)
         pad_batch = list(map_batch)
@@ -1044,7 +1095,6 @@ class TripletPadCollate:
 
         ys_a = torch.LongTensor(list(map(lambda x: x[3], pad_batch)))
         ys_n = torch.LongTensor(list(map(lambda x: x[4], pad_batch)))
-
 
         return xs_a, xs_p, xs_n, ys_a, ys_n
 
@@ -1066,7 +1116,8 @@ class ExtractCollate:
         self.dim = dim
         self.min_chunk_size = 300
         self.max_chunk_size = 500
-        self.num_chunk = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
+        self.num_chunk = np.random.randint(
+            low=self.min_chunk_size, high=self.max_chunk_size)
 
     def extract_collate(self, batch):
         """
@@ -1082,7 +1133,8 @@ class ExtractCollate:
         # max_len = max(map(lambda x: x[0].shape[self.dim], batch))
         frame_len = self.num_chunk
         # pad according to max_len
-        map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim), x_y[1]), batch)
+        map_batch = map(lambda x_y: (pad_tensor(
+            x_y[0], pad=frame_len, dim=self.dim), x_y[1]), batch)
         pad_batch = list(map_batch)
         # stack all
 
@@ -1099,6 +1151,7 @@ class ExtractCollate:
 class truncatedinputfromSpectrogram(object):
     """truncated input from Spectrogram
     """
+
     def __init__(self, input_per_file=1):
 
         super(truncatedinputfromSpectrogram, self).__init__()
@@ -1113,18 +1166,21 @@ class truncatedinputfromSpectrogram(object):
 
         for i in range(self.input_per_file):
 
-            j=0
+            j = 0
 
             if c.NUM_PREVIOUS_FRAME_SPECT <= (num_frames - c.NUM_NEXT_FRAME_SPECT):
-                j = random.randrange(c.NUM_PREVIOUS_FRAME_SPECT, num_frames - c.NUM_NEXT_FRAME_SPECT)
+                j = random.randrange(
+                    c.NUM_PREVIOUS_FRAME_SPECT, num_frames - c.NUM_NEXT_FRAME_SPECT)
 
             #j = random.randrange(c.NUM_PREVIOUS_FRAME_SPECT, num_frames - c.NUM_NEXT_FRAME_SPECT)
             # If len(frames_features)<NUM__FRAME_SPECT, then apply zero padding.
-            if j==0:
-                frames_slice = np.zeros((c.NUM_FRAMES_SPECT, c.NUM_FFT/2+1), dtype=np.float32)
+            if j == 0:
+                frames_slice = np.zeros(
+                    (c.NUM_FRAMES_SPECT, c.NUM_FFT/2+1), dtype=np.float32)
                 frames_slice[0:(frames_features.shape[0])] = frames_features
             else:
-                frames_slice = frames_features[j - c.NUM_PREVIOUS_FRAME_SPECT:j + c.NUM_NEXT_FRAME_SPECT]
+                frames_slice = frames_features[j -
+                                               c.NUM_PREVIOUS_FRAME_SPECT:j + c.NUM_NEXT_FRAME_SPECT]
 
             network_inputs.append(frames_slice)
 
@@ -1137,8 +1193,9 @@ def read_audio(filename, sample_rate=c.SAMPLE_RATE):
     return audio
 
 #this is not good
-#def normalize_frames(m):
+# def normalize_frames(m):
 #    return [(v - np.mean(v)) / (np.std(v) + 2e-12) for v in m]
+
 
 def normalize_frames(m, Scale=True):
     """
@@ -1155,7 +1212,8 @@ def normalize_frames(m, Scale=True):
 
 def pre_process_inputs(signal=np.random.uniform(size=32000), target_sample_rate=8000, use_delta=c.USE_DELTA):
 
-    filter_banks, energies = fbank(signal, samplerate=target_sample_rate, nfilt=c.FILTER_BANK, winlen=0.025)
+    filter_banks, energies = fbank(
+        signal, samplerate=target_sample_rate, nfilt=c.FILTER_BANK, winlen=0.025)
     delta_1 = delta(filter_banks, N=1)
     delta_2 = delta(delta_1, N=1)
 
@@ -1178,7 +1236,8 @@ def pre_process_inputs(signal=np.random.uniform(size=32000), target_sample_rate=
     """
     import random
     j = random.randrange(c.NUM_PREVIOUS_FRAME, num_frames - c.NUM_NEXT_FRAME)
-    frames_slice = frames_features[j - c.NUM_PREVIOUS_FRAME:j + c.NUM_NEXT_FRAME]
+    frames_slice = frames_features[j -
+                                   c.NUM_PREVIOUS_FRAME:j + c.NUM_NEXT_FRAME]
     network_inputs.append(frames_slice)
     return np.array(network_inputs)
 
@@ -1263,7 +1322,7 @@ class to2tensor(object):
             Tensor: Converted image.
         """
         # if isinstance(pic, np.ndarray):
-            # handle numpy array
+        # handle numpy array
         img = torch.tensor(pic, dtype=torch.float32)
         return img
 

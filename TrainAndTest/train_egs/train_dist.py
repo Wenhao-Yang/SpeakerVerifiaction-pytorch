@@ -10,7 +10,7 @@
 @Overview:
 """
 from __future__ import print_function
-from Light.dataset import Sampler_Loaders, SubDatasets, SubScriptDatasets
+from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
 from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
@@ -19,7 +19,7 @@ import argparse
 import signal
 import yaml
 import os
-import os.path as osp
+# import os.path as osp
 import pdb
 import random
 import shutil

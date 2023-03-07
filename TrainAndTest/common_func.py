@@ -129,25 +129,42 @@ def create_model(name, **kwargs):
     return model
 
 
-def create_scheduler(optimizer, args, train_dir):
-    milestones = args.milestones.split(',')
-    milestones = [int(x) for x in milestones]
-    milestones.sort()
+def create_classifier(encode_model, **kwargs):
+    if kwargs['loss_type'] in ['asoft', 'amsoft', 'damsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2', 'aDCF']:
+        encode_model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
+                                                       normalize=kwargs['normalize'] if 'normalize' in kwargs else True,
+                                                       num_classes=kwargs['num_classes'])
+    elif 'sub' in kwargs['loss_type']:
+        encode_model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'],
+                                                  num_classes=kwargs['num_classes'],
+                                                  num_center=kwargs['num_center'],
+                                                  output_subs=kwargs['output_subs'])
+    elif kwargs['loss_type'] in ['proser']:
+        encode_model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'],
+                                                    dummy_classes=kwargs['num_center'],
+                                                    num_classes=kwargs['num_classes'])
 
-    if args.scheduler == 'exp':
-        gamma = np.power(args.base_lr / args.lr, 1 /
-                         args.epochs) if args.gamma == 0 else args.gamma
+
+def create_scheduler(optimizer, config_args, train_dir=None):
+    milestones = config_args['milestones']
+    if config_args['scheduler'] == 'exp':
+        gamma = np.power(config_args['base_lr'] / config_args['lr'],
+                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
         scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
-    elif args.scheduler == 'rop':
+    elif config_args['scheduler'] == 'rop':
         scheduler = lr_scheduler.ReduceLROnPlateau(
-            optimizer, patience=args.patience, min_lr=1e-5)
-    elif args.scheduler == 'cyclic':
-        cycle_momentum = False if args.optimizer == 'adam' else True
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=args.base_lr,
-                                          max_lr=args.lr,
-                                          step_size_up=5 *
-                                          int(np.ceil(
-                                              len(train_dir) / args.batch_size)),
+            optimizer, patience=config_args['patience'], min_lr=1e-5)
+    elif config_args['scheduler'] == 'cyclic':
+        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
+        if 'step_size' in config_args:
+            step_size = config_args['step_size']
+        else:
+            step_size = config_args['cyclic_epoch'] * int(
+                np.ceil(len(train_dir) / config_args['batch_size']))
+
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
+                                          max_lr=config_args['lr'],
+                                          step_size_up=step_size,
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
     else:
@@ -270,9 +287,11 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         #     uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
                         if mean_vector:
                             # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
+                            uid_vec = out[num_seg_tensor[i]
+                                :num_seg_tensor[i + 1]].mean(axis=0)
                         else:
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+                            uid_vec = out[num_seg_tensor[i]
+                                :num_seg_tensor[i + 1]]
 
                         uid2vectors.append((uid, uid_vec))
 
