@@ -24,12 +24,15 @@ num_valid: 2
 test_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/test_<feat>
 trials: trials
 input_norm: Inst
+input_per_spks: 512
 
 test_input: fix
 log_scale: False
 random_chunk: [200, 400]
 chunk_size: 300
 frame_shift: 300
+num_frames: 300
+
 extract: True
 nj: 8
 shuffle: False
