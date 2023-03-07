@@ -42,18 +42,16 @@ if [ $stage -le 0 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --batch-size 128 \
-      --input-norm ${input_norm} \
+      --input-norm ${input_norm} --input-dim 40 \
       --test-input fix \
       --feat-format kaldi --nj 10 \
-      --epochs 40 \
+      --epochs 40 --patience 3 \
       --lr 0.1 \
-      --input-dim 40 \
       --random-chunk 6400 12800 \
       --chunk-size 9600 \
       --filter ${filter} --feat-dim ${feat_dim} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --time-dim 1 --avg-size ${avgsize} \
-      --patience 3 \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_9.pth \
@@ -61,13 +59,11 @@ if [ $stage -le 0 ]; then
       --block-type ${block_type} \
       --channels 128,128,128,128,375 \
       --encoder-type ${encoder_type} \
-      --embedding-size ${embedding_size} \
-      --alpha ${alpha} \
+      --embedding-size ${embedding_size} --alpha ${alpha} \
       --num-valid 2 \
       --margin 0.2 --s 30 --m 3 --all-iteraion 0 \
       --lr-ratio ${lr_ratio} \
-      --filter-wd 0.001 \
-      --weight-decay 0.0005 \
+      --filter-wd 0.001 --weight-decay 0.0005 \
       --dropout-p ${dropout_p} \
       --gpu-id 3 \
       --cos-sim --extract \
@@ -94,7 +90,8 @@ if [ $stage -le 10 ]; then
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
     #   CUDA_VISIBLE_DEVICES=3,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Fbank/ResNets/aidata_resnet.yaml --seed=${seed}
-       CUDA_VISIBLE_DEVICES=4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Wav/vox2_ecapa.yaml --seed=${seed}
+      #  CUDA_VISIBLE_DEVICES=4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs_dist.py --train-config=TrainAndTest/Wav/vox2_ecapa.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/vox2_int_original.yaml --seed=${seed}
       #  CUDA_VISIBLE_DEVICES=4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41425 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox2_ecapa.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 #     CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
     done
