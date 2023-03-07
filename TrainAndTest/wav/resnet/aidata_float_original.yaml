@@ -37,7 +37,7 @@ frame_shift: 48000
 num_frames: 48000
 extract: True
 nj: 6
-shuffle: False
+shuffle: True
 batch_shuffle: True
 
 feat_format: wav
