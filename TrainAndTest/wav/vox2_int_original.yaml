@@ -82,6 +82,7 @@ activation: relu
 channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 #channels: [1024,1024,1024,1024,3072]
 encoder_type: "SASP2"
+num_classes: 5994
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
   filter: "fbank"
@@ -92,12 +93,12 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
   channels: [512, 512, 512, 512, 1536]
   encoder_type: "SASP2"
   embedding_size: !ref <embedding_size>
-  num_classes: 5994
+  num_classes: !ref <num_classes>
   activation: relu
 
 classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
   feat_dim: !ref <embedding_size>
-  num_classes: 5994
+  num_classes: !ref <num_classes>
 
 # loss
 loss_ratio: 1
