@@ -64,7 +64,7 @@ def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: b
     return filter_layer
 
 
-def get_input_norm(input_norm: str, dim=None):
+def get_input_norm(input_norm: str, input_dim=None):
     if input_norm == 'Mean':
         inst_layer = Mean_Norm()
     elif input_norm == 'SMean':
@@ -72,7 +72,7 @@ def get_input_norm(input_norm: str, dim=None):
     elif input_norm == 'Mstd':
         inst_layer = MeanStd_Norm()
     elif input_norm == 'Inst':
-        inst_layer = Inst_Norm(dim=dim)
+        inst_layer = Inst_Norm(dim=input_dim)
     else:
         inst_layer = None
 

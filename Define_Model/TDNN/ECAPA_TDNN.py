@@ -174,7 +174,7 @@ class ECAPA_TDNN(nn.Module):
         if filter_layer != None:
             input_mask.append(filter_layer)
 
-        norm_layer = get_input_norm(input_norm)
+        norm_layer = get_input_norm(input_norm, input_dim=input_dim)
         if norm_layer != None:
             input_mask.append(norm_layer)
         mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
