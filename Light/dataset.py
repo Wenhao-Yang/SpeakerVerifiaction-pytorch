@@ -117,7 +117,7 @@ def SubScriptDatasets(config_args):
     sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
     vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
 
-    train_dir = ScriptTrainDataset(dir=config_args['data_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
+    train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
                                    transform=transform, num_valid=config_args['num_valid'], domain=domain,
                                    vad_select=vad_select, sample_type=sample_type,
                                    feat_type=feat_type,
