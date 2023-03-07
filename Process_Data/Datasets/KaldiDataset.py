@@ -765,6 +765,7 @@ class ScriptTrainDataset(data.Dataset):
                     uid2vad[uid] = vad_offset
 
         total_frames = 0
+        self.utt2num_frames = {}
         if self.sample_type != 'balance':
             if os.path.exists(utt2num_frames):
                 with open(utt2num_frames, 'r') as f:
@@ -776,6 +777,7 @@ class ScriptTrainDataset(data.Dataset):
                             num_frames = float(num_frames) * 16000
 
                         num_frames = int(num_frames)
+                        self.utt2num_frames[uid] = num_frames
 
                         if num_frames >= min_frames:
                             total_frames += num_frames
@@ -975,7 +977,12 @@ class ScriptTrainDataset(data.Dataset):
                 (uid, start, end) = self.base_utts[sid]
                 # pdb.set_trace()
                 if uid not in self.valid_utt2spk_dict:
-                    y = self.loader(self.uid2feat[uid])
+                    if self.feat_type != 'wav':
+                        y = self.loader(self.uid2feat[uid])
+                    else:
+                        y = self.loader(
+                            self.uid2feat[uid], start=start, stop=end)
+
                     if uid in self.uid2vad:
                         voice_idx = np.where(
                             kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
@@ -1004,39 +1011,47 @@ class ScriptTrainDataset(data.Dataset):
             rand_idxs.append(rand_utt_idx)
             uid = utts[rand_utt_idx]
 
-            feature = self.loader(self.uid2feat[uid])
-            if uid in self.uid2vad:
-                voice_idx = np.where(
-                    kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
-                feature = feature[voice_idx]
-
-            # print(y.shape, feature.shape)
-            y = np.concatenate((y, feature), axis=self.c_axis)
-
-            while y.shape[self.c_axis] < self.segment_len:
-                rand_utt_idx = np.random.randint(0, num_utt)
-                rand_idxs.append(rand_utt_idx)
-
-                uid = utts[rand_utt_idx]
-
+            if self.feat_type == 'wav' and self.utt2num_frames[uid] >= self.segment_len:
+                start = np.random.randint(
+                    0, self.utt2num_frames[uid] - self.segment_len)
+                end = start + self.segment_len
+                feature = self.loader(
+                    self.uid2feat[uid], start=start, stop=end)
+                y = np.concatenate((y, feature), axis=self.c_axis)
+            else:
                 feature = self.loader(self.uid2feat[uid])
                 if uid in self.uid2vad:
                     voice_idx = np.where(
                         kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                     feature = feature[voice_idx]
 
+                # print(y.shape, feature.shape)
                 y = np.concatenate((y, feature), axis=self.c_axis)
 
-                # transform features if required
-                if self.rand_test:
-                    while len(rand_idxs) < 4:
-                        rand_idxs.append(-1)
-                    start, length = self.transform(y)
-                    rand_idxs.append(start)
-                    rand_idxs.append(length)
+                while y.shape[self.c_axis] < self.segment_len:
+                    rand_utt_idx = np.random.randint(0, num_utt)
+                    rand_idxs.append(rand_utt_idx)
 
-                    # [uttid uttid -1 -1 start lenght]
-                    return torch.tensor(rand_idxs).reshape(1, -1), sid
+                    uid = utts[rand_utt_idx]
+
+                    feature = self.loader(self.uid2feat[uid])
+                    if uid in self.uid2vad:
+                        voice_idx = np.where(
+                            kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                        feature = feature[voice_idx]
+
+                    y = np.concatenate((y, feature), axis=self.c_axis)
+
+                    # transform features if required
+                    if self.rand_test:
+                        while len(rand_idxs) < 4:
+                            rand_idxs.append(-1)
+                        start, length = self.transform(y)
+                        rand_idxs.append(start)
+                        rand_idxs.append(length)
+
+                        # [uttid uttid -1 -1 start lenght]
+                        return torch.tensor(rand_idxs).reshape(1, -1), sid
 
         feature = self.transform(y)
         label = sid
