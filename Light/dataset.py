@@ -9,7 +9,7 @@
 @Overview: 
 '''
 import torch
-from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset
+from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, ScriptTrainDataset, ScriptValidDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
 
 from Process_Data.audio_processing import toMFB, totensor, truncatedinput, PadCollate3d
@@ -66,6 +66,81 @@ def SubDatasets(config_args):
                                             trials_file=config_args['train_trials'])
 
     return train_dir, valid_dir, train_extract_dir
+
+
+def SubScriptDatasets(config_args):
+    transform = transforms.Compose([
+        totensor()
+    ])
+
+    if config_args['test_input'] == 'var':
+        transform_V = transforms.Compose([
+            ConcateOrgInput(
+                remove_vad=config_args['remove_vad'], feat_type=config_args['feat_format']),
+        ])
+    elif config_args['test_input'] == 'fix':
+        transform_V = transforms.Compose([
+            ConcateVarInput(remove_vad=config_args['remove_vad'], num_frames=config_args['chunk_size'],
+                            frame_shift=config_args['chunk_size'],
+                            feat_type=config_args['feat_format']),
+        ])
+
+    if config_args['log_scale']:
+        transform.transforms.append(tolog())
+        transform_V.transforms.append(tolog())
+
+    loader_types = {'kaldi': load_mat, 'wav': load_mat, 'npy': np.load}
+    file_loader = loader_types[config_args['feat_format']]
+
+    feat_type = 'kaldi'
+    if config_args['feat_format'] == 'npy':
+        file_loader = np.load
+    elif config_args['feat_format'] in ['kaldi', 'klfb', 'klsp']:
+        # file_loader = kaldi_io.read_mat
+        file_loader = load_mat
+    elif config_args['feat_format'] == 'wav':
+        file_loader = read_WaveInt if config_args['wav_type'] == 'int' else read_WaveFloat
+        feat_type = 'wav'
+
+    # return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
+    # train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
+    #                        transform=transform, batch_size=config_args['batch_size'],
+    #                        random_chunk=config_args['random_chunk'],
+    #                        verbose=1 if torch.distributed.get_rank() == 0 else 0,
+    #                        domain=return_domain)
+
+    # valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
+    #                        transform=transform,
+    #                        verbose=1 if torch.distributed.get_rank() == 0 else 0
+    #                        )
+    domain = config_args['domain'] if 'domain' in config_args else False
+    sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
+    vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
+
+    train_dir = ScriptTrainDataset(dir=config_args['data_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
+                                   transform=transform, num_valid=config_args['num_valid'], domain=domain,
+                                   vad_select=vad_select, sample_type=sample_type,
+                                   feat_type=feat_type,
+                                   segment_len=config_args['num_frames'])
+
+    valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
+                                   dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
+                                   valid_uid2feat=train_dir.valid_uid2feat,
+                                   valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                   transform=transform, domain=domain)
+
+    feat_type = 'kaldi'
+    if config_args['feat_format'] == 'wav':
+        file_loader = read_WaveInt if config_args['feat'] == 'int' else read_WaveFloat
+        feat_type = 'wav'
+
+    train_extract_dir = KaldiExtractDataset(dir=config_args['train_test_dir'],
+                                            transform=transform_V,
+                                            filer_loader=file_loader, feat_type=feat_type,
+                                            trials_file=config_args['train_trials'])
+
+    return train_dir, valid_dir, train_extract_dir
+
 
 
 def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
