@@ -100,11 +100,12 @@ def SubScriptDatasets(config_args):
     elif config_args['feat_format'] == 'wav':
         file_loader = read_WaveInt if config_args['wav_type'] == 'int' else read_WaveFloat
         feat_type = 'wav'
-        
+
     remove_vad = False if 'remove_vad' not in config_args else config_args['remove_vad']
     transform = transforms.Compose([
         ConcateNumInput(num_frames=config_args['num_frames'], remove_vad=remove_vad,
                     feat_type=feat_type),
+        totensor()
     ])
     # return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
     # train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
