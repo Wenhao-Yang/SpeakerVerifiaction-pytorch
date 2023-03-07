@@ -12,7 +12,7 @@ import torch
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, ScriptTrainDataset, ScriptValidDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset
 
-from Process_Data.audio_processing import toMFB, totensor, truncatedinput, PadCollate3d
+from Process_Data.audio_processing import ConcateNumInput, toMFB, totensor, truncatedinput, PadCollate3d
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_WaveInt, read_WaveFloat
 import torchvision.transforms as transforms
 from kaldiio import load_mat
@@ -69,9 +69,8 @@ def SubDatasets(config_args):
 
 
 def SubScriptDatasets(config_args):
-    transform = transforms.Compose([
-        totensor()
-    ])
+    
+
 
     if config_args['test_input'] == 'var':
         transform_V = transforms.Compose([
@@ -85,9 +84,9 @@ def SubScriptDatasets(config_args):
                             feat_type=config_args['feat_format']),
         ])
 
-    if config_args['log_scale']:
-        transform.transforms.append(tolog())
-        transform_V.transforms.append(tolog())
+    # if config_args['log_scale']:
+    #     transform.transforms.append(tolog())
+    #     transform_V.transforms.append(tolog())
 
     # loader_types = {'kaldi': load_mat, 'wav': load_mat, 'npy': np.load}
     # file_loader = loader_types[config_args['feat_format']]
@@ -101,7 +100,12 @@ def SubScriptDatasets(config_args):
     elif config_args['feat_format'] == 'wav':
         file_loader = read_WaveInt if config_args['wav_type'] == 'int' else read_WaveFloat
         feat_type = 'wav'
-
+        
+    remove_vad = False if 'remove_vad' not in config_args else config_args['remove_vad']
+    transform = transforms.Compose([
+        ConcateNumInput(num_frames=config_args['num_frames'], remove_vad=remove_vad,
+                    feat_type=feat_type),
+    ])
     # return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
     # train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
     #                        transform=transform, batch_size=config_args['batch_size'],
