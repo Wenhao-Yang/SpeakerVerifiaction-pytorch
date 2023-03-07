@@ -41,7 +41,7 @@ shuffle: False
 batch_shuffle: True
 
 feat_format: wav
-remove_vad: True
+remove_vad: False
 
 ### Training settings
 epochs: 60
