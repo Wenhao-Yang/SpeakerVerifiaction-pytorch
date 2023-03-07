@@ -903,6 +903,7 @@ class ScriptTrainDataset(data.Dataset):
             self.valid_set = valid_set
             self.valid_uid2feat = valid_uid2feat
             self.valid_utt2spk_dict = valid_utt2spk_dict
+            self.valid_uids = set(list(valid_utt2spk_dict.keys()))
             self.valid_utt2dom_dict = valid_utt2dom_dict
 
         self.speakers = speakers
@@ -976,24 +977,21 @@ class ScriptTrainDataset(data.Dataset):
             while True:
                 (uid, start, end) = self.base_utts[sid]
                 # pdb.set_trace()
-                if uid not in self.valid_utt2spk_dict:
+                if uid not in self.valid_uids:
                     if self.feat_type != 'wav':
                         y = self.loader(self.uid2feat[uid])
                     else:
                         y = self.loader(
                             self.uid2feat[uid], start=start, stop=end)
 
-                    if uid in self.uid2vad:
-                        voice_idx = np.where(
-                            kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
-                        # print(voice_idx)
-                        y = y[voice_idx]
-                        # print(y)
-
-                    if self.feat_type == 'wav':
-                        y = y[:, start:end]
-                    else:
+                        if uid in self.uid2vad:
+                            voice_idx = np.where(
+                                kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                            # print(voice_idx)
+                            y = y[voice_idx]
+                            # print(y)
                         y = y[start:end]
+
                     sid = self.utt2spk_dict[uid]
                     sid = self.spk_to_idx[sid]
                     break
@@ -1012,7 +1010,7 @@ class ScriptTrainDataset(data.Dataset):
             uid = utts[rand_utt_idx]
 
             if self.feat_type == 'wav':
-                start = np.random.randint(
+                start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
                     0, self.utt2num_frames[uid] - self.segment_len)
                 end = start + self.segment_len
                 feature = self.loader(
@@ -1039,9 +1037,7 @@ class ScriptTrainDataset(data.Dataset):
                 #         voice_idx = np.where(
                 #             kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                 #         feature = feature[voice_idx]
-
                 #     y = np.concatenate((y, feature), axis=self.c_axis)
-
                 #     # transform features if required
                 #     if self.rand_test:
                 #         while len(rand_idxs) < 4:
@@ -1049,7 +1045,6 @@ class ScriptTrainDataset(data.Dataset):
                 #         start, length = self.transform(y)
                 #         rand_idxs.append(start)
                 #         rand_idxs.append(length)
-
                 #         # [uttid uttid -1 -1 start lenght]
                 #         return torch.tensor(rand_idxs).reshape(1, -1), sid
 
