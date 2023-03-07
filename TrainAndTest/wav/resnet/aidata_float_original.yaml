@@ -15,6 +15,7 @@ feat_type: wave
 loss: arcsoft
 input_dim: 40
 feat: float
+wav_type: float
 subset: ""
 
 train_dir: !ref <data_root_dir>/data/<datasets>/train

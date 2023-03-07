@@ -89,8 +89,8 @@ def SubScriptDatasets(config_args):
         transform.transforms.append(tolog())
         transform_V.transforms.append(tolog())
 
-    loader_types = {'kaldi': load_mat, 'wav': load_mat, 'npy': np.load}
-    file_loader = loader_types[config_args['feat_format']]
+    # loader_types = {'kaldi': load_mat, 'wav': load_mat, 'npy': np.load}
+    # file_loader = loader_types[config_args['feat_format']]
 
     feat_type = 'kaldi'
     if config_args['feat_format'] == 'npy':
