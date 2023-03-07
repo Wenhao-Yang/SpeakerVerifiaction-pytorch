@@ -57,7 +57,7 @@ milestones: [10, 20, 30, 40]
 scheduler: cyclic
 lr: 0.001
 base_lr: 0.00000001
-cyclic_epoch: 3
+cyclic_epoch: 5
 cos_sim: True
 
 early_stopping: True
