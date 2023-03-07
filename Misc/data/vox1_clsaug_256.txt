@@ -1,0 +1,81 @@
+# Mean_batch64_cbam_downk1_avg4_SAP2_em128_dp01_alpha1_none1_wd5e4_mix2_dist_256 baseline
+EER(%):         8.44    Threshold:  0.2210  MinDcf-0.01: 0.6729  MinDcf-0.001: 0.7943  Mix2,3: 6.7012, 4.5095
+EER(%):         8.57    Threshold:  0.2191  MinDcf-0.01: 0.6313  MinDcf-0.001: 0.7581  Mix2,3: 6.4990, 4.1031
+EER(%):         8.72    Threshold:  0.2252  MinDcf-0.01: 0.6503  MinDcf-0.001: 0.7312  Mix2,3: 6.3740, 4.1448
+
+# mixup manifold1
+EER(%):        13.58    Threshold:  0.2588  mindcf-0.01: 0.7901  mindcf-0.001: 0.9009  mix2,3: 12.2434, 9.6737.
+EER(%):        15.06    Threshold:  0.3678  MinDcf-0.01: 0.8161  MinDcf-0.001: 0.8932  Mix3: 10.9802
+EER(%):        14.35    Threshold:  0.3037  MinDcf-0.01: 0.8180  MinDcf-0.001: 0.8909  Mix3: 10.4602
+
+# mixup manifold1 clsaug
+EER(%):        12.33    Threshold:  0.3070  MinDcf-0.01: 0.7634  MinDcf-0.001: 0.8380  Mix2,3: 10.3301, 7.8862
+EER(%):        12.30    Threshold:  0.2982  MinDcf-0.01: 0.7956  MinDcf-0.001: 0.8606  Mix2,3: 10.5822, 8.4194
+EER(%):        12.33    Threshold:  0.2871  MinDcf-0.01: 0.8010  MinDcf-0.001: 0.8641  Mix2,3: 10.6524, 8.5326
+
+# mixup manifold2
+EER(%):        12.59    Threshold:  0.2914  mindcf-0.01: 0.8054  mindcf-0.001: 0.8559  mix2,3: 10.7769, 8.6795.
+EER(%):        12.97    Threshold:  0.3133  MinDcf-0.01: 0.7848  MinDcf-0.001: 0.8872  Mix3: 9.0315
+EER(%):        13.35    Threshold:  0.3127  MinDcf-0.01: 0.7866  MinDcf-0.001: 0.8453  Mix3: 8.8740
+
+# mixup manifold3 clsaug
+EER(%):        12.03    Threshold:  0.3116  MinDcf-0.01: 0.7897  MinDcf-0.001: 0.9068  Mix2,3: 10.9052, 8.6120
+EER(%):        12.17    Threshold:  0.2923  MinDcf-0.01: 0.7556  MinDcf-0.001: 0.8736  Mix2,3: 10.6303, 8.0321
+EER(%):        11.89    Threshold:  0.3182  MinDcf-0.01: 0.7749  MinDcf-0.001: 0.9188  Mix2,3: 10.9275, 8.4676
+
+# mixup manifold3
+EER(%):        13.05    Threshold:  0.3210  mindcf-0.01: 0.7855  mindcf-0.001: 0.8690  mix2,3: 11.3422, 8.9095.
+EER(%):        12.87    Threshold:  0.2987  MinDcf-0.01: 0.7935  MinDcf-0.001: 0.8559  Mix3: 8.7405
+EER(%):        12.70    Threshold:  0.2937  MinDcf-0.01: 0.7852  MinDcf-0.001: 0.8464  Mix3: 8.4395
+
+# mixup manifold3 clsaug
+EER(%):        12.75    Threshold:  0.3172  MinDcf-0.01: 0.7610  MinDcf-0.001: 0.8328  Mix2,3: 10.6178, 8.0799
+EER(%):        12.48    Threshold:  0.3129  MinDcf-0.01: 0.7979  MinDcf-0.001: 0.9345  Mix2,3: 11.6616, 9.3046
+EER(%):        12.52    Threshold:  0.3247  MinDcf-0.01: 0.7868  MinDcf-0.001: 0.9213  Mix2,3: 11.5329, 9.0740
+
+# mixup manifold4
+EER(%):        13.64    Threshold:  0.3513  mindcf-0.01: 0.7385  mindcf-0.001: 0.8162  mix2,3: 11.1353, 8.2236.
+EER(%):        13.43    Threshold:  0.3074  MinDcf-0.01: 0.8033  MinDcf-0.001: 0.9127  Mix3: 9.8431
+EER(%):        13.39    Threshold:  0.3085  MinDcf-0.01: 0.7833  MinDcf-0.001: 0.9232  Mix3: 9.6798
+
+# mixup manifold4 clsaug
+EER(%):        12.60    Threshold:  0.3487  MinDcf-0.01: 0.8267  MinDcf-0.001: 0.9016  Mix2,3: 11.3583, 9.3902
+EER(%):        13.01    Threshold:  0.3428  MinDcf-0.01: 0.7901  MinDcf-0.001: 0.8979  Mix2,3: 11.6836, 9.2316
+EER(%):        12.39    Threshold:  0.3254  MinDcf-0.01: 0.7770  MinDcf-0.001: 0.9128  Mix2,3: 11.3105, 8.7887
+
+# mixup manifold5
+EER(%):        13.55    Threshold:  0.3306  mindcf-0.01: 0.8426  mindcf-0.001: 0.9678  mix2,3: 13.1156, 11.0516.
+EER(%):        13.96    Threshold:  0.3073  MinDcf-0.01: 0.8440  MinDcf-0.001: 0.9052  Mix3: 10.6632
+EER(%):        13.96    Threshold:  0.3608  MinDcf-0.01: 0.8070  MinDcf-0.001: 0.8625  Mix3: 9.7155
+
+# mixup manifold5 clsaug
+EER(%):        13.41    Threshold:  0.3733  MinDcf-0.01: 0.8112  MinDcf-0.001: 0.8651  Mix2,3: 11.6032, 9.4120
+EER(%):        13.34    Threshold:  0.4038  MinDcf-0.01: 0.8050  MinDcf-0.001: 0.8927  Mix2,3: 11.9064, 9.5851
+EER(%):        12.87    Threshold:  0.3439  MinDcf-0.01: 0.8333  MinDcf-0.001: 0.9120  Mix2,3: 11.7365, 9.7800
+
+# mixup manifold6
+EER(%):        14.49    Threshold:  0.3947  mindcf-0.01: 0.8437  mindcf-0.001: 0.8994  mix2,3: 13.0334, 10.9969.
+EER(%):        15.68    Threshold:  0.3716  MinDcf-0.01: 0.8180  MinDcf-0.001: 0.8180  Mix3: 10.4952
+EER(%):        15.53    Threshold:  0.3776  MinDcf-0.01: 0.8560  MinDcf-0.001: 0.9084  Mix3: 12.0785
+
+# mixup manifold6 clsaug
+EER(%):        14.88    Threshold:  0.4746  MinDcf-0.01: 0.8231  MinDcf-0.001: 0.8703  Mix2,3: 12.9508, 10.6593
+EER(%):        14.28    Threshold:  0.3924  MinDcf-0.01: 0.8645  MinDcf-0.001: 0.9309  Mix2,3: 13.2899, 11.4888
+EER(%):        14.95    Threshold:  0.4866  MinDcf-0.01: 0.8231  MinDcf-0.001: 0.8881  Mix2,3: 13.2795, 10.9306
+
+# mixup manifold7
+EER(%):        16.30    Threshold:  0.5429  mindcf-0.01: 0.8449  mindcf-0.001: 0.8748  mix2,3: 14.2624, 12.0505.
+EER(%):        16.42    Threshold:  0.5780  MinDcf-0.01: 0.8814  MinDcf-0.001: 0.9066  Mix3: 13.1169
+EER(%):        16.69    Threshold:  0.6162  MinDcf-0.01: 0.8525  MinDcf-0.001: 0.8783  Mix3: 12.4998
+
+# mixup manifold7 clsaug
+EER(%):        13.81    Threshold:  0.3805  MinDcf-0.01: 0.8628  MinDcf-0.001: 0.8879  Mix2,3: 12.2587, 10.5772
+EER(%):        13.76    Threshold:  0.4545  MinDcf-0.01: 0.8673  MinDcf-0.001: 0.8869  Mix2,3: 12.2024, 10.5836
+EER(%):        14.13    Threshold:  0.4697  MinDcf-0.01: 0.8536  MinDcf-0.001: 0.8576  Mix2,3: 12.1142, 10.3408
+
+# mixup manifold8
+EER(%):        15.73    Threshold:  0.5563  mindcf-0.01: 0.8259  mindcf-0.001: 0.9060  mix2,3: 14.2528, 11.7710.
+EER(%):        16.86    Threshold:  0.5371  mindcf-0.01: 0.8432  mindcf-0.001: 0.8790  mix2,3: 14.8209, 12.4972.
+EER(%):        16.03    Threshold:  0.5565  MinDcf-0.01: 0.8590  MinDcf-0.001: 0.9059  Mix3: 12.4709
+
+# mixup manifold8 clsaug
