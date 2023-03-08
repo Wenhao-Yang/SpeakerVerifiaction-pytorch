@@ -365,8 +365,8 @@ def main():
     # Training settings
     args = args_parse('PyTorch Speaker Recognition: Classification')
     
-    if os.path.exists(args.config_yaml):
-        with open(args.config_yaml, 'r') as f:
+    if os.path.exists(args.train_config):
+        with open(args.train_config, 'r') as f:
             config_args = load_hyperpyyaml(f)
     else:
         config_args = vars(args)
