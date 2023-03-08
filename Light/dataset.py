@@ -44,10 +44,10 @@ def SubDatasets(config_args):
     file_loader = loader_types[config_args['feat_format']]
 
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
-    if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
-        verbose = 1
-    else:
+    if torch.distributed.is_initialized() and torch.distributed.get_rank() > 0:
         verbose = 0
+    else:
+        verbose = 1
     train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                            transform=transform, batch_size=config_args['batch_size'],
                            random_chunk=config_args['random_chunk'],

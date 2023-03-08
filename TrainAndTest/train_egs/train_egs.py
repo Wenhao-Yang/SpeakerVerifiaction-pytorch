@@ -450,10 +450,10 @@ def main():
     
     start_epoch = 0
     if args.save_init and not args.finetune:
-        check_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
+        checkpoint_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
                                                       time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
-        if not os.path.exists(check_path):
-            torch.save({'state_dict': model.state_dict()}, check_path)
+        if not os.path.exists(checkpoint_path):
+            torch.save({'state_dict': model.state_dict()}, checkpoint_path)
 
     # Load checkpoint
     iteration = 0  # if args.resume else 0
