@@ -113,7 +113,7 @@ if [ $stage -le 11 ]; then
     #  feat=fb${input_dim}
 
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-      python TrainAndTest/train_egs/train_dist.py \
+      python TrainAndTest/train_egs/train_egs.py \
         --train-config TrainAndTest/wav/vox2_ecapa.yaml \
         --gpu-id 1 \
         --seed ${seed}
