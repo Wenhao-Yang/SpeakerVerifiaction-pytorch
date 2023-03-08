@@ -633,7 +633,9 @@ def main():
                 select_samples(train_dir, train_loader, model, args, args.select_score)
 
             train(train_loader, model, optimizer, epoch, scheduler, args, writer)
-
+            if config_args['batch_shuffle']:
+                train_dir.__shuffle__()
+                
             valid_loss = valid_class(valid_loader, model, epoch, args, writer)
             if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1)):
