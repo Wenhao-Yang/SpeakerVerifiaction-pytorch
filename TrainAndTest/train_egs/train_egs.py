@@ -86,7 +86,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
         data, label = Variable(data), Variable(label)
         classfier, feats = model(data)
 
-        loss, other_loss = model.module.loss(classfier, feats, label, epoch=epoch)
+        if torch.distributed.is_initialized():
+            loss, other_loss = model.module.loss(classfier, feats, label, epoch=epoch)
+        else:
+            loss, other_loss = model.loss(classfier, feats, label, epoch=epoch)
         predicted_labels = output_softmax(classfier.clone())
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
@@ -195,7 +198,10 @@ def valid_class(valid_loader, model, epoch, args, writer):
 
             # compute output
             classfier, feats = model(data)
-            loss, other_loss = model.module.loss(classfier, feats, label)
+            if torch.distributed.is_initialized():
+                loss, other_loss = model.module.loss(classfier, feats, label)
+            else:
+                loss, other_loss = model.loss(classfier, feats, label)
 
             total_loss += float(loss.item())
             total_other_loss += other_loss
@@ -271,7 +277,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, args, writer):
 
 def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     model.eval()
-    model.module.loss.xe_criterion.ce.reduction = 'none'
+    if torch.distributed.is_initialized():
+        model.module.loss.xe_criterion.ce.reduction = 'none'
+    else:
+        model.loss.xe_criterion.ce.reduction = 'none'
 
     if isinstance(args, dict):
         args = AttrDict(args)
@@ -296,7 +305,10 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
                     label = label.cuda()
 
                 classfier, feats = model(data)
-                loss, other_loss = model.module.loss(classfier, feats, label)
+                if torch.distributed.is_initialized():
+                    loss, other_loss = model.module.loss(classfier, feats, label)
+                else:
+                    loss, other_loss = model.loss(classfier, feats, label)
 
             elif select_score == 'random':
                 loss = torch.zeros_like(label)
@@ -306,7 +318,10 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
                 score_dict[int(l)].append([float(sample_loss), idx_labels[i]])
                 all_loss.append(float(sample_loss))
 
-    model.module.loss.xe_criterion.ce.reduction = 'mean'
+    if torch.distributed.is_initialized():
+        model.module.loss.xe_criterion.ce.reduction = 'mean'
+    else:
+        model.loss.xe_criterion.ce.reduction = 'mean'
     train_dataset = train_dir.dataset
 
     dataset = []
@@ -488,7 +503,7 @@ def main():
     if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert args.lr_ratio > 0
         model_para.append(
-            {'params': model.module.loss.xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio})
+            {'params': model.loss.xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio})
 
     if args.finetune or args.second_wd > 0:
         # if args.loss_type in ['asoft', 'amsoft']:
