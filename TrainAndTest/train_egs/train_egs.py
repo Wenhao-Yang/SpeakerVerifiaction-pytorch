@@ -405,6 +405,7 @@ def main():
     if not os.path.exists(check_path):
         print('Making checkpath...')
         os.makedirs(check_path)
+    print('Checkpoint path: ', check_path)
 
     writer = SummaryWriter(logdir=check_path)
     sys.stdout = NewLogger(osp.join(check_path, 'log.%s.txt' %
@@ -635,7 +636,7 @@ def main():
             train(train_loader, model, optimizer, epoch, scheduler, args, writer)
             if config_args['batch_shuffle']:
                 train_dir.__shuffle__()
-                
+
             valid_loss = valid_class(valid_loader, model, epoch, args, writer)
             if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1)):
