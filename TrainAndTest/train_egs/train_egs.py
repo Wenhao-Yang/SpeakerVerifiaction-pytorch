@@ -632,7 +632,7 @@ def main():
 
             train(train_loader, model, optimizer, epoch, scheduler, args, writer)
 
-            valid_loss = valid_class(valid_loader, model, epoch)
+            valid_loss = valid_class(valid_loader, model, epoch, args, writer)
             if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
                     end - 1)):
                 valid_test_dict = valid_test(
