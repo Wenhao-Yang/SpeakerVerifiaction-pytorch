@@ -2679,8 +2679,8 @@ if [ $stage -le 301 ]; then
 
   batch_size=256
   mask_layer=baseline mask_len=5,5
-  train_set=cnceleb test_set=cnceleb
-  # train_set=vox1 test_set=vox1
+  # train_set=cnceleb test_set=cnceleb
+  train_set=vox1 test_set=vox1
   train_subset=
 #  subset=dev
   subset=dev test_input=var
