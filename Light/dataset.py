@@ -44,15 +44,19 @@ def SubDatasets(config_args):
     file_loader = loader_types[config_args['feat_format']]
 
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
+    if torch.is_distributed() and torch.distributed.get_rank() == 0:
+        verbose = 1
+    else:
+        verbose = 0
     train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                            transform=transform, batch_size=config_args['batch_size'],
                            random_chunk=config_args['random_chunk'],
-                           verbose=1 if torch.distributed.get_rank() == 0 else 0,
+                           verbose=verbose,
                            domain=return_domain)
 
     valid_dir = EgsDataset(dir=config_args['valid_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                            transform=transform,
-                           verbose=1 if torch.distributed.get_rank() == 0 else 0
+                           verbose=verbose
                            )
 
     feat_type = 'kaldi'
