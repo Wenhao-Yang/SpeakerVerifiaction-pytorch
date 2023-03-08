@@ -44,7 +44,7 @@ def SubDatasets(config_args):
     file_loader = loader_types[config_args['feat_format']]
 
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
-    if torch.is_distributed() and torch.distributed.get_rank() == 0:
+    if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
         verbose = 1
     else:
         verbose = 0
