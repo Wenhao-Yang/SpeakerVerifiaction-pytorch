@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=10
+stage=11
 waited=0
 while [ $(ps 106034 | wc -l) -eq 2 ]; do
   sleep 60
@@ -94,6 +94,29 @@ if [ $stage -le 10 ]; then
       # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/vox2_int_original.yaml --seed=${seed}
       #  CUDA_VISIBLE_DEVICES=4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41425 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox2_ecapa.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 #     CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+    done
+    done
+  done
+  exit
+fi
+
+
+if [ $stage -le 11 ]; then
+  model=ECAPA
+  datasets=vox2 feat_type=wave
+  loss=arcsoft
+  encod=ASTP2 embedding_size=256
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+  for lamda_beta in 0.2;do
+    for seed in 123456 123457 123458; do
+    for type in 01 ;do
+    #  feat=fb${input_dim}
+
+     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+      python TrainAndTest/train_egs/train_dist.py \
+        --config-yaml TrainAndTest/wav/vox2_ecapa.yaml \
+        --gpu-id 1 \
+        --seed ${seed}
     done
     done
   done
