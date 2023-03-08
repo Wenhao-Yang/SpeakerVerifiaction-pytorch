@@ -145,6 +145,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
             scheduler.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
+            
             epoch_str='Train Epoch {}: [ {:>5.1f}% ]'.format(
                 epoch, 100. * batch_idx / len(train_loader))
 
@@ -160,6 +161,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
             epoch_str += ' Avg Loss: {:.4f}'.format(total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
+            break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:6.2f}%, Avg loss: {:7.4f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
