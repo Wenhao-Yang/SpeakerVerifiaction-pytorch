@@ -25,18 +25,18 @@ from collections import OrderedDict
 from hyperpyyaml import load_hyperpyyaml
 from Define_Model.model import AttrDict
 from Light.model import SpeakerLoss
-import kaldiio
+# import kaldiio
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
-import torchvision.transforms as transforms
+# import torchvision.transforms as transforms
 from kaldi_io import read_mat, read_vec_flt
-from kaldiio import load_mat
+# from kaldiio import load_mat
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.nn.parallel import DistributedDataParallel
-from torch.optim import lr_scheduler
+# from torch.optim import lr_scheduler
 from tqdm import tqdm
 
 from Light.dataset import SubDatasets, SubLoaders
