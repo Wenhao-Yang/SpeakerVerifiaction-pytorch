@@ -36,7 +36,8 @@ if [ $stage -le 0 ]; then
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/wav/resnet/aidata_int.yaml --seed=${seed}
 
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/aidata_int_original.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/fbank/ResNets/aidata_cm.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/fbank/ResNets/aidata_cm.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/fbank/resnet/vox1_int_original.yaml --seed=${seed}
 
 
   done
