@@ -367,7 +367,8 @@ def main():
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
     torch.cuda.set_device(args.local_rank)
-
+    torch.multiprocessing.set_sharing_strategy('file_system')
+    
     # load train config file args.train_config
     with open(args.train_config, 'r') as f:
         # config_args = yaml.load(f, Loader=yaml.FullLoader)
