@@ -2711,7 +2711,7 @@ for seed in 123456 123457 123458 ; do
     # model_dir=ThinResNet34/cnceleb/klfb_egs_baseline/arcsoft_sgd_step/Mean_batch256_seblock_red2_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist_core/percent0.5_random/123456
     model_dir=ThinResNet34/vox1/klfb80_egs_baseline/arcsoft_sgd_rop/Inst_batch256_cbam_downk3_avg5_SAP2_em256_dp01_alpha0_none1_wd5e4_varesmix2_bashuf2_dist/baseline/${seed}
 
-   python -W ignore TrainAndTest/test_egs.py \
+   python -W ignore TrainAndTest/train_egs/test_egs.py \
      --model ${model} --resnet-size ${resnet_size} \
      --train-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat} \
      --train-extract-dir ${lstm_dir}/data/${train_set}/${feat_type}/dev${train_subset}_${feat} \
