@@ -2683,7 +2683,7 @@ if [ $stage -le 301 ]; then
   train_set=vox1 test_set=vox1
   train_subset=
 #  subset=dev
-  subset=dev test_input=var
+  subset=test test_input=var
   epoch=13
 
 #     --trials subtrials/trials_${s} --score-suffix ${s} \
