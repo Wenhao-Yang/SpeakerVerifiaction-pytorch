@@ -729,7 +729,7 @@ class ScriptVerifyDataset(data.Dataset):
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
-                 vad_select=False, sample_type='instance',
+                 vad_select=False, sample_type='instance', sr=16000,
                  segment_len=c.N_SAMPLES, verbose=1, min_frames=50):
         self.return_uid = return_uid
         self.domain = domain
@@ -748,7 +748,7 @@ class ScriptTrainDataset(data.Dataset):
         assert os.path.exists(feat_scp), feat_scp
         assert os.path.exists(spk2utt), spk2utt
 
-        invalid_uid = []
+        invalid_uid = set([])
         base_utts = []
 
         uid2vad = {}
@@ -759,10 +759,6 @@ class ScriptTrainDataset(data.Dataset):
                 for line in f.readlines():
                     uid_vad = line.split()
                     uid, vad_offset = uid_vad
-
-                    if uid in invalid_uid:
-                        continue
-
                     uid2vad[uid] = vad_offset
 
         total_frames = 0
@@ -774,7 +770,7 @@ class ScriptTrainDataset(data.Dataset):
                         if uid in uid2vad:
                             num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
                         if feat_type == 'wav':
-                            num_frames = float(num_frames) * 16000
+                            num_frames = float(num_frames) * sr
 
                         num_frames = int(num_frames)
 
@@ -788,7 +784,7 @@ class ScriptTrainDataset(data.Dataset):
                                 start = min(end - segment_len, 0)
                                 base_utts.append((uid, start, end))
                         else:
-                            invalid_uid.append(uid)
+                            invalid_uid.add(uid)
 
                     # if int(num_frames) < 50:
                     #     invalid_uid.append(uid)
@@ -884,7 +880,7 @@ class ScriptTrainDataset(data.Dataset):
                 if spk not in valid_set.keys():
                     valid_set[spk] = []
                     for i in range(num_valid):
-                        if len(dataset[spk]) <= 1:
+                        if len(dataset[spk]) <= num_valid:
                             break
                         j = np.random.randint(len(dataset[spk]))
                         utt = dataset[spk].pop(j)
@@ -902,6 +898,7 @@ class ScriptTrainDataset(data.Dataset):
             self.valid_set = valid_set
             self.valid_uid2feat = valid_uid2feat
             self.valid_utt2spk_dict = valid_utt2spk_dict
+            self.valid_uids = set(list(valid_utt2spk_dict.keys()))
             self.valid_utt2dom_dict = valid_utt2dom_dict
 
         self.speakers = speakers
@@ -931,7 +928,7 @@ class ScriptTrainDataset(data.Dataset):
                     '    The number of sampling utterances for each speakers is decided by the number of total frames.')
         else:
             samples_per_speaker = max(
-                len(base_utts) / len(speakers), samples_per_speaker)
+                np.ceil(len(base_utts) / len(speakers)), samples_per_speaker)
             if verbose > 1:
                 print(
                     '    The number of sampling utterances for each speakers is add to the number of total frames.')
@@ -968,17 +965,18 @@ class ScriptTrainDataset(data.Dataset):
         if sid < len(self.base_utts):
             while True:
                 (uid, start, end) = self.base_utts[sid]
-                if uid not in self.valid_utt2spk_dict:
-                    y = self.loader(self.uid2feat[uid])
+                if uid not in self.valid_uids:
+                    if self.feat_type != 'wav':
+                        y = self.loader(self.uid2feat[uid])
+                        y = y[start:end]
+                    else:
+                        y = self.loader(
+                            self.uid2feat[uid], start=start, stop=end)
+                        
                     if uid in self.uid2vad:
                         voice_idx = np.where(
                             kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                         y = y[voice_idx]
-
-                    if self.feat_type == 'wav':
-                        y = y[:, start:end]
-                    else:
-                        y = y[start:end]
 
                     sid = self.utt2spk_dict[uid]
                     sid = self.spk_to_idx[sid]
