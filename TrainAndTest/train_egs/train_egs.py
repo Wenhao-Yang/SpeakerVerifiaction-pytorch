@@ -368,7 +368,6 @@ def main():
     if os.path.exists(args.config_yaml):
         with open(args.config_yaml, 'r') as f:
             config_args = load_hyperpyyaml(f)
-
     else:
         config_args = vars(args)
     

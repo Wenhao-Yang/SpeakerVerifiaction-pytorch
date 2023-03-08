@@ -585,9 +585,11 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy', 'wav'],
                         help='number of jobs to make feats (default: 10)')
 
-    parser.add_argument(
-        '--check-path', help='folder to output model checkpoints')
+    parser.add_argument('--check-path', type=str,
+                        help='folder to output model checkpoints')
     parser.add_argument('--check-yaml', type=str,
+                        default='', help='path to model yaml')
+    parser.add_argument('--train-config', type=str,
                         default='', help='path to model yaml')
 
     parser.add_argument('--save-init', action='store_true',
