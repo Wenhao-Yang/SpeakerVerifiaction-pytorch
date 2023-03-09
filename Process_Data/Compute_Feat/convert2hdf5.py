@@ -14,19 +14,17 @@ from __future__ import print_function
 
 import argparse
 import os
-import pdb
 import shutil
 import sys
 import time
-from multiprocessing import Pool, Manager
-import traceback
+
 import kaldi_io
 import h5py
 import soundfile as sf
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
-parser.add_argument('--nj', type=int, default=6, metavar='E', help='number of jobs to make feats (default: 10)')
+parser.add_argument('--nj', type=int, default=4, metavar='E', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-dir', type=str, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
@@ -55,33 +53,6 @@ def read_WaveInt(filename, start=0, stop=None):
     return audio
 
 
-def Load_Process(lock_i, lock_w, h5py_file, i_queue, error_queue, feat_loader):
-    # print('Process {} Start'.format(str(os.getpid())))
-    while True:
-        # print(os.getpid(), " acqing lock i")
-        lock_i.acquire()  # 加上锁
-        # print(" %d Acqed lock i " % os.getpid(), end='')
-        if not i_queue.empty():
-            key, feat_path = i_queue.get()
-            lock_i.release()
-        else:
-            lock_i.release()
-            break
-        try:
-            feat = feat_loader(feat_path)
-        except:
-            error_queue.append(key)
-        
-        
-        lock_w.acquire()
-        with h5py.File(h5py_file, 'w') as f:
-            f.create_dataset(key, data=feat)  
-        lock_w.release()
-            
-        print('\rProcess [{:8>s}]: [{:>10d}] samples Left'.format
-              (str(os.getpid()), i_queue.qsize()), end='')
-        
-
 if __name__ == "__main__":
 
     nj = args.nj
@@ -89,6 +60,7 @@ if __name__ == "__main__":
     out_dir = os.path.join(args.out_dir, args.out_set)
     if os.path.exists(out_dir):
         shutil.rmtree(out_dir)
+        # os.removedirs(out_dir)
         print('Remove old dir!')
 
     if not os.path.exists(out_dir):
@@ -123,44 +95,24 @@ if __name__ == "__main__":
     # lmdb_file = os.path.join(out_dir, 'feat')
     # env = lmdb.open(lmdb_file, map_size=1099511627776)  # 1TB
     # txn = env.begin(write=True)
-
+    error_queue = []
     # print('Plan to make feats for %d utterances in %s with %d jobs.' % (num_utt, str(time.asctime()), nj))
-    manager = Manager()
-    read_lock = manager.Lock()
-    write_lock = manager.Lock()
-    read_queue = manager.Queue()
-    error_queue = manager.Queue()
 
-    pbar = tqdm(enumerate(feat_scp), ncols=100)
-    for idx, u in pbar:
-        key, feat_path = u.split()
-        read_queue.put((key, feat_path))
-
-        # if idx == 1000:
-        #     break
-    
-    # pdb.set_trace()
-
-    # f = h5py.File(h5py_file, 'w')  # 写入的时候是‘w’
-    pool = Pool(processes=int(nj))  # 创建nj个进程
-
-    for i in range(0, nj):
-        result = pool.apply_async(Load_Process, args=(read_lock, write_lock, h5py_file, read_queue, error_queue, feat_loader))
-        print(result)
-    pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
-    try:
-        pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
-    except:
-        traceback.print_exc()
-    # f.close()
-    if error_queue.qsize() > 0:
+    pbar = tqdm(enumerate(feat_scp))
+    with h5py.File(h5py_file, 'w') as f:  # 写入的时候是‘w’
+        for idx, u in pbar:
+            try:
+                key, feat_path = u.split()
+                feat = feat_loader(feat_path)
+                f.create_dataset(key, data=feat)
+            except:
+                error_queue.append(key)
+            
+    if len(error_queue) > 0:
         print('\n>>>> Saving Completed with errors in: ')
-        while not error_queue.empty():
-                print(error_queue.get() + ' ', end='')
-        print('')
+        print(error_queue)
     else:
         print('\n>>>> Saving Completed without errors.!')
-    
     end_time = time.time()
     print('All files in: %s, %.2fs collapse.' % (out_dir, end_time - start_time))
     sys.exit()
