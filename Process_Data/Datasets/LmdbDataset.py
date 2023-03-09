@@ -45,7 +45,7 @@ def _read_from_lmdb(env, key, start=0, stop=-1):
 def _read_from_hdf5(reader, key, start=0, stop=-1):
     """read data array from lmdb with key (w/ and w/o fixed size)
     size: feat-dim"""
-    data_flat = reader.get(key)[start:stop]
+    data_flat = reader.get(key)[:][start:stop]
 
     return data_flat
 
