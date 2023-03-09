@@ -95,7 +95,7 @@ if __name__ == "__main__":
     env = lmdb.open(lmdb_file, map_size=1099511627776)  # 1TB
     txn = env.begin(write=True)
     error_queue = []
-    print('Plan to make feats for %d utterances in %s with %d jobs.' % (num_utt, str(time.asctime()), nj))
+    # print('Plan to make feats for %d utterances in %s with %d jobs.' % (num_utt, str(time.asctime()), nj))
 
     pbar = tqdm(enumerate(feat_scp))
     for idx, u in pbar:

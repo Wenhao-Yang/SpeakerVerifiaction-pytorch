@@ -201,8 +201,7 @@ if [ $stage -le 4 ]; then
       --data-dir ${lstm_dir}/data/vox1/dev \
       --out-dir ${lstm_dir}/data/vox1/pyfb \
       --out-set dev_fb${filters} \
-      --filter-type mel \
-      --feat-type fbank \
+      --filter-type mel --feat-type fbank \
       --filters ${filters} \
       --log-scale \
       --feat-format kaldi_cmp \
@@ -222,8 +221,7 @@ if [ $stage -le 5 ]; then
       --data-dir ${lstm_dir}/data/vox1/${name} \
       --out-dir ${lstm_dir}/data/vox1/spect \
       --out-set ${name} \
-      --nfft 320 \
-      --windowsize 0.02 \
+      --nfft 320 --windowsize 0.02 \
       --feat-format npy \
       --feat-type spectrogram
   done
@@ -241,13 +239,11 @@ if [ $stage -le 10 ]; then
       --data-dir ${lstm_dir}/data/${dataset}/${s} \
       --out-dir ${lstm_dir}/data/${dataset}/pyfb \
       --out-set ${s}_fb${filters}_ws25 \
-      --filter-type mel \
-      --feat-type fbank \
+      --filter-type mel --feat-type fbank \
       --filters ${filters} \
       --log-scale \
       --feat-format kaldi_cmp \
-      --nfft 512 \
-      --windowsize 0.025 \
+      --nfft 512 --windowsize 0.025 \
       --nj 12
   done
   exit
@@ -260,7 +256,6 @@ if [ $stage -le 20 ]; then
   feat=hst
   feat_type=$feat
   filters=20
-
   #        --filters ${filters} \
   #      --log-scale \
 
@@ -288,8 +283,6 @@ if [ $stage -le 21 ]; then
   dataset=timit
   feat=hst
   feat_type=hst
-
-
 #  feat=klfb
 #  feat_type=klfb
   num_frames=64000
@@ -702,12 +695,9 @@ if [ $stage -le 52 ]; then
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/aishell2/spect \
       --out-set ${s}_8k \
       --feat-type spectrogram \
-      --lowfreq 300 \
-      --highfreq 3000 \
-      --bandpass \
+      --lowfreq 300 --highfreq 3000 --bandpass \
       --feat-format kaldi \
-      --nfft 160 \
-      --windowsize 0.02 \
+      --nfft 160 --windowsize 0.02 \
       --log-scale \
       --nj 18
 
@@ -755,7 +745,6 @@ if [ $stage -le 52 ]; then
 #        --log-scale \
 #        --nj 18
 #  done
-
 #  for s in dev ; do
 #    python Process_Data/Compute_Feat/make_egs.py \
 #      --data-dir ${lstm_dir}/data/army/spect/vox1_dev_clear_radio \
@@ -798,9 +787,7 @@ if [ $stage -le 53 ]; then
       --out-format kaldi_cmp \
       --num-valid 4 \
       --out-set dev_v2
-
     #    Process_Data/Compute_Feat/sort_scp.sh ${lstm_dir}/data/army/egs/spect/dev_v2
-
     python Process_Data/Compute_Feat/make_egs.py \
       --data-dir ${lstm_dir}/data/army/spect/dev_8k \
       --out-dir ${lstm_dir}/data/army/egs/spect \
@@ -838,7 +825,6 @@ if [ $stage -le 54 ]; then
     #        --windowsize 0.02 \
     #        --log-scale \
     #        --nj 6
-
     python Process_Data/Compute_Feat/make_feat.py \
       --data-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/dev_8k_7h_v4 \
       --out-dir /home/work2020/yangwenhao/project/lstm_speaker_verification/data/vox2/spect \
@@ -924,7 +910,6 @@ if [ $stage -le 62 ]; then
       --feat-format kaldi \
       --domain \
       --out-set valid_4w
-
   done
 fi
 
@@ -961,8 +946,7 @@ if [ $stage -le 64 ]; then
       --data-dir ${lstm_dir}/data/${datasets}/${feat_type}/${s} \
       --out-dir ${lstm_dir}/data/${datasets}/egs/${feat_type} \
       --feat-type ${feat_type} \
-      --train \
-      --domain \
+      --train --domain \
       --input-per-spks ${num_per_spk} \
       --num-frames 400 \
       --feat-format kaldi \
@@ -1104,7 +1088,6 @@ fi
 
 if [ $stage -le 232 ]; then
   datasets=army
-
   python Process_Data/Compute_Feat/make_egs.py \
     --nj 12 \
     --data-dir ${lstm_dir}/data/${datasets}/spect/dev_8k_v5_log \
@@ -1128,7 +1111,6 @@ if [ $stage -le 232 ]; then
     --num-valid 2 \
     --out-set valid_8k_v5_log
   exit
-
 fi
 
 if [ $stage -le 250 ]; then
@@ -1152,9 +1134,7 @@ if [ $stage -le 300 ]; then
   dataset=vox1
   #  feat_type=pyfb
   #  dataset=vox1
-  feat=klfb
-  feat_type=klfb
-
+  feat=klfb feat_type=klfb
   echo -e "\n\033[1;4;31m Stage ${stage}: making ${feat} egs for ${dataset}\033[0m\n"
   #  for s in dev_log dev_aug_1m_log ; do
   for s in dev_auged2_fb40; do
@@ -1164,13 +1144,10 @@ if [ $stage -le 300 ]; then
       --nj 12 \
       --feat-type ${feat_type} \
       --train \
-      --input-per-spks 1024 \
-      --num-frames 600 \
-      --feat-format kaldi \
-      --out-format kaldi_cmp \
+      --input-per-spks 1024 --num-frames 600 \
+      --feat-format kaldi --out-format kaldi_cmp \
       --num-valid 2 \
-      --enhance \
-      --remove-vad \
+      --enhance --remove-vad \
       --sets none reverb music noise babble volume \
       --out-set ${s}_pair
 
@@ -1190,4 +1167,16 @@ if [ $stage -le 300 ]; then
       --out-set ${s}_pair_valid
   done
   exit
+fi
+
+
+if [ $stage -le 301 ]; then
+  feat=lmdb
+  dataset=vox1
+  python Process_Data/Compute_Feat/conver2lmdb.py \
+      --data-dir ${lstm_dir}/data/${dataset}/dev \
+      --out-set dev \
+      --out-dir ${lstm_dir}/data/${dataset}/${feat} \
+      --data-format wav \
+      --feat-format wav
 fi
