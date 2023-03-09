@@ -104,7 +104,7 @@ if __name__ == "__main__":
             try:
                 key, feat_path = u.split()
                 feat = feat_loader(feat_path)
-                f.create_dataset(u, data=feat)
+                f.create_dataset(key, data=feat)
             except:
                 error_queue.append(key)
             

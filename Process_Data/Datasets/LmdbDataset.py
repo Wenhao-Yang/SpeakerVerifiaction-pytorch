@@ -175,6 +175,7 @@ class LmdbTrainDataset(Dataset):
         utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         lmdb_file = dir + '/feat'
         self.sample_type = sample_type
+        self.segment_len = segment_len
 
         assert os.path.exists(lmdb_file)
         assert os.path.exists(spk2utt)
@@ -1100,7 +1101,7 @@ class Hdf5TrainDataset(Dataset):
         utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         hdf5_file = dir + '/feat.h5py'
         self.sample_type = sample_type
-
+        self.segment_len = segment_len
         assert os.path.exists(hdf5_file)
         assert os.path.exists(spk2utt)
 
