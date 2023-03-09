@@ -316,7 +316,7 @@ class LmdbTrainDataset(Dataset):
             y = self.loader(self.reader, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
 
-        feature = self.transform(y)
+        feature = self.transform(y.reshape(1,-1))
         # print(sid)
         label = sid
 
@@ -356,7 +356,7 @@ class LmdbValidDataset(Dataset):
         spk = self.utt2spk_dict[uid]
         y = self.loader(self.reader, uid, self.feat_dim)
 
-        feature = self.transform(y)
+        feature = self.transform(y.reshape(1,-1))
         label = self.spk_to_idx[spk]
 
         if self.return_uid:
@@ -1249,10 +1249,10 @@ class Hdf5TrainDataset(Dataset):
             start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
                 0, self.utt2num_frames[uid] - self.segment_len)
             end = start + self.segment_len
-            y = self.loader(self.self.reader, uid, start=start, stop=end)
+            y = self.loader(self.reader, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
 
-        feature = self.transform(y)
+        feature = self.transform(y.reshape(1,-1))
         # print(sid)
         label = sid
 
@@ -1292,7 +1292,7 @@ class Hdf5ValidDataset(Dataset):
         spk = self.utt2spk_dict[uid]
         y = self.loader(self.reader, uid, self.feat_dim)
 
-        feature = self.transform(y)
+        feature = self.transform(y.reshape(1,-1))
         label = self.spk_to_idx[spk]
 
         if self.return_uid:
