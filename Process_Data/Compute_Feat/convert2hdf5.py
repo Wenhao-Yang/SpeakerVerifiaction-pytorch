@@ -14,6 +14,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import pdb
 import shutil
 import sys
 import time
@@ -131,6 +132,11 @@ if __name__ == "__main__":
     for idx, u in pbar:
         key, feat_path = u.split()
         read_queue.put((key, feat_path))
+
+        if idx == 1000:
+            break
+    
+    pdb.set_trace()
 
     with h5py.File(h5py_file, 'w') as f:  # 写入的时候是‘w’
         pool = Pool(processes=int(nj))  # 创建nj个进程
