@@ -11,7 +11,7 @@
 """
 import os
 import random
-
+import h5py
 import lmdb
 import numpy as np
 from kaldi_io import read_mat
@@ -42,6 +42,12 @@ def _read_from_lmdb(env, key, start=0, stop=-1):
 
     return data_flat
 
+def _read_from_hdf5(reader, key, start=0, stop=-1):
+    """read data array from lmdb with key (w/ and w/o fixed size)
+    size: feat-dim"""
+    data_flat = reader.get(key)[start:stop]
+
+    return data_flat
 
 class LmdbVerifyDataset(Dataset):
     def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load, return_uid=False):
@@ -157,7 +163,7 @@ class LmdbVerifyDataset(Dataset):
 
 
 class LmdbTrainDataset(Dataset):
-    def __init__(self, dir, feat_dim, samples_per_speaker, transform, loader=_read_from_lmdb, 
+    def __init__(self, dir, samples_per_speaker, transform, feat_dim=0,  loader=_read_from_lmdb, 
                  num_valid=5, feat_type='wav', sample_type='instance',
                  segment_len=c.N_SAMPLES, verbose=1, min_frames=50,
                  return_uid=False):
@@ -259,7 +265,7 @@ class LmdbTrainDataset(Dataset):
         # for uid in uid2feat.keys():
         #     for i in range(int(np.ceil(utt2len_dict[uid] / c.NUM_FRAMES_SPECT))):
         #         self.all_utts.append(uid)
-        self.env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
+        self.reader = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
                         meminit=False)
         # self.env = env.begin(write=False, buffers=True)  # as txn:
         self.speakers = speakers
@@ -282,7 +288,7 @@ class LmdbTrainDataset(Dataset):
             while True:
                 (uid, start, end) = self.base_utts[sid]
                 # pdb.set_trace()
-                y = self.loader(self.env, uid, start=start, stop=end)
+                y = self.loader(self.reader, uid, start=start, stop=end)
                 y = y[start:end]
 
                 sid = self.utt2spk_dict[uid]
@@ -303,7 +309,7 @@ class LmdbTrainDataset(Dataset):
             start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
                 0, self.utt2num_frames[uid] - self.segment_len)
             end = start + self.segment_len
-            y = self.loader(self.env, uid, start=start, stop=end)
+            y = self.loader(self.reader, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
 
         feature = self.transform(y)
@@ -317,9 +323,10 @@ class LmdbTrainDataset(Dataset):
 
 
 class LmdbValidDataset(Dataset):
-    def __init__(self, valid_set, spk_to_idx, env, valid_utt2spk_dict, transform, feat_dim, loader=_read_data_lmdb,
+    def __init__(self, valid_set, spk_to_idx, reader, 
+                 valid_utt2spk_dict, transform, feat_dim=0, loader=_read_data_lmdb,
                  return_uid=False):
-        self.env = env
+        self.reader = reader
         self.feat_dim = feat_dim
 
         speakers = [spk for spk in valid_set.keys()]
@@ -343,7 +350,7 @@ class LmdbValidDataset(Dataset):
     def __getitem__(self, index):
         uid = self.uids[index]
         spk = self.utt2spk_dict[uid]
-        y = self.loader(self.env, uid, self.feat_dim)
+        y = self.loader(self.reader, uid, self.feat_dim)
 
         feature = self.transform(y)
         label = self.spk_to_idx[spk]
@@ -1074,3 +1081,218 @@ class CrossMetaEgsDataset(Dataset):
 
     def __len__(self):
         return self.dataset_len  # 返回一个epoch的采样数
+
+
+class Hdf5TrainDataset(Dataset):
+    def __init__(self, dir, feat_dim, samples_per_speaker, transform, loader=_read_from_hdf5, 
+                 num_valid=5, feat_type='wav', sample_type='instance',
+                 segment_len=c.N_SAMPLES, verbose=1, min_frames=50,
+                 return_uid=False):
+
+        # feat_scp = dir + '/feats.scp'
+        spk2utt = dir + '/spk2utt'
+        utt2spk = dir + '/utt2spk'
+        # utt2num_frames = dir + '/utt2num_frames'
+        utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
+        hdf5_file = dir + '/feat.h5py'
+
+        assert os.path.exists(hdf5_file)
+        assert os.path.exists(spk2utt)
+
+        dataset = {}
+        with open(spk2utt, 'r') as u:
+            all_cls = u.readlines()
+            for line in all_cls:
+                spk_utt = line.split()
+                spk_name = spk_utt[0]
+                if spk_name not in dataset.keys():
+                    dataset[spk_name] = [x for x in spk_utt[1:]]
+                    # dataset[spk_name] = [x for x in spk_utt[1:] if x not in invalid_uid]
+
+        utt2spk_dict = {}
+        with open(utt2spk, 'r') as u:
+            all_cls = u.readlines()
+            for line in all_cls:
+                utt_spk = line.split()
+                uid = utt_spk[0]
+                # if uid in invalid_uid:
+                #     continue
+                if uid not in utt2spk_dict.keys():
+                    utt2spk_dict[uid] = utt_spk[-1]
+        # pdb.set_trace()
+        total_frames = 0
+        self.utt2num_frames = {}
+        base_utts = []
+        if self.sample_type != 'balance':
+            if os.path.exists(utt2num_frames):
+                with open(utt2num_frames, 'r') as f:
+                    for l in f.readlines():
+                        uid, num_frames = l.split()
+                        
+                        if feat_type == 'wav':
+                            num_frames = float(num_frames) * 16000
+
+                        num_frames = int(num_frames)
+                        self.utt2num_frames[uid] = num_frames
+
+                        if num_frames >= min_frames:
+                            total_frames += num_frames
+                            this_numofseg = int(
+                                np.ceil(float(num_frames) / segment_len))
+
+                            for i in range(this_numofseg):
+                                end = min((i + 1) * segment_len, num_frames)
+                                start = min(end - segment_len, 0)
+                                base_utts.append((uid, start, end))
+
+                    # if int(num_frames) < 50:
+                    #     invalid_uid.append(uid)
+        random.shuffle(base_utts)
+        self.base_utts = base_utts
+        if verbose > 0:
+            print('    There are {} basic segments.'.format(len(base_utts)))
+
+        speakers = [spk for spk in dataset.keys()]
+        speakers.sort()
+        print('==> There are {} speakers in Dataset.'.format(len(speakers)))
+        spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
+        idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
+
+        print('    There are {} utterances in Train Dataset'.format(
+            len(utt2spk_dict.keys())))
+        
+        if num_valid > 0:
+            valid_set = {}
+            valid_utt2spk_dict = {}
+
+            for spk in speakers:
+                if spk not in valid_set.keys():
+                    valid_set[spk] = []
+                    for i in range(num_valid):
+                        if len(dataset[spk]) <= 1:
+                            break
+                        j = np.random.randint(len(dataset[spk]))
+                        utt = dataset[spk].pop(j)
+                        valid_set[spk].append(utt)
+
+                        valid_utt2spk_dict[utt] = utt2spk_dict[utt]
+
+            print('    Spliting {} utterances for Validation.'.format(
+                len(valid_utt2spk_dict.keys())))
+            self.valid_set = valid_set
+            self.valid_utt2spk_dict = valid_utt2spk_dict
+
+        if sample_type == 'instance':
+            if verbose > 1:
+                print(
+                    '    The number of sampling utterances is euqal to the number of total utterance.')
+
+        elif samples_per_speaker == 0:
+            samples_per_speaker = np.power(2, np.ceil(
+                np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
+            if verbose > 1:
+                print(
+                    '    The number of sampling utterances for each speakers is decided by the number of total frames.')
+        else:
+            samples_per_speaker = max(
+                len(base_utts) / len(speakers), samples_per_speaker)
+            if verbose > 1:
+                print(
+                    '    The number of sampling utterances for each speakers is add to the number of total frames.')
+
+        self.samples_per_speaker = int(samples_per_speaker)
+        self.all_utts = list(utt2spk_dict.keys())
+        self.reader = h5py.File(hdf5_file, 'r')
+        self.speakers = speakers
+        self.dataset = dataset
+
+        self.spk_to_idx = spk_to_idx
+        self.idx_to_spk = idx_to_spk
+        self.num_spks = len(speakers)
+        self.utt2spk_dict = utt2spk_dict
+
+        self.feat_dim = feat_dim
+        self.loader = loader
+        self.transform = transform
+        self.return_uid = return_uid
+
+    def __getitem__(self, sid):
+
+        if sid < len(self.base_utts):
+            while True:
+                (uid, start, end) = self.base_utts[sid]
+                # pdb.set_trace()
+                y = self.loader(self.reader, uid, start=start, stop=end)
+                y = y[start:end]
+
+                sid = self.utt2spk_dict[uid]
+                sid = self.spk_to_idx[sid]
+                break
+        else:
+            # rand_idxs = [sid]
+            sid %= self.num_spks
+            spk = self.idx_to_spk[sid]
+            utts = self.dataset[spk]
+            num_utt = len(utts)
+
+            # y = np.array([[]]).reshape(self.feat_shape)
+            rand_utt_idx = np.random.randint(0, num_utt)
+            # rand_idxs.append(rand_utt_idx)
+            uid = utts[rand_utt_idx]
+
+            start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
+                0, self.utt2num_frames[uid] - self.segment_len)
+            end = start + self.segment_len
+            y = self.loader(self.self.reader, uid, start=start, stop=end)
+            # y = np.concatenate((y, feature), axis=self.c_axis)
+
+        feature = self.transform(y)
+        # print(sid)
+        label = sid
+
+        return feature, label
+
+    def __len__(self):
+        return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
+
+
+class Hdf5ValidDataset(Dataset):
+    def __init__(self, valid_set, spk_to_idx, reader, 
+                 valid_utt2spk_dict, transform, feat_dim, loader=_read_from_hdf5,
+                 return_uid=False):
+        self.reader = reader
+        self.feat_dim = feat_dim
+
+        speakers = [spk for spk in valid_set.keys()]
+        speakers.sort()
+        self.speakers = speakers
+
+        self.valid_set = valid_set
+
+        uids = list(valid_utt2spk_dict.keys())
+        uids.sort()
+        print(uids[:10])
+        self.uids = uids
+        self.utt2spk_dict = valid_utt2spk_dict
+        self.spk_to_idx = spk_to_idx
+        self.num_spks = len(speakers)
+
+        self.loader = loader
+        self.transform = transform
+        self.return_uid = return_uid
+
+    def __getitem__(self, index):
+        uid = self.uids[index]
+        spk = self.utt2spk_dict[uid]
+        y = self.loader(self.reader, uid, self.feat_dim)
+
+        feature = self.transform(y)
+        label = self.spk_to_idx[spk]
+
+        if self.return_uid:
+            return feature, label, uid
+
+        return feature, label
+
+    def __len__(self):
+        return len(self.uids)
