@@ -84,7 +84,7 @@ if [ $stage -le 10 ]; then
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 0.2;do
     for seed in 123456 ; do
-    for data_type in hdf5 lmdb ; do
+    for data_type in lmdb ; do
     for type in 01 ;do
     #  feat=fb${input_dim}
 

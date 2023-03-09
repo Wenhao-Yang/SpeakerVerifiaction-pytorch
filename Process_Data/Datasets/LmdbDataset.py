@@ -329,7 +329,7 @@ class LmdbTrainDataset(Dataset):
 
 class LmdbValidDataset(Dataset):
     def __init__(self, valid_set, spk_to_idx, reader, 
-                 valid_utt2spk_dict, transform, feat_dim=0, loader=_read_data_lmdb,
+                 valid_utt2spk_dict, transform, feat_dim=0, loader=_read_from_lmdb,
                  return_uid=False, verbose=0):
         self.reader = reader
         self.feat_dim = feat_dim
