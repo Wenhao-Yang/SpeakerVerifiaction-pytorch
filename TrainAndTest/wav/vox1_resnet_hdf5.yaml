@@ -36,7 +36,7 @@ chunk_size: 48000
 frame_shift: 48000
 num_frames: 48000
 extract: True
-nj: 4
+nj: 0
 shuffle: False
 batch_shuffle: True
 
