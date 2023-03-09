@@ -53,7 +53,7 @@ def read_WaveInt(filename, start=0, stop=None):
     return audio
 
 
-def Load_Process(lock_i, lock_w, f, i_queue):
+def Load_Process(lock_i, lock_w, f, i_queue, feat_loader):
     while True:
         # print(os.getpid(), " acqing lock i")
         lock_i.acquire()  # 加上锁
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     with h5py.File(h5py_file, 'w') as f:  # 写入的时候是‘w’
         pool = Pool(processes=int(nj))  # 创建nj个进程
         for i in range(0, nj):
-            pool.apply_async(Load_Process, args=(read_lock, write_lock, f, read_queue))
+            pool.apply_async(Load_Process, args=(read_lock, write_lock, f, read_queue, feat_loader))
             
     if len(error_queue) > 0:
         print('\n>>>> Saving Completed with errors in: ')
