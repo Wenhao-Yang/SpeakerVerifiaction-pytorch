@@ -144,8 +144,8 @@ if __name__ == "__main__":
     pool = Pool(processes=int(nj))  # 创建nj个进程
 
     for i in range(0, nj):
-        pool.apply_async(Load_Process, args=(read_lock, write_lock, f, read_queue, error_queue, feat_loader))
-
+        result = pool.apply_async(Load_Process, args=(read_lock, write_lock, f, read_queue, error_queue, feat_loader))
+        print(result)
     pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
     try:
         pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
