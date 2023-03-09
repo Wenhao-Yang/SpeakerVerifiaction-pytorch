@@ -27,7 +27,7 @@ num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
 input_norm: Inst
-input_per_spks: 512
+input_per_spks: 1024
 
 test_input: fix
 log_scale: False
