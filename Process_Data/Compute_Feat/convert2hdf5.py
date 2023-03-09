@@ -56,6 +56,8 @@ def read_WaveInt(filename, start=0, stop=None):
 
 
 def Load_Process(lock_i, lock_w, f, i_queue, error_queue, feat_loader):
+    print('Process {} Start'.format(str(os.getpid())))
+    
     while True:
         # print(os.getpid(), " acqing lock i")
         lock_i.acquire()  # 加上锁
