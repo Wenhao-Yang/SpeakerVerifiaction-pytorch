@@ -20,6 +20,7 @@ import time
 
 import kaldi_io
 import lmdb
+import soundfile as sf
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
@@ -29,15 +30,28 @@ parser.add_argument('--data-format', type=str, default='wav', choices=['flac', '
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
-parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
+parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy', 'wav'],
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
+parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc', 'wav'],
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--conf', type=str, default='condf/spect.conf', metavar='E',
                     help='number of epochs to train (default: 10)')
 args = parser.parse_args()
+
+def read_WaveInt(filename, start=0, stop=None):
+    """
+    read features from npy files
+    :param filename: the path of wav files.
+    :return:
+    """
+    # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
+    # audio = audio.flatten()
+    audio, sample_rate = sf.read(
+        filename, dtype='int16', start=start, stop=stop)
+    return audio
+
 
 if __name__ == "__main__":
 
@@ -52,7 +66,13 @@ if __name__ == "__main__":
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    feats_scp_f = os.path.join(data_dir, 'feats.scp')
+    if args.feat_format == 'kaldi':
+        feats_scp_f = os.path.join(data_dir, 'feats.scp')
+        feat_loader = kaldi_io.read_mat
+    else:
+        feats_scp_f = os.path.join(data_dir, 'wav.scp')
+        feat_loader = read_WaveInt
+
     assert os.path.exists(data_dir)
     assert os.path.exists(feats_scp_f)
 
@@ -81,12 +101,13 @@ if __name__ == "__main__":
     for idx, u in pbar:
         key, feat_path = u.split()
         try:
-            feat = kaldi_io.read_mat(feat_path)
+            feat = feat_loader(feat_path)
             # print(feat.shape)
             key_byte = key.encode('ascii')
             txn.put(key_byte, feat)
         except:
             error_queue.append(key)
+        
         if (idx + 1) % 2000 == 0:
             txn.commit()
             # commit 之后需要再次 begin

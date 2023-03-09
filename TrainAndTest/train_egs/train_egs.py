@@ -478,63 +478,45 @@ def main():
             torch.save({'state_dict': model.state_dict()}, checkpoint_path)
 
     # Load checkpoint
-    iteration = 0  # if args.resume else 0
-    if args.finetune and args.resume:
-        if os.path.isfile(args.resume):
-            print('=> loading checkpoint {}'.format(args.resume))
-            checkpoint = torch.load(args.resume)
-            start_epoch = checkpoint['epoch']
+    # iteration = 0  # if args.resume else 0
 
-            checkpoint_state_dict = checkpoint['state_dict']
-            if isinstance(checkpoint_state_dict, tuple):
-                checkpoint_state_dict = checkpoint_state_dict[0]
-            filtered = {k: v for k, v in checkpoint_state_dict.items(
-            ) if 'num_batches_tracked' not in k}
-            if list(filtered.keys())[0].startswith('module'):
-                new_state_dict = OrderedDict()
-                for k, v in filtered.items():
-                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                    name = k[7:]
-                    new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
-
-                model.load_state_dict(new_state_dict)
-            else:
-                model_dict = model.state_dict()
-                model_dict.update(filtered)
-                model.load_state_dict(model_dict)
-            # model.dropout.p = args.dropout_p
-        else:
-            print('=> no checkpoint found at {}'.format(args.resume))
+    # load resume
 
     model_para = [{'params': model.parameters()}]
-    if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
-        assert args.lr_ratio > 0
-        model_para.append(
-            {'params': model.loss.xe_criterion.parameters(), 'lr': args.lr * args.lr_ratio})
 
-    if args.finetune or args.second_wd > 0:
-        # if args.loss_type in ['asoft', 'amsoft']:
+    model_para = [{'params': model.parameters()}]
+    if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
+        assert config_args['lr_ratio'] > 0
+        model_para.append({'params': model.loss.xe_criterion.parameters(
+        ), 'lr': config_args['lr'] * config_args['lr_ratio']})
+
+    if 'second_wd' in config_args and config_args['second_wd'] > 0:
+        # if config_args['loss_type in ['asoft', 'amsoft']:
         classifier_params = list(map(id, model.classifier.parameters()))
         rest_params = filter(lambda p: id(
             p) not in classifier_params, model.parameters())
-        init_lr = args.lr * args.lr_ratio if args.lr_ratio > 0 else args.lr
-        init_wd = args.second_wd if args.second_wd > 0 else args.weight_decay
+
+        init_lr = config_args['lr'] * \
+            config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
+        init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
         print('Set the lr and weight_decay of classifier to %f and %f' %
               (init_lr, init_wd))
         model_para = [{'params': rest_params},
                       {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
-    if args.filter in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer']:
-        filter_params = list(map(id, model.filter_layer.parameters()))
-        rest_params = filter(lambda p: id(
-            p) not in filter_params, model_para[0]['params'])
-        init_wd = args.filter_wd if args.filter_wd > 0 else args.weight_decay
-        init_lr = args.lr * args.lr_ratio if args.lr_ratio > 0 else args.lr
-        print('Set the lr and weight_decay of filter layer to %f and %f' %
-              (init_lr, init_wd))
-        model_para[0]['params'] = rest_params
-        model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
-                           'weight_decay': init_wd})
+    if 'filter' in config_args:
+        if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
+            filter_params = list(map(id, model.filter_layer.parameters()))
+            rest_params = filter(lambda p: id(
+                p) not in filter_params, model_para[0]['params'])
+            init_wd = config_args['filter_wd'] if args.filter_wd > 0 else config_args['weight_decay']
+            init_lr = config_args['lr'] * \
+                config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
+            print('Set the lr and weight_decay of filter layer to %f and %f' %
+                  (init_lr, init_wd))
+            model_para[0]['params'] = rest_params
+            model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
+                               'weight_decay': init_wd})
 
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
                   'weight_decay': config_args['weight_decay'],
@@ -548,49 +530,15 @@ def main():
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
 
-    if not args.finetune and args.resume:
-        if os.path.isfile(args.resume):
-            print('=> loading checkpoint {}'.format(args.resume))
-            checkpoint = torch.load(args.resume)
-            start_epoch = checkpoint['epoch']
-
-            checkpoint_state_dict = checkpoint['state_dict']
-            if isinstance(checkpoint_state_dict, tuple):
-                checkpoint_state_dict = checkpoint_state_dict[0]
-            filtered = {k: v for k, v in checkpoint_state_dict.items(
-            ) if 'num_batches_tracked' not in k}
-
-            # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-            if list(filtered.keys())[0].startswith('module'):
-                new_state_dict = OrderedDict()
-                for k, v in filtered.items():
-                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                    name = k[7:]
-                    new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
-
-                model.load_state_dict(new_state_dict)
-            else:
-                model_dict = model.state_dict()
-                model_dict.update(filtered)
-                model.load_state_dict(model_dict)
-
-            if 'scheduler' in checkpoint:
-                scheduler.load_state_dict(checkpoint['scheduler'])
-            if 'optimizer' in optimizer:
-                optimizer.load_state_dict(checkpoint['optimizer'])
-            # model.dropout.p = args.dropout_p
-        else:
-            print('=> no checkpoint found at {}'.format(args.resume))
-
     # Save model config txt
     with open(osp.join(check_path, 'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())), 'w') as f:
         f.write('model: ' + str(model) + '\n')
         f.write('Optimizer: ' + str(optimizer) + '\n')
 
-    start = args.start_epoch + start_epoch
-    print('Start epoch is : ' + str(start))
-    # start = 0
-    end = start + args.epochs
+    start = 1 + start_epoch
+    if torch.distributed.get_rank() == 0:
+        print('Start epoch is : ' + str(start))
+    end = start + config_args['epochs']
 
     if args.cuda:
         if len(args.gpu_id) > 1:
@@ -625,7 +573,7 @@ def main():
         for epoch in range(start, end):
             # pdb.set_trace()
             lr_string = '\n\33[1;34m Current \'{}\' learning rate is '.format(
-                args.optimizer)
+                config_args['optimizer'])
             this_lr = []
             for param_group in optimizer.param_groups:
                 this_lr.append(param_group['lr'])
@@ -634,47 +582,49 @@ def main():
             all_lr.append(this_lr[0])
             writer.add_scalar('Train/lr', this_lr[0], epoch)
 
-            if args.coreset_percent > 0 and epoch % args.select_interval == 1:
+            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
                 select_samples(train_dir, train_loader,
-                               model, args, args.select_score)
+                               model, config_args)
 
             train(train_loader, model, optimizer,
-                  epoch, scheduler, args, writer)
+                  epoch, scheduler, config_args, writer)
             if config_args['batch_shuffle']:
                 train_dir.__shuffle__()
 
-            valid_loss = valid_class(valid_loader, model, epoch, args, writer)
-            if args.early_stopping or (epoch % args.test_interval == 1 or epoch in milestones or epoch == (
-                    end - 1)):
+            valid_loss = valid_class(valid_loader, model, epoch, config_args, writer)
+
+            if config_args['early_stopping'] or (
+                    epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):
                 valid_test_dict = valid_test(
-                    train_extract_loader, model, epoch, xvector_dir, args, writer)
+                    train_extract_loader, model, epoch, xvector_dir, config_args, writer)
             else:
                 valid_test_dict = {}
 
             valid_test_dict['Valid_Loss'] = valid_loss
             valid_test_result.append(valid_test_dict)
 
-            if args.early_stopping:
+            if config_args['early_stopping']:
                 early_stopping_scheduler(
-                    valid_test_dict[args.early_meta], epoch)
-                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end:
+                    valid_test_dict[config_args['early_meta']], epoch)
+
+                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
                     early_stopping_scheduler.early_stop = True
 
-                if args.scheduler != 'cyclic' and this_lr[0] <= 0.1 ** 3 * args.lr:
-                    if len(all_lr) > 5 and all_lr[-5] == this_lr[0]:
+                if config_args['scheduler'] != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
+                    if len(all_lr) > 5 and all_lr[-5] >= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
-            if epoch % args.test_interval == (args.test_interval-1) or epoch in milestones or epoch == (
+            if epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch:
                 model.eval()
-                check_path = '{}/checkpoint_{}.pth'.format(
+                this_check_path = '{}/checkpoint_{}.pth'.format(
                     check_path, epoch)
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
                 torch.save({'epoch': epoch, 'state_dict': model_state_dict,
                             'scheduler': scheduler.state_dict(),
                             'optimizer': optimizer.state_dict(),
-                            }, check_path)
+                            }, this_check_path)
 
                 if args.early_stopping:
                     pass
@@ -702,7 +652,9 @@ def main():
                         best_res['mix2'], best_res['mix3'])
 
                 print(best_str)
-
+                with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
+                        f.write(best_str + '\n')
+                        
                 try:
                     shutil.copy('{}/checkpoint_{}.pth'.format(check_path, early_stopping_scheduler.best_epoch),
                                 '{}/best.pth'.format(check_path))
