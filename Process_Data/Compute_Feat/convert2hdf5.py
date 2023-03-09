@@ -67,6 +67,13 @@ def Load_Process(lock_i, lock_w, h5py_file, i_queue, error_queue, feat_loader):
             key, feat_path = i_queue.get()
             lock_i.release()
         else:
+            if len(tmp_stack) > 0:
+                lock_w.acquire()
+                with h5py.File(h5py_file, 'w') as f:
+                    for key, feat in tmp_stack:
+                        f.create_dataset(key, data=feat)  
+                lock_w.release()
+
             lock_i.release()
             break
         try:
@@ -74,6 +81,7 @@ def Load_Process(lock_i, lock_w, h5py_file, i_queue, error_queue, feat_loader):
             tmp_stack.append(key, feat)
         except:
             error_queue.append(key)
+        
         
         if len(tmp_stack) > 40:
             lock_w.acquire()
@@ -83,7 +91,7 @@ def Load_Process(lock_i, lock_w, h5py_file, i_queue, error_queue, feat_loader):
             lock_w.release()
 
             tmp_stack = []
-
+            
         print('\rProcess [{:8>s}]: [{:>8d}] samples Left'.format
               (str(os.getpid()), i_queue.qsize()), end='')
         
