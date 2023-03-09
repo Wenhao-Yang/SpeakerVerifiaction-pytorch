@@ -234,11 +234,13 @@ class LmdbTrainDataset(Dataset):
 
         speakers = [spk for spk in dataset.keys()]
         speakers.sort()
-        print('==> There are {} speakers in Dataset.'.format(len(speakers)))
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(speakers)))
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-        print('    There are {} utterances in Train Dataset'.format(
+        if verbose > 0:
+            print('    There are {} utterances in Train Dataset'.format(
             len(utt2spk_dict.keys())))
         
         if num_valid > 0:
@@ -257,7 +259,8 @@ class LmdbTrainDataset(Dataset):
 
                         valid_utt2spk_dict[utt] = utt2spk_dict[utt]
 
-            print('    Spliting {} utterances for Validation.'.format(
+            if verbose > 0:
+                print('    Spliting {} utterances for Validation.'.format(
                 len(valid_utt2spk_dict.keys())))
             self.valid_set = valid_set
             self.valid_utt2spk_dict = valid_utt2spk_dict
@@ -1156,12 +1159,13 @@ class Hdf5TrainDataset(Dataset):
 
         speakers = [spk for spk in dataset.keys()]
         speakers.sort()
-        print('==> There are {} speakers in Dataset.'.format(len(speakers)))
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(speakers)))
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
-
-        print('    There are {} utterances in Train Dataset'.format(
-            len(utt2spk_dict.keys())))
+        if verbose > 0:
+            print('    There are {} utterances in Train Dataset'.format(
+                len(utt2spk_dict.keys())))
         
         if num_valid > 0:
             valid_set = {}
@@ -1178,9 +1182,9 @@ class Hdf5TrainDataset(Dataset):
                         valid_set[spk].append(utt)
 
                         valid_utt2spk_dict[utt] = utt2spk_dict[utt]
-
-            print('    Spliting {} utterances for Validation.'.format(
-                len(valid_utt2spk_dict.keys())))
+            if verbose > 0:
+                print('    Spliting {} utterances for Validation.'.format(
+                    len(valid_utt2spk_dict.keys())))
             self.valid_set = valid_set
             self.valid_utt2spk_dict = valid_utt2spk_dict
 
