@@ -87,15 +87,17 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
         classfier, feats = model(data)
 
         if torch.distributed.is_initialized():
-            loss, other_loss = model.module.loss(classfier, feats, label, epoch=epoch)
+            loss, other_loss = model.module.loss(
+                classfier, feats, label, epoch=epoch)
         else:
             loss, other_loss = model.loss(classfier, feats, label, epoch=epoch)
 
         predicted_labels = output_softmax(classfier.clone())
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
-        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
-        minibatch_acc=minibatch_correct / len(predicted_one_labels)
+        minibatch_correct = float(
+            (predicted_one_labels.cpu() == label.cpu()).sum().item())
+        minibatch_acc = minibatch_correct / len(predicted_one_labels)
 
         correct += minibatch_correct
         total_datasize += len(predicted_one_labels)
@@ -111,9 +113,9 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
 
         # gradient clip
         if args.grad_clip > 0:
-            this_lr=args.lr
+            this_lr = args.lr
             for param_group in optimizer.param_groups:
-                this_lr=min(param_group['lr'], this_lr)
+                this_lr = min(param_group['lr'], this_lr)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
         #
@@ -145,8 +147,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
             scheduler.step()
 
         if (batch_idx + 1) % args.log_interval == 0:
-            
-            epoch_str='Train Epoch {}: [ {:>5.1f}% ]'.format(
+
+            epoch_str = 'Train Epoch {}: [ {:>5.1f}% ]'.format(
                 epoch, 100. * batch_idx / len(train_loader))
 
             if len(args.random_chunk) == 2 and args.random_chunk[0] <= args.random_chunk[1]:
@@ -157,8 +159,9 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
 
             if other_loss != 0:
                 epoch_str += ' Other Loss: {:.4f}'.format(other_loss)
-            
-            epoch_str += ' Avg Loss: {:.4f}'.format(total_loss / (batch_idx + 1))
+
+            epoch_str += ' Avg Loss: {:.4f}'.format(
+                total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
             # break
@@ -228,7 +231,7 @@ def valid_class(valid_loader, model, epoch, args, writer):
     if total_other_loss != 0:
         this_epoch_str += ' {} Loss: {:6f}'.format(
             args.loss_type, total_other_loss / len(valid_loader))
-        
+
     this_epoch_str += '.\33[0m'
     print(this_epoch_str)
 
@@ -246,8 +249,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, args, writer):
     verify_dir = ScriptVerifyDataset(dir=args.train_test_dir, trials_file=args.train_trials,
                                      xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
-    
-    kwargs = {'num_workers': args.nj, 'pin_memory': False} 
+
+    kwargs = {'num_workers': args.nj, 'pin_memory': False}
     verify_loader = torch.utils.data.DataLoader(
         verify_dir, batch_size=128, shuffle=False, **kwargs)
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
@@ -308,7 +311,8 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
 
                 classfier, feats = model(data)
                 if torch.distributed.is_initialized():
-                    loss, other_loss = model.module.loss(classfier, feats, label)
+                    loss, other_loss = model.module.loss(
+                        classfier, feats, label)
                 else:
                     loss, other_loss = model.loss(classfier, feats, label)
 
@@ -372,7 +376,6 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     train_dir.rest_dataset = rest_dataset
 
 
-
 def main():
     # Views the training images and displays the distance on anchor-negative and anchor-positive
     # test_display_triplet_distance = False
@@ -381,17 +384,18 @@ def main():
 
     # Training settings
     args = args_parse('PyTorch Speaker Recognition: Classification')
-    
+
     if os.path.exists(args.train_config):
         with open(args.train_config, 'r') as f:
             config_args = load_hyperpyyaml(f)
     else:
         config_args = vars(args)
-    
+
     model_str = 'baseline'
-    if 'mix_type' in config_args and len(config_args['mixup_layer'])>0:
+    if 'mix_type' in config_args and len(config_args['mixup_layer']) > 0:
         if isinstance(config_args['mixup_layer'], list):
-            mixup_layer_str = ''.join([str(s) for s in config_args['mixup_layer']])
+            mixup_layer_str = ''.join([str(s)
+                                      for s in config_args['mixup_layer']])
         else:
             mixup_layer_str = str(config_args['mixup_layer'])
 
@@ -410,7 +414,7 @@ def main():
     writer = SummaryWriter(logdir=check_path)
     sys.stdout = NewLogger(osp.join(check_path, 'log.%s.txt' %
                                     time.strftime("%Y.%m.%d", time.localtime())))
-    
+
     keys = list(config_args.keys())
     keys.sort()
     options = ["\'%s\': \'%s\'" % (
@@ -438,7 +442,7 @@ def main():
     train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
     train_loader, valid_loader, train_extract_loader = SubLoaders(
         train_dir, valid_dir, train_extract_dir, config_args)
-    
+
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     # instantiate model and initialize weights
@@ -460,16 +464,16 @@ def main():
         save_model_args(model_kwargs, model_yaml_path)
 
     model.loss = SpeakerLoss(config_args)
-    
+
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
     else:
-        create_classifier(model, **config_args)    
-    
+        create_classifier(model, **config_args)
+
     start_epoch = 0
     if args.save_init and not args.finetune:
         checkpoint_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
-                                                      time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
+                                                           time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
         if not os.path.exists(checkpoint_path):
             torch.save({'state_dict': model.state_dict()}, checkpoint_path)
 
@@ -501,7 +505,7 @@ def main():
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
-    
+
     model_para = [{'params': model.parameters()}]
     if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert args.lr_ratio > 0
@@ -532,18 +536,18 @@ def main():
         model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
                            'weight_decay': init_wd})
 
-    opt_kwargs = {'lr': config_args['lr'],
-                    'lr_decay': config_args['lr_decay'],
-                    'weight_decay': config_args['weight_decay'],
-                    'dampening': config_args['dampening'],
-                    'momentum': config_args['momentum'],
-                    'nesterov': config_args['nesterov']}
+    opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
+                  'weight_decay': config_args['weight_decay'],
+                  'dampening': config_args['dampening'],
+                  'momentum': config_args['momentum'],
+                  'nesterov': config_args['nesterov']}
 
-    optimizer = create_optimizer(model_para, config_args['optimizer'], **opt_kwargs)
-    scheduler = create_scheduler(optimizer, config_args)
+    optimizer = create_optimizer(
+        model_para, config_args['optimizer'], **opt_kwargs)
+    scheduler = create_scheduler(optimizer, config_args, train_dir)
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
-    
+
     if not args.finetune and args.resume:
         if os.path.isfile(args.resume):
             print('=> loading checkpoint {}'.format(args.resume))
@@ -595,7 +599,7 @@ def main():
             #                                      init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
             #                                      rank=0,
             #                                      world_size=1)
-            
+
             torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32456', rank=0,
                                                  world_size=1)
             # if args.gain
@@ -631,9 +635,11 @@ def main():
             writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             if args.coreset_percent > 0 and epoch % args.select_interval == 1:
-                select_samples(train_dir, train_loader, model, args, args.select_score)
+                select_samples(train_dir, train_loader,
+                               model, args, args.select_score)
 
-            train(train_loader, model, optimizer, epoch, scheduler, args, writer)
+            train(train_loader, model, optimizer,
+                  epoch, scheduler, args, writer)
             if config_args['batch_shuffle']:
                 train_dir.__shuffle__()
 
