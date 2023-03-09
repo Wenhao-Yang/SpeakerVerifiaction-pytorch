@@ -174,6 +174,7 @@ class LmdbTrainDataset(Dataset):
         # utt2num_frames = dir + '/utt2num_frames'
         utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         lmdb_file = dir + '/feat'
+        self.sample_type = sample_type
 
         assert os.path.exists(lmdb_file)
         assert os.path.exists(spk2utt)
@@ -1084,8 +1085,8 @@ class CrossMetaEgsDataset(Dataset):
 
 
 class Hdf5TrainDataset(Dataset):
-    def __init__(self, dir, feat_dim, samples_per_speaker, transform, loader=_read_from_hdf5, 
-                 num_valid=5, feat_type='wav', sample_type='instance',
+    def __init__(self, dir, samples_per_speaker, transform, loader=_read_from_hdf5, 
+                 num_valid=5, feat_type='wav', sample_type='instance', feat_dim=0,
                  segment_len=c.N_SAMPLES, verbose=1, min_frames=50,
                  return_uid=False):
 
@@ -1095,6 +1096,7 @@ class Hdf5TrainDataset(Dataset):
         # utt2num_frames = dir + '/utt2num_frames'
         utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         hdf5_file = dir + '/feat.h5py'
+        self.sample_type = sample_type
 
         assert os.path.exists(hdf5_file)
         assert os.path.exists(spk2utt)
@@ -1258,7 +1260,7 @@ class Hdf5TrainDataset(Dataset):
 
 class Hdf5ValidDataset(Dataset):
     def __init__(self, valid_set, spk_to_idx, reader, 
-                 valid_utt2spk_dict, transform, feat_dim, loader=_read_from_hdf5,
+                 valid_utt2spk_dict, transform, feat_dim=0, loader=_read_from_hdf5,
                  return_uid=False):
         self.reader = reader
         self.feat_dim = feat_dim
