@@ -55,7 +55,7 @@ def read_WaveInt(filename, start=0, stop=None):
     return audio
 
 
-def Load_Process(lock_i, lock_w, f, i_queue, error_queue, feat_loader):
+def Load_Process(lock_i, lock_w, h5py_file, i_queue, error_queue, feat_loader):
     print('Process {} Start'.format(str(os.getpid())))
     
     while True:
@@ -68,13 +68,15 @@ def Load_Process(lock_i, lock_w, f, i_queue, error_queue, feat_loader):
         else:
             lock_i.release()
             break
-        
-        lock_w.acquire()
         try:
             feat = feat_loader(feat_path)
-            f.create_dataset(key, data=feat)
+            
         except:
             error_queue.append(key)
+        lock_w.acquire()
+        with h5py.File(h5py_file, 'w') as f:
+            f.create_dataset(key, data=feat)  
+
         lock_w.release()
 
         print('\rProcess [{:8>s}]: [{:>8d}] samples Left'.format
@@ -135,23 +137,23 @@ if __name__ == "__main__":
         key, feat_path = u.split()
         read_queue.put((key, feat_path))
 
-        if idx == 1000:
-            break
+        # if idx == 1000:
+        #     break
     
-    pdb.set_trace()
+    # pdb.set_trace()
 
-    f = h5py.File(h5py_file, 'w')  # 写入的时候是‘w’
+    # f = h5py.File(h5py_file, 'w')  # 写入的时候是‘w’
     pool = Pool(processes=int(nj))  # 创建nj个进程
 
     for i in range(0, nj):
-        result = pool.apply_async(Load_Process, args=(read_lock, write_lock, f, read_queue, error_queue, feat_loader))
+        result = pool.apply_async(Load_Process, args=(read_lock, write_lock, h5py_file, read_queue, error_queue, feat_loader))
         print(result)
     pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
     try:
         pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
     except:
         traceback.print_exc()
-    f.close()
+    # f.close()
     if error_queue.qsize() > 0:
         print('\n>>>> Saving Completed with errors in: ')
         while not error_queue.empty():
