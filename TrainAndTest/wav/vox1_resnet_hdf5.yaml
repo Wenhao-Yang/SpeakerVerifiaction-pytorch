@@ -91,6 +91,9 @@ num_classes: 1211
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
+  filter: "fbank"
+  sr: 16000
+  feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   block_type: !ref <block_type>
