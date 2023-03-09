@@ -140,24 +140,25 @@ if __name__ == "__main__":
     
     pdb.set_trace()
 
-    with h5py.File(h5py_file, 'w') as f:  # 写入的时候是‘w’
-        pool = Pool(processes=int(nj))  # 创建nj个进程
-        for i in range(0, nj):
-            pool.apply_async(Load_Process, args=(read_lock, write_lock, f, read_queue, error_queue, feat_loader))
-    
-        pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
-        try:
-            pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
-        except:
-            traceback.print_exc()
-        
-        if error_queue.qsize() > 0:
-            print('\n>>>> Saving Completed with errors in: ')
-            while not error_queue.empty():
-                    print(error_queue.get() + ' ', end='')
-            print('')
-        else:
-            print('\n>>>> Saving Completed without errors.!')
+    f = h5py.File(h5py_file, 'w')  # 写入的时候是‘w’
+    pool = Pool(processes=int(nj))  # 创建nj个进程
+
+    for i in range(0, nj):
+        pool.apply_async(Load_Process, args=(read_lock, write_lock, f, read_queue, error_queue, feat_loader))
+
+    pool.close()  # 关闭进程池，表示不能在往进程池中添加进程
+    try:
+        pool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
+    except:
+        traceback.print_exc()
+    f.close()
+    if error_queue.qsize() > 0:
+        print('\n>>>> Saving Completed with errors in: ')
+        while not error_queue.empty():
+                print(error_queue.get() + ' ', end='')
+        print('')
+    else:
+        print('\n>>>> Saving Completed without errors.!')
     
     end_time = time.time()
     print('All files in: %s, %.2fs collapse.' % (out_dir, end_time - start_time))
