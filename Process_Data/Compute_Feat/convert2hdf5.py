@@ -17,14 +17,14 @@ import os
 import shutil
 import sys
 import time
-
+from multiprocessing import Pool, Manager
 import kaldi_io
 import h5py
 import soundfile as sf
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
-parser.add_argument('--nj', type=int, default=4, metavar='E', help='number of jobs to make feats (default: 10)')
+parser.add_argument('--nj', type=int, default=6, metavar='E', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-dir', type=str, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
@@ -52,6 +52,30 @@ def read_WaveInt(filename, start=0, stop=None):
         filename, dtype='int16', start=start, stop=stop)
     return audio
 
+
+def Load_Process(lock_i, lock_w, f, i_queue):
+    while True:
+        # print(os.getpid(), " acqing lock i")
+        lock_i.acquire()  # 加上锁
+        # print(" %d Acqed lock i " % os.getpid(), end='')
+        if not i_queue.empty():
+            key, feat_path = i_queue.get()
+            lock_i.release()
+        else:
+            lock_i.release()
+            break
+        
+        lock_w.acquire()
+        try:
+            feat = feat_loader(feat_path)
+            f.create_dataset(key, data=feat)
+        except:
+            error_queue.append(key)
+        lock_w.release()
+
+        print('\rProcess [{:8>s}]: [{:>8d}] samples Left'.format
+              (str(os.getpid()), i_queue.qsize()), end='')
+        
 
 if __name__ == "__main__":
 
@@ -97,16 +121,20 @@ if __name__ == "__main__":
     # txn = env.begin(write=True)
     error_queue = []
     # print('Plan to make feats for %d utterances in %s with %d jobs.' % (num_utt, str(time.asctime()), nj))
+    manager = Manager()
+    read_lock = manager.Lock()
+    write_lock = manager.Lock()
+    read_queue = manager.Queue()
 
-    pbar = tqdm(enumerate(feat_scp))
+    pbar = tqdm(enumerate(feat_scp), ncols=100)
+    for idx, u in pbar:
+        key, feat_path = u.split()
+        read_queue.put((key, feat_path))
+
     with h5py.File(h5py_file, 'w') as f:  # 写入的时候是‘w’
-        for idx, u in pbar:
-            try:
-                key, feat_path = u.split()
-                feat = feat_loader(feat_path)
-                f.create_dataset(key, data=feat)
-            except:
-                error_queue.append(key)
+        pool = Pool(processes=int(nj))  # 创建nj个进程
+        for i in range(0, nj):
+            pool.apply_async(Load_Process, args=(read_lock, write_lock, f, read_queue))
             
     if len(error_queue) > 0:
         print('\n>>>> Saving Completed with errors in: ')
