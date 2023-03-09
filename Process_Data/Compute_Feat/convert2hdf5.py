@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
-"""
+'''
 @Author: yangwenhao
 @Contact: 874681044@qq.com
-@Software: PyCharm
-@File: conver2lmdb.py
-@Time: 2020/8/20 14:44
-@Overview:
-"""
+@Software: VS Code
+@File: convert2hdf5.py
+@Time: 2023/03/09 18:39
+@Overview: 
+'''
+
 
 from __future__ import print_function
 
@@ -19,7 +19,7 @@ import sys
 import time
 
 import kaldi_io
-import lmdb
+import h5py
 import soundfile as sf
 from tqdm import tqdm
 
@@ -50,7 +50,6 @@ def read_WaveInt(filename, start=0, stop=None):
     # audio = audio.flatten()
     audio, sample_rate = sf.read(
         filename, dtype='int16', start=start, stop=stop)
-    
     return audio
 
 
@@ -92,31 +91,23 @@ if __name__ == "__main__":
     num_utt = len(feat_scp)
     start_time = time.time()
 
-    lmdb_file = os.path.join(out_dir, 'feat')
-    env = lmdb.open(lmdb_file, map_size=1099511627776)  # 1TB
-    txn = env.begin(write=True)
+    h5py_file = os.path.join(out_dir, 'feat.h5py')
+    # lmdb_file = os.path.join(out_dir, 'feat')
+    # env = lmdb.open(lmdb_file, map_size=1099511627776)  # 1TB
+    # txn = env.begin(write=True)
     error_queue = []
     # print('Plan to make feats for %d utterances in %s with %d jobs.' % (num_utt, str(time.asctime()), nj))
 
     pbar = tqdm(enumerate(feat_scp))
-    for idx, u in pbar:
-        key, feat_path = u.split()
-        try:
-            feat = feat_loader(feat_path)
-            # print(feat.shape)
-            key_byte = key.encode('ascii')
-            txn.put(key_byte, feat)
-        except:
-            error_queue.append(key)
-        
-        if (idx + 1) % 2000 == 0:
-            txn.commit()
-            # commit 之后需要再次 begin
-            txn = env.begin(write=True)
-
-    txn.commit()
-    env.close()
-
+    with h5py.File(h5py_file, 'w') as f:  # 写入的时候是‘w’
+        for idx, u in pbar:
+            try:
+                key, feat_path = u.split()
+                feat = feat_loader(feat_path)
+                f.create_dataset(u, data=feat)
+            except:
+                error_queue.append(key)
+            
     if len(error_queue) > 0:
         print('\n>>>> Saving Completed with errors in: ')
         print(error_queue)

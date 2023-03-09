@@ -32,6 +32,17 @@ def _read_data_lmdb(txn, key, size):
     return data_flat.reshape(int(data_flat.shape[0] / size), size)
 
 
+def _read_from_lmdb(env, key, start=0, stop=-1):
+    """read data array from lmdb with key (w/ and w/o fixed size)
+    size: feat-dim"""
+    with env.begin(write=False) as txn:
+        buf = txn.get(key.encode('ascii'))
+    
+    data_flat = np.frombuffer(buf, dtype=np.int16)[start:stop]
+
+    return data_flat
+
+
 class LmdbVerifyDataset(Dataset):
     def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load, return_uid=False):
 
@@ -146,19 +157,20 @@ class LmdbVerifyDataset(Dataset):
 
 
 class LmdbTrainDataset(Dataset):
-    def __init__(self, dir, feat_dim, samples_per_speaker, transform, loader=_read_data_lmdb, num_valid=5,
+    def __init__(self, dir, feat_dim, samples_per_speaker, transform, loader=_read_from_lmdb, 
+                 num_valid=5, feat_type='wav', sample_type='instance',
+                 segment_len=c.N_SAMPLES, verbose=1, min_frames=50,
                  return_uid=False):
 
         # feat_scp = dir + '/feats.scp'
         spk2utt = dir + '/spk2utt'
         utt2spk = dir + '/utt2spk'
         # utt2num_frames = dir + '/utt2num_frames'
+        utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         lmdb_file = dir + '/feat'
 
-        if not os.path.exists(lmdb_file):
-            raise FileExistsError(lmdb_file)
-        if not os.path.exists(spk2utt):
-            raise FileExistsError(spk2utt)
+        assert os.path.exists(lmdb_file)
+        assert os.path.exists(spk2utt)
 
         dataset = {}
         with open(spk2utt, 'r') as u:
@@ -181,6 +193,37 @@ class LmdbTrainDataset(Dataset):
                 if uid not in utt2spk_dict.keys():
                     utt2spk_dict[uid] = utt_spk[-1]
         # pdb.set_trace()
+        total_frames = 0
+        self.utt2num_frames = {}
+        base_utts = []
+        if self.sample_type != 'balance':
+            if os.path.exists(utt2num_frames):
+                with open(utt2num_frames, 'r') as f:
+                    for l in f.readlines():
+                        uid, num_frames = l.split()
+                        
+                        if feat_type == 'wav':
+                            num_frames = float(num_frames) * 16000
+
+                        num_frames = int(num_frames)
+                        self.utt2num_frames[uid] = num_frames
+
+                        if num_frames >= min_frames:
+                            total_frames += num_frames
+                            this_numofseg = int(
+                                np.ceil(float(num_frames) / segment_len))
+
+                            for i in range(this_numofseg):
+                                end = min((i + 1) * segment_len, num_frames)
+                                start = min(end - segment_len, 0)
+                                base_utts.append((uid, start, end))
+
+                    # if int(num_frames) < 50:
+                    #     invalid_uid.append(uid)
+        random.shuffle(base_utts)
+        self.base_utts = base_utts
+        if verbose > 0:
+            print('    There are {} basic segments.'.format(len(base_utts)))
 
         speakers = [spk for spk in dataset.keys()]
         speakers.sort()
@@ -190,6 +233,7 @@ class LmdbTrainDataset(Dataset):
 
         print('    There are {} utterances in Train Dataset'.format(
             len(utt2spk_dict.keys())))
+        
         if num_valid > 0:
             valid_set = {}
             valid_utt2spk_dict = {}
@@ -215,9 +259,9 @@ class LmdbTrainDataset(Dataset):
         # for uid in uid2feat.keys():
         #     for i in range(int(np.ceil(utt2len_dict[uid] / c.NUM_FRAMES_SPECT))):
         #         self.all_utts.append(uid)
-        env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
+        self.env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
                         meminit=False)
-        self.env = env.begin(write=False, buffers=True)  # as txn:
+        # self.env = env.begin(write=False, buffers=True)  # as txn:
         self.speakers = speakers
         self.dataset = dataset
 
@@ -232,34 +276,35 @@ class LmdbTrainDataset(Dataset):
         self.samples_per_speaker = samples_per_speaker
         self.return_uid = return_uid
 
-        # if self.return_uid:
-        #     self.utt_dataset = []
-        #     for i in range(self.samples_per_speaker * self.num_spks):
-        #         sid = i % self.num_spks
-        #         spk = self.idx_to_spk[sid]
-        #         utts = self.dataset[spk]
-        #         uid = utts[random.randrange(0, len(utts))]
-        #         self.utt_dataset.append([uid, sid])
-
     def __getitem__(self, sid):
-        # start_time = time.time()
-        # if self.return_uid:
-        #     uid, label = self.utt_dataset[sid]
-        #     y = self.loader(self.uid2feat[uid])
-        #     feature = self.transform(y)
-        #     return feature, label, uid
 
-        sid %= self.num_spks
-        spk = self.idx_to_spk[sid]
-        utts = self.dataset[spk]
+        if sid < len(self.base_utts):
+            while True:
+                (uid, start, end) = self.base_utts[sid]
+                # pdb.set_trace()
+                y = self.loader(self.env, uid, start=start, stop=end)
+                y = y[start:end]
 
-        y = np.array([[]]).reshape(0, self.feat_dim)
+                sid = self.utt2spk_dict[uid]
+                sid = self.spk_to_idx[sid]
+                break
+        else:
+            # rand_idxs = [sid]
+            sid %= self.num_spks
+            spk = self.idx_to_spk[sid]
+            utts = self.dataset[spk]
+            num_utt = len(utts)
 
-        while len(y) < c.N_SAMPLES:
-            uid = random.randrange(0, len(utts))
+            # y = np.array([[]]).reshape(self.feat_shape)
+            rand_utt_idx = np.random.randint(0, num_utt)
+            # rand_idxs.append(rand_utt_idx)
+            uid = utts[rand_utt_idx]
 
-            feature = self.loader(self.env, utts[uid], self.feat_dim)
-            y = np.concatenate((y, feature), axis=0)
+            start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
+                0, self.utt2num_frames[uid] - self.segment_len)
+            end = start + self.segment_len
+            y = self.loader(self.env, uid, start=start, stop=end)
+            # y = np.concatenate((y, feature), axis=self.c_axis)
 
         feature = self.transform(y)
         # print(sid)

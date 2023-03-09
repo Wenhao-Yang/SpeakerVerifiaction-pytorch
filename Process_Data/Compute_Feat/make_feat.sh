@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=302
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 # echo $(awk '{n += $2} END{print n}' <utt2num_frames)
@@ -1174,6 +1174,18 @@ if [ $stage -le 301 ]; then
   feat=lmdb
   dataset=vox1
   python Process_Data/Compute_Feat/conver2lmdb.py \
+      --data-dir ${lstm_dir}/data/${dataset}/dev \
+      --out-set dev \
+      --out-dir ${lstm_dir}/data/${dataset}/${feat} \
+      --data-format wav \
+      --feat-format wav
+fi
+
+
+if [ $stage -le 302 ]; then
+  feat=hdf5
+  dataset=vox1
+  python Process_Data/Compute_Feat/convert2hdf5.py \
       --data-dir ${lstm_dir}/data/${dataset}/dev \
       --out-set dev \
       --out-dir ${lstm_dir}/data/${dataset}/${feat} \
