@@ -47,7 +47,7 @@ remove_vad: False
 epochs: 60
 
 # optimizer
-optimizer: adam
+optimizer: sgd
 lr_decay: 0
 weight_decay: 0.0005
 # second_wd: 0.0002
@@ -60,8 +60,8 @@ accu_steps: 1
 patience: 3
 milestones: [10, 20, 30, 40]
 scheduler: rop
-lr: 0.001
-base_lr: 0.000001
+lr: 0.1
+base_lr: 0.00001
 cyclic_epoch: 3
 step_size: 65000
 cos_sim: True
@@ -82,7 +82,7 @@ kernel_size:
 alpha: 0
 avg_size: 5
 embedding_size: 256
-batch_size: 128
+batch_size: 256
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
