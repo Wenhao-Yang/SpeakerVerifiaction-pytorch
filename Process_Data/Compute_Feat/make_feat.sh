@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=301
 # voxceleb1
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 # echo $(awk '{n += $2} END{print n}' <utt2num_frames)
