@@ -330,7 +330,7 @@ class LmdbTrainDataset(Dataset):
 class LmdbValidDataset(Dataset):
     def __init__(self, valid_set, spk_to_idx, reader, 
                  valid_utt2spk_dict, transform, feat_dim=0, loader=_read_data_lmdb,
-                 return_uid=False):
+                 return_uid=False, verbose=0):
         self.reader = reader
         self.feat_dim = feat_dim
 
@@ -342,7 +342,8 @@ class LmdbValidDataset(Dataset):
 
         uids = list(valid_utt2spk_dict.keys())
         uids.sort()
-        print(uids[:10])
+        if verbose > 0:
+            print(uids[:5])
         self.uids = uids
         self.utt2spk_dict = valid_utt2spk_dict
         self.spk_to_idx = spk_to_idx
@@ -1266,7 +1267,7 @@ class Hdf5TrainDataset(Dataset):
 class Hdf5ValidDataset(Dataset):
     def __init__(self, valid_set, spk_to_idx, reader, 
                  valid_utt2spk_dict, transform, feat_dim=0, loader=_read_from_hdf5,
-                 return_uid=False):
+                 return_uid=False, verbose=0):
         self.reader = reader
         self.feat_dim = feat_dim
 
@@ -1278,7 +1279,9 @@ class Hdf5ValidDataset(Dataset):
 
         uids = list(valid_utt2spk_dict.keys())
         uids.sort()
-        print(uids[:10])
+        
+        if verbose > 1:
+            print(uids[:4])
         self.uids = uids
         self.utt2spk_dict = valid_utt2spk_dict
         self.spk_to_idx = spk_to_idx

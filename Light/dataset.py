@@ -125,6 +125,7 @@ def SubScriptDatasets(config_args):
         
         valid_dir = LmdbValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
                                     reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                    verbose=verbose,
                                     transform=transform)
         
     elif 'feat_type' in config_args and config_args['feat_type'] == 'hdf5':
@@ -137,6 +138,7 @@ def SubScriptDatasets(config_args):
         
         valid_dir = Hdf5ValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
                                     reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                    verbose=verbose,
                                     transform=transform)
     else:
         train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
