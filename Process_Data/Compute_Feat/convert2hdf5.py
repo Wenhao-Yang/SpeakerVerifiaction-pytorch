@@ -56,8 +56,9 @@ def read_WaveInt(filename, start=0, stop=None):
 
 
 def Load_Process(lock_i, lock_w, h5py_file, i_queue, error_queue, feat_loader):
-    print('Process {} Start'.format(str(os.getpid())))
+    # print('Process {} Start'.format(str(os.getpid())))
     
+    tmp_stack = []
     while True:
         # print(os.getpid(), " acqing lock i")
         lock_i.acquire()  # 加上锁
@@ -70,14 +71,18 @@ def Load_Process(lock_i, lock_w, h5py_file, i_queue, error_queue, feat_loader):
             break
         try:
             feat = feat_loader(feat_path)
-            
+            tmp_stack.append(key, feat)
         except:
             error_queue.append(key)
-        lock_w.acquire()
-        with h5py.File(h5py_file, 'w') as f:
-            f.create_dataset(key, data=feat)  
+        
+        if len(tmp_stack) > 40:
+            lock_w.acquire()
+            with h5py.File(h5py_file, 'w') as f:
+                for key, feat in tmp_stack:
+                    f.create_dataset(key, data=feat)  
+            lock_w.release()
 
-        lock_w.release()
+            tmp_stack = []
 
         print('\rProcess [{:8>s}]: [{:>8d}] samples Left'.format
               (str(os.getpid()), i_queue.qsize()), end='')
