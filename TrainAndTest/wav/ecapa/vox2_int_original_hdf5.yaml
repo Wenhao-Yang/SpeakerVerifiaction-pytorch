@@ -67,7 +67,7 @@ step_size: 65000
 cos_sim: True
 
 early_stopping: True
-early_patience: 20
+early_patience: 6
 early_delta: 0.0001
 early_meta: "mix2"
 
