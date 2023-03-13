@@ -280,6 +280,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     for i in range(train_dir.num_spks):
         score_dict[i] = []
 
+    train_dir.return_idx = True
     if len(train_dir.rest_dataset) > 0:
         train_dir.dataset = np.concatenate(
             [train_dir.dataset, train_dir.rest_dataset])
@@ -288,7 +289,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
 
     with torch.no_grad():
         pbar = tqdm(enumerate(train_loader))
-        for batch_idx, (data, label) in pbar:
+        for batch_idx, (data, label, idx) in pbar:
 
             if 'loss' in select_score:
                 if torch.cuda.is_available():
@@ -301,9 +302,10 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
             elif select_score == 'random':
                 loss = torch.zeros_like(label)
 
-            idx_labels = batch_idx * len(data) + np.arange(args.batch_size)
+            # idx_labels = batch_idx * len(data) + np.arange(args.batch_size)
             for i, (l, sample_loss) in enumerate(zip(label, loss)):
-                score_dict[int(l)].append([float(sample_loss), idx_labels[i]])
+                # score_dict[int(l)].append([float(sample_loss), idx_labels[i]])
+                score_dict[int(l)].append([float(sample_loss), idx])
                 all_loss.append(float(sample_loss))
 
     model.module.loss.xe_criterion.ce.reduction = 'mean'

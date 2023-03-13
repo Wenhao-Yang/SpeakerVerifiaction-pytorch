@@ -533,6 +533,7 @@ class EgsDataset(Dataset):
         self.domain = domain
         self.chunk_size = []
         self.batch_size = batch_size
+        self.return_idx = False
 
     def __getitem__(self, idx):
         # time_s = time.time()
@@ -557,6 +558,9 @@ class EgsDataset(Dataset):
             else:
                 return feature, label, guide_label
 
+        if self.return_idx:
+            return feature, label, idx
+        
         if self.domain:
             return feature, label, dom_label
         else:
