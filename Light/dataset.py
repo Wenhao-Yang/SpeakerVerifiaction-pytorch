@@ -196,12 +196,12 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
     max_chunk_size = int(config_args['random_chunk'][1])
     pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
 
-    if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
-        train_length = len(train_dir)
-        core_length = int(train_length*config_args['coreset_percent'])
-        rest_length = train_length - core_length
-        train_dir.rest_dataset = train_dir.dataset[-rest_length:]
-        train_dir.dataset = train_dir.dataset[:core_length]
+    # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
+    #     train_length = len(train_dir)
+    #     core_length = int(train_length*config_args['coreset_percent'])
+    #     rest_length = train_length - core_length
+    #     train_dir.rest_dataset = train_dir.dataset[-rest_length:]
+    #     train_dir.dataset = train_dir.dataset[:core_length]
 
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dir)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False

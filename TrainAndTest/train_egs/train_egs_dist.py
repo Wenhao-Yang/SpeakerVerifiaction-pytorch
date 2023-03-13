@@ -210,7 +210,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
             pbar.set_description(epoch_str)
 
-        if (batch_idx + 1) == 100:
+        if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and (batch_idx + 1) == int(len(train_loader) * config_args['coreset_percent']):
             break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
@@ -613,9 +613,9 @@ def main():
             if not torch.distributed.is_initialized():
                 break
 
-            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
-                select_samples(train_dir, train_loader, model,
-                               config_args, config_args['select_score'])
+            # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
+            #     select_samples(train_dir, train_loader, model,
+            #                    config_args, config_args['select_score'])
 
             train(train_loader, model, optimizer,
                   epoch, scheduler, config_args, writer)
