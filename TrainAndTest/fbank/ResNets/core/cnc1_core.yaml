@@ -9,19 +9,18 @@ data_root_dir: /home/work2020/yangwenhao/project/lstm_speaker_verification
 
 ## Dataset
 seed: 123456
-datasets: vox1
+datasets: cnceleb_v2
 testset: vox1
 feat_type: klfb
 loss: arcsoft
-second_loss: center
 input_dim: 40
 feat: !ref fb<input_dim>
 subset: ""
 
-train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_cnc
+train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test<subset>_<feat>
 train_trials: trials
-valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_cnc_valid
+valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>_<feat>_valid
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/<feat_type>/test_<feat>
 trials: trials
@@ -36,7 +35,6 @@ extract: True
 nj: 6
 shuffle: False
 batch_shuffle: True
-
 coreset_percent: 0.5
 select_score: random
 select_interval: 4
@@ -45,12 +43,12 @@ feat_format: kaldi
 remove_vad: True
 
 ### Training settings
-epochs: 50
+epochs: 60
 
 # optimizer
-optimizer: sgd
+optimizer: adam
 lr_decay: 0
-weight_decay: 0.0005
+weight_decay: 0.0001
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -59,13 +57,14 @@ accu_steps: 1
 # Scheduler
 patience: 3
 milestones: [20, 35, 45, 55]
-scheduler: step
-lr: 0.1
-base_lr: 0.000001
+scheduler: cyclic
+lr: 0.001
+cyclic_epoch: 6
+base_lr: 0.00000001
 cos_sim: True
 
 early_stopping: True
-early_patience: 35
+early_patience: 30
 early_delta: 0.0001
 early_meta: "mix2"
 
@@ -85,7 +84,6 @@ dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
 fast: none1
-num_classes: 797
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
@@ -112,7 +110,7 @@ classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
 
 # loss
 loss_ratio: 1
-lr_ratio: 5
+lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
 margin: 0.15
@@ -129,7 +127,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist_cnc_core/percent<coreset_percent>_<select_score>_<second_loss><lr_ratio>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_varesmix2_bashuf2_dist_core/percent<coreset_percent>_<select_score>
 # _red<red_ratio>
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>

@@ -278,7 +278,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     if isinstance(args, dict):
         args = AttrDict(args)
 
-    print('id of train_dir', id(train_loader))
+    # print('id of train_dir', id(train_loader))
 
     train_dir.return_idx = True
     pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
@@ -302,14 +302,12 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
         score_dict[i] = []
 
     with torch.no_grad():
-        pbar = tqdm(enumerate(train_loader))
-        for batch_idx, (data, label, idx) in pbar:
-
+        pbar = tqdm(train_loader) if torch.distributed.get_rank() == 0 else train_loader
+        for data, label, idx in pbar:
             if 'loss' in select_score:
                 if torch.cuda.is_available():
                     data = data.cuda()
                     label = label.cuda()
-
                 classfier, feats = model(data)
                 loss, _ = model.module.loss(classfier, feats, label)
 
@@ -326,7 +324,6 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
 
     all_score_dict = [None for _ in range(torch.distributed.get_world_size())]
     torch.distributed.all_gather_object(all_score_dict, score_dict)
-
     all_total_loss = [None for _ in range(torch.distributed.get_world_size())]
     torch.distributed.all_gather_object(all_total_loss, total_loss)
 
@@ -383,10 +380,9 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
 
     # if len(dataset) % args.batch_size > 0:
     #     dataset = dataset[:-(len(dataset) % args.batch_size)]
-    print(len(dataset), ' ', previous_len)
+    # print(len(dataset), ' ', previous_len)
     rest_dataset.extend(dataset[-(len(dataset)-previous_len):])
     dataset = dataset[:previous_len]
-
     np.random.shuffle(dataset)
 
     train_dir.dataset = dataset

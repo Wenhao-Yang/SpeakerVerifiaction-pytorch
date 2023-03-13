@@ -221,7 +221,7 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                      min_chunk_size=min_chunk_size,
                                                                      max_chunk_size=max_chunk_size,
-                                                                     verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                     verbose=else 0
                                                                      ),
                                                sampler=valid_sampler,
                                                shuffle=False, **kwargs)  # , 
