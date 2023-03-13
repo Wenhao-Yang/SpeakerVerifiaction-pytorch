@@ -280,7 +280,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     for i in range(train_dir.num_spks):
         score_dict[i] = []
 
-    train_dir.return_idx = True
+    train_loader.dataset.return_idx = True
     if len(train_dir.rest_dataset) > 0:
         train_dir.dataset = np.concatenate(
             [train_dir.dataset, train_dir.rest_dataset])
