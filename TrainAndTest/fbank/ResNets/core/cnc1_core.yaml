@@ -59,7 +59,7 @@ patience: 3
 milestones: [20, 35, 45, 55]
 scheduler: cyclic
 lr: 0.001
-cyclic_epoch: 4
+cyclic_epoch: 6
 base_lr: 0.00000001
 cos_sim: True
 

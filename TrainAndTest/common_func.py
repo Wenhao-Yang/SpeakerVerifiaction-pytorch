@@ -96,10 +96,13 @@ def create_scheduler(optimizer, config_args, train_dir=None):
     elif config_args['scheduler'] == 'cyclic':
         cycle_momentum = False if config_args['optimizer'] == 'adam' else True
         if 'step_size' in config_args:
-            step_size= config_args['step_size']
+            step_size = config_args['step_size']
         else:
             step_size = config_args['cyclic_epoch'] * int(
-                                              np.ceil(len(train_dir) / config_args['batch_size']))
+                np.ceil(len(train_dir) / config_args['batch_size']))
+
+            if torch.distributed.is_initialized() and torch.distributed.get_world_size() > 1:
+                step_size /= torch.distributed.get_world_size()
 
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
                                           max_lr=config_args['lr'],
