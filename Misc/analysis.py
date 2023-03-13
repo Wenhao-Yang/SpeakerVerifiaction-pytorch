@@ -86,21 +86,26 @@ def format_eer_file_train(file_path):
                 mindcf01 = []
                 mindcf001 = []
 
-def format_eer_file_eval(file_path):
+def format_eer_file_eval(file_path, log=True):
     assert os.path.exists(file_path)
-    eer = []
-    mindcf01 = []
-    mindcf001 = []
-    mix2 = []
-    mix3 = []
-    model_str = ''
+    results = []
     with open(file_path, 'r') as f:
+        eer = []
+        mindcf01 = []
+        mindcf001 = []
+        mix2 = []
+        mix3 = []
+        model_str = ''
+        result = []
+        
         for l in f.readlines():
             ls = l.split()
             if len(ls) ==0:
                 continue
             elif len(ls)< 10:
                 model_str = "-".join(ls[1:])
+                result.append(model_str)
+                
                 # print("-".join(ls[1:]))
                 test_set=''
                 eer = []
@@ -111,20 +116,32 @@ def format_eer_file_eval(file_path):
                 eer.append(float(ls[1]))
                 mindcf01.append(float(ls[5]))
                 mindcf001.append(float(ls[7]))
-                mix2.append(float(ls[9].rstrip(',')))
-                mix3.append(float(ls[10].rstrip('.')))
+                
+                mix2.append(float(ls[1])*float(ls[7]))
+                mix3.append(float(ls[1])*float(ls[7])*float(ls[5]))
                 test_set=''# ls[1]
 
             if len(eer)==3:
-                print("#| {:>5.2f}±{:<.2f} |".format(np.mean(eer), np.std(eer)), end=' ')
-                print("%.4f±%.4f"%(np.mean(mindcf01), np.std(mindcf01)), end=' ')
-                print("| %.4f±%.4f"%(np.mean(mindcf001), np.std(mindcf001)), end=' ') 
-                print("| %.4f±%.4f"%(np.mean(mix2), np.std(mix2)), end=' ') 
-                print("| %.4f±%.4f | %s"%(np.mean(mix3), np.std(mix3), model_str)) 
+                if log:
+                    print("#| {:>5.2f}±{:<.2f} |".format(np.mean(eer), np.std(eer)), end=' ')
+                    print("%.4f±%.4f"%(np.mean(mindcf01), np.std(mindcf01)), end=' ')
+                    print("| %.4f±%.4f"%(np.mean(mindcf001), np.std(mindcf001)), end=' ')    
+                    print("| %.4f±%.4f"%(np.mean(mix2), np.std(mix2)), end=' ') 
+                    print("| %.4f±%.4f | %s"%(np.mean(mix3), np.std(mix3), model_str)) 
                 
+                result.extend([np.mean(eer), np.std(eer), 
+                               np.mean(mindcf01), np.std(mindcf01), 
+                               np.mean(mindcf001), np.std(mindcf001),
+                               np.mean(mix2), np.std(mix2),
+                               np.mean(mix3), np.std(mix3)])
+                results.append(result)
+                              
+                result = []             
                 eer = []
                 mindcf01 = []
                 mindcf001 = []
+        
+        return results
 
                 
 def read_eer_file(file_path):
