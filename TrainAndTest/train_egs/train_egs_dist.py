@@ -362,6 +362,7 @@ def main():
     # test_display_triplet_distance = False
     # print the experiment configuration
     all_seed(args.seed)
+    torch.multiprocessing.set_sharing_strategy('file_system')
     torch.distributed.init_process_group(backend='nccl')
     torch.cuda.set_device(args.local_rank)
     
