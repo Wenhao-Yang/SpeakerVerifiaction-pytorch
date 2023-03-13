@@ -1101,7 +1101,6 @@ class Hdf5TrainDataset(Dataset):
         # utt2num_frames = dir + '/utt2num_frames'
         utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         hdf5_file = dir + '/feat.h5py'
-        self.hdf5_file = hdf5_file
         self.sample_type = sample_type
         self.segment_len = segment_len
         assert os.path.exists(hdf5_file)
@@ -1231,8 +1230,7 @@ class Hdf5TrainDataset(Dataset):
             while True:
                 (uid, start, end) = self.base_utts[sid]
                 # pdb.set_trace()
-                reader = h5py.File(self.hdf5_file, 'r')
-                y = self.loader(reader, uid, start=start, stop=end)
+                y = self.loader(self.reader, uid, start=start, stop=end)
                 y = y[start:end]
 
                 sid = self.utt2spk_dict[uid]
@@ -1253,10 +1251,7 @@ class Hdf5TrainDataset(Dataset):
             start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
                 0, self.utt2num_frames[uid] - self.segment_len)
             end = start + self.segment_len
-
-            reader = h5py.File(self.hdf5_file, 'r')
-            y = self.loader(reader, uid, start=start, stop=end)
-            # y = self.loader(self.reader, uid, start=start, stop=end)
+            y = self.loader(self.reader, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
 
         feature = self.transform(y.reshape(1,-1))
