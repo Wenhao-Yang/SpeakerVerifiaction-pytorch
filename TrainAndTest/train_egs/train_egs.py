@@ -330,70 +330,67 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     all_total_loss = [None for _ in range(torch.distributed.get_world_size())]
     torch.distributed.all_gather_object(all_total_loss, total_loss)
 
-    if torch.distributed.get_rank() == 0:
-        this_score_dict = {}
-        for score_dict in all_score_dict:
-            for i in score_dict:
-                if i in this_score_dict:
-                    this_score_dict[i].extend(score_dict[i])
-                else:
-                    this_score_dict[i] = score_dict[i]
-
-        score_dict = this_score_dict
-        all_loss = np.concatenate(all_total_loss)
-
-        train_dataset = train_dir.dataset
-        previous_len = len(train_dataset)
-        # print(previous_len, len(train_loader))
-
-        dataset = []
-        rest_dataset = []
-
-        all_loss = np.sort(all_loss)
-
-        if select_score == 'loss_mean':
-            threshold = np.mean(all_loss)
-        elif select_score == 'loss_part':
-            number_samples = int(len(all_loss)*args.coreset_percent)
-            number_samples = int(
-                np.ceil(number_samples / args.batch_size) * args.batch_size)
-            threshold = all_loss[-number_samples]
-
+    this_score_dict = {}
+    for score_dict in all_score_dict:
         for i in score_dict:
-            sort_np = np.array(score_dict[i])
-            if select_score in ['loss', 'random']:
-                idx = np.argsort(sort_np, axis=0)
-                sort_np = sort_np[idx[:, 0]]
-                sort_np_len = int(len(sort_np)*args.coreset_percent)+1
-
-                # pdb.set_trace()
-                for _, j in sort_np[-sort_np_len:]:
-                    dataset.append(train_dataset[int(j)])
-
-                for _, k in sort_np[:-sort_np_len]:
-                    rest_dataset.append(train_dataset[int(k)])
+            if i in this_score_dict:
+                this_score_dict[i].extend(score_dict[i])
             else:
-                for l, j in sort_np:
-                    if l >= threshold:
-                        dataset.append(train_dataset[int(j)])
-                    else:
-                        rest_dataset.append(train_dataset[int(j)])
+                this_score_dict[i] = score_dict[i]
 
-        # pdb.set_trace()
+    score_dict = this_score_dict
+    all_loss = np.concatenate(all_total_loss)
 
-        dataset = np.array(dataset)
-        dataset = dataset[np.argsort(dataset, axis=0)[:, 2]]
+    train_dataset = train_dir.dataset
+    previous_len = len(train_dataset)
+    # print(previous_len, len(train_loader))
 
-        # if len(dataset) % args.batch_size > 0:
-        #     dataset = dataset[:-(len(dataset) % args.batch_size)]
-        assert len(dataset) >= previous_len
-        rest_dataset.extend(dataset[-(len(dataset)-previous_len):])
-        dataset = dataset[:previous_len]
+    dataset = []
+    rest_dataset = []
+    all_loss = np.sort(all_loss)
 
-        np.random.shuffle(dataset)
+    if select_score == 'loss_mean':
+        threshold = np.mean(all_loss)
+    elif select_score == 'loss_part':
+        number_samples = int(len(all_loss)*args.coreset_percent)
+        number_samples = int(
+            np.ceil(number_samples / args.batch_size) * args.batch_size)
+        threshold = all_loss[-number_samples]
 
-        train_dir.dataset = dataset
-        train_dir.rest_dataset = rest_dataset
+    for i in score_dict:
+        sort_np = np.array(score_dict[i])
+        if select_score in ['loss', 'random']:
+            idx = np.argsort(sort_np, axis=0)
+            sort_np = sort_np[idx[:, 0]]
+            sort_np_len = int(len(sort_np)*args.coreset_percent)+1
+
+            # pdb.set_trace()
+            for _, j in sort_np[-sort_np_len:]:
+                dataset.append(train_dataset[int(j)])
+
+            for _, k in sort_np[:-sort_np_len]:
+                rest_dataset.append(train_dataset[int(k)])
+        else:
+            for l, j in sort_np:
+                if l >= threshold:
+                    dataset.append(train_dataset[int(j)])
+                else:
+                    rest_dataset.append(train_dataset[int(j)])
+
+    # pdb.set_trace()
+    dataset = np.array(dataset)
+    dataset = dataset[np.argsort(dataset, axis=0)[:, 2]]
+
+    # if len(dataset) % args.batch_size > 0:
+    #     dataset = dataset[:-(len(dataset) % args.batch_size)]
+    assert len(dataset) >= previous_len
+    rest_dataset.extend(dataset[-(len(dataset)-previous_len):])
+    dataset = dataset[:previous_len]
+
+    np.random.shuffle(dataset)
+
+    train_dir.dataset = dataset
+    train_dir.rest_dataset = rest_dataset
 
     torch.distributed.barrier()
     train_dir.return_idx = False
