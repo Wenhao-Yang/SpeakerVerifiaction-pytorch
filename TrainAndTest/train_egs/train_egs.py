@@ -278,7 +278,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     if isinstance(args, dict):
         args = AttrDict(args)
 
-    print('id of train_dir', id(train_dir))
+    print('id of train_dir', id(train_loader))
 
     train_dir.return_idx = True
     pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
