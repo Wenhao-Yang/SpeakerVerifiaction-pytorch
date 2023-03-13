@@ -459,9 +459,12 @@ def main():
     model_para = [{'params': model.parameters()}]
     if 'second_loss' in config_args and config_args['second_loss'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         if config_args['lr_ratio'] != 1.0:
-            model_para.append({'params': model.loss.ce_criterion.parameters(
-            ), 'lr': config_args['lr'] * config_args['lr_ratio']})
+            center_params = list(map(id, model.loss.ce_criterion.classifier.parameters()))
+            rest_params = filter(lambda p: id(p) not in center_params, model.parameters())
 
+            model_para = [{'params': rest_params}, 
+                          {'params': center_params, 'lr': config_args['lr'] * config_args['lr_ratio']}]
+            
     if 'second_wd' in config_args and config_args['second_wd'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:
         classifier_params = list(map(id, model.classifier.parameters()))
