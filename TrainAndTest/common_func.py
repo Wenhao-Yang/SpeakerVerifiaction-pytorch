@@ -104,6 +104,9 @@ def create_scheduler(optimizer, config_args, train_dir=None):
             if torch.distributed.is_initialized() and torch.distributed.get_world_size() > 1:
                 step_size /= torch.distributed.get_world_size()
 
+            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
+                step_size = int(step_size * config_args['coreset_percent'])
+
         scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
                                           max_lr=config_args['lr'],
                                           step_size_up=step_size,
@@ -313,10 +316,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
                             # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]                                          :num_seg_tensor[i + 1]].mean(axis=0)
-                        else:
                             uid_vec = out[num_seg_tensor[i]
-                                :num_seg_tensor[i + 1]]
+                                :num_seg_tensor[i + 1]].mean(axis=0)
+                        else:
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 
                         uid2vectors.append((uid, uid_vec))
 
