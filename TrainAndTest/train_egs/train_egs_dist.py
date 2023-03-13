@@ -459,7 +459,7 @@ def main():
     model_para = [{'params': model.parameters()}]
     if 'second_loss' in config_args and config_args['second_loss'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         if config_args['lr_ratio'] != 1.0:
-            center_params = list(map(id, model.loss.ce_criterion.classifier.parameters()))
+            center_params = list(map(id, model.loss.ce_criterion.parameters()))
             rest_params = filter(lambda p: id(p) not in center_params, model.parameters())
 
             model_para = [{'params': rest_params}, 
