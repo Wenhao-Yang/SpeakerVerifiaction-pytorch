@@ -296,7 +296,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
                     label = label.cuda()
 
                 classfier, feats = model(data)
-                loss, other_loss = model.module.loss(classfier, feats, label)
+                loss, _ = model.module.loss(classfier, feats, label)
 
             elif select_score == 'random':
                 loss = torch.zeros_like(label)
@@ -308,6 +308,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
 
     model.module.loss.xe_criterion.ce.reduction = 'mean'
     train_dataset = train_dir.dataset
+    previous_len = len(train_dataset)
 
     dataset = []
     rest_dataset = []
@@ -327,13 +328,13 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
         if select_score in ['loss', 'random']:
             idx = np.argsort(sort_np, axis=0)
             sort_np = sort_np[idx[:, 0]]
-            sort_np_len = len(sort_np)
+            sort_np_len = int(len(sort_np)*args.coreset_percent)+1
 
             # pdb.set_trace()
-            for _, j in sort_np[-int(sort_np_len*args.coreset_percent):]:
+            for _, j in sort_np[-sort_np_len:]:
                 dataset.append(train_dataset[int(j)])
 
-            for _, k in sort_np[:-int(sort_np_len*args.coreset_percent)]:
+            for _, k in sort_np[:-sort_np_len]:
                 rest_dataset.append(train_dataset[int(k)])
         else:
             for l, j in sort_np:
@@ -346,8 +347,12 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
 
     dataset = np.array(dataset)
     dataset = dataset[np.argsort(dataset, axis=0)[:, 2]]
-    if len(dataset) % args.batch_size > 0:
-        dataset = dataset[:-(len(dataset) % args.batch_size)]
+
+    # if len(dataset) % args.batch_size > 0:
+    #     dataset = dataset[:-(len(dataset) % args.batch_size)]
+    assert len(dataset) >= previous_len
+    rest_dataset.extend(dataset[-(len(dataset)-previous_len):])
+    dataset = dataset[:previous_len]
 
     np.random.shuffle(dataset)
 
