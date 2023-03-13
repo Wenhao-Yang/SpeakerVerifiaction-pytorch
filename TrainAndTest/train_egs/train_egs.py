@@ -30,6 +30,7 @@ import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
+from Process_Data.audio_processing import PadCollate3d
 import torchvision.transforms as transforms
 from kaldi_io import read_mat, read_vec_flt
 from kaldiio import load_mat
@@ -272,6 +273,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, args, writer):
 def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     model.eval()
     model.module.loss.xe_criterion.ce.reduction = 'none'
+    config_args = args
 
     if isinstance(args, dict):
         args = AttrDict(args)
@@ -280,7 +282,19 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     for i in range(train_dir.num_spks):
         score_dict[i] = []
 
-    train_loader.dataset.return_idx = True
+    train_dir.return_idx = True
+    pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
+    min_chunk_size = int(config_args['random_chunk'][0])
+    max_chunk_size = int(config_args['random_chunk'][1])
+    train_paddfunc = PadCollate3d(dim=pad_dim, num_batch=int(np.ceil(len(train_dir) / config_args['batch_size'])),
+                                                                         min_chunk_size=min_chunk_size,
+                                                                         max_chunk_size=max_chunk_size,
+                                                                         chisquare=False if 'chisquare' not in config_args else
+                                                                         config_args['chisquare'],
+                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                         ),
+    back_up_collate_fn = train_loader.collate_fn 
+    train_loader.collate_fn = train_paddfunc
     if len(train_dir.rest_dataset) > 0:
         train_dir.dataset = np.concatenate(
             [train_dir.dataset, train_dir.rest_dataset])
