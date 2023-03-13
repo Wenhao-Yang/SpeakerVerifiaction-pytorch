@@ -383,7 +383,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
 
     # if len(dataset) % args.batch_size > 0:
     #     dataset = dataset[:-(len(dataset) % args.batch_size)]
-    assert len(dataset) >= previous_len
+    print(len(dataset), ' ', previous_len)
     rest_dataset.extend(dataset[-(len(dataset)-previous_len):])
     dataset = dataset[:previous_len]
 
