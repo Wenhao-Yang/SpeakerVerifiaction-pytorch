@@ -286,13 +286,14 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
     min_chunk_size = int(config_args['random_chunk'][0])
     max_chunk_size = int(config_args['random_chunk'][1])
-    train_paddfunc = PadCollate3d(dim=pad_dim, num_batch=int(np.ceil(len(train_dir) / config_args['batch_size'])),
+    train_paddfunc = PadCollate3d(dim=pad_dim,
+                                  num_batch=int(np.ceil(len(train_dir) / config_args['batch_size'])),
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size,
                                                                          chisquare=False if 'chisquare' not in config_args else
                                                                          config_args['chisquare'],
                                                                          verbose=1 if torch.distributed.get_rank() == 0 else 0
-                                                                         ),
+                                                                         )
     back_up_collate_fn = train_loader.collate_fn 
     train_loader.collate_fn = train_paddfunc
     if len(train_dir.rest_dataset) > 0:
