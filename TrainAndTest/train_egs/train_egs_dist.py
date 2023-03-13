@@ -100,7 +100,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
     output_softmax = nn.Softmax(dim=1)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
-    lambda_ = (epoch / config_args['epochs']) ** 2
+    # lambda_ = (epoch / config_args['epochs']) ** 2
 
     # start_time = time.time()
     # pdb.set_trace()
@@ -179,8 +179,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     orth_err += model.get_orth_errors()
 
         if config_args['loss_ratio'] != 0:
-            if config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter']:
-                for param in model.module.loss.xe_criterion.parameters():
+            if 'second_loss' in config_args and config_args['second_loss'] in ['center', 'mulcenter', 'gaussian', 'coscenter']:
+                for param in model.module.loss.ce_criterion.parameters():
                     param.grad.data *= (1. / config_args['loss_ratio'])
 
         # optimizer.step()
@@ -457,10 +457,10 @@ def main():
     model.loss = SpeakerLoss(config_args)
     
     model_para = [{'params': model.parameters()}]
-    if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
-        assert config_args['lr_ratio'] > 0
-        model_para.append({'params': model.loss.xe_criterion.parameters(
-        ), 'lr': config_args['lr'] * config_args['lr_ratio']})
+    if 'second_loss' in config_args and config_args['second_loss'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
+        if config_args['lr_ratio'] != 1.0:
+            model_para.append({'params': model.loss.ce_criterion.parameters(
+            ), 'lr': config_args['lr'] * config_args['lr_ratio']})
 
     if 'second_wd' in config_args and config_args['second_wd'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:

@@ -41,16 +41,13 @@ class SpeakerLoss(nn.Module):
                          'amsoft', 'subam',  'damsoft', 'subdam',
                          'arcsoft', 'subarc', 'minarcsoft', 'minarcsoft2', 'wasse', 'mmd', 'ring', 'arcdist',
                          'aDCF', ])
+        
         if config_args['loss_type'] == 'soft':
             xe_criterion = None
         elif config_args['loss_type'] == 'asoft':
             ce_criterion = AngleSoftmaxLoss(
                 lambda_min=config_args['lambda_min'], lambda_max=config_args['lambda_max'])
             xe_criterion = None
-
-        elif config_args['loss_type'] == 'center':
-            xe_criterion = CenterLoss(
-                num_classes=config_args['num_classes'], feat_dim=config_args['embedding_size'])
         elif config_args['loss_type'] == 'variance':
             xe_criterion = VarianceLoss(
                 num_classes=config_args['num_classes'], feat_dim=config_args['embedding_size'])
@@ -63,7 +60,6 @@ class SpeakerLoss(nn.Module):
         elif config_args['loss_type'] == 'mulcenter':
             xe_criterion = MultiCenterLoss(num_classes=config_args['num_classes'], feat_dim=config_args['embedding_size'],
                                            num_center=config_args['num_center'])
-
         elif config_args['loss_type'] in ['amsoft', 'subam']:
             ce_criterion = None
             xe_criterion = AMSoftmaxLoss(
@@ -74,8 +70,10 @@ class SpeakerLoss(nn.Module):
                 margin=config_args['margin'], s=config_args['s'])
         elif config_args['loss_type'] in ['aDCF']:
             ce_criterion = None
-            xe_criterion = aDCFLoss(alpha=config_args['s'], beta=(
-                1 - config_args['smooth_ratio']), gamma=config_args['smooth_ratio'], omega=config_args['margin'])
+            xe_criterion = aDCFLoss(alpha=config_args['s'],
+                                    beta=(1 - config_args['smooth_ratio']),
+                                    gamma=config_args['smooth_ratio'],
+                                    omega=config_args['margin'])
 
         elif config_args['loss_type'] in ['arcsoft', 'subarc']:
             ce_criterion = None
@@ -111,14 +109,17 @@ class SpeakerLoss(nn.Module):
                 source_cls=config_args['source_cls'])
         elif config_args['loss_type'] == 'mmd':
             xe_criterion = MMD_Loss()
-        elif config_args['loss_type'] == 'ring':
-            xe_criterion = RingLoss(ring=config_args['ring'])
             # args.alpha = 0.0
-        elif 'arcdist' in config_args['loss_type']:
-            ce_criterion = DistributeLoss(
-                stat_type=config_args['stat_type'], margin=config_args['m'])
-            xe_criterion = ArcSoftmaxLoss(margin=config_args['margin'], s=config_args['s'], iteraion=iteration,
-                                          all_iteraion=0 if 'all_iteraion' not in config_args else config_args['all_iteraion'])
+            
+        if 'second_loss' in config_args and config_args['second_loss'] == 'center':
+            ce_criterion = CenterLoss(num_classes=config_args['num_classes'],
+                                      feat_dim=config_args['embedding_size'])
+        elif 'second_loss' in config_args and config_args['second_loss'] == 'ring':
+            ce_criterion = RingLoss(ring=config_args['ring'])
+        elif 'second_loss' in config_args and config_args['second_loss'] == 'dist':
+            ce_criterion = DistributeLoss(stat_type=config_args['stat_type'],
+                                      margin=config_args['m'])
+
         self.softmax = nn.Softmax(dim=1)
         self.ce_criterion = ce_criterion
         self.xe_criterion = xe_criterion
@@ -132,22 +133,8 @@ class SpeakerLoss(nn.Module):
 
         if config_args['loss_type'] in ['soft', 'asoft']:
             loss = self.ce_criterion(classfier, label)
-
-        elif config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter', 'variance']:
-            loss_cent = self.ce_criterion(classfier, label)
-            loss_xent = self.loss_ratio * self.xe_criterion(feats, label)
-            other_loss += float(loss_xent)
-
-            loss = loss_xent + loss_cent
-        elif config_args['loss_type'] == 'ring':
-            loss_cent = self.ce_criterion(classfier, label)
-            loss_xent = self.loss_ratio * self.xe_criterion(feats)
-
-            other_loss += float(loss_xent)
-            loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
             if isinstance(self.xe_criterion, MixupLoss):
-
                 loss = self.xe_criterion(classfier, label, half_batch_size=half_data, lamda_beta=lamda_beta)
             else:
                 loss = self.xe_criterion(classfier, label)
@@ -156,23 +143,13 @@ class SpeakerLoss(nn.Module):
                 loss = loss * batch_weight
                 loss = loss.mean()
                 self.xe_criterion.ce.reduction = 'mean'
-
-        elif 'arcdist' in config_args['loss_type']:
-            loss_xent = self.xe_criterion(classfier, label)
-            loss_cent = self.loss_ratio * self.ce_criterion(classfier, label)
-            # if 'loss_lambda' in config_args and config_args['loss_lambda']:
-            #     loss_cent = loss_cent * lambda_
-
-            if batch_weight != None:
-                loss_xent = loss_xent * batch_weight
-                loss_xent = loss_xent.mean()
-                self.xe_criterion.ce.reduction = 'mean'
-
-            other_loss += float(loss_xent)
-            loss = loss_xent + loss_cent
+            
+            if self.ce_criterion != None:
+                loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
+                other_loss += float(loss_cent)
+                loss = loss + loss_cent
 
         if self.lncl:
-
             predicted_labels = self.softmax(classfier.clone())
             predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 

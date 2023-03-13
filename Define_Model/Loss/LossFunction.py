@@ -28,17 +28,16 @@ class CenterLoss(nn.Module):
         feat_dim (int): feature dimension.
     """
 
-    def __init__(self, num_classes=10, feat_dim=2):
+    def __init__(self, num_classes=10, feat_dim=2, alpha=0,):
         super(CenterLoss, self).__init__()
         self.num_classes = num_classes
         self.feat_dim = feat_dim
 
-        centers = torch.randn(self.num_classes, self.feat_dim)
-        centers = torch.nn.functional.normalize(centers, p=2, dim=1)
-        alpha = np.ceil(np.log(0.99 * (num_classes - 2) / (1 - 0.99)))
-        centers *= np.sqrt(alpha)
-
-        self.centers = nn.Parameter(centers)
+        # centers = torch.randn(self.num_classes, self.feat_dim)
+        # centers = torch.nn.functional.normalize(centers, p=2, dim=1)
+        self.alpha = np.ceil(np.log(0.99 * (num_classes - 2) / (1 - 0.99))) if alpha>0 else 0
+        # centers *= np.sqrt(alpha)
+        self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim))
 
     def forward(self, x, labels):
         """
@@ -46,24 +45,32 @@ class CenterLoss(nn.Module):
             x: feature matrix with shape (batch_size, feat_dim).
             labels: ground truth labels with shape (batch_size).
         """
+        if self.alpha:
+            norms = self.centers.data.pow(2).sum(
+                dim=1, keepdim=True).add(1e-12).sqrt()
+            self.centers.data = torch.div(
+                self.centers.data, norms) * self.alpha
         # norms = self.centers.data.norm(p=2, dim=1, keepdim=True).add(1e-14)
         # self.centers.data = self.centers.data / norms * self.alpha
 
-        batch_size = x.size(0)
-        distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
-            torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(
-                self.num_classes, batch_size).t()
-        distmat.addmm_(1, -2, x, self.centers.t())
+        # batch_size = x.size(0)
+        # distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
+        #     torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(
+        #         self.num_classes, batch_size).t()
+        # distmat.addmm_(1, -2, x, self.centers.t())
 
-        classes = torch.arange(self.num_classes).long()
-        # if self.use_gpu: classes = classes.cuda()
-        if self.centers.is_cuda:
-            classes = classes.cuda()
+        # classes = torch.arange(self.num_classes).long()
+        # # if self.use_gpu: classes = classes.cuda()
+        # if self.centers.is_cuda:
+        #     classes = classes.cuda()
 
-        labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
-        mask = labels.eq(classes.expand(batch_size, self.num_classes))
+        # labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
+        # mask = labels.eq(classes.expand(batch_size, self.num_classes))
 
-        dist = distmat * mask.float()
+        # dist = distmat * mask.float()
+        # loss = dist.mean()
+        centers = self.centers[labels]
+        dist = F.pairwise_distance(centers, x, p=2)  # nn.PairwiseDistance(p=2)
         loss = dist.mean()
 
         return loss
