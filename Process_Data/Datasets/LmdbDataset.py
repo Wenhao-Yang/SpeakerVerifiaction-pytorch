@@ -1211,7 +1211,7 @@ class Hdf5TrainDataset(Dataset):
 
         self.samples_per_speaker = int(samples_per_speaker)
         self.all_utts = list(utt2spk_dict.keys())
-        # self.reader = h5py.File(hdf5_file, 'r')
+        self.reader = h5py.File(hdf5_file, 'r')
         self.speakers = speakers
         self.dataset = dataset
 
