@@ -592,13 +592,13 @@ def main():
 
             # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
-            lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate is '.format(torch.distributed.get_rank(),
+            lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate: '.format(torch.distributed.get_rank(),
                                                                                         config_args['optimizer'])
             this_lr = []
 
             for param_group in optimizer.param_groups:
                 this_lr.append(param_group['lr'])
-                lr_string += '{:.10f} '.format(param_group['lr'])
+                lr_string += '{:.8f} '.format(param_group['lr'])
 
             print('%s \33[0m' % lr_string)
             all_lr.append(this_lr[0])
