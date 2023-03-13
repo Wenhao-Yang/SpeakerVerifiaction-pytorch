@@ -309,6 +309,7 @@ def select_samples(train_dir, train_loader, model, args, select_score='loss'):
     model.module.loss.xe_criterion.ce.reduction = 'mean'
     train_dataset = train_dir.dataset
     previous_len = len(train_dataset)
+    print(previous_len, len(train_loader))
 
     dataset = []
     rest_dataset = []
