@@ -608,7 +608,7 @@ def main():
                 break
 
             if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
-                select_samples(train_loader, model, config_args, config_args['select_score'])
+                select_samples(train_dir, train_loader, model, config_args, config_args['select_score'])
 
             train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             if config_args['batch_shuffle']:
