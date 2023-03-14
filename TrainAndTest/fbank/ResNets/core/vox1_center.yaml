@@ -60,7 +60,7 @@ accu_steps: 1
 # Scheduler
 patience: 3
 milestones: [20, 35, 45, 55]
-scheduler: cyclic
+scheduler: step
 lr: 0.001
 cyclic_epoch: 6
 base_lr: 0.00000001
