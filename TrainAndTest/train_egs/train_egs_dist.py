@@ -98,7 +98,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     orth_err = 0
     total_other_loss = 0.
 
-    pbar = tqdm(enumerate(train_loader))
+    pbar = tqdm(enumerate(train_loader)) if torch.distributed.get_rank() == 0 else enumerate(train_loader)
 
     output_softmax = nn.Softmax(dim=1)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
@@ -189,8 +189,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         if config_args['scheduler'] == 'cyclic':
             scheduler.step()
 
-        # if torch.distributed.get_rank() == 0:
-        if (batch_idx + 1) % config_args['log_interval'] == 0:
+        if torch.distributed.get_rank() == 0 and (batch_idx + 1) % config_args['log_interval'] == 0:
             epoch_str = 'Train Epoch {}: [ {:5>3.1f}% ]'.format(
                 epoch, 100. * batch_idx / len(train_loader))
 
