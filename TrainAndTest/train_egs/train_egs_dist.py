@@ -76,6 +76,8 @@ except AttributeError:
 # args.cuda = not args.no_cuda and torch.cuda.is_available()
 # setting seeds
 # pl.seed_everything(args.seed)
+
+
 def all_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -130,8 +132,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         classfier, feats = model(data)
         # print('max logit is ', classfier_label.max())
 
-        loss, other_loss = model.module.loss(classfier, feats, label, 
-                                      batch_weight=batch_weight, epoch=epoch)
+        loss, other_loss = model.module.loss(classfier, feats, label,
+                                             batch_weight=batch_weight, epoch=epoch)
 
         predicted_labels = output_softmax(classfier.clone())
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
@@ -208,8 +210,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
             pbar.set_description(epoch_str)
 
-        # if (batch_idx + 1) == 100:
-        #     break
+        if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and (batch_idx + 1) == int(len(train_loader) * config_args['coreset_percent']):
+            break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
@@ -316,7 +318,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
                                      xvectors_dir=this_xvector_dir,
                                      loader=read_vec_flt)
 
-    kwargs = {'num_workers': config_args['nj'], 'pin_memory': False} 
+    kwargs = {'num_workers': config_args['nj'], 'pin_memory': False}
     verify_loader = torch.utils.data.DataLoader(
         verify_dir, batch_size=128, shuffle=False, **kwargs)
     eer, eer_threshold, mindcf_01, mindcf_001 = verification_test(test_loader=verify_loader,
@@ -346,9 +348,10 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
             'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
 
+
 def main():
     parser = argparse.ArgumentParser(
-    description='PyTorch ( Distributed ) Speaker Recognition: Classification')
+        description='PyTorch ( Distributed ) Speaker Recognition: Classification')
     parser.add_argument('--local_rank', default=-1, type=int,
                         help='node rank for distributed training')
 
@@ -365,7 +368,7 @@ def main():
     torch.multiprocessing.set_sharing_strategy('file_system')
     torch.distributed.init_process_group(backend='nccl')
     torch.cuda.set_device(args.local_rank)
-    
+
     # load train config file args.train_config
     with open(args.train_config, 'r') as f:
         # config_args = yaml.load(f, Loader=yaml.FullLoader)
@@ -389,7 +392,7 @@ def main():
     train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
     train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
         train_dir, valid_dir, train_extract_dir, config_args)
-        
+
     torch.distributed.barrier()
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
@@ -456,20 +459,22 @@ def main():
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
     model.loss = SpeakerLoss(config_args)
-    
+
     model_para = [{'params': model.parameters()}]
     if 'second_loss' in config_args and config_args['second_loss'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         if config_args['lr_ratio'] != 1.0:
             center_params = list(map(id, model.loss.ce_criterion.parameters()))
-            rest_params = filter(lambda p: id(p) not in center_params, model.parameters())
+            rest_params = filter(lambda p: id(
+                p) not in center_params, model.parameters())
 
-            model_para = [{'params': rest_params}, 
+            model_para = [{'params': rest_params},
                           {'params': model.loss.ce_criterion.parameters(), 'lr': config_args['lr'] * config_args['lr_ratio']}]
-            
+
     if 'second_wd' in config_args and config_args['second_wd'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:
         classifier_params = list(map(id, model.classifier.parameters()))
-        rest_params = filter(lambda p: id(p) not in classifier_params, model.parameters())
+        rest_params = filter(lambda p: id(
+            p) not in classifier_params, model.parameters())
 
         init_lr = config_args['lr'] * \
             config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
@@ -494,10 +499,10 @@ def main():
                                'weight_decay': init_wd})
 
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
-                    'weight_decay': config_args['weight_decay'],
-                    'dampening': config_args['dampening'],
-                    'momentum': config_args['momentum'],
-                    'nesterov': config_args['nesterov']}
+                  'weight_decay': config_args['weight_decay'],
+                  'dampening': config_args['dampening'],
+                  'momentum': config_args['momentum'],
+                  'nesterov': config_args['nesterov']}
 
     optimizer = create_optimizer(
         model_para, config_args['optimizer'], **opt_kwargs)
@@ -608,14 +613,17 @@ def main():
             if not torch.distributed.is_initialized():
                 break
 
-            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
-                select_samples(train_dir, train_loader, model, config_args, config_args['select_score'])
+            # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
+            #     select_samples(train_dir, train_loader, model,
+            #                    config_args, config_args['select_score'])
 
-            train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
+            train(train_loader, model, optimizer,
+                  epoch, scheduler, config_args, writer)
             if config_args['batch_shuffle']:
                 train_dir.__shuffle__()
 
-            valid_loss = valid_class(valid_loader, model, epoch, config_args, writer)
+            valid_loss = valid_class(
+                valid_loader, model, epoch, config_args, writer)
 
             if config_args['early_stopping'] or (
                     epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):

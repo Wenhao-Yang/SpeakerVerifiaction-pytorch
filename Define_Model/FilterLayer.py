@@ -1100,7 +1100,7 @@ class CBAM(nn.Module):
         f_output = self.cov_f(f_output)
         f_output = self.activation(f_output)
         # f_output = input * f_output
-        output = (t_output + f_output) / 2 * input
+        output = (t_output/2 + f_output/2) * input
 
         return output
 

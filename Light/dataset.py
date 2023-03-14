@@ -69,8 +69,6 @@ def SubDatasets(config_args):
 
 
 def SubScriptDatasets(config_args):
-    
-
 
     if config_args['test_input'] == 'var':
         transform_V = transforms.Compose([
@@ -104,7 +102,7 @@ def SubScriptDatasets(config_args):
     remove_vad = False if 'remove_vad' not in config_args else config_args['remove_vad']
     transform = transforms.Compose([
         ConcateNumInput(num_frames=config_args['num_frames'], remove_vad=remove_vad,
-                    feat_type=feat_type),
+                        feat_type=feat_type),
         totensor()
     ])
     # return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
@@ -119,7 +117,8 @@ def SubScriptDatasets(config_args):
     #                        verbose=1 if torch.distributed.get_rank() == 0 else 0
     #                        )
     domain = config_args['domain'] if 'domain' in config_args else False
-    sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
+    sample_type = 'half_balance' if 'sample_type' not in config_args else config_args[
+        'sample_type']
     vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
 
     train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
@@ -145,7 +144,6 @@ def SubScriptDatasets(config_args):
                                             trials_file=config_args['train_trials'])
 
     return train_dir, valid_dir, train_extract_dir
-
 
 
 def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
@@ -198,6 +196,13 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
     max_chunk_size = int(config_args['random_chunk'][1])
     pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
 
+    # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
+    #     train_length = len(train_dir)
+    #     core_length = int(train_length*config_args['coreset_percent'])
+    #     rest_length = train_length - core_length
+    #     train_dir.rest_dataset = train_dir.dataset[-rest_length:]
+    #     train_dir.dataset = train_dir.dataset[:core_length]
+
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dir)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
     train_paddfunc = PadCollate3d if return_domain else PadCollate
@@ -213,7 +218,7 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                                          verbose=1 if torch.distributed.get_rank() == 0 else 0
                                                                          ),
                                                sampler=train_sampler,
-                                               shuffle=config_args['shuffle'],  **kwargs)  # 
+                                               shuffle=config_args['shuffle'],  **kwargs)  #
 
     valid_sampler = torch.utils.data.distributed.DistributedSampler(
         valid_dir)
@@ -224,18 +229,17 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                                      verbose=0
                                                                      ),
                                                sampler=valid_sampler,
-                                               shuffle=False, **kwargs)  # , 
+                                               shuffle=False, **kwargs)  # ,
 
     # extract_sampler = torch.utils.data.distributed.DistributedSampler(extract_dir)
     # sampler = extract_sampler,
     # extract_loader = torch.utils.data.DataLoader(extract_dir, batch_size=1, shuffle=False,
     #                                                 sampler=extract_sampler, **extract_kwargs)
 
-    train_extract_sampler = torch.utils.data.distributed.DistributedSampler(train_extract_dir)
-    # 
+    train_extract_sampler = torch.utils.data.distributed.DistributedSampler(
+        train_extract_dir)
+    #
     train_extract_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=1, shuffle=False,
                                                        sampler=train_extract_sampler, **extract_kwargs)
 
     return train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler
-
-
