@@ -113,7 +113,8 @@ class SpeakerLoss(nn.Module):
             
         if 'second_loss' in config_args and config_args['second_loss'] == 'center':
             ce_criterion = CenterLoss(num_classes=config_args['num_classes'],
-                                      feat_dim=config_args['embedding_size'])
+                                      feat_dim=config_args['embedding_size'],
+                                      alpha=config_args['center_alpha'] if 'center_alpha' in config_args else 0)
         elif 'second_loss' in config_args and config_args['second_loss'] == 'ring':
             ce_criterion = RingLoss(ring=config_args['ring'])
         elif 'second_loss' in config_args and config_args['second_loss'] == 'dist':
