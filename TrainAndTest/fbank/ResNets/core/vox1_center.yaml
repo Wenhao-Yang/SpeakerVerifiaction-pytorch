@@ -46,7 +46,7 @@ feat_format: kaldi
 remove_vad: True
 
 ### Training settings
-epochs: 60
+epochs: 50
 
 # optimizer
 optimizer: adam
@@ -59,7 +59,7 @@ accu_steps: 1
 
 # Scheduler
 patience: 3
-milestones: [20, 35, 45, 55]
+milestones: [20, 35, 45,]
 scheduler: step
 lr: 0.001
 cyclic_epoch: 6
