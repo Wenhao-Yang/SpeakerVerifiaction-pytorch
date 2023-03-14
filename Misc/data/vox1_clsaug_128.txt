@@ -33,7 +33,7 @@ EER(%):        12.20    Threshold:  0.1959  MinDcf-0.01: 0.7710  MinDcf-0.001: 0
 EER(%):        11.76    Threshold:  0.1999  MinDcf-0.01: 0.7342  MinDcf-0.001: 0.8242  Mix2,3: 9.6889, 7.1136
 EER(%):        12.15    Threshold:  0.1910  MinDcf-0.01: 0.7608  MinDcf-0.001: 0.8272  Mix2,3: 10.0527, 7.6483
 
-# mixup manifold3 clsaug
+# mixup manifold2 clsaug
 EER(%):        12.03    Threshold:  0.3116  MinDcf-0.01: 0.7897  MinDcf-0.001: 0.9068  Mix2,3: 10.9052, 8.6120
 EER(%):        12.17    Threshold:  0.2923  MinDcf-0.01: 0.7556  MinDcf-0.001: 0.8736  Mix2,3: 10.6303, 8.0321
 EER(%):        11.89    Threshold:  0.3182  MinDcf-0.01: 0.7749  MinDcf-0.001: 0.9188  Mix2,3: 10.9275, 8.4676
