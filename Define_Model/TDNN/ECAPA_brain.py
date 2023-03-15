@@ -511,8 +511,10 @@ class ECAPA_TDNN(torch.nn.Module):
         x = self.fc(x)
         embeddings = x.transpose(1, 2)
 
+        logits = self.classifier(embeddings)
 
-        return embeddings
+
+        return logits, embeddings
 
 
 class Classifier(torch.nn.Module):
