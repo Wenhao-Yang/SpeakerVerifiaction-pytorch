@@ -410,11 +410,7 @@ class ECAPA_TDNN(torch.nn.Module):
     """
 
     def __init__(
-        self,
-        input_size,
-        device="cpu",
-        lin_neurons=192,
-        activation=torch.nn.ReLU,
+        self, input_size, num_classes, embedding_size=192, activation=torch.nn.ReLU,
         channels=[512, 512, 512, 512, 1536],
         kernel_sizes=[5, 3, 3, 3, 1],
         dilations=[1, 2, 3, 4, 1],
@@ -479,9 +475,10 @@ class ECAPA_TDNN(torch.nn.Module):
         # Final linear transformation
         self.fc = Conv1d(
             in_channels=channels[-1] * 2,
-            out_channels=lin_neurons,
+            out_channels=embedding_size,
             kernel_size=1,
         )
+        self.classifier = Classifier(input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
 
     def forward(self, x, lengths=None):
         """Returns the embedding vector.
@@ -512,9 +509,10 @@ class ECAPA_TDNN(torch.nn.Module):
 
         # Final linear transformation
         x = self.fc(x)
+        embeddings = x.transpose(1, 2)
 
-        x = x.transpose(1, 2)
-        return x
+
+        return embeddings
 
 
 class Classifier(torch.nn.Module):
@@ -543,14 +541,7 @@ class Classifier(torch.nn.Module):
     tensor(0)
     """
 
-    def __init__(
-        self,
-        input_size,
-        device="cpu",
-        lin_blocks=0,
-        lin_neurons=192,
-        out_neurons=1211,
-    ):
+    def __init__(self, input_size, lin_blocks=0, lin_neurons=192, out_neurons=1211):
 
         super().__init__()
         self.blocks = nn.ModuleList()
@@ -566,7 +557,7 @@ class Classifier(torch.nn.Module):
 
         # Final Layer
         self.weight = nn.Parameter(
-            torch.FloatTensor(out_neurons, input_size, device=device)
+            torch.FloatTensor(out_neurons, input_size)
         )
         nn.init.xavier_uniform_(self.weight)
 
