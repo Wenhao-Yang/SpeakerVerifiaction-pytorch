@@ -98,11 +98,12 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     orth_err = 0
     total_other_loss = 0.
 
-    pbar = tqdm(enumerate(train_loader))
+    pbar = tqdm(enumerate(train_loader)) if torch.distributed.get_rank(
+    ) == 0 else enumerate(train_loader)
 
     output_softmax = nn.Softmax(dim=1)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
-    lambda_ = (epoch / config_args['epochs']) ** 2
+    # lambda_ = (epoch / config_args['epochs']) ** 2
 
     # start_time = time.time()
     # pdb.set_trace()
@@ -190,7 +191,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             scheduler.step()
 
         # if torch.distributed.get_rank() == 0:
-        if (batch_idx + 1) % config_args['log_interval'] == 0:
+        if torch.distributed.get_rank() == 0 and (batch_idx + 1) % config_args['log_interval'] == 0:
             epoch_str = 'Train Epoch {}: [ {:5>3.1f}% ]'.format(
                 epoch, 100. * batch_idx / len(train_loader))
 
@@ -593,7 +594,7 @@ def main():
             # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
             lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate: '.format(torch.distributed.get_rank(),
-                                                                                        config_args['optimizer'])
+                                                                                      config_args['optimizer'])
             this_lr = []
 
             for param_group in optimizer.param_groups:
