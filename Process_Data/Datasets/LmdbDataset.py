@@ -1228,15 +1228,15 @@ class Hdf5TrainDataset(Dataset):
     def __getitem__(self, sid):
 
         if sid < len(self.base_utts):
-            while True:
-                (uid, start, end) = self.base_utts[sid]
-                # pdb.set_trace()
-                reader = h5py.File(self.hdf5_file, 'r')
-                y = self.loader(reader, uid, start=start, stop=end)
+            # while True:
+            (uid, start, end) = self.base_utts[sid]
+            # pdb.set_trace()
+            reader = h5py.File(self.hdf5_file, 'r')
+            y = self.loader(reader, uid, start=start, stop=end)
 
-                sid = self.utt2spk_dict[uid]
-                sid = self.spk_to_idx[sid]
-                break
+            sid = self.utt2spk_dict[uid]
+            sid = self.spk_to_idx[sid]
+                # break
         else:
             # rand_idxs = [sid]
             sid %= self.num_spks
