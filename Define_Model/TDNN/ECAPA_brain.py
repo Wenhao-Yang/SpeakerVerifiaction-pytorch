@@ -511,6 +511,11 @@ class ECAPA_TDNN(torch.nn.Module):
             Tensor of shape (batch, time, channel).
         """
         # Minimize transpose for efficiency
+        x = self.input_mask(x)
+        # if proser != None and layer_mix == 1:
+        #     x = self.mixup(x, proser, lamda_beta)
+        if len(x.shape) == 4:
+            x = x.squeeze(1).float()
         x = x.transpose(1, 2)
 
         xl = []
