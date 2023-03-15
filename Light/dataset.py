@@ -12,7 +12,7 @@ import torch
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, ScriptTrainDataset, ScriptValidDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset, LmdbTrainDataset, LmdbValidDataset, Hdf5TrainDataset, Hdf5ValidDataset
 
-from Process_Data.audio_processing import ConcateNumInput, totensor, PadCollate3d
+from Process_Data.audio_processing import ConcateNumInput, MelFbank, totensor, PadCollate3d
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_WaveInt, read_WaveFloat
 import torchvision.transforms as transforms
 from kaldiio import load_mat
@@ -109,6 +109,10 @@ def SubScriptDatasets(config_args):
                         feat_type=feat_type),
         totensor()
     ])
+
+    if 'trans_fbank' in config_args and config_args['trans_fbank']:
+        transform.transforms.append(MelFbank(num_filter=config_args['input_dim']))
+        transform_V.transforms.append(MelFbank(num_filter=config_args['input_dim']))
 
     domain = config_args['domain'] if 'domain' in config_args else False
     sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']

@@ -198,7 +198,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
                     config_args['random_chunk'][
                         1]:
-                batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' else data.shape[-2]
+                batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args else data.shape[-2]
                 epoch_str += ' Batch Len: {:>3d}'.format(batch_length)
 
             epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)

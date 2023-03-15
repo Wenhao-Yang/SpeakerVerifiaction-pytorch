@@ -5,6 +5,8 @@ import pathlib
 import pdb
 import traceback
 import random
+
+import torchaudio
 import librosa
 import numpy as np
 import soundfile as sf
@@ -774,6 +776,21 @@ def pad_tensor(vec, pad, dim):
 
     start = np.random.randint(low=0, high=vec.shape[dim]-pad+1)
     return torch.Tensor.narrow(vec, dim=dim, start=start, length=pad)
+
+
+class MelFbank(object):
+    def __init__(self, num_filter, sr=16000,):
+        super(MelFbank, self).__init__()
+        self.num_filter = num_filter
+        self.sr = sr
+        self.t = torchaudio.transforms.MelSpectrogram(n_fft=512, win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
+                                                      window_fn=torch.hamming_window, n_mels=num_filter)
+
+    def __call__(self, input):
+        output = self.t(input.squeeze(1))
+        # print(input.shape, output.shape)
+        output = torch.transpose(output, 1, 2)
+        return torch.log(output + 1e-6)
 
 
 class PadCollate:
