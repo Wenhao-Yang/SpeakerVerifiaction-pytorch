@@ -25,6 +25,8 @@ from speechbrain.nnet.CNN import Conv1d as _Conv1d
 from speechbrain.nnet.normalization import BatchNorm1d as _BatchNorm1d
 from speechbrain.nnet.linear import Linear
 
+from Define_Model.model import get_filter_layer, get_input_norm, get_mask_layer
+
 
 # Skip transpose as much as possible for efficiency
 class Conv1d(_Conv1d):
@@ -410,7 +412,10 @@ class ECAPA_TDNN(torch.nn.Module):
     """
 
     def __init__(
-        self, input_size, num_classes, embedding_size=192, activation=torch.nn.ReLU,
+        self, input_dim, num_classes, embedding_size=192, activation=torch.nn.ReLU,
+        input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
+        init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
+        mask='None', mask_len=[5, 20],
         channels=[512, 512, 512, 512, 1536],
         kernel_sizes=[5, 3, 3, 3, 1],
         dilations=[1, 2, 3, 4, 1],
@@ -422,6 +427,22 @@ class ECAPA_TDNN(torch.nn.Module):
     ):
 
         super().__init__()
+        input_mask = []
+
+        filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
+                                        exp=exp, filter_fix=filter_fix)
+        if filter_layer != None:
+            input_mask.append(filter_layer)
+        norm_layer = get_input_norm(input_norm, input_dim=input_dim)
+        if norm_layer != None:
+            input_mask.append(norm_layer)
+        mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
+                                    init_weight=init_weight, weight_p=weight_p,
+                                    scale=scale, weight_norm=weight_norm)
+        if mask_layer != None:
+            input_mask.append(mask_layer)
+        self.input_mask = nn.Sequential(*input_mask)
+
         assert len(channels) == len(kernel_sizes)
         assert len(channels) == len(dilations)
         self.channels = channels
@@ -430,7 +451,7 @@ class ECAPA_TDNN(torch.nn.Module):
         # The initial TDNN layer
         self.blocks.append(
             TDNNBlock(
-                input_size,
+                input_dim,
                 channels[0],
                 kernel_sizes[0],
                 dilations[0],
@@ -476,9 +497,10 @@ class ECAPA_TDNN(torch.nn.Module):
         self.fc = Conv1d(
             in_channels=channels[-1] * 2,
             out_channels=embedding_size,
-            kernel_size=1,
-        )
-        self.classifier = Classifier(input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
+            kernel_size=1,)
+
+        self.classifier = Classifier(
+            input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
 
     def forward(self, x, lengths=None):
         """Returns the embedding vector.
@@ -513,8 +535,7 @@ class ECAPA_TDNN(torch.nn.Module):
 
         logits = self.classifier(embeddings)
 
-
-        return logits, embeddings
+        return logits, embeddings.squeeze(1)
 
 
 class Classifier(torch.nn.Module):
@@ -576,4 +597,5 @@ class Classifier(torch.nn.Module):
 
         # Need to be normalized
         x = F.linear(F.normalize(x.squeeze(1)), F.normalize(self.weight))
-        return x.unsqueeze(1)
+
+        return x  # .unsqueeze(1)
