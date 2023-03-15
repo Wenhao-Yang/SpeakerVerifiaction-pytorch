@@ -8,6 +8,7 @@
 @File: train_egs.py
 @Time: 2020/8/21 20:30
 @Overview:
+from speechbrain
 
 A popular speaker recognition and diarization model.
 
