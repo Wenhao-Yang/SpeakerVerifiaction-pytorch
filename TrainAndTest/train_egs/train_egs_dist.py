@@ -107,6 +107,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
+        if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and np.random.uniform(0,1) > config_args['coreset_percent']:
+            continue
 
         if not return_domain:
             data, label = data_cols
@@ -208,9 +210,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
-
-        if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and (batch_idx + 1) == int(len(train_loader) * config_args['coreset_percent']):
-            break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))

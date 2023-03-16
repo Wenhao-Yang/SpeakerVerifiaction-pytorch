@@ -576,8 +576,8 @@ if [ $stage -le 44 ]; then
   # sleep 10
   # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/fbank/ResNets/core/cnc1_core.yaml --seed=${seed}
 
-  # sleep 10
-  # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/fbank/ResNets/core/vox1_center.yaml --seed=${seed}
+  sleep 10
+  CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/fbank/ResNets/core/vox1_center.yaml --seed=${seed}
 
   # sleep 10
 
