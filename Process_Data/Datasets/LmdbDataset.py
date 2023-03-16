@@ -45,8 +45,8 @@ def _read_from_lmdb(env, key, start=0, stop=-1):
 def _read_from_hdf5(reader, key, start=0, stop=-1):
     """read data array from lmdb with key (w/ and w/o fixed size)
     size: feat-dim"""
-    with h5py.File(reader, 'r') as r:
-        data_flat = r.get(key)[:][start:stop]
+    # with h5py.File(reader, 'r') as r:
+    data_flat = reader.get(key)[:][start:stop]
 
     return data_flat
 
@@ -1248,7 +1248,7 @@ class Hdf5TrainDataset(Dataset):
 
         # reader =  h5py.File(self.hdf5_file, 'r') as reader:
         # y = self.loader(self.reader, uid, start=start, stop=end)
-        y = self.loader(self.hdf5_file, uid, start=start, stop=end)
+        y = self.loader(self.reader, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
         feature = self.transform(y.reshape(1,-1))
         # print(sid)
