@@ -5,6 +5,8 @@ import pathlib
 import pdb
 import traceback
 import random
+
+import torchaudio
 import librosa
 import numpy as np
 import soundfile as sf
@@ -17,7 +19,8 @@ from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
 from speechpy.feature import mfe
 from speechpy.processing import cmvn, cmvnw
-
+import torchaudio
+from Misc.HST.short_SHT import short_SHT
 from Process_Data import constants as c
 from Process_Data.Compute_Feat.compute_vad import ComputeVadEnergy
 from Process_Data.xfcc.common import local_fbank, local_mfcc
@@ -381,6 +384,37 @@ def Make_MFCC(filename,
     return feats
 
 
+def Make_HST(filename, winlen=0.125, winstep=0.1, numcep=20, duration=False):
+    '''
+
+    :param filename:
+    :param winlen:
+    :param winstep: per of Components
+    :param numcep: num of Components
+    :return:
+    '''
+    if not os.path.exists(filename):
+        raise ValueError('wav file does not exist.')
+
+    # sample_rate, audio = wavfile.read(filename)
+    audio, sample_rate = sf.read(filename, dtype='int16')
+    # audio, sample_rate = librosa.load(filename, sr=None)
+    # audio = audio.flatten()
+    if not len(audio) > 0:
+        raise ValueError('wav file is empty?')
+
+    insf_all, inse_all, s_list, t = short_SHT(audio, fs=sample_rate,
+                                              win=int(winlen * sample_rate),
+                                              a=winstep, s=numcep)
+
+    feats = np.stack((insf_all, inse_all)).transpose(
+        (2, 1, 0)).reshape(-1, int(numcep * 2))
+    if duration:
+        return (feats, s_list), len(audio) / sample_rate
+    # np.save(filename.replace('.wav', '.npy'), frames_features)
+    return feats
+
+
 def conver_to_wav(filename, write_path, format='m4a'):
     """
     Convert other formats into wav.
@@ -494,7 +528,6 @@ class ConcateVarInput(object):
             else:
                 network_inputs.append(output[:, start:end])
 
-        network_inputs = np.array(network_inputs)
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
         if self.remove_vad:
             network_inputs = network_inputs[:, :, 1:]
@@ -758,8 +791,8 @@ class MelFbank(object):
         # print(input.shape, output.shape)
         output = torch.transpose(output, 1, 2)
         return torch.log(output + 1e-6)
-    
-    
+
+
 class PadCollate:
     """
     a variant of callate_fn that pads according to the longest sequence in
@@ -768,6 +801,7 @@ class PadCollate:
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
                  num_batch=0, split=False, chisquare=False, noise_padding=None,
+                 memory_len=4,
                  fix_len=False, augment=False, verbose=1):
         """
         args:
@@ -788,7 +822,8 @@ class PadCollate:
         #     self.frame_len = np.random.randint(low=self.min_chunk_size, high=self.max_chunk_size)
         # else:
         # assert num_batch > 0
-        batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1, 20)
+        batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1,
+                              max(int((self.max_chunk_size - self.min_chunk_size) / 10), 20))
 
         if chisquare:
             chi_len = np.random.chisquare(
@@ -801,6 +836,7 @@ class PadCollate:
                 len(batch_len), np.mean(self.batch_len)))
 
         self.frame_len = random.choice(self.batch_len)
+        self.memory_len = memory_len
         self.memory_idx = 0
 
     def pad_collate(self, batch):
@@ -856,11 +892,16 @@ class PadCollate:
         if self.split:
             xs = torch.cat(xs.chunk(2, dim=2), dim=1)
             # print(xs.shape)
+        xs_shape = xs.shape
 
-        if frame_len < xs.shape[-2]:
-            start = np.random.randint(low=0, high=xs.shape[-2] - frame_len)
+        if frame_len < xs_shape[self.dim]:
+            start = np.random.randint(
+                low=0, high=xs_shape[self.dim] - frame_len)
             end = start + frame_len
-            xs = xs[:, :, start:end, :].contiguous()
+            if self.dim == 2:
+                xs = xs[:, :, start:end, :].contiguous()
+            elif self.dim == 3:
+                xs = xs[:, :, :, start:end].contiguous()
         else:
             # print(frame_len, xs.shape[-2])
             xs = xs.contiguous()
@@ -877,6 +918,7 @@ class PadCollate:
                 xs = torch.cat(
                     (xs[:, :, :start, :], noise_features, xs[:, :, start:, :]), dim=2)
 
+        # pdb.set_trace()
         if isinstance(batch[0][1], torch.Tensor) and len(batch[0][1]) > 1:
             ys = torch.LongTensor(batch[0][1])
         else:
@@ -901,7 +943,7 @@ class PadCollate3d:
     """
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
-                 num_batch=0, split=False, chisquare=False, noise_padding=None,
+                 num_batch=0,
                  fix_len=False, augment=False, verbose=1):
         """
         args:
@@ -954,42 +996,15 @@ class PadCollate3d:
             start = np.random.randint(
                 low=0, high=batch[0][0].shape[-2] - frame_len)
             end = start + frame_len
-            # print(xs.shape)
             xs = xs[:, :, start:end, :].contiguous()
         else:
             xs = xs.contiguous()
 
-        # pdb.set_trace()
-        # print(batch[0][1])
-        if isinstance(batch[0][1], torch.Tensor):
-            ys = torch.stack(list(map(lambda x: x[1], batch)), dim=0)
-
-            if frame_len < batch[0][1].shape[-2]:
-                start = np.random.randint(
-                    low=0, high=batch[0][1].shape[-2] - frame_len)
-                end = start + frame_len
-                ys = ys[:, :, start:end, :].contiguous()
-            else:
-                ys = ys.contiguous()
-
-        else:
-            ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
-
+        ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
         if isinstance(batch[0][2], torch.Tensor):
             zs = torch.stack(list(map(lambda x: x[2], batch)), dim=0)
         else:
             zs = torch.LongTensor(list(map(lambda x: x[2], batch)))
-
-        if len(batch[0]) > 3:
-            os = []
-            for i in range(3, len(batch[0])):
-                if isinstance(batch[0][i], torch.Tensor):
-                    ws = torch.stack(list(map(lambda x: x[i], batch)), dim=0)
-                else:
-                    ws = torch.LongTensor(list(map(lambda x: x[i], batch)))
-                os.append(ws)
-
-            return xs, ys, zs, os
 
         # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
         # pad_batch = list(map_batch)
