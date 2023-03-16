@@ -66,6 +66,9 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
     # switch to train mode
     model.train()
 
+    if isinstance(args, dict):
+        args = AttrDict(args)
+
     correct = 0.
     total_datasize = 0.
     total_loss = 0.
