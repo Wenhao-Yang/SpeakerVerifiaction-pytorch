@@ -997,38 +997,38 @@ class ScriptTrainDataset(data.Dataset):
             rand_idxs.append(rand_utt_idx)
             uid = utts[rand_utt_idx]
 
-            feature = self.loader(self.uid2feat[uid])
+            y = self.loader(self.uid2feat[uid])
             if uid in self.uid2vad:
                 voice_idx = np.where(
                     kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
-                feature = feature[voice_idx]
+                y = y[voice_idx]
 
-            y = np.concatenate((y, feature), axis=self.c_axis)
+            # y = np.concatenate((y, feature), axis=self.c_axis)
 
-            while y.shape[self.c_axis] < self.segment_len:
-                rand_utt_idx = np.random.randint(0, num_utt)
-                rand_idxs.append(rand_utt_idx)
+            # while y.shape[self.c_axis] < self.segment_len:
+            #     rand_utt_idx = np.random.randint(0, num_utt)
+            #     rand_idxs.append(rand_utt_idx)
 
-                uid = utts[rand_utt_idx]
+            #     uid = utts[rand_utt_idx]
 
-                feature = self.loader(self.uid2feat[uid])
-                if uid in self.uid2vad:
-                    voice_idx = np.where(
-                        kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
-                    feature = feature[voice_idx]
+            #     feature = self.loader(self.uid2feat[uid])
+            #     if uid in self.uid2vad:
+            #         voice_idx = np.where(
+            #             kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+            #         feature = feature[voice_idx]
 
-                y = np.concatenate((y, feature), axis=self.c_axis)
+            #     y = np.concatenate((y, feature), axis=self.c_axis)
 
-                # transform features if required
-                if self.rand_test:
-                    while len(rand_idxs) < 4:
-                        rand_idxs.append(-1)
-                    start, length = self.transform(y)
-                    rand_idxs.append(start)
-                    rand_idxs.append(length)
+            #     # transform features if required
+            #     if self.rand_test:
+            #         while len(rand_idxs) < 4:
+            #             rand_idxs.append(-1)
+            #         start, length = self.transform(y)
+            #         rand_idxs.append(start)
+            #         rand_idxs.append(length)
 
-                    # [uttid uttid -1 -1 start lenght]
-                    return torch.tensor(rand_idxs).reshape(1, -1), sid
+            #         # [uttid uttid -1 -1 start lenght]
+            #         return torch.tensor(rand_idxs).reshape(1, -1), sid
 
         feature = self.transform(y)
         label = sid
