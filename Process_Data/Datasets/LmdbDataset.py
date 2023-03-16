@@ -45,10 +45,9 @@ def _read_from_lmdb(env, key, start=0, stop=-1):
 def _read_from_hdf5(reader, key, start=0, stop=-1):
     """read data array from lmdb with key (w/ and w/o fixed size)
     size: feat-dim"""
-    # with h5py.File(reader, 'r') as r:
-    data_flat = reader.get(key)[:][start:stop]
-
-    return data_flat
+    with h5py.File(reader, 'r') as r:
+        data_flat = r.get(key)[:][start:stop]
+        return data_flat
 
 class LmdbVerifyDataset(Dataset):
     def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load, return_uid=False):
@@ -1193,22 +1192,14 @@ class Hdf5TrainDataset(Dataset):
             self.valid_utt2spk_dict = valid_utt2spk_dict
 
         if sample_type == 'instance':
-            if verbose > 1:
+            if verbose > 0:
                 print(
                     '    The number of sampling utterances is euqal to the number of total utterance.')
-
-        elif samples_per_speaker == 0:
-            samples_per_speaker = np.power(2, np.ceil(
-                np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
-            if verbose > 1:
-                print(
-                    '    The number of sampling utterances for each speakers is decided by the number of total frames.')
         else:
             samples_per_speaker = max(
                 len(base_utts) / len(speakers), samples_per_speaker)
-            if verbose > 1:
-                print(
-                    '    The number of sampling utterances for each speakers is add to the number of total frames.')
+            if verbose > 0:
+                print('    The number of sampling utterances for each speakers: %d ' % (samples_per_speaker))
 
         self.samples_per_speaker = int(samples_per_speaker)
         self.all_utts = list(utt2spk_dict.keys())
@@ -1248,7 +1239,7 @@ class Hdf5TrainDataset(Dataset):
 
         # reader =  h5py.File(self.hdf5_file, 'r') as reader:
         # y = self.loader(self.reader, uid, start=start, stop=end)
-        y = self.loader(self.reader, uid, start=start, stop=end)
+        y = self.loader(self.hdf5_file, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
         feature = self.transform(y.reshape(1,-1))
         # print(sid)
