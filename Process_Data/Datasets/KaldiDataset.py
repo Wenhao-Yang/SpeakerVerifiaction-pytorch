@@ -762,6 +762,7 @@ class ScriptTrainDataset(data.Dataset):
                     uid2vad[uid] = vad_offset
 
         total_frames = 0
+        self.utt2num_frames = {}
         if self.sample_type != 'balance':
             if os.path.exists(utt2num_frames):
                 with open(utt2num_frames, 'r') as f:
@@ -773,6 +774,7 @@ class ScriptTrainDataset(data.Dataset):
                             num_frames = float(num_frames) * sr
 
                         num_frames = int(num_frames)
+                        self.utt2num_frames[uid] = num_frames
 
                         if num_frames >= min_frames:
                             total_frames += num_frames
@@ -972,7 +974,7 @@ class ScriptTrainDataset(data.Dataset):
                     else:
                         y = self.loader(
                             self.uid2feat[uid], start=start, stop=end)
-                        
+
                     if uid in self.uid2vad:
                         voice_idx = np.where(
                             kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]

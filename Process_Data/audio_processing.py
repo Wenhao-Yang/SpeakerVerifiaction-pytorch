@@ -381,7 +381,6 @@ def Make_MFCC(filename,
     return feats
 
 
-
 def conver_to_wav(filename, write_path, format='m4a'):
     """
     Convert other formats into wav.
@@ -420,8 +419,10 @@ def read_WaveInt(filename, start=0, stop=None):
     """
     # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
     # audio = audio.flatten()
-    audio, sample_rate = sf.read(filename, dtype='int16', start=start, stop=stop)
+    audio, sample_rate = sf.read(
+        filename, dtype='int16', start=start, stop=stop)
     return audio.astype(np.float32).reshape(1, -1)
+
 
 def read_WaveFloat(filename, start=0, stop=None):
     """
@@ -431,10 +432,10 @@ def read_WaveFloat(filename, start=0, stop=None):
     """
     # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
     # audio = audio.flatten()
-    audio, sample_rate = sf.read(filename, dtype='float32', start=start, stop=stop)
+    audio, sample_rate = sf.read(
+        filename, dtype='float32', start=start, stop=stop)
 
     return audio.astype(np.float32).reshape(1, -1)
-
 
 
 def read_from_npy(filename):
@@ -510,6 +511,7 @@ class ConcateInput(object):
     size: size of the exactly size or the smaller edge
     interpolation: Default: PIL.Image.BILINEAR
     """
+
     def __init__(self, input_per_file=1, num_frames=c.NUM_FRAMES_SPECT, remove_vad=False):
 
         super(ConcateInput, self).__init__()
@@ -743,6 +745,21 @@ def pad_tensor(vec, pad, dim):
     return torch.Tensor.narrow(vec, dim=dim, start=start, length=pad)
 
 
+class MelFbank(object):
+    def __init__(self, num_filter, sr=16000,):
+        super(MelFbank, self).__init__()
+        self.num_filter = num_filter
+        self.sr = sr
+        self.t = torchaudio.transforms.MelSpectrogram(n_fft=512, win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
+                                                      window_fn=torch.hamming_window, n_mels=num_filter)
+
+    def __call__(self, input):
+        output = self.t(input.squeeze(1))
+        # print(input.shape, output.shape)
+        output = torch.transpose(output, 1, 2)
+        return torch.log(output + 1e-6)
+    
+    
 class PadCollate:
     """
     a variant of callate_fn that pads according to the longest sequence in
