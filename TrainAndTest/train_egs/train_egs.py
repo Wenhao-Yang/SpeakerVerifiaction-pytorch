@@ -77,11 +77,11 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
     # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
-        if args.cuda:
-            # label = label.cuda(non_blocking=True)
-            # data = data.cuda(non_blocking=True)
-            label = label.cuda()
-            data = data.cuda()
+        # if args.cuda:
+        # label = label.cuda(non_blocking=True)
+        # data = data.cuda(non_blocking=True)
+        label = label.cuda()
+        data = data.cuda()
 
         data, label = Variable(data), Variable(label)
         classfier, feats = model(data)
@@ -419,7 +419,7 @@ def main():
     keys.sort()
     options = ["\'%s\': \'%s\'" % (
         str(k), str(config_args[k])) for k in keys]
-    print('Parsed options: \n{ %s }' % (', '.join(options)))
+    # print('Parsed options: \n{ %s }' % (', '.join(options)))
 
     # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
     # order to prevent any memory allocation on unused GPUs
