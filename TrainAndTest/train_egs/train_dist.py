@@ -98,11 +98,12 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     orth_err = 0
     total_other_loss = 0.
 
-    pbar = tqdm(enumerate(train_loader))
+    pbar = tqdm(enumerate(train_loader)) if torch.distributed.get_rank(
+    ) == 0 else enumerate(train_loader)
 
     output_softmax = nn.Softmax(dim=1)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
-    lambda_ = (epoch / config_args['epochs']) ** 2
+    # lambda_ = (epoch / config_args['epochs']) ** 2
 
     # start_time = time.time()
     # pdb.set_trace()
@@ -190,14 +191,14 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             scheduler.step()
 
         # if torch.distributed.get_rank() == 0:
-        if (batch_idx + 1) % config_args['log_interval'] == 0:
+        if torch.distributed.get_rank() == 0 and (batch_idx + 1) % config_args['log_interval'] == 0:
             epoch_str = 'Train Epoch {}: [ {:5>3.1f}% ]'.format(
                 epoch, 100. * batch_idx / len(train_loader))
 
             if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
                     config_args['random_chunk'][
                         1]:
-                batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' else data.shape[-2]
+                batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args else data.shape[-2]
                 epoch_str += ' Batch Len: {:>3d}'.format(batch_length)
 
             epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
@@ -367,6 +368,7 @@ def main():
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
     torch.cuda.set_device(args.local_rank)
+    torch.multiprocessing.set_sharing_strategy('file_system')
 
     # load train config file args.train_config
     with open(args.train_config, 'r') as f:
@@ -591,13 +593,13 @@ def main():
 
             # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
-            lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate is '.format(torch.distributed.get_rank(),
-                                                                                        config_args['optimizer'])
+            lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate: '.format(torch.distributed.get_rank(),
+                                                                                      config_args['optimizer'])
             this_lr = []
 
             for param_group in optimizer.param_groups:
                 this_lr.append(param_group['lr'])
-                lr_string += '{:.10f} '.format(param_group['lr'])
+                lr_string += '{:.8f} '.format(param_group['lr'])
 
             print('%s \33[0m' % lr_string)
             all_lr.append(this_lr[0])
