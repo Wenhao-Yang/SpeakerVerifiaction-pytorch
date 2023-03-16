@@ -112,7 +112,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
         loss.backward()
 
         # gradient clip
-        if args.grad_clip > 0:
+        if hasattr(args, 'grad_clip') and args.grad_clip > 0:
             this_lr = args.lr
             for param_group in optimizer.param_groups:
                 this_lr = min(param_group['lr'], this_lr)
