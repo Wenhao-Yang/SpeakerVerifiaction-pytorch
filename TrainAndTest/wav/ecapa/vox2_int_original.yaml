@@ -1,0 +1,133 @@
+# @Author: yangwenhao
+# @Contact: 874681044@qq.com
+# @Software: PyCharm
+# @File: aidata_resnet.yaml
+# @Time: 2022/09/30 09:15
+# @Overview:
+
+data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
+
+## Dataset
+seed: 123456
+datasets: vox2
+testset: vox1
+feat_type: wave
+loss: arcsoft
+input_dim: 80
+feat: int
+wav_type: int
+subset: ""
+sample_type: instance
+
+train_dir: !ref <data_root_dir>/data/<datasets>/dev
+# <subset>_<feat>
+train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
+train_trials: trials
+valid_dir: !ref <data_root_dir>/data/<datasets>/train_valid_<feat>
+num_valid: 2
+test_dir: !ref <data_root_dir>/data/<testset>/test
+trials: trials
+input_norm: Mean
+input_per_spks: 1024
+
+test_input: fix
+log_scale: False
+random_chunk: [48000, 48000]
+chunk_size: 48000
+frame_shift: 48000
+num_frames: 48000
+extract: True
+nj: 6
+shuffle: False
+batch_shuffle: True
+
+feat_format: wav
+remove_vad: False
+
+### Training settings
+epochs: 60
+
+# optimizer
+optimizer: adam
+lr_decay: 0
+weight_decay: 0.00002
+second_wd: 0.0002
+dampening: 0
+nesterov: False
+momentum: 0.9
+accu_steps: 1
+
+# Scheduler
+patience: 3
+milestones: [10, 20, 30, 40]
+scheduler: cyclic
+lr: 0.001
+base_lr: 0.00000001
+cyclic_epoch: 3
+step_size: 65000
+cos_sim: True
+
+early_stopping: True
+early_patience: 20
+early_delta: 0.0001
+early_meta: "mix2"
+
+## model Setttings
+model: ECAPA
+kernel_size:
+alpha: 0
+embedding_size: 192
+batch_size: 128
+dropout_p: 0.0
+activation: relu
+channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
+#channels: [1024,1024,1024,1024,3072]
+encoder_type: "SASP2"
+num_classes: 5994
+
+embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
+  filter: "fbank"
+  sr: 16000
+  feat_dim: !ref <input_dim>
+  input_dim: !ref <input_dim>
+  input_norm: !ref <input_norm>
+  channels: [512, 512, 512, 512, 1536]
+  encoder_type: "SASP2"
+  embedding_size: !ref <embedding_size>
+  num_classes: !ref <num_classes>
+  activation: relu
+
+classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
+  feat_dim: !ref <embedding_size>
+  num_classes: !ref <num_classes>
+
+# loss
+loss_ratio: 1
+lr_ratio: 0
+loss_lambda: False
+loss_type: !ref <loss>
+margin: 0.2
+# m: 0.2
+s: 30
+#lamda_beta: 0.2
+#mixup_type: input
+lamda_beta: 2
+proser_gamma: 1
+#_<proser_gamma>
+mixup_layer: [1, 2, 3]
+mixup_type: manifold
+# stat_type: margin1
+
+# Checkpoints
+loss_str: ""
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_3sesmix2_dist/baseline_<feat>_instance
+#_lamda<lamda_beta>
+#_mixup<lamda_beta>_<mixup_type>
+# _red<red_ratio>
+resume: !ref <check_path>/checkpoint_17.pth
+
+veri_pairs: 9600
+gpu_id: 0,1
+
+test_interval: 4
+log_interval: 10
