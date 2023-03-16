@@ -28,7 +28,7 @@ if [ $stage -le 0 ]; then
 
   # seed=123456
   for lamda_beta in 0.2 ; do
-  for seed in 123456 123457 123458 ; do
+  for seed in 123456  ; do
    for layer in 7 ; do
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/wav/resnet/aidata_float.yaml --seed=${seed}
@@ -37,7 +37,9 @@ if [ $stage -le 0 ]; then
 
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/aidata_int_original.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/fbank/ResNets/aidata_cm.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox1_int_original.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox1_int_original.yaml --seed=${seed}
+
+    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/vox2_int_brain.yaml --seed=${seed}
 
 
   done
