@@ -117,7 +117,7 @@ def SubScriptDatasets(config_args):
     domain = config_args['domain'] if 'domain' in config_args else False
     sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
     vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
-    verbose = 1 if torch.distributed.get_rank() == 0 else 0
+    verbose = 1 if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0 else 0
 
     if 'feat_type' in config_args and config_args['feat_type'] == 'lmdb':
         print('Create Lmdb Dataset...')
