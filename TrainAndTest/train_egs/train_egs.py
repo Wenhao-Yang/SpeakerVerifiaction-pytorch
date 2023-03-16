@@ -119,7 +119,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, args, writer):
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
         #
-        if args.loss_ratio != 0:
+        if hasattr(args, 'loss_ratio') and args.loss_ratio != 0:
             if args.loss_type in ['center', 'mulcenter', 'gaussian', 'coscenter']:
                 for param in model.module.loss.xe_criterion.parameters():
                     param.grad.data *= (1. / args.loss_ratio)
