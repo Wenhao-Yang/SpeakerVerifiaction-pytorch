@@ -1228,29 +1228,24 @@ class Hdf5TrainDataset(Dataset):
     def __getitem__(self, sid):
 
         if sid < len(self.base_utts):
-            # while True:
             (uid, start, end) = self.base_utts[sid]
-            # pdb.set_trace()
             sid = self.utt2spk_dict[uid]
             sid = self.spk_to_idx[sid]
-                # break
         else:
             # rand_idxs = [sid]
             sid %= self.num_spks
             spk = self.idx_to_spk[sid]
             utts = self.dataset[spk]
             num_utt = len(utts)
-            # y = np.array([[]]).reshape(self.feat_shape)
-            rand_utt_idx = np.random.randint(0, num_utt)
             # rand_idxs.append(rand_utt_idx)
-            uid = utts[rand_utt_idx]
+            uid = utts[np.random.randint(0, num_utt)]
 
             start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
                 0, self.utt2num_frames[uid] - self.segment_len)
+            
             end = start + self.segment_len
 
-        # reader = 
-        # with h5py.File(self.hdf5_file, 'r') as reader:
+        # reader =  h5py.File(self.hdf5_file, 'r') as reader:
         y = self.loader(self.reader, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
         feature = self.transform(y.reshape(1,-1))
