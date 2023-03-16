@@ -426,7 +426,7 @@ def main():
 
     # Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
     # order to prevent any memory allocation on unused GPUs
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
+    os.environ['CUDA_VISIBLE_DEVICES'] = args_object.gpu_id
     # os.environ['MASTER_ADDR'] = '127.0.0.1'
     # os.environ['MASTER_PORT'] = '29555'
 
