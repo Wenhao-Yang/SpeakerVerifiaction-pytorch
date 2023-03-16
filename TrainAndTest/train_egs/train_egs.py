@@ -485,9 +485,6 @@ def main():
     # iteration = 0  # if args.resume else 0
 
     # load resume
-
-    model_para = [{'params': model.parameters()}]
-
     model_para = [{'params': model.parameters()}]
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert config_args['lr_ratio'] > 0
@@ -540,7 +537,7 @@ def main():
         f.write('Optimizer: ' + str(optimizer) + '\n')
 
     start = 1 + start_epoch
-    if torch.distributed.get_rank() == 0:
+    if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
         print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
 
