@@ -77,7 +77,7 @@ model: ECAPA_brain
 kernel_size:
 alpha: 0
 embedding_size: 192
-batch_size: 128
+batch_size: 192
 dropout_p: 0.0
 activation: relu
 channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
