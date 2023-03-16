@@ -39,7 +39,7 @@ from torch.nn.parallel import DistributedDataParallel
 # from torch.optim import lr_scheduler
 from tqdm import tqdm
 
-from Light.dataset import SubDatasets, SubLoaders
+from Light.dataset import Sampler_Loaders, SubDatasets, SubLoaders, SubScriptDatasets
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -439,9 +439,13 @@ def main():
         cudnn.benchmark = True
 
     # Datasets
-    train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
-    train_loader, valid_loader, train_extract_loader = SubLoaders(
-        train_dir, valid_dir, train_extract_dir, config_args)
+    if config_args['feat_type'] == 'hdf5':
+        train_dir, valid_dir, train_extract_dir = SubScriptDatasets(config_args)
+        train_loader, valid_loader, train_extract_loader = SubLoaders(train_dir, valid_dir, train_extract_dir, config_args)
+    
+    else:
+        train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
+        train_loader, valid_loader, train_extract_loader = SubLoaders(train_dir, valid_dir, train_extract_dir, config_args)
 
     print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
