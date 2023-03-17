@@ -128,7 +128,7 @@ def SubScriptDatasets(config_args):
                                      return_uid=False)
         
         valid_dir = LmdbValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
-                                    hdf5_file=train_dir.hdf5_file, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                    reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
                                     verbose=verbose,
                                     transform=transform)
         
@@ -141,7 +141,7 @@ def SubScriptDatasets(config_args):
                                      return_uid=False)
         
         valid_dir = Hdf5ValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
-                                    reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                    hdf5_file=train_dir.hdf5_file, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
                                     verbose=verbose,
                                     transform=transform)
     else:
