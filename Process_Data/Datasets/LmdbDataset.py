@@ -1252,10 +1252,10 @@ class Hdf5TrainDataset(Dataset):
 
 
 class Hdf5ValidDataset(Dataset):
-    def __init__(self, valid_set, spk_to_idx, reader, 
+    def __init__(self, valid_set, spk_to_idx, hdf5_file, 
                  valid_utt2spk_dict, transform, feat_dim=0, loader=_read_from_hdf5,
                  return_uid=False, verbose=0):
-        self.reader = reader
+        self.reader = hdf5_file
         self.feat_dim = feat_dim
 
         speakers = [spk for spk in valid_set.keys()]
