@@ -135,7 +135,7 @@ train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.inpu
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
 
 if args.score_norm != '' and os.path.isdir(args.train_extract_dir):
-    train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, filer_loader=file_loader,
+    train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform, filer_loader=file_loader,
                                             feat_type=feat_type,
                                             verbose=args.verbose, trials_file='')
 
