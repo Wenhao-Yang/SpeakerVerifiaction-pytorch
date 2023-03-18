@@ -34,7 +34,6 @@ from tqdm import tqdm
 from hyperpyyaml import load_hyperpyyaml
 
 # from Define_Model.Loss.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
-import Define_Model
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -54,7 +53,6 @@ except AttributeError:
         tensor.requires_grad = requires_grad
         tensor._backward_hooks = backward_hooks
         return tensor
-
 
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
@@ -138,63 +136,12 @@ train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.inpu
 
 if args.score_norm != '' and os.path.isdir(args.train_extract_dir):
     train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, filer_loader=file_loader,
+                                            feat_type=feat_type,
                                             verbose=args.verbose, trials_file='')
 
 verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
+                                  feat_type=feat_type,
                                   verbose=args.verbose)
-
-if args.valid:
-    valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader,
-                                   spk_to_idx=train_dir.spk_to_idx,
-                                   valid_uid2feat=train_dir.valid_uid2feat,
-                                   valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
-                                   transform=transform, verbose=args.verbose)
-
-
-def valid(valid_loader, model):
-    model.eval()
-
-    valid_pbar = tqdm(enumerate(valid_loader))
-    softmax = nn.Softmax(dim=1)
-
-    correct = 0.
-    total_datasize = 0.
-
-    for batch_idx, (data, label) in valid_pbar:
-        data = Variable(data.cuda())
-        # print(model.conv1.weight)
-        # print(data)
-        # pdb.set_trace()
-
-        # compute output
-        out, _ = model(data)
-        if args.loss_type == 'asoft':
-            predicted_labels, _ = out
-        else:
-            predicted_labels = out
-
-        true_labels = Variable(label.cuda())
-
-        # pdb.set_trace()
-        predicted_one_labels = softmax(predicted_labels)
-        predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
-
-        batch_correct = (predicted_one_labels.cuda() == true_labels.cuda()).sum().item()
-        minibatch_acc = float(batch_correct / len(predicted_one_labels))
-        correct += batch_correct
-        total_datasize += len(predicted_one_labels)
-
-        if batch_idx % args.log_interval == 0:
-            valid_pbar.set_description('Valid: [{:8d}/{:8d} ({:3.0f}%)] Batch Accuracy: {:.4f}%'.format(
-                batch_idx * len(data),
-                len(valid_loader.dataset),
-                100. * batch_idx / len(valid_loader),
-                100. * minibatch_acc
-            ))
-
-    valid_accuracy = 100. * correct / total_datasize
-    print('  \33[91mValid Accuracy is %.4f %%.\33[0m' % valid_accuracy)
-    torch.cuda.empty_cache()
 
 
 def test(test_loader, xvector_dir, test_cohort_scores=None):
@@ -433,7 +380,6 @@ if __name__ == '__main__':
         print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
-
     start_time = time.time()
     test_xvector_dir = os.path.join(args.xvector_dir, 'test')
     train_xvector_dir = os.path.join(args.xvector_dir, 'train')
@@ -480,11 +426,6 @@ if __name__ == '__main__':
         if args.cuda:
             model.cuda()
 
-        if args.valid:
-            valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=args.test_batch_size, shuffle=False,
-                                                       **kwargs)
-            valid(valid_loader, model)
-
         del train_dir  # , valid_dir
         if args.verbose > 0:
             print('Memery Usage: %.4f GB' % (psutil.Process(os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
@@ -507,7 +448,6 @@ if __name__ == '__main__':
                                  mean_vector=args.mean_vector,
                                  xvector=args.xvector)
 
-    # pdb.set_trace()
     if args.test:
         file_loader = kaldiio.load_mat
         # file_loader = read_vec_flt
