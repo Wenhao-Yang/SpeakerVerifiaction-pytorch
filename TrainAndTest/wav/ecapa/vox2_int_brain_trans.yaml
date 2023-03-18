@@ -19,7 +19,7 @@ feat: int
 wav_type: int
 subset: ""
 trans_fbank: True
-sample_type: instance
+sample_type: half_balance
 
 train_dir: !ref <data_root_dir>/data/<datasets>/dev
 # <subset>_<feat>
@@ -30,14 +30,14 @@ num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
 input_norm: Mean
-input_per_spks: 1024
+input_per_spks: 512
 
 test_input: fix
 log_scale: False
 random_chunk: [48000, 48000]
 chunk_size: 48000
 frame_shift: 48000
-num_frames: 48000
+num_frames: 64000
 extract: True
 nj: 6
 shuffle: False
@@ -130,7 +130,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_3sesmix2_dist/baseline_<feat>_trans
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_3sesmix2_dist/baseline_<feat>_trans2
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
