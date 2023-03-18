@@ -118,7 +118,6 @@ if 'trans_fbank' in config_args and config_args['trans_fbank']:
 # pdb.set_trace()
 feat_type = 'kaldi'
 if config_args['feat_format'] == 'kaldi':
-    # file_loader = read_mat
     file_loader = kaldiio.load_mat
     torch.multiprocessing.set_sharing_strategy('file_system')
 elif config_args['feat_format'] == 'npy':
@@ -130,8 +129,9 @@ elif config_args['feat_format'] == 'wav':
 if not args.valid:
     args.num_valid = 0
 
+sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
-                               feat_type=feat_type,
+                               feat_type=feat_type, sample_type=sample_type, segment_len=config_args['num_frames'],
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
 
 if args.score_norm != '' and os.path.isdir(args.train_extract_dir):
@@ -384,7 +384,7 @@ if __name__ == '__main__':
     test_xvector_dir = os.path.join(args.xvector_dir, 'test')
     train_xvector_dir = os.path.join(args.xvector_dir, 'train')
 
-    if args.valid or args.extract:
+    if args.extract:
         
         model = config_args['embedding_model']
         model.classifier = config_args['classifier']
@@ -393,8 +393,6 @@ if __name__ == '__main__':
             print('=> loading checkpoint {}'.format(args.resume))
         
         checkpoint = torch.load(args.resume)
-        # start_epoch = checkpoint['epoch']
-
         checkpoint_state_dict = checkpoint['state_dict']
         start = checkpoint['epoch'] if 'epoch' in checkpoint else args.start_epoch
         if args.verbose > 0:
