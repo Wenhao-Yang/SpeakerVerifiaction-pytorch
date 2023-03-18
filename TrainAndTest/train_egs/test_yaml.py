@@ -29,7 +29,6 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torchvision.transforms as transforms
-from kaldi_io import read_mat, read_vec_flt
 from torch.autograd import Variable
 from tqdm import tqdm
 from hyperpyyaml import load_hyperpyyaml
@@ -39,7 +38,7 @@ import Define_Model
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, MelFbank, mvnormal, read_WaveFloat, read_WaveInt, read_Waveform
+from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, MelFbank, mvnormal, read_WaveFloat, read_WaveInt
 from TrainAndTest.common_func import create_model, verification_extract, load_model_args, args_model, args_parse
 from logger import NewLogger
 
