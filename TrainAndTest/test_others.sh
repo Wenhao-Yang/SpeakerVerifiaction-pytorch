@@ -2970,14 +2970,13 @@ if [ $stage -le 600 ]; then
       --train-dir ${lstm_dir}/data/${datasets}/${sname} \
       --train-extract-dir ${lstm_dir}/data/${datasets}/dev \
       --test-dir ${lstm_dir}/data/${testset}/${test_subset} --trials trials \
-      --score-norm as-norm \
       --feat-format wav --nj 8 \
       --train-config Data/checkpoint/${model_dir}/model.2023.03.17.yaml \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/checkpoint_13.pth \
       --gpu-id 0 \
       --test-input var --verbose 2 \
-      --cos-sim
+      --cos-sim --extract
   done
   done
   done
