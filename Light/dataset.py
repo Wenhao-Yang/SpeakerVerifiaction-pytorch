@@ -207,7 +207,7 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
 
     min_chunk_size = int(config_args['random_chunk'][0])
     max_chunk_size = int(config_args['random_chunk'][1])
-    pad_dim = 2 if config_args['feat_format'] == 'kaldi' and 'trans_fbank' not in config_args else 3
+    pad_dim = 2 if config_args['feat_format'] == 'kaldi' or 'trans_fbank' in config_args else 3
 
     # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
     #     train_length = len(train_dir)
