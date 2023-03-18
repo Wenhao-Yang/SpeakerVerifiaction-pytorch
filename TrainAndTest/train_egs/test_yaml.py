@@ -91,29 +91,12 @@ if args.test_input == 'var':
     transform_T = transforms.Compose([
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
-
 elif args.test_input == 'fix':
     transform_T = transforms.Compose([
         ConcateVarInput(num_frames=args.chunk_size, frame_shift=args.frame_shift, remove_vad=args.remove_vad),
     ])
 else:
     raise ValueError('input length must be var or fix.')
-
-transform = transforms.Compose([
-        ConcateVarInput(num_frames=config_args['chunk_size'],
-                        frame_shift=config_args['frame_shift'],
-                        remove_vad=config_args['remove_vad']),
-    ])
-
-if args.mvnorm:
-    transform.transforms.append(mvnormal())
-    transform_T.transforms.append(mvnormal())
-
-if 'trans_fbank' in config_args and config_args['trans_fbank']:
-    transform.transforms.append(
-        MelFbank(num_filter=config_args['input_dim']))
-    transform_T.transforms.append(
-        MelFbank(num_filter=config_args['input_dim']))
 
 # pdb.set_trace()
 feat_type = 'kaldi'
@@ -126,8 +109,22 @@ elif config_args['feat_format'] == 'wav':
     file_loader = read_WaveInt if config_args['feat'] == 'int' else read_WaveFloat
     feat_type = 'wav'
 
-if not args.valid:
-    args.num_valid = 0
+
+transform = transforms.Compose([
+        ConcateVarInput(num_frames=config_args['chunk_size'],
+                        frame_shift=config_args['frame_shift'], feat_type=feat_type,
+                        remove_vad=config_args['remove_vad']),
+    ])
+
+if args.mvnorm:
+    transform.transforms.append(mvnormal())
+    transform_T.transforms.append(mvnormal())
+
+if 'trans_fbank' in config_args and config_args['trans_fbank']:
+    transform.transforms.append(
+        MelFbank(num_filter=config_args['input_dim']))
+    transform_T.transforms.append(
+        MelFbank(num_filter=config_args['input_dim']))
 
 sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
