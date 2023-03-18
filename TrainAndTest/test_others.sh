@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300
+stage=600
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2941,4 +2941,46 @@ if [ $stage -le 500 ]; then
   #|    aidata-test    |  5.29±0.09  |             | 0.4862±0.0133 | 0.8015±0.0142 | baseline
   #|    aidata-test    |  5.10±0.06  |             | 0.4740±0.0082 | 0.8181±0.0083 | manifold_mixup 0.01
 
+fi
+
+
+if [ $stage -le 600 ]; then
+  feat_type=wave feat=log
+  model=ECAPA_brain
+  loss=arcsoft
+  input_dim=40 input_norm=Mean
+  encoder_type=SASP2
+  datasets=vox2 testset=vox1
+  embedding_size=192
+  batch_size=128
+  sname=dev #_aug_com
+  test_subset=test
+  mask_layer=baseline
+  dp=0.1
+#        --downsample ${downsample} \
+#      --trials trials_20w \
+  for resnet_size in 34 ;do
+        echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
+  for seed in 123456 ; do
+#  for lamda_beta in 0.2 0.5 1 2 ; do
+  for lamda_beta in 1; do
+    model_dir=ECAPA_brain/vox2/wave_baseline/arcsoft_adam_cyclic/Mean_batch128_SASP2_em192_official_3sesmix2_dist/baseline_int_trans/123456
+
+    python -W ignore TrainAndTest/train_egs/test_yaml.py \
+      --train-dir ${lstm_dir}/data/${datasets}/${sname} \
+      --train-extract-dir ${lstm_dir}/data/${datasets}/dev \
+      --test-dir ${lstm_dir}/data/${testset}/${test_subset} --trials trials \
+      --score-norm as-norm \
+      --feat-format wav --nj 8 \
+      --train-config Data/checkpoint/${model_dir}/model.2023.03.17.yaml \
+      --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
+      --resume Data/checkpoint/${model_dir}/checkpoint_13.pth \
+      --gpu-id 0 \
+      --test-input var \
+      --verbose 2 \
+      --cos-sim
+  done
+  done
+  done
+  exit
 fi

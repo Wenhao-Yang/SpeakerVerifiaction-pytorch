@@ -33,6 +33,7 @@ from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear,
 from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
+from Define_Model.TDNN import ECAPA_brain 
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
 from Define_Model.TDNN.Slimmable import SlimmableTDNN
@@ -142,6 +143,7 @@ __factory = {
     'ETDNN_v5': ETDNN_v5,
     'FTDNN': FTDNN,
     'ECAPA': ECAPA_TDNN,
+    'ECAPA_brain': ECAPA_brain.ECAPA_TDNN,
     'RET': RET,
     'RET_v2': RET_v2,
     'RET_v3': RET_v3,
@@ -981,7 +983,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='path to voxceleb1 test dataset')
 
     if 'Test' in description:
-        # parser.add_argument('--model-yaml', default='', type=str, help='path to yaml of model for the latest checkpoint')
+        parser.add_argument('--train-config', default='', help='path to yaml of model for the latest checkpoint')
         parser.add_argument('--extract-trials', action='store_false',
                             default=True, help='log power spectogram')
         parser.add_argument('--score-suffix', type=str,

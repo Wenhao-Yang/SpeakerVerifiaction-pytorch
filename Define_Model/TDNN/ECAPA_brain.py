@@ -424,8 +424,7 @@ class ECAPA_TDNN(torch.nn.Module):
         res2net_scale=8,
         se_channels=128,
         global_context=True,
-        groups=[1, 1, 1, 1, 1],
-    ):
+        groups=[1, 1, 1, 1, 1], **kwargs):
 
         super().__init__()
         input_mask = []
