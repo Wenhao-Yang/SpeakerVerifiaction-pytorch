@@ -32,7 +32,7 @@ num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
 input_norm: Mean
-input_per_spks: 768
+input_per_spks: 1024
 
 test_input: fix
 log_scale: False
@@ -40,6 +40,7 @@ random_chunk: [300, 300]
 chunk_size: 48000
 frame_shift: 48000
 num_frames: 48000
+segment_shift: 32000
 extract: True
 nj: 6
 shuffle: False

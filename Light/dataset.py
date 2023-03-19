@@ -132,12 +132,13 @@ def SubScriptDatasets(config_args):
     vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
     verbose = 1 if torch.distributed.is_initialized(
     ) and torch.distributed.get_rank() == 0 else 0
+    segment_shift = config_args['segment_shift'] if 'segment_shift' in config_args else config_args['num_frames']
 
     train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
                                    transform=transform, num_valid=config_args['num_valid'], domain=domain,
                                    vad_select=vad_select, sample_type=sample_type,
                                    feat_type=feat_type, verbose=verbose,
-                                   segment_len=config_args['num_frames'])
+                                   segment_len=config_args['num_frames'], segment_shift=segment_shift)
 
     valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
                                    dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
