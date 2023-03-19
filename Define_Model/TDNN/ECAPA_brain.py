@@ -536,6 +536,7 @@ class ECAPA_TDNN(torch.nn.Module):
         x = self.asp_bn(x)
 
         # Final linear transformation
+        print(x.shape)
         x = self.fc(x)
         embeddings = x.transpose(1, 2).contiguous()
 
