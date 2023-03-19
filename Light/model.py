@@ -211,7 +211,7 @@ class SpeakerModule(LightningModule):
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
-        pdb.set_trace()
+        torch.cuda.empty_cache()
         data, label = batch
 
         logits, embeddings = self.encoder(data)
