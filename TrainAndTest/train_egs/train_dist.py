@@ -111,7 +111,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     total_backward = 0
     for batch_idx, data_cols in pbar:
         if batch_idx > 0:
-            print('backward:, ',  time.time() - stop)
+            print('dataload:, ',  time.time() - stop)
 
         start = time.time()
         if not return_domain:
@@ -164,8 +164,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             raise ValueError('Loss value is NaN!')
 
         stop = time.time()
-
-        total_forward += stop - start
         print('forward:, ', stop - start)
         # compute gradient and update weights
         loss.backward()
@@ -224,7 +222,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         # pdb.set_trace()
         # start = time.time()
-        total_backward += time.time() - stop
+        # total_backward += time.time() - stop
+        print('back_opt: ', time.time() - stop)
+        stop = time.time()
+
         if (batch_idx + 1) == 100:
             break
 
