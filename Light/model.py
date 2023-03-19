@@ -204,8 +204,11 @@ class SpeakerModule(LightningModule):
         self.test_trials = get_trials(config_args['train_trials_path'])
         # self.optimizer = optimizer
 
-    # def on_train_batch_start(self, batch: Any, batch_idx: int) -> Optional[int]:
-    #     return super().on_train_batch_start(batch, batch_idx)
+    def on_train_batch_start(self, batch: Any, batch_idx: int) -> Optional[int]:
+        self.print('torchdata:, ', time.time() - self.stop_time)
+        self.stop_time = time.time()
+
+        return super().on_train_batch_start(batch, batch_idx)
 
     def on_train_epoch_start(self) -> None:
         self.train_accuracy = []
@@ -220,7 +223,7 @@ class SpeakerModule(LightningModule):
         # it is independent of forward
         torch.cuda.empty_cache()
         if batch_idx > 0:
-            self.print('dataload:, ', time.time() - self.stop_time)
+            self.print('todevice:, ', time.time() - self.stop_time)
 
         start = time.time()
         data, label = batch
