@@ -19,7 +19,7 @@ import numpy as np
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.profilers import AdvancedProfiler
+from pytorch_lightning.profilers import AdvancedProfiler, PyTorchProfiler
 from Light.callback import ShufTrainset
 from pytorch_lightning.callbacks import LearningRateMonitor
 
@@ -86,8 +86,12 @@ def main():
     if args.manual_shuffle:
         this_callbacks.append(ShufTrainset(train_dir=train_dir))
 
-    profiler = AdvancedProfiler(
-        filename='profilers')
+    # profiler = AdvancedProfiler(
+    #     filename='profilers')
+
+    profiler = PyTorchProfiler(filename='profilers')
+
+    # strategy="ddp_find_unused_parameters_false",
 
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='cuda', devices=args.gpus, strategy="ddp_find_unused_parameters_false",
