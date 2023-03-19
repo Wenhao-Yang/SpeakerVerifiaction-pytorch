@@ -290,7 +290,7 @@ class SpeakerModule(LightningModule):
         if isinstance(label[0], str):
             return embeddings, label
         else:
-            val_loss = self.loss(logits, embeddings, label)
+            val_loss, _ = self.loss(logits, embeddings, label)
             self.valid_total_loss += float(val_loss.item())
             predicted_one_labels = self.softmax(logits)
             predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
