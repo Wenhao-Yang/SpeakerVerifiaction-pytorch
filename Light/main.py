@@ -87,7 +87,7 @@ def main():
         this_callbacks.append(ShufTrainset(train_dir=train_dir))
 
     profiler = AdvancedProfiler(
-        output_filename=config_args['check_path']+'/profilers')
+        filename=config_args['check_path']+'/profilers')
 
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='ddp', gpus=args.gpus,
