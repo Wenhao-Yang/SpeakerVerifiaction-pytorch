@@ -210,7 +210,6 @@ class SpeakerModule(LightningModule):
 
         return super().on_train_epoch_start()
 
-
     def on_after_batch_transfer(self, batch: Any, dataloader_idx: int) -> Any:
         # self.print('transfer:, ', time.time() - self.stop_time)
         # self.stop_time = time.time()
@@ -461,8 +460,12 @@ class SpeakerModule(LightningModule):
 
         # torch.optim.Adam(self.parameters(), lr=1e-3)
         # return ({'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'},)
+        interval = 1 if isinstance(
+            scheduler, torch.optim.lr_scheduler.CyclicLR) else 'epoch'
+
         return ({'optimizer': optimizer,
                  'lr_scheduler': {
                      "scheduler": scheduler,
                      "monitor": "val_loss",
+                     "interval": interval,
                  }, })
