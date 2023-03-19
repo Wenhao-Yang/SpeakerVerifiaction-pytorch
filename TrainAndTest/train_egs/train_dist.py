@@ -110,6 +110,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     total_forward = 0
     total_backward = 0
     for batch_idx, data_cols in pbar:
+        if batch_idx > 0:
+            print('backward:, ',  time.time() - stop)
 
         start = time.time()
         if not return_domain:
@@ -221,8 +223,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             pbar.set_description(epoch_str)
 
         # pdb.set_trace()
-        start = time.time()
-        print('backward:, ',  start - stop)
+        # start = time.time()
         total_backward += time.time() - stop
         if (batch_idx + 1) == 100:
             break

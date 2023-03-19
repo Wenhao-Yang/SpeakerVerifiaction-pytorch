@@ -216,6 +216,8 @@ class SpeakerModule(LightningModule):
         # training_step defines the train loop.
         # it is independent of forward
         torch.cuda.empty_cache()
+        if batch_idx > 0:
+            self.print('backward:, ', time.time() - self.stop_time)
 
         start = time.time()
         data, label = batch
@@ -239,10 +241,10 @@ class SpeakerModule(LightningModule):
 
         return loss
 
-    def training_step_end(self, step_output):
-        self.print('backward:, ', time.time() - self.stop_time)
+    # def training_step_end(self, step_output):
+    #     self.print('backward:, ', time.time() - self.stop_time)
 
-        return super().training_step_end(step_output)
+    #     return super().training_step_end(step_output)
 
     # def on_train_epoch_end(self, outputs) -> None:
     #     # pdb.set_trace()
