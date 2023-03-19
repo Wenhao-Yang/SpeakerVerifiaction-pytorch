@@ -87,7 +87,7 @@ def main():
         this_callbacks.append(ShufTrainset(train_dir=train_dir))
 
     profiler = AdvancedProfiler(
-        filename=config_args['check_path']+'/profilers')
+        filename='profilers')
 
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='cuda', devices=args.gpus, strategy="ddp_find_unused_parameters_false",
