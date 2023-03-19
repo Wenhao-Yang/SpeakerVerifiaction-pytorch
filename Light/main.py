@@ -97,7 +97,7 @@ def main():
                       val_check_interval=0.5, gradient_clip_val=1.0, profiler=profiler,
                       )
 
-    trainer.fit(model=model, train_dataloader=train_loader,
+    trainer.fit(model=model, train_dataloaders=train_loader,
                 val_dataloaders=[train_extract_loader, valid_loader])
 
     # val_dataloaders=[valid_loader, train_extract_loader])
