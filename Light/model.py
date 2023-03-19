@@ -460,7 +460,7 @@ class SpeakerModule(LightningModule):
 
         # torch.optim.Adam(self.parameters(), lr=1e-3)
         # return ({'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'},)
-        interval = 1 if isinstance(
+        interval = 'step' if isinstance(
             scheduler, torch.optim.lr_scheduler.CyclicLR) else 'epoch'
 
         return ({'optimizer': optimizer,
