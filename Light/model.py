@@ -204,10 +204,14 @@ class SpeakerModule(LightningModule):
         self.test_trials = get_trials(config_args['train_trials_path'])
         # self.optimizer = optimizer
 
+    def on_train_epoch_start(self) -> None:
+        self.stop_time = time.time()
+        return super().on_train_epoch_start()
+
     def on_train_batch_start(self, batch: Any, batch_idx: int) -> Optional[int]:
-        if hasattr(self, 'stop_rime'):
-            self.print('torchdata:, ', time.time() - self.stop_time)
-            self.stop_time = time.time()
+        # if hasattr(self, 'stop_rime'):
+        self.print('torchdata:, ', time.time() - self.stop_time)
+        self.stop_time = time.time()
 
         return super().on_train_batch_start(batch, batch_idx)
 
