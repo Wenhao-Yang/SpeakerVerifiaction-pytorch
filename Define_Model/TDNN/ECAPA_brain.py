@@ -499,7 +499,7 @@ class ECAPA_TDNN(torch.nn.Module):
         #     out_channels=embedding_size,
         #     kernel_size=1,)
 
-        self.fc = Linear(channels[-1] * 2, embedding_size)
+        self.fc = nn.Linear(channels[-1] * 2, embedding_size)
 
         self.classifier = Classifier(
             input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
