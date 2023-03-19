@@ -69,6 +69,7 @@ lr: 0.001
 base_lr: 0.00000001
 cyclic_epoch: 3
 step_size: 65000
+val_check_interval: 32500
 cos_sim: True
 
 early_stopping: True

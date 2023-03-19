@@ -81,7 +81,8 @@ def main():
                                           save_last=True)
     this_callbacks.append(checkpoint_callback)
 
-    this_callbacks.append(LearningRateMonitor(logging_interval='epoch'))
+    log_interval = 'step' if config_args['scheduler'] == 'cyclic' else 'epoch'
+    this_callbacks.append(LearningRateMonitor(logging_interval=log_interval))
 
     if args.manual_shuffle:
         this_callbacks.append(ShufTrainset(train_dir=train_dir))
@@ -99,7 +100,9 @@ def main():
                       num_sanity_val_steps=0, precision=16, amp_backend='native',
                       callbacks=this_callbacks,  # max_steps=100,
                       default_root_dir=config_args['check_path'],
-                      val_check_interval=0.5,  # profiler=profiler,
+                      # profiler=profiler,
+                      check_val_every_n_epoch=None,
+                      val_check_interval=config_args['val_check_interval'],
                       )
 
     trainer.fit(model=model, train_dataloaders=train_loader,
