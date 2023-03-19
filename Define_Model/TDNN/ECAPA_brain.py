@@ -292,7 +292,7 @@ class AttentiveStatisticsPooling(nn.Module):
         mean, std = _compute_statistics(x, attn)
         # Append mean and std of the batch
         pooled_stats = torch.cat((mean, std), dim=1)
-        pooled_stats = pooled_stats.unsqueeze(2)
+        pooled_stats = pooled_stats  # .unsqueeze(2)
 
         return pooled_stats
 
@@ -494,10 +494,12 @@ class ECAPA_TDNN(torch.nn.Module):
         self.asp_bn = BatchNorm1d(input_size=channels[-1] * 2)
 
         # Final linear transformation
-        self.fc = Conv1d(
-            in_channels=channels[-1] * 2,
-            out_channels=embedding_size,
-            kernel_size=1,)
+        # self.fc = Conv1d(
+        #     in_channels=channels[-1] * 2,
+        #     out_channels=embedding_size,
+        #     kernel_size=1,)
+
+        self.fc = Linear(channels[-1] * 2, embedding_size)
 
         self.classifier = Classifier(
             input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
