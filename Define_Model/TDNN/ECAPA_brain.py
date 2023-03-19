@@ -538,13 +538,12 @@ class ECAPA_TDNN(torch.nn.Module):
         x = self.asp_bn(x)
 
         # Final linear transformation
-        print(x.shape)
-        x = self.fc(x)
-        embeddings = x.transpose(1, 2).contiguous()
+        embeddings = self.fc(x)
+        # embeddings = x.transpose(1, 2).contiguous()
 
         logits = self.classifier(embeddings)
 
-        return logits, embeddings.squeeze(1)
+        return logits, embeddings
 
 
 class Classifier(torch.nn.Module):
@@ -605,6 +604,6 @@ class Classifier(torch.nn.Module):
             x = layer(x)
 
         # Need to be normalized
-        x = F.linear(F.normalize(x.squeeze(1)), F.normalize(self.weight))
+        x = F.linear(F.normalize(x), F.normalize(self.weight))
 
         return x  # .unsqueeze(1)
