@@ -413,18 +413,18 @@ class ECAPA_TDNN(torch.nn.Module):
     """
 
     def __init__(
-        self, input_dim, num_classes, embedding_size=192, activation=torch.nn.ReLU,
-        input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
-        init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
-        mask='None', mask_len=[5, 20],
-        channels=[512, 512, 512, 512, 1536],
-        kernel_sizes=[5, 3, 3, 3, 1],
-        dilations=[1, 2, 3, 4, 1],
-        attention_channels=128,
-        res2net_scale=8,
-        se_channels=128,
-        global_context=True,
-        groups=[1, 1, 1, 1, 1], **kwargs):
+            self, input_dim, num_classes, embedding_size=192, activation=torch.nn.ReLU,
+            input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
+            init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
+            mask='None', mask_len=[5, 20],
+            channels=[512, 512, 512, 512, 1536],
+            kernel_sizes=[5, 3, 3, 3, 1],
+            dilations=[1, 2, 3, 4, 1],
+            attention_channels=128,
+            res2net_scale=8,
+            se_channels=128,
+            global_context=True,
+            groups=[1, 1, 1, 1, 1], **kwargs):
 
         super().__init__()
         input_mask = []
@@ -537,7 +537,7 @@ class ECAPA_TDNN(torch.nn.Module):
 
         # Final linear transformation
         x = self.fc(x)
-        embeddings = x.transpose(1, 2)
+        embeddings = x.transpose(1, 2).contigous()
 
         logits = self.classifier(embeddings)
 
