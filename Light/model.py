@@ -228,7 +228,8 @@ class SpeakerModule(LightningModule):
     def on_after_batch_transfer(self, batch: Any, dataloader_idx: int) -> Any:
         self.print('transfer:, ', time.time() - self.stop_time)
         self.stop_time = time.time()
-        return super().on_after_batch_transfer(batch, dataloader_idx)
+        # return super().on_after_batch_transfer(batch, dataloader_idx)
+        return batch
 
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
