@@ -90,7 +90,7 @@ def main():
         filename=config_args['check_path']+'/profilers')
 
     trainer = Trainer(max_epochs=config_args['epochs'],
-                      accelerator='cuda', devices=args.gpus, strategy="ddp"
+                      accelerator='cuda', devices=args.gpus, strategy="ddp",
                       num_sanity_val_steps=0,
                       callbacks=this_callbacks,
                       default_root_dir=config_args['check_path'],
