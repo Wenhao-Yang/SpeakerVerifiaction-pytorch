@@ -89,8 +89,8 @@ def main():
     # profiler = AdvancedProfiler(
     #     filename='profilers')
 
-    profiler = PyTorchProfiler(
-        filename='profilers', profile_memory=True, use_cpu=False, use_kineto=True)
+    # profiler = PyTorchProfiler(
+    #     filename='profilers', profile_memory=True, use_cpu=False, use_kineto=True)
 
     # strategy="ddp_find_unused_parameters_false",
 
@@ -99,7 +99,7 @@ def main():
                       num_sanity_val_steps=0,
                       callbacks=this_callbacks, max_steps=100,
                       default_root_dir=config_args['check_path'],
-                      val_check_interval=0.5, profiler=profiler,
+                      val_check_interval=0.5,  # profiler=profiler,
                       )
 
     trainer.fit(model=model, train_dataloaders=train_loader,
