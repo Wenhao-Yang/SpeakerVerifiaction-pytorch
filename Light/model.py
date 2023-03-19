@@ -204,6 +204,9 @@ class SpeakerModule(LightningModule):
         self.test_trials = get_trials(config_args['train_trials_path'])
         # self.optimizer = optimizer
 
+    # def on_train_batch_start(self, batch: Any, batch_idx: int) -> Optional[int]:
+    #     return super().on_train_batch_start(batch, batch_idx)
+
     def on_train_epoch_start(self) -> None:
         self.train_accuracy = []
         self.train_loss = []
