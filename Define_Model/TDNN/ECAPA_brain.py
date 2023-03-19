@@ -537,7 +537,7 @@ class ECAPA_TDNN(torch.nn.Module):
 
         # Final linear transformation
         x = self.fc(x)
-        embeddings = x.transpose(1, 2).contigous()
+        embeddings = x.transpose(1, 2).contiguous()
 
         logits = self.classifier(embeddings)
 
