@@ -234,7 +234,7 @@ class SpeakerModule(LightningModule):
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
         if batch_idx > 0:
             self.print('todevice:, ', time.time() - self.stop_time)
 
