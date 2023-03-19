@@ -128,6 +128,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
+        print(data.size())
         pdb.set_trace()
         # print(data.shape)
         # pdb.set_trace()
