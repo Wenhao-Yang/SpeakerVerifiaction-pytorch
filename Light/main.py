@@ -89,7 +89,7 @@ def main():
     # profiler = AdvancedProfiler(
     #     filename='profilers')
 
-    profiler = PyTorchProfiler(filename='profilers')
+    profiler = PyTorchProfiler(filename='profilers', profile_memory=True)
 
     # strategy="ddp_find_unused_parameters_false",
 
