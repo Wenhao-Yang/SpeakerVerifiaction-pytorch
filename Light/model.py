@@ -219,6 +219,12 @@ class SpeakerModule(LightningModule):
 
         return super().on_train_batch_start(batch, batch_idx)
 
+    def transfer_batch_to_device(self, batch: Any, device: torch.device, dataloader_idx: int) -> Any:
+        self.print('transbefore:, ', time.time() - self.stop_time)
+        self.stop_time = time.time()
+
+        return super().transfer_batch_to_device(batch, device, dataloader_idx)
+
     def on_after_batch_transfer(self, batch: Any, dataloader_idx: int) -> Any:
         self.print('transfer:, ', time.time() - self.stop_time)
         self.stop_time = time.time()
@@ -228,6 +234,8 @@ class SpeakerModule(LightningModule):
         # training_step defines the train loop.
         # it is independent of forward
         torch.cuda.empty_cache()
+        if batch_idx > 0:
+            self.print('todevice:, ', time.time() - self.stop_time)
 
         start = time.time()
         data, label = batch
