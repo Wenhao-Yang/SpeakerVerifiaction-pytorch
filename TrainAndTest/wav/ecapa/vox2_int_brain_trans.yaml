@@ -24,6 +24,8 @@ sample_type: half_balance
 train_dir: !ref <data_root_dir>/data/<datasets>/dev
 # <subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
+train_trials_path: !ref <data_root_dir>/data/<testset>/test<subset>/trials
+
 train_trials: trials
 valid_dir: !ref <data_root_dir>/data/<datasets>/train_valid_<feat>
 num_valid: 2
