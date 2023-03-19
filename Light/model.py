@@ -216,16 +216,16 @@ class SpeakerModule(LightningModule):
         logits, embeddings = self.encoder(data)
         loss, other_loss = self.loss(logits, embeddings, label)
 
-        # predicted_one_labels = self.softmax(logits)
-        # predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
-        # batch_correct = (predicted_one_labels == label).sum().item()
+        predicted_one_labels = self.softmax(logits)
+        predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
+        batch_correct = (predicted_one_labels == label).sum().item()
 
-        # train_batch_accuracy = 100. * batch_correct / len(predicted_one_labels)
-        # self.train_accuracy.append(train_batch_accuracy)
-        # self.train_loss.append(float(loss))
+        train_batch_accuracy = 100. * batch_correct / len(predicted_one_labels)
+        self.train_accuracy.append(train_batch_accuracy)
+        self.train_loss.append(float(loss))
 
-        # self.log("train_batch_loss", float(loss))
-        # self.log("train_batch_accu", train_batch_accuracy)
+        self.log("train_batch_loss", float(loss))
+        self.log("train_batch_accu", train_batch_accuracy)
 
         return loss
 
