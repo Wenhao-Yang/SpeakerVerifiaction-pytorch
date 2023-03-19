@@ -8,6 +8,7 @@
 @Time: 2023/02/23 18:23
 @Overview:
 '''
+import time
 import numpy as np
 import torch.nn as nn
 import torch
@@ -206,12 +207,17 @@ class SpeakerModule(LightningModule):
     def on_train_epoch_start(self) -> None:
         self.train_accuracy = []
         self.train_loss = []
+
+        self.total_forward = 0
+        self.total_backward = 0
         return super().on_train_epoch_start()
 
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
         torch.cuda.empty_cache()
+
+        start = time.time()
         data, label = batch
 
         logits, embeddings = self.encoder(data)
@@ -228,7 +234,15 @@ class SpeakerModule(LightningModule):
         self.log("train_batch_loss", float(loss))
         self.log("train_batch_accu", train_batch_accuracy)
 
+        self.stop_time = time.time()
+        self.print('forward:, ', self.stop_time - start)
+
         return loss
+
+    def training_step_end(self, step_output):
+        self.print('backward:, ', time.time() - self.stop_time)
+
+        return super().training_step_end(step_output)
 
     # def on_train_epoch_end(self, outputs) -> None:
     #     # pdb.set_trace()

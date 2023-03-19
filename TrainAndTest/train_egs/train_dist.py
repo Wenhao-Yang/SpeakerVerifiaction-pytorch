@@ -107,8 +107,11 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
     # start_time = time.time()
     # pdb.set_trace()
+    total_forward = 0
+    total_backward = 0
     for batch_idx, data_cols in pbar:
 
+        start = time.time()
         if not return_domain:
             data, label = data_cols
             batch_weight = None
@@ -158,6 +161,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         if np.isnan(loss.item()):
             raise ValueError('Loss value is NaN!')
 
+        stop = time.time()
+
+        total_forward += stop - start
+        print('forward:, ', stop - start)
         # compute gradient and update weights
         loss.backward()
 
@@ -213,9 +220,15 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
             pbar.set_description(epoch_str)
 
-        pdb.set_trace()
-        # if (batch_idx + 1) == 100:
-        #     break
+        # pdb.set_trace()
+        start = time.time()
+        print('backward:, ',  start - stop)
+        total_backward += time.time() - stop
+        if (batch_idx + 1) == 100:
+            break
+
+    print('Forward Time: {:>7.4} Backward Time: {:>7.4}'.format(
+        total_forward/100, total_backward/100))
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))

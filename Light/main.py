@@ -97,7 +97,7 @@ def main():
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='cuda', devices=args.gpus, strategy="ddp_find_unused_parameters_false",
                       num_sanity_val_steps=0,
-                      callbacks=this_callbacks,  # max_steps=100,
+                      callbacks=this_callbacks,  max_steps=100,
                       default_root_dir=config_args['check_path'],
                       val_check_interval=0.5,  # profiler=profiler,
                       )
