@@ -129,7 +129,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         data, label = Variable(data), Variable(label)
         print(data.size())
-        pdb.set_trace()
+
         # print(data.shape)
         # pdb.set_trace()
         classfier, feats = model(data)
@@ -213,6 +213,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
             pbar.set_description(epoch_str)
 
+        pdb.set_trace()
         # if (batch_idx + 1) == 100:
         #     break
 
