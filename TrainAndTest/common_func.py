@@ -33,7 +33,7 @@ from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear,
 from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
-from Define_Model.TDNN import ECAPA_brain 
+from Define_Model.TDNN import ECAPA_brain
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
 from Define_Model.TDNN.Slimmable import SlimmableTDNN
@@ -318,10 +318,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
                             # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]
-                                :num_seg_tensor[i + 1]].mean(axis=0)
+                            uid_vec = out[num_seg_tensor[i]                                          :num_seg_tensor[i + 1]].mean(axis=0)
                         else:
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+                            uid_vec = out[num_seg_tensor[i]
+                                :num_seg_tensor[i + 1]]
 
                         uid2vectors.append((uid, uid_vec))
 
@@ -587,8 +587,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser = argparse.ArgumentParser(description=description)
 
     # Data options
-    parser.add_argument('--train-dir', type=str,
-                        required=True, help='path to dataset')
+    parser.add_argument('--train-dir', type=str, help='path to dataset')
     parser.add_argument('--coreset-percent', default=0.0,
                         type=float, help='replace batchnorm with instance norm')
     parser.add_argument('--select-score', default='loss',
@@ -599,7 +598,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         default='', help='path to dataset')
 
     parser.add_argument('--valid-dir', type=str, help='path to dataset')
-    parser.add_argument('--test-dir', type=str, required=True,
+    parser.add_argument('--test-dir', type=str,
                         help='path to voxceleb1 test dataset')
     parser.add_argument('--class-weight', type=str, default='',
                         help='path to voxceleb1 test dataset')
@@ -983,7 +982,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='path to voxceleb1 test dataset')
 
     if 'Test' in description:
-        parser.add_argument('--train-config', default='', help='path to yaml of model for the latest checkpoint')
+        parser.add_argument('--train-config', default='',
+                            help='path to yaml of model for the latest checkpoint')
         parser.add_argument('--extract-trials', action='store_false',
                             default=True, help='log power spectogram')
         parser.add_argument('--score-suffix', type=str,

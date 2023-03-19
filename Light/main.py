@@ -23,7 +23,7 @@ from pytorch_lightning.profiler.profilers import AdvancedProfiler
 from Light.callback import ShufTrainset
 from pytorch_lightning.callbacks import LearningRateMonitor
 
-from Light.dataset import SubDatasets, SubLoaders
+from Light.dataset import SubDatasets, SubLoaders, SubScriptDatasets
 from Light.model import SpeakerModule
 from argparse import ArgumentParser
 from hyperpyyaml import load_hyperpyyaml
@@ -36,11 +36,15 @@ parser = ArgumentParser()
 # Hyperparameters for the model
 
 parser.add_argument('--config-yaml', type=str,
-                    default='TrainAndTest/Fbank/ResNets/cnc1_resnet_light.yaml')
+                    default='TrainAndTest/wav/ecapa/vox2_int_brain_trans.yaml')
 parser.add_argument('--seed', type=int, default=123456,
                     help='random seed (default: 0)')
 parser.add_argument('--gpus', type=str, default='0,1',
                     help='gpus(default: 0)')
+parser.add_argument('--dataset-type', type=str,
+                    default='scripts', help='gpus(default: 0)')
+parser.add_argument('--manual-shuffle', action='store_true',
+                    default=False, help='log power spectogram')
 args = parser.parse_args()
 
 # seed
@@ -54,7 +58,12 @@ def main():
         config_args = load_hyperpyyaml(f)
 
     # Dataset
-    train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
+    if args.dataset_type == 'egs':
+        train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
+    else:
+        train_dir, valid_dir, train_extract_dir = SubScriptDatasets(
+            config_args)
+
     train_loader, valid_loader, train_extract_loader = SubLoaders(
         train_dir, valid_dir, train_extract_dir, config_args)
 
@@ -63,15 +72,19 @@ def main():
     # model._set_hparams(config_args=config_args, train_dir=train_dir)
     model._set_hparams({'config_args': config_args})
 
+    this_callbacks = []
     checkpoint_callback = ModelCheckpoint(monitor='val_eer',
                                           filename='%s-{epoch:02d}-{val_eer:.2f}' % (
                                               config_args['loss']),
                                           save_top_k=3,
                                           mode='min',
                                           save_last=True)
-    lr_monitor = LearningRateMonitor(logging_interval='epoch')
+    this_callbacks.append(checkpoint_callback)
 
-    shuf_train_callback = ShufTrainset(train_dir=train_dir)
+    this_callbacks.append(LearningRateMonitor(logging_interval='epoch'))
+
+    if args.manual_shuffle:
+        this_callbacks.append(ShufTrainset(train_dir=train_dir))
 
     # profiler = AdvancedProfiler(
     # output_filename=config_args['check_path']+'/profilers')
@@ -79,8 +92,7 @@ def main():
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='ddp', gpus=args.gpus,
                       num_sanity_val_steps=0,
-                      callbacks=[checkpoint_callback,
-                                 shuf_train_callback, lr_monitor],
+                      callbacks=this_callbacks,
                       default_root_dir=config_args['check_path'],
                       val_check_interval=0.5, gradient_clip_val=1.0,
                       weights_summary='full')
@@ -89,7 +101,6 @@ def main():
                 val_dataloaders=[train_extract_loader, valid_loader])
 
     # val_dataloaders=[valid_loader, train_extract_loader])
-
     # return 0
 
 

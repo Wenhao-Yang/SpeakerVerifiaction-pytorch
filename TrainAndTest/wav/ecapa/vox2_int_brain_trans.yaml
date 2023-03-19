@@ -130,7 +130,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_3sesmix2_dist/baseline_<feat>_trans2
+check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_3sesmix2_dist/baseline_<feat>_trans2_light
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>

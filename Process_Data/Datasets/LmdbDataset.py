@@ -34,6 +34,25 @@ def _read_data_lmdb(txn, key, size):
     return data_flat.reshape(int(data_flat.shape[0] / size), size)
 
 
+def _read_from_lmdb(env, key, start=0, stop=-1):
+    """read data array from lmdb with key (w/ and w/o fixed size)
+    size: feat-dim"""
+    with env.begin(write=False) as txn:
+        buf = txn.get(key.encode('ascii'))
+
+    data_flat = np.frombuffer(buf, dtype=np.int16)[start:stop]
+
+    return data_flat
+
+
+def _read_from_hdf5(reader, key, start=0, stop=-1):
+    """read data array from lmdb with key (w/ and w/o fixed size)
+    size: feat-dim"""
+    with h5py.File(reader, 'r') as r:
+        data_flat = r.get(key)[:][start:stop]
+        return data_flat
+
+
 class LmdbVerifyDataset(Dataset):
     def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load, return_uid=False):
 
@@ -148,19 +167,22 @@ class LmdbVerifyDataset(Dataset):
 
 
 class LmdbTrainDataset(Dataset):
-    def __init__(self, dir, feat_dim, samples_per_speaker, transform, loader=_read_data_lmdb, num_valid=5,
+    def __init__(self, dir,  samples_per_speaker, transform, feat_dim=0,  loader=_read_from_lmdb,
+                 num_valid=5, feat_type='wav', sample_type='instance',
+                 segment_len=c.N_SAMPLES, verbose=1, min_frames=50,
                  return_uid=False):
 
         # feat_scp = dir + '/feats.scp'
         spk2utt = dir + '/spk2utt'
         utt2spk = dir + '/utt2spk'
         # utt2num_frames = dir + '/utt2num_frames'
+        utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         lmdb_file = dir + '/feat'
+        self.sample_type = sample_type
+        self.segment_len = segment_len
 
-        if not os.path.exists(lmdb_file):
-            raise FileExistsError(lmdb_file)
-        if not os.path.exists(spk2utt):
-            raise FileExistsError(spk2utt)
+        assert os.path.exists(lmdb_file)
+        assert os.path.exists(spk2utt)
 
         dataset = {}
         with open(spk2utt, 'r') as u:
@@ -186,12 +208,15 @@ class LmdbTrainDataset(Dataset):
 
         speakers = [spk for spk in dataset.keys()]
         speakers.sort()
-        print('==> There are {} speakers in Dataset.'.format(len(speakers)))
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(speakers)))
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-        print('    There are {} utterances in Train Dataset'.format(
-            len(utt2spk_dict.keys())))
+        if verbose > 0:
+            print('    There are {} utterances in Train Dataset'.format(
+                len(utt2spk_dict.keys())))
+
         if num_valid > 0:
             valid_set = {}
             valid_utt2spk_dict = {}
@@ -208,8 +233,9 @@ class LmdbTrainDataset(Dataset):
 
                         valid_utt2spk_dict[utt] = utt2spk_dict[utt]
 
-            print('    Spliting {} utterances for Validation.'.format(
-                len(valid_utt2spk_dict.keys())))
+            if verbose > 0:
+                print('    Spliting {} utterances for Validation.'.format(
+                    len(valid_utt2spk_dict.keys())))
             self.valid_set = valid_set
             self.valid_utt2spk_dict = valid_utt2spk_dict
 
@@ -217,9 +243,9 @@ class LmdbTrainDataset(Dataset):
         # for uid in uid2feat.keys():
         #     for i in range(int(np.ceil(utt2len_dict[uid] / c.NUM_FRAMES_SPECT))):
         #         self.all_utts.append(uid)
-        env = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
-                        meminit=False)
-        self.env = env.begin(write=False, buffers=True)  # as txn:
+        self.reader = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
+                                meminit=False)
+        # self.env = env.begin(write=False, buffers=True)  # as txn:
         self.speakers = speakers
         self.dataset = dataset
 
@@ -244,26 +270,36 @@ class LmdbTrainDataset(Dataset):
         #         self.utt_dataset.append([uid, sid])
 
     def __getitem__(self, sid):
-        # start_time = time.time()
-        # if self.return_uid:
-        #     uid, label = self.utt_dataset[sid]
-        #     y = self.loader(self.uid2feat[uid])
-        #     feature = self.transform(y)
-        #     return feature, label, uid
 
-        sid %= self.num_spks
-        spk = self.idx_to_spk[sid]
-        utts = self.dataset[spk]
+        if sid < len(self.base_utts):
+            while True:
+                (uid, start, end) = self.base_utts[sid]
+                # pdb.set_trace()
+                y = self.loader(self.reader, uid, start=start, stop=end)
+                y = y[start:end]
 
-        y = np.array([[]]).reshape(0, self.feat_dim)
+                sid = self.utt2spk_dict[uid]
+                sid = self.spk_to_idx[sid]
+                break
+        else:
+            # rand_idxs = [sid]
+            sid %= self.num_spks
+            spk = self.idx_to_spk[sid]
+            utts = self.dataset[spk]
+            num_utt = len(utts)
 
-        while len(y) < c.N_SAMPLES:
-            uid = random.randrange(0, len(utts))
+            # y = np.array([[]]).reshape(self.feat_shape)
+            rand_utt_idx = np.random.randint(0, num_utt)
+            # rand_idxs.append(rand_utt_idx)
+            uid = utts[rand_utt_idx]
 
-            feature = self.loader(self.env, utts[uid], self.feat_dim)
-            y = np.concatenate((y, feature), axis=0)
+            start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
+                0, self.utt2num_frames[uid] - self.segment_len)
+            end = start + self.segment_len
+            y = self.loader(self.reader, uid, start=start, stop=end)
+            # y = np.concatenate((y, feature), axis=self.c_axis)
 
-        feature = self.transform(y)
+        feature = self.transform(y.reshape(1, -1))
         # print(sid)
         label = sid
 
@@ -274,9 +310,10 @@ class LmdbTrainDataset(Dataset):
 
 
 class LmdbValidDataset(Dataset):
-    def __init__(self, valid_set, spk_to_idx, env, valid_utt2spk_dict, transform, feat_dim, loader=_read_data_lmdb,
-                 return_uid=False):
-        self.env = env
+    def __init__(self, valid_set, spk_to_idx, reader,
+                 valid_utt2spk_dict, transform, feat_dim=0, loader=_read_from_lmdb,
+                 return_uid=False, verbose=0):
+        self.reader = reader
         self.feat_dim = feat_dim
 
         speakers = [spk for spk in valid_set.keys()]
@@ -287,7 +324,8 @@ class LmdbValidDataset(Dataset):
 
         uids = list(valid_utt2spk_dict.keys())
         uids.sort()
-        print(uids[:10])
+        if verbose > 0:
+            print(uids[:5])
         self.uids = uids
         self.utt2spk_dict = valid_utt2spk_dict
         self.spk_to_idx = spk_to_idx
@@ -300,9 +338,9 @@ class LmdbValidDataset(Dataset):
     def __getitem__(self, index):
         uid = self.uids[index]
         spk = self.utt2spk_dict[uid]
-        y = self.loader(self.env, uid, self.feat_dim)
+        y = self.loader(self.reader, uid, self.feat_dim)
 
-        feature = self.transform(y)
+        feature = self.transform(y.reshape(1, -1))
         label = self.spk_to_idx[spk]
 
         if self.return_uid:
@@ -560,7 +598,7 @@ class EgsDataset(Dataset):
 
         if self.return_idx:
             return feature, label, idx
-        
+
         if self.domain:
             return feature, label, dom_label
         else:
