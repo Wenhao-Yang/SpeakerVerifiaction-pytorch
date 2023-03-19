@@ -204,13 +204,6 @@ class SpeakerModule(LightningModule):
         self.test_trials = get_trials(config_args['train_trials_path'])
         # self.optimizer = optimizer
 
-    def on_train_batch_start(self, batch: Any, batch_idx: int) -> Optional[int]:
-        # if hasattr(self, 'stop_rime'):
-        self.print('torchdata:, ', time.time() - self.stop_time)
-        self.stop_time = time.time()
-
-        return super().on_train_batch_start(batch, batch_idx)
-
     def on_train_epoch_start(self) -> None:
         self.train_accuracy = []
         self.train_loss = []
@@ -219,12 +212,22 @@ class SpeakerModule(LightningModule):
         self.total_backward = 0
         return super().on_train_epoch_start()
 
+    def on_train_batch_start(self, batch: Any, batch_idx: int) -> Optional[int]:
+        # if hasattr(self, 'stop_rime'):
+        self.print('torchdata:, ', time.time() - self.stop_time)
+        self.stop_time = time.time()
+
+        return super().on_train_batch_start(batch, batch_idx)
+
+    def on_after_batch_transfer(self, batch: Any, dataloader_idx: int) -> Any:
+        self.print('transfer:, ', time.time() - self.stop_time)
+        self.stop_time = time.time()
+        return super().on_after_batch_transfer(batch, dataloader_idx)
+
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
         torch.cuda.empty_cache()
-        if batch_idx > 0:
-            self.print('todevice:, ', time.time() - self.stop_time)
 
         start = time.time()
         data, label = batch
