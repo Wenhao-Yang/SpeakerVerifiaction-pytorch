@@ -94,10 +94,11 @@ def main():
     #     filename='profilers', profile_memory=True, use_cpu=False, use_kineto=True)
 
     # strategy="ddp_find_unused_parameters_false",
-
+    # precision=16, amp_backend='native',
+    precision = config_args['precision'] if 'precision' in config_args else 32
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='cuda', devices=args.gpus, strategy="ddp_find_unused_parameters_false",
-                      num_sanity_val_steps=0, precision=16, amp_backend='native',
+                      num_sanity_val_steps=0, precision=precision,
                       callbacks=this_callbacks,  # max_steps=100,
                       default_root_dir=config_args['check_path'],
                       # profiler=profiler,
