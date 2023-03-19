@@ -207,36 +207,19 @@ class SpeakerModule(LightningModule):
     def on_train_epoch_start(self) -> None:
         self.train_accuracy = []
         self.train_loss = []
-        self.stop_time = time.time()
-        self.total_forward = 0
-        self.total_backward = 0
+
         return super().on_train_epoch_start()
 
-    def on_train_batch_start(self, batch: Any, batch_idx: int) -> Optional[int]:
-        # if hasattr(self, 'stop_rime'):
-        self.print('torchdata:, ', time.time() - self.stop_time)
-        self.stop_time = time.time()
-
-        return super().on_train_batch_start(batch, batch_idx)
-
-    def transfer_batch_to_device(self, batch: Any, device: torch.device, dataloader_idx: int) -> Any:
-        self.print('transbefore:, ', time.time() - self.stop_time)
-        self.stop_time = time.time()
-
-        return super().transfer_batch_to_device(batch, device, dataloader_idx)
 
     def on_after_batch_transfer(self, batch: Any, dataloader_idx: int) -> Any:
-        self.print('transfer:, ', time.time() - self.stop_time)
-        self.stop_time = time.time()
-        # return super().on_after_batch_transfer(batch, dataloader_idx)
+        # self.print('transfer:, ', time.time() - self.stop_time)
+        # self.stop_time = time.time()
+        # # return super().on_after_batch_transfer(batch, dataloader_idx)
         return batch
 
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
-        # torch.cuda.empty_cache()
-        if batch_idx > 0:
-            self.print('todevice:, ', time.time() - self.stop_time)
 
         start = time.time()
         data, label = batch
@@ -255,20 +238,13 @@ class SpeakerModule(LightningModule):
         self.log("train_batch_loss", float(loss))
         self.log("train_batch_accu", train_batch_accuracy)
 
-        self.stop_time = time.time()
-        self.print('forward:, ', self.stop_time - start)
-
         return loss
 
     # def training_step_end(self, step_output):
     #     self.print('backward:, ', time.time() - self.stop_time)
 
     #     return super().training_step_end(step_output)
-    def on_train_batch_end(self, outputs, batch: Any, batch_idx: int) -> None:
-        self.print('back_opt: ', time.time() - self.stop_time)
-        self.stop_time = time.time()
 
-        return super().on_train_batch_end(outputs, batch, batch_idx)
     # def on_train_epoch_end(self, outputs) -> None:
     #     # pdb.set_trace()
     #     # print(self.current_epoch)
