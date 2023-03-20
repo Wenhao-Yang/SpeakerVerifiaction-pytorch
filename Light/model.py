@@ -308,7 +308,7 @@ class SpeakerModule(LightningModule):
 
             return val_loss
 
-    def validation_epoch_end(self, outputs: List[Any]) -> None:
+    def on_validation_epoch_end(self) -> None:
         # pdb.set_trace()
         for dataloader_outs in outputs:
             # pdb.set_trace()
@@ -350,7 +350,7 @@ class SpeakerModule(LightningModule):
                 self.log("val_accuracy", valid_accuracy)
                 # print('val_loss: {:>8.4f} val_accuracy: {:>6.2f}%'.format(
                 #     valid_loss, valid_accuracy))
-        return super().validation_epoch_end(outputs)
+        return super().on_validation_epoch_end()
 
     def on_test_epoch_start(self) -> None:
         self.test_xvector_dir = "%s/train/epoch_%s" % (
