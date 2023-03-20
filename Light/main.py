@@ -73,7 +73,7 @@ def main():
     model._set_hparams({'config_args': config_args})
 
     this_callbacks = []
-    checkpoint_callback = ModelCheckpoint(monitor='val_eer',
+    checkpoint_callback = ModelCheckpoint(monitor='val/eer',
                                           filename='%s-{epoch:02d}-{val_eer:.2f}' % (
                                               config_args['loss']),
                                           save_top_k=3,
