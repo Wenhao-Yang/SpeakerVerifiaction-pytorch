@@ -251,12 +251,16 @@ class SpeakerModule(LightningModule):
     #         self.current_epoch, np.mean(self.train_loss), np.mean(self.train_accuracy)))
     #     # self.train_dir.__shuffle__()
     #     return super().on_train_epoch_end(outputs)
-
-    def training_epoch_end(self, outputs) -> None:
-
+    def on_train_epoch_end(self, outputs) -> None:
         self.print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
             self.current_epoch, np.mean(self.train_loss), np.mean(self.train_accuracy)))
-        return super().training_epoch_end(outputs)
+        return super().on_train_epoch_end(outputs)
+
+    # def training_epoch_end(self, outputs) -> None:
+
+    #     self.print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
+    #         self.current_epoch, np.mean(self.train_loss), np.mean(self.train_accuracy)))
+    #     return super().training_epoch_end(outputs)
 
     def on_validation_epoch_start(self) -> None:
         self.valid_total_loss = 0.
