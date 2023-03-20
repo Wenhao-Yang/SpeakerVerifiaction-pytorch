@@ -12,22 +12,18 @@ lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 if [ $stage -le 0 ]; then
   datasets=timit
   model=TDNN_v5
-  feat_type=hst
-  feat=c20
+  feat_type=hst feat=c20
   block_type=basic
   input_norm=Mean
   dropout_p=0
-  encoder_type=STAP
+  encoder_type=STAP embedding_size=128
   #  loss=arcsoft
   loss=soft
-  avgsize=4
-  alpha=0
-  embedding_size=128
+  avgsize=4 alpha=0
   block_type=None
   feat_dim=40
   loss=soft
   scheduler=rop optimizer=sgd
-
   lr_ratio=0.1
 #  --channels 512,512,512,512,1500 \
 
@@ -41,14 +37,11 @@ if [ $stage -le 0 ]; then
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
-      --batch-size 128 \
-      --input-norm ${input_norm} --input-dim 40 \
+      --batch-size 128 --input-norm ${input_norm} --input-dim 40 \
       --test-input fix \
       --feat-format kaldi --nj 10 \
-      --epochs 40 --patience 3 \
-      --lr 0.1 \
-      --random-chunk 6400 12800 \
-      --chunk-size 9600 \
+      --epochs 40 --patience 3 --lr 0.1 \
+      --random-chunk 6400 12800 --chunk-size 9600 \
       --filter ${filter} --feat-dim ${feat_dim} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --time-dim 1 --avg-size ${avgsize} \
@@ -58,15 +51,13 @@ if [ $stage -le 0 ]; then
       --stride 1 \
       --block-type ${block_type} \
       --channels 128,128,128,128,375 \
-      --encoder-type ${encoder_type} \
-      --embedding-size ${embedding_size} --alpha ${alpha} \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha ${alpha} \
       --num-valid 2 \
       --margin 0.2 --s 30 --m 3 --all-iteraion 0 \
       --lr-ratio ${lr_ratio} \
       --filter-wd 0.001 --weight-decay 0.0005 \
       --dropout-p ${dropout_p} \
-      --gpu-id 3 \
-      --cos-sim --extract \
+      --gpu-id 3 --cos-sim --extract \
       --loss-type ${loss}
   done
   exit
@@ -99,7 +90,7 @@ if [ $stage -le 10 ]; then
 
       # CUDA_VISIBLE_DEVICES=5,7 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/vox2_int_brain_hdf5.yaml --seed=${seed}
 
-      CUDA_VISIBLE_DEVICES=5,7 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/vox1_resnet_hdf5.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=5,6 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/vox1_resnet_hdf5.yaml --seed=${seed}
       #  CUDA_VISIBLE_DEVICES=4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41425 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox2_ecapa.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 #     CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
     done
