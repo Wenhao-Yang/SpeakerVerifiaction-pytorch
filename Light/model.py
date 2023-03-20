@@ -24,7 +24,7 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSo
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, MixupLoss
 import Process_Data.constants as C
 
-from TrainAndTest.common_func import create_optimizer, create_scheduler
+from TrainAndTest.common_func import AverageMeter, create_optimizer, create_scheduler
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 
@@ -205,8 +205,8 @@ class SpeakerModule(LightningModule):
         # self.optimizer = optimizer
 
     def on_train_epoch_start(self) -> None:
-        self.train_accuracy = []
-        self.train_loss = []
+        self.train_accuracy = AverageMeter()
+        self.train_loss = AverageMeter()
 
         return super().on_train_epoch_start()
 
@@ -220,7 +220,7 @@ class SpeakerModule(LightningModule):
         # training_step defines the train loop.
         # it is independent of forward
 
-        start = time.time()
+        # start = time.time()
         data, label = batch
 
         logits, embeddings = self.encoder(data)
@@ -231,47 +231,30 @@ class SpeakerModule(LightningModule):
         batch_correct = (predicted_one_labels == label).sum().item()
 
         train_batch_accuracy = 100. * batch_correct / len(predicted_one_labels)
-        self.train_accuracy.append(train_batch_accuracy)
-        self.train_loss.append(float(loss))
+        self.train_loss.update(float(train_batch_accuracy), embeddings.size(0))
+        self.train_loss.update(float(loss), embeddings.size(0))
+        # self.train_accuracy.append(train_batch_accuracy)
+        # # self.train_loss.append(float(loss))
 
-        self.log("train_batch_loss", float(loss))
-        self.log("train_batch_accu", train_batch_accuracy)
+        self.log("train/batch_loss", float(loss))
+        self.log("train/batch_accuracy", train_batch_accuracy)
 
         return loss
 
-    # def training_step_end(self, step_output):
-    #     self.print('backward:, ', time.time() - self.stop_time)
-
-    #     return super().training_step_end(step_output)
-
-    # def on_train_epoch_end(self, outputs) -> None:
-    #     # pdb.set_trace()
-    #     # print(self.current_epoch)
-    #     self.print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
-    #         self.current_epoch, np.mean(self.train_loss), np.mean(self.train_accuracy)))
-    #     # self.train_dir.__shuffle__()
-    #     return super().on_train_epoch_end(outputs)
     def on_train_epoch_end(self, outputs) -> None:
         self.print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
-            self.current_epoch, np.mean(self.train_loss), np.mean(self.train_accuracy)))
+            self.current_epoch, self.train_loss.avg, self.train_accuracy.avg))
         return super().on_train_epoch_end(outputs)
 
-    # def training_epoch_end(self, outputs) -> None:
-
-    #     self.print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
-    #         self.current_epoch, np.mean(self.train_loss), np.mean(self.train_accuracy)))
-    #     return super().training_epoch_end(outputs)
-
     def on_validation_epoch_start(self) -> None:
+        self.valid_xvectors = []
         self.valid_total_loss = 0.
         self.valid_other_loss = 0.
 
         self.valid_correct = 0.
         self.valid_total_datasize = 0.
         self.valid_batch = 0.
-        # self.valid_data = torch.tensor([])
-        # self.valid_num_seg = [0]
-        # self.valid_uid_lst = []
+
         return super().on_validation_epoch_start()
 
     def validation_step(self, batch, batch_idx, dataloader_idx):
@@ -281,17 +264,11 @@ class SpeakerModule(LightningModule):
             data_shape = data.shape
             data = data.reshape(-1, 1, data_shape[2], data_shape[3])
 
-        # self.valid_data = torch.cat((self.valid_data, data), dim=0)
-        # self.valid_num_seg.append(self.valid_num_seg[-1] + len(data))
-        # self.valid_uid_lst.append(label[0])
-        # if self.valid_data.shape[0] >= self.batch_size or batch_idx+1 == len(self.val_dataloader[0]):
-        #     logits, embeddings = self.encoder(self.valid_data)
-        #     label = self.valid_uid_lst
-        #     return embeddings, label
         logits, embeddings = self.encoder(data)
         # logits = self.decoder(embeddings)
         # ipdb.set_trace()
         if isinstance(label[0], str):
+            self.valid_xvectors.append((embeddings, label))
             return embeddings, label
         else:
             val_loss, _ = self.loss(logits, embeddings, label)
@@ -305,51 +282,44 @@ class SpeakerModule(LightningModule):
             self.valid_batch += 1
 
             # self.log("val_batch_loss", val_loss)
-
             return val_loss
 
     def on_validation_epoch_end(self) -> None:
         # pdb.set_trace()
-        for dataloader_outs in outputs:
-            # pdb.set_trace()
-            # dataloader_outs = dataloader_output_result  # .dataloader_i_outputs
-            if isinstance(dataloader_outs[0], tuple):
-                uid2embedding = {
-                    uid[0]: embedding for embedding, uid in dataloader_outs}
-                distances = []
-                labels = []
+        valid_xvectors = [None for _ in range(
+            torch.distributed.get_world_size())]
+        torch.distributed.all_gather_object(valid_xvectors, self.valid_xvectors)
+        uid2embedding = {
+            uid[0]: embedding for embedding, uid in self.valid_xvectors}
+        distances = []
+        labels = []
 
-                for a_uid, b_uid, l in self.test_trials:
-                    try:
-                        a = uid2embedding[a_uid]
-                        b = uid2embedding[b_uid]
-                    except Exception as e:
-                        continue
+        for a_uid, b_uid, l in self.test_trials:
+            try:
+                a = uid2embedding[a_uid]
+                b = uid2embedding[b_uid]
+            except Exception as e:
+                continue
+            a_norm = a/a.norm(2)
+            b_norm = b/b.norm(2)
+            distances.append(float(a_norm.matmul(b_norm.T).mean()))
+            labels.append(l)
 
-                    a_norm = a/a.norm(2)
-                    b_norm = b/b.norm(2)
+        eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
+                                                            cos=True, re_thre=True)
+        mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
+            distances, labels)
+        # pdb.set_trace()
+        self.log("val/eer", eer*100,  sync_dist=True)
+        self.log("val/mindcf_01", mindcf_01,  sync_dist=True)
+        self.log("val/mindcf_001", mindcf_001,  sync_dist=True)
 
-                    distances.append(float(a_norm.matmul(b_norm.T).mean()))
-                    labels.append(l)
+        valid_loss = self.valid_total_loss / self.valid_batch
+        valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
 
-                eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
-                                                                  cos=True, re_thre=True)
-                mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
-                    distances, labels)
-                # pdb.set_trace()
-                self.log("val_eer", eer*100,  sync_dist=True)
-                self.log("val_mindcf_01", mindcf_01,  sync_dist=True)
-                self.log("val_mindcf_001", mindcf_001,  sync_dist=True)
+        self.log("val/loss", valid_loss)
+        self.log("val/accuracy", valid_accuracy)
 
-            else:
-                # self.log("val_accuracy", valid_accuracy)
-                valid_loss = self.valid_total_loss / self.valid_batch
-                valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
-                # print(valid_loss, valid_accuracy)
-                self.log("val_loss", valid_loss)
-                self.log("val_accuracy", valid_accuracy)
-                # print('val_loss: {:>8.4f} val_accuracy: {:>6.2f}%'.format(
-                #     valid_loss, valid_accuracy))
         return super().on_validation_epoch_end()
 
     def on_test_epoch_start(self) -> None:
