@@ -236,8 +236,8 @@ class SpeakerModule(LightningModule):
         # self.train_accuracy.append(train_batch_accuracy)
         # # self.train_loss.append(float(loss))
 
-        self.log("train/batch_loss", float(loss))
-        self.log("train/batch_accuracy", train_batch_accuracy)
+        self.log("Train/All_Loss", float(loss))
+        self.log("Train/ALL_Accuracy", train_batch_accuracy)
 
         return loss
 
@@ -281,11 +281,10 @@ class SpeakerModule(LightningModule):
             self.valid_total_datasize += len(predicted_one_labels)
             self.valid_batch += 1
 
-            # self.log("val_batch_loss", val_loss)
             return val_loss
 
     def on_validation_epoch_end(self) -> None:
-        # pdb.set_trace()
+
         valid_xvectors = [None for _ in range(
             torch.distributed.get_world_size())]
         torch.distributed.all_gather_object(valid_xvectors, self.valid_xvectors)
@@ -310,15 +309,18 @@ class SpeakerModule(LightningModule):
         mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
             distances, labels)
         # pdb.set_trace()
-        self.log("val/eer", eer*100,  sync_dist=True)
-        self.log("val/mindcf_01", mindcf_01,  sync_dist=True)
-        self.log("val/mindcf_001", mindcf_001,  sync_dist=True)
+        self.log("Test/EER", eer*100,  sync_dist=True)
+        self.log("Test/mindcf_01", mindcf_01,  sync_dist=True)
+        self.log("Test/mindcf_001", mindcf_001,  sync_dist=True)
+
+        self.log("Test/mix2", eer*100*mindcf_001,  sync_dist=True)
+        self.log("Test/mix3", eer*100*mindcf_01*mindcf_001,  sync_dist=True)
 
         valid_loss = self.valid_total_loss / self.valid_batch
         valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
 
-        self.log("val/loss", valid_loss, sync_dist=True)
-        self.log("val/accuracy", valid_accuracy, sync_dist=True)
+        self.log("Valid/Loss", valid_loss, sync_dist=True)
+        self.log("Valid/Accuracy", valid_accuracy, sync_dist=True)
 
         return super().on_validation_epoch_end()
 
