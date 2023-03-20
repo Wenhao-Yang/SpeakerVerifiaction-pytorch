@@ -19,7 +19,7 @@ feat: int
 wav_type: int
 subset: ""
 trans_fbank: True
-sample_type: half_balance
+sample_type: balance
 
 train_dir: !ref <data_root_dir>/data/<datasets>/dev
 # <subset>_<feat>
@@ -32,7 +32,7 @@ num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
 input_norm: Mean
-input_per_spks: 1024
+input_per_spks: 100
 
 test_input: fix
 log_scale: False

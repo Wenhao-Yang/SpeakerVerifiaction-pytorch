@@ -241,10 +241,10 @@ class SpeakerModule(LightningModule):
 
         return loss
 
-    def on_train_epoch_end(self, outputs) -> None:
+    def on_train_epoch_end(self) -> None:
         self.print("Epoch {:>2d} Loss: {:>7.4f} Accuracy: {:>6.2f}%".format(
             self.current_epoch, self.train_loss.avg, self.train_accuracy.avg))
-        return super().on_train_epoch_end(outputs)
+        return super().on_train_epoch_end()
 
     def on_validation_epoch_start(self) -> None:
         self.valid_xvectors = []
