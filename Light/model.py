@@ -231,7 +231,7 @@ class SpeakerModule(LightningModule):
         batch_correct = (predicted_one_labels == label).sum().item()
 
         train_batch_accuracy = 100. * batch_correct / len(predicted_one_labels)
-        self.train_loss.update(float(train_batch_accuracy), embeddings.size(0))
+        self.train_accuracy.update(float(train_batch_accuracy), embeddings.size(0))
         self.train_loss.update(float(loss), embeddings.size(0))
         # self.train_accuracy.append(train_batch_accuracy)
         # # self.train_loss.append(float(loss))
