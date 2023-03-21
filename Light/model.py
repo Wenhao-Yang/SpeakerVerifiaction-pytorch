@@ -304,6 +304,17 @@ class SpeakerModule(LightningModule):
             distances.append(float(a_norm.matmul(b_norm.T).mean()))
             labels.append(l)
 
+        all_distances = [None for _ in range(
+            torch.distributed.get_world_size())]
+        torch.distributed.all_gather_object(distances, all_distances)
+
+        all_labels = [None for _ in range(
+            torch.distributed.get_world_size())]
+        torch.distributed.all_gather_object(labels, all_labels)
+
+        distances = np.concatenate(all_distances)
+        labels = np.concatenate(all_labels)
+
         eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
                                                             cos=True, re_thre=True)
         mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
