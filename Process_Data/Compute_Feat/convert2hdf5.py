@@ -102,7 +102,14 @@ if __name__ == "__main__":
     with h5py.File(h5py_file, 'w') as f:  # 写入的时候是‘w’
         for idx, u in pbar:
             try:
-                key, feat_path = u.split()
+                
+                key = u.split()[0]
+
+                if len(u.split())==2:
+                    feat_path = u.split()[1]
+                else:
+                    feat_path = u.split()[4]
+                    
                 feat = feat_loader(feat_path)
                 f.create_dataset(key, data=feat)
             except:
