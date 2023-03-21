@@ -1184,7 +1184,7 @@ fi
 
 if [ $stage -le 302 ]; then
   feat=hdf5
-  dataset=vox2
+  dataset=cnceleb #vox2
   python Process_Data/Compute_Feat/convert2hdf5.py \
       --data-dir ${lstm_dir}/data/${dataset}/dev \
       --out-set dev \
