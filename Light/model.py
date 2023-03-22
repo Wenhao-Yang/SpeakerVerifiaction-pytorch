@@ -288,7 +288,6 @@ class SpeakerModule(LightningModule):
         valid_xvectors = [None for _ in range(
             torch.distributed.get_world_size())]
         
-        print(len(self.valid_xvectors))
         torch.distributed.all_gather_object(valid_xvectors, self.valid_xvectors)
         uid2embedding = {}
         for v_dict in valid_xvectors:
@@ -297,7 +296,6 @@ class SpeakerModule(LightningModule):
             for embedding, uid in v_dict:
                 uid2embedding[uid[0]] = embedding 
         
-        print(len(uid2embedding))
         distances = []
         labels = []
 
@@ -311,21 +309,6 @@ class SpeakerModule(LightningModule):
             b_norm = b/b.norm(2)
             distances.append(float(a_norm.matmul(b_norm.T).mean()))
             labels.append(l)
-
-        print(len(distances), len(labels))
-        torch.distributed.barrier()
-        all_distances = [None for _ in range(torch.distributed.get_world_size())]
-        torch.distributed.all_gather_object(distances, all_distances)
-
-        all_labels = [None for _ in range(torch.distributed.get_world_size())]
-        torch.distributed.all_gather_object(labels, all_labels)
-
-        for l in all_labels:
-            pdb.set_trace()
-            print(l.shape)
-
-        distances = np.concatenate(all_distances)
-        labels = np.concatenate(all_labels)
 
         eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
                                                             cos=True, re_thre=True)
