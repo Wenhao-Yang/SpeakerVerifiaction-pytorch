@@ -23,6 +23,7 @@ import torch.optim as optim
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
+from Light.model import SpeakerModule
 import Process_Data.constants as c
 
 from Define_Model.CNN import AlexNet
@@ -353,6 +354,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         model_out = model.module.xvector(a_data) if isinstance(model,
                                                                                DistributedDataParallel) else model.xvector(
                             a_data)
+                    elif isinstance(model, SpeakerModule):
+                        model_out = model.encoder(a_data)
                     else:
                         model_out = model(a_data)
                 except Exception as e:
