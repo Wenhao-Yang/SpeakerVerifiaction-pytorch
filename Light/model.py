@@ -231,7 +231,8 @@ class SpeakerModule(LightningModule):
         batch_correct = (predicted_one_labels == label).sum().item()
 
         train_batch_accuracy = 100. * batch_correct / len(predicted_one_labels)
-        self.train_accuracy.update(float(train_batch_accuracy), embeddings.size(0))
+        self.train_accuracy.update(
+            float(train_batch_accuracy), embeddings.size(0))
         self.train_loss.update(float(loss), embeddings.size(0))
         # self.train_accuracy.append(train_batch_accuracy)
         # # self.train_loss.append(float(loss))
@@ -287,15 +288,16 @@ class SpeakerModule(LightningModule):
         torch.distributed.barrier()
         valid_xvectors = [None for _ in range(
             torch.distributed.get_world_size())]
-        
-        torch.distributed.all_gather_object(valid_xvectors, self.valid_xvectors)
+
+        torch.distributed.all_gather_object(
+            valid_xvectors, self.valid_xvectors)
         uid2embedding = {}
         for v_dict in valid_xvectors:
             if v_dict == None:
                 print('None exist.')
             for embedding, uid in v_dict:
-                uid2embedding[uid[0]] = embedding 
-        
+                uid2embedding[uid[0]] = embedding
+
         distances = []
         labels = []
 
@@ -303,14 +305,14 @@ class SpeakerModule(LightningModule):
 
             a = uid2embedding[a_uid].cpu()
             b = uid2embedding[b_uid].cpu()
-            
+
             a_norm = a/a.norm(2)
             b_norm = b/b.norm(2)
             distances.append(float(a_norm.matmul(b_norm.T).mean()))
             labels.append(l)
 
         eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
-                                                            cos=True, re_thre=True)
+                                                          cos=True, re_thre=True)
         mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
             distances, labels)
         # pdb.set_trace()
@@ -448,6 +450,6 @@ class SpeakerModule(LightningModule):
         return ({'optimizer': optimizer,
                  'lr_scheduler': {
                      "scheduler": scheduler,
-                     "monitor": "val_loss",
+                     "monitor": "Valid/Loss",
                      "interval": interval,
                  }, })
