@@ -23,7 +23,6 @@ import torch.optim as optim
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.optim import lr_scheduler
 from tqdm import tqdm
-from Light.model import SpeakerModule
 import Process_Data.constants as c
 
 from Define_Model.CNN import AlexNet
@@ -258,7 +257,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             os.makedirs(xvector_dir)
     # pbar =
     pbar = tqdm(extract_loader, ncols=100) if verbose > 0 else extract_loader
-
+    from Light.model import SpeakerModule
     uid2vectors = []
     with torch.no_grad():
         if test_input == 'fix':
