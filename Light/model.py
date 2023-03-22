@@ -292,6 +292,7 @@ class SpeakerModule(LightningModule):
         torch.distributed.all_gather_object(valid_xvectors, self.valid_xvectors)
         uid2embedding = {
             uid[0]: embedding for embedding, uid in self.valid_xvectors}
+        print(len(uid2embedding))
         distances = []
         labels = []
 
