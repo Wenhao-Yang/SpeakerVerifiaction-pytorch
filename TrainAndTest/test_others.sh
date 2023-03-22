@@ -2964,16 +2964,18 @@ if [ $stage -le 600 ]; then
   for seed in 123456 ; do
 #  for lamda_beta in 0.2 0.5 1 2 ; do
   for lamda_beta in 1; do
-    model_dir=ECAPA_brain/vox2/wave_baseline/arcsoft_adam_cyclic/Mean_batch128_SASP2_em192_official_3sesmix2_dist/baseline_int_trans/123456
+    # model_dir=ECAPA_brain/vox2/wave_baseline/arcsoft_adam_cyclic/Mean_batch128_SASP2_em192_official_3sesmix2_dist/baseline_int_trans/123456
+    # --train-config Data/checkpoint/${model_dir}/model.2023.03.17.yaml \
+    model_dir=Data/checkpoint/ECAPA_brain/vox2/wave_baseline/arcsoft_adam_cyclic/Mean_batch128_SASP2_em192_official_3sesmix2_dist/baseline_int_trans2_light/lightnig_logs/version_2/checkpoints/arcsoft-epoch=10-Test
 
     python -W ignore TrainAndTest/train_egs/test_yaml.py \
       --train-dir ${lstm_dir}/data/${datasets}/${sname} \
       --train-extract-dir ${lstm_dir}/data/${datasets}/dev \
       --test-dir ${lstm_dir}/data/${testset}/${test_subset} --trials trials \
       --feat-format wav --nj 8 \
-      --train-config Data/checkpoint/${model_dir}/model.2023.03.17.yaml \
+      --train-config TrainAndTest/wav/ecapa/vox2_int_brain_trans.yaml \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
-      --resume Data/checkpoint/${model_dir}/checkpoint_13.pth \
+      --resume Data/checkpoint/${model_dir}/EER=2.97.ckpt \
       --gpu-id 0 \
       --test-input var --verbose 2 \
       --cos-sim --extract
