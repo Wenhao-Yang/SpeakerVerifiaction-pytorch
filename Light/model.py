@@ -287,6 +287,8 @@ class SpeakerModule(LightningModule):
 
         valid_xvectors = [None for _ in range(
             torch.distributed.get_world_size())]
+        
+        print(self.valid_xvectors)
         torch.distributed.all_gather_object(valid_xvectors, self.valid_xvectors)
         uid2embedding = {
             uid[0]: embedding for embedding, uid in self.valid_xvectors}
@@ -304,6 +306,7 @@ class SpeakerModule(LightningModule):
             distances.append(float(a_norm.matmul(b_norm.T).mean()))
             labels.append(l)
 
+        print(len(distances), len(labels))
         all_distances = [None for _ in range(
             torch.distributed.get_world_size())]
         torch.distributed.all_gather_object(distances, all_distances)
