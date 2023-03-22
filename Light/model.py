@@ -284,7 +284,7 @@ class SpeakerModule(LightningModule):
             return val_loss
 
     def on_validation_epoch_end(self) -> None:
-
+        torch.distributed.barrier()
         valid_xvectors = [None for _ in range(
             torch.distributed.get_world_size())]
         
@@ -308,6 +308,7 @@ class SpeakerModule(LightningModule):
             labels.append(l)
 
         print(len(distances), len(labels))
+        torch.distributed.barrier()
         all_distances = [None for _ in range(
             torch.distributed.get_world_size())]
         torch.distributed.all_gather_object(distances, all_distances)
