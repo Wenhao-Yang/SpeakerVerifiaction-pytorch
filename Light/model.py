@@ -288,10 +288,15 @@ class SpeakerModule(LightningModule):
         valid_xvectors = [None for _ in range(
             torch.distributed.get_world_size())]
         
-        print(self.valid_xvectors)
+        print(len(self.valid_xvectors))
         torch.distributed.all_gather_object(valid_xvectors, self.valid_xvectors)
-        uid2embedding = {
-            uid[0]: embedding for embedding, uid in self.valid_xvectors}
+        uid2embedding = {}
+        for v_dict in valid_xvectors:
+            if v_dict == None:
+                print('None exist.')
+            for embedding, uid in v_dict:
+                uid2embedding[uid[0]] = embedding 
+        
         print(len(uid2embedding))
         distances = []
         labels = []
@@ -309,12 +314,10 @@ class SpeakerModule(LightningModule):
 
         print(len(distances), len(labels))
         torch.distributed.barrier()
-        all_distances = [None for _ in range(
-            torch.distributed.get_world_size())]
+        all_distances = [None for _ in range(torch.distributed.get_world_size())]
         torch.distributed.all_gather_object(distances, all_distances)
 
-        all_labels = [None for _ in range(
-            torch.distributed.get_world_size())]
+        all_labels = [None for _ in range(torch.distributed.get_world_size())]
         torch.distributed.all_gather_object(labels, all_labels)
 
         for l in all_labels:
