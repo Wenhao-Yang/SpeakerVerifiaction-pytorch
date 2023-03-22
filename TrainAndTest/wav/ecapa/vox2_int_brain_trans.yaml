@@ -55,8 +55,8 @@ epochs: 60
 # optimizer
 optimizer: sgd
 lr_decay: 0
-weight_decay: 0.00002
-second_wd: 0.0002
+weight_decay: 0.00005
+second_wd: 0.0001
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -134,7 +134,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_3sesmix2_dist/baseline_<feat>_trans2_light
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wd5e5_3sdist/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>/baseline_<feat>_trans2_light
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
