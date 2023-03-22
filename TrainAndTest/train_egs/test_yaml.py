@@ -35,6 +35,7 @@ from hyperpyyaml import load_hyperpyyaml
 
 # from Define_Model.Loss.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
+from Light.model import SpeakerModule
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, MelFbank, mvnormal, read_WaveFloat, read_WaveInt
@@ -129,6 +130,7 @@ if 'trans_fbank' in config_args and config_args['trans_fbank']:
 sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                feat_type=feat_type, sample_type=sample_type, segment_len=config_args['num_frames'],
+                               segment_shift=config_args['segment_shift'],
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
 
 if args.score_norm != '' and os.path.isdir(args.train_extract_dir):
@@ -382,9 +384,12 @@ if __name__ == '__main__':
     train_xvector_dir = os.path.join(args.xvector_dir, 'train')
 
     if args.extract:
-        
-        model = config_args['embedding_model']
-        model.classifier = config_args['classifier']
+        # Model
+        if args.lightning:
+            model = SpeakerModule(config_args=config_args)
+        else:
+            model = config_args['embedding_model']
+            model.classifier = config_args['classifier']
 
         if args.verbose > 0:
             print('=> loading checkpoint {}'.format(args.resume))

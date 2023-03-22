@@ -11,6 +11,7 @@
 
 
 from argparse import ArgumentParser
+import math
 # from operator import mod
 import torch
 import os
@@ -73,8 +74,8 @@ def main():
     model._set_hparams({'config_args': config_args})
 
     this_callbacks = []
-    checkpoint_callback = ModelCheckpoint(monitor='val_eer',
-                                          filename='%s-{epoch:02d}-{val_eer:.2f}' % (
+    checkpoint_callback = ModelCheckpoint(monitor='Test/EER',
+                                          filename='%s-{epoch:02d}-{Test/EER:.2f}' % (
                                               config_args['loss']),
                                           save_top_k=3,
                                           mode='min',
@@ -95,6 +96,9 @@ def main():
 
     # strategy="ddp_find_unused_parameters_false",
     # precision=16, amp_backend='native',
+    val_check_interval = max([ math.gcd(len(train_loader)+i, config_args['val_check_interval']+j) for i in range(-256, 256) for j in range(-256, 256)])
+    print('Val interval: ', val_check_interval)
+    
     precision = config_args['precision'] if 'precision' in config_args else 32
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='cuda', devices=args.gpus, strategy="ddp_find_unused_parameters_false",
@@ -103,7 +107,7 @@ def main():
                       default_root_dir=config_args['check_path'],
                       # profiler=profiler,
                       check_val_every_n_epoch=None,
-                      val_check_interval=config_args['val_check_interval'],
+                      val_check_interval = val_check_interval ,
                       )
 
     trainer.fit(model=model, train_dataloaders=train_loader,
