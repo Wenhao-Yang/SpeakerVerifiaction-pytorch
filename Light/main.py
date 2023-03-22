@@ -20,7 +20,7 @@ import numpy as np
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.profilers import AdvancedProfiler, PyTorchProfiler
+# from pytorch_lightning.profilers import AdvancedProfiler, PyTorchProfiler
 from Light.callback import ShufTrainset
 from pytorch_lightning.callbacks import LearningRateMonitor
 
@@ -96,9 +96,10 @@ def main():
 
     # strategy="ddp_find_unused_parameters_false",
     # precision=16, amp_backend='native',
-    val_check_interval = max([ math.gcd(len(train_loader)+i, config_args['val_check_interval']+j) for i in range(-256, 256) for j in range(-256, 256)])
+    val_check_interval = max([math.gcd(len(train_loader)+i, config_args['val_check_interval']+j)
+                             for i in range(-256, 256) for j in range(-256, 256)])
     print('Val interval: ', val_check_interval)
-    
+
     precision = config_args['precision'] if 'precision' in config_args else 32
     trainer = Trainer(max_epochs=config_args['epochs'],
                       accelerator='cuda', devices=args.gpus, strategy="ddp_find_unused_parameters_false",
@@ -107,7 +108,7 @@ def main():
                       default_root_dir=config_args['check_path'],
                       # profiler=profiler,
                       check_val_every_n_epoch=None,
-                      val_check_interval = val_check_interval ,
+                      val_check_interval=val_check_interval,
                       )
 
     trainer.fit(model=model, train_dataloaders=train_loader,
