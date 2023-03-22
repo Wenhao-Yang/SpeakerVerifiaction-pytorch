@@ -283,8 +283,15 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         while i < data.shape[0]:
                             data_part = data[i:(i + batch_size)]
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
-                            model_out = model.xvector(
-                                data_part) if xvector else model(data_part)
+                            if xvector:
+                                model_out = model.xvector(data_part)
+                            elif isinstance(model, SpeakerModule):
+                                model_out = model.encoder(data_part)
+                            else:
+                                model_out = model(data_part)
+                        
+                            # model_out = model.xvector(
+                            #     data_part) if xvector else model(data_part)
                             if isinstance(model_out, tuple):
                                 try:
                                     _, out_part, _, _ = model_out
@@ -299,8 +306,14 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     else:
 
                         data = data.cuda() if next(model.parameters()).is_cuda else data
-                        model_out = model.xvector(
-                            data) if xvector else model(data)
+                        if xvector:
+                            model_out = model.xvector(data)
+                        elif isinstance(model, SpeakerModule):
+                            model_out = model.encoder(data)
+                        else:
+                            model_out = model(data)
+                        # model_out = model.xvector(
+                        #     data) if xvector else model(data)
 
                         if isinstance(model_out, tuple):
                             try:
