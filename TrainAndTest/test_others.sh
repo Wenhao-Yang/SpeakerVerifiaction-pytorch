@@ -2976,7 +2976,7 @@ if [ $stage -le 600 ]; then
       --train-config TrainAndTest/wav/ecapa/vox2_int_brain_trans.yaml \
       --xvector-dir Data/xvector/${model_dir}/${testset}_${test_subset}_var \
       --resume Data/checkpoint/${model_dir}/EER\=2.97.ckpt \
-      --gpu-id 0 \
+      --gpu-id 0 --score-norm as-norm \
       --test-input var --verbose 2 \
       --cos-sim --lightning
   done
