@@ -2978,7 +2978,7 @@ if [ $stage -le 600 ]; then
       --resume Data/checkpoint/${model_dir}/EER\=2.97.ckpt \
       --gpu-id 0 \
       --test-input var --verbose 2 \
-      --cos-sim --extract
+      --cos-sim
   done
   done
   done
