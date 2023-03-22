@@ -246,7 +246,15 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     :param xvector: extract xvectors in embedding-a layer
     :return:
     """
+    from Light.model import SpeakerModule
     model.eval()
+
+    if xvector:
+        encode_func = model.xvector
+    elif isinstance(model, SpeakerModule):
+        encode_func = model.encoder
+    else:
+        encode_func = model
 
     if isinstance(model, DistributedDataParallel):
         if torch.distributed.get_rank() == 0:
@@ -257,7 +265,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             os.makedirs(xvector_dir)
     # pbar =
     pbar = tqdm(extract_loader, ncols=100) if verbose > 0 else extract_loader
-    from Light.model import SpeakerModule
+    
     uid2vectors = []
     with torch.no_grad():
         if test_input == 'fix':
@@ -283,15 +291,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         while i < data.shape[0]:
                             data_part = data[i:(i + batch_size)]
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
-                            if xvector:
-                                model_out = model.xvector(data_part)
-                            elif isinstance(model, SpeakerModule):
-                                model_out = model.encoder(data_part)
-                            else:
-                                model_out = model(data_part)
-                        
-                            # model_out = model.xvector(
-                            #     data_part) if xvector else model(data_part)
+                            model_out = encode_func(data_part)
+
                             if isinstance(model_out, tuple):
                                 try:
                                     _, out_part, _, _ = model_out
@@ -304,16 +305,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                             i += batch_size
                         out = torch.cat(out, dim=0)
                     else:
-
                         data = data.cuda() if next(model.parameters()).is_cuda else data
-                        if xvector:
-                            model_out = model.xvector(data)
-                        elif isinstance(model, SpeakerModule):
-                            model_out = model.encoder(data)
-                        else:
-                            model_out = model(data)
-                        # model_out = model.xvector(
-                        #     data) if xvector else model(data)
+                        model_out = encode_func(data)
 
                         if isinstance(model_out, tuple):
                             try:
@@ -331,10 +324,9 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
                             # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]                                          :num_seg_tensor[i + 1]].mean(axis=0)
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
                         else:
-                            uid_vec = out[num_seg_tensor[i]
-                                :num_seg_tensor[i + 1]]
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 
                         uid2vectors.append((uid, uid_vec))
 
@@ -362,14 +354,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     a_data = torch.cat((half_a, half_b), dim=0)
 
                 try:
-                    if xvector:
-                        model_out = model.module.xvector(a_data) if isinstance(model,
-                                                                               DistributedDataParallel) else model.xvector(
-                            a_data)
-                    elif isinstance(model, SpeakerModule):
-                        model_out = model.encoder(a_data)
-                    else:
-                        model_out = model(a_data)
+                    model_out = encode_func(a_data)
                 except Exception as e:
                     pdb.set_trace()
                     print('\ninput shape is ', a_data.shape)
@@ -378,10 +363,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if isinstance(model_out, tuple):
                     if len(model_out) == 4:
                         _, out, _, _ = model_out
-
                     elif len(model_out) == 2:
                         _, out = model_out
-
                 else:
                     out = model_out
 
