@@ -312,6 +312,10 @@ class SpeakerModule(LightningModule):
             torch.distributed.get_world_size())]
         torch.distributed.all_gather_object(labels, all_labels)
 
+        for l in all_labels:
+            pdb.set_trace()
+            print(l.shape)
+
         distances = np.concatenate(all_distances)
         labels = np.concatenate(all_labels)
 
