@@ -53,7 +53,7 @@ remove_vad: False
 epochs: 60
 
 # optimizer
-optimizer: adam
+optimizer: sgd
 lr_decay: 0
 weight_decay: 0.00002
 second_wd: 0.0002
@@ -65,16 +65,16 @@ accu_steps: 1
 # Scheduler
 patience: 3
 milestones: [10, 20, 30, 40]
-scheduler: cyclic
-lr: 0.001
-base_lr: 0.00000001
+scheduler: rop
+lr: 0.1
+base_lr: 0.00001
 cyclic_epoch: 3
 step_size: 65000
 val_check_interval: 16250
 cos_sim: True
 
 early_stopping: True
-early_patience: 20
+early_patience: 10
 early_delta: 0.0001
 early_meta: "mix2"
 
