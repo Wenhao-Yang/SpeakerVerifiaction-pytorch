@@ -300,11 +300,10 @@ class SpeakerModule(LightningModule):
         labels = []
 
         for a_uid, b_uid, l in self.test_trials:
-            try:
-                a = uid2embedding[a_uid].cpu()
-                b = uid2embedding[b_uid].cpu()
-            except Exception as e:
-                continue
+
+            a = uid2embedding[a_uid].cpu()
+            b = uid2embedding[b_uid].cpu()
+            
             a_norm = a/a.norm(2)
             b_norm = b/b.norm(2)
             distances.append(float(a_norm.matmul(b_norm.T).mean()))
@@ -316,6 +315,7 @@ class SpeakerModule(LightningModule):
             distances, labels)
         # pdb.set_trace()
         self.log("Test/EER", eer*100,  sync_dist=True)
+        self.log("Test/threshold", eer_threshold,  sync_dist=True)
         self.log("Test/mindcf_01", mindcf_01,  sync_dist=True)
         self.log("Test/mindcf_001", mindcf_001,  sync_dist=True)
 
