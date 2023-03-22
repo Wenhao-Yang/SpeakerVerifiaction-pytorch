@@ -303,8 +303,8 @@ class SpeakerModule(LightningModule):
 
         for a_uid, b_uid, l in self.test_trials:
             try:
-                a = uid2embedding[a_uid]
-                b = uid2embedding[b_uid]
+                a = uid2embedding[a_uid].cpu()
+                b = uid2embedding[b_uid].cpu()
             except Exception as e:
                 continue
             a_norm = a/a.norm(2)
