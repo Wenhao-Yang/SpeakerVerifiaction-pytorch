@@ -97,7 +97,7 @@ def main():
     # strategy="ddp_find_unused_parameters_false",
     # precision=16, amp_backend='native',
     val_check_interval = max([math.gcd(len(train_loader)+i, config_args['val_check_interval']+j)
-                             for i in range(-0, 256) for j in range(-256, 256)])
+                             for i in range(-0, 256) for j in range(0, 256)])
     print('Val interval: ', val_check_interval)
 
     precision = config_args['precision'] if 'precision' in config_args else 32
