@@ -222,7 +222,6 @@ class SpeakerModule(LightningModule):
 
         # start = time.time()
         data, label = batch
-        self.print(data.shape)
 
         logits, embeddings = self.encoder(data)
         loss, other_loss = self.loss(logits, embeddings, label)
