@@ -82,7 +82,8 @@ def main():
                                           save_last=True)
     this_callbacks.append(checkpoint_callback)
 
-    log_interval = 'step' if config_args['scheduler'] == 'cyclic' else 'epoch'
+    log_interval = 'step' if config_args['scheduler'] in [
+        'cyclic', 'rop'] else 'epoch'
     this_callbacks.append(LearningRateMonitor(logging_interval=log_interval))
 
     if args.manual_shuffle:
@@ -96,9 +97,13 @@ def main():
 
     # strategy="ddp_find_unused_parameters_false",
     # precision=16, amp_backend='native',
-    val_check_interval = max([math.gcd(int(len(train_loader)/(len(args.gpus.split(','))))+i, config_args['val_check_interval']+j) for i in range(-256, 256) for j in range(-256, 256)])
-    
-    print('Val interval: {:>7d} (Train: {:>7d} Interval: {:>7d})'.format(val_check_interval, len(train_loader), config_args['val_check_interval']))
+    # val_check_interval = max([math.gcd(int(len(train_loader)/(len(args.gpus.split(','))))+i,
+    #                          config_args['val_check_interval']+j) for i in range(-256, 256) for j in range(-256, 256)])
+
+    val_check_interval = config_args['val_check_interval'] if 'val_check_interval' in config_args else 1
+
+    print('Val interval: {:>7d} (Train: {:>7d} Interval: {:>7d})'.format(
+        val_check_interval, len(train_loader), config_args['val_check_interval']))
 
     precision = config_args['precision'] if 'precision' in config_args else 32
     trainer = Trainer(max_epochs=config_args['epochs'],

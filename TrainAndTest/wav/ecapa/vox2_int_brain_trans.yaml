@@ -36,10 +36,10 @@ input_per_spks: 1024
 
 test_input: fix
 log_scale: False
-random_chunk: [300, 300]
+random_chunk: [200, 400]
 chunk_size: 48000
 frame_shift: 48000
-num_frames: 48000
+num_frames: 64000
 segment_shift: 32000
 extract: True
 nj: 4
@@ -53,10 +53,10 @@ remove_vad: False
 epochs: 60
 
 # optimizer
-optimizer: sgd
+optimizer: adam
 lr_decay: 0
-weight_decay: 0.00005
-second_wd: 0.0001
+weight_decay: 0.00002
+second_wd: 0.0002
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -65,12 +65,12 @@ accu_steps: 1
 # Scheduler
 patience: 3
 milestones: [10, 20, 30, 40]
-scheduler: rop
+scheduler: cyclic
 lr: 0.1
 base_lr: 0.00001
 cyclic_epoch: 3
 step_size: 65000
-val_check_interval: 16250
+val_check_interval: 6250
 cos_sim: True
 
 early_stopping: True
@@ -134,7 +134,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_wd5e5_3sdist/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>/baseline_<feat>_trans2_light
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_vardist/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>/baseline_<feat>_trans2_light
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
