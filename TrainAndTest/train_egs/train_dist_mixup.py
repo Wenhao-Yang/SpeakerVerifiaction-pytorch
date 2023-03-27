@@ -193,8 +193,8 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
 
             pbar.set_description(epoch_str)
 
-        if (batch_idx + 1) == 100:
-            break
+        # if (batch_idx + 1) == 100:
+        #     break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
