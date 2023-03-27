@@ -917,6 +917,7 @@ class ThinResNet(nn.Module):
                  replace_stride_with_dilation=None, norm_layer=None, downsample=None,
                  mask='None', mask_len=[5, 10], red_ratio=8,
                  init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
+                 mix='mixup',
                  input_norm='', gain_layer=False, **kwargs):
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -949,6 +950,14 @@ class ThinResNet(nn.Module):
         self.num_filter = channels  # [16, 32, 64, 128]
         self.inplanes = self.num_filter[0]
         self.downsample = str(downsample)
+
+        self.mix_type = mix
+        mix_types = {
+            "mixup": self.mixup,
+            "addup": self.addup,
+            "stylemix": self.mixstyle,
+        }
+        self.mix = mix_types[mix]
 
         if block_type == "seblock":
             block = SEBasicBlock if resnet_size < 50 else SEBottleneck
@@ -1085,7 +1094,6 @@ class ThinResNet(nn.Module):
         self.alpha = alpha
         if self.alpha:
             self.l2_norm = L2_Norm(self.alpha)
-
         self.classifier = nn.Linear(embedding_size, num_classes)
 
         for m in self.modules():
@@ -1163,11 +1171,11 @@ class ThinResNet(nn.Module):
             layer_mix = random.choice(mixup_alpha)
 
         if proser != None and layer_mix == 0:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         x = self.input_mask(x)
         if proser != None and layer_mix == 1:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -1176,27 +1184,27 @@ class ThinResNet(nn.Module):
             x = self.maxpool(x)
 
         if proser != None and layer_mix == 2:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         # print(x.shape)
         group1 = self.layer1(x)
 
         if proser != None and layer_mix == 3:
-            group1 = self.mixup(group1, proser, lamda_beta)
+            group1 = self.mix(group1, proser, lamda_beta)
 
         group2 = self.layer2(group1)
 
         if proser != None and layer_mix == 4:
-            group2 = self.mixup(group2, proser, lamda_beta)
+            group2 = self.mix(group2, proser, lamda_beta)
 
         group3 = self.layer3(group2)
 
         if proser != None and layer_mix == 5:
-            group3 = self.mixup(group3, proser, lamda_beta)
+            group3 = self.mix(group3, proser, lamda_beta)
 
         group4 = self.layer4(group3)
         if proser != None and layer_mix == 6:
-            group4 = self.mixup(group4, proser, lamda_beta)
+            group4 = self.mix(group4, proser, lamda_beta)
 
         if self.dropout_p > 0:
             group4 = self.dropout(group4)
@@ -1247,8 +1255,6 @@ class ThinResNet(nn.Module):
             # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
             # pdb.set_trace()
             lamda_beta = np.random.beta(lamda_beta, lamda_beta)
-            # lamda_beta = max(0.2, lamda_beta)
-            # lamda_beta = min(0.8, lamda_beta)
 
             half_feat = lamda_beta * half_a_feat + \
                 (1 - lamda_beta) * half_b_feat
@@ -1256,7 +1262,7 @@ class ThinResNet(nn.Module):
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
         if proser != None and layer_mix == 7:
-            x = self.mixup(x, proser, lamda_beta)
+            x = self.mix(x, proser, lamda_beta)
 
         logits = "" if self.classifier == None else self.classifier(x)
 
@@ -1343,6 +1349,16 @@ class ThinResNet(nn.Module):
 
         return x
 
+    def addup(self, x, shuf_half_idx_ten, lamda_beta):
+        half_batch_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-half_batch_size:]
+        x = torch.cat(
+            [x[:-half_batch_size], -lamda_beta * half_feats +
+                (1 + lamda_beta) * half_feats[shuf_half_idx_ten]],
+            dim=0)
+
+        return x
+    
     # Allow for accessing forward method in a inherited class
     forward = _forward
 
