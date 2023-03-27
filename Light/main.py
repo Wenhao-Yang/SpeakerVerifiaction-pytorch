@@ -23,7 +23,7 @@ from pytorch_lightning.profiler.profilers import AdvancedProfiler
 from Light.callback import ShufTrainset
 from pytorch_lightning.callbacks import LearningRateMonitor
 
-from Light.dataset import SubDatasets, SubLoaders
+from Light.dataset import SubDatasets, SubLoaders, SubScriptDatasets
 from Light.model import SpeakerModule
 from argparse import ArgumentParser
 from hyperpyyaml import load_hyperpyyaml
@@ -54,7 +54,12 @@ def main():
         config_args = load_hyperpyyaml(f)
 
     # Dataset
-    train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
+    if args.dataset_type == 'egs':
+        train_dir, valid_dir, train_extract_dir = SubDatasets(config_args)
+    else:
+        train_dir, valid_dir, train_extract_dir = SubScriptDatasets(
+            config_args)
+        
     train_loader, valid_loader, train_extract_loader = SubLoaders(
         train_dir, valid_dir, train_extract_dir, config_args)
 

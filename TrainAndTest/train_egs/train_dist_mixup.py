@@ -84,23 +84,30 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
         data, label = data_cols
         batch_weight = None
 
+        
         lamda_beta = np.random.beta(config_args['lamda_beta'], config_args['lamda_beta'])
-        half_data = int(len(data) / 2)
+        mixup_percent = 0.5 if 'batmix_ratio' not in config_args else config_args['batmix_ratio']
+        half_data = int(len(data) * mixup_percent)
 
-        if config_args['mixup_type'] == 'style':
-            rand_idx = torch.randperm(half_data)
-            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
-            
-            perm = torch.arange(half_data-1, -1, -1)  # inverse index crossdomain mixup
-            perm_b, perm_a = perm.chunk(2)
-            perm_b = perm_b[torch.randperm(perm_b.shape[0])]
-            perm_a = perm_a[torch.randperm(perm_a.shape[0])]
-            rand_idx = torch.cat([perm_b, perm_a], 0)
-            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+        if 'mix_ratio'in config_args and np.random.uniform(0, 1) <= config_args['mix_ratio']:
+            if config_args['mixup_type'] == 'style':
+                rand_idx = torch.randperm(half_data)
+                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+                
+                perm = torch.arange(half_data-1, -1, -1)  # inverse index crossdomain mixup
+                perm_b, perm_a = perm.chunk(2)
+                perm_b = perm_b[torch.randperm(perm_b.shape[0])]
+                perm_a = perm_a[torch.randperm(perm_a.shape[0])]
+                rand_idx = torch.cat([perm_b, perm_a], 0)
+                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
 
-        elif config_args['mixup_type'] != '':
-            rand_idx = torch.randperm(half_data)
-            label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+            elif config_args['mixup_type'] != '':
+                rand_idx = torch.randperm(half_data)
+                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+        else:
+            lamda_beta = 0
+            rand_idx = None
+            half_data = 0
 
         if torch.cuda.is_available():
             label = label.cuda()
