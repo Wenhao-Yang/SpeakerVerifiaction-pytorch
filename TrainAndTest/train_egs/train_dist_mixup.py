@@ -247,7 +247,7 @@ def main():
         mixup_layer_str = str(config_args['mixup_layer'])
 
     lambda_str = '_lamda' + str(args.lamda_beta)
-    mixup_str = '_mani' + mixup_layer_str + lambda_str
+    mixup_str = '_%s'%(config_args['mixup_type'][:4]) + mixup_layer_str + lambda_str
     config_args['lamda_beta'] = args.lamda_beta
 
     check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
