@@ -107,11 +107,13 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
-        classfier, feats = model(data)
+        classfier, feats = model(data, proser=rand_idx, lamda_beta=lamda_beta,
+                                 mixup_alpha=config_args['mixup_layer'])
         # print('max logit is ', classfier_label.max())
 
         loss, other_loss = model.module.loss(classfier, feats, label,
-                                             batch_weight=batch_weight, epoch=epoch)
+                                             batch_weight=batch_weight, epoch=epoch,
+                                             half_data=half_data, lamda_beta=lamda_beta)
 
         predicted_labels = output_softmax(classfier.clone())
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
