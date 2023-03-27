@@ -855,9 +855,9 @@ class MixupLoss(nn.Module):
         self.loss = loss
         self.gamma = gamma
 
-    def forward(self, costh, label, half_batch_size=None, lamda_beta=0):
+    def forward(self, costh, label, half_batch_size=0, lamda_beta=0):
         # pdb.set_trace()
-        if half_batch_size != None:
+        if half_batch_size > 0:
             loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
 
             loss = loss + self.gamma * (
