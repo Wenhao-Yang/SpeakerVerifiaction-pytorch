@@ -1333,9 +1333,7 @@ class ThinResNet(nn.Module):
         mu, sig = mu.detach(), sig.detach()
         x_normed = (half_feats - mu ) / sig
 
-        
-
-        mu2, sig2 = mu[perm], sig[perm]
+        mu2, sig2 = mu[shuf_half_idx_ten], sig[shuf_half_idx_ten]
         mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)
         sig_mix = sig*lamda_beta + sig2 * (1-lamda_beta)
 
