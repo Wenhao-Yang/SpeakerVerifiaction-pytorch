@@ -121,6 +121,10 @@ class SpeakerLoss(nn.Module):
                                           all_iteraion=0 if 'all_iteraion' not in config_args else config_args['all_iteraion'])
         self.softmax = nn.Softmax(dim=1)
         self.ce_criterion = ce_criterion
+
+        if 'mixup_type' in config_args and config_args['mixup_type'] != '':
+            xe_criterion = MixupLoss(xe_criterion, gamma=config_args['proser_gamma'])
+
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']
 
@@ -147,7 +151,6 @@ class SpeakerLoss(nn.Module):
             loss = loss_xent + loss_cent
         elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
             if isinstance(self.xe_criterion, MixupLoss):
-
                 loss = self.xe_criterion(classfier, label, half_batch_size=half_data, lamda_beta=lamda_beta)
             else:
                 loss = self.xe_criterion(classfier, label)

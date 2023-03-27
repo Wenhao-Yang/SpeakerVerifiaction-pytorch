@@ -1333,11 +1333,7 @@ class ThinResNet(nn.Module):
         mu, sig = mu.detach(), sig.detach()
         x_normed = (half_feats - mu ) / sig
 
-        perm = torch.arange(mix_size - 1, -1, -1)  # inverse index crossdomain mixup
-        perm_b, perm_a = perm.chunk(2)
-        perm_b = perm_b[torch.randperm(perm_b.shape[0])]
-        perm_a = perm_a[torch.randperm(perm_a.shape[0])]
-        perm = torch.cat([perm_b, perm_a], 0)
+        
 
         mu2, sig2 = mu[perm], sig[perm]
         mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)

@@ -222,24 +222,19 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     # pdb.set_trace()
     for batch_idx, (data, label) in pbar:
 
-        lamda_beta = np.random.beta(args.lamda_beta, args.lamda_beta)
-        half_data = int(len(data) / 2)
+        lamda_beta = np.random.beta(config_args['lamda_beta'], config_args['lamda_beta'])
+        mixup_percent = 0.5 if 'batchmix_ratio' not in config_args else config_args['batchmix_ratio']
+        half_data = int(len(data) * mixup_percent)
 
-        if config_args['mixup_type'] != 'manifold':
+        if config_args['mixup_type'] == 'style':
             rand_idx = torch.randperm(half_data)
-            mix_data = lamda_beta * data[half_data:] + \
-                (1 - lamda_beta) * data[half_data:][rand_idx]
-            data = torch.cat([data[:half_data], mix_data], dim=0)
             label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
-        else:
+            
+        elif config_args['mixup_type'] != '':
             rand_idx = torch.randperm(half_data)
-            # mix_data = lamda_beta * data[half_data:] + (1 - lamda_beta) * data[half_data:][rand_idx]
-            # data = torch.cat([data[:half_data], mix_data], dim=0)
             label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
 
         if torch.cuda.is_available():
-            # label = label.cuda(non_blocking=True)
-            # data = data.cuda(non_blocking=True)
             label = label.cuda()
             data = data.cuda()
 
