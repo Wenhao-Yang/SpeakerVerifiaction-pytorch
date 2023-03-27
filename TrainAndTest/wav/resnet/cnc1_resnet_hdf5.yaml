@@ -21,7 +21,7 @@ subset: ""
 train_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/dev
 # <subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
-train_trials: trials
+train_trials: trials_4w
 valid_dir: !ref <data_root_dir>/data/<datasets>/train_valid_<feat>
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
@@ -72,7 +72,7 @@ early_delta: 0.0001
 early_meta: "mix2"
 
 ## model Setttings
-resnet_size: 34
+resnet_size: 18
 block_type: "cbam"
 red_ratio: 2
 encoder_type: "SAP2"
@@ -134,7 +134,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_dist/baseline_<feat>_original
+check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_dist/<loss>_<optimizer>_<scheduler>/<feat_type><subset>_baseline/<datasets>/baseline_<feat>_original
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
