@@ -80,13 +80,12 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
 
     for batch_idx, data_cols in pbar:
-
-        lamda_beta = np.random.beta(config_args['lamda_beta'], config_args['lamda_beta'])
-        half_data = int(len(data) / 2)
-
         # if not return_domain:
         data, label = data_cols
         batch_weight = None
+
+        lamda_beta = np.random.beta(config_args['lamda_beta'], config_args['lamda_beta'])
+        half_data = int(len(data) / 2)
 
         if config_args['mixup_type'] == 'style':
             rand_idx = torch.randperm(half_data)
