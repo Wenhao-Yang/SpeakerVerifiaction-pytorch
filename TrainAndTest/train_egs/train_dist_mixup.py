@@ -292,7 +292,6 @@ def main():
     # exit(0)
 
     start_epoch = 0
-    check_path = config_args['check_path'] + '/' + str(args.seed)
     if 'finetune' not in config_args or not config_args['finetune']:
         this_check_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
                                                            time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
