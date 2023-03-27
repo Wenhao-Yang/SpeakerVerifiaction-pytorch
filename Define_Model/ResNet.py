@@ -908,7 +908,6 @@ class Bottleneck_v2(nn.Module):
 
 
 class ThinResNet(nn.Module):
-
     def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
                  input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
                  first_bias=True, kernel_size=5, stride=1, padding=2,
@@ -1157,18 +1156,8 @@ class ThinResNet(nn.Module):
 
     def _forward(self, x, feature_map='', proser=None, label=None,
                  lamda_beta=0.2, mixup_alpha=-1):
-        # pdb.set_trace()
-        # print(x.shape)
-        # if self.filter_layer != None:
-        #     x = self.filter_layer(x)
-        #
-        # if self.inst_layer != None:
-        #     x = self.inst_layer(x)
-        #
-        # if self.mask_layer != None:
-        #     x = self.mask_layer(x)
+
         if isinstance(mixup_alpha, float) or isinstance(mixup_alpha, int):
-            # layer_mix = random.randint(0, 2)
             layer_mix = mixup_alpha
         elif isinstance(mixup_alpha, list):
             layer_mix = random.choice(mixup_alpha)
@@ -1319,11 +1308,37 @@ class ThinResNet(nn.Module):
         return embeddings
 
     def mixup(self, x, shuf_half_idx_ten, lamda_beta):
-        half_batch_size = shuf_half_idx_ten.shape[0]
-        half_feats = x[-half_batch_size:]
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
         x = torch.cat(
-            [x[:-half_batch_size], lamda_beta * half_feats +
+            [x[:-mix_size], lamda_beta * half_feats +
                 (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
+            dim=0)
+
+        return x
+    
+    def mixstyle(self, x, shuf_half_idx_ten, lamda_beta):
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+
+        mu = half_feats.mean(dim=[2, 3], keepdim=True)
+        var = half_feats.var(dim=[2, 3], keepdim=True)
+        sig = (var + self.eps).sqrt()
+        mu, sig = mu.detach(), sig.detach()
+        x_normed = (half_feats - mu ) / sig
+
+        perm = torch.arange(mix_size - 1, -1, -1)  # inverse index crossdomain mixup
+        perm_b, perm_a = perm.chunk(2)
+        perm_b = perm_b[torch.randperm(perm_b.shape[0])]
+        perm_a = perm_a[torch.randperm(perm_a.shape[0])]
+        perm = torch.cat([perm_b, perm_a], 0)
+
+        mu2, sig2 = mu[perm], sig[perm]
+        mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)
+        sig_mix = sig*lamda_beta + sig2 * (1-lamda_beta)
+
+        x = torch.cat(
+            [x[:-mix_size], x_normed*sig_mix + mu_mix],
             dim=0)
 
         return x
