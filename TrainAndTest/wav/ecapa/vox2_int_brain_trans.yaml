@@ -36,8 +36,8 @@ input_per_spks: 1024
 
 test_input: fix
 log_scale: False
-random_chunk: [200, 300]
-precision: 16-mixed
+random_chunk: [200, 400]
+# precision: 16-mixed
 chunk_size: 48000
 frame_shift: 48000
 num_frames: 48000
@@ -84,7 +84,7 @@ model: ECAPA_brain
 kernel_size:
 alpha: 0
 embedding_size: 192
-batch_size: 128
+batch_size: 64
 dropout_p: 0.0
 activation: relu
 channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
