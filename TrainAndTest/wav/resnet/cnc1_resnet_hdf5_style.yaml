@@ -44,7 +44,7 @@ feat_format: wav
 remove_vad: False
 
 ### Training settings
-epochs: 80
+epochs: 1
 
 # optimizer
 optimizer: sgd

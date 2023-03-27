@@ -855,21 +855,19 @@ class MixupLoss(nn.Module):
         self.loss = loss
         self.gamma = gamma
 
-    def forward(self, costh, label, half_batch_size, lamda_beta):
+    def forward(self, costh, label, half_batch_size=None, lamda_beta=0):
         # pdb.set_trace()
-        loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
-        # print(loss)
+        if half_batch_size != None:
+            loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
 
-        loss = loss + self.gamma * (
-            lamda_beta * self.loss(costh[-half_batch_size:],
-                                   label[half_batch_size:int(2 * half_batch_size)])
-            + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:]))
+            loss = loss + self.gamma * (
+                lamda_beta * self.loss(costh[-half_batch_size:],
+                                    label[half_batch_size:int(2 * half_batch_size)])
+                + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:]))
 
-        # if torch.isnan(loss):
-        #     pdb.set_trace()
-        #     print(loss)
-
-        return loss / (1 + self.gamma)
+            return loss / (1 + self.gamma)
+        else:
+            return self.loss(costh, label)
 
     def __repr__(self):
         return "MixupLoss(loss=%s)" % (self.loss)
