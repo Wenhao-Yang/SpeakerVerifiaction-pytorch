@@ -1218,11 +1218,11 @@ class ThinResNet(nn.Module):
 
         if self.avgpool != None:
             x = self.avgpool(group4)
+        if proser != None and layer_mix == 7:
+            x = self.mix(x, proser, lamda_beta)
 
         if self.encoder != None:
             x = self.encoder(x)
-        if proser != None and layer_mix == 7:
-            x = self.mix(x, proser, lamda_beta)
 
         x = x.view(x.size(0), -1)
 
