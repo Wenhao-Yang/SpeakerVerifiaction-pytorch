@@ -28,6 +28,7 @@ from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcita
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, AttentionweightLayer_v0
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
+from Define_Model.MixStyle import SinkhornDistance
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2, AttentionStatisticPooling_v2, SelfAttentionPooling_v2, SelfAttentionPooling_v3
 
@@ -956,6 +957,7 @@ class ThinResNet(nn.Module):
             "mixup": self.mixup,
             "addup": self.addup,
             "style": self.mixstyle,
+            "align": self.alignmix
         }
         self.mix = mix_types[mix]
 
@@ -1340,6 +1342,36 @@ class ThinResNet(nn.Module):
         x = torch.cat(
             [x[:-mix_size], x_normed*sig_mix + mu_mix],
             dim=0)
+
+        return x
+    
+    def alignmix(self, x, shuf_half_idx_ten, lamda_beta):
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+        half_feats_shape = half_feats.shape
+
+        # out shape = batch_size x 512 x 4 x 4 (cifar10/100)
+        feat1 = half_feats.view(half_feats_shape[0], half_feats_shape[1], -1) # batch_size x 512 x 16
+        feat2 = half_feats[shuf_half_idx_ten].view(half_feats_shape[0], half_feats_shape[1], -1) # batch_size x 512 x 16
+        
+        sinkhorn = SinkhornDistance(eps=0.1, max_iter=100, reduction=None)
+        P = sinkhorn(feat1.permute(0,2,1), feat2.permute(0,2,1)).detach()  # optimal plan batch x 16 x 16
+        
+        P = P*(half_feats_shape[2]*half_feats_shape[3]) # assignment matrix 
+
+        align_mix = random.randint(0,1) # uniformly choose at random, which alignmix to perform
+    
+        if (align_mix == 0):
+            # \tilde{A} = A'R^{T}
+            f1 = torch.matmul(feat2, P.permute(0,2,1).cuda()).view(half_feats_shape) 
+            final = feat1.view(half_feats_shape)*lamda_beta + f1*(1-lamda_beta)
+
+        elif (align_mix == 1):
+            # \tilde{A}' = AR
+            f2 = torch.matmul(feat1, P.cuda()).view(half_feats_shape).cuda()
+            final = f2*lamda_beta + feat2.view(half_feats_shape.shape)*(1-lamda_beta)
+
+        x = torch.cat([x[:-mix_size], final], dim=0)
 
         return x
 
