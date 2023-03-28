@@ -1218,11 +1218,12 @@ class ThinResNet(nn.Module):
 
         if self.avgpool != None:
             x = self.avgpool(group4)
-        if proser != None and layer_mix == 7:
-            x = self.mix(x, proser, lamda_beta)
-
+        
         if self.encoder != None:
             x = self.encoder(x)
+
+        if proser != None and layer_mix == 7:
+            x = self.mix(x, proser, lamda_beta)
 
         x = x.view(x.size(0), -1)
 
@@ -1349,8 +1350,8 @@ class ThinResNet(nn.Module):
     def alignmix(self, x, shuf_half_idx_ten, lamda_beta):
         mix_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-mix_size:]
-        half_feats_shape = half_feats.shape
-
+        half_feats_shape = half_feats.shape # 128 x 128 x 38 x 5 
+        print(half_feats.shape)
         # out shape = batch_size x 512 x 4 x 4 (cifar10/100)
         feat1 = half_feats.view(half_feats_shape[0], half_feats_shape[1], -1) # batch_size x 512 x 16
         feat2 = half_feats[shuf_half_idx_ten].view(half_feats_shape[0], half_feats_shape[1], -1) # batch_size x 512 x 16
