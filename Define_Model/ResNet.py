@@ -1370,7 +1370,7 @@ class ThinResNet(nn.Module):
         elif (align_mix == 1):
             # \tilde{A}' = AR
             f2 = torch.matmul(feat1, P.cuda()).view(half_feats_shape).cuda()
-            final = f2*lamda_beta + feat2.view(half_feats_shape.shape)*(1-lamda_beta)
+            final = f2*lamda_beta + feat2.view(half_feats_shape)*(1-lamda_beta)
 
         x = torch.cat([x[:-mix_size], final], dim=0)
 

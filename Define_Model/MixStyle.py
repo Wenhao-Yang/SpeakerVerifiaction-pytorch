@@ -162,7 +162,7 @@ class SinkhornDistance(nn.Module):
         x_col = x.unsqueeze(-2).cuda()
         y_lin = y.unsqueeze(-3).cuda()
 
-        print(x_col.shape, y_lin.shape)
+        # print(x_col.shape, y_lin.shape)
         C = torch.sum((torch.abs(x_col - y_lin)) ** p, -1)
         return C
 
