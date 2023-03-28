@@ -955,7 +955,7 @@ class ThinResNet(nn.Module):
         mix_types = {
             "mixup": self.mixup,
             "addup": self.addup,
-            "stylemix": self.mixstyle,
+            "style": self.mixstyle,
         }
         self.mix = mix_types[mix]
 
