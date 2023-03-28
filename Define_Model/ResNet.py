@@ -1221,10 +1221,11 @@ class ThinResNet(nn.Module):
 
         if self.encoder != None:
             x = self.encoder(x)
+        if proser != None and layer_mix == 7:
+            x = self.mix(x, proser, lamda_beta)
 
         x = x.view(x.size(0), -1)
-        # if proser != None and layer_mix == 7:
-        #     x = self.mixup(x, proser, lamda_beta)
+
         x = self.fc1(x)
         if self.alpha:
             x = self.l2_norm(x)
@@ -1263,7 +1264,7 @@ class ThinResNet(nn.Module):
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
-        if proser != None and layer_mix == 7:
+        if proser != None and layer_mix == 8:
             x = self.mix(x, proser, lamda_beta)
 
         logits = "" if self.classifier == None else self.classifier(x)
