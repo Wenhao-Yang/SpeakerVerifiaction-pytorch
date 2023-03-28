@@ -1329,7 +1329,7 @@ class ThinResNet(nn.Module):
 
         mu = half_feats.mean(dim=[2, 3], keepdim=True)
         var = half_feats.var(dim=[2, 3], keepdim=True)
-        sig = (var + self.eps).sqrt()
+        sig = (var + 1e-6).sqrt()
         mu, sig = mu.detach(), sig.detach()
         x_normed = (half_feats - mu ) / sig
 
