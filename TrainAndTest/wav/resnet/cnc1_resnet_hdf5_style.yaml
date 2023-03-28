@@ -109,6 +109,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   encoder_type: !ref <encoder_type>
   embedding_size: !ref <embedding_size>
   num_classes: !ref <num_classes>
+  mix: 'style'
   activation: relu
 
 classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
