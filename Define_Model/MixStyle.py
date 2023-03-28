@@ -109,11 +109,11 @@ class SinkhornDistance(nn.Module):
         self.max_iter = max_iter
         self.reduction = reduction
 
-    def forward(self, x, y):
+    def forward(self, x, y): # x = batch x tf x channel
         # The Sinkhorn algorithm takes as input three variables :
-        C = self._cost_matrix(x, y)  # Wasserstein cost function
-        x_points = x.shape[-2]
-        y_points = y.shape[-2]
+        C = self._cost_matrix(x, y)  # Wasserstein cost function: batch x tf x tf x channel
+        x_points = x.shape[-2] # tf
+        y_points = y.shape[-2] # tf
         if x.dim() == 2:
             batch_size = 1
         else:
@@ -158,11 +158,11 @@ class SinkhornDistance(nn.Module):
     @staticmethod
     def _cost_matrix(x, y, p=2):
         "Returns the matrix of $|x_i-y_j|^p$."
-        x_col = x.unsqueeze(-2).cuda()
-        y_lin = y.unsqueeze(-3).cuda()
+        x_col = x.unsqueeze(-2).cuda() # batch x tf x 1 x channel
+        y_lin = y.unsqueeze(-3).cuda() # batch x 1 x tf x channel 
 
         # print(x_col.shape, y_lin.shape)
-        C = torch.sum((torch.abs(x_col - y_lin)) ** p, -1)
+        C = torch.sum((torch.abs(x_col - y_lin)) ** p, -1) # batch x tf x tf x channel
         return C
 
     @staticmethod

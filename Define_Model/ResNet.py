@@ -1221,10 +1221,8 @@ class ThinResNet(nn.Module):
         
         if self.encoder != None:
             x = self.encoder(x)
-
         if proser != None and layer_mix == 7:
             x = self.mix(x, proser, lamda_beta)
-
         x = x.view(x.size(0), -1)
 
         x = self.fc1(x)
@@ -1351,21 +1349,21 @@ class ThinResNet(nn.Module):
         mix_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-mix_size:]
         half_feats_shape = half_feats.shape # 128 x 128 x 38 x 5 
-        print(half_feats.shape)
+        # print(half_feats.shape)
         # out shape = batch_size x 512 x 4 x 4 (cifar10/100)
-        feat1 = half_feats.view(half_feats_shape[0], half_feats_shape[1], -1) # batch_size x 512 x 16
-        feat2 = half_feats[shuf_half_idx_ten].view(half_feats_shape[0], half_feats_shape[1], -1) # batch_size x 512 x 16
+        feat1 = half_feats.view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
+        feat2 = half_feats[shuf_half_idx_ten].view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
         
         sinkhorn = SinkhornDistance(eps=0.1, max_iter=100, reduction=None)
-        P = sinkhorn(feat1.permute(0,2,1), feat2.permute(0,2,1)).detach()  # optimal plan batch x 16 x 16
         
+        P = sinkhorn(feat1.permute(0,2,1), feat2.permute(0,2,1)).detach()  # optimal plan batch x 16 x 16
         P = P*(half_feats_shape[2]*half_feats_shape[3]) # assignment matrix 
 
         align_mix = random.randint(0,1) # uniformly choose at random, which alignmix to perform
     
         if (align_mix == 0):
             # \tilde{A} = A'R^{T}
-            f1 = torch.matmul(feat2, P.permute(0,2,1).cuda()).view(half_feats_shape) 
+            f1 = torch.matmul(feat2, P.permute(0,2,1).cuda()).view(half_feats_shape) # batch_tf*channel x tf*channel_tf*channel
             final = feat1.view(half_feats_shape)*lamda_beta + f1*(1-lamda_beta)
 
         elif (align_mix == 1):
