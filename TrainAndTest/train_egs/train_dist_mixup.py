@@ -255,6 +255,9 @@ def main():
 
     lambda_str = '_lamda' + str(args.lamda_beta)
     mixup_str = '_%s'%(config_args['mixup_type'][:4]) + mixup_layer_str + lambda_str
+    if 'batmix_ratio' in config_args and config_args['batmix_ratio'] != 0.5:
+        mixup_str += '_batmix{:.2f}'.format(config_args['batmix_ratio'])
+        
     config_args['lamda_beta'] = args.lamda_beta
 
     check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
