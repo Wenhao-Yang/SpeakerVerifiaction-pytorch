@@ -125,12 +125,19 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
         predicted_labels = output_softmax(classfier.clone())
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
-        minibatch_correct = predicted_one_labels[:half_data].eq(
+        if half_data == len(data):
+            minibatch_correct = lamda_beta * predicted_one_labels.eq(
                 label[:half_data]).cpu().sum().float() + \
-                lamda_beta * predicted_one_labels[half_data:].eq(
-                label[half_data:(half_data + half_data)]).cpu().sum().float() + \
-                (1 - lamda_beta) * predicted_one_labels[half_data:].eq(
+                (1 - lamda_beta) * predicted_one_labels.eq(
                 label[-half_data:]).cpu().sum().float()
+        else:
+            minibatch_correct = predicted_one_labels[:-half_data].eq(
+                label[:int(-2*half_data)]).cpu().sum().float() + \
+                lamda_beta * predicted_one_labels[-half_data:].eq(
+                label[int(-2*half_data):-half_data]).cpu().sum().float() + \
+                (1 - lamda_beta) * predicted_one_labels[-half_data:].eq(
+                label[-half_data:]).cpu().sum().float()
+        
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
         correct += minibatch_correct
 
