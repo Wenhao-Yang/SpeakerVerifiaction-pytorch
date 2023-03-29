@@ -91,19 +91,19 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
 
         if 'mix_ratio'in config_args and np.random.uniform(0, 1) <= config_args['mix_ratio']:
             if config_args['mixup_type'] == 'style':
-                rand_idx = torch.randperm(half_data)
-                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+                # rand_idx = torch.randperm(half_data)
+                # label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
                 
                 perm = torch.arange(half_data-1, -1, -1)  # inverse index crossdomain mixup
                 perm_b, perm_a = perm.chunk(2)
                 perm_b = perm_b[torch.randperm(perm_b.shape[0])]
                 perm_a = perm_a[torch.randperm(perm_a.shape[0])]
                 rand_idx = torch.cat([perm_b, perm_a], 0)
-                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+                label = torch.cat([label, label[-half_data:][rand_idx]], dim=0)
 
             elif config_args['mixup_type'] != '':
                 rand_idx = torch.randperm(half_data)
-                label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
+                label = torch.cat([label, label[-half_data:][rand_idx]], dim=0)
         else:
             lamda_beta = 0
             rand_idx = None
@@ -257,7 +257,7 @@ def main():
     mixup_str = '_%s'%(config_args['mixup_type'][:4]) + mixup_layer_str + lambda_str
     if 'batmix_ratio' in config_args and config_args['batmix_ratio'] != 0.5:
         mixup_str += '_batmix{:.2f}'.format(config_args['batmix_ratio'])
-        
+
     config_args['lamda_beta'] = args.lamda_beta
 
     check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
