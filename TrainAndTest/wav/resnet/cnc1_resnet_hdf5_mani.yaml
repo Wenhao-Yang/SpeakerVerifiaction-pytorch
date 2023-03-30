@@ -131,7 +131,7 @@ proser_gamma: 1
 mixup_layer: [1, 2, 3]
 mixup_type: 'manifold'
 mix_ratio: 1
-batmix_ratio: 1.0
+batmix_ratio: 0.5
 # stat_type: margin1
 
 # Checkpoints
