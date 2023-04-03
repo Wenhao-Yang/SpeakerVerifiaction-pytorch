@@ -49,7 +49,7 @@ epochs: 60
 # optimizer
 optimizer: sgd
 lr_decay: 0
-weight_decay: 0.0001
+weight_decay: 0.0005
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -132,7 +132,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_varesmix2_bashuf2_dist/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/baseline_fb<input_dim>_original
+check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/baseline_fb<input_dim>_original
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
