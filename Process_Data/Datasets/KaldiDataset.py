@@ -860,8 +860,12 @@ class ScriptTrainDataset(data.Dataset):
                 uid_feat = line.split()
                 if len(uid_feat) == 2:
                     uid, feat_offset = uid_feat
-                else:
+                elif len(uid_feat) == 3:
                     uid, _, feat_offset = uid_feat
+                elif len(uid_feat) > 3:
+                    uid = uid_feat[0]
+                    feat_offset = uid_feat[4]
+
                 if uid in invalid_uid:
                     continue
                 uid2feat[uid] = feat_offset
@@ -988,22 +992,30 @@ class ScriptTrainDataset(data.Dataset):
                 else:
                     self.base_utts.pop(sid)
         else:
-            rand_idxs = [sid]
+            # rand_idxs = [sid]
             sid %= self.num_spks
             spk = self.idx_to_spk[sid]
             utts = self.dataset[spk]
             num_utt = len(utts)
 
-            y = np.array([[]]).reshape(self.feat_shape)
+            # y = np.array([[]]).reshape(self.feat_shape)
             rand_utt_idx = np.random.randint(0, num_utt)
-            rand_idxs.append(rand_utt_idx)
+            # rand_idxs.append(rand_utt_idx)
             uid = utts[rand_utt_idx]
 
-            y = self.loader(self.uid2feat[uid])
-            if uid in self.uid2vad:
-                voice_idx = np.where(
-                    kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
-                y = y[voice_idx]
+            if self.feat_type == 'wav':
+                start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
+                    0, self.utt2num_frames[uid] - self.segment_len)
+                end = start + self.segment_len
+                y = self.loader(
+                    self.uid2feat[uid], start=start, stop=end)
+                # y = np.concatenate((y, feature), axis=self.c_axis)
+            else:
+                y = self.loader(self.uid2feat[uid])
+                if uid in self.uid2vad:
+                    voice_idx = np.where(
+                        kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                    y = y[voice_idx]
 
             # y = np.concatenate((y, feature), axis=self.c_axis)
 
