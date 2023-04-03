@@ -823,7 +823,7 @@ class MelSpectrogram(torch.nn.Module):
             hop_length=self.hop_length,
             pad=self.pad,
             window_fn=window_fn,
-            power=self.power,
+            power=None,
             normalized=self.normalized,
             wkwargs=wkwargs,
             center=center,
@@ -846,6 +846,8 @@ class MelSpectrogram(torch.nn.Module):
         specgram = self.spectrogram(waveform)
         if self.stretch_ratio != 1.0:
             specgram = self.stretch(specgram)
+        
+        specgram = specgram.abs().pow(2)
             
         mel_specgram = self.mel_scale(specgram)
         return mel_specgram
