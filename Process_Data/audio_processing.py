@@ -1313,8 +1313,7 @@ class stretch(object):
 class pitch_shift(object):
     """ 'ratio'.
     """
-    
-    def __init__(self, step=0.8, sr=16000):
+    def __init__(self, step=1, sr=16000):
         self.step = step
         self.sr = sr
         
