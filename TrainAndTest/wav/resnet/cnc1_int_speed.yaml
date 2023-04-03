@@ -31,8 +31,8 @@ input_per_spks: 1024
 
 test_input: fix
 log_scale: False
-random_chunk: [38400, 38400]
-chunk_size: 38400
+random_chunk: [48000, 48000]
+chunk_size: 48000
 frame_shift: 48000
 num_frames: 48000
 extract: True
@@ -90,6 +90,7 @@ num_classes: 797
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   filter: "fbank"
   sr: 16000
+  stretch_ratio: !ref <speed_fast>
   feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
   resnet_size: !ref <resnet_size>

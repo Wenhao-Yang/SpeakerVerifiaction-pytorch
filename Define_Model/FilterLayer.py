@@ -20,6 +20,7 @@ from python_speech_features import hz2mel, mel2hz
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 from scipy import interpolate
+from Process_Data.audio_processing import MelSpectrogram
 import Process_Data.constants as c
 
 
@@ -206,12 +207,14 @@ class fLLayer(nn.Module):
 
 
 class MelFbankLayer(nn.Module):
-    def __init__(self, sr, num_filter, log_scale=True):
+    def __init__(self, sr, num_filter, stretch_ratio=1.0, log_scale=True):
         super(MelFbankLayer, self).__init__()
         self.num_filter = num_filter
         self.sr = sr
-        self.t = torchaudio.transforms.MelSpectrogram(n_fft=512, win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
-                                                      window_fn=torch.hamming_window, n_mels=num_filter)
+        self.stretch_ratio = stretch_ratio
+        self.t = MelSpectrogram(n_fft=512, stretch_ratio=stretch_ratio,
+                                win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
+                                window_fn=torch.hamming_window, n_mels=num_filter)
 
     def forward(self, input):
         output = self.t(input.squeeze(1))
@@ -220,7 +223,7 @@ class MelFbankLayer(nn.Module):
         return torch.log(output + 1e-6)
 
     def __repr__(self):
-        return "MelFbankLayer(sr=%d, num_filter=%d)" % (self.sr, self.num_filter)
+        return "MelFbankLayer(sr=%d, num_filter=%d, stretch_ratio=%f)" % (self.sr, self.num_filter, self.stretch_ratio)
 
 
 # https://github.com/mravanelli/SincNet

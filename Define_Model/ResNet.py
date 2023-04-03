@@ -908,6 +908,7 @@ class Bottleneck_v2(nn.Module):
 class ThinResNet(nn.Module):
     def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
                  input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
+                 stretch_ratio=1.0,
                  kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
@@ -983,7 +984,8 @@ class ThinResNet(nn.Module):
 
         input_mask = []
         filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
-                                        exp=exp, filter_fix=filter_fix)
+                                        exp=exp, filter_fix=filter_fix, 
+                                        stretch_ratio=stretch_ratio)
         if filter_layer != None:
             input_mask.append(filter_layer)
             input_dim = feat_dim

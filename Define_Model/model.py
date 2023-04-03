@@ -40,7 +40,8 @@ def get_activation(activation):
     return nonlinearity
 
 
-def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool):
+def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool,
+                     stretch_ratio: float = 1.0):
     if filter == 'fDLR':
         filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
     elif filter == 'fBLayer':
@@ -53,7 +54,7 @@ def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: b
     elif filter == 'Avg':
         filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
     elif filter == 'fbank':
-        filter_layer = MelFbankLayer(sr=sr, num_filter=feat_dim)
+        filter_layer = MelFbankLayer(sr=sr, num_filter=feat_dim, stretch_ratio=stretch_ratio)
     else:
         filter_layer = None
 
