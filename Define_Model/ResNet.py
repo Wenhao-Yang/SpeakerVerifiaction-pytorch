@@ -1175,6 +1175,7 @@ class ThinResNet(nn.Module):
             x = self.mix(x, proser, lamda_beta)
 
         x = self.input_mask(x)
+        print(x.shape)
         if proser != None and layer_mix == 1:
             x = self.mix(x, proser, lamda_beta)
 
