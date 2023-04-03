@@ -1298,6 +1298,31 @@ class toMFB(object):
         return output
 
 
+class stretch(object):
+    """ 'ratio'.
+    """
+    
+    def __init__(self, ratio=0.8):
+        self.ratio = ratio
+        
+    def __call__(self, input):
+
+        input = librosa.effects.time_stretch(input, rate=self.ratio)
+        return input
+    
+class pitch_shift(object):
+    """ 'ratio'.
+    """
+    
+    def __init__(self, step=0.8, sr=16000):
+        self.step = step
+        self.sr = sr
+        
+    def __call__(self, input):
+
+        input = librosa.effects.pitch_shift(input, sr=self.sr, n_steps=self.step)
+        return input
+
 class totensor(object):
     """Rescales the input PIL.Image to the given 'size'.
     If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
