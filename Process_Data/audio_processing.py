@@ -843,14 +843,14 @@ class MelSpectrogram(torch.nn.Module):
         Returns:
             Tensor: Mel frequency spectrogram of size (..., ``n_mels``, time).
         """
-        print(waveform.shape)
+        # print(waveform.shape)
         specgram = self.spectrogram(waveform)
-        print(specgram.shape)
+        # print(specgram.shape)
         if self.stretch_ratio != 1.0:
             specgram = self.stretch(specgram)
-        print(specgram.shape)
-        specgram = specgram.abs().pow(2)
-        print(specgram.shape)
+        # print(specgram.shape)
+        specgram = specgram.pow(2).sum(-1)
+        # print(specgram.shape)
         mel_specgram = self.mel_scale(specgram)
         return mel_specgram
 
