@@ -19,7 +19,7 @@ from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
 from speechpy.feature import mfe
 from speechpy.processing import cmvn, cmvnw
-import torchaudio
+
 from Misc.HST.short_SHT import short_SHT
 from Process_Data import constants as c
 from Process_Data.Compute_Feat.compute_vad import ComputeVadEnergy
@@ -1298,6 +1298,30 @@ class toMFB(object):
         output = pre_process_inputs(input, target_sample_rate=c.SAMPLE_RATE)
         return output
 
+
+class stretch(object):
+    """ 'ratio'.
+    """
+    
+    def __init__(self, ratio=0.8):
+        self.ratio = ratio
+        
+    def __call__(self, input):
+
+        input = librosa.effects.time_stretch(input, rate=self.ratio)
+        return input
+    
+class pitch_shift(object):
+    """ 'ratio'.
+    """
+    def __init__(self, step=1, sr=16000):
+        self.step = step
+        self.sr = sr
+        
+    def __call__(self, input):
+
+        input = librosa.effects.pitch_shift(input, sr=self.sr, n_steps=self.step)
+        return input
 
 class totensor(object):
     """Rescales the input PIL.Image to the given 'size'.
