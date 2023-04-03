@@ -110,9 +110,9 @@ def SubScriptDatasets(config_args):
         totensor()
     ])
 
-    if 'speed_fast' in config_args and config_args['speed_fast'] != 1.0:
-        transform.transforms.insert(
-            0, stretch(ratio=config_args['speed_fast']))
+    # if 'speed_fast' in config_args and config_args['speed_fast'] != 1.0:
+    #     transform.transforms.insert(
+    #         0, stretch(ratio=config_args['speed_fast']))
 
     if 'trans_fbank' in config_args and config_args['trans_fbank']:
         transform.transforms.append(
