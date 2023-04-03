@@ -105,7 +105,7 @@ def SubScriptDatasets(config_args):
 
     remove_vad = False if 'remove_vad' not in config_args else config_args['remove_vad']
     transform = transforms.Compose([
-        ConcateNumInput(num_frames=config_args['num_frames'], remove_vad=remove_vad,
+        ConcateNumInput(num_frames=config_args['chunk_size'], remove_vad=remove_vad,
                         feat_type=feat_type),
         totensor()
     ])
