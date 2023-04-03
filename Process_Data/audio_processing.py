@@ -832,7 +832,7 @@ class MelSpectrogram(torch.nn.Module):
         )
         self.stretch = TimeStretch(hop_length=self.hop_length, n_freq=self.n_fft // 2 + 1, fixed_rate=self.stretch_ratio)
         self.mel_scale = MelScale(
-            self.n_mels, self.sample_rate, self.f_min, self.f_max, self.n_fft // 2 + 1, norm, mel_scale
+            self.n_mels, self.sample_rate, self.f_min, self.f_max, self.n_fft // 2 + 1, norm, #mel_scale
         )
 
     def forward(self, waveform: torch.Tensor) -> torch.Tensor:
