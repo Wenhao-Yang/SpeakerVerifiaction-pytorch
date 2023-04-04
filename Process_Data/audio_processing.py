@@ -846,7 +846,7 @@ class MelSpectrogram(torch.nn.Module):
         # print(waveform.shape)
         specgram = self.spectrogram(waveform)
         # print(specgram.shape)
-        if self.stretch_ratio != 1.0:
+        if self.stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram)
         # print(specgram.shape)
         specgram = specgram.pow(2).sum(-1)
