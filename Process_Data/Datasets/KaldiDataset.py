@@ -730,12 +730,13 @@ class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
                  vad_select=False, sample_type='instance', sr=16000,
-                 segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=50):
+                 segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
         self.segment_len = segment_len
         self.segment_shift = segment_shift
+        self.min_frames = min_frames
 
         self.feat_type = feat_type
         self.sample_type = sample_type  # balance or instance
@@ -778,7 +779,7 @@ class ScriptTrainDataset(data.Dataset):
                         num_frames = int(num_frames)
                         self.utt2num_frames[uid] = num_frames
 
-                        if num_frames >= min_frames:
+                        if num_frames >= self.min_frames:
                             total_frames += num_frames
                             this_numofseg = int(
                                 np.ceil(float(num_frames-segment_len+segment_shift) / segment_shift))
