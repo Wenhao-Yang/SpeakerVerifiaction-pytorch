@@ -1234,12 +1234,12 @@ class Hdf5TrainDataset(Dataset):
         if sample_type == 'instance':
             if verbose > 0:
                 print(
-                    '    The number of sampling utterances is euqal to the number of total utterance.')
+                    '    The number of samples is euqal to the number of total utterance.')
         else:
             samples_per_speaker = max(
                 len(base_utts) / len(speakers), samples_per_speaker)
             if verbose > 0:
-                print('    The number of sampling utterances for each speakers: %d ' % (samples_per_speaker))
+                print('    The number of samples for each speakers: %d ' % (samples_per_speaker))
 
         self.samples_per_speaker = int(samples_per_speaker)
         self.all_utts = list(utt2spk_dict.keys())

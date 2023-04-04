@@ -872,7 +872,7 @@ class ScriptTrainDataset(data.Dataset):
                 uid2feat[uid] = feat_offset
 
         if verbose > 0:
-            print('    There are {} utterances in Train Dataset, where {} utterances are removed.'.format(len(uid2feat),
+            print('    There are {} utterances in Trainset, where {} utterances are removed.'.format(len(uid2feat),
                                                                                                           len(invalid_uid)))
         self.valid_set = None
         self.valid_uid2feat = None
@@ -927,20 +927,20 @@ class ScriptTrainDataset(data.Dataset):
         if sample_type == 'instance':
             if verbose > 1:
                 print(
-                    '    The number of sampling utterances is euqal to the number of total utterance.')
+                    '    The number of samples is euqal to the number of total utterance.')
 
         elif samples_per_speaker == 0:
             samples_per_speaker = np.power(2, np.ceil(
                 np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
             if verbose > 1:
                 print(
-                    '    The number of sampling utterances for each speakers is decided by the number of total frames.')
+                    '    The number of samples for each speakers is decided by the number of total frames.')
         else:
             samples_per_speaker = max(
                 np.ceil(len(base_utts) / len(speakers)), samples_per_speaker)
             if verbose > 1:
                 print(
-                    '    The number of sampling utterances for each speakers is add to the number of total frames.')
+                    '    The number of samples for each speakers is add to the number of total frames.')
 
         self.samples_per_speaker = int(samples_per_speaker)
         self.c_axis = 0 if feat_type != 'wav' else 1
