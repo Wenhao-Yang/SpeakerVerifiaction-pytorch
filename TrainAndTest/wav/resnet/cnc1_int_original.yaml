@@ -10,7 +10,7 @@ data_root_dir: /home/work2020/yangwenhao/project/lstm_speaker_verification
 ## Dataset
 seed: 123456
 datasets: cnceleb_v2
-testset: cnceleb
+testset: cnceleb_v2
 feat_type: wave
 loss: arcsoft
 input_dim: 40
@@ -21,7 +21,7 @@ subset: ""
 train_dir: !ref <data_root_dir>/data/<datasets>/dev
 # <subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
-train_trials: trials
+train_trials: trials_4w
 valid_dir: !ref <data_root_dir>/data/<datasets>/train_valid_<feat>
 num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
