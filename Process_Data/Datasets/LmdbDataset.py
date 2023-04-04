@@ -208,6 +208,8 @@ class LmdbTrainDataset(Dataset):
         total_frames = 0
         self.utt2num_frames = {}
         base_utts = []
+        invalid_uid = set([])
+
         if self.sample_type != 'balance':
             if os.path.exists(utt2num_frames):
                 with open(utt2num_frames, 'r') as f:
@@ -229,6 +231,8 @@ class LmdbTrainDataset(Dataset):
                                 start = int(i * segment_shift)
                                 end = int(min(start+segment_len, num_frames))
                                 base_utts.append((uid, start, end))
+                        else:
+                            invalid_uid.add(uid)
 
                     # if int(num_frames) < 50:
                     #     invalid_uid.append(uid)
@@ -245,8 +249,8 @@ class LmdbTrainDataset(Dataset):
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
         if verbose > 0:
-            print('    There are {} utterances in Train Dataset'.format(
-                len(utt2spk_dict.keys())))
+            print('    There are {} utterances in Train Dataset, where {} utterances are removed.'.format(len(utt2spk_dict.keys()),
+                                                                                                          len(invalid_uid)))
 
         if num_valid > 0:
             valid_set = {}
@@ -1162,6 +1166,8 @@ class Hdf5TrainDataset(Dataset):
         total_frames = 0
         self.utt2num_frames = {}
         base_utts = []
+        invalid_uid = set([])
+
         if self.sample_type != 'balance':
             if os.path.exists(utt2num_frames):
                 with open(utt2num_frames, 'r') as f:
@@ -1183,6 +1189,8 @@ class Hdf5TrainDataset(Dataset):
                                 start = int(i * segment_shift)
                                 end = int(min(start+segment_len, num_frames))
                                 base_utts.append((uid, start, end))
+                        else:
+                            invalid_uid.add(uid)
 
                     # if int(num_frames) < 50:
                     #     invalid_uid.append(uid)
@@ -1197,9 +1205,10 @@ class Hdf5TrainDataset(Dataset):
             print('==> There are {} speakers in Dataset.'.format(len(speakers)))
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
+            
         if verbose > 0:
-            print('    There are {} utterances in Train Dataset'.format(
-                len(utt2spk_dict.keys())))
+            print('    There are {} utterances in Trainset, where {} utterances are removed.'.format(len(utt2spk_dict.keys()),
+                                                                                                          len(invalid_uid)))
         
         if num_valid > 0:
             valid_set = {}
