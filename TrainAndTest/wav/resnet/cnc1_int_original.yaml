@@ -18,7 +18,7 @@ feat: int
 wav_type: int
 subset: ""
 
-train_dir: !ref <data_root_dir>/data/<datasets>/dev
+train_dir: !ref <data_root_dir>/data/<datasets>/<feat_type>/dev
 # <subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
 train_trials: trials_4w
