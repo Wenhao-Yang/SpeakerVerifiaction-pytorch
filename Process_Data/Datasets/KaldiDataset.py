@@ -1008,12 +1008,12 @@ class ScriptTrainDataset(data.Dataset):
                 start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
                     0, self.utt2num_frames[uid] - self.segment_len)
                 end = start + self.segment_len
-                try:
-                    y = self.loader(
-                        self.uid2feat[uid], start=start, stop=end)
-                except Exception as e:
-                    print(e)
-                    print("uid: {} start: {} {}".format(uid, start, end))
+                # try:
+                y = self.loader(
+                    self.uid2feat[uid], start=start, stop=end)
+                # except Exception as e:
+                #     print(e)
+                #     print("uid: {} start: {} {}".format(uid, start, end))
                 # y = np.concatenate((y, feature), axis=self.c_axis)
             else:
                 y = self.loader(self.uid2feat[uid])

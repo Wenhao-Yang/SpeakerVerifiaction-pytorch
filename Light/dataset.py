@@ -10,7 +10,7 @@
 '''
 import torch
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, ScriptTrainDataset, ScriptValidDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset, LmdbTrainDataset, LmdbValidDataset, Hdf5TrainDataset, Hdf5ValidDataset
 
 from Process_Data.audio_processing import ConcateNumInput, MelFbank, totensor, PadCollate3d, stretch
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_WaveInt, read_WaveFloat
@@ -131,18 +131,46 @@ def SubScriptDatasets(config_args):
     if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args:
         min_frames *= config_args['sr'] / 100
 
-    train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
-                                   transform=transform, num_valid=config_args['num_valid'], domain=domain,
-                                   vad_select=vad_select, sample_type=sample_type,
-                                   feat_type=feat_type, verbose=verbose,
-                                   segment_len=config_args['num_frames'], segment_shift=segment_shift,
-                                   min_frames=min_frames)
+    if 'feat_type' in config_args and config_args['feat_type'] == 'lmdb':
+        print('Create Lmdb Dataset...')
+        train_dir = LmdbTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 
+                                     transform=transform, num_valid=config_args['num_valid'],
+                                     feat_type='wav', sample_type=sample_type,
+                                     segment_len=config_args['num_frames'], segment_shift=segment_shift,
+                                     min_frames=min_frames, verbose=verbose,
+                                     return_uid=False)
+        
+        valid_dir = LmdbValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
+                                    reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                    verbose=verbose,
+                                    transform=transform)
+        
+    elif 'feat_type' in config_args and config_args['feat_type'] == 'hdf5':
+        print('Create HDF5 Dataset...')
+        train_dir = Hdf5TrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 
+                                     transform=transform, num_valid=config_args['num_valid'],
+                                     feat_type='wav', sample_type=sample_type,
+                                     segment_len=config_args['num_frames'], segment_shift=segment_shift,
+                                     min_frames=min_frames, verbose=verbose,
+                                     return_uid=False)
+        
+        valid_dir = Hdf5ValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
+                                    hdf5_file=train_dir.hdf5_file, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                    verbose=verbose,
+                                    transform=transform)
+    else:
+        train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
+                                    transform=transform, num_valid=config_args['num_valid'], domain=domain,
+                                    vad_select=vad_select, sample_type=sample_type,
+                                    feat_type=feat_type, verbose=verbose,
+                                    segment_len=config_args['num_frames'], segment_shift=segment_shift,
+                                    min_frames=min_frames)
 
-    valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
-                                   dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
-                                   valid_uid2feat=train_dir.valid_uid2feat,
-                                   valid_utt2spk_dict=train_dir.valid_utt2spk_dict, verbose=verbose,
-                                   transform=transform, domain=domain)
+        valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
+                                    dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
+                                    valid_uid2feat=train_dir.valid_uid2feat,
+                                    valid_utt2spk_dict=train_dir.valid_utt2spk_dict, verbose=verbose,
+                                    transform=transform, domain=domain)
 
     feat_type = 'kaldi'
     if config_args['feat_format'] == 'wav':
