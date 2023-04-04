@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=1
+stage=302
 # voxceleb1
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
@@ -1155,4 +1155,15 @@ if [ $stage -le 300 ]; then
       --out-set ${s}_pair_valid
   done
   exit
+fi
+
+if [ $stage -le 302 ]; then
+  feat=hdf5
+  dataset=cnceleb_v2 #vox2
+  python Process_Data/Compute_Feat/convert2hdf5.py \
+      --data-dir ${lstm_dir}/data/${dataset}/dev \
+      --out-set dev \
+      --out-dir ${lstm_dir}/data/${dataset}/${feat} \
+      --data-format wav \
+      --feat-format wav
 fi
