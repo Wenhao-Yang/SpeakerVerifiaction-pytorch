@@ -295,6 +295,7 @@ class SparseFbankLayer(nn.Module):
         if stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram, stretch_ratio)
         
+        print(specgram.shape)
         specgram = specgram.pow(2).sum(-1)
         # normalize
         weight = self.SpareFbank.data
