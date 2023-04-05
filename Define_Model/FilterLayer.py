@@ -230,10 +230,10 @@ class MelFbankLayer(nn.Module):
 class SparseFbankLayer(nn.Module):
     def __init__(self, sr, num_filter, n_fft=512, stretch_ratio=[1.0], log_scale=True,
                  win_length=None, hop_length=None, f_max=None, f_min: float = 0.0,
-                 pad = 0, n_mels = 80,
+                 pad = 0, n_mels = 80, init_weight = 'mel',
                  window_fn = torch.hann_window, power: float = 2.0, normalized: bool = False,
                  center: bool = True, pad_mode: str = "reflect",
-                 onesided: bool = True, norm = None,wkwargs = None,):
+                 onesided: bool = True, norm = None, wkwargs = None,):
         
         super(SparseFbankLayer, self).__init__()
         self.num_filter = num_filter
@@ -246,6 +246,7 @@ class SparseFbankLayer(nn.Module):
         self.pad = pad
         self.power = power
         self.normalized = normalized
+        self.init_weight = init_weight
         self.n_mels = n_mels  # number of mel frequency bins
         self.f_max = f_max
         self.f_min = f_min
@@ -254,8 +255,37 @@ class SparseFbankLayer(nn.Module):
                                        pad=self.pad, window_fn=window_fn, power=power, normalized=self.normalized,
                                        wkwargs=wkwargs, center=center, pad_mode=pad_mode,
                                        onesided=onesided,)
+        # init mel
+        if init_weight == 'mel':
+            all_freqs = torch.linspace(f_min, int(self.sr/2), n_fft // 2 + 1)
+            m_pts = torch.linspace(hz2mel(f_min), hz2mel(int(self.sr/2)), num_filter + 2)
+            f_pts = mel2hz(m_pts)
+
+            f_diff = f_pts[1:] - f_pts[:-1]  # (n_filter + 1)
+            slopes = f_pts.unsqueeze(0) - all_freqs.unsqueeze(1)  # (n_freqs, n_filter + 2)
+            # create overlapping triangles
+            zero = torch.zeros(1)
+            down_slopes = (-1.0 * slopes[:, :-2]) / f_diff[:-1]  # (n_freqs, n_filter)
+            up_slopes = slopes[:, 2:] / f_diff[1:]  # (n_freqs, n_filter)
+            sparsebank = torch.max(zero, torch.min(down_slopes, up_slopes))     
+
+        elif init_weight == 'linear':
+            all_freqs = torch.linspace(f_min, int(self.sr/2), n_fft // 2 + 1)
+            m_pts = torch.linspace(f_min, int(self.sr/2), num_filter+2)
+
+            f_diff = m_pts[1:] - m_pts[:-1]  # (n_filter + 1)
+            slopes = m_pts.unsqueeze(0) - all_freqs.unsqueeze(1)  # (n_freqs, n_filter + 2)
+            # create overlapping triangles
+            zero = torch.zeros(1)
+            down_slopes = (-1.0 * slopes[:, :-2]) / f_diff[:-1]  # (n_freqs, n_filter)
+            up_slopes = slopes[:, 2:] / f_diff[1:]  # (n_freqs, n_filter)
+            sparsebank = torch.min(down_slopes, up_slopes).clamp_min(0)
+            sparsebank = torch.where(sparsebank > 0, 1, 0)       
         
-        self.SpareFbank = nn.Linear(n_fft // 2 + 1, num_filter, bias=False)
+        elif init_weight == 'rand':
+            sparsebank = torch.randn(n_fft // 2 + 1, num_filter)
+
+        self.SpareFbank = nn.Parameter(sparsebank)
 
     def forward(self, input):
 
@@ -265,16 +295,18 @@ class SparseFbankLayer(nn.Module):
         if stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram, stretch_ratio)
         
-        weight = self.SpareFbank.weight
-        self.SpareFbank.weight = (weight/ weight.norm(p=2, dim=0).reshape(1,-1)).abs()
-        
-        output = torch.transpose(specgram, 2, 3)
-        output = self.SpareFbank(specgram)
+        specgram = specgram.pow(2).sum(-1)
+        # normalize
+        weight = self.SpareFbank.data
+        self.SpareFbank.data = (weight/ weight.norm(p=2, dim=0).reshape(1,-1)).abs()
+
+        output = torch.transpose(specgram, 1, 2)
+        output = torch.matmul(output, self.SpareFbank)
         
         return torch.log(output + 1e-6)
 
     def __repr__(self):
-        return "SparseFbankLayer(sr={}, num_filter={}, stretch_ratio={})".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
+        return "SparseFbankLayer(sr={}, num_filter={}, stretch_ratio={}, init_weight={},)".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]), self.init_weight)
 
 # https://github.com/mravanelli/SincNet
 class SincConv_fast(nn.Module):
