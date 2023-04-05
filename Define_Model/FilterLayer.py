@@ -305,7 +305,7 @@ class SparseFbankLayer(nn.Module):
         print(output.shape, self.SpareFbank.shape)
         output = torch.matmul(output, self.SpareFbank)
         
-        return torch.log(output + 1e-6)
+        return torch.log(output.unsqueeze(1) + 1e-6)
 
     def __repr__(self):
         return "SparseFbankLayer(sr={}, num_filter={}, stretch_ratio={}, init_weight={},)".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]), self.init_weight)
