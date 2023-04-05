@@ -207,7 +207,7 @@ class fLLayer(nn.Module):
 
 
 class MelFbankLayer(nn.Module):
-    def __init__(self, sr, num_filter, stretch_ratio=1.0, log_scale=True):
+    def __init__(self, sr, num_filter, stretch_ratio=[1.0], log_scale=True):
         super(MelFbankLayer, self).__init__()
         self.num_filter = num_filter
         self.sr = sr

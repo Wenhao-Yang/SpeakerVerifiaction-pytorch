@@ -41,7 +41,7 @@ def get_activation(activation):
 
 
 def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool,
-                     stretch_ratio: float = 1.0):
+                     stretch_ratio: list = [1.0]):
     if filter == 'fDLR':
         filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
     elif filter == 'fBLayer':

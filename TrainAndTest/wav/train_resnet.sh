@@ -42,8 +42,8 @@ if [ $stage -le 0 ]; then
     # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/vox2_int_brain_trans.yaml --seed=${seed}
 # 
     CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/cnc1_int_speed.yaml --seed=${seed}
-    sleep 5
-    CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/cnc1_int_original.yaml --seed=${seed}
+    # sleep 5
+    # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/cnc1_int_original.yaml --seed=${seed}
 
 
   done

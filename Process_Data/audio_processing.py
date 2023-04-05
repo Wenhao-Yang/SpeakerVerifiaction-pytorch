@@ -787,7 +787,7 @@ class MelSpectrogram(torch.nn.Module):
 
     def __init__(self, sample_rate: int = 16000,
         n_fft: int = 400,
-        stretch_ratio=1.0,
+        stretch_ratio=[1.0],
         win_length: Optional[int] = None,
         hop_length: Optional[int] = None,
         f_min: float = 0.0,
@@ -830,7 +830,7 @@ class MelSpectrogram(torch.nn.Module):
             pad_mode=pad_mode,
             onesided=onesided,
         )
-        self.stretch = TimeStretch(hop_length=self.hop_length, n_freq=self.n_fft // 2 + 1, fixed_rate=self.stretch_ratio)
+        self.stretch = TimeStretch(hop_length=self.hop_length, n_freq=self.n_fft // 2 + 1, fixed_rate=None)
         self.mel_scale = MelScale(
             self.n_mels, self.sample_rate, self.f_min, self.f_max, self.n_fft // 2 + 1, norm, #mel_scale
         )
@@ -846,8 +846,9 @@ class MelSpectrogram(torch.nn.Module):
         # print(waveform.shape)
         specgram = self.spectrogram(waveform)
         # print(specgram.shape)
-        if self.stretch_ratio != 1.0 and self.training:
-            specgram = self.stretch(specgram)
+        stretch_ratio = np.random.choice(self.stretch_ratio)
+        if stretch_ratio != 1.0 and self.training:
+            specgram = self.stretch(specgram, stretch_ratio)
         # print(specgram.shape)
         specgram = specgram.pow(2).sum(-1)
         # print(specgram.shape)
