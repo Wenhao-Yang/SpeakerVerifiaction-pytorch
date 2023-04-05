@@ -223,7 +223,7 @@ class MelFbankLayer(nn.Module):
         return torch.log(output + 1e-6)
 
     def __repr__(self):
-        return "MelFbankLayer(sr=%d, num_filter=%d, stretch_ratio=%f)" % (self.sr, self.num_filter, '/'.join(self.stretch_ratio))
+        return "MelFbankLayer(sr=%d, num_filter=%d, stretch_ratio=%s)" % (self.sr, self.num_filter, '/'.join(self.stretch_ratio))
 
 
 # https://github.com/mravanelli/SincNet
