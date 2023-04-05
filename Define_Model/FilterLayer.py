@@ -21,6 +21,7 @@ from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 from scipy import interpolate
 from Process_Data.audio_processing import MelSpectrogram
+from torchaudio.transforms import Spectrogram
 import Process_Data.constants as c
 
 
@@ -225,6 +226,55 @@ class MelFbankLayer(nn.Module):
     def __repr__(self):
         return "MelFbankLayer(sr={}, num_filter={}, stretch_ratio={})".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
 
+
+class SparseFbankLayer(nn.Module):
+    def __init__(self, sr, num_filter, n_fft=512, stretch_ratio=[1.0], log_scale=True,
+                 win_length=None, hop_length=None, f_max=None, f_min: float = 0.0,
+                 pad = 0, n_mels = 80,
+                 window_fn = torch.hann_window, power: float = 2.0, normalized: bool = False,
+                 center: bool = True, pad_mode: str = "reflect",
+                 onesided: bool = True, norm = None,wkwargs = None,):
+        
+        super(SparseFbankLayer, self).__init__()
+        self.num_filter = num_filter
+        self.sr = sr
+        self.stretch_ratio = stretch_ratio
+
+        self.n_fft = n_fft
+        self.win_length = win_length if win_length is not None else n_fft
+        self.hop_length = hop_length if hop_length is not None else self.win_length // 2
+        self.pad = pad
+        self.power = power
+        self.normalized = normalized
+        self.n_mels = n_mels  # number of mel frequency bins
+        self.f_max = f_max
+        self.f_min = f_min
+
+        self.spectrogram = Spectrogram(n_fft=self.n_fft, win_length=self.win_length, hop_length=self.hop_length,
+                                       pad=self.pad, window_fn=window_fn, power=power, normalized=self.normalized,
+                                       wkwargs=wkwargs, center=center, pad_mode=pad_mode,
+                                       onesided=onesided,)
+        
+        self.SpareFbank = nn.Linear(n_fft // 2 + 1, num_filter, bias=False)
+
+    def forward(self, input):
+
+        specgram = self.spectrogram(input.squeeze(1))
+
+        stretch_ratio = np.random.choice(self.stretch_ratio)
+        if stretch_ratio != 1.0 and self.training:
+            specgram = self.stretch(specgram, stretch_ratio)
+        
+        weight = self.SpareFbank.weight
+        self.SpareFbank.weight = (weight/ weight.norm(p=2, dim=0).reshape(1,-1)).abs()
+        
+        output = torch.transpose(specgram, 2, 3)
+        output = self.SpareFbank(specgram)
+        
+        return torch.log(output + 1e-6)
+
+    def __repr__(self):
+        return "SparseFbankLayer(sr={}, num_filter={}, stretch_ratio={})".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
 
 # https://github.com/mravanelli/SincNet
 class SincConv_fast(nn.Module):
