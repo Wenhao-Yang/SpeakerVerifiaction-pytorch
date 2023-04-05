@@ -908,7 +908,7 @@ class Bottleneck_v2(nn.Module):
 class ThinResNet(nn.Module):
     def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
                  input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
-                 stretch_ratio=1.0,
+                 stretch_ratio=[1.0],
                  kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
                  feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
                  alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
