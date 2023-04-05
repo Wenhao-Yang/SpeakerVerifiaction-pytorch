@@ -241,8 +241,8 @@ class SparseFbankLayer(nn.Module):
         self.stretch_ratio = stretch_ratio
 
         self.n_fft = n_fft
-        self.win_length = win_length if win_length is not None else n_fft
-        self.hop_length = hop_length if hop_length is not None else self.win_length // 2
+        self.win_length = win_length if win_length is not None else int(0.025 * sr)
+        self.hop_length = hop_length if hop_length is not None else int(0.01 * sr)
         self.pad = pad
         self.power = power
         self.normalized = normalized
