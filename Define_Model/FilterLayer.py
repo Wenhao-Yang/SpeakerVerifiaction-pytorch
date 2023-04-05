@@ -301,7 +301,7 @@ class SparseFbankLayer(nn.Module):
         weight = self.SpareFbank.data
         self.SpareFbank.data = (weight/ weight.norm(p=2, dim=0).reshape(1,-1)).abs()
 
-        output = torch.transpose(specgram, 1, 2)
+        output = torch.transpose(specgram.squeeze(1), 1, 2)
         print(output.shape, self.SpareFbank.shape)
         output = torch.matmul(output, self.SpareFbank)
         
