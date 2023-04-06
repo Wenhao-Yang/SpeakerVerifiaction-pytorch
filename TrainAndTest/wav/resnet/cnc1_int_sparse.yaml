@@ -116,7 +116,8 @@ classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
 
 # loss
 loss_ratio: 1
-lr_ratio: 0
+lr_ratio: 1
+filter_wd: 1e-3
 loss_lambda: False
 loss_type: !ref <loss>
 margin: 0.2
@@ -133,7 +134,7 @@ mixup_type: manifold
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/baseline_fb<input_dim>_sparse
+check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e4_varesmix2_bashuf2_dist/<datasets>/<feat_type><subset>_baseline/<loss>_<optimizer>_<scheduler>/baseline_fb<input_dim>_sparsewde3
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>

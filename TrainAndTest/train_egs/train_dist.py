@@ -500,19 +500,19 @@ def main():
         model_para = [{'params': rest_params},
                       {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
-    if 'filter' in config_args:
-        if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
-            filter_params = list(map(id, model.filter_layer.parameters()))
-            rest_params = filter(lambda p: id(
-                p) not in filter_params, model_para[0]['params'])
-            init_wd = config_args['filter_wd'] if args.filter_wd > 0 else config_args['weight_decay']
-            init_lr = config_args['lr'] * \
-                config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
-            print('Set the lr and weight_decay of filter layer to %f and %f' %
-                  (init_lr, init_wd))
-            model_para[0]['params'] = rest_params
-            model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
-                               'weight_decay': init_wd})
+    if 'filter_wd' in config_args:
+        # if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
+        filter_params = list(map(id, model.input_mask[0].parameters()))
+        rest_params = filter(lambda p: id(
+            p) not in filter_params, model_para[0]['params'])
+        init_wd = config_args['filter_wd'] if 'filter_wd' in config_args else config_args['weight_decay']
+        init_lr = config_args['lr'] * \
+            config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
+        print('Set the lr and weight_decay of filter layer to %f and %f' %
+                (init_lr, init_wd))
+        model_para[0]['params'] = rest_params
+        model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
+                            'weight_decay': init_wd})
 
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
                   'weight_decay': config_args['weight_decay'],
