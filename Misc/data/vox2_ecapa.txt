@@ -26,5 +26,5 @@
 |     sitw-test     |   3.2531    |   0.2844    |    0.2843     |    0.4561     | 20221223 10:28:06 |
 |     sitw-test     |   3.0618    |   0.2709    |    0.2854     |    0.4457     | 20221223 10:30:04 |
 
-# ECAPA fb80 vox2+6aug speechbrain
+# ECAPA fb80 vox2+5aug speechbrain
 |     vox1-test     |   1.0584    |             |    0.1406
