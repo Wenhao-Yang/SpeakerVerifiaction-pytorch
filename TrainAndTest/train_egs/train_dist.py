@@ -508,10 +508,10 @@ def main():
         init_wd = config_args['filter_wd'] if 'filter_wd' in config_args else config_args['weight_decay']
         init_lr = config_args['lr'] * \
             config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
-        print('Set the lr and weight_decay of filter layer to %f and %f' %
-                (init_lr, init_wd))
+        print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
+        
         model_para[0]['params'] = rest_params
-        model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
+        model_para.append({'params': model.input_mask[0].parameters(), 'lr': init_lr,
                             'weight_decay': init_wd})
 
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
