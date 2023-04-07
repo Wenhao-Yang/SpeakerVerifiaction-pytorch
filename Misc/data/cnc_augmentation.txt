@@ -1,0 +1,20 @@
+# baseline
+EER(%):        13.79    Threshold:  0.1709  MinDcf-0.01: 0.6040  MinDcf-0.001: 0.6531  Mix2,3: 9.0081, 5.4412
+
+# baseline server
+EER(%):        13.79    Threshold:  0.1628  MinDcf-0.01: 0.6237  MinDcf-0.001: 0.6453  Mix2,3: 8.9010,   
+
+# server speed 0.9_1_1.1_1.25_1.5
+EER(%):        12.32    Threshold:  0.1532  MinDcf-0.01: 0.6149  MinDcf-0.001: 0.6995  Mix2,3: 8.6146, 5.2968
+
+# server speed 1_1.1_1.25
+EER(%):        11.58    Threshold:  0.1637  MinDcf-0.01: 0.6137  MinDcf-0.001: 0.6601  Mix2,3: 7.6415, 4.6893
+
+# alignmix 7
+EER(%):        13.30    Threshold:  0.1377  MinDcf-0.01: 0.6270  MinDcf-0.001: 0.7192  Mix2,3: 9.5659, 5.9982
+
+# mani123
+EER(%):        14.78    Threshold:  0.1129  MinDcf-0.01: 0.5972  MinDcf-0.001: 0.6305  Mix2,3: 9.3184, 5.5653
+
+# styl123
+EER(%):        22.17    Threshold:  0.4661  MinDcf-0.01: 0.7619  MinDcf-0.001: 0.7833  Mix2,3: 17.3627, 13.2289
