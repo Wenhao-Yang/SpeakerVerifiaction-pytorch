@@ -888,9 +888,13 @@ class ScriptTrainDataset(data.Dataset):
             for spk in speakers:
                 if spk not in valid_set.keys():
                     valid_set[spk] = []
-                    for i in range(num_valid):
-                        if len(dataset[spk]) <= num_valid:
-                            break
+                    if isinstance(num_valid, float) and num_valid < 1.0:
+                        numofutt = len(dataset[spk]) - int(np.ceil((1-num_valid) * dataset[spk]))
+                    else:
+                        numofutt = num_valid
+
+                    for i in range(numofutt):
+
                         j = np.random.randint(len(dataset[spk]))
                         utt = dataset[spk].pop(j)
                         valid_set[spk].append(utt)

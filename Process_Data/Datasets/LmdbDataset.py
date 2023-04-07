@@ -1217,14 +1217,18 @@ class Hdf5TrainDataset(Dataset):
             for spk in speakers:
                 if spk not in valid_set.keys():
                     valid_set[spk] = []
-                    for i in range(num_valid):
-                        if len(dataset[spk]) <= 1:
-                            break
+                    if isinstance(num_valid, float) and num_valid < 1.0:
+                        numofutt = len(dataset[spk]) - int(np.ceil((1-num_valid) * dataset[spk]))
+                    else:
+                        numofutt = num_valid
+
+                    for i in range(numofutt):
+
                         j = np.random.randint(len(dataset[spk]))
                         utt = dataset[spk].pop(j)
                         valid_set[spk].append(utt)
-
                         valid_utt2spk_dict[utt] = utt2spk_dict[utt]
+                        
             if verbose > 0:
                 print('    Spliting {} utterances for Validation.'.format(
                     len(valid_utt2spk_dict.keys())))
