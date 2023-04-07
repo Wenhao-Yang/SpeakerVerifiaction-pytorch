@@ -7,7 +7,6 @@ numpy
 python-speech-features
 scikit-learn
 scipy
-sklearn
 SoundFile
 speechpy
 tensorboardX
