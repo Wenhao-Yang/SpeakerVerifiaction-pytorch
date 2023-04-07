@@ -5,7 +5,7 @@
 @Author: yangwenhao
 @Contact: 874681044@qq.com
 @Software: PyCharm
-@File: ResNets.py
+@File: ResNet.py
 @Time: 2019/10/10 下午5:09
 @Overview: Deep Speaker using Resnet with CNN, which is not ordinary Resnet.
 This file define resnet in 'Deep Residual Learning for Image Recognition'
@@ -14,8 +14,9 @@ For all model, the pre_forward function is for extract vectors and forward for c
 """
 import pdb
 import random
-import torch
+
 import numpy as np
+import torch
 import torch.nn.functional as F
 from torch import nn
 # from torchvision.models.resnet import BasicBlock
@@ -27,6 +28,7 @@ from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcita
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, ReweightLayer, AttentionweightLayer_v0
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
+from Define_Model.MixStyle import SinkhornDistance
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
     SelfVadPooling, GhostVLAD_v2, AttentionStatisticPooling_v2, SelfAttentionPooling_v2, SelfAttentionPooling_v3
 
@@ -947,8 +949,15 @@ class ThinResNet(nn.Module):
         self.num_filter = channels  # [16, 32, 64, 128]
         self.inplanes = self.num_filter[0]
         self.downsample = str(downsample)
+
         self.mix_type = mix
-        self.mix = self.mixup if mix == 'mixup' else self.addup
+        mix_types = {
+            "mixup": self.mixup,
+            "addup": self.addup,
+            "style": self.mixstyle,
+            "align": self.alignmix
+        }
+        self.mix = mix_types[mix]
 
         if block_type == "seblock":
             block = SEBasicBlock if resnet_size < 50 else SEBottleneck
@@ -1002,8 +1011,7 @@ class ThinResNet(nn.Module):
 
         self.input_mask = nn.Sequential(*input_mask)
 
-        self.conv1 = nn.Conv2d(
-            1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
+        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(self.num_filter[0])
         self.relu = nn.ReLU(inplace=True)
 
@@ -1083,7 +1091,6 @@ class ThinResNet(nn.Module):
         self.alpha = alpha
         if self.alpha:
             self.l2_norm = L2_Norm(self.alpha)
-
         self.classifier = nn.Linear(embedding_size, num_classes)
 
         for m in self.modules():
@@ -1142,7 +1149,6 @@ class ThinResNet(nn.Module):
                 )
 
         layers = []
-        # pdb.set_trace()
         if blocks > 0:
             layers.append(block(self.inplanes, planes, stride=stride,
                           downsample=downsample, reduction_ratio=red_ratio))
@@ -1190,21 +1196,19 @@ class ThinResNet(nn.Module):
         # print(x.shape)
         group1 = self.layer1(x)
         if proser != None and layer_mix == 3:
-            group1 = self.mixup(group1, proser, lamda_beta)
+            group1 = self.mix(group1, proser, lamda_beta)
 
         group2 = self.layer2(group1)
         if proser != None and layer_mix == 4:
-            group2 = self.mixup(group2, proser, lamda_beta)
+            group2 = self.mix(group2, proser, lamda_beta)
 
         group3 = self.layer3(group2)
         if proser != None and layer_mix == 5:
-            group3 = self.mixup(group3, proser, lamda_beta)
+            group3 = self.mix(group3, proser, lamda_beta)
 
         group4 = self.layer4(group3)
         if proser != None and layer_mix == 6:
-            group4 = self.mixup(group4, proser, lamda_beta)
-
-        # print(x.shape)
+            group4 = self.mix(group4, proser, lamda_beta)
 
         if self.dropout_p > 0:
             group4 = self.dropout(group4)
@@ -1219,10 +1223,9 @@ class ThinResNet(nn.Module):
 
         if self.encoder != None:
             x = self.encoder(x)
-
-        x = x.view(x.size(0), -1)
         if proser != None and layer_mix == 7:
             x = self.mix(x, proser, lamda_beta)
+        x = x.view(x.size(0), -1)
 
         x = self.fc1(x)
         if self.alpha:
@@ -1234,7 +1237,6 @@ class ThinResNet(nn.Module):
         if feature_map == 'last':
             return embeddings, x
 
-        # pdb.set_trace()
         if proser != None and label != None:
             half_batch_size = int(x.shape[0] / 2)
             half_feats = x[-half_batch_size:]
@@ -1318,12 +1320,63 @@ class ThinResNet(nn.Module):
         return embeddings
 
     def mixup(self, x, shuf_half_idx_ten, lamda_beta):
-        half_batch_size = shuf_half_idx_ten.shape[0]
-        half_feats = x[-half_batch_size:]
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
         x = torch.cat(
-            [x[:-half_batch_size], lamda_beta * half_feats +
+            [x[:-mix_size], lamda_beta * half_feats +
                 (1 - lamda_beta) * half_feats[shuf_half_idx_ten]],
             dim=0)
+
+        return x
+
+    def mixstyle(self, x, shuf_half_idx_ten, lamda_beta):
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+
+        mu = half_feats.mean(dim=[2, 3], keepdim=True)
+        var = half_feats.var(dim=[2, 3], keepdim=True)
+        sig = (var + 1e-6).sqrt()
+        mu, sig = mu.detach(), sig.detach()
+        x_normed = (half_feats - mu ) / sig
+
+        mu2, sig2 = mu[shuf_half_idx_ten], sig[shuf_half_idx_ten]
+        mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)
+        sig_mix = sig*lamda_beta + sig2 * (1-lamda_beta)
+
+        x = torch.cat(
+            [x[:-mix_size], x_normed*sig_mix + mu_mix],
+            dim=0)
+
+        return x
+    
+    def alignmix(self, x, shuf_half_idx_ten, lamda_beta):
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+        half_feats_shape = half_feats.shape # 128 x 128 x 38 x 5 
+        # print(half_feats.shape)
+        # out shape = batch_size x 512 x 4 x 4 (cifar10/100)
+        feat1 = half_feats.view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
+        feat2 = half_feats[shuf_half_idx_ten].view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
+        
+        sinkhorn = SinkhornDistance(eps=0.1, max_iter=100, reduction=None)
+        
+        P = sinkhorn(feat1.permute(0,2,1), feat2.permute(0,2,1)).detach()  # optimal plan batch x 16 x 16
+        # P = P*(half_feats_shape[2]*half_feats_shape[3]) # assignment matrix 
+        P = P*(feat1.shape[-1]) # assignment matrix 
+
+        align_mix = random.randint(0,1) # uniformly choose at random, which alignmix to perform
+    
+        if (align_mix == 0):
+            # \tilde{A} = A'R^{T}
+            f1 = torch.matmul(feat2, P.permute(0,2,1).cuda()).view(half_feats_shape) # batch_tf*channel x tf*channel_tf*channel
+            final = feat1.view(half_feats_shape)*lamda_beta + f1*(1-lamda_beta)
+
+        elif (align_mix == 1):
+            # \tilde{A}' = AR
+            f2 = torch.matmul(feat1, P.cuda()).view(half_feats_shape).cuda()
+            final = f2*lamda_beta + feat2.view(half_feats_shape)*(1-lamda_beta)
+
+        x = torch.cat([x[:-mix_size], final], dim=0)
 
         return x
 
@@ -1336,7 +1389,7 @@ class ThinResNet(nn.Module):
             dim=0)
 
         return x
-
+    
     # Allow for accessing forward method in a inherited class
     forward = _forward
 
