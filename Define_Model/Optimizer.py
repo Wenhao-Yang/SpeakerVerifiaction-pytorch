@@ -163,6 +163,7 @@ class EarlyStopping():
         self.best_epoch = 0
         self.best_loss = None
         self.early_stop = False
+        self.top_lossepochs = []
 
     def __call__(self, val_loss, epoch):
         if self.best_loss == None:
@@ -172,12 +173,18 @@ class EarlyStopping():
         elif self.best_loss - val_loss > self.min_delta:
             self.best_loss = val_loss
             self.best_epoch = epoch
+            self.top_lossepochs.append([val_loss, epoch])
 
             # reset counter if validation loss improves
             self.counter = 0
         elif self.best_loss - val_loss < self.min_delta:
             self.counter += 1
-            print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
+            print(
+                f"INFO: Early stopping counter {self.counter} of {self.patience}")
             if self.counter >= self.patience:
-                print('INFO: Early stopping')
+                tops = torch.tensor(self.top_lossepochs)
+                tops_4 = tops[torch.argsort(tops[:, 1])][:4, 0].long().tolist()
+
+                print('INFO: Early stopping, top-4 epochs: ',
+                      tops_4)
                 self.early_stop = True
