@@ -347,6 +347,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
             'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
 
+
 def valid(valid_loader, train_extract_loader,
           model, optimizer, scheduler,
           check_path, xvector_dir, 
@@ -384,7 +385,6 @@ def main():
 
     args = parser.parse_args()
     # Views the training images and displays the distance on anchor-negative and anchor-positive
-    # test_display_triplet_distance = False
     # print the experiment configuration
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
@@ -410,6 +410,7 @@ def main():
             os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
     else:
         writer = None
+
     # Dataset
     train_dir, valid_dir, train_extract_dir = SubScriptDatasets(config_args)
     train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
@@ -418,11 +419,6 @@ def main():
     torch.distributed.barrier()
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-        # opts = vars(config_args)
-        # keys = list(config_args.keys())
-        # keys.sort()
-        # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
-        # print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
         if train_dir.num_spks != config_args['num_classes']:
             print('Number of Speakers in training set is not equal to the asigned number.\n'.format(
@@ -439,10 +435,6 @@ def main():
         model.classifier = config_args['classifier']
     else:
         create_classifier(model, **config_args)
-
-    # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
-    # save_model_args(model_kwargs, model_yaml_path)
-    # exit(0)
 
     start_epoch = 0
     check_path = config_args['check_path'] + '/' + str(args.seed)

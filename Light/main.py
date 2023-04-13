@@ -89,16 +89,14 @@ def main():
     early_stop_callback = EarlyStopping(
         monitor="Test/"+config_args['early_meta'], min_delta=config_args['early_delta'],
         patience=config_args['early_patience'], verbose=True, mode="min")
+    this_callbacks.append(early_stop_callback)
     
     # if args.manual_shuffle:
     #     this_callbacks.append(ShufTrainset(train_dir=train_dir))
-
     # profiler = AdvancedProfiler(
     #     filename='profilers')
-
     # profiler = PyTorchProfiler(
     #     filename='profilers', profile_memory=True, use_cpu=False, use_kineto=True)
-
     # strategy="ddp_find_unused_parameters_false",
     # precision=16, amp_backend='native',
     # val_check_interval = max([math.gcd(int(len(train_loader)/(len(args.gpus.split(','))))+i,
