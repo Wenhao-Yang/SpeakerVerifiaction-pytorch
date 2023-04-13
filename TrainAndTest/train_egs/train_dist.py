@@ -347,6 +347,29 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
             'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
 
+def valid(valid_loader, train_extract_loader,
+          model, optimizer, scheduler,
+          check_path, xvector_dir, 
+          config_args,
+          writer, early_stopping_scheduler,
+          epoch, step=None,):
+    valid_loss = valid_class(valid_loader, model, epoch, config_args, writer)
+    valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, writer)
+
+    early_stopping_scheduler(valid_test_dict[config_args['early_meta']], epoch)
+
+    if torch.distributed.get_rank() == 0 and (
+                    epoch % config_args['test_interval'] == 0 or early_stopping_scheduler.best_epoch == epoch):
+        # save model
+        model.eval()
+        this_check_path = '{}/checkpoint_{}.pth'.format(check_path, epoch)
+        model_state_dict = model.module.state_dict() \
+            if isinstance(model, DistributedDataParallel) else model.state_dict()
+        torch.save({'epoch': epoch, 'state_dict': model_state_dict,
+                    'scheduler': scheduler.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    }, this_check_path)
+        
 
 def main():
     parser = argparse.ArgumentParser(
@@ -506,13 +529,12 @@ def main():
                                              min_delta=config_args['early_delta'])
 
     # scheduler = create_scheduler(optimizer, config_args)
-
     # Save model config txt
     if torch.distributed.get_rank() == 0:
         with open(os.path.join(check_path,
                                'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
                   'w') as f:
-            f.write('model: ' + str(model) + '\n')
+            f.write('Model:     ' + str(model) + '\n')
             f.write('Optimizer: ' + str(optimizer) + '\n')
             f.write('Scheduler: ' + str(scheduler) + '\n')
 
@@ -565,7 +587,6 @@ def main():
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
             model.cuda(), device_ids=[args.local_rank])
-
     else:
         model = model.cuda()
 
@@ -587,19 +608,13 @@ def main():
             train_sampler.set_epoch(epoch)
             valid_sampler.set_epoch(epoch)
             train_extract_sampler.set_epoch(epoch)
-            # extract_sampler.set_epoch(epoch)
-
-            # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
-            lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate: '.format(torch.distributed.get_rank(),
+            lr_string = '\33[1;34m Ranking {}: \'{}\' learning rate: '.format(torch.distributed.get_rank(),
                                                                                       config_args['optimizer'])
-            this_lr = []
-
-            for param_group in optimizer.param_groups:
-                this_lr.append(param_group['lr'])
-                lr_string += '{:.8f} '.format(param_group['lr'])
-
+            this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
+            lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
             print('%s \33[0m' % lr_string)
+
             all_lr.append(this_lr[0])
             if torch.distributed.get_rank() == 0:
                 writer.add_scalar('Train/lr', this_lr[0], epoch)
@@ -614,22 +629,16 @@ def main():
 
             train(train_loader, model, optimizer,
                   epoch, scheduler, config_args, writer)
-            # if config_args['batch_shuffle']:
-            #     train_dir.__shuffle__()
 
             valid_loss = valid_class(
                 valid_loader, model, epoch, config_args, writer)
+            # if config_args['early_stopping'] or (
+            #         epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):
+            valid_test_dict = valid_test(
+                train_extract_loader, model, epoch, xvector_dir, config_args, writer)
 
-            if config_args['early_stopping'] or (
-                    epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):
-                valid_test_dict = valid_test(
-                    train_extract_loader, model, epoch, xvector_dir, config_args, writer)
-            else:
-                valid_test_dict = {}
-
-            # valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
-            flag_tensor = torch.zeros(1).cuda()
             valid_test_dict['Valid_Loss'] = valid_loss
+
             if torch.distributed.get_rank() == 0:
                 valid_test_result.append(valid_test_dict)
 
@@ -644,15 +653,10 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] >= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
-            # if torch.distributed.get_rank() == 0:
-            #     flag_tensor += 1
-
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch):
 
-                # if (epoch == 1 or epoch != (end - 2)) and (
-                #     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
                 model.eval()
                 this_check_path = '{}/checkpoint_{}.pth'.format(
                     check_path, epoch)
@@ -662,16 +666,6 @@ def main():
                             'scheduler': scheduler.state_dict(),
                             'optimizer': optimizer.state_dict(),
                             }, this_check_path)
-
-                # valid_test(train_extract_loader, model, epoch, xvector_dir)
-                # test(extract_loader, model, epoch, xvector_dir)
-
-                if config_args['early_stopping']:
-                    pass
-                # elif early_stopping_scheduler.best_epoch == epoch or (
-                #         args.early_stopping == False and epoch % args.test_interval == 1):
-                # elif epoch % config_args['test_interval'] == 1:
-                #     test(extract_loader, model, epoch, xvector_dir)
 
                 if early_stopping_scheduler.early_stop:
                     print('Best Epoch is %d:' %

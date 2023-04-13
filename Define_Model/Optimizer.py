@@ -150,7 +150,7 @@ class EarlyStopping():
     certain epochs.
     """
 
-    def __init__(self, patience=5, min_delta=1e-3):
+    def __init__(self, patience=5, min_delta=1e-3, top_k=4):
         """
         :param patience: how many epochs to wait before stopping when loss is
                not improving
@@ -163,6 +163,7 @@ class EarlyStopping():
         self.best_epoch = 0
         self.best_loss = None
         self.early_stop = False
+        self.top_k = top_k
         self.top_lossepochs = []
 
     def __call__(self, val_loss, epoch):
@@ -179,12 +180,24 @@ class EarlyStopping():
             self.counter = 0
         elif self.best_loss - val_loss < self.min_delta:
             self.counter += 1
-            print(
-                f"INFO: Early stopping counter {self.counter} of {self.patience}")
+            print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
+
             if self.counter >= self.patience:
                 tops = torch.tensor(self.top_lossepochs)
-                tops_4 = tops[torch.argsort(tops[:, 1])][:4, 0].long().tolist()
+                tops_k = tops[torch.argsort(tops[:, 1])][:self.top_k, 0].long().tolist()
 
-                print('INFO: Early stopping, top-4 epochs: ',
-                      tops_4)
+                print('INFO: Early stopping, top-k best epochs: ',
+                      tops_k)
                 self.early_stop = True
+
+
+class TrainSave():
+    """
+    Early stopping to stop the training when the loss does not improve after
+    certain epochs.
+    """
+
+    def __init__(self, patience=5, min_delta=1e-3, top_k=4):
+        self.lr       = []
+        self.loss     = []
+        self.accuracy = []
