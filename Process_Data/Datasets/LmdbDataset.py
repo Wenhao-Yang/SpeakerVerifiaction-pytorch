@@ -651,7 +651,7 @@ class EgsDataset(Dataset):
 
 
 class CrossEgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False, num_meta_spks=0,
+    def __init__(self, dir, feat_dim, transform, loader=load_mat, domain=False, num_meta_spks=0,
                  random_chunk=[], batch_size=144, enroll_utt=5,
                  label_dir='', verbose=1):
 
