@@ -67,6 +67,7 @@ scheduler: rop
 lr: 0.1
 base_lr: 0.00001
 cyclic_epoch: 3
+val_check_interval: 1211
 cos_sim: True
 
 early_stopping: True
