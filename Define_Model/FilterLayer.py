@@ -227,6 +227,50 @@ class MelFbankLayer(nn.Module):
         return "MelFbankLayer(sr={}, num_filter={}, stretch_ratio={})".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
 
 
+class SpectrogramLayer(nn.Module):
+    def __init__(self, sr, n_fft=512, stretch_ratio=[1.0], log_scale=True,
+                 win_length=None, hop_length=None, f_max=None, f_min: float = 0.0,
+                 pad=0, n_mels=80, init_weight='mel',
+                 window_fn=torch.hann_window, power: float = 2.0, normalized: bool = False,
+                 center: bool = True, pad_mode: str = "reflect",
+                 onesided: bool = True, norm=None, wkwargs=None,):
+
+        super(SpectrogramLayer, self).__init__()
+        self.sr = sr
+        self.stretch_ratio = stretch_ratio
+
+        self.n_fft = n_fft
+        self.win_length = win_length if win_length is not None else int(
+            0.025 * sr)
+        self.hop_length = hop_length if hop_length is not None else int(
+            0.01 * sr)
+        self.pad = pad
+        self.power = power
+        self.normalized = normalized
+        self.init_weight = init_weight
+        self.n_mels = n_mels  # number of mel frequency bins
+        self.f_max = f_max
+        self.f_min = f_min
+
+        self.spectrogram = Spectrogram(n_fft=self.n_fft, win_length=self.win_length, hop_length=self.hop_length,
+                                       pad=self.pad, window_fn=window_fn, power=power, normalized=self.normalized,
+                                       wkwargs=wkwargs, center=center, pad_mode=pad_mode,
+                                       onesided=onesided,)
+
+    def forward(self, input):
+
+        specgram = self.spectrogram(input.squeeze(1))
+
+        stretch_ratio = np.random.choice(self.stretch_ratio)
+        if stretch_ratio != 1.0 and self.training:
+            specgram = self.stretch(specgram, stretch_ratio)
+
+        return torch.log(specgram + 1e-6).transpose(-1, -2)
+
+    def __repr__(self):
+        return "SpectrogramLayer(sr={}, stretch_ratio={})".format(self.sr, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
+
+
 class SparseFbankLayer(nn.Module):
     def __init__(self, sr, num_filter, n_fft=512, stretch_ratio=[1.0], log_scale=True,
                  win_length=None, hop_length=None, f_max=None, f_min: float = 0.0,
@@ -234,7 +278,7 @@ class SparseFbankLayer(nn.Module):
                  window_fn = torch.hann_window, power: float = 2.0, normalized: bool = False,
                  center: bool = True, pad_mode: str = "reflect",
                  onesided: bool = True, norm = None, wkwargs = None,):
-        
+
         super(SparseFbankLayer, self).__init__()
         self.num_filter = num_filter
         self.sr = sr
@@ -513,7 +557,7 @@ class Inst_Norm(nn.Module):
 
     def forward(self, input):
         # alpha = log(p * ( class -2) / (1-p))
-        output = input.squeeze().transpose(-1, -2)
+        output = input.squeeze(1).transpose(-1, -2)
         output = self.norm_layer(output)
         output = output.unsqueeze(1).transpose(-1, -2)
 
@@ -804,7 +848,7 @@ class DropweightLayer(nn.Module):
             if x.is_cuda:
                 drop_weight = drop_weight.cuda()
 
-            return x
+            return x * drop_weight
 
     def __repr__(self):
         return "DropweightLayer(input_dim=%d, weight=%s, dropout_p=%s, scale=%f)" % (self.input_dim, self.weight,
@@ -989,6 +1033,30 @@ class ReweightLayer(nn.Module):
 
     def __repr__(self):
         return "ReweightLayer(input_dim=%d, weight=%s)" % (self.input_dim, self.weight)
+
+# On The Importance Of Different Frequency Bins For speaker verification
+class FrequencyReweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FrequencyReweightLayer, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        U = x * self.activation(self.weight)
+        
+        return x + U
+
+    def __repr__(self):
+        return "FrequencyReweightLayer(input_dim=%d)" % (self.input_dim)
 
 
 class AttentionweightLayer_v2(nn.Module):

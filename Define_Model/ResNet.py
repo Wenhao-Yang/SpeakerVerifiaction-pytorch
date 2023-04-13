@@ -23,7 +23,7 @@ from torch import nn
 # from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
-from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
+from Define_Model.FilterLayer import FrequencyReweightLayer, TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, ReweightLayer, AttentionweightLayer_v0
@@ -908,16 +908,22 @@ class Bottleneck_v2(nn.Module):
 
 
 class ThinResNet(nn.Module):
-    def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
-                 input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
-                 stretch_ratio=[1.0],
-                 kernel_size=5, stride=1, padding=2, dropout_p=0.0, exp=False, filter_fix=False,
-                 feat_dim=64, num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
-                 alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
-                 filter=None, replace_stride_with_dilation=None, norm_layer=None, downsample=None,
-                 mask='None', mask_len=[5, 10], red_ratio=8, init_weight='mel', scale=0.2,
-                 weight_p=0.1, weight_norm='max', mix='mixup',
-                 input_norm='', gain_layer=False, **kwargs):
+    def __init__(self, resnet_size=34, num_classes=1000, 
+                 input_norm='', input_len=300, inst_norm=True, input_dim=257, gain_axis='both',
+                 filter=None, feat_dim=64, sr=16000, stretch_ratio=[1.0], win_length=int(0.025*16000),
+                 nfft=512, exp=False, filter_fix=False,
+                 kernel_size=5, stride=1, padding=2, first_bias=True, 
+                 block_type='None', expansion=1, channels=[16, 32, 64, 128], fast='None', downsample=None, 
+                 red_ratio=8,
+                 zero_init_residual=False, groups=1, width_per_group=64, replace_stride_with_dilation=None, 
+                 dropout_p=0.0, 
+                 encoder_type='STAP', time_dim=1, avg_size=4, embedding_size=128, 
+                 alpha=0,
+                 norm_layer=None, 
+                 mask='None', mask_len=[5, 10], init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
+                 mix='mixup',
+                 gain_layer=False, **kwargs):
+        
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
@@ -993,8 +999,8 @@ class ThinResNet(nn.Module):
 
         input_mask = []
         filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
-                                        exp=exp, filter_fix=filter_fix, 
-                                        stretch_ratio=stretch_ratio)
+                                        exp=exp, filter_fix=filter_fix,
+                                        stretch_ratio=stretch_ratio, win_length=win_length, nfft=nfft)
         if filter_layer != None:
             input_mask.append(filter_layer)
             input_dim = feat_dim
@@ -1016,11 +1022,9 @@ class ThinResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
         if self.fast.startswith('avp'):
-            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
             self.maxpool = nn.AvgPool2d(kernel_size=(
                 3, 3), stride=(1, 2), padding=(1, 1))
         elif self.fast.startswith('av1p'):
-            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
             self.maxpool = nn.AvgPool2d(kernel_size=(
                 1, 3), stride=(1, 2), padding=(0, 1))
         elif self.fast.startswith('mxp'):
@@ -1030,9 +1034,9 @@ class ThinResNet(nn.Module):
             self.maxpool = None
 
         self.layer1 = self._make_layer(
-            block, self.num_filter[0], layers[0], red_ratio=red_ratio)
+            block, self.num_filter[0], layers[0], red_ratio=red_ratio, input_dim=int(np.ceil(input_dim/self.conv1.stride[1])))
         self.layer2 = self._make_layer(
-            block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio)
+            block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio, input_dim=int(np.ceil(input_dim/self.conv1.stride[1]/2)))
         self.layer3 = self._make_layer(
             block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
 
@@ -1052,7 +1056,6 @@ class ThinResNet(nn.Module):
             encode_input_dim = int(freq_dim * last_channel * block.expansion)
         else:
             self.avgpool = None
-            # print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
             encode_input_dim = int(
                 np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
 
@@ -1111,7 +1114,7 @@ class ThinResNet(nn.Module):
                 elif isinstance(m, BasicBlock):
                     nn.init.constant_(m.bn2.weight, 0)
 
-    def _make_layer(self, block, planes, blocks, stride=1, red_ratio=2):
+    def _make_layer(self, block, planes, blocks, stride=1, red_ratio=2, input_dim=None):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             if self.downsample in ['None', 'k1']:
@@ -1157,22 +1160,14 @@ class ThinResNet(nn.Module):
                 layers.append(block(self.inplanes, planes,
                               reduction_ratio=red_ratio))
 
+        if self.mask == 'frl' and input_dim != None:
+            layers.append(FrequencyReweightLayer(input_dim=input_dim))
         return nn.Sequential(*layers)
 
     def _forward(self, x, feature_map='', proser=None, label=None,
                  lamda_beta=0.2, mixup_alpha=-1):
-        # pdb.set_trace()
-        # print(x.shape)
-        # if self.filter_layer != None:
-        #     x = self.filter_layer(x)
-        #
-        # if self.inst_layer != None:
-        #     x = self.inst_layer(x)
-        #
-        # if self.mask_layer != None:
-        #     x = self.mask_layer(x)
+
         if isinstance(mixup_alpha, float) or isinstance(mixup_alpha, int):
-            # layer_mix = random.randint(0, 2)
             layer_mix = mixup_alpha
         elif isinstance(mixup_alpha, list):
             layer_mix = random.choice(mixup_alpha)
@@ -1184,9 +1179,7 @@ class ThinResNet(nn.Module):
         if proser != None and layer_mix == 1:
             x = self.mix(x, proser, lamda_beta)
 
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
+        x = self.relu(self.bn1(self.conv1(x)))
         if self.maxpool != None:
             x = self.maxpool(x)
 
@@ -1219,10 +1212,11 @@ class ThinResNet(nn.Module):
             embeddings = (group1, group2, group3, group4)
 
         if self.avgpool != None:
-            x = self.avgpool(group4)
+            group4 = self.avgpool(group4)
 
         if self.encoder != None:
-            x = self.encoder(x)
+            x = self.encoder(group4)
+
         if proser != None and layer_mix == 7:
             x = self.mix(x, proser, lamda_beta)
         x = x.view(x.size(0), -1)
@@ -1337,7 +1331,7 @@ class ThinResNet(nn.Module):
         var = half_feats.var(dim=[2, 3], keepdim=True)
         sig = (var + 1e-6).sqrt()
         mu, sig = mu.detach(), sig.detach()
-        x_normed = (half_feats - mu ) / sig
+        x_normed = (half_feats - mu) / sig
 
         mu2, sig2 = mu[shuf_half_idx_ten], sig[shuf_half_idx_ten]
         mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)
@@ -1348,7 +1342,7 @@ class ThinResNet(nn.Module):
             dim=0)
 
         return x
-    
+
     def alignmix(self, x, shuf_half_idx_ten, lamda_beta):
         mix_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-mix_size:]
@@ -1357,7 +1351,7 @@ class ThinResNet(nn.Module):
         # out shape = batch_size x 512 x 4 x 4 (cifar10/100)
         feat1 = half_feats.view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
         feat2 = half_feats[shuf_half_idx_ten].view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
-        
+
         sinkhorn = SinkhornDistance(eps=0.1, max_iter=100, reduction=None)
         
         P = sinkhorn(feat1.permute(0,2,1), feat2.permute(0,2,1)).detach()  # optimal plan batch x 16 x 16

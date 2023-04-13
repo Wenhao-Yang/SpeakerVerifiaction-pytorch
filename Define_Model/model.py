@@ -164,6 +164,7 @@ class BasicBlock(nn.Module):
 
         return out
 
+
 class myResNet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000):
@@ -227,6 +228,7 @@ class myResNet(nn.Module):
         x = self.fc(x)
 
         return x
+
 
 class DeepSpeakerModel(nn.Module):
     def __init__(self, resnet_size, embedding_size, num_classes, feature_dim=64):
