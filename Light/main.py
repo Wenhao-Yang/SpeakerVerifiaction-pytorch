@@ -45,8 +45,8 @@ parser.add_argument('--gpus', type=str, default='0,1',
                     help='gpus(default: 0)')
 parser.add_argument('--dataset-type', type=str,
                     default='scripts', help='gpus(default: 0)')
-parser.add_argument('--manual-shuffle', action='store_true',
-                    default=False, help='log power spectogram')
+parser.add_argument('--test', action='store_true',
+                    default=False, help='gpus(default: 0)')
 args = parser.parse_args()
 
 # seed
@@ -92,6 +92,7 @@ def main():
     
     # if args.manual_shuffle:
     #     this_callbacks.append(ShufTrainset(train_dir=train_dir))
+
     # profiler = AdvancedProfiler(
     #     filename='profilers')
 
