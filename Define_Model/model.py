@@ -18,7 +18,7 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, fDLR, MelFbankLayer
+from Define_Model.FilterLayer import MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
@@ -41,7 +41,8 @@ def get_activation(activation):
 
 
 def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool,
-                     stretch_ratio: list = [1.0], init_weight: str = 'mel'):
+                     stretch_ratio: list = [1.0], init_weight: str = 'mel', win_length=int(0.025*16000),
+                     nfft=512):
     if filter == 'fDLR':
         filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
     elif filter == 'fBLayer':
@@ -55,6 +56,9 @@ def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: b
         filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
     elif filter == 'fbank':
         filter_layer = MelFbankLayer(sr=sr, num_filter=feat_dim, stretch_ratio=stretch_ratio)
+    elif filter == 'spect':
+        filter_layer = SpectrogramLayer(sr=sr, stretch_ratio=stretch_ratio, 
+                                        win_length=win_length, n_fft=nfft)
     elif filter == 'sparse':
         filter_layer = SparseFbankLayer(sr=sr, num_filter=feat_dim, stretch_ratio=stretch_ratio,
                                         init_weight=init_weight)
@@ -112,6 +116,8 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
     elif mask == 'drop3':
         mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=weight_p,
                                         weight=init_weight, scale=scale)
+    elif mask == 'frl':
+        mask_layer = FrequencyReweightLayer(input_dim=input_dim)
     else:
         mask_layer = None
 

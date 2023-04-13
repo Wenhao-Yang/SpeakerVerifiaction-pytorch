@@ -1073,12 +1073,10 @@ class ThinResNet(nn.Module):
             self.encoder = AttentionStatisticPooling(input_dim=encode_input_dim,
                                                      hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim * 2
-
         elif encoder_type in ['ASTP2', 'SASP2']:
             self.encoder = AttentionStatisticPooling_v2(
                 input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim * 2
-
         elif encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=encode_input_dim)
             self.encoder_output = encode_input_dim * 2
@@ -1522,7 +1520,7 @@ class RepeatResNet(nn.Module):
             encode_input_dim = int(freq_dim * last_channel * block.expansion)
         else:
             self.avgpool = None
-            # print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
+
             encode_input_dim = int(
                 np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
 
