@@ -751,14 +751,12 @@ class ConcateOrgInput(object):
         self.remove_vad = remove_vad
 
     def __call__(self, frames_features):
-        # pdb.set_trace()
-        network_inputs = []
         output = np.array(frames_features)
 
         if self.remove_vad:
             output = output[:, 1:]
 
-        network_inputs.append(output)
+        network_inputs = np.array([output])
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
 
         return network_inputs
@@ -850,7 +848,7 @@ class MelSpectrogram(torch.nn.Module):
         if stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram, stretch_ratio)
         # print(specgram.shape)
-        specgram = specgram.pow(2).sum(-1)
+        specgram = specgram.abs().pow(2) #.sum(-1)
         # print(specgram.shape)
         mel_specgram = self.mel_scale(specgram)
         return mel_specgram

@@ -78,7 +78,7 @@ def SubScriptDatasets(config_args):
     if config_args['test_input'] == 'var':
         transform_V = transforms.Compose([
             ConcateOrgInput(
-                remove_vad=config_args['remove_vad'], feat_type=config_args['feat_format']),
+                remove_vad=config_args['remove_vad']) # , feat_type=config_args['feat_format']),
         ])
     elif config_args['test_input'] == 'fix':
         transform_V = transforms.Compose([
@@ -130,6 +130,7 @@ def SubScriptDatasets(config_args):
     min_frames = 50 if 'min_frames' not in config_args else config_args['min_frames']
     if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args:
         min_frames *= config_args['sr'] / 100
+        min_frames = int(min_frames)
 
     if 'feat_type' in config_args and config_args['feat_type'] == 'lmdb':
         print('Create Lmdb Dataset...')

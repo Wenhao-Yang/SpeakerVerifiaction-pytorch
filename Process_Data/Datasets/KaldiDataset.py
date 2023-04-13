@@ -14,12 +14,12 @@ import pathlib
 import pdb
 import random
 
-import kaldi_io
+# import kaldi_io
 import kaldiio
 import numpy as np
 import torch
 import torch.utils.data as data
-from kaldi_io import read_mat
+# from kaldi_io import read_mat
 from tqdm import tqdm
 
 import Process_Data.constants as c
@@ -48,16 +48,17 @@ def write_vec_ark(uid, feats, write_path, set_id):
     scp_file = write_path + '/xvec.{}.scp'.format(set_id)
 
     # write scp and ark file
-    with open(scp_file, 'w') as scp, open(ark_file, 'wb') as ark:
+    with kaldiio.WriteHelper('ark,scp:%s,%s'%(ark_file, scp_file)) as writer:
+    # with open(scp_file, 'w') as scp, open(ark_file, 'wb') as ark:
         for i in range(len(uid)):
             vec = feats[i]
-            len_vec = len(vec.tobytes())
-            key = uid[i]
-
-            kaldi_io.write_vec_flt(ark, vec, key=key)
-            # print(ark.tell())
-            scp.write(str(uid[i]) + ' ' + str(ark_file) +
-                      ':' + str(ark.tell()-len_vec-10) + '\n')
+            # len_vec = len(vec.tobytes())
+            # key = uid[i]
+            # kaldiio..write_vec_flt(ark, vec, key=key)
+            # # print(ark.tell())
+            # scp.write(str(uid[i]) + ' ' + str(ark_file) +
+            #           ':' + str(ark.tell()-len_vec-10) + '\n')
+            writer(uid[i], vec)
 
     print('\nark,scp files are in: {}, {}.'.format(ark_file, scp_file))
 
@@ -113,7 +114,8 @@ class KaldiTrainDataset(data.Dataset):
 
         # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
         uid2feat = {}
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
+        pbar = tqdm(enumerate(kaldiio.load_scp(feat_scp)), ncols=100)
+
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -243,7 +245,7 @@ class KaldiTestDataset(data.Dataset):
         print('==> There are {} speakers in Test Dataset.'.format(len(speakers)))
 
         uid2feat = {}
-        for utt_id, feat in kaldi_io.read_mat_scp(feat_scp):
+        for utt_id, feat in kaldiio.load_scp(feat_scp):
             uid2feat[utt_id] = feat
         print('\tThere are {} utterances in Test Dataset.'.format(len(uid2feat)))
 
@@ -324,7 +326,7 @@ class TrainDataset(data.Dataset):
 
         # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
         uid2feat = {}
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
+        pbar = tqdm(enumerate(kaldiio.load_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -427,7 +429,7 @@ class KaldiTupleDataset(data.Dataset):
 
         # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
         uid2feat = {}
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)), ncols=100)
+        pbar = tqdm(enumerate(kaldiio.load_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -889,7 +891,7 @@ class ScriptTrainDataset(data.Dataset):
                 if spk not in valid_set.keys():
                     valid_set[spk] = []
                     if isinstance(num_valid, float) and num_valid < 1.0:
-                        numofutt = len(dataset[spk]) - int(np.ceil((1-num_valid) * dataset[spk]))
+                        numofutt = len(dataset[spk]) - int(np.ceil((1-num_valid) * len(dataset[spk])))
                     else:
                         numofutt = num_valid
 
@@ -1012,12 +1014,8 @@ class ScriptTrainDataset(data.Dataset):
                 start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
                     0, self.utt2num_frames[uid] - self.segment_len)
                 end = start + self.segment_len
-                # try:
                 y = self.loader(
                     self.uid2feat[uid], start=start, stop=end)
-                # except Exception as e:
-                #     print(e)
-                #     print("uid: {} start: {} {}".format(uid, start, end))
                 # y = np.concatenate((y, feature), axis=self.c_axis)
             else:
                 y = self.loader(self.uid2feat[uid])
@@ -1565,7 +1563,7 @@ class SitwTestDataset(data.Dataset):
 
     """
 
-    def __init__(self, sitw_dir, sitw_set, transform, loader=read_mat, return_uid=False, set_suffix='no_sil'):
+    def __init__(self, sitw_dir, sitw_set, transform, loader=kaldiio.load_mat, return_uid=False, set_suffix='no_sil'):
         # sitw_set: dev, eval
         feat_scp = sitw_dir + '/%s%s/feats.scp' % (sitw_set, set_suffix)
         spk2utt = sitw_dir + '/%s%s/spk2utt' % (sitw_set, set_suffix)

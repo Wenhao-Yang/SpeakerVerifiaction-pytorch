@@ -20,6 +20,7 @@ import numpy as np
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import EarlyStopping
 # from pytorch_lightning.profilers import AdvancedProfiler, PyTorchProfiler
 from Light.callback import ShufTrainset
 from pytorch_lightning.callbacks import LearningRateMonitor
@@ -77,8 +78,7 @@ def main():
     checkpoint_callback = ModelCheckpoint(monitor='Test/EER',
                                           filename='%s-{epoch:02d}-{Test/EER:.2f}' % (
                                               config_args['loss']),
-                                          save_top_k=3,
-                                          mode='min',
+                                          save_top_k=4, mode='min',
                                           save_last=True)
     this_callbacks.append(checkpoint_callback)
 
@@ -86,9 +86,12 @@ def main():
         'cyclic', 'rop'] else 'epoch'
     this_callbacks.append(LearningRateMonitor(logging_interval=log_interval))
 
-    if args.manual_shuffle:
-        this_callbacks.append(ShufTrainset(train_dir=train_dir))
-
+    early_stop_callback = EarlyStopping(
+        monitor="Test/"+config_args['early_meta'], min_delta=config_args['early_delta'],
+        patience=config_args['early_patience'], verbose=True, mode="min")
+    
+    # if args.manual_shuffle:
+    #     this_callbacks.append(ShufTrainset(train_dir=train_dir))
     # profiler = AdvancedProfiler(
     #     filename='profilers')
 
@@ -99,26 +102,33 @@ def main():
     # precision=16, amp_backend='native',
     # val_check_interval = max([math.gcd(int(len(train_loader)/(len(args.gpus.split(','))))+i,
     #                          config_args['val_check_interval']+j) for i in range(-256, 256) for j in range(-256, 256)])
-
     val_check_interval = config_args['val_check_interval'] if 'val_check_interval' in config_args else 1
 
     print('Val interval: {:>7d} (Train: {:>7d} Interval: {:>7d})'.format(
         val_check_interval, len(train_loader), config_args['val_check_interval']))
 
     precision = config_args['precision'] if 'precision' in config_args else 32
-    trainer = Trainer(max_epochs=config_args['epochs'],
-                      accelerator='cuda', devices=args.gpus, strategy="ddp_find_unused_parameters_false",
-                      num_sanity_val_steps=0, precision=precision,
-                      callbacks=this_callbacks,  # max_steps=100,
-                      default_root_dir=config_args['check_path'],
-                      # profiler=profiler,
-                      check_val_every_n_epoch=None,
-                      val_check_interval=val_check_interval,
-                      )
 
-    trainer.fit(model=model, train_dataloaders=train_loader,
-                val_dataloaders=[train_extract_loader, valid_loader])
+    if args.test:
+        trainer = Trainer(accelerator='cuda',
+                          devices=args.gpus, precision=precision)
+        trainer.test(model=model, dataloaders=train_extract_loader,
+                     ckpt_path=config_args['resume'],)
+    else:
+        trainer = Trainer(max_epochs=config_args['epochs'],
+                          accelerator='cuda', devices=args.gpus, strategy="ddp_find_unused_parameters_false",
+                          num_sanity_val_steps=0, precision=precision,
+                          callbacks=this_callbacks,  # max_steps=100,
+                          default_root_dir=config_args['check_path'],
+                          # profiler=profiler,
+                          check_val_every_n_epoch=None,
+                          val_check_interval=val_check_interval,
+                          )
+        trainer.fit(model=model, train_dataloaders=train_loader,
+                    val_dataloaders=[train_extract_loader, valid_loader])
 
+        trainer.test(model=model, dataloaders=train_extract_loader,
+         ckpt_path='best')
     # val_dataloaders=[valid_loader, train_extract_loader])
     # return 0
 

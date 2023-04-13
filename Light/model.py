@@ -249,12 +249,9 @@ class SpeakerModule(LightningModule):
 
     def on_validation_epoch_start(self) -> None:
         self.valid_xvectors = []
-        self.valid_total_loss = 0.
-        self.valid_other_loss = 0.
-
-        self.valid_correct = 0.
-        self.valid_total_datasize = 0.
-        self.valid_batch = 0.
+        self.valid_total_loss = AverageMeter()
+        # self.valid_other_loss = AverageMeter()
+        self.valid_accuracy = AverageMeter()
 
         return super().on_validation_epoch_start()
 
@@ -273,14 +270,15 @@ class SpeakerModule(LightningModule):
             return embeddings, label
         else:
             val_loss, _ = self.loss(logits, embeddings, label)
-            self.valid_total_loss += float(val_loss.item())
+
             predicted_one_labels = self.softmax(logits)
             predicted_one_labels = torch.max(predicted_one_labels, dim=1)[1]
             batch_correct = (predicted_one_labels == label).sum().item()
 
-            self.valid_correct += batch_correct
-            self.valid_total_datasize += len(predicted_one_labels)
-            self.valid_batch += 1
+            self.valid_total_loss.update(
+                float(val_loss.item()), predicted_one_labels.size(0))
+            self.valid_accuracy.update(
+                float(batch_correct / len(predicted_one_labels)), predicted_one_labels.size(0))
 
             return val_loss
 
@@ -298,24 +296,32 @@ class SpeakerModule(LightningModule):
             for embedding, uid in v_dict:
                 uid2embedding[uid[0]] = embedding
 
-        distances = []
-        labels = []
+        distances, labels = [], []
+        list_a, list_b = [], []
+        dist = nn.CosineSimilarity(dim=1)
 
-        for a_uid, b_uid, l in self.test_trials:
+        for i, (a_uid, b_uid, l) in enumerate(self.test_trials):
 
-            a = uid2embedding[a_uid].cpu()
-            b = uid2embedding[b_uid].cpu()
+            a = uid2embedding[a_uid].cpu()[0]
+            b = uid2embedding[b_uid].cpu()[0]
 
-            a_norm = a/a.norm(2)
-            b_norm = b/b.norm(2)
-            distances.append(float(a_norm.matmul(b_norm.T).mean()))
+            list_a.append(a/a.norm(2))
+            list_b.append(b/b.norm(2))
             labels.append(l)
+
+            if len(list_a) == 256 or i+1 == len(self.test_trials):
+                dists = dist.forward(torch.stack(
+                    list_a), torch.stack(list_b)).cpu().numpy()
+                distances.extend(dists)
+                list_a, list_b = [], []
 
         eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
                                                           cos=True, re_thre=True)
         mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
             distances, labels)
         # pdb.set_trace()
+        self.valid_xvectors = []
+
         self.log("Test/EER", eer*100,  sync_dist=True)
         self.log("Test/threshold", eer_threshold,  sync_dist=True)
         self.log("Test/mindcf_01", mindcf_01,  sync_dist=True)
@@ -324,97 +330,171 @@ class SpeakerModule(LightningModule):
         self.log("Test/mix2", eer*100*mindcf_001,  sync_dist=True)
         self.log("Test/mix3", eer*100*mindcf_01*mindcf_001,  sync_dist=True)
 
-        valid_loss = self.valid_total_loss / self.valid_batch
-        valid_accuracy = 100. * self.valid_correct / self.valid_total_datasize
-
-        self.log("Valid/Loss", valid_loss, sync_dist=True)
-        self.log("Valid/Accuracy", valid_accuracy, sync_dist=True)
+        self.log("Valid/Loss", self.valid_total_loss.avg, sync_dist=True)
+        self.log("Valid/Accuracy",
+                 self.validvalid_accuracy_total_loss.avg, sync_dist=True)
 
         return super().on_validation_epoch_end()
 
     def on_test_epoch_start(self) -> None:
-        self.test_xvector_dir = "%s/train/epoch_%s" % (
-            self.xvector_dir, self.current_epoch)
-        self.test_uid2vectors = []
+        self.test_input = self.config_args['test_input']
+        self.test_xvector_dir = "%s/Test/epoch_%s" % (
+            self.config_args['check_path'].replace('checkpoint', 'xvector'), self.current_epoch)
 
-        return super().on_test_epoch_start()
-
-    def on_test_batch_start(self, batch: Any, batch_idx: int, dataloader_idx: int) -> None:
+        self.test_xvectors = []
         if self.test_input == 'fix':
-            self.this_test_data = torch.tensor([])
+            self.this_test_data = []
             self.this_test_seg = [0]
             self.this_test_uids = []
 
-        # elif self.test_input == 'var':
-        #     max_lenght = 10 * C.NUM_FRAMES_SPECT
-        #     if self.feat_type == 'wav':
-        #         max_lenght *= 160
+        return super().on_test_epoch_start()
 
-        return super().on_test_batch_start(batch, batch_idx, dataloader_idx)
 
     def test_step(self, batch, batch_idx):
         # this is the test loop
         data, uid = batch
         vec_shape = data.shape
 
-        if vec_shape[1] != 1:
-            data = data.reshape(
-                vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+        if self.test_input == 'fix':
+            if vec_shape[1] != 1:
+                data = data.reshape(
+                    vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
 
-        self.this_test_data = torch.cat((self.this_test_data, data), dim=0)
-        self.this_test_seg.append(self.this_test_seg[-1] + len(data))
-        self.this_test_uids.append(uid[0])
+            self.this_test_data.append(data)
+            self.this_test_seg.append(self.this_test_seg[-1] + len(data))
+            self.this_test_uids.append(uid)
 
-        # embeddings = self.encoder(data)
-        batch_size = self.batch_size
-        if self.this_test_data.shape[0] >= batch_size or batch_idx + 1 == len(self.test_dataloader):
-            if self.this_test_data.shape[0] > (3 * batch_size):
-                i = 0
-                out = []
-                while i < self.this_test_data.shape[0]:
-                    data_part = self.this_test_data[i:(i + batch_size)]
-                    model_out = self.encoder(data_part)
+            batch_size = self.batch_size
+            test_length = len(self.trainer.test_dataloaders)
+
+            if torch.cat(self.this_test_data, dim=0).shape[0] >= batch_size or batch_idx + 1 >= test_length-4:
+                data = torch.cat(self.this_test_data, dim=0)
+                if data.shape[0] > (3 * batch_size):
+                    i = 0
+                    out = []
+                    while i < data.shape[0]:
+                        data_part = data[i:(i + batch_size)]
+                        model_out = self.encoder(data_part)
+                        if isinstance(model_out, tuple):
+                            try:
+                                _, out_part, _, _ = model_out
+                            except:
+                                _, out_part = model_out
+                        else:
+                            out_part = model_out
+
+                        out.append(out_part)
+                        i += batch_size
+
+                    out = torch.cat(out, dim=0)
+                else:
+                    model_out = self.encoder(data)
+
                     if isinstance(model_out, tuple):
                         try:
-                            _, out_part, _, _ = model_out
+                            _, out, _, _ = model_out
                         except:
-                            _, out_part = model_out
+                            _, out = model_out
                     else:
-                        out_part = model_out
+                        out = model_out
 
-                    out.append(out_part)
-                    i += batch_size
+                # out = out.data.cpu().float().numpy()
+                # print(out.shape)
+                if len(out.shape) == 3:
+                    out = out.squeeze(0)
 
-                out = torch.cat(out, dim=0)
+                for i, u in enumerate(self.this_test_uids):
+                    uid_vec = out[self.this_test_seg[i]                                  :self.this_test_seg[i + 1]]
+                    if self.mean_vector:
+                        uid_vec = uid_vec.mean(axis=0, keepdim=True)
+                    self.test_xvectors.append((u, uid_vec))
+
+                self.this_test_data = []
+                self.this_test_seg = [0]
+                self.this_test_uids = []
+        else:
+            model_out = self.encoder(data)
+            if isinstance(model_out, tuple):
+                try:
+                    _, out, _, _ = model_out
+                except:
+                    _, out = model_out
             else:
-                model_out = self.encoder(self.this_test_data)
+                out = model_out
 
-                if isinstance(model_out, tuple):
-                    try:
-                        _, out, _, _ = model_out
-                    except:
-                        _, out = model_out
-                else:
-                    out = model_out
-
-            out = out.data.cpu().float().numpy()
-            # print(out.shape)
-            if len(out.shape) == 3:
-                out = out.squeeze(0)
-
-            for i, uid in enumerate(self.this_test_uids):
-                uid_vec = out[self.this_test_seg[i]:self.this_test_seg[i + 1]]
-                if self.mean_vector:
-                    uid_vec = uid_vec.mean(axis=0)
-                self.test_uid2vectors.append((uid, uid_vec))
-
-            self.this_test_data = torch.tensor([])
-            self.this_test_seg = [0]
-            self.this_test_uids = []
+            self.test_xvectors.append((uid, out))
 
     def on_test_epoch_end(self) -> None:
+        test_xvectors = [None for _ in range(
+            torch.distributed.get_world_size())]
+
+        torch.distributed.all_gather_object(
+            test_xvectors, self.test_xvectors)
 
         if torch.distributed.get_rank() == 0:
+            uid2embedding = {}
+
+            for v_dict in test_xvectors:
+                if v_dict == None:
+                    print('None exist.')
+
+                for uid, embedding in v_dict:
+                    uid2embedding[uid[0]] = embedding
+
+            distances, labels = [], []
+            list_a, list_b = [], []
+            dist = nn.CosineSimilarity(dim=1)
+            for i, (a_uid, b_uid, l) in enumerate(self.test_trials):
+
+                a = uid2embedding[a_uid].cpu()[0]
+                b = uid2embedding[b_uid].cpu()[0]
+
+                list_a.append(a/a.norm(2))
+                list_b.append(b/b.norm(2))
+                labels.append(l)
+
+                if len(list_a) == 256 or i+1 == len(self.test_trials):
+                    dists = dist.forward(torch.stack(
+                        list_a), torch.stack(list_b)).cpu().numpy()
+                    distances.extend(dists)
+
+                    list_a, list_b = [], []
+
+            eer, eer_threshold, accuracy = evaluate_kaldi_eer(distances, labels,
+                                                              cos=True, re_thre=True)
+            mindcf_01, mindcf_001 = evaluate_kaldi_mindcf(
+                distances, labels)
+
+            result_str = 'For cosine distance, %d pairs:\n' % (
+                len(self.test_trials))
+            result_str += '\33[91m'
+            result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
+            result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^15s}|{: ^15s}|{: ^19s}|\n'.format('Test Set',
+                                                                                             'EER (%)',
+                                                                                             'Threshold',
+                                                                                             'MinDCF-0.01',
+                                                                                             'MinDCF-0.001',
+                                                                                             'Date')
+            result_str += '+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
+            eer = '{:.4f}'.format(eer * 100.)
+            threshold = '{:.4f}'.format(eer_threshold)
+            mindcf_01 = '{:.4f}'.format(mindcf_01)
+            mindcf_001 = '{:.4f}'.format(mindcf_001)
+            date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
+            test_set_name = '-'.join(
+                self.config_args['train_trials_path'].split('/')[-3:-1])
+            result_str += '|{: ^19s}|{: ^13s}|{: ^13s}|{: ^15s}|{: ^15s}|{: ^19s}|'.format(test_set_name,
+                                                                                           eer,
+                                                                                           threshold,
+                                                                                           mindcf_01,
+                                                                                           mindcf_001,
+                                                                                           date)
+            result_str += '\n+-------------------+-------------+-------------+---------------+---------------+-------------------+\n'
+            result_str += '\33[0m'
+
+            self.print(result_str)
+
+        # if torch.distributed.get_rank() == 0:
             xvector_dir = self.test_xvector_dir
             if not os.path.exists(xvector_dir):
                 os.makedirs(xvector_dir)
@@ -423,8 +503,9 @@ class SpeakerModule(LightningModule):
             ark_file = xvector_dir + '/xvectors.ark'
             writer = WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
 
-            for uid, uid_vec in self.test_uid2vectors:
-                writer(str(uid), uid_vec)
+            for uid in uid2embedding:
+                uid_vec = uid2embedding[uid]
+                writer(str(uid), uid_vec.detach().cpu().numpy())
 
         return super().on_test_epoch_end()
 
@@ -444,8 +525,11 @@ class SpeakerModule(LightningModule):
 
         # torch.optim.Adam(self.parameters(), lr=1e-3)
         # return ({'optimizer': optimizer, 'scheduler': scheduler, 'monitor': 'val_loss'},)
-        interval = 'step' if isinstance(
-            scheduler, torch.optim.lr_scheduler.CyclicLR) else 'epoch'
+        if 'scheduler_interval' in config_args:
+            interval = config_args['scheduler_interval']
+        else:
+            interval = 'step' if isinstance(
+                scheduler, torch.optim.lr_scheduler.CyclicLR) else 'epoch'
 
         return ({'optimizer': optimizer,
                  'lr_scheduler': {

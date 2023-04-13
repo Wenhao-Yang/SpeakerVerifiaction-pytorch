@@ -17,9 +17,9 @@ import torch._utils
 
 import argparse
 import signal
-import yaml
+# import yaml
 import os
-import os.path as osp
+# import os.path as osp
 import pdb
 import random
 import shutil
@@ -98,7 +98,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     orth_err = 0
     total_other_loss = 0.
 
-    pbar = tqdm(enumerate(train_loader)) if torch.distributed.get_rank(
+    pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True) if torch.distributed.get_rank(
     ) == 0 else enumerate(train_loader)
 
     output_softmax = nn.Softmax(dim=1)
@@ -107,13 +107,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
     # start_time = time.time()
     # pdb.set_trace()
-    # total_forward = 0
-    # total_backward = 0
     for batch_idx, data_cols in pbar:
-        # if batch_idx > 0:
-        #     print('dataload:, ',  time.time() - stop)
 
-        # start = time.time()
         if not return_domain:
             data, label = data_cols
             batch_weight = None
@@ -133,8 +128,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
-        # print(data.size())
-
         # print(data.shape)
         # pdb.set_trace()
         classfier, feats = model(data)
@@ -163,8 +156,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         if np.isnan(loss.item()):
             raise ValueError('Loss value is NaN!')
 
-        # stop = time.time()
-        # print('forward:, ', stop - start)
         # compute gradient and update weights
         loss.backward()
 
@@ -201,36 +192,25 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         # if torch.distributed.get_rank() == 0:
         if torch.distributed.get_rank() == 0 and (batch_idx + 1) % config_args['log_interval'] == 0:
-            epoch_str = 'Train Epoch {}: [ {:5>3.1f}% ]'.format(
-                epoch, 100. * batch_idx / len(train_loader))
+            epoch_str = 'Train Epoch {} '.format(epoch)
 
             if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
                     config_args['random_chunk'][
                         1]:
                 batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args else data.shape[-2]
-                epoch_str += ' Batch Len: {:>3d}'.format(batch_length)
-
-            epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
-
-            if other_loss != 0:
-                epoch_str += ' Other Loss: {:.4f}'.format(other_loss)
-
-            epoch_str += ' Avg Loss: {:.4f}'.format(
-                total_loss / (batch_idx + 1))
+            #     epoch_str += ' Batch Len: {:>3d}'.format(batch_length)
+            # epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
+            # if other_loss != 0:
+            #     epoch_str += ' Other Loss: {:.4f}'.format(other_loss)
+            # epoch_str += ' Avg Loss: {:.4f}'.format(
+            #     total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
-
-        # pdb.set_trace()
-        # start = time.time()
-        # total_backward += time.time() - stop
-        # print('back_opt: ', time.time() - stop)
-        # stop = time.time()
+            pbar.set_postfix(batch_length=batch_length, accuracy='{:>6.2f}%'.format(
+                100. * minibatch_acc), average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
 
         # if (batch_idx + 1) == 100:
         #     break
-
-    # print('Forward Time: {:>7.4} Backward Time: {:>7.4}'.format(
-    #     total_forward/100, total_backward/100))
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
@@ -407,7 +387,6 @@ def main():
             os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
     else:
         writer = None
-
     # Dataset
     train_dir, valid_dir, train_extract_dir = SubScriptDatasets(config_args)
     train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(

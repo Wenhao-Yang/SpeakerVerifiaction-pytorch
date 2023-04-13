@@ -14,7 +14,7 @@ import os
 import pdb
 import time
 
-import kaldi_io
+# import kaldi_io
 import kaldiio
 import numpy as np
 import torch
@@ -130,7 +130,7 @@ __factory = {
     'ThinResNet': ThinResNet,
     'RepeatResNet': RepeatResNet,
     'MultiResNet': MultiResNet,
-    'ResNets': ResNet,
+    'ResNet': ResNet,
     'DTDNN': DTDNN,
     'TDNN': TDNN_v2,
     'TDNN_v4': TDNN_v4,
@@ -409,29 +409,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         for uid, uid_vec in uid2vectors:
             writer(str(uid), uid_vec)
 
-    # write scp and ark file
-    # vec_norm = [np.sqrt(np.power(uid2vectors[a], 2).sum()) for a in uid2vectors.keys()]
-    # pdb.set_trace()
-    # writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
-    # for uid in uids:
-    #     writer(str(uid), uid2vectors[uid])
-
-    # for set_id in range(int(np.ceil(len(uids) / ark_num))):
-    #     ark_file = xvector_dir + '/xvector.{}.ark'.format(set_id)
-    #     with open(ark_file, 'wb') as ark:
-    #         ranges = np.arange(len(uids))[int(set_id * ark_num):int((set_id + 1) * ark_num)]
-    #         for i in ranges:
-    #             key = uids[i]
-    #             vec = uid2vectors[key]
-    #             len_vec = len(vec.tobytes())
-    #             try:
-    #                 kaldi_io.write_vec_flt(ark, vec, key=key)
-    #             except Exception as e:
-    #                 pdb.set_trace()
-    #             # print(ark.tell())
-    #             scp.write(str(uids[i]) + ' ' + str(ark_file) + ':' + str(ark.tell() - len_vec - 10) + '\n')
-    # scp.close()
-    # print('Saving %d xvectors to %s' % (len(uids), xvector_dir))
     torch.cuda.empty_cache()
 
 
@@ -449,7 +426,6 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
         for batch_idx, (data_a, data_p, label) in pbar:
             # .view(-1, 4, embedding_size)
             data_a = torch.tensor(data_a).cuda()
-            # .view(-1, 4, embedding_size)
             data_p = torch.tensor(data_p).cuda()
             # dists = dist_fn.forward(data_a, data_p).cpu().numpy()
 
@@ -645,9 +621,11 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy', 'wav'],
                         help='number of jobs to make feats (default: 10)')
 
-    parser.add_argument(
-        '--check-path', help='folder to output model checkpoints')
+    parser.add_argument('--check-path',
+                        help='folder to output model checkpoints')
     parser.add_argument('--check-yaml', type=str,
+                        default='', help='path to model yaml')
+    parser.add_argument('--train-config', type=str,
                         default='', help='path to model yaml')
 
     parser.add_argument('--save-init', action='store_true',
