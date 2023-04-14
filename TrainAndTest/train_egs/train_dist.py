@@ -199,8 +199,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             pbar.set_postfix(batch_length=batch_length, accuracy='{:>6.2f}%'.format(
                 100. * minibatch_acc), average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
 
-        # if (batch_idx + 1) == 100:
-        #     break
+        if (batch_idx + 1) == 100:
+            break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
