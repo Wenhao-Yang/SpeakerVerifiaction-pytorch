@@ -71,7 +71,7 @@ val_check_interval: 1211
 cos_sim: True
 
 early_stopping: True
-early_patience: 20
+early_patience: 1
 early_delta: 0.0001
 early_meta: "mix2"
 
@@ -138,7 +138,7 @@ mixup_type: ""
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_esmix2/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb40_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde4_esmix2/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb40_dist_test
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>

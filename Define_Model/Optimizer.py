@@ -150,7 +150,7 @@ class EarlyStopping():
     certain epochs.
     """
 
-    def __init__(self, patience=5, min_delta=1e-3, top_k=4):
+    def __init__(self, patience=5, min_delta=1e-3, top_k=4, verbose=True):
         """
         :param patience: how many epochs to wait before stopping when loss is
                not improving
@@ -160,6 +160,7 @@ class EarlyStopping():
         self.patience = patience
         self.min_delta = min_delta
         self.counter = 0
+        self.verbose = verbose
         self.best_epoch = 0
         self.best_loss = None
         self.early_stop = False
@@ -180,7 +181,8 @@ class EarlyStopping():
             self.counter = 0
         elif self.best_loss - val_loss < self.min_delta:
             self.counter += 1
-            print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
+            if self.verbose:
+                print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
 
             if self.counter >= self.patience:
                 tops = torch.tensor(self.top_lossepochs)

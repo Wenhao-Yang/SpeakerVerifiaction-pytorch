@@ -105,7 +105,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
     # lambda_ = (epoch / config_args['epochs']) ** 2
 
-    # start_time = time.time()
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
 
@@ -122,13 +121,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             model.module.loss.xe_criterion.ce.reduction = 'none'
 
         if torch.cuda.is_available():
-            # label = label.cuda(non_blocking=True)
-            # data = data.cuda(non_blocking=True)
             label = label.cuda()
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
-        # print(data.shape)
         # pdb.set_trace()
         classfier, feats = model(data)
         # print('max logit is ', classfier_label.max())
@@ -198,12 +194,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     config_args['random_chunk'][
                         1]:
                 batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args else data.shape[-2]
-            #     epoch_str += ' Batch Len: {:>3d}'.format(batch_length)
-            # epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
-            # if other_loss != 0:
-            #     epoch_str += ' Other Loss: {:.4f}'.format(other_loss)
-            # epoch_str += ' Avg Loss: {:.4f}'.format(
-            #     total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
             pbar.set_postfix(batch_length=batch_length, accuracy='{:>6.2f}%'.format(
@@ -443,7 +433,6 @@ def main():
             torch.save({'state_dict': model.state_dict()}, this_check_path)
 
     # Load checkpoint
-    iteration = 0  # if args.resume else 0
     if 'fintune' in config_args:
         if os.path.isfile(config_args['resume']):
             print('=> loading checkpoint {}'.format(config_args['resume']))
@@ -518,7 +507,6 @@ def main():
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
 
-    # scheduler = create_scheduler(optimizer, config_args)
     # Save model config txt
     if torch.distributed.get_rank() == 0:
         with open(os.path.join(check_path,
@@ -571,10 +559,9 @@ def main():
         print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
 
-    # if config_args['cuda']:
     if len(config_args['gpu_id']) > 1:
         print("Continue with gpu: %s ..." % str(args.local_rank))
-        model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+        # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
             model.cuda(), device_ids=[args.local_rank])
     else:
@@ -593,11 +580,10 @@ def main():
 
     try:
         for epoch in range(start, end):
-
-            # if torch. is_distributed():
             train_sampler.set_epoch(epoch)
             valid_sampler.set_epoch(epoch)
             train_extract_sampler.set_epoch(epoch)
+
             # if torch.distributed.get_rank() == 0:
             lr_string = '\33[1;34m Ranking {}: \'{}\' learning rate: '.format(torch.distributed.get_rank(),
                                                                                       config_args['optimizer'])
@@ -610,29 +596,22 @@ def main():
                 writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             torch.distributed.barrier()
-            if not torch.distributed.is_initialized():
-                break
-
-            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
-                select_samples(train_loader, model, config_args,
-                               config_args['select_score'])
+            # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
+            #     select_samples(train_loader, model, config_args,
+            #                    config_args['select_score'])
 
             train(train_loader, model, optimizer,
                   epoch, scheduler, config_args, writer)
 
             valid_loss = valid_class(
                 valid_loader, model, epoch, config_args, writer)
-            # if config_args['early_stopping'] or (
-            #         epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):
             valid_test_dict = valid_test(
                 train_extract_loader, model, epoch, xvector_dir, config_args, writer)
-
             valid_test_dict['Valid_Loss'] = valid_loss
 
-            if torch.distributed.get_rank() == 0:
+            if torch.distributed.get_rank() == 0 and config_args['early_stopping']:
                 valid_test_result.append(valid_test_dict)
 
-            if torch.distributed.get_rank() == 0 and config_args['early_stopping']:
                 early_stopping_scheduler(
                     valid_test_dict[config_args['early_meta']], epoch)
 
@@ -686,13 +665,11 @@ def main():
                     except Exception as e:
                         print(e)
 
-                    flag_tensor += 1
+            check_stop = early_stopping_scheduler.early_stop
+            dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
 
-            dist.all_reduce(flag_tensor, op=dist.ReduceOp.SUM)
-            # torch.distributed.barrier()
-            if flag_tensor >= 1:
+            if check_stop:
                 end = epoch
-                # print('Rank      ', torch.distributed.get_rank(), '      stopped')
                 break
 
             if config_args['scheduler'] == 'rop':

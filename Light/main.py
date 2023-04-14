@@ -91,16 +91,6 @@ def main():
         patience=config_args['early_patience'], verbose=True, mode="min")
     this_callbacks.append(early_stop_callback)
     
-    # if args.manual_shuffle:
-    #     this_callbacks.append(ShufTrainset(train_dir=train_dir))
-    # profiler = AdvancedProfiler(
-    #     filename='profilers')
-    # profiler = PyTorchProfiler(
-    #     filename='profilers', profile_memory=True, use_cpu=False, use_kineto=True)
-    # strategy="ddp_find_unused_parameters_false",
-    # precision=16, amp_backend='native',
-    # val_check_interval = max([math.gcd(int(len(train_loader)/(len(args.gpus.split(','))))+i,
-    #                          config_args['val_check_interval']+j) for i in range(-256, 256) for j in range(-256, 256)])
     val_check_interval = config_args['val_check_interval'] if 'val_check_interval' in config_args else 1
 
     print('Val interval: {:>7d} (Train: {:>7d} Interval: {:>7d})'.format(
