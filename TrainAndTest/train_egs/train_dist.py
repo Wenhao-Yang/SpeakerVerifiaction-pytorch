@@ -692,8 +692,8 @@ def main():
     # pdb.set_trace()
     # torch.distributed.destroy_process_group()
     # torch.distributed.des
-    time.sleep(10)
-    os.kill(os.getpid(), signal.SIGKILL)
+    time.sleep(5)
+    # os.kill(os.getpid(), signal.SIGKILL)
     exit(0)
 
 
