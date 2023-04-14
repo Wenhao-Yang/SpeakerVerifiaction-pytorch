@@ -186,7 +186,7 @@ class EarlyStopping():
 
             if self.counter >= self.patience:
                 tops = torch.tensor(self.top_lossepochs)
-                tops_k = tops[torch.argsort(tops[:, 1])][:self.top_k, 0].long().tolist()
+                tops_k = tops[torch.argsort(tops[:, 0])][:self.top_k, 1].long().tolist()
 
                 print('INFO: Early stopping, top-k best epochs: ',
                       tops_k)
