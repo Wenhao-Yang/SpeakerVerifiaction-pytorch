@@ -61,7 +61,7 @@ momentum: 0.9
 accu_steps: 1
 
 # Scheduler
-patience: 3
+patience: 4
 milestones: [10, 20, 30, 40]
 scheduler: rop
 lr: 0.1
@@ -71,7 +71,7 @@ val_check_interval: 1211
 cos_sim: True
 
 early_stopping: True
-early_patience: 1
+early_patience: 20
 early_delta: 0.0001
 early_meta: "mix2"
 
