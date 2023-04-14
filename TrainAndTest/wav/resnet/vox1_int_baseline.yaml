@@ -77,7 +77,7 @@ early_meta: "mix2"
 
 ## model Setttings
 resnet_size: 18
-block_type: "cbam"
+block_type: "basic"
 red_ratio: 2
 encoder_type: "SAP2"
 downsample: "k3"
