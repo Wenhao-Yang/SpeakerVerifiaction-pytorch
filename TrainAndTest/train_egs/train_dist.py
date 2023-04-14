@@ -665,7 +665,7 @@ def main():
                     except Exception as e:
                         print(e)
 
-            check_stop = early_stopping_scheduler.early_stop
+            check_stop = torch.tensor(early_stopping_scheduler.early_stop)
             dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
 
             if check_stop:
