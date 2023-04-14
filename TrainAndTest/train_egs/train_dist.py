@@ -384,7 +384,6 @@ def main():
                         help='random seed (default: 0)')
 
     args = parser.parse_args()
-    # Views the training images and displays the distance on anchor-negative and anchor-positive
     # print the experiment configuration
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
@@ -393,7 +392,6 @@ def main():
 
     # load train config file args.train_config
     with open(args.train_config, 'r') as f:
-        # config_args = yaml.load(f, Loader=yaml.FullLoader)
         config_args = load_hyperpyyaml(f)
 
     # Create logger & Define visulaize SummaryWriter instance
