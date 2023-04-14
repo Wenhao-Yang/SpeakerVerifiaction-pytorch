@@ -1906,16 +1906,9 @@ class ResNet(nn.Module):
 
         return logits, feat
 
-# model = SimpleResNet(block=BasicBlock, layers=[3, 4, 6, 3])
-# input = torch.torch.randn(128,1,400,64)
-# x_vectors = model.pre_forward(input)
-# outputs = model(x_vectors)
-# print('hello')
 
 # M. Hajibabaei and D. Dai, “Unified hypersphere embedding for speaker recognition,”
 # arXiv preprint arXiv:1807.08312, 2018.
-
-
 class ResNet20(nn.Module):
     def __init__(self, num_classes=1000, embedding_size=128, dropout_p=0.0,
                  block=BasicBlock, input_frames=300, **kwargs):

@@ -18,7 +18,7 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, fDLR, MelFbankLayer
+from Define_Model.FilterLayer import FrequencyReweightLayer, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \

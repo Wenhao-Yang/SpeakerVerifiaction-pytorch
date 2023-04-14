@@ -845,7 +845,7 @@ class MelSpectrogram(torch.nn.Module):
         stretch_ratio = np.random.choice(self.stretch_ratio)
         if stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram, stretch_ratio)
-        specgram = specgram.abs().pow(2) #.sum(-1)
+        specgram = specgram.abs().pow(2).sum(-1)
         mel_specgram = self.mel_scale(specgram)
         return mel_specgram
 
