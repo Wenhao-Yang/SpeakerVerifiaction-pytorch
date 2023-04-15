@@ -789,16 +789,11 @@ class ScriptTrainDataset(data.Dataset):
                             for i in range(this_numofseg):
                                 start = int(i * segment_shift)
                                 end = int(min(start+segment_len, num_frames))
+                                start = int(max(end - num_frames, 0))
+
                                 base_utts.append((uid, start, end))
                         else:
                             invalid_uid.add(uid)
-
-                    # if int(num_frames) < 50:
-                    #     invalid_uid.append(uid)
-        random.shuffle(base_utts)
-        self.base_utts = base_utts
-        if verbose > 0:
-            print('    There are {} basic segments.'.format(len(base_utts)))
 
         dataset = {}
         with open(spk2utt, 'r') as u:
@@ -896,7 +891,6 @@ class ScriptTrainDataset(data.Dataset):
                         numofutt = num_valid
 
                     for i in range(numofutt):
-
                         j = np.random.randint(len(dataset[spk]))
                         utt = dataset[spk].pop(j)
                         valid_set[spk].append(utt)
@@ -916,6 +910,16 @@ class ScriptTrainDataset(data.Dataset):
             self.valid_uids = set(list(valid_utt2spk_dict.keys()))
             self.valid_utt2dom_dict = valid_utt2dom_dict
 
+        train_base_utts = []
+        for (uid, start, end) in base_utts:
+            if uid not in self.valid_uids:
+                train_base_utts.append((uid, start, end))
+        
+        random.shuffle(train_base_utts)
+        self.base_utts = train_base_utts
+        if verbose > 0:
+            print('    There are {} basic segments for training .'.format(len(self.base_utts)))
+
         self.speakers = speakers
         self.utt2spk_dict = utt2spk_dict
         self.dataset = dataset
@@ -933,7 +937,7 @@ class ScriptTrainDataset(data.Dataset):
         if sample_type == 'instance':
             if verbose > 1:
                 print(
-                    '    The number of samples is euqal to the number of total utterance.')
+                    '    The number of samples is related to the number of total frames.')
 
         elif samples_per_speaker == 0:
             samples_per_speaker = np.power(2, np.ceil(
@@ -964,10 +968,10 @@ class ScriptTrainDataset(data.Dataset):
                 uid = utts[random.randrange(0, len(utts))]
                 self.utt_dataset.append([uid, sid])
 
-    def __getitem__(self, sid):
+    def __getitem__(self, idx):
         # start_time = time.time()
         if self.return_uid or self.domain:
-            uid, label = self.utt_dataset[sid]
+            uid, label = self.utt_dataset[idx]
             y = self.loader(self.uid2feat[uid])
             feature = self.transform(y)
 
@@ -977,37 +981,30 @@ class ScriptTrainDataset(data.Dataset):
             else:
                 return feature, label, uid
 
-        if sid < len(self.base_utts):
-            while True:
-                (uid, start, end) = self.base_utts[sid]
-                if uid not in self.valid_uids:
-                    if self.feat_type != 'wav':
-                        y = self.loader(self.uid2feat[uid])
-                        y = y[start:end]
-                    else:
-                        y = self.loader(
-                            self.uid2feat[uid], start=start, stop=end)
+        if idx < len(self.base_utts):
+            (uid, start, end) = self.base_utts[idx]
+            if self.feat_type != 'wav':
+                y = self.loader(self.uid2feat[uid])
+            else:
+                y = self.loader(
+                    self.uid2feat[uid], start=start, stop=end)
 
-                    if uid in self.uid2vad:
-                        voice_idx = np.where(
-                            kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
-                        y = y[voice_idx]
+                if uid in self.uid2vad:
+                    voice_idx = np.where(
+                        kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                    y = y[voice_idx]
 
-                    sid = self.utt2spk_dict[uid]
-                    sid = self.spk_to_idx[sid]
-                    break
-                else:
-                    self.base_utts.pop(sid)
+            sid = self.utt2spk_dict[uid]
+            label = self.spk_to_idx[sid]
+    
         else:
             # rand_idxs = [sid]
-            sid %= self.num_spks
-            spk = self.idx_to_spk[sid]
+            label = idx % self.num_spks
+            spk = self.idx_to_spk[label]
             utts = self.dataset[spk]
             num_utt = len(utts)
 
-            # y = np.array([[]]).reshape(self.feat_shape)
             rand_utt_idx = np.random.randint(0, num_utt)
-            # rand_idxs.append(rand_utt_idx)
             uid = utts[rand_utt_idx]
 
             if self.feat_type == 'wav':
@@ -1024,35 +1021,7 @@ class ScriptTrainDataset(data.Dataset):
                         kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                     y = y[voice_idx]
 
-            # y = np.concatenate((y, feature), axis=self.c_axis)
-
-            # while y.shape[self.c_axis] < self.segment_len:
-            #     rand_utt_idx = np.random.randint(0, num_utt)
-            #     rand_idxs.append(rand_utt_idx)
-
-            #     uid = utts[rand_utt_idx]
-
-            #     feature = self.loader(self.uid2feat[uid])
-            #     if uid in self.uid2vad:
-            #         voice_idx = np.where(
-            #             kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
-            #         feature = feature[voice_idx]
-
-            #     y = np.concatenate((y, feature), axis=self.c_axis)
-
-            #     # transform features if required
-            #     if self.rand_test:
-            #         while len(rand_idxs) < 4:
-            #             rand_idxs.append(-1)
-            #         start, length = self.transform(y)
-            #         rand_idxs.append(start)
-            #         rand_idxs.append(length)
-
-            #         # [uttid uttid -1 -1 start lenght]
-            #         return torch.tensor(rand_idxs).reshape(1, -1), sid
-
         feature = self.transform(y)
-        label = sid
 
         return feature, label
 

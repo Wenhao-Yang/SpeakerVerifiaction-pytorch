@@ -32,7 +32,7 @@ def SubDatasets(config_args):
     elif config_args['test_input'] == 'fix':
         transform_V = transforms.Compose([
             ConcateVarInput(remove_vad=config_args['remove_vad'], num_frames=config_args['chunk_size'],
-                            frame_shift=config_args['chunk_size'],
+                            frame_shift=config_args['frame_shift'],
                             feat_type=config_args['feat_format']),
         ])
 
@@ -130,18 +130,18 @@ def SubScriptDatasets(config_args):
 
     if 'feat_type' in config_args and config_args['feat_type'] == 'lmdb':
         print('Create Lmdb Dataset...')
-        train_dir = LmdbTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 
+        train_dir = LmdbTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'],
                                      transform=transform, num_valid=config_args['num_valid'],
                                      feat_type='wav', sample_type=sample_type,
                                      segment_len=config_args['num_frames'], segment_shift=segment_shift,
                                      min_frames=min_frames, verbose=verbose,
                                      return_uid=False)
-        
+
         valid_dir = LmdbValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
                                     reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
                                     verbose=verbose,
                                     transform=transform)
-        
+
     elif 'feat_type' in config_args and config_args['feat_type'] == 'hdf5':
         print('Create HDF5 Dataset...')
         train_dir = Hdf5TrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 
@@ -150,7 +150,7 @@ def SubScriptDatasets(config_args):
                                      segment_len=config_args['num_frames'], segment_shift=segment_shift,
                                      min_frames=min_frames, verbose=verbose,
                                      return_uid=False)
-        
+
         valid_dir = Hdf5ValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
                                     hdf5_file=train_dir.hdf5_file, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
                                     verbose=verbose,
@@ -212,7 +212,7 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                      min_chunk_size=min_chunk_size,
                                                                      max_chunk_size=max_chunk_size,
-                                                                     #  verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                     verbose=0
                                                                      ),
                                                shuffle=False, **kwargs)  # , sampler=valid_sampler
 

@@ -637,9 +637,12 @@ class ConcateNumInput(object):
         network_inputs = []
 
         output = frames_features
+        repeats = 0
         while output.shape[self.c_axis] < self.num_frames:
             output = np.concatenate(
                 (output, frames_features), axis=self.c_axis)
+            repeats += 1
+            assert repeats < 10
 
         if len(output) / self.num_frames >= self.input_per_file:
             for i in range(self.input_per_file):

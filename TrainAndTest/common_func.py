@@ -120,8 +120,6 @@ def create_scheduler(optimizer, config_args, train_dir=None):
     return scheduler
 
 # ALSTM  ASiResNet34  ExResNet34  LoResNet  ResNet20  SiResNet34  SuResCNN10  TDNN
-
-
 __factory = {
     'AlexNet': AlexNet,
     'LoResNet': LocalResNet,
@@ -431,7 +429,6 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
 
             if len(data_a.shape) == 2:
                 dists = dist_fn(data_a, data_p)
-
             elif dist_type == 'cos':
                 out_a = torch.nn.functional.normalize(data_a, dim=-1)
                 out_p = torch.nn.functional.normalize(data_p, dim=-1)
@@ -1174,8 +1171,8 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
                         help='input sample per file for testing (default: 8)')
     parser.add_argument('--test-input-per-file', type=int, default=4, metavar='IPFT',
                         help='input sample per file for testing (default: 8)')
-    parser.add_argument('--test-batch-size', type=int, default=4, metavar='BST',
-                        help='input batch size for testing (default: 64)')
+    parser.add_argument('--test-batch-size', type=int, default=1, metavar='BST',
+                        help='batch size for testing (default: 64)')
     parser.add_argument('--dropout-p', type=float, default=0.25, metavar='BST',
                         help='input batch size for testing (default: 64)')
 

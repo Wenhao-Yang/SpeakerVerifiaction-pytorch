@@ -16,11 +16,11 @@ from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
 
 import argparse
-import signal
+# import signal
 # import yaml
 import os
 # import os.path as osp
-import pdb
+# import pdb
 import random
 import shutil
 import sys
@@ -44,8 +44,7 @@ from tqdm import tqdm
 import torch.distributed as dist
 
 from Define_Model.Optimizer import EarlyStopping
-from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
-    ScriptVerifyDataset
+from Process_Data.Datasets.KaldiDataset import ScriptVerifyDataset
 import Process_Data.constants as C
 from TrainAndTest.common_func import create_classifier, create_optimizer, create_scheduler, create_model, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
@@ -127,7 +126,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         data, label = Variable(data), Variable(label)
         # pdb.set_trace()
         classfier, feats = model(data)
-        # print('max logit is ', classfier_label.max())
 
         loss, other_loss = model.module.loss(classfier, feats, label,
                                              batch_weight=batch_weight, epoch=epoch)
@@ -318,6 +316,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
                                                                   epoch=epoch)
     mix3 = 100. * eer * mindcf_01 * mindcf_001
     mix2 = 100. * eer * mindcf_001
+    mix8 = 100. * eer * mindcf_01
 
     if torch.distributed.get_rank() == 0:
         print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, '
@@ -331,11 +330,12 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
         writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
         writer.add_scalar('Train/mix3', mix3, epoch)
         writer.add_scalar('Train/mix2', mix2, epoch)
+        writer.add_scalar('Train/mix8', mix8, epoch)
 
     torch.cuda.empty_cache()
 
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
-            'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
+            'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2, 'mix8': mix8}
 
 
 def valid(valid_loader, train_extract_loader,
@@ -367,7 +367,6 @@ def main():
         description='PyTorch ( Distributed ) Speaker Recognition: Classification')
     parser.add_argument('--local_rank', default=-1, type=int,
                         help='node rank for distributed training')
-
     parser.add_argument('--train-config', default='', type=str,
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=123456,
@@ -398,7 +397,6 @@ def main():
             os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
     else:
         writer = None
-
     # Dataset
     train_dir, valid_dir, train_extract_dir = SubScriptDatasets(config_args)
     train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
@@ -490,7 +488,7 @@ def main():
         init_lr = config_args['lr'] * \
             config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
         print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
-        
+
         model_para[0]['params'] = rest_params
         model_para.append({'params': model.input_mask[0].parameters(), 'lr': init_lr,
                             'weight_decay': init_wd})

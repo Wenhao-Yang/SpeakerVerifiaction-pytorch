@@ -11,3 +11,11 @@ SoundFile
 speechpy
 tensorboardX
 tqdm
+kaldiio
+librosa
+pyyaml
+lmdb
+h5py
+pandas
+geomloss
+pydub

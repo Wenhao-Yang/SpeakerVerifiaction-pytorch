@@ -124,6 +124,10 @@ class SpeakerLoss(nn.Module):
 
         self.softmax = nn.Softmax(dim=1)
         self.ce_criterion = ce_criterion
+        if 'mixup_type' in config_args and config_args['mixup_type'] != '':
+            xe_criterion = MixupLoss(
+                xe_criterion, gamma=config_args['proser_gamma'])
+
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']
 
@@ -202,6 +206,7 @@ class SpeakerModule(LightningModule):
         self.loss = SpeakerLoss(config_args)
         self.batch_size = config_args['batch_size']
         self.test_trials = get_trials(config_args['train_trials_path'])
+        self.mean_vector = True
         # self.optimizer = optimizer
 
     def on_train_epoch_start(self) -> None:
@@ -219,10 +224,7 @@ class SpeakerModule(LightningModule):
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         # it is independent of forward
-
-        # start = time.time()
         data, label = batch
-        # print(data.shape)
         logits, embeddings = self.encoder(data)
         loss, other_loss = self.loss(logits, embeddings, label)
 
@@ -234,8 +236,6 @@ class SpeakerModule(LightningModule):
         self.train_accuracy.update(
             float(train_batch_accuracy), embeddings.size(0))
         self.train_loss.update(float(loss), embeddings.size(0))
-        # self.train_accuracy.append(train_batch_accuracy)
-        # # self.train_loss.append(float(loss))
 
         self.log("Train/All_Loss", float(loss))
         self.log("Train/ALL_Accuracy", train_batch_accuracy)
@@ -264,7 +264,7 @@ class SpeakerModule(LightningModule):
 
         logits, embeddings = self.encoder(data)
         # logits = self.decoder(embeddings)
-        # ipdb.set_trace()
+
         if isinstance(label[0], str):
             self.valid_xvectors.append((embeddings, label))
             return embeddings, label
@@ -328,6 +328,7 @@ class SpeakerModule(LightningModule):
         self.log("Test/mindcf_001", mindcf_001,  sync_dist=True)
 
         self.log("Test/mix2", eer*100*mindcf_001,  sync_dist=True)
+        self.log("Test/mix8", eer*100*mindcf_01,  sync_dist=True)
         self.log("Test/mix3", eer*100*mindcf_01*mindcf_001,  sync_dist=True)
 
         self.log("Valid/Loss", self.valid_total_loss.avg, sync_dist=True)
