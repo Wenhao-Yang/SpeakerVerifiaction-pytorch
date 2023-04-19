@@ -205,7 +205,6 @@ train_part = torch.utils.data.Subset(train_dir, indices)
 
 # veri_dir = ScriptTestDataset(dir=args.train_dir, loader=file_loader, transform=transform, return_uid=True)
 # veri_dir.partition(args.sample_utt)
-
 # test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform, return_uid=True)
 # test_dir.partition(args.sample_utt)
 
@@ -274,7 +273,6 @@ def _extract_layer_grad(module, in_grad, out_grad):
     global out_layer_grad
     in_layer_grad.append(in_grad[0])
     out_layer_grad.append(out_grad[0])
-
 
 
 def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):

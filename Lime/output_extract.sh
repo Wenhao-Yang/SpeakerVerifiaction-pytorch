@@ -890,7 +890,7 @@ if [ $stage -le 300 ]; then
   # dataset=vox1
   dataset=vox2
   train_set=vox2 test_set=vox1
-  feat_type=klsp
+  feat_type=klsp #--remove-vad \
   feat=log
   loss=arcsoft
   encoder_type=SAP2 embedding_size=256
@@ -905,6 +905,7 @@ if [ $stage -le 300 ]; then
     python Lime/cam_extract.py \
       --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} \
+      --batch-size 1 --test-input var \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --train-set-name ${train_set} --test-set-name ${test_set} \
@@ -921,8 +922,7 @@ if [ $stage -le 300 ]; then
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam} \
       --gpu-id 1 \
-      --remove-vad \
-      --sample-utt 5994
+      --sample-utt 23976
     done
   exit
 fi
