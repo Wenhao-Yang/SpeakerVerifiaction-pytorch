@@ -867,9 +867,9 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='random seed (default: 0)')
     parser.add_argument('--log-interval', type=int, default=10, metavar='LI',
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--test-interval', type=int, default=1, metavar='TI',
+    parser.add_argument('--test-interval', type=int, default=1,
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--select-interval', type=int, default=4, metavar='TI',
+    parser.add_argument('--select-interval', type=int, default=4, 
                         help='how many batches to wait before logging training status')
 
     parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
@@ -917,17 +917,28 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument(
             '--extract-path', help='folder to output model grads, etc')
         parser.add_argument('--cam', type=str, default='gradient',
+                            choices=['gradient', 'grad_cam', 'grad_cam_pp',
+                                     'fullgrad', 'acc_grad', 'layer_cam',
+                                     'acc_input', 'integrad'],
                             help='path to voxceleb1 test dataset')
         parser.add_argument('--cam-layers',
                             default=['conv1', 'layer1.0.conv2', 'conv2',
                                      'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
                             type=list, metavar='CAML', help='The channels of convs layers)')
+        parser.add_argument('--layer-weight', action='store_true',
+                            default=False, help='backward after softmax normalization')
         parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
                             help='number of epochs to train (default: 10)')
         parser.add_argument('--test-only', action='store_true',
                             default=False, help='using Cosine similarity')
+        parser.add_argument('--zero-padding', action='store_true',
+                            default=False, help='using Cosine similarity')
         parser.add_argument('--revert', action='store_true',
                             default=False, help='using Cosine similarity')
+        parser.add_argument('--steps', type=int, default=100,
+                            help='Dimensionality of the embedding')
+        parser.add_argument('--softmax', action='store_true', default=False,
+                            help='backward after softmax normalization')
 
     if 'Knowledge' in description:
         parser.add_argument('--kd-type', type=str, default='vanilla',
@@ -994,6 +1005,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='how many batches to wait before logging training status')
         parser.add_argument('--cohort-size', type=int, default=50000,
                             help='how many imposters to include in cohort')
+
     args = parser.parse_args()
 
     return args
