@@ -17,3 +17,9 @@ EER(%):         4.31    Threshold:  0.2479  MinDcf-0.01: 0.3779  MinDcf-0.001: 0
 
 # sgd_rop     frl
 EER(%):         4.43    Threshold:  0.2435  MinDcf-0.01: 0.3826  MinDcf-0.001: 0.4707  Mix2,3: 2.0853, 0.7979
+
+# sgd_rop
+EER(%):         4.43    Threshold:  0.2354  MinDcf-0.01: 0.4134  MinDcf-0.001: 0.4514  Mix2,3: 1.9998, 0.8267
+
+# sgd_rop     frl
+EER(%):         4.46    Threshold:  0.2341  MinDcf-0.01: 0.4233  MinDcf-0.001: 0.4688  Mix2,3: 2.0918, 0.8855
