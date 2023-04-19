@@ -957,7 +957,7 @@ class ScriptTrainDataset(data.Dataset):
                     if (end - start) >= self.min_frames:
                         train_base_utts.append((uid, start, end))
 
-            assert len(train_base_utts) == samples_per_speaker * self.num_spks
+                assert len(train_base_utts) == samples_per_speaker * self.num_spks
             random.shuffle(train_base_utts)
             if save_dir != '':
                 if not os.path.exists(save_dir):
