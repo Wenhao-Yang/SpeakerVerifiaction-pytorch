@@ -1051,7 +1051,10 @@ class ScriptTrainDataset(data.Dataset):
         return feature, label
 
     def __len__(self):
-        if self.sample_type == 'instance':
+        if self.return_uid or self.domain:
+            return len(self.utt_dataset)
+        
+        elif self.sample_type == 'instance':
             return len(self.base_utts)
         # elif self.sample_type == 'half_balance':
         #     return max(len(self.base_utts), self.samples_per_speaker * len(self.speakers))
