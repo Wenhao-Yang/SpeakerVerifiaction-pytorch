@@ -156,7 +156,7 @@ def create_model(name, **kwargs):
         raise KeyError("Unknown model: {}".format(name))
 
     model = __factory[name](**kwargs)
-    create_classifier(model, kwargs)
+    create_classifier(model, **kwargs)
 
     return model
 
