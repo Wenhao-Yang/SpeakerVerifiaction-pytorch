@@ -890,7 +890,7 @@ if [ $stage -le 300 ]; then
   # dataset=vox1
   dataset=vox2
   train_set=vox2 test_set=vox1
-  feat_type=klfb
+  feat_type=klsp
   feat=log
   loss=arcsoft
   encoder_type=SAP2 embedding_size=256
