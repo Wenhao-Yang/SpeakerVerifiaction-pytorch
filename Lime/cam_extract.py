@@ -281,7 +281,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
     input_grads = []
     inputs_uids = []
-    pbar = tqdm(enumerate(train_loader))
+    pbar = tqdm(enumerate(train_loader), total=args.sample_utt)
     global out_feature_grads
     global in_feature_grads
     global in_layer_feat
@@ -676,7 +676,7 @@ def main():
             #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
             train_extract(train_loader, model, file_dir, '%s_train' % args.train_set_name)
-            train_extract(valid_loader, model, file_dir, '%s_valid' % args.train_set_name)
+            # train_extract(valid_loader, model, file_dir, '%s_valid' % args.train_set_name)
             # test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
 
         # test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)

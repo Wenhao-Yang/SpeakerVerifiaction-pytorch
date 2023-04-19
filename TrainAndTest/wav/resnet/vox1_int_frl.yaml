@@ -84,7 +84,7 @@ downsample: "k3"
 model: ThinResNet
 kernel_size:
 alpha: 0
-avg_size: 0
+avg_size: 10
 embedding_size: 256
 batch_size: 256
 dropout_p: 0.1
@@ -109,7 +109,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   fast: !ref <fast>
   alpha: !ref <alpha>
   kernel_size: [5, 5]
-  stride: [2, 2]
+  stride: [2, 1]
   channels: [16, 32, 64, 128]
   dropout_p: !ref <dropout_p>
   avg_size: !ref <avg_size>
