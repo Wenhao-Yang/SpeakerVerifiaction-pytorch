@@ -619,9 +619,14 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] >= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
+            if torch.distributed.get_rank() == 0:
+                top_k = early_stopping_scheduler.top_k()
+            else:
+                top_k = []
+
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
-                    end - 1) or early_stopping_scheduler.best_epoch == epoch):
+                    end - 1) or early_stopping_scheduler.best_epoch == epoch or epoch in top_k):
 
                 model.eval()
                 this_check_path = '{}/checkpoint_{}.pth'.format(

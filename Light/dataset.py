@@ -48,7 +48,6 @@ def SubDatasets(config_args):
         verbose = 0
     else:
         verbose = 1
-
     train_dir = EgsDataset(dir=config_args['train_dir'], feat_dim=config_args['input_dim'], loader=file_loader,
                            transform=transform, batch_size=config_args['batch_size'],
                            random_chunk=config_args['random_chunk'],
@@ -156,17 +155,20 @@ def SubScriptDatasets(config_args):
                                     verbose=verbose,
                                     transform=transform)
     else:
+        save_dir = config_args['check_path'] if 'save_data_dir' not in config_args else config_args['save_data_dir']
         train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
                                     transform=transform, num_valid=config_args['num_valid'], domain=domain,
                                     vad_select=vad_select, sample_type=sample_type,
-                                    feat_type=feat_type, verbose=verbose,
+                                    feat_type=feat_type, verbose=verbose, save_dir=save_dir,
                                     segment_len=config_args['num_frames'], segment_shift=segment_shift,
                                     min_frames=min_frames)
 
         valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
                                     dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
                                     valid_uid2feat=train_dir.valid_uid2feat,
+                                    save_dir=save_dir,
                                     valid_utt2spk_dict=train_dir.valid_utt2spk_dict, verbose=verbose,
+                                    feat_type=feat_type,
                                     transform=transform, domain=domain)
 
     feat_type = 'kaldi'

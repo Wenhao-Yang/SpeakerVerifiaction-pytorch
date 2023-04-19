@@ -11,7 +11,6 @@
 
 
 from argparse import ArgumentParser
-import math
 # from operator import mod
 import torch
 import os
@@ -48,7 +47,6 @@ parser.add_argument('--dataset-type', type=str,
 parser.add_argument('--test', action='store_true',
                     default=False, help='gpus(default: 0)')
 args = parser.parse_args()
-
 # seed
 pl.seed_everything(args.seed)
 
@@ -90,14 +88,13 @@ def main():
         monitor="Test/"+config_args['early_meta'], min_delta=config_args['early_delta'],
         patience=config_args['early_patience'], verbose=True, mode="min")
     this_callbacks.append(early_stop_callback)
-    
+
     val_check_interval = config_args['val_check_interval'] if 'val_check_interval' in config_args else 1
 
     print('Val interval: {:>7d} (Train: {:>7d} Interval: {:>7d})'.format(
         val_check_interval, len(train_loader), config_args['val_check_interval']))
 
     precision = config_args['precision'] if 'precision' in config_args else 32
-
     if args.test:
         trainer = Trainer(accelerator='cuda',
                           devices=args.gpus, precision=precision)

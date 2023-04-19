@@ -640,7 +640,7 @@ class ConcateNumInput(object):
         repeats = 0
         while output.shape[self.c_axis] < self.num_frames:
             output = np.concatenate(
-                (output, frames_features), axis=self.c_axis)
+                (output, output), axis=self.c_axis)
             repeats += 1
             assert repeats < 10
 
@@ -690,8 +690,6 @@ class ConcateNumInput_Test(object):
         self.remove_vad = remove_vad
 
     def __call__(self, frames_features):
-        network_inputs = []
-
         output = frames_features
         while len(output) < self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
