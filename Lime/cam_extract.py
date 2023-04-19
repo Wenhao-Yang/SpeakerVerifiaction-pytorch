@@ -48,8 +48,6 @@ except AttributeError:
         tensor.requires_grad = requires_grad
         tensor._backward_hooks = backward_hooks
         return tensor
-
-
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 import warnings
 
@@ -196,7 +194,6 @@ elif args.test_input == 'fix':
 
 # if args.mvnorm:
 #     transform.transforms.append(mvnormal())
-
 file_loader = read_mat
 
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
@@ -603,7 +600,6 @@ def main():
     print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
-
     train_loader = DataLoader(train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     # veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = DataLoader(valid_part, batch_size=args.batch_size, shuffle=False, **kwargs)
