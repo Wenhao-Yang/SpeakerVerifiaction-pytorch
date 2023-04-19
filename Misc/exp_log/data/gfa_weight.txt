@@ -1,0 +1,19 @@
+#Mean_batch256_basic_downk3_avg0_SAP2_em256_dp01_alpha0_none1_wde4_esmix2
+
+# adam_rop
+EER(%):         4.29    Threshold:  0.2346  MinDcf-0.01: 0.4075  MinDcf-0.001: 0.5157  Mix2,3: 2.2109, 0.9010
+
+# adam_rop    frl
+EER(%):         4.60    Threshold:  0.2376  MinDcf-0.01: 0.4176  MinDcf-0.001: 0.5106  Mix2,3: 2.3473, 0.9801
+
+# adam_cyclic
+EER(%):         5.18    Threshold:  0.2263  MinDcf-0.01: 0.4486  MinDcf-0.001: 0.4892  Mix2,3: 2.5319, 1.1358
+
+# adam_cyclic frl
+EER(%):         5.04    Threshold:  0.2255  MinDcf-0.01: 0.4739  MinDcf-0.001: 0.5284  Mix2,3: 2.6645, 1.2626
+
+# sgd_rop
+EER(%):         4.31    Threshold:  0.2479  MinDcf-0.01: 0.3779  MinDcf-0.001: 0.4570  Mix2,3: 1.9705, 0.7446
+
+# sgd_rop     frl
+EER(%):         4.43    Threshold:  0.2435  MinDcf-0.01: 0.3826  MinDcf-0.001: 0.4707  Mix2,3: 2.0853, 0.7979
