@@ -32,7 +32,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
-from Define_Model.model import PairwiseDistance
+# from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput
@@ -181,7 +181,7 @@ if args.cuda:
 
 # Define visulaize SummaryWriter instance
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else nn.PairwiseDistance(2)
 
 if args.test_input == 'var':
     transform = transforms.Compose([
