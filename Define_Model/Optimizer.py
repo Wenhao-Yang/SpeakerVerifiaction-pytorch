@@ -150,7 +150,7 @@ class EarlyStopping():
     certain epochs.
     """
 
-    def __init__(self, patience=5, min_delta=1e-3, top_k=4, verbose=True):
+    def __init__(self, patience=5, min_delta=1e-3, top_k_epoch=4, verbose=True):
         """
         :param patience: how many epochs to wait before stopping when loss is
                not improving
@@ -164,10 +164,12 @@ class EarlyStopping():
         self.best_epoch = 0
         self.best_loss = None
         self.early_stop = False
-        self.top_k = top_k
+        self.top_k_epoch = top_k_epoch
         self.top_lossepochs = []
 
     def __call__(self, val_loss, epoch):
+        self.top_lossepochs.append([val_loss, epoch])
+
         if self.best_loss == None:
             self.best_loss = val_loss
             self.best_epoch = epoch
@@ -175,8 +177,6 @@ class EarlyStopping():
         elif self.best_loss - val_loss > self.min_delta:
             self.best_loss = val_loss
             self.best_epoch = epoch
-            self.top_lossepochs.append([val_loss, epoch])
-
             # reset counter if validation loss improves
             self.counter = 0
         elif self.best_loss - val_loss < self.min_delta:
@@ -185,13 +185,15 @@ class EarlyStopping():
                 print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
 
             if self.counter >= self.patience:
-                tops = torch.tensor(self.top_lossepochs)
-                tops_k = tops[torch.argsort(tops[:, 0])][:self.top_k, 1].long().tolist()
-
-                print('INFO: Early stopping, top-k best epochs: ',
-                      tops_k)
+                print('INFO: Early stopping, top-k epochs: ',
+                      self.tops_k())
                 self.early_stop = True
 
+    def top_k(self):
+        tops = torch.tensor(self.top_lossepochs)
+        tops_k_epochs = tops[torch.argsort(tops[:, 0])][:self.top_k_epoch, 1].long().tolist()
+
+        return tops_k_epochs
 
 class TrainSave():
     """

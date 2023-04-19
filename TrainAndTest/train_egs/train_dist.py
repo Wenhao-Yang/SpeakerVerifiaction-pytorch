@@ -588,7 +588,6 @@ def main():
             this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
             lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
             print('%s \33[0m' % lr_string)
-
             all_lr.append(this_lr[0])
             if torch.distributed.get_rank() == 0:
                 writer.add_scalar('Train/lr', this_lr[0], epoch)
