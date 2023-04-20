@@ -904,7 +904,7 @@ if [ $stage -le 300 ]; then
     epoch=41
     python Lime/cam_extract.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --cam ${cam} --zero-padding \
+      --cam ${cam} --zero-padding --softmax \
       --batch-size 1 --test-input var \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
@@ -920,7 +920,7 @@ if [ $stage -le 300 ]; then
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
-      --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_zero \
+      --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_zerosoft \
       --gpu-id 1 \
       --sample-utt 23976
     done
