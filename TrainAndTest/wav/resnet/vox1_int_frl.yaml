@@ -13,7 +13,7 @@ datasets: vox1
 testset: vox1
 feat_type: wave
 loss: arcsoft
-input_dim: 80
+input_dim: 64
 feat: int
 wav_type: int
 subset: ""
