@@ -23,3 +23,15 @@ EER(%):         4.43    Threshold:  0.2354  MinDcf-0.01: 0.4134  MinDcf-0.001: 0
 
 # sgd_rop     frl
 EER(%):         4.46    Threshold:  0.2341  MinDcf-0.01: 0.4233  MinDcf-0.001: 0.4688  Mix2,3: 2.0918, 0.8855
+
+# ThinResNet34 Mean_batch128_seblock_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8 v2 labser7
+EER(%):         1.69    Threshold:  0.2769, mindcf-0.01: 0.1760, mindcf-0.001: 0.2393, mix2,3: 0.4036, 0.0710.
+
+# frl v2
+EER(%):         1.59    Threshold:  0.2716, mindcf-0.01: 0.1663, mindcf-0.001: 0.2435, mix2,3: 0.3865, 0.0643.
+
+# ThinResNet18 Mean_batch128_seblock_downk5_avg0_SAP2_em256_dp01_alpha0_none1_wde4_varesmix8 v2 labser7
+EER(%):         2.08    Threshold:  0.2849  MinDcf-0.01: 0.1828  MinDcf-0.001: 0.3132  Mix2,3: 0.6526, 0.1193
+
+# frl v2 labser7
+EER(%):         2.03    Threshold:  0.2822  MinDcf-0.01: 0.1991  MinDcf-0.001: 0.3022  Mix2,3: 0.6129, 0.1220
