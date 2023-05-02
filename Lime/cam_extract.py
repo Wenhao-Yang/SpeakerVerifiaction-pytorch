@@ -373,6 +373,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     feat = last_feat  # .copy()
 
                     T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
+                    if args.zero_padding and T.shape[-1] < input_gradient.shape[-1]:
+                            T = zeros(T)
+
                     grad += ups(T).abs()
 
                 elif args.cam == 'grad_cam_pp':
@@ -389,6 +392,10 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     weight /= weight.sum()
 
                     grad = (last_feat * weight).sum(dim=1, keepdim=True)
+
+                    if args.zero_padding and grad.shape[-1] < input_gradient.shape[-1]:
+                            grad = zeros(grad)
+
                     grad = ups(grad)
 
                     # grad_cam_pp -= grad_cam_pp.min()
@@ -427,6 +434,10 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
                         bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
                         bias_grad /= bias_grad.max()
+
+                        if args.zero_padding and bias_grad.shape[-1] < input_gradient.shape[-1]:
+                            bias_grad = zeros(bias_grad)
+
                         full_grad += ups(bias_grad)
 
                     # full_grad -= full_grad.min()
