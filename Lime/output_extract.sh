@@ -898,13 +898,13 @@ if [ $stage -le 300 ]; then
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   
-  for cam in grad_cam grad_cam_pp fullgrad layer_cam ;do
+  for cam in grad_cam grad_cam_pp fullgrad layer_cam integrad;do
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
     model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456
     epoch=41
     python Lime/cam_extract.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --cam ${cam} --zero-padding --softmax \
+      --cam ${cam} --softmax \
       --batch-size 1 --test-input var \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
@@ -920,7 +920,7 @@ if [ $stage -le 300 ]; then
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
-      --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_zerosoft \
+      --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
       --gpu-id 1 \
       --sample-utt 23976
     done
