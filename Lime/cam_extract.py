@@ -360,6 +360,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                 if args.cam == 'gradient':
                     grad = data.grad  # .cpu().numpy().squeeze().astype(np.float32)
+                    # grad -= grad.min()
+                    # grad /= grad.max() + 1e-8
 
                 elif args.cam == 'grad_cam':
                     grad = torch.zeros_like(data)
@@ -372,11 +374,13 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     weight /= weight.sum()
                     feat = last_feat  # .copy()
 
-                    T = (feat * weight).clamp_min(0).sum(dim=1, keepdim=True)  # .clamp_min(0)
-                    if args.zero_padding and T.shape[-1] < input_gradient.shape[-1]:
+                    T = (feat * weight).sum(dim=1, keepdim=True).clamp_min(0)  # .clamp_min(0)
+                    if args.zero_padding and T.shape[-1] < data.shape[-1]:
                             T = zeros(T)
 
-                    grad += ups(T).abs()
+                    grad += ups(T) #.abs()
+                    # grad -= grad.min()
+                    # grad /= grad.max() + 1e-8
 
                 elif args.cam == 'grad_cam_pp':
                     # grad cam ++ last
@@ -385,30 +389,31 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     first_derivative = classifed[0][label.long()].exp().cpu() * last_grad
                     alpha = last_grad.pow(2) / (
                             2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
-                    # weight = alpha * (first_derivative.clamp_min_(0))
-                    weight = alpha * (first_derivative.abs())
+                    weight = alpha * (first_derivative.clamp_min_(0))
+                    # weight = alpha * (first_derivative.abs())
 
                     weight = weight.mean(dim=(2, 3), keepdim=True)
                     weight /= weight.sum()
 
-                    grad = (last_feat * weight).sum(dim=1, keepdim=True)
+                    grad = (last_feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
 
-                    if args.zero_padding and grad.shape[-1] < input_gradient.shape[-1]:
+                    if args.zero_padding and grad.shape[-1] < data.shape[-1]:
                             grad = zeros(grad)
 
                     grad = ups(grad)
 
                     # grad_cam_pp -= grad_cam_pp.min()
-                    grad = grad.abs()
-                    grad /= grad.max()
+                    # grad -= grad.min()
+                    # grad /= grad.max() + 1e-8
 
                 elif args.cam == 'fullgrad':
                     # full grad
                     input_gradient = (data.grad * data)
-                    full_grad = input_gradient.clone().clamp_min(0)
+                    full_grad = input_gradient.clone().abs()
+                    full_grad -= full_grad.min()
+                    full_grad /= full_grad.max() + 1e-8
 
                     L = len(bias_layers)
-
                     for i, l in enumerate(bias_layers):
                         bias = biases[L - i - 1]
                         if len(bias.shape) == 1:
@@ -432,8 +437,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             pdb.set_trace()
                         #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
                         #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                        bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
-                        bias_grad /= bias_grad.max()
+                        bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).abs()
+                        bias_grad -= bias_grad.min()
+                        bias_grad /= bias_grad.max() + 1e-8
 
                         if args.zero_padding and bias_grad.shape[-1] < input_gradient.shape[-1]:
                             bias_grad = zeros(bias_grad)
@@ -442,20 +448,17 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                     # full_grad -= full_grad.min()
                     # full_grad = full_grad.abs()
-                    full_grad /= full_grad.max()
-                    grad = full_grad.detach().cpu()
+                    full_grad -= full_grad.min()
+                    full_grad /= full_grad.max() + 1e-8
+                    grad = full_grad#.detach().cpu()
 
                 elif args.cam == 'acc_grad':
                     # pdb.set_trace()
                     input_gradient = (data.grad * data)
                     acc_grad = input_gradient.clone().clamp_min(0)  # .cpu()
-                    acc_grad /= acc_grad.max()
+                    acc_grad -= acc_grad.min()
 
                     for i in range(len(out_layer_grad)):
-                        # this_grad = out_layer_grad[i].clone()  # .cpu()
-                        # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
-                        # print(this_grad.shape, this_feat.shape)
-                        # try:
                         this_grad = out_layer_grad[i] * out_layer_feat[-1 - i]
                         if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
                             this_grad = zeros(this_grad)
@@ -473,24 +476,24 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     # pdb.set_trace()
                     input_gradient = (data.grad.clamp_min(0) * data)
                     acc_grad = input_gradient.clone()  # .cpu()
-                    acc_grad /= acc_grad.max()
-                    # acc_grad = torch.tanh(acc_grad)
+                    # acc_grad /= acc_grad.max()
 
                     for i in range(len(out_layer_grad)):
-                        # this_grad = out_layer_grad[i].clone()  # .cpu()
-                        # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
-                        # print(this_grad.shape, this_feat.shape)
-                        # try:
                         this_grad = out_layer_grad[i].clamp_min(
                             0) * out_layer_feat[-1 - i]
+                        
                         if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
                             this_grad = zeros(this_grad)
 
-                        this_grad = ups(this_grad).mean(dim=1, keepdim=True)
-                        acc_grad += this_grad / this_grad.max()
+                        this_grad = ups(this_grad).sum(dim=1, keepdim=True).clamp_min(0)
+                        acc_grad += this_grad #/ this_grad.max()
 
-                    acc_grad = acc_grad.clamp_min(0)
-                    grad = torch.tanh(acc_grad * 2 / acc_grad.max())
+                    # acc_grad -= acc_grad.min()
+                    # acc_grad /= acc_grad.max() + 1e-8
+                    grad = acc_grad#.detach().cpu()
+
+                    # acc_grad = acc_grad.clamp_min(0)
+                    # grad = torch.tanh(acc_grad * 2 / acc_grad.max())
 
                 elif args.cam == 'acc_input':
                     # pdb.set_trace()
@@ -566,6 +569,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                     if args.cam == 'gradient':
                         grad_a = data_a.grad  # .cpu().numpy().squeeze().astype(np.float32)
+                        # grad_a -= grad_a.min()
+                        # grad_a /= grad_a.max() + 1e-8
+
                     elif args.cam == 'grad_cam':
                         grad_a = torch.zeros_like(data_a)
                         L = len(cam_layers)
@@ -578,10 +584,13 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         weight /= weight.sum()
                         feat = last_feat  # .copy()
 
-                        T = (feat * weight).clamp_min(0).sum(dim=1,
-                                                             keepdim=True)  # .clamp_min(0)
+                        T = (feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
+                        if args.zero_padding and T.shape[-1] < grad.shape[-1]:
+                            T = zeros(T)
 
-                        grad_a += ups(T).abs()
+                        grad_a += ups(T) #.abs()
+                        # grad_a -= grad_a.min()
+                        # grad_a /= grad_a.max() + 1e-8
 
                     elif args.cam == 'grad_cam_pp':
                         # grad cam ++ last
@@ -591,26 +600,31 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         ) * last_grad
                         alpha = last_grad.pow(2) / (
                             2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
-                        # weight = alpha * (first_derivative.clamp_min_(0))
-                        weight = alpha * (first_derivative.abs())
+                        weight = alpha * (first_derivative.clamp_min_(0))
+                        # weight = alpha * (first_derivative.abs())
 
                         weight = weight.mean(dim=(2, 3), keepdim=True)
                         weight /= weight.sum()
 
-                        grad_a = (last_feat * weight).sum(dim=1, keepdim=True)
+                        grad_a = (last_feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
+
+                        if args.zero_padding and grad.shape[-1] < data_a.shape[-1]:
+                            grad = zeros(grad)
+
                         grad_a = ups(grad_a)
 
                         # grad_cam_pp -= grad_cam_pp.min()
-                        grad_a = grad_a.abs()
-                        grad_a /= grad_a.max()
+                        # grad_a = grad_a.abs()
+                        # grad_a /= grad_a.max()
 
                     elif args.cam == 'fullgrad':
                         # full grad
                         input_gradient = (data_a.grad * data_a)
-                        full_grad = input_gradient.clone().clamp_min(0)
+                        full_grad = input_gradient.clone().abs()
+                        full_grad -= full_grad.min()
+                        full_grad /= full_grad.max() + 1e-8
 
                         L = len(bias_layers)
-
                         for j, l in enumerate(bias_layers):
                             bias = biases[L - j - 1]
                             if len(bias.shape) == 1:
@@ -635,8 +649,13 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
                             #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
                             bias_grad = (
-                                out_feature_grads[j] * bias).mean(dim=1, keepdim=True).clamp_min(0)
-                            bias_grad /= bias_grad.max()
+                                out_feature_grads[j] * bias).mean(dim=1, keepdim=True).abs()
+                            bias_grad -= bias_grad.min()
+                            bias_grad /= bias_grad.max() + 1e-8
+
+                            if args.zero_padding and bias_grad.shape[-1] < input_gradient.shape[-1]:
+                                bias_grad = zeros(bias_grad)
+                            
                             full_grad += ups(bias_grad)
 
                         # full_grad -= full_grad.min()
@@ -670,21 +689,21 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         # pdb.set_trace()
                         input_gradient = (data_a.grad.clamp_min(0) * data_a)
                         acc_grad = input_gradient.clone()
-                        acc_grad /= acc_grad.max()
+                        # acc_grad /= acc_grad.max()
 
                         for i in range(len(out_layer_grad)):
-                            # this_grad = out_layer_grad[i].clone()  # .cpu()
-                            # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
-                            # print(this_grad.shape, this_feat.shape)
-                            # try:
                             this_grad = ups(out_layer_grad[i].clamp_min(
                                 0) * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
-                            # except Exception as e:
-                            #     print(this_grad.shape, this_feat.shape)
 
-                            acc_grad += this_grad / this_grad.max()
-                        acc_grad = acc_grad.clamp_min(0)
-                        grad_a = torch.tanh(acc_grad * 2 / acc_grad.max())
+                            if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
+                                this_grad = zeros(this_grad)
+
+                            this_grad = ups(this_grad).sum(dim=1, keepdim=True).clamp_min(0)
+
+                            acc_grad += this_grad #/ this_grad.max()
+
+                        acc_grad = acc_grad #.clamp_min(0)
+                        # grad_a = torch.tanh(acc_grad * 2 / acc_grad.max())
 
                     elif args.cam == 'acc_input':
                         # pdb.set_trace()
@@ -866,7 +885,6 @@ def main():
     model = create_model(args.model, **model_kwargs)
 
     train_loader = DataLoader(train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
-
     # veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     # valid_loader = DataLoader(valid_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     # test_loader = DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
