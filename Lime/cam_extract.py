@@ -531,7 +531,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     baseline = 0. * data
 
                 scaled_inputs = [baseline + (float(i) / args.steps) * (data - baseline) for i in
-                                 range(0, args.steps + 1)]
+                                 range(1, args.steps + 1)]
 
                 grads, target_label_idx = calculate_outputs_and_gradients(
                     scaled_inputs, model, target_label_index)
@@ -738,7 +738,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         baseline = 0. * data_a
 
                     scaled_inputs = [baseline + (float(i) / args.steps) * (data_a - baseline) for i in
-                                     range(0, args.steps + 1)]
+                                     range(1, args.steps + 1)]
 
                     grads, target_label_idx = calculate_outputs_and_gradients(
                         scaled_inputs, model, target_label_index)
