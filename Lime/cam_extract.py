@@ -869,7 +869,13 @@ def main():
     print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
     # print the experiment configuration
     print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    print('Parsed options: {}'.format(vars(args)))
+    options = vars(args)
+    options_keys = list(options.keys())
+    options_keys.sort()
+    options_str = ''
+    for k in options_keys:
+        options_str += '\'{}\': \'{}\', '.format(k, options[k])
+    print('Parsed options: \n {}'.format(options_str))
 
     # instantiate model and initialize weights
     if args.check_yaml != None and os.path.exists(args.check_yaml):
