@@ -702,7 +702,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                             acc_grad += this_grad #/ this_grad.max()
 
-                        acc_grad = acc_grad #.clamp_min(0)
+                        grad_a = acc_grad #.clamp_min(0)
                         # grad_a = torch.tanh(acc_grad * 2 / acc_grad.max())
 
                     elif args.cam == 'acc_input':
@@ -751,6 +751,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 if grad_a.shape != data_a.shape:
                     print(grad_a.shape, data_a.shape)
                     pdb.set_trace()
+
                 grad.append(grad_a.detach().cpu().squeeze())
                 all_data.append(data_a.detach().squeeze())
 
