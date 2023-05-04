@@ -870,26 +870,26 @@ class ScriptTrainDataset(data.Dataset):
             valid_utt2dom_dict = {}
             valid_base_utts = []
 
-            for spk in speakers:
-                if spk not in valid_set.keys():
-                    valid_set[spk] = []
-                    if isinstance(num_valid, float) and num_valid < 1.0:
-                        numofutt = len(dataset[spk]) - int(np.ceil((1-num_valid) * len(dataset[spk])))
-                    else:
-                        numofutt = num_valid
-
-                    for i in range(numofutt):
-                        j = np.random.randint(len(dataset[spk]))
-                        utt = dataset[spk].pop(j)
-                        valid_set[spk].append(utt)
-
-                        valid_uid2feat[valid_set[spk][-1]
-                                       ] = uid2feat.pop(valid_set[spk][-1])
-                        valid_utt2spk_dict[utt] = utt2spk_dict[utt]
-                        if self.domain:
-                            valid_utt2dom_dict[utt] = utt2dom_dict[utt]
-
             if not os.path.exists(os.path.join(save_dir, 'valid.csv')):
+                for spk in speakers:
+                    if spk not in valid_set.keys():
+                        valid_set[spk] = []
+                        if isinstance(num_valid, float) and num_valid < 1.0:
+                            numofutt = len(dataset[spk]) - int(np.ceil((1-num_valid) * len(dataset[spk])))
+                        else:
+                            numofutt = num_valid
+
+                        for i in range(numofutt):
+                            j = np.random.randint(len(dataset[spk]))
+                            utt = dataset[spk].pop(j)
+                            valid_set[spk].append(utt)
+
+                            valid_uid2feat[valid_set[spk][-1]
+                                        ] = uid2feat.pop(valid_set[spk][-1])
+                            valid_utt2spk_dict[utt] = utt2spk_dict[utt]
+                            if self.domain:
+                                valid_utt2dom_dict[utt] = utt2dom_dict[utt]
+
                 for utt in valid_uid2feat:
                     num_frames = self.utt2num_frames[utt]
                     this_numofseg = int(np.ceil(float(num_frames-segment_len+segment_shift) / segment_shift))
@@ -904,6 +904,15 @@ class ScriptTrainDataset(data.Dataset):
 
                 valid_utts = pd.DataFrame(valid_base_utts, columns=['uid', 'start', 'end'])
                 valid_utts.to_csv(os.path.join(save_dir, 'valid.csv'), index=None)
+            else:
+                valid_base_utts = pd.read_csv(os.path.join(save_dir, 'valid.csv')).to_numpy().tolist()
+                valid_uids = set([utt for utt, start, end in valid_base_utts])
+                for uid in valid_uids:
+                    valid_set.setdefault(utt2spk_dict[uid], []).extend([uid])
+                    valid_utt2spk_dict[uid] = utt2spk_dict[uid]
+                    valid_uid2feat[uid] = uid2feat[uid]
+                    if self.domain:
+                        valid_utt2dom_dict[uid] = utt2dom_dict[uid]
 
             if verbose > 0:
                 print('    Spliting {} utterances for Validation.'.format(
@@ -1045,7 +1054,6 @@ class ScriptTrainDataset(data.Dataset):
 
         sid = self.utt2spk_dict[uid]
         label = self.spk_to_idx[sid]
-
         feature = self.transform(y)
 
         return feature, label
@@ -1080,7 +1088,6 @@ class ScriptValidDataset(data.Dataset):
         
         self.valid_base_utts = valid_base_utts
         self.speakers = speakers
-        self.dataset = valid_set
         self.valid_set = valid_set
         self.uid2feat = valid_uid2feat
         self.domain = domain

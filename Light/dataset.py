@@ -143,7 +143,7 @@ def SubScriptDatasets(config_args):
 
     elif 'feat_type' in config_args and config_args['feat_type'] == 'hdf5':
         print('Create HDF5 Dataset...')
-        train_dir = Hdf5TrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 
+        train_dir = Hdf5TrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'],
                                      transform=transform, num_valid=config_args['num_valid'],
                                      feat_type='wav', sample_type=sample_type,
                                      segment_len=config_args['num_frames'], segment_shift=segment_shift,
@@ -167,7 +167,7 @@ def SubScriptDatasets(config_args):
                                     dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
                                     valid_uid2feat=train_dir.valid_uid2feat,
                                     save_dir=save_dir,
-                                    valid_utt2spk_dict=train_dir.valid_utt2spk_dict, verbose=verbose,
+                                    valid_utt2spk_dict=train_dir.valid_utt2spk_dict, verbose=0,
                                     feat_type=feat_type,
                                     transform=transform, domain=domain)
 
