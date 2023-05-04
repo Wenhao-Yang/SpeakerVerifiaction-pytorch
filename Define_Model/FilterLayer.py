@@ -1059,6 +1059,32 @@ class FrequencyReweightLayer(nn.Module):
         return "FrequencyReweightLayer(input_dim=%d)" % (self.input_dim)
 
 
+
+class FreqTimeReweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FreqTimeReweightLayer, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        F = x * self.activation(self.weight)
+        T = x * self.activation(F.sum(dim=-2, keepdim=True))
+        
+        return x + F + T
+
+    def __repr__(self):
+        return "FreqTimeReweightLayer(input_dim=%d)" % (self.input_dim)
+
+
 class AttentionweightLayer_v2(nn.Module):
     def __init__(self, input_dim=161, weight='mel', weight_norm='none'):
         super(AttentionweightLayer_v2, self).__init__()
