@@ -1079,7 +1079,7 @@ class FreqTimeReweightLayer(nn.Module):
         F = x * self.activation(self.weight)
         T = x * self.activation(F.sum(dim=-2, keepdim=True))
         
-        return (x + F + T) / 3
+        return x + (F + T) / 2
 
     def __repr__(self):
         return "FreqTimeReweightLayer(input_dim=%d)" % (self.input_dim)
