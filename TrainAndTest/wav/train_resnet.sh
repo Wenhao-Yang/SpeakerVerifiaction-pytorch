@@ -2,7 +2,7 @@
 
 stage=0
 waited=0
-while [ `ps 3492243 | wc -l` -eq 2 ]; do
+while [ `ps 530981 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -28,8 +28,8 @@ if [ $stage -le 0 ]; then
 
   # seed=123456
   for lamda_beta in 0.2 ; do
-  for seed in 123456  ; do
-   for layer in 7 ; do
+  for seed in 123456 ; do
+   for dim in 40 64 161 ; do
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/wav/resnet/aidata_float.yaml --seed=${seed}
     # sleep 5
@@ -47,9 +47,11 @@ if [ $stage -le 0 ]; then
     # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox1_int_baseline.yaml --seed=${seed}
 
     # sleep 5
-    CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox1_int_frl.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox1_int_frl.yaml --seed=${seed}
 
-    # sleep 5
+    CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_ftrl${dim}.yaml --seed=${seed}
+
+    sleep 5
     # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox1_int_baseline_spect.yaml --seed=${seed}
 
     # sleep 5
