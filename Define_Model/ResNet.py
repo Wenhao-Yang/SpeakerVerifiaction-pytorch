@@ -23,7 +23,7 @@ from torch import nn
 # from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
-from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyReweightLayer, TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyNormReweightLayer, FrequencyReweightLayer, TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, ReweightLayer, AttentionweightLayer_v0
@@ -1160,6 +1160,8 @@ class ThinResNet(nn.Module):
 
         if self.mask == 'frl' and input_dim != None:
             layers.append(FrequencyReweightLayer(input_dim=input_dim))
+        elif self.mask == 'fnrl' and input_dim != None:
+            layers.append(FrequencyNormReweightLayer(input_dim=input_dim))
         elif self.mask == 'ftrl' and input_dim != None:
             layers.append(FreqTimeReweightLayer(input_dim=input_dim))
         
