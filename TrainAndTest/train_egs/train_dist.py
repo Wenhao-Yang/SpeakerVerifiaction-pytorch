@@ -623,7 +623,6 @@ def main():
                 top_k = early_stopping_scheduler.top_k()
             else:
                 top_k = []
-
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch or epoch in top_k):
@@ -638,7 +637,13 @@ def main():
                             'optimizer': optimizer.state_dict(),
                             }, this_check_path)
 
-                if early_stopping_scheduler.early_stop:
+            check_stop = torch.tensor(
+                int(early_stopping_scheduler.early_stop)).cuda()
+            dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
+
+            if check_stop:
+                end = epoch
+                if torch.distributed.get_rank() == 0:
                     print('Best Epoch is %d:' %
                           (early_stopping_scheduler.best_epoch))
                     best_epoch = early_stopping_scheduler.best_epoch
@@ -666,18 +671,12 @@ def main():
                                     '{}/best.pth'.format(check_path))
                     except Exception as e:
                         print(e)
-
-            check_stop = torch.tensor(int(early_stopping_scheduler.early_stop)).cuda()
-            dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
-
-            if check_stop:
-                end = epoch
                 break
 
             if config_args['scheduler'] == 'rop':
                 scheduler.step(valid_loss)
             elif config_args['scheduler'] == 'cyclic':
-                continue
+                pass
             else:
                 scheduler.step()
 

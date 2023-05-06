@@ -186,7 +186,7 @@ class EarlyStopping():
 
             if self.counter >= self.patience:
                 print('INFO: Early stopping, top-k epochs: ',
-                      self.tops_k())
+                      self.top_k())
                 self.early_stop = True
 
     def top_k(self):
