@@ -8,18 +8,7 @@
 @Time: 2023/05/08 15:53
 @Overview: 
 '''
-#!/usr/bin/env python
-# encoding: utf-8
-
-"""
-@Author: yangwenhao
-@Contact: 874681044@qq.com
-@Software: PyCharm
-@File: output_extract.py
-@Time: 2020/3/21 5:57 PM
-@Overview:
-"""
-from __future__ import print_function
+# from __future__ import print_function
 
 import argparse
 import json
