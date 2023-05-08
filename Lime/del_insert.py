@@ -122,7 +122,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
     pbar = tqdm(enumerate(valid_loader))
 
     with torch.no_grad():
-        for batch_idx, (data, grad, label) in pbar:
+        for batch_idx, (data, label) in pbar:
             logit, _ = model(data.cuda())
 
             if args.loss_type == 'asoft':
