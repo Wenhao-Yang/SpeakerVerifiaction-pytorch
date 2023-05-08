@@ -947,6 +947,7 @@ if [ $stage -le 301 ]; then
     python Lime/del_insert.py \
       --model ${model} --resnet-size ${resnet_size} \
       --batch-size 1 --test-input var \
+      --pro-type insert --threshold 0.1 \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --train-set-name ${train_set} --test-set-name ${test_set} \
