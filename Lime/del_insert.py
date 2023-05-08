@@ -153,11 +153,17 @@ def main():
     print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
     # print the experiment configuration
     print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    print('Parsed options: {}'.format(vars(args)))
+    options = vars(args)
+    options_keys = list(options.keys())
+    options_keys.sort()
+    options_str = ''
+    for k in options_keys:
+        options_str += '\'{}\': \'{}\', '.format(k, options[k])
+    print('Parsed options: \n {}'.format(options_str))
 
     # instantiate model and initialize weights
-    if os.path.exists(args.model_yaml):
-        model_kwargs = load_model_args(args.model_yaml)
+    if args.check_yaml != None and os.path.exists(args.check_yaml):
+        model_kwargs = load_model_args(args.check_yaml)
     else:
         model_kwargs = args_model(args, train_dir)
 
@@ -168,7 +174,6 @@ def main():
     print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
-
 
     valid_loader = DataLoader(valid_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
 
