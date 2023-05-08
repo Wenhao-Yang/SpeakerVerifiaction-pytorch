@@ -1167,7 +1167,7 @@ class ScriptEvalDataset(data.Dataset):
         with h5py.File(self.grad_file, 'r') as r:
             grad = r.get(uid)[:]
 
-        data = self.transform(data, grad)
+        data = self.transform((data, grad))
         return data, idx
         
 

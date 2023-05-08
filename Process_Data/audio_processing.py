@@ -509,7 +509,7 @@ class CAMNormInput(object):
         self.pro_type = pro_type
         self.norm_cam = norm_cam
 
-    def __call__(self, data, grad):
+    def __call__(self, x):
         """sumary_line
         Keyword arguments:
         data        -- numpy like input with shape t*f
@@ -517,7 +517,7 @@ class CAMNormInput(object):
         threshold   -- percent of input will be inserted or deleted
         Return: return_description
         """
-        
+        data, grad = x
         H, W = data.shape
         start = np.zeros(data.shape)
         final = data.copy()
