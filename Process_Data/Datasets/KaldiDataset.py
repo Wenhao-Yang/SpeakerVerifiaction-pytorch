@@ -9,6 +9,7 @@
 @Time: 2019/12/10 下午9:28
 @Overview:
 """
+import json
 import os
 import pathlib
 import pdb
@@ -21,6 +22,7 @@ import torch
 import torch.utils.data as data
 # from kaldi_io import read_mat
 from tqdm import tqdm
+import h5py
 
 import Process_Data.constants as c
 
@@ -1135,6 +1137,42 @@ class ScriptValidDataset(data.Dataset):
             return len(self.valid_base_utts)
         else:
             return len(self.uids)
+        
+
+class ScriptEvalDataset(data.Dataset):
+    # dataset for inset and delete
+    def __init__(self, valid_dir, transform, feat_type='kaldi',
+                 return_uid=False, verbose=1):
+        
+        uid_file = os.path.join(valid_dir, 'uid_idx.json')
+        with open(uid_file, 'r') as f:
+            uids = json.load(f)
+
+        self.data_file = os.path.join(valid_dir, 'data.h5py')
+        self.grad_file = os.path.join(valid_dir, 'grad.h5py')
+
+        # uids.sort()
+        if verbose > 0:
+            print('Examples uids: ', uids[:4])
+
+        self.uids = uids
+        self.transform = transform
+
+    def __getitem__(self, index):
+        uid, idx = self.uids[index]
+
+        with h5py.File(self.data_file, 'r') as r:
+            data = r.get(uid)[:]
+
+        with h5py.File(self.grad_file, 'r') as r:
+            grad = r.get(uid)[:]
+
+        data = self.transform(data, grad)
+        return data, idx
+        
+
+    def __len__(self):
+        return len(self.uids)
 
 
 class ScriptTestDataset(data.Dataset):

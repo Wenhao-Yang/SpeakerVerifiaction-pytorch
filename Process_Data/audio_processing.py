@@ -5,7 +5,7 @@ import pathlib
 import pdb
 import traceback
 import random
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 import torchaudio
 import librosa
@@ -484,6 +484,59 @@ def read_from_npy(filename):
     audio = np.load(filename.replace('.wav', '.npy'))
 
     return audio
+
+
+def cam_normalize(grad):
+    """sumary_line
+    
+    Keyword arguments:
+    grad -- cam
+    dim  -- dim for features
+    Return: return_description
+    """
+    dim = grad.shape[-1]
+    grad_t = grad.sum(axis=1)
+    cam_min, cam_max = grad_t.min(), grad_t.max()
+
+    pre_cam = np.tile((grad_t - cam_min) / (cam_max - cam_min + 1e-8), (1, dim))
+    # pre_cam = np.int64(pre_cam > 0.6)
+    return pre_cam
+
+
+class CAMNormInput(object):
+    def __init__(self, threshold=0.15, pro_type='del', norm_cam=None) -> None:
+        self.threshold = threshold
+        self.pro_type = pro_type
+        self.norm_cam = norm_cam
+
+    def __call__(self, data, grad):
+        """sumary_line
+        Keyword arguments:
+        data        -- numpy like input with shape t*f
+        frag        -- numpy like input cam with shape t*f
+        threshold   -- percent of input will be inserted or deleted
+        Return: return_description
+        """
+        
+        H, W = data.shape
+        start = np.zeros(data.shape)
+        final = data.copy()
+
+        if self.norm_cam != None:
+            grad = cam_normalize(grad)
+
+        if self.pro_type in ['insertion', 'insert']:
+            # 值递增，首先插入权值小的部分
+            salient_order = np.flip(np.argsort(grad.reshape(H*W)), axis=0) 
+        else:
+            # 值递减，首先删掉权值大的部分
+            salient_order = np.argsort(grad.reshape(H*W))                  
+            threshold = 1 - threshold
+        
+        coords = salient_order[0:int((H*W)*self.threshold)]
+        start.reshape(H*W)[coords] = final.reshape(H*W)[coords]
+
+        return start
 
 
 class ConcateVarInput(object):
