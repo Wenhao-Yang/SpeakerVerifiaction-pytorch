@@ -31,7 +31,7 @@ from tqdm import tqdm
 import pandas as pd
 
 from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
-from Define_Model.model import PairwiseDistance
+# from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptEvalDataset, ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import CAMNormInput, ConcateOrgInput, mvnormal, ConcateVarInput
@@ -181,7 +181,7 @@ if args.cuda:
 
 # Define visulaize SummaryWriter instance
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else nn.PairwiseDistance(p=2)
 
 if args.input_length == 'var':
     transform = transforms.Compose([
