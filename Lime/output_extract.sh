@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300
+stage=301
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 438120 | wc -l) -eq 2 ]; do
@@ -921,6 +921,48 @@ if [ $stage -le 300 ]; then
       --check-path Data/checkpoint/${model_dir} \
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
+      --gpu-id 1 \
+      --sample-utt 23976
+    done
+  exit
+fi
+
+if [ $stage -le 301 ]; then
+  model=ThinResNet resnet_size=34
+  # dataset=vox1
+  dataset=vox2
+  train_set=vox2 test_set=vox1
+  feat_type=klsp #--remove-vad \
+  feat=log
+  loss=arcsoft
+  encoder_type=SAP2 embedding_size=256
+  block_type=basic kernel=5,5
+  cam=gradient
+  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  
+  for cam in grad_cam layer_cam ;do
+  # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
+    model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456
+    epoch=41
+    python Lime/del_insert.py \
+      --model ${model} --resnet-size ${resnet_size} \
+      --batch-size 1 --test-input var \
+      --start-epochs ${epoch} --epochs ${epoch} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+      --input-norm Mean \
+      --kernel-size ${kernel} --stride 2,2 --fast none1 \
+      --channels 16,32,64,128 \
+      --block-type ${block_type} \
+      --encoder-type ${encoder_type} --time-dim 1 --avg-size 5 \
+      --embedding-size ${embedding_size} --alpha 0 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --dropout-p 0.1 \
+      --check-path Data/checkpoint/${model_dir} \
+      --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
+      --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
+      --eval-dir Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft/epoch_41 \
       --gpu-id 1 \
       --sample-utt 23976
     done

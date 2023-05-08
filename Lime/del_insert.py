@@ -262,7 +262,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                     batch_idx + 1,
                     100. * batch_idx / len(valid_loader)))
 
-        filename = file_dir + '/%s.label_pred.%s.csv' % (set_name, args.pro_type)
+        filename = file_dir + '/%s.label_pred.%s.%.2f.csv' % (set_name, args.pro_type, args.threshold)
         df = pd.DataFrame(label_pred, columns=['label', 'predict'])
         df.to_csv(filename)
 
