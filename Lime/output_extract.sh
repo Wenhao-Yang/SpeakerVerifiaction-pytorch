@@ -941,13 +941,15 @@ if [ $stage -le 301 ]; then
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   
   for cam in layer_cam ;do
+  for pro_type in insert del ; do
+  for threshold in 0.2 0.4 0.6 0.8 ; do
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
     model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456
     epoch=41
     python Lime/del_insert.py \
       --model ${model} --resnet-size ${resnet_size} \
       --batch-size 1 --test-input var \
-      --pro-type insert --threshold 0.1 \
+      --pro-type ${pro_type} --threshold ${threshold} \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --train-set-name ${train_set} --test-set-name ${test_set} \
@@ -966,6 +968,8 @@ if [ $stage -le 301 ]; then
       --eval-dir Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft/epoch_41 \
       --gpu-id 1 \
       --sample-utt 23976
+    done
+    done
     done
   exit
 fi
