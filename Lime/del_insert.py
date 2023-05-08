@@ -146,6 +146,8 @@ parser.add_argument('--input-per-spks', type=int, default=192, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
 parser.add_argument('--test-input-per-file', type=int, default=1, metavar='IPFT',
                     help='input sample per file for testing (default: 8)')
+parser.add_argument('--test-input', type=str, default='var',
+                    help='input sample per file for testing (default: 8)')
 
 # Device options
 parser.add_argument('--no-cuda', action='store_true', default=False,
@@ -183,7 +185,7 @@ if args.cuda:
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else nn.PairwiseDistance(p=2)
 
-if args.input_length == 'var':
+if args.test_input == 'var':
     transform = transforms.Compose([
         CAMNormInput(threshold=args.threshold, pro_type=args.pro_type),
         ConcateOrgInput(remove_vad=args.remove_vad),
@@ -191,7 +193,7 @@ if args.input_length == 'var':
     # transform_T = transforms.Compose([
     #     ConcateOrgInput(remove_vad=args.remove_vad),
     # ])
-elif args.input_length == 'fix':
+elif args.test_input == 'fix':
     transform = transforms.Compose([
         CAMNormInput(threshold=args.threshold, pro_type=args.pro_type),
         ConcateVarInput(remove_vad=args.remove_vad),
