@@ -42,7 +42,7 @@ class fDLR(nn.Module):
         centers = np.linspace(0, hz2mel(sr / 2), num_filter + 2)
         centers = mel2hz(centers)
         self.frequency_center = nn.Parameter(torch.from_numpy(centers[1:-1]).float().reshape(num_filter, 1),
-                                             requires_grad=requires_grad)
+                                             requFires_grad=requires_grad)
 
         bandwidth = []
         for i in range(2, len(centers)):
@@ -1082,6 +1082,29 @@ class FrequencyNormReweightLayer(nn.Module):
     def __repr__(self):
         return "FrequencyNormReweightLayer(input_dim=%d)" % (self.input_dim)
 
+class TimeReweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(TimeReweightLayer, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        F = x * self.activation(self.weight)
+        T = self.activation(F.sum(dim=-1, keepdim=True))
+        
+        return x * ( 1 + T)
+
+    def __repr__(self):
+        return "TimeReweightLayer(input_dim=%d)" % (self.input_dim)  
 
 class FreqTimeReweightLayer(nn.Module):
     def __init__(self, input_dim=161):
@@ -1100,7 +1123,7 @@ class FreqTimeReweightLayer(nn.Module):
         """
         # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
         F = x * self.activation(self.weight)
-        T = x * self.activation(F.sum(dim=-2, keepdim=True))
+        T = x * self.activation(F.sum(dim=-1, keepdim=True))
         
         return x + (F + T) / 2
 
