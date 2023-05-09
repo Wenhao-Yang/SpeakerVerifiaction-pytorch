@@ -95,7 +95,7 @@ elif args.test_input == 'fix':
 
 file_loader = read_mat
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
-                               loader=file_loader, transform=transform, return_uid=True)
+                               loader=file_loader, transform=transform, return_uid=True, verbose=0)
 indices = list(range(len(train_dir)))
 random.shuffle(indices)
 indices = indices[:args.sample_utt]
