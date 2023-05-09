@@ -183,7 +183,7 @@ def main():
     valid_loader = DataLoader(valid_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     resume_path = args.check_path + '/checkpoint_{}.pth'
-    print('=> Saving output in {}\n'.format(args.extract_path))
+    # print('=> Saving output in {}\n'.format(args.extract_path))
     epochs = np.arange(args.start_epochs, args.epochs + 1)
 
     for e in epochs:
