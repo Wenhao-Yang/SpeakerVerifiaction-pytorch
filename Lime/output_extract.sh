@@ -942,7 +942,7 @@ if [ $stage -le 301 ]; then
   
   for cam in layer_cam ;do
   for pro_type in insert del ; do
-  for threshold in 0.01 0.02 0.04 0.06 0.08 0.2; do
+  for threshold in 0.4 0.6 0.8 0.9; do
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
     model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456
     epoch=41
