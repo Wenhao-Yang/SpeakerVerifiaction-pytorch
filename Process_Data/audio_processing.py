@@ -527,13 +527,14 @@ class CAMNormInput(object):
 
         if self.pro_type in ['insertion', 'insert']:
             # 值递增，首先插入权值小的部分
-            salient_order = np.flip(np.argsort(grad.reshape(H*W)), axis=0) 
+            salient_order = np.flip(np.argsort(grad.reshape(H*W)), axis=0)
+            threshold = self.threshold 
         else:
             # 值递减，首先删掉权值大的部分
             salient_order = np.argsort(grad.reshape(H*W))                  
-            threshold = 1 - threshold
+            threshold = 1 - self.threshold
         
-        coords = salient_order[0:int((H*W)*self.threshold)]
+        coords = salient_order[0:int((H*W)*threshold)]
         start.reshape(H*W)[coords] = final.reshape(H*W)[coords]
 
         return start
