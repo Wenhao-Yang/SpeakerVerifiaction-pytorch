@@ -120,6 +120,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
 
     label_pred = []
     pbar = tqdm(enumerate(valid_loader))
+    output_softmax = nn.Softmax(dim=1)
 
     with torch.no_grad():
         for batch_idx, (data, label) in pbar:
@@ -130,7 +131,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             else:
                 classifed = logit
 
-            p = classifed[0].cpu().numpy()
+            p = output_softmax(classifed)[0].cpu().numpy()
             l = label[0].numpy()
 
             label_pred.append([l, p])
@@ -140,9 +141,10 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                     batch_idx + 1,
                     100. * batch_idx / len(valid_loader)))
 
-        filename = file_dir + '/%s.label_pred.%s.%.2f.csv' % (set_name, args.pro_type, args.threshold)
+        filename = file_dir + '/%s.label_pred.%s.%.2f.json' % (set_name, args.pro_type, args.threshold)
         df = pd.DataFrame(label_pred, columns=['label', 'predict'])
-        df.to_csv(filename)
+        # df.to_csv(filename)
+        df.to_json(filename)
 
         # with open(filename, 'wb') as f:
         #     pickle.dump(label_pred, f)
