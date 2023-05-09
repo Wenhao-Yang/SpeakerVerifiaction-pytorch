@@ -132,7 +132,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                 classifed = logit
 
             p = output_softmax(classifed)[0].cpu().numpy()
-            l = label[0].numpy()
+            l = label.numpy()
 
             label_pred.append([l, p])
 
@@ -148,20 +148,22 @@ def valid_eval(valid_loader, model, file_dir, set_name):
 
         # with open(filename, 'wb') as f:
         #     pickle.dump(label_pred, f)
-        print('Saving pairs in %s.\n' % filename)
+        if args.verbose > 0:
+            print('Saving pairs in %s.\n' % filename)
         torch.cuda.empty_cache()
 
 def main():
-    print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
-    # print the experiment configuration
-    print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    options = vars(args)
-    options_keys = list(options.keys())
-    options_keys.sort()
-    options_str = ''
-    for k in options_keys:
-        options_str += '\'{}\': \'{}\', '.format(k, options[k])
-    print('Parsed options: \n {}'.format(options_str))
+    if args.verbose > 1:
+        print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
+        # print the experiment configuration
+        print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
+        options = vars(args)
+        options_keys = list(options.keys())
+        options_keys.sort()
+        options_str = ''
+        for k in options_keys:
+            options_str += '\'{}\': \'{}\', '.format(k, options[k])
+        print('Parsed options: \n {}'.format(options_str))
 
     # instantiate model and initialize weights
     if args.check_yaml != None and os.path.exists(args.check_yaml):
@@ -172,8 +174,9 @@ def main():
     keys = list(model_kwargs.keys())
     keys.sort()
     model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
-    print('Model options: \n{ %s }' % (', '.join(model_options)))
-    print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
+    if args.verbose > 1:
+        print('Model options: \n{ %s }' % (', '.join(model_options)))
+        print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
 
@@ -186,7 +189,8 @@ def main():
     for e in epochs:
         # Load model from Checkpoint file
         if os.path.isfile(resume_path.format(e)):
-            print('=> loading checkpoint {}'.format(resume_path.format(e)))
+            if args.verbose > 0:
+                print('=> loading checkpoint {}'.format(resume_path.format(e)))
             checkpoint = torch.load(resume_path.format(e))
             checkpoint_state_dict = checkpoint['state_dict']
             if isinstance(checkpoint_state_dict, tuple):
