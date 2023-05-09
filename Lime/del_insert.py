@@ -130,7 +130,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             else:
                 classifed = logit
 
-            p = classifed[0].cpu().numpy
+            p = classifed[0].cpu().numpy()
             l = label[0].numpy()
 
             label_pred.append([l, p])
