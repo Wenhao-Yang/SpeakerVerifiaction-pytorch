@@ -972,8 +972,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     if 'Test' in description:
         parser.add_argument('--lightning', action='store_true',
                             default=False, help='need to make mfb file')
-        parser.add_argument('--train-config', default='',
-                            help='path to yaml of model for the latest checkpoint')
+        # parser.add_argument('--train-config', default='',
+        #                     help='path to yaml of model for the latest checkpoint')
         parser.add_argument('--extract-trials', action='store_false',
                             default=True, help='log power spectogram')
         parser.add_argument('--score-suffix', type=str,
