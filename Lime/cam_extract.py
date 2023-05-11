@@ -217,7 +217,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             # orig = data.detach().numpy().squeeze().astype(np.float32)
             spks = [train_dir.utt2spk_dict[u] for u in uid]
             target_label_index = [train_dir.spk_to_idx[s] for s in spks]
-            target_label_index = torch.LongTensor(target_label_index)
+            label = torch.LongTensor(target_label_index)
 
             if data.shape[2] > 5 * c.NUM_FRAMES_SPECT:
                 num_half = int(data.shape[2] / (4 * c.NUM_FRAMES_SPECT))
