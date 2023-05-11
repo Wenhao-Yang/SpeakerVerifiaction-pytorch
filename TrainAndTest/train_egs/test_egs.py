@@ -35,7 +35,7 @@ from tqdm import tqdm
 
 # from Define_Model.Loss.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 import Define_Model
-from Define_Model.model import PairwiseDistance
+# from Define_Model.model import PairwiseDistance
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
@@ -285,7 +285,7 @@ assert os.path.isfile(args.resume), print(args.resume)
 
 sys.stdout = NewLogger(os.path.join(os.path.dirname(args.resume), 'test.log'))
 
-l2_dist = nn.CosineSimilarity(dim=-1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(dim=-1, eps=1e-6) if args.cos_sim else nn.PairwiseDistance(p=2)
 
 if args.test_input == 'var':
     transform = transforms.Compose([
