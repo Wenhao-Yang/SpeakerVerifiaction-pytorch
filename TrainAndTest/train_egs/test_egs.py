@@ -626,45 +626,11 @@ if __name__ == '__main__':
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
     if os.path.exists(args.check_yaml):
+        if args.verbose > 0:
+            print('\nLoading model weights from: {}'.format(args.check_yaml))
         model_kwargs = load_model_args(args.check_yaml)
     else:
         model_kwargs = args_model(args, train_dir)
-
-        # # instantiate model and initialize weights
-        # kernel_size = args.kernel_size.split(',')
-        # kernel_size = [int(x) for x in kernel_size]
-        # if args.padding == '':
-        #     padding = [int((x - 1) / 2) for x in kernel_size]
-        # else:
-        #     padding = args.padding.split(',')
-        #     padding = [int(x) for x in padding]
-        #
-        # kernel_size = tuple(kernel_size)
-        # padding = tuple(padding)
-        # stride = args.stride.split(',')
-        # stride = [int(x) for x in stride]
-        #
-        # channels = args.channels.split(',')
-        # channels = [int(x) for x in channels]
-        # context = args.context.split(',')
-        # context = [int(x) for x in context]
-        # dilation = args.dilation.split(',')
-        # dilation = [int(x) for x in dilation]
-        #
-        # mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
-        #
-        # model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-        #                 'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
-        #                 'dilation': dilation, 'first_2d': args.first_2d,
-        #                 'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
-        #                 'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
-        #                 'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-        #                 'downsample': args.downsample, 'normalize': args.normalize,
-        #                 'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-        #                 'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-        #                 'channels': channels, 'context': context, 'init_weight': args.init_weight,
-        #                 'alpha': args.alpha, 'dropout_p': args.dropout_p,
-        #                 'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
 
     if args.verbose > 1:
         print('Model options: {}'.format(model_kwargs))
@@ -710,7 +676,7 @@ if __name__ == '__main__':
         model_dict.update(filtered)
         model.load_state_dict(model_dict)
         # model.dropout.p = args.dropout_p
-        
+    
         # print(model)
         if args.cuda:
             model.cuda()

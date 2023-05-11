@@ -2114,7 +2114,7 @@ if [ $stage -le 201 ]; then
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.29.yaml \
       --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
-      --cos-sim
+      --cos-sim --verbose 1
   done
   exit
 
@@ -2140,7 +2140,6 @@ if [ $stage -le 201 ]; then
 #|     vox1-test     |   ------    |   0.2410    |   0.2972    |    0.3885    | 20220209 17:01:16 | 34
 #|     vox1-test     |   2.7413    |   0.2583    |   0.2781    |    0.3520    | 20220209 17:27:02 | 18
 #|     vox1-test     |   3.0011    |   0.2647    |   0.3277    |    0.3613    | 20220214 17:00:17 | 10
-
 fi
 
 
@@ -2236,7 +2235,6 @@ if [ $stage -le 202 ]; then
 
     # model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_kd_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_var${kd_str}_bashuf/${seed}
     model_dir=${model}${resnet_size}/${datasets}/${feat_type}_egs_${mask_layer}/${loss}_${optimizer}_${scheduler}/${input_norm}_batch${batch_size}_${block_type}_red${red_ratio}${exp_str}_down${downsample}_avg${avg_size}_${encoder_type}_em${embedding_size}_dp01_alpha${alpha}_${fast}${at_str}_${chn_str}wd5e4_varesmix2_bashuf2_dist/${seed}
-    
 
     python -W ignore TrainAndTest/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \

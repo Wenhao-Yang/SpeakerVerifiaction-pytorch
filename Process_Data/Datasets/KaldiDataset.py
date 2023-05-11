@@ -800,7 +800,6 @@ class ScriptTrainDataset(data.Dataset):
         with open(utt2spk, 'r') as u:
             for line in u.readlines():
                 uid, sid = line.split()
-
                 # if uid in invalid_uid:
                 #     continue
                 if uid not in utt2spk_dict:
@@ -836,9 +835,16 @@ class ScriptTrainDataset(data.Dataset):
         self.num_spks = len(speakers)
         if verbose > 0:
             print('==> There are {} speakers in Dataset.'.format(len(speakers)))
-        spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
-        idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
+        if not os.path.exists(os.path.join(save_dir, 'spk2idx')):
+            spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
+            with open(os.path.join(save_dir, 'spk2idx'), 'w') as f:
+                json.dump(spk_to_idx, f)
+        else:
+            with open(os.path.join(save_dir, 'spk2idx'), 'r') as f:
+                spk_to_idx = json.load(f)
+
+        idx_to_spk = {spk_to_idx[sid]: sid for sid in spk_to_idx}
         # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
         uid2feat = {}
         with open(feat_scp, 'r') as f:
@@ -1022,12 +1028,15 @@ class ScriptTrainDataset(data.Dataset):
 
         if self.return_uid or self.domain:
             self.utt_dataset = []
-            for i in range(self.samples_per_speaker * self.num_spks):
+            for i in range(self.num_spks):
+                # self.samples_per_speaker
                 sid = i % self.num_spks
                 spk = self.idx_to_spk[sid]
                 utts = self.dataset[spk]
-                uid = utts[random.randrange(0, len(utts))]
-                self.utt_dataset.append([uid, sid])
+                
+                uids = utts[:self.samples_per_speaker]
+                for uid in uids:
+                    self.utt_dataset.append([uid, sid])
 
     def __getitem__(self, idx):
         # start_time = time.time()

@@ -77,21 +77,11 @@ if args.test_input == 'var':
         CAMNormInput(threshold=args.threshold, pro_type=args.pro_type),
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
-    # transform_T = transforms.Compose([
-    #     ConcateOrgInput(remove_vad=args.remove_vad),
-    # ])
 elif args.test_input == 'fix':
     transform = transforms.Compose([
         CAMNormInput(threshold=args.threshold, pro_type=args.pro_type),
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
-    # transform_T = transforms.Compose([
-    #     ConcateVarInput(remove_vad=args.remove_vad),
-    # ])
-
-# if args.mvnorm:
-#     transform.transforms.append(mvnormal())
-    # transform_T.transforms.append(mvnormal())
 
 file_loader = read_mat
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
@@ -101,18 +91,7 @@ random.shuffle(indices)
 indices = indices[:args.sample_utt]
 train_part = torch.utils.data.Subset(train_dir, indices)
 
-# veri_dir = ScriptTestDataset(dir=args.train_dir, loader=file_loader, transform=transform_T, return_uid=True)
-# veri_dir.partition(args.sample_utt)
-# test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform_T, return_uid=True)
-# test_dir.partition(args.sample_utt)
-
 valid_dir = ScriptEvalDataset(valid_dir=args.eval_dir, transform=transform)
-
-# indices = list(range(len(valid_dir)))
-# random.shuffle(indices)
-# indices = indices[:args.sample_utt]
-# valid_part = torch.utils.data.Subset(valid_dir, indices)
-
 
 def valid_eval(valid_loader, model, file_dir, set_name):
     # switch to evaluate mode
@@ -167,6 +146,8 @@ def main():
 
     # instantiate model and initialize weights
     if args.check_yaml != None and os.path.exists(args.check_yaml):
+        if args.verbose > 0:
+            print('\nLoading model weights from: {}'.format(args.check_yaml))
         model_kwargs = load_model_args(args.check_yaml)
     else:
         model_kwargs = args_model(args, train_dir)
