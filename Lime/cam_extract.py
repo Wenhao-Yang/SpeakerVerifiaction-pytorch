@@ -846,10 +846,12 @@ def main():
         global biases
         global handlers
 
+        valid_layers = []
         if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input', 'layer_cam']:
             for name, m in model.named_modules():
                 try:
                     if name in cam_layers:
+                        valid_layers.append(name)
                         handlers.append(
                             m.register_forward_hook(_extract_layer_feat))
                         handlers.append(
@@ -867,6 +869,11 @@ def main():
 
         if args.verbose > 1 and args.cam == 'fullgrad':
             print("The number of layers with biases: {}".format(len(biases)))
+
+        if args.verbose > 0 :
+            print("Valid layers for cam: {}".format(" ".join(valid_layers)))
+
+        valid_layers
         print('')
 
         file_dir = args.extract_path + '/epoch_%d' % ep
