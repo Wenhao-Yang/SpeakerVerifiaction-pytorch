@@ -671,7 +671,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             df.create_dataset(uid[0], data=data)
             gf.create_dataset(uid[0], data=grad)
 
-            inputs_uids.append([uid, label.numpy()[0]])
+            inputs_uids.append([uid[0], label.numpy()[0]])
 
             model.zero_grad()
             if batch_idx % args.log_interval == 0:
