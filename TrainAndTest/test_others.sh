@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=600
+stage=201
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 
 # ===============================    LoResNet10    ===============================
@@ -2080,20 +2080,21 @@ if [ $stage -le 201 ]; then
   loss=arcsoft
   encod=SAP2 embedding_size=256
   alpha=0
-  datasets=vox1 testset=vox1
-#  test_subset=
-  block_type=cbam_v2
+  datasets=vox2 testset=vox1
+  # datasets=vox1 testset=vox1
+  block_type=basic
 #  encoder_type=None
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
-  downsample=k5
+  downsample=k1
   test_subset=test
 
-  for sname in dev dev_aug_com; do
+  for sname in dev ; do
     echo -e "\n\033[1;4;31mStage ${stage}: Testing ${model}_${resnet_size} in ${datasets} with ${loss} kernel 5,5 \033[0m\n"
 
-    model_dir=ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}
-    python -W ignore TrainAndTest/test_egs.py \
+    # model_dir=ThinResNet${resnet_size}/vox1/klsp_egs_rvec/arcsoft_sgd_rop/chn32_Mean_cbam_v2_downk5_SAP2_em256_dp01_alpha0_none1_wd5e4_var_${sname}
+    model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123457
+    python -W ignore TrainAndTest/train_egs/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
       --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
@@ -2102,48 +2103,18 @@ if [ $stage -le 201 ]; then
       --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
       --feat-format kaldi --nj 12 \
       --input-norm Mean --input-dim 161 \
-      --embedding-size ${embedding_size} \
-      --encoder-type ${encod} \
       --block-type ${block_type} --downsample ${downsample} \
       --kernel-size 5,5 --stride 2,2 --fast none1 \
-      --channels 32,64,128,256 \
-      --alpha ${alpha} \
+      --channels 16,32,64,128 \
+      --encoder-type ${encod} --alpha ${alpha} --embedding-size ${embedding_size} \
       --loss-type ${loss} --margin 0.2 --s 30 \
-      --time-dim 1 --avg-size 5 \
+      --time-dim 1 --avg-size 5 --dropout-p 0.1 \
       --test-input var \
-      --dropout-p 0.1 \
-      --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch_60_var \
-      --resume Data/checkpoint/${model_dir}/checkpoint_60.pth \
+      --xvector-dir Data/xvector/${model_dir}/${test_subset}_epoch_best_var \
+      --check-yaml Data/checkpoint/${model_dir}/model.2022.07.29.yaml \
+      --resume Data/checkpoint/${model_dir}/best.pth \
       --gpu-id 0 \
       --cos-sim
-
-#    python -W ignore TrainAndTest/test_egs.py \
-#      --model ${model} --resnet-size ${resnet_size} \
-#      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
-#      --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
-#      --train-trials trials_2w \
-#      --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
-#      --test-dir ${lstm_dir}/data/${testset}/${feat_type}/${test_subset} \
-#      --feat-format kaldi \
-#      --input-norm Mean --input-dim 161 \
-#      --nj 12 \
-#      --mask-layer attention --init-weight vox2 \
-#      --embedding-size ${embedding_size} \
-#      --fast none1 \
-#      --downsample ${downsample} \
-#      --encoder-type ${encod} \
-#      --block-type ${block_type} \
-#      --kernel-size 5,5 --stride 2,2 \
-#      --channels 16,32,64,128 \
-#      --alpha ${alpha} \
-#      --loss-type ${loss} --margin 0.2 --s 30 \
-#      --time-dim 1 --avg-size 5 \
-#      --test-input var \
-#      --dropout-p 0.1 \
-#      --xvector-dir Data/xvector/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/${test_subset}_epoch_50_var \
-#      --resume Data/checkpoint/ThinResNet${resnet_size}/vox1/klsp_egs_rvec_attention/arcsoft/inputMean_basic_v2_downk5_AVG_em256_dp125_alpha0_none1_vox2_wd5e4_var/checkpoint_50.pth \
-#      --gpu-id 0 \
-#      --cos-sim
   done
   exit
 
@@ -2834,7 +2805,7 @@ if [ $stage -le 500 ]; then
   alpha=0
   datasets=aidata testset=aidata
 #  test_subset=
-  block_type=seblock red_ratio=2
+  block_type=seblock red_ratio=2 fast=none1
 #  encoder_type=None
   embedding_size=256
   batch_size=256
@@ -2846,7 +2817,7 @@ if [ $stage -le 500 ]; then
   mask_layer=baseline
   dp=0.1
   avg_size=5
-  fast=none1
+  
   chn=16
 #        --downsample ${downsample} \
 #      --trials trials_20w \
@@ -2937,7 +2908,6 @@ if [ $stage -le 500 ]; then
   done
   done
   exit
-
   #|    aidata-test    |  5.29±0.09  |             | 0.4862±0.0133 | 0.8015±0.0142 | baseline
   #|    aidata-test    |  5.10±0.06  |             | 0.4740±0.0082 | 0.8181±0.0083 | manifold_mixup 0.01
 
