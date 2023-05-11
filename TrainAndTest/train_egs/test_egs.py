@@ -39,7 +39,7 @@ import Define_Model
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
-from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal, read_Waveform
+from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal, read_WaveInt
 from TrainAndTest.common_func import create_model, verification_extract, load_model_args, args_model, args_parse
 from logger import NewLogger
 
@@ -318,7 +318,7 @@ if args.feat_format == 'kaldi':
 elif args.feat_format == 'npy':
     file_loader = np.load
 elif args.feat_format == 'wav':
-    file_loader = read_Waveform
+    file_loader = read_WaveInt
     feat_type = 'wav'
 
 if not args.valid:
