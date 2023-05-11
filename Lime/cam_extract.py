@@ -683,18 +683,17 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
             if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
                 num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
+                break
                 # checkpoint_dir / extract / < dataset > / < set >.*.bin
-
                 # filename = file_dir + '/%s.%d.bin' % (set_name, num)
                 # with open(filename, 'wb') as f:
                 #     pickle.dump(input_grads, f)
-
                 # with open(file_dir + '/uid_idx.%s.%d.json' % (set_name, num), 'w') as f:
                 #     json.dump(inputs_uids, f)
-
                 # input_grads = []
                 # inputs_uids = []
     
+    pdb.set_trace()
     with open(file_dir + '/uid_idx.%s.json' % (set_name), 'w') as f:
         json.dump(inputs_uids, f)
 
