@@ -86,10 +86,11 @@ elif args.test_input == 'fix':
 file_loader = read_mat
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
                                loader=file_loader, transform=transform, return_uid=True, verbose=0)
-indices = list(range(len(train_dir)))
-random.shuffle(indices)
-indices = indices[:args.sample_utt]
-train_part = torch.utils.data.Subset(train_dir, indices)
+
+# indices = list(range(len(train_dir)))
+# random.shuffle(indices)
+# indices = indices[:args.sample_utt]
+# train_part = torch.utils.data.Subset(train_dir, indices)
 
 valid_dir = ScriptEvalDataset(valid_dir=args.eval_dir, transform=transform)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=300
+stage=301
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 827849 | wc -l) -eq 2 ]; do
@@ -946,6 +946,7 @@ if [ $stage -le 301 ]; then
   for threshold in 0.0; do
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
     model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456
+    # Data/gradient/ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456/epoch_41_var_layer_cam_soft/epoch_41
     epoch=41
     python Lime/del_insert.py \
       --model ${model} --resnet-size ${resnet_size} \
