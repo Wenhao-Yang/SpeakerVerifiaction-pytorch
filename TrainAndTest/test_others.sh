@@ -2096,7 +2096,7 @@ if [ $stage -le 201 ]; then
     model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123457
     python -W ignore TrainAndTest/train_egs/test_egs.py \
       --model ${model} --resnet-size ${resnet_size} \
-      --train-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname} \
+      --train-dir ${lstm_dir}/data/${datasets}/${feat_type}/${sname} \
       --train-test-dir ${lstm_dir}/data/vox1/${feat_type}/dev/trials_dir \
       --train-trials trials_2w \
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/${sname}_valid \
