@@ -649,7 +649,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             grad = torch.cat(grad, dim=0)
             data = torch.cat(all_data, dim=0)
 
-        print('Predict Accuracy: {:.2f}%...'.format(correct/total*100))
         out_feature_grads = []
         in_feature_grads = []
         in_layer_feat = []
@@ -689,7 +688,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
             input_grads = []
             inputs_uids = []
-
+    
+    print('Predict Accuracy: {:.2f}%...'.format(correct/total*100))
     print('Saving pairs in %s.\n' % file_dir)
     torch.cuda.empty_cache()
 

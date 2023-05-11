@@ -922,7 +922,7 @@ if [ $stage -le 300 ]; then
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
       --gpu-id 1 \
-      --input-per-spks 4
+      --input-per-spks 2
     done
   exit
 fi
