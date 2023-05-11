@@ -668,8 +668,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 grad = grad.transpose()
                 data = data.transpose()
 
-            df.create_dataset(uid, data=data)
-            gf.create_dataset(uid, data=grad)
+            df.create_dataset(uid[0], data=data)
+            gf.create_dataset(uid[0], data=grad)
 
             inputs_uids.append([uid, label.numpy()[0]])
 
