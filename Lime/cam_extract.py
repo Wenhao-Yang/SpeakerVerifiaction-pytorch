@@ -671,7 +671,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             df.create_dataset(uid[0], data=data)
             gf.create_dataset(uid[0], data=grad)
 
-            inputs_uids.append([uid[0], label.numpy()[0]])
+            inputs_uids.append([uid[0], int(label.numpy()[0])])
 
             model.zero_grad()
             if batch_idx % args.log_interval == 0:
@@ -681,9 +681,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     len(train_loader.dataset),
                     100. * batch_idx / len(train_loader)))
 
-            if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
-                num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
-                break
+            # if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
+            #     num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
+                # break
                 # checkpoint_dir / extract / < dataset > / < set >.*.bin
                 # filename = file_dir + '/%s.%d.bin' % (set_name, num)
                 # with open(filename, 'wb') as f:
@@ -693,7 +693,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 # input_grads = []
                 # inputs_uids = []
     
-    pdb.set_trace()
+    # pdb.set_trace()
     with open(file_dir + '/uid_idx.%s.json' % (set_name), 'w') as f:
         json.dump(inputs_uids, f)
 
