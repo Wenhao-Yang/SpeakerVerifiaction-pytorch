@@ -208,8 +208,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     correct = .0
     total = .0
 
-    data_file = file_dir + '/%s_data.hdf5' % (set_name)
-    grad_file = file_dir + '/%s_grad.hdf5' % (set_name)
+    data_file = file_dir + 'data.h5py'
+    grad_file = file_dir + 'grad.h5py'
 
     with h5py.File(data_file, 'w') as df, h5py.File(grad_file, 'w') as gf:
         for batch_idx, (data, label, uid) in pbar:
@@ -694,7 +694,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 # inputs_uids = []
     
     # pdb.set_trace()
-    with open(file_dir + '/uid_idx.%s.json' % (set_name), 'w') as f:
+    with open(file_dir + '/uid_idx.json', 'w') as f:
         json.dump(inputs_uids, f)
 
     print('Predict Accuracy: {:.2f}%...'.format(correct/total*100))
