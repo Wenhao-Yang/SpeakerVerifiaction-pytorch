@@ -928,7 +928,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--cam-layers',
                             default=['conv1', 'layer1.0.conv2', 'conv2',
                                      'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
-                            type=list, metavar='CAML', help='The channels of convs layers)')
+                            nargs='+', metavar='CAML', help='The channels of convs layers)')
         parser.add_argument('--layer-weight', action='store_true',
                             default=False, help='backward after softmax normalization')
         parser.add_argument('--start-epochs', type=int, default=36, metavar='E',

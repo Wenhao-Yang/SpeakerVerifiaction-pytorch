@@ -846,7 +846,7 @@ def main():
         global biases
         global handlers
 
-        if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input']:
+        if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input', 'layer_cam']:
             for name, m in model.named_modules():
                 try:
                     if name in cam_layers:
@@ -854,21 +854,20 @@ def main():
                             m.register_forward_hook(_extract_layer_feat))
                         handlers.append(
                             m.register_backward_hook(_extract_layer_grad))
-                    #         if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear) or isinstance(m, nn.BatchNorm2d):
+
                     if not ('fc' in name or 'classifier' in name or 'CBAM' in name):
-                        #             print(m)
                         b = extract_layer_bias(m)
                         if (b is not None):
                             biases.append(b)
                             bias_layers.append(name)
-                            #                 biases.append(_extract_layer_bias(m))
-                            #                 print("bias:", _extract_layer_bias(m))
                             m.register_backward_hook(_extract_layer_grads)
-                #                     m.register_forward_hook(_extract_layer_feat)
+
                 except Exception as e:
                     continue
-        if args.verbose > 0:
-            print("The number of layers with biases: ", len(biases))
+
+        if args.verbose > 1 and args.cam == 'fullgrad':
+            print("The number of layers with biases: {}".format(len(biases)))
+        print('')
 
         file_dir = args.extract_path + '/epoch_%d' % ep
         if args.cam == 'acc_input' and args.layer_weight:
@@ -878,9 +877,6 @@ def main():
             os.makedirs(file_dir)
 
         if not args.test_only:
-            # if args.cuda:
-            #     model_conv1 = model.conv1.weight.cpu().detach().numpy()
-            #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
             train_extract(train_loader, model, file_dir,
                           '%s_train' % args.train_set_name)

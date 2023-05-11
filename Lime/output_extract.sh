@@ -905,6 +905,7 @@ if [ $stage -le 300 ]; then
     python Lime/cam_extract.py \
       --model ${model} --resnet-size ${resnet_size} \
       --cam ${cam} --softmax \
+      --cam-layers bn1 layer1.2.bn2 layer2.3.bn2 layer3.5.bn2 layer4.2.bn2 \
       --batch-size 1 --test-input var \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
