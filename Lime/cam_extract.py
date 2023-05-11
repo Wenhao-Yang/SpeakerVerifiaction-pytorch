@@ -767,16 +767,18 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
 
 
 def main():
-    print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
-    # print the experiment configuration
-    print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    options = vars(args)
-    options_keys = list(options.keys())
-    options_keys.sort()
-    options_str = ''
-    for k in options_keys:
-        options_str += '\'{}\': \'{}\', '.format(k, options[k])
-    print('Parsed options: \n {}'.format(options_str))
+    if args.verbose > 1:
+        print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
+        # print the experiment configuration
+        print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
+    
+        options = vars(args)
+        options_keys = list(options.keys())
+        options_keys.sort()
+        options_str = ''
+        for k in options_keys:
+            options_str += '\'{}\': \'{}\', '.format(k, options[k])
+        print('Parsed options: \n {}'.format(options_str))
 
     # instantiate model and initialize weights
     if args.check_yaml != None and os.path.exists(args.check_yaml):
@@ -789,8 +791,10 @@ def main():
     keys = list(model_kwargs.keys())
     keys.sort()
     model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
-    print('Model options: \n{ %s }' % (', '.join(model_options)))
-    print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
+
+    if args.verbose > 0:
+        print('Model options: \n{ %s }' % (', '.join(model_options)))
+        print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
 
@@ -802,7 +806,8 @@ def main():
     # sitw_dev_loader = DataLoader(sitw_dev_part, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     resume_path = args.check_path + '/checkpoint_{}.pth'
-    print('=> Saving output in {}\n'.format(args.extract_path))
+    if args.verbose > 1:
+        print('=> Saving output in {}\n'.format(args.extract_path))
     epochs = np.arange(args.start_epochs, args.epochs + 1)
 
     for ep in epochs:
@@ -863,7 +868,8 @@ def main():
                 #                     m.register_forward_hook(_extract_layer_feat)
                 except Exception as e:
                     continue
-        print("The number of layers with biases: ", len(biases))
+        if args.verbose > 0:
+            print("The number of layers with biases: ", len(biases))
 
         file_dir = args.extract_path + '/epoch_%d' % ep
         if args.cam == 'acc_input' and args.layer_weight:
@@ -881,7 +887,6 @@ def main():
                           '%s_train' % args.train_set_name)
             # train_extract(valid_loader, model, file_dir, '%s_valid' % args.train_set_name)
             # test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
-
         # test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
 
 
