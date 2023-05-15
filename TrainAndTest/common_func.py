@@ -912,6 +912,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--threshold', type=float, default=0.1, metavar='E', help='number of epochs to train (default: 10)')
         parser.add_argument('--pro-type', choices=['del', 'insert', 'none', 'rand'], default='insert',
                     help='choose the acoustic features type.')
+        parser.add_argument('--init-input', choices=['zero', 'mean'], default='zero',
+                    help='choose the acoustic features type.')
         parser.add_argument('--train-set-name', type=str,
                             required=True, help='path to voxceleb1 test dataset')
         parser.add_argument('--test-set-name', type=str,
