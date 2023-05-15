@@ -942,9 +942,16 @@ if [ $stage -le 301 ]; then
   echo -e "\n\033[1;4;31m stage${stage} Delete and Insert for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   
   for cam in layer_cam ;do
-  for pro_type in insert ; do
+  for pro_type in del ; do
   for ((i=1; i<=100; i=i+2)); do
     threshold=`echo "$i 100" | awk '{printf("%0.2f\n",$1/$2)}'`
+    if [ $i -gt 40 ]; then
+      i=$i+6
+    elif [ $i -gt 30 ]; then
+      i=$i+4
+    elif [ $i -gt 20 ]; then
+      i=$i+2
+    fi
   # for threshold in 0.01 0.02 0.04 0.08 0.09; do
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
     model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456
