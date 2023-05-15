@@ -109,7 +109,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             else:
                 classifed = logit
 
-            pdb.set_trace()
+            # pdb.set_trace()
             total += 1
             predicted = torch.max(classifed, dim=1)[1]
             correct += (predicted.cpu() == label.cpu()).sum().item()
@@ -122,7 +122,11 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                 pbar.set_description('Eval: [{:8d} ({:3.0f}%)] '.format(
                     batch_idx + 1,
                     100. * batch_idx / len(valid_loader)))
+                
+            if batch_idx == 99:
+                break
 
+        label_pred.append(['accuracy', correct/total*100])
         filename = file_dir + '/label_pred.%s.%.4f.json' % (args.pro_type, args.threshold)
         df = pd.DataFrame(label_pred, columns=['label', 'predict'])
         # df.to_csv(filename)
