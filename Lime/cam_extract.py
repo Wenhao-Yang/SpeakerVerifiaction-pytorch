@@ -871,7 +871,7 @@ def main():
             print("The number of layers with biases: {}".format(len(biases)))
 
         if args.verbose > 0 :
-            print("Valid layers for cam: {}".format(" ".join(valid_layers)))
+            print("Valid layers for {}: {}".format(args.cam, " ".join(valid_layers)))
 
         valid_layers
         print('')
