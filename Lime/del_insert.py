@@ -13,6 +13,7 @@
 import argparse
 import json
 import os
+import pdb
 import pickle
 import random
 import time
@@ -87,11 +88,6 @@ file_loader = read_mat
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
                                loader=file_loader, transform=transform, return_uid=True, verbose=0)
 
-# indices = list(range(len(train_dir)))
-# random.shuffle(indices)
-# indices = indices[:args.sample_utt]
-# train_part = torch.utils.data.Subset(train_dir, indices)
-
 valid_dir = ScriptEvalDataset(valid_dir=args.eval_dir, transform=transform)
 
 def valid_eval(valid_loader, model, file_dir, set_name):
@@ -101,6 +97,8 @@ def valid_eval(valid_loader, model, file_dir, set_name):
     label_pred = []
     pbar = tqdm(enumerate(valid_loader))
     output_softmax = nn.Softmax(dim=1)
+    correct = .0
+    total = .0
 
     with torch.no_grad():
         for batch_idx, (data, label) in pbar:
@@ -111,9 +109,13 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             else:
                 classifed = logit
 
+            pdb.set_trace()
+            total += 1
+            predicted = torch.max(classifed, dim=1)[1]
+            correct += (predicted.cpu() == label.cpu()).sum().item()
+
             p = output_softmax(classifed)[0].cpu().numpy()
             l = label.numpy()
-
             label_pred.append([l, p])
 
             if batch_idx % args.log_interval == 0:
@@ -121,7 +123,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                     batch_idx + 1,
                     100. * batch_idx / len(valid_loader)))
 
-        filename = file_dir + '/%s.label_pred.%s.%.2f.json' % (set_name, args.pro_type, args.threshold)
+        filename = file_dir + '/label_pred.%s.%.4f.json' % (args.pro_type, args.threshold)
         df = pd.DataFrame(label_pred, columns=['label', 'predict'])
         # df.to_csv(filename)
         df.to_json(filename)
