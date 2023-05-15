@@ -127,7 +127,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                     100. * batch_idx / len(valid_loader)))
 
         if os.path.exists(result_file):
-            with open(results, 'r') as f:
+            with open(result_file, 'r') as f:
                 results = json.load(f)
                 results.append([args.pro_type, args.threshold, correct/total*100])
         else:
