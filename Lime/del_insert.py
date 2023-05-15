@@ -100,6 +100,8 @@ def valid_eval(valid_loader, model, file_dir, set_name):
     correct = .0
     total = .0
 
+    result_file = file_dir + '/result.json'
+
     with torch.no_grad():
         for batch_idx, (data, label) in pbar:
             logit, _ = model(data.cuda())
@@ -108,34 +110,43 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                 classifed, _ = logit
             else:
                 classifed = logit
+            classifed = output_softmax(classifed)
 
             # pdb.set_trace()
             total += 1
             predicted = torch.max(classifed, dim=1)[1]
             correct += (predicted.cpu() == label.cpu()).sum().item()
 
-            p = output_softmax(classifed)[0].cpu().numpy()
-            l = label.numpy()
-            label_pred.append([l, p])
+            # p = output_softmax(classifed)[0].cpu().numpy()
+            # l = label.numpy()
+            # label_pred.append([l, p])
 
             if batch_idx % args.log_interval == 0:
                 pbar.set_description('Eval: [{:8d} ({:3.0f}%)] '.format(
                     batch_idx + 1,
                     100. * batch_idx / len(valid_loader)))
-                
-            if batch_idx == 99:
-                break
 
-        label_pred.append(['accuracy', correct/total*100])
-        filename = file_dir + '/label_pred.%s.%.4f.json' % (args.pro_type, args.threshold)
-        df = pd.DataFrame(label_pred, columns=['label', 'predict'])
-        # df.to_csv(filename)
-        df.to_json(filename)
+        if os.path.exists(result_file):
+            with open(results, 'r') as f:
+                results = json.load(f)
+                results.append([args.pro_type, args.threshold, correct/total*100])
+        else:
+            results = [[args.pro_type, args.threshold, correct/total*100]]
+
+        with open(result_file, "w") as f:
+            json.dump(results, f)
+
+        # label_pred.append(['accuracy', correct/total*100])
+        # filename = file_dir + '/label_pred.%s.%.4f.json' % (args.pro_type, args.threshold)
+        # df = pd.DataFrame(label_pred, columns=['label', 'predict'])
+        # # df.to_csv(filename)
+        # df.to_json(filename)
 
         # with open(filename, 'wb') as f:
         #     pickle.dump(label_pred, f)
         if args.verbose > 0:
-            print('Saving pairs in %s.\n' % filename)
+            print('Saving results in %s.\n' % result_file)
+            
         torch.cuda.empty_cache()
 
 def main():

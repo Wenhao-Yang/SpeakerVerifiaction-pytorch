@@ -943,7 +943,7 @@ if [ $stage -le 301 ]; then
   
   for cam in layer_cam ;do
   for pro_type in insert ; do
-  for ((i=1; i<=2; i=i+2)); do
+  for ((i=1; i<=100; i=i+2)); do
     threshold=`echo "$i 100" | awk '{printf("%0.2f\n",$1/$2)}'`
   # for threshold in 0.01 0.02 0.04 0.08 0.09; do
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
@@ -970,8 +970,7 @@ if [ $stage -le 301 ]; then
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
       --eval-dir Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft/epoch_41 \
-      --gpu-id 1 --verbose 1\
-      --sample-utt 23976
+      --gpu-id 1 --verbose 1
     done
     done
     done
