@@ -944,7 +944,7 @@ if [ $stage -le 301 ]; then
   for cam in layer_cam ;do
   for pro_type in del ; do
   for ((i=0; i<100; i=i+2)); do
-    threshold=`echo "$i 1000" | awk '{printf("%0.2f\n",$1/$2)}'`
+    threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
     # if [ $i -gt 40 ]; then
     #   i=$((i+7))
     # elif [ $i -gt 30 ]; then
