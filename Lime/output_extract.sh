@@ -943,17 +943,16 @@ if [ $stage -le 301 ]; then
   
   for cam in layer_cam ;do
   for pro_type in del ; do
-  for ((i=2; i<100; i=i+2)); do
+  for ((i=12; i<100; i=i+1)); do
     threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
-    # if [ $i -gt 40 ]; then
-    #   i=$((i+7))
-    # elif [ $i -gt 30 ]; then
-    #   i=$((i+5))
-    # elif [ $i -gt 20 ]; then
-    #   i=$((i+3))
-    # el
-    if [ $i -gt 10 ]; then
-      i=$((i+8))
+    if [ $i -gt 40 ]; then
+      i=$((i+7))
+    elif [ $i -gt 30 ]; then
+      i=$((i+5))
+    elif [ $i -gt 20 ]; then
+      i=$((i+3))
+    elif [ $i -gt 10 ]; then
+      i=$((i+1))
     fi
   # for threshold in 0.01 0.02 0.04 0.08 0.09; do
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
