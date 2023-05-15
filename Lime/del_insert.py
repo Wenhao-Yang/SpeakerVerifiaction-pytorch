@@ -75,12 +75,12 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else nn.PairwiseD
 
 if args.test_input == 'var':
     transform = transforms.Compose([
-        CAMNormInput(threshold=args.threshold, pro_type=args.pro_type),
+        CAMNormInput(threshold=args.threshold, pro_type=args.pro_type, init_input=args.init_input),
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
 elif args.test_input == 'fix':
     transform = transforms.Compose([
-        CAMNormInput(threshold=args.threshold, pro_type=args.pro_type),
+        CAMNormInput(threshold=args.threshold, pro_type=args.pro_type, init_input=args.init_input),
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
@@ -100,7 +100,10 @@ def valid_eval(valid_loader, model, file_dir, set_name):
     correct = .0
     total = .0
 
-    result_file = file_dir + '/result.json'
+    if args.init_input == "zero":
+        result_file = file_dir + '/result.json'
+    else:
+        result_file = file_dir + '/result.%s.json'%(args.init_input)
 
     with torch.no_grad():
         for batch_idx, (data, label) in pbar:

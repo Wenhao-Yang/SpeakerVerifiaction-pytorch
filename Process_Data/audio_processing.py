@@ -504,10 +504,12 @@ def cam_normalize(grad):
 
 
 class CAMNormInput(object):
-    def __init__(self, threshold=0.15, pro_type='del', norm_cam=None) -> None:
+    def __init__(self, threshold=0.15, pro_type='del', 
+                 norm_cam=None, init_input='zero') -> None:
         self.threshold = threshold
         self.pro_type = pro_type
         self.norm_cam = norm_cam
+        self.init_input = init_input
 
     def __call__(self, x):
         """sumary_line
@@ -520,6 +522,12 @@ class CAMNormInput(object):
         data, grad = x
         H, W = data.shape
         start = np.zeros(data.shape)
+        if self.init_input == 'zero':
+            start = np.zeros(data.shape)
+        elif self.init_input == 'mean':
+            start = np.mean(data, axis=0, keepdims=True)
+            start = np.tile(start, (data.shape[0], 1))
+
         final = data.copy()
 
         if self.norm_cam != None:
