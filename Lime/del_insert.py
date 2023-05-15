@@ -146,7 +146,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
         #     pickle.dump(label_pred, f)
         if args.verbose > 0:
             print('Saving results in %s.\n' % result_file)
-            
+
         torch.cuda.empty_cache()
 
 def main():
@@ -164,7 +164,7 @@ def main():
 
     # instantiate model and initialize weights
     if args.check_yaml != None and os.path.exists(args.check_yaml):
-        if args.verbose > 0:
+        if args.verbose > 1:
             print('\nLoading model weights from: {}'.format(args.check_yaml))
         model_kwargs = load_model_args(args.check_yaml)
     else:

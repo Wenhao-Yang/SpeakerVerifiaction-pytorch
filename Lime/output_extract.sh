@@ -939,7 +939,7 @@ if [ $stage -le 301 ]; then
   encoder_type=SAP2 embedding_size=256
   block_type=basic kernel=5,5
   cam=gradient
-  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  echo -e "\n\033[1;4;31m stage${stage} Delete and Insert for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   
   for cam in layer_cam ;do
   for pro_type in insert ; do
@@ -959,13 +959,12 @@ if [ $stage -le 301 ]; then
       --train-set-name ${train_set} --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --input-norm Mean \
-      --kernel-size ${kernel} --stride 2,2 --fast none1 \
+      --kernel-size ${kernel} --stride 2,2 \
       --channels 16,32,64,128 \
-      --block-type ${block_type} \
-      --encoder-type ${encoder_type} --time-dim 1 --avg-size 5 \
+      --block-type ${block_type} --fast none1 \
+      --encoder-type ${encoder_type} --time-dim 1 --avg-size 5 --dropout-p 0.1 \
       --embedding-size ${embedding_size} --alpha 0 \
       --loss-type ${loss} --margin 0.2 --s 30 \
-      --dropout-p 0.1 \
       --check-path Data/checkpoint/${model_dir} \
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
