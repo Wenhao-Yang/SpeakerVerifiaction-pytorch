@@ -426,7 +426,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                                     range(1, args.steps + 1)]
 
                     grads, target_label_idx = calculate_outputs_and_gradients(
-                        scaled_inputs, model, target_label_index)
+                        scaled_inputs, model, label)
                     grads = (grads[:-1] + grads[1:]) / 2.0
                     avg_grads = grads.mean(dim=0)
 
@@ -637,7 +637,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                                         range(1, args.steps + 1)]
 
                         grads, target_label_idx = calculate_outputs_and_gradients(
-                            scaled_inputs, model, target_label_index)
+                            scaled_inputs, model, label)
                         grads = (grads[:-1] + grads[1:]) / 2.0
                         avg_grads = grads.mean(dim=0)
 

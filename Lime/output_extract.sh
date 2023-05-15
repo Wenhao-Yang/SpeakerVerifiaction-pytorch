@@ -898,7 +898,7 @@ if [ $stage -le 300 ]; then
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   
-  for cam in gradient grad_cam grad_cam_pp fullgrad integrad ;do #layer_cam 
+  for cam in integrad ;do #layer_cam 
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
     model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456
     epoch=41
