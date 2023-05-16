@@ -596,11 +596,8 @@ class RET(nn.Module):
             self.maks_layer = TimeMaskLayer(mask_len=mask_len)
         elif self.mask == "freq":
             self.mask = FreqMaskLayer(mask_len=mask_len)
-        elif self.mask == "time_freq":
-            self.mask_layer = nn.Sequential(
-                TimeMaskLayer(mask_len=mask_len),
-                FreqMaskLayer(mask_len=mask_len)
-            )
+        elif self.mask == "both":
+            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
         else:
             self.mask_layer = None
 

@@ -63,7 +63,7 @@ except AttributeError:
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 # Training settings
-parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: ENd-to-End')
+parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: End-to-End')
 
 # Data options
 parser.add_argument('--train-dir', type=str, required=True, help='path to dataset')

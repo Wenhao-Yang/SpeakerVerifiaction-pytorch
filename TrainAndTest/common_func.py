@@ -14,6 +14,7 @@ import os
 import pdb
 import time
 
+# import kaldi_io
 import kaldi_io
 import kaldiio
 import numpy as np
@@ -26,6 +27,7 @@ from tqdm import tqdm
 import Process_Data.constants as c
 
 from Define_Model.CNN import AlexNet
+from Define_Model.Optimizer import SAMSGD, SAM
 from Define_Model.Optimizer import SAMSGD
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, RepeatResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
@@ -33,6 +35,7 @@ from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear,
 from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
 from Define_Model.TDNN.DTDNN import DTDNN
 from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
+from Define_Model.TDNN import ECAPA_brain
 from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
 from Define_Model.TDNN.FTDNN import FTDNN
 from Define_Model.TDNN.Slimmable import SlimmableTDNN
@@ -75,12 +78,51 @@ def create_optimizer(parameters, optimizer, **kwargs):
                      momentum=kwargs['momentum'],
                      dampening=kwargs['dampening'],
                      weight_decay=kwargs['weight_decay'])
+    elif optimizer == 'sam':
+        opt = SAM(parameters,
+                  lr=kwargs['lr'],
+                  momentum=kwargs['momentum'],
+                  dampening=kwargs['dampening'],
+                  weight_decay=kwargs['weight_decay'])
 
     return opt
 
 
-# ALSTM  ASiResNet34  ExResNet34  LoResNet  ResNet20  SiResNet34  SuResCNN10  TDNN
+def create_scheduler(optimizer, config_args, train_dir=None):
+    milestones = config_args['milestones']
+    if config_args['scheduler'] == 'exp':
+        gamma = np.power(config_args['base_lr'] / config_args['lr'],
+                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
+    elif config_args['scheduler'] == 'rop':
+        scheduler = lr_scheduler.ReduceLROnPlateau(
+            optimizer, patience=config_args['patience'], min_lr=1e-5)
+    elif config_args['scheduler'] == 'cyclic':
+        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
+        if 'step_size' in config_args:
+            step_size = config_args['step_size']
+        else:
+            step_size = config_args['cyclic_epoch'] * int(
+                np.ceil(len(train_dir) / config_args['batch_size']))
 
+            if torch.distributed.is_initialized() and torch.distributed.get_world_size() > 1:
+                step_size /= torch.distributed.get_world_size()
+
+            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
+                step_size = int(step_size * config_args['coreset_percent'])
+
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
+                                          max_lr=config_args['lr'],
+                                          step_size_up=step_size,
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
+    else:
+        scheduler = lr_scheduler.MultiStepLR(
+            optimizer, milestones=milestones, gamma=0.1)
+
+    return scheduler
+
+# ALSTM  ASiResNet34  ExResNet34  LoResNet  ResNet20  SiResNet34  SuResCNN10  TDNN
 __factory = {
     'AlexNet': AlexNet,
     'LoResNet': LocalResNet,
@@ -102,6 +144,7 @@ __factory = {
     'ETDNN_v5': ETDNN_v5,
     'FTDNN': FTDNN,
     'ECAPA': ECAPA_TDNN,
+    'ECAPA_brain': ECAPA_brain.ECAPA_TDNN,
     'RET': RET,
     'RET_v2': RET_v2,
     'RET_v3': RET_v3,
@@ -116,6 +159,8 @@ def create_model(name, **kwargs):
         raise KeyError("Unknown model: {}".format(name))
 
     model = __factory[name](**kwargs)
+    create_classifier(model, **kwargs)
+
 
     if kwargs['loss_type'] in ['asoft', 'amsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2', 'aDCF']:
         model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
@@ -199,6 +244,7 @@ class AverageMeter(object):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
                          ark_num=50000, gpu=True, mean_vector=True, feat_type='kaldi',
+                         verbose=0, xvector=False):
                          verbose=0, xvector=False, num_utts=50000):
     """
 
@@ -213,8 +259,26 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     :param xvector: extract xvectors in embedding-a layer
     :return:
     """
+    from Light.model import SpeakerModule
     model.eval()
 
+    if xvector:
+        encode_func = model.xvector
+    elif isinstance(model, SpeakerModule):
+        encode_func = model.encoder
+    else:
+        encode_func = model
+
+    if isinstance(model, DistributedDataParallel):
+        if torch.distributed.get_rank() == 0:
+            if not os.path.exists(xvector_dir):
+                os.makedirs(xvector_dir)
+    else:
+        if not os.path.exists(xvector_dir):
+            os.makedirs(xvector_dir)
+    # pbar =
+    pbar = tqdm(extract_loader, ncols=100) if verbose > 0 else extract_loader
+    
     if isinstance(model, DistributedDataParallel):
         if torch.distributed.get_rank() == 0:
             if not os.path.exists(xvector_dir):
@@ -250,6 +314,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         while i < data.shape[0]:
                             data_part = data[i:(i + batch_size)]
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
+                            model_out = encode_func(data_part)
+
                             model_out = model.xvector(
                                 data_part) if xvector else model(data_part)
                             if isinstance(model_out, tuple):
@@ -259,12 +325,14 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                                     _, out_part = model_out
                             else:
                                 out_part = model_out
+
                             out.append(out_part)
                             i += batch_size
                         out = torch.cat(out, dim=0)
                     else:
-
                         data = data.cuda() if next(model.parameters()).is_cuda else data
+                        model_out = encode_func(data)
+
                         model_out = model.xvector(
                             data) if xvector else model(data)
                         if isinstance(model_out, tuple):
@@ -281,6 +349,11 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         out = out.squeeze(0)
 
                     for i, uid in enumerate(uid_lst):
+                        if mean_vector:
+                            # , uid[0])
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
+                        else:
+                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
                         # if mean_vector:
                         #     uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
                         # else:
@@ -303,6 +376,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             max_lenght = 10 * c.NUM_FRAMES_SPECT
             if feat_type == 'wav':
                 max_lenght *= 160
+
             half_max_length = int(max_lenght / 2)
             for batch_idx, (a_data, a_uid) in enumerate(pbar):
                 vec_shape = a_data.shape
@@ -313,6 +387,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
                 if vec_shape[2] >= max_lenght:
+                    num_half = int(vec_shape[2] / 2)
+                    half_a = a_data[:, :, :num_half, :]
+                    half_b = a_data[:, :, -num_half:, :]
+                    a_data = torch.cat((half_a, half_b), dim=0)
 
                     num_segments = int(np.ceil(vec_shape[2] / half_max_length))
                     data_as = []
@@ -331,12 +409,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                     a_data = torch.cat(data_as, dim=0)
 
                 try:
-                    if xvector:
-                        model_out = model.module.xvector(a_data) if isinstance(model,
-                                                                               DistributedDataParallel) else model.xvector(
-                            a_data)
-                    else:
-                        model_out = model(a_data)
+                    model_out = encode_func(a_data)
                 except Exception as e:
                     print('\ninput shape is ', a_data.shape)
                     pdb.set_trace()
@@ -348,7 +421,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                     elif len(model_out) == 2:
                         _, out = model_out
-
                 else:
                     out = model_out
 
@@ -400,6 +472,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     torch.cuda.empty_cache()
 
 
+def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False,
+                      verbose=0):
 def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     # switch to evaluate mode
     labels, distances = [], []
@@ -408,14 +482,34 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
 
     # pbar = tqdm(enumerate(test_loader))
     with torch.no_grad():
-        for batch_idx, (data_a, data_p, label) in enumerate(test_loader):
-            out_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
-            out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
-            dists = dist_fn.forward(out_a, out_p).cpu().numpy()
+        pbar = tqdm(enumerate(test_loader)
+                    ) if verbose > 0 else enumerate(test_loader)
+        for batch_idx, (data_a, data_p, label) in pbar:
+            # .view(-1, 4, embedding_size)
+            data_a = torch.tensor(data_a).cuda()
+            data_p = torch.tensor(data_p).cuda()
+            # dists = dist_fn.forward(data_a, data_p).cpu().numpy()
+
+            if len(data_a.shape) == 2:
+                dists = dist_fn(data_a, data_p)
+            elif dist_type == 'cos':
+                out_a = torch.nn.functional.normalize(data_a, dim=-1)
+                out_p = torch.nn.functional.normalize(data_p, dim=-1)
+
+                dists = torch.matmul(out_a, out_p.transpose(-2, -1))
+            else:
+                dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
+
+            # print(dists.shape)
+            # pdb.set_trace()
+            while len(dists.shape) > 1:
+                dists = dists.mean(dim=-1)
+
+            dists = dists.detach().cpu().numpy()
 
             distances.append(dists)
             labels.append(label.numpy())
-            del out_a, out_p  # , ae, pe
+            # del out_a, out_p  # , ae, pe
 
         # if batch_idx % log_interval == 0:
         #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
@@ -527,6 +621,28 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser = argparse.ArgumentParser(description=description)
 
     # Data options
+    parser.add_argument('--train-dir', type=str, help='path to dataset')
+    parser.add_argument('--coreset-percent', default=0.0,
+                        type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--select-score', default='loss',
+                        type=str, help='replace batchnorm with instance norm')
+
+    parser.add_argument('--train-test-dir', type=str, help='path to dataset')
+    parser.add_argument('--noise-padding-dir', type=str,
+                        default='', help='path to dataset')
+
+    parser.add_argument('--valid-dir', type=str, help='path to dataset')
+    parser.add_argument('--test-dir', type=str,
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--class-weight', type=str, default='',
+                        help='path to voxceleb1 test dataset')
+    parser.add_argument('--max-cls-weight', default=0.8,
+                        type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--target-ratio', default=0.5,
+                        type=float, help='replace batchnorm with instance norm')
+    parser.add_argument('--inter-ratio', default=0.2, type=float,
+                        help='replace batchnorm with instance norm')
+
     parser.add_argument('--train-dir', type=str,
                         help='path to dataset')
     parser.add_argument('--train-test-dir', type=str, help='path to dataset')
@@ -696,6 +812,24 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     parser.add_argument('--alpha', default=12, type=float,
                         metavar='FEAT', help='acoustic feature dimension')
+    parser.add_argument('--normalize', action='store_false', default=True,
+                        help='normalize vectors in final layer')
+
+    parser.add_argument('--ring', default=12, type=float,
+                        metavar='RING', help='acoustic feature dimension')
+
+    parser.add_argument('--kernel-size', default='5,5', type=str,
+                        metavar='KE', help='kernel size of conv filters')
+    parser.add_argument('--context', default='5,3,3,5', type=str,
+                        metavar='KE', help='kernel size of conv filters')
+
+    parser.add_argument('--padding', default='', type=str,
+                        metavar='KE', help='padding size of conv filters')
+    parser.add_argument('--stride', default='1', type=str,
+                        metavar='ST', help='stride size of conv filters')
+    parser.add_argument('--fast', type=str, default='None',
+                        help='max pooling for fast')
+
     parser.add_argument('--ring', default=12, type=float,
                         metavar='RING', help='acoustic feature dimension')
 
@@ -798,6 +932,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='random seed (default: 0)')
     parser.add_argument('--lambda-max', type=float, default=1000, metavar='S',
                         help='random seed (default: 0)')
+    parser.add_argument('--focal', action='store_true',
+                        default=False, help='using Cosine similarity')
 
     parser.add_argument('--lr', type=float, default=0.1,
                         metavar='LR', help='learning rate (default: 0.125)')
@@ -831,7 +967,9 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='random seed (default: 0)')
     parser.add_argument('--log-interval', type=int, default=10, metavar='LI',
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--test-interval', type=int, default=4, metavar='TI',
+    parser.add_argument('--test-interval', type=int, default=1,
+                        help='how many batches to wait before logging training status')
+    parser.add_argument('--select-interval', type=int, default=4, 
                         help='how many batches to wait before logging training status')
 
     parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
@@ -872,6 +1010,12 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='substract center for speaker embeddings')
 
     if 'Gradient' in description:
+        parser.add_argument('--eval-dir', type=str, help='path to voxceleb1 test dataset')
+        parser.add_argument('--threshold', type=float, default=0.1, metavar='E', help='number of epochs to train (default: 10)')
+        parser.add_argument('--pro-type', choices=['del', 'insert', 'none', 'rand'], default='insert',
+                    help='choose the acoustic features type.')
+        parser.add_argument('--init-input', choices=['zero', 'mean'], default='zero',
+                    help='choose the acoustic features type.')
         parser.add_argument('--train-set-name', type=str,
                             required=True, help='path to voxceleb1 test dataset')
         parser.add_argument('--test-set-name', type=str,
@@ -881,10 +1025,14 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument(
             '--extract-path', help='folder to output model grads, etc')
         parser.add_argument('--cam', type=str, default='gradient',
+                            choices=['gradient', 'grad_cam', 'grad_cam_pp',
+                                     'fullgrad', 'acc_grad', 'layer_cam',
+                                     'acc_input', 'integrad'],
                             help='path to voxceleb1 test dataset')
         parser.add_argument('--cam-layers',
                             default=['conv1', 'layer1.0.conv2', 'conv2',
                                      'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
+                            nargs='+', metavar='CAML', help='The channels of convs layers)')
                             type=list, metavar='CAML', help='The channels of convs layers)')
         parser.add_argument('--layer-weight', action='store_true',
                             default=False, help='backward after softmax normalization')
@@ -927,6 +1075,10 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='path to voxceleb1 test dataset')
 
     if 'Test' in description:
+        parser.add_argument('--lightning', action='store_true',
+                            default=False, help='need to make mfb file')
+        # parser.add_argument('--train-config', default='',
+        #                     help='path to yaml of model for the latest checkpoint')
         # parser.add_argument('--model-yaml', default='', type=str, help='path to yaml of model for the latest checkpoint')
         parser.add_argument('--extract-trials', action='store_false',
                             default=True, help='log power spectogram')
@@ -1011,6 +1163,7 @@ def args_model(args, train_dir):
                     'power_weight': args.power_weight, 'scale': args.scale, 'weight_p': args.weight_p,
                     'weight_norm': args.weight_norm,
                     'channels': channels, 'width_mult_list': width_mult_list,
+                    'alpha': args.alpha, 'normalize': args.normalize, 'dropout_p': args.dropout_p,
                     'alpha': args.alpha, 'dropout_p': args.dropout_p,
                     'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s,
                     'num_center': args.num_center, 'output_subs': args.output_subs,
@@ -1115,6 +1268,7 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
     parser.add_argument('--accu-steps', default=1, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
 
+    parser.add_argument('--alpha', default=1, type=float,
     parser.add_argument('--alpha', default=12, type=float,
                         metavar='FEAT', help='acoustic feature dimension')
     parser.add_argument('--ring', default=12, type=float,
@@ -1224,4 +1378,13 @@ def load_model_args(model_yaml):
     with open(model_yaml, 'r') as f:
         model_args = yaml.load(f, Loader=yaml.FullLoader)
 
+    if 'normalize' not in model_args:
+        model_args['normalize'] = True
+
     return model_args
+
+
+class ModelArgs(object):
+    def __init__(self, config_args):
+        for i in config_args:
+            self.__setattr__(i, config_args[i])

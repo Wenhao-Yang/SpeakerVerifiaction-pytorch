@@ -21,6 +21,8 @@ from python_speech_features import hz2mel, mel2hz
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 from scipy import interpolate
+from Process_Data.audio_processing import MelSpectrogram
+from torchaudio.transforms import Spectrogram
 import Process_Data.constants as c
 
 
@@ -41,7 +43,7 @@ class fDLR(nn.Module):
         centers = np.linspace(0, hz2mel(sr / 2), num_filter + 2)
         centers = mel2hz(centers)
         self.frequency_center = nn.Parameter(torch.from_numpy(centers[1:-1]).float().reshape(num_filter, 1),
-                                             requires_grad=requires_grad)
+                                             requFires_grad=requires_grad)
 
         bandwidth = []
         for i in range(2, len(centers)):
@@ -207,12 +209,14 @@ class fLLayer(nn.Module):
 
 
 class MelFbankLayer(nn.Module):
-    def __init__(self, sr, num_filter, log_scale=True):
+    def __init__(self, sr, num_filter, stretch_ratio=[1.0], log_scale=True):
         super(MelFbankLayer, self).__init__()
         self.num_filter = num_filter
         self.sr = sr
-        self.t = torchaudio.transforms.MelSpectrogram(n_fft=512, win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
-                                                      window_fn=torch.hamming_window, n_mels=num_filter)
+        self.stretch_ratio = stretch_ratio
+        self.t = MelSpectrogram(n_fft=512, stretch_ratio=stretch_ratio,
+                                win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
+                                window_fn=torch.hamming_window, n_mels=num_filter)
 
     def forward(self, input):
         output = self.t(input.squeeze(1))
@@ -221,8 +225,135 @@ class MelFbankLayer(nn.Module):
         return torch.log(output + 1e-6)
 
     def __repr__(self):
-        return "MelFbankLayer(sr=%d, num_filter=%d)" % (self.sr, self.num_filter)
+        return "MelFbankLayer(sr={}, num_filter={}, stretch_ratio={})".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
 
+
+class SpectrogramLayer(nn.Module):
+    def __init__(self, sr, n_fft=512, stretch_ratio=[1.0], log_scale=True,
+                 win_length=None, hop_length=None, f_max=None, f_min: float = 0.0,
+                 pad=0, n_mels=80, init_weight='mel',
+                 window_fn=torch.hann_window, power: float = 2.0, normalized: bool = False,
+                 center: bool = True, pad_mode: str = "reflect",
+                 onesided: bool = True, norm=None, wkwargs=None,):
+
+        super(SpectrogramLayer, self).__init__()
+        self.sr = sr
+        self.stretch_ratio = stretch_ratio
+
+        self.n_fft = n_fft
+        self.win_length = win_length if win_length is not None else int(
+            0.025 * sr)
+        self.hop_length = hop_length if hop_length is not None else int(
+            0.01 * sr)
+        self.pad = pad
+        self.power = power
+        self.normalized = normalized
+        self.init_weight = init_weight
+        self.n_mels = n_mels  # number of mel frequency bins
+        self.f_max = f_max
+        self.f_min = f_min
+
+        self.spectrogram = Spectrogram(n_fft=self.n_fft, win_length=self.win_length, hop_length=self.hop_length,
+                                       pad=self.pad, window_fn=window_fn, power=power, normalized=self.normalized,
+                                       wkwargs=wkwargs, center=center, pad_mode=pad_mode,
+                                       onesided=onesided,)
+
+    def forward(self, input):
+
+        specgram = self.spectrogram(input.squeeze(1))
+
+        stretch_ratio = np.random.choice(self.stretch_ratio)
+        if stretch_ratio != 1.0 and self.training:
+            specgram = self.stretch(specgram, stretch_ratio)
+
+        return torch.log(specgram + 1e-6).transpose(-1, -2)
+
+    def __repr__(self):
+        return "SpectrogramLayer(sr={}, stretch_ratio={})".format(self.sr, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
+
+
+class SparseFbankLayer(nn.Module):
+    def __init__(self, sr, num_filter, n_fft=512, stretch_ratio=[1.0], log_scale=True,
+                 win_length=None, hop_length=None, f_max=None, f_min: float = 0.0,
+                 pad = 0, n_mels = 80, init_weight = 'mel',
+                 window_fn = torch.hann_window, power: float = 2.0, normalized: bool = False,
+                 center: bool = True, pad_mode: str = "reflect",
+                 onesided: bool = True, norm = None, wkwargs = None,):
+
+        super(SparseFbankLayer, self).__init__()
+        self.num_filter = num_filter
+        self.sr = sr
+        self.stretch_ratio = stretch_ratio
+
+        self.n_fft = n_fft
+        self.win_length = win_length if win_length is not None else int(0.025 * sr)
+        self.hop_length = hop_length if hop_length is not None else int(0.01 * sr)
+        self.pad = pad
+        self.power = power
+        self.normalized = normalized
+        self.init_weight = init_weight
+        self.n_mels = n_mels  # number of mel frequency bins
+        self.f_max = f_max
+        self.f_min = f_min
+
+        self.spectrogram = Spectrogram(n_fft=self.n_fft, win_length=self.win_length, hop_length=self.hop_length,
+                                       pad=self.pad, window_fn=window_fn, power=power, normalized=self.normalized,
+                                       wkwargs=wkwargs, center=center, pad_mode=pad_mode,
+                                       onesided=onesided,)
+        # init mel
+        if init_weight == 'mel':
+            all_freqs = torch.linspace(f_min, int(self.sr/2), n_fft // 2 + 1)
+            m_pts = torch.linspace(hz2mel(f_min), hz2mel(int(self.sr/2)), num_filter + 2)
+            f_pts = mel2hz(m_pts)
+
+            f_diff = f_pts[1:] - f_pts[:-1]  # (n_filter + 1)
+            slopes = f_pts.unsqueeze(0) - all_freqs.unsqueeze(1)  # (n_freqs, n_filter + 2)
+            # create overlapping triangles
+            zero = torch.zeros(1)
+            down_slopes = (-1.0 * slopes[:, :-2]) / f_diff[:-1]  # (n_freqs, n_filter)
+            up_slopes = slopes[:, 2:] / f_diff[1:]  # (n_freqs, n_filter)
+            sparsebank = torch.max(zero, torch.min(down_slopes, up_slopes))     
+
+        elif init_weight == 'linear':
+            all_freqs = torch.linspace(f_min, int(self.sr/2), n_fft // 2 + 1)
+            m_pts = torch.linspace(f_min, int(self.sr/2), num_filter+2)
+
+            f_diff = m_pts[1:] - m_pts[:-1]  # (n_filter + 1)
+            slopes = m_pts.unsqueeze(0) - all_freqs.unsqueeze(1)  # (n_freqs, n_filter + 2)
+            # create overlapping triangles
+            zero = torch.zeros(1)
+            down_slopes = (-1.0 * slopes[:, :-2]) / f_diff[:-1]  # (n_freqs, n_filter)
+            up_slopes = slopes[:, 2:] / f_diff[1:]  # (n_freqs, n_filter)
+            sparsebank = torch.min(down_slopes, up_slopes).clamp_min(0)
+            sparsebank = torch.where(sparsebank > 0, 1, 0)       
+        
+        elif init_weight == 'rand':
+            sparsebank = torch.randn(n_fft // 2 + 1, num_filter)
+
+        self.SpareFbank = nn.Parameter(sparsebank)
+
+    def forward(self, input):
+
+        specgram = self.spectrogram(input.squeeze(1))
+
+        stretch_ratio = np.random.choice(self.stretch_ratio)
+        if stretch_ratio != 1.0 and self.training:
+            specgram = self.stretch(specgram, stretch_ratio)
+        
+        # print(specgram.shape)
+        # specgram = specgram.pow(2).sum(-1)
+        # normalize
+        weight = self.SpareFbank.data
+        self.SpareFbank.data = (weight/ weight.norm(p=2, dim=0).reshape(1,-1)).abs()
+
+        output = torch.transpose(specgram.squeeze(1), 1, 2)
+        # print(output.shape, self.SpareFbank.shape)
+        output = torch.matmul(output, self.SpareFbank)
+        
+        return torch.log(output.unsqueeze(1) + 1e-6)
+
+    def __repr__(self):
+        return "SparseFbankLayer(sr={}, num_filter={}, stretch_ratio={}, init_weight={},)".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]), self.init_weight)
 
 # https://github.com/mravanelli/SincNet
 class SincConv_fast(nn.Module):
@@ -479,7 +610,7 @@ class MeanStd_Norm(nn.Module):
         self.dim = dim
 
     def forward(self, x):
-        return (x - torch.mean(x, dim=self.dim, keepdim=True)) / x.std()
+        return (x - torch.mean(x, dim=self.dim, keepdim=True)) / torch.std(x, dim=self.dim, keepdim=True)
 
     def __repr__(self):
         return "MeanStd_Norm(mean_dim=%d, std_dim=all)" % self.dim
@@ -628,64 +759,50 @@ class TimeFreqMaskLayer(nn.Module):
 
 def get_weight(weight: str, input_dim: int, power_weight: str):
 
-    if weight == 'amel':
-        m = np.arange(0, 2840.0230467083188)
-        m = 700 * (10 ** (m / 2595.0) - 1)
-        n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
-        # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-        f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(
-            m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-        ynew = 1 / f(xnew)
-    elif weight == 'mel':
-        m = np.arange(0, 2840.0230467083188)
-        m = 700 * (10 ** (m / 2595.0) - 1)
-        n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
-        # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-        f = interpolate.interp1d(m[1:], n)
-        xnew = np.arange(np.min(m[1:]), np.max(
-            m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+    m = np.arange(0, 2840.0230467083188)
+    m = 700 * (10 ** (m / 2595.0) - 1)
+    n = np.array([1/(m[i] - m[i - 1]) for i in range(1, len(m))])
+    # x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
+    f = interpolate.interp1d(m[1:], n)
+    xnew = np.arange(np.min(m[1:]), np.max(
+        m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
+    mel = f(xnew)
+    amel = 1/f(xnew)
+
+    weights = {
+        "mel": mel,
+        "amel": amel,
+        "rand": np.random.uniform(size=input_dim),
+        "one": np.ones(input_dim),
+        "clean": c.VOX1_CLEAN,
+        "rclean": c.VOX1_RCLEAN,
+        "rclean_max": c.VOX1_RCLEAN_MAX,
+        "vox2_rclean": c.VOX2_RCLEAN,
+        "aug": c.VOX1_AUG,
+        "vox2": c.VOX2_CLEAN,
+        "vox1_cf": c.VOX1_CFB40,
+        "vox2_cf": c.VOX2_CFB40,
+        "vox1_rcf": c.VOX1_RCFB40,
+        "vox2_rcf": c.VOX2_RCFB40,
+        "v2_rclean_gean": c.VOX2_RCLEAN_GRAD_MEAN,
+        "v2_rclean_iean": c.VOX2_RCLEAN_INPT_MEAN,
+        "v2_rclean_igean": c.VOX2_RCLEAN_INGR_MEAN,
+        "v2_rclean_gax": c.VOX2_RCLEAN_GRAD_MAX,
+        "v2_rclean_imax": c.VOX2_RCLEAN_INPT_MAX,
+        "v2_rclean_igmax": c.VOX2_RCLEAN_INGR_MAX,
+        "v2_fratio": c.VOX2_FRATIO,
+        "v2_eer": c.V2_EER
+    }
+
+    assert weight in weights.keys()
+    ynew = weights[weight]
+
+    if len(ynew) != input_dim:
+        x = np.arange(0, 8000+8000/(len(ynew)-1), 8000/(len(ynew)-1))
+        f = interpolate.interp1d(x, ynew)
+
+        xnew = np.arange(0, 8000+8000/(input_dim-1), 8000/(input_dim-1))
         ynew = f(xnew)
-    elif weight == 'rand':
-        ynew = np.random.uniform(size=input_dim)
-    elif weight == 'one':
-        ynew = np.ones(input_dim)
-    elif weight == 'clean':
-        ynew = c.VOX1_CLEAN
-    elif weight == 'rclean':
-        ynew = c.VOX1_RCLEAN
-    elif weight == 'rclean_max':
-        ynew = c.VOX1_RCLEAN_MAX
-    elif weight == 'vox2_rclean':
-        ynew = c.VOX2_RCLEAN
-    elif weight == 'aug':
-        ynew = c.VOX1_AUG
-    elif weight == 'vox2':
-        ynew = c.VOX2_CLEAN
-    elif weight == 'vox1_cf':
-        ynew = c.VOX1_CFB40
-    elif weight == 'vox2_cf':
-        ynew = c.VOX2_CFB40
-    elif weight == 'vox1_rcf':
-        ynew = c.VOX1_RCFB40
-    elif weight == 'vox2_rcf':
-        ynew = c.VOX2_RCFB40
-    elif weight == 'v2_rclean_gean':
-        ynew = c.VOX2_RCLEAN_GRAD_MEAN
-    elif weight == 'v2_rclean_iean':
-        ynew = c.VOX2_RCLEAN_INPT_MEAN
-    elif weight == 'v2_rclean_igean':
-        ynew = c.VOX2_RCLEAN_INGR_MEAN
-    elif weight == 'v2_rclean_gax':
-        ynew = c.VOX2_RCLEAN_GRAD_MAX
-    elif weight == 'v2_rclean_imax':
-        ynew = c.VOX2_RCLEAN_INPT_MAX
-    elif weight == 'v2_rclean_igmax':
-        ynew = c.VOX2_RCLEAN_INGR_MAX
-    elif weight == 'one':
-        ynew = np.ones(input_dim)
-    else:
-        raise ValueError(weight)
 
     ynew = np.array(ynew)
     if 'power' in power_weight:
@@ -693,6 +810,8 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
 
     if 'mean' in power_weight:
         ynew /= ynew.mean()
+    elif 'norm' in power_weight:
+        ynew = (ynew - ynew.min()) / (ynew.max() - ynew.min())
     else:
         ynew /= ynew.max()
 
@@ -701,7 +820,7 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
 
 class DropweightLayer(nn.Module):
     def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2,
-                 power_weight='none'):
+                 power_weight='mean'):
         super(DropweightLayer, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
@@ -733,9 +852,8 @@ class DropweightLayer(nn.Module):
             return x * drop_weight
 
     def __repr__(self):
-
-        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
-                                                                                      self.dropout_p, self.scale)
+        return "DropweightLayer(input_dim=%d, weight=%s, dropout_p=%s, scale=%f)" % (self.input_dim, self.weight,
+                                                                                     self.dropout_p, self.scale)
 
 
 class DropweightLayer_v2(nn.Module):
@@ -850,15 +968,15 @@ class DropweightLayer_v3(nn.Module):
 
 
 class AttentionweightLayer(nn.Module):
-    def __init__(self, input_dim=161, weight='mel', power_weight='none'):
+    def __init__(self, input_dim=161, weight='mel', weight_norm='none'):
         super(AttentionweightLayer, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
-        self.power_weight = power_weight
+        self.weight_norm = weight_norm
 
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
-        self.drop_p = get_weight(weight, input_dim, power_weight)
+        self.drop_p = get_weight(weight, input_dim, weight_norm)
         # self.activation = nn.Tanh()
         # self.activation = nn.Softmax(dim=-1)
         self.activation = nn.Sigmoid()
@@ -880,7 +998,8 @@ class AttentionweightLayer(nn.Module):
         return x * drop_weight
 
     def __repr__(self):
-        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, power_weight=%s)" % (self.input_dim, self.weight, self.power_weight)
+        return "AttentionweightLayer_v0(input_dim=%d, weight=%s, weight_norm=%s)" % (
+            self.input_dim, self.weight, self.weight_norm)
 
 
 class ReweightLayer(nn.Module):
@@ -916,24 +1035,120 @@ class ReweightLayer(nn.Module):
     def __repr__(self):
         return "ReweightLayer(input_dim=%d, weight=%s)" % (self.input_dim, self.weight)
 
+# On The Importance Of Different Frequency Bins For speaker verification
+class FrequencyReweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FrequencyReweightLayer, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        F = 1 + self.activation(self.weight)
+        
+        return x * F
+
+    def __repr__(self):
+        return "FrequencyReweightLayer(input_dim=%d)" % (self.input_dim)   
+
+class FrequencyNormReweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FrequencyNormReweightLayer, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        F = 1 + self.activation(self.weight)
+        F = F / F.mean()
+        
+        return x * F
+
+    def __repr__(self):
+        return "FrequencyNormReweightLayer(input_dim=%d)" % (self.input_dim)
+
+class TimeReweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(TimeReweightLayer, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        F = x * self.activation(self.weight)
+        T = self.activation(F.sum(dim=-1, keepdim=True))
+        
+        return x * ( 1 + T)
+
+    def __repr__(self):
+        return "TimeReweightLayer(input_dim=%d)" % (self.input_dim)  
+
+class FreqTimeReweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FreqTimeReweightLayer, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        F = x * self.activation(self.weight)
+        T = x * self.activation(F.sum(dim=-1, keepdim=True))
+        
+        return x + (F + T) / 2
+
+    def __repr__(self):
+        return "FreqTimeReweightLayer(input_dim=%d)" % (self.input_dim)
+
 
 class AttentionweightLayer_v2(nn.Module):
-    def __init__(self, input_dim=161, weight='mel', power_weight='mean'):
+    def __init__(self, input_dim=161, weight='mel', weight_norm='none'):
         super(AttentionweightLayer_v2, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
-        self.power_weight = power_weight
+        self.weight_norm = weight_norm
 
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
-
+        # self.s = nn.Parameter(torch.tensor(0.5))
+        # self.drop_p = ynew  # * dropout_p
         self.drop_p = nn.Parameter(torch.tensor(
-            get_weight(weight, input_dim, power_weight)).float())
+            get_weight(weight, input_dim, weight_norm)).float())
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
         # assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
-
         if len(x.shape) == 4:
             drop_weight = self.drop_p.reshape(1, 1, 1, -1).float()
         else:
@@ -941,13 +1156,14 @@ class AttentionweightLayer_v2(nn.Module):
         # if x.is_cuda:
         #     drop_weight = drop_weight.cuda()
         drop_weight = self.w * drop_weight + self.b
+        # drop_weight = (drop_weight - drop_weight.mean()) / self.s.clamp(min=0.0625, max=2.0)
         drop_weight = self.activation(drop_weight)
 
         return x * drop_weight
 
     def __repr__(self):
-        return "AttentionweightLayer_Trainable(input_dim=%d, weight=%s, power_weight=%s)" % (
-            self.input_dim, self.weight, self.power_weight)
+        return "AttentionweightLayer_Trainable(input_dim=%d, weight=%s, weight_norm=%s)" % (
+            self.input_dim, self.weight, self.weight_norm)
 
 
 class AttentionweightLayer_v3(nn.Module):
@@ -956,8 +1172,8 @@ class AttentionweightLayer_v3(nn.Module):
         self.input_dim = input_dim
         self.weight = weight
 
-        self.s = nn.Parameter(torch.tensor(0.125).float())
-        self.b = nn.Parameter(torch.tensor(1.0).float())
+        self.s = nn.Parameter(torch.tensor(0.125))
+        self.b = nn.Parameter(torch.tensor(1.0))
 
         self.drop_p = get_weight(
             weight, input_dim, power_weight)  # * dropout_p
@@ -976,8 +1192,8 @@ class AttentionweightLayer_v3(nn.Module):
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
-        drop_weight = (drop_weight - self.b.clamp(min=0.125, max=1.5) * drop_weight.mean()) / self.s.clamp(
-            min=0.0625,                                                                                            max=0.5)
+        drop_weight = (drop_weight - self.b * drop_weight.mean()
+                       ) / self.s.clamp(min=0.0625, max=2.0)
         drop_weight = self.activation(drop_weight)
 
         return x * drop_weight
@@ -1104,17 +1320,15 @@ class CBAM(nn.Module):
         self.activation = nn.Sigmoid()
 
     def forward(self, input):
-        t_output = self.avg_t(input)
+        t_output = input.mean(dim=2, keepdim=True)
         t_output = self.cov_t(t_output)
         t_output = self.activation(t_output)
         # t_output = input * t_output
-
-        f_output = self.avg_f(input)
+        f_output = input.mean(dim=3, keepdim=True)
         f_output = self.cov_f(f_output)
         f_output = self.activation(f_output)
         # f_output = input * f_output
-
-        output = (t_output + f_output) / 2 * input
+        output = (t_output/2 + f_output/2) * input
 
         return output
 

@@ -5,6 +5,7 @@ import pathlib
 import pdb
 import traceback
 import random
+from typing import Any, Callable, Optional
 
 import torchaudio
 import librosa
@@ -24,7 +25,7 @@ from Misc.HST.short_SHT import short_SHT
 from Process_Data import constants as c
 from Process_Data.Compute_Feat.compute_vad import ComputeVadEnergy
 from Process_Data.xfcc.common import local_fbank, local_mfcc
-
+from torchaudio.transforms import Spectrogram, MelScale, TimeStretch
 
 def mk_MFB(filename, sample_rate=c.SAMPLE_RATE, use_delta=c.USE_DELTA, use_scale=c.USE_SCALE, use_logscale=c.USE_LOGSCALE):
     audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
@@ -485,6 +486,73 @@ def read_from_npy(filename):
     return audio
 
 
+def cam_normalize(grad):
+    """sumary_line
+    
+    Keyword arguments:
+    grad -- cam
+    dim  -- dim for features
+    Return: return_description
+    """
+    dim = grad.shape[-1]
+    grad_t = grad.sum(axis=1)
+    cam_min, cam_max = grad_t.min(), grad_t.max()
+
+    pre_cam = np.tile((grad_t - cam_min) / (cam_max - cam_min + 1e-8), (1, dim))
+    # pre_cam = np.int64(pre_cam > 0.6)
+    return pre_cam
+
+
+class CAMNormInput(object):
+    def __init__(self, threshold=0.15, pro_type='del', 
+                 norm_cam=None, init_input='zero') -> None:
+        self.threshold = threshold
+        self.pro_type = pro_type
+        self.norm_cam = norm_cam
+        self.init_input = init_input
+
+    def __call__(self, x):
+        """sumary_line
+        Keyword arguments:
+        data        -- numpy like input with shape t*f
+        frag        -- numpy like input cam with shape t*f
+        threshold   -- percent of input will be inserted or deleted
+        Return: return_description
+        """
+        data, grad = x
+        H, W = data.shape
+        start = np.zeros(data.shape)
+        if self.init_input == 'zero':
+            start = np.zeros(data.shape)
+        elif self.init_input == 'mean':
+            start = np.mean(data, axis=0, keepdims=True)
+            start = np.tile(start, (data.shape[0], 1))
+
+        final = data.copy()
+
+        if self.norm_cam != None:
+            grad = cam_normalize(grad)
+
+        if self.pro_type in ['insertion', 'insert']:
+            # 值递增，首先插入权值小的部分
+            salient_order = np.flip(np.argsort(grad.reshape(H*W)), axis=0)
+            threshold = self.threshold 
+        elif self.pro_type in ['deletion', 'del']:
+            # 值递减，首先删掉权值大的部分
+            salient_order = np.argsort(grad.reshape(H*W))                  
+            threshold = 1 - self.threshold
+        elif self.pro_type in ['random', 'rand']:
+            salient_order = np.arange(H*W)     
+            np.random.shuffle(salient_order)             
+        elif self.pro_type in ['none']:
+            return final
+        
+        coords = salient_order[0:int((H*W)*threshold)]
+        start.reshape(H*W)[coords] = final.reshape(H*W)[coords]
+
+        return start
+
+
 class ConcateVarInput(object):
     """Rescales the input PIL.Image to the given 'size'.
     If 'size' is a 2-element tuple or list in the order of (width, height), it will be the exactly size to scale.
@@ -528,6 +596,7 @@ class ConcateVarInput(object):
             else:
                 network_inputs.append(output[:, start:end])
 
+        network_inputs = np.array(network_inputs)
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
         if self.remove_vad:
             network_inputs = network_inputs[:, :, 1:]
@@ -635,9 +704,12 @@ class ConcateNumInput(object):
         network_inputs = []
 
         output = frames_features
+        repeats = 0
         while output.shape[self.c_axis] < self.num_frames:
             output = np.concatenate(
-                (output, frames_features), axis=self.c_axis)
+                (output, output), axis=self.c_axis)
+            repeats += 1
+            assert repeats < 10
 
         if len(output) / self.num_frames >= self.input_per_file:
             for i in range(self.input_per_file):
@@ -685,8 +757,6 @@ class ConcateNumInput_Test(object):
         self.remove_vad = remove_vad
 
     def __call__(self, frames_features):
-        network_inputs = []
-
         output = frames_features
         while len(output) < self.num_frames:
             output = np.concatenate((output, frames_features), axis=0)
@@ -749,14 +819,12 @@ class ConcateOrgInput(object):
         self.remove_vad = remove_vad
 
     def __call__(self, frames_features):
-        # pdb.set_trace()
-        network_inputs = []
         output = np.array(frames_features)
 
         if self.remove_vad:
             output = output[:, 1:]
 
-        network_inputs.append(output)
+        network_inputs = np.array([output])
         network_inputs = torch.tensor(network_inputs, dtype=torch.float32)
 
         return network_inputs
@@ -778,17 +846,91 @@ def pad_tensor(vec, pad, dim):
     return torch.Tensor.narrow(vec, dim=dim, start=start, length=pad)
 
 
+class MelSpectrogram(torch.nn.Module):
+    r"""Create MelSpectrogram for a raw audio signal.
+    """
+    __constants__ = ["sample_rate", "n_fft", "win_length", "hop_length", "pad", "n_mels", "f_min"]
+
+    def __init__(self, sample_rate: int = 16000,
+        n_fft: int = 400,
+        stretch_ratio=[1.0],
+        win_length: Optional[int] = None,
+        hop_length: Optional[int] = None,
+        f_min: float = 0.0,
+        f_max: Optional[float] = None,
+        pad: int = 0,
+        n_mels: int = 128,
+        window_fn: Callable[..., torch.Tensor] = torch.hann_window,
+        power: float = 2.0,
+        normalized: bool = False,
+        wkwargs: Optional[dict] = None,
+        center: bool = True,
+        pad_mode: str = "reflect",
+        onesided: bool = True,
+        norm: Optional[str] = None,
+        mel_scale: str = "htk",
+    ) -> None:
+        super(MelSpectrogram, self).__init__()
+        self.sample_rate = sample_rate
+        self.stretch_ratio = stretch_ratio
+
+        self.n_fft = n_fft
+        self.win_length = win_length if win_length is not None else n_fft
+        self.hop_length = hop_length if hop_length is not None else self.win_length // 2
+        self.pad = pad
+        self.power = power
+        self.normalized = normalized
+        self.n_mels = n_mels  # number of mel frequency bins
+        self.f_max = f_max
+        self.f_min = f_min
+        self.spectrogram = Spectrogram(
+            n_fft=self.n_fft,
+            win_length=self.win_length,
+            hop_length=self.hop_length,
+            pad=self.pad,
+            window_fn=window_fn,
+            power=None,
+            normalized=self.normalized,
+            wkwargs=wkwargs,
+            center=center,
+            pad_mode=pad_mode,
+            onesided=onesided,
+        )
+        self.stretch = TimeStretch(hop_length=self.hop_length, n_freq=self.n_fft // 2 + 1, fixed_rate=None)
+        self.mel_scale = MelScale(
+            self.n_mels, self.sample_rate, self.f_min, self.f_max, self.n_fft // 2 + 1, norm, #mel_scale
+        )
+
+    def forward(self, waveform: torch.Tensor) -> torch.Tensor:
+        r"""
+        Args:
+            waveform (Tensor): Tensor of audio of dimension (..., time).
+
+        Returns:
+            Tensor: Mel frequency spectrogram of size (..., ``n_mels``, time).
+        """
+        specgram = self.spectrogram(waveform)
+        stretch_ratio = np.random.choice(self.stretch_ratio)
+        if stretch_ratio != 1.0 and self.training:
+            specgram = self.stretch(specgram, stretch_ratio)
+        specgram = specgram.abs().pow(2).sum(-1)
+        # print(specgram.shape)
+        mel_specgram = self.mel_scale(specgram)
+        return mel_specgram
+
+
 class MelFbank(object):
-    def __init__(self, num_filter, sr=16000,):
+    def __init__(self, num_filter, sr=16000, stretch_ratio=1.0,):
         super(MelFbank, self).__init__()
         self.num_filter = num_filter
         self.sr = sr
-        self.t = torchaudio.transforms.MelSpectrogram(n_fft=512, win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
-                                                      window_fn=torch.hamming_window, n_mels=num_filter)
+        self.t = MelSpectrogram(n_fft=512, stretch_ratio=stretch_ratio,
+                                win_length=int(0.025 * sr), hop_length=int(0.01 * sr),
+                                window_fn=torch.hamming_window, n_mels=num_filter)
 
     def __call__(self, input):
         output = self.t(input.squeeze(1))
-        # print(input.shape, output.shape)
+
         output = torch.transpose(output, 1, 2)
         return torch.log(output + 1e-6)
 

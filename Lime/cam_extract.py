@@ -20,6 +20,7 @@ import random
 import time
 from collections import OrderedDict
 import Process_Data.constants as c
+import h5py
 
 import numpy as np
 import torch
@@ -34,24 +35,21 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
-from Define_Model.model import PairwiseDistance
+# from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput
 from TrainAndTest.common_func import create_model, load_model_args, args_model, args_parse
 
 # Version conflict
-
 try:
     torch._utils._rebuild_tensor_v2
 except AttributeError:
     def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
-        tensor = torch._utils._rebuild_tensor(
-            storage, storage_offset, size, stride)
+        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
         tensor.requires_grad = requires_grad
         tensor._backward_hooks = backward_hooks
         return tensor
-
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 import warnings
 
@@ -59,125 +57,6 @@ warnings.filterwarnings("ignore")
 
 # Training settings
 args = args_parse('PyTorch Speaker Recognition: Gradient')
-
-# parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: Gradient')
-# Data options
-# parser.add_argument('--train-dir', type=str, help='path to dataset')
-# parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
-# parser.add_argument('--train-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
-# parser.add_argument('--test-set-name', type=str, required=True, help='path to voxceleb1 test dataset')
-# parser.add_argument('--sitw-dir', type=str, help='path to voxceleb1 test dataset')
-# parser.add_argument('--sample-utt', type=int, default=120, metavar='SU', help='Dimensionality of the embedding')
-# parser.add_argument('--test-only', action='store_true', default=False, help='using Cosine similarity')
-# parser.add_argument('--check-path', help='folder to output model checkpoints')
-# parser.add_argument('--extract-path', help='folder to output model grads, etc')
-#
-# parser.add_argument('--start-epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
-# parser.add_argument('--epochs', type=int, default=36, metavar='E', help='number of epochs to train (default: 10)')
-#
-# # Data options
-# parser.add_argument('--feat-dim', default=64, type=int, metavar='N', help='acoustic feature dimension')
-# parser.add_argument('--input-dim', default=257, type=int, metavar='N', help='acoustic feature dimension')
-#
-# parser.add_argument('--revert', action='store_true', default=False, help='using Cosine similarity')
-# parser.add_argument('--input-length', choices=['var', 'fix'], default='var',
-#                     help='choose the acoustic features type.')
-# parser.add_argument('--remove-vad', action='store_true', default=False, help='using Cosine similarity')
-# parser.add_argument('--mvnorm', action='store_true', default=False,
-#                     help='using Cosine similarity')
-# # Model options
-# parser.add_argument('--model', type=str, help='path to voxceleb1 test dataset')
-# parser.add_argument('--cam', type=str, default='gradient', help='path to voxceleb1 test dataset')
-#
-# parser.add_argument('--layer-weight', action='store_true', default=False, help='backward after softmax normalization')
-# parser.add_argument('--steps', type=int, default=100, metavar='ES', help='Dimensionality of the embedding')
-#
-# parser.add_argument('--softmax', action='store_true', default=False,
-#                     help='backward after softmax normalization')
-#
-# parser.add_argument('--cam-layers',
-#                     default=['conv1', 'layer1.0.conv2', 'conv2', 'layer2.0.conv2', 'conv3', 'layer3.0.conv2',
-#                              'layer3.5.conv2', 'layer4.2.conv2'],
-#                     type=list, metavar='CAML', help='The channels of convs layers)')
-# parser.add_argument('--resnet-size', default=8, type=int, metavar='RES', help='The channels of convs layers)')
-#
-# parser.add_argument('--filter', type=str, default='None', help='replace batchnorm with instance norm')
-# parser.add_argument('--input-norm', type=str, default='Mean', help='batchnorm with instance norm')
-# parser.add_argument('--vad', action='store_true', default=False, help='vad layers')
-# parser.add_argument('--inception', action='store_true', default=False, help='multi size conv layer')
-# parser.add_argument('--inst-norm', action='store_true', default=False, help='batchnorm with instance norm')
-#
-# parser.add_argument('--mask-layer', type=str, default='None', help='time or freq masking layers')
-# parser.add_argument('--mask-len', type=int, default=20, help='maximum length of time or freq masking layers')
-# parser.add_argument('--block-type', type=str, default='None', help='replace batchnorm with instance norm')
-# parser.add_argument('--relu-type', type=str, default='relu', help='replace batchnorm with instance norm')
-# parser.add_argument('--encoder-type', type=str, help='path to voxceleb1 test dataset')
-# parser.add_argument('--transform', type=str, default="None", help='add a transform layer after embedding layer')
-#
-# parser.add_argument('--channels', default='64,128,256', type=str,
-#                     metavar='CHA', help='The channels of convs layers)')
-# parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
-# parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
-# parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
-#                     help='kernel size of conv filters')
-# parser.add_argument('--padding', default='', type=str, metavar='KE', help='padding size of conv filters')
-# parser.add_argument('--stride', default='2', type=str, metavar='ST', help='stride size of conv filters')
-# parser.add_argument('--time-dim', default=1, type=int, metavar='FEAT', help='acoustic feature dimension')
-# parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimensionality of the embedding')
-#
-# parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
-# parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
-#                     help='input batch size for testing (default: 64)')
-#
-# # args for additive margin-softmax
-# parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
-#                     help='the margin value for the angualr softmax loss function (default: 3.0')
-# parser.add_argument('--s', type=float, default=15, metavar='S',
-#                     help='the margin value for the angualr softmax loss function (default: 3.0')
-# # args for a-softmax
-# parser.add_argument('--m', type=int, default=3, metavar='M',
-#                     help='the margin value for the angualr softmax loss function (default: 3.0')
-# parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
-#                     help='random seed (default: 0)')
-# parser.add_argument('--lambda-max', type=float, default=0.05, metavar='S',
-#                     help='random seed (default: 0)')
-#
-# parser.add_argument('--alpha', default=0, type=float,
-#                     metavar='l2 length', help='acoustic feature dimension')
-# parser.add_argument('--cos-sim', action='store_true', default=True, help='using Cosine similarity')
-# parser.add_argument('--embedding-size', type=int, metavar='ES', help='Dimensionality of the embedding')
-#
-# parser.add_argument('--nj', default=12, type=int, metavar='NJOB', help='num of job')
-# parser.add_argument('--batch-size', type=int, default=1, metavar='BS',
-#                     help='input batch size for training (default: 128)')
-# parser.add_argument('--test-batch-size', type=int, default=1, metavar='BST',
-#                     help='input batch size for testing (default: 64)')
-# parser.add_argument('--input-per-spks', type=int, default=192, metavar='IPFT',
-#                     help='input sample per file for testing (default: 8)')
-# parser.add_argument('--test-input-per-file', type=int, default=1, metavar='IPFT',
-#                     help='input sample per file for testing (default: 8)')
-#
-# # Device options
-# parser.add_argument('--no-cuda', action='store_true', default=False,
-#                     help='enables CUDA training')
-# parser.add_argument('--gpu-id', default='1', type=str,
-#                     help='id(s) for CUDA_VISIBLE_DEVICES')
-# parser.add_argument('--seed', type=int, default=123456, metavar='S',
-#                     help='random seed (default: 0)')
-# parser.add_argument('--log-interval', type=int, default=1, metavar='LI',
-#                     help='how many batches to wait before logging training status')
-#
-# parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
-#                     help='choose the acoustic features type.')
-# parser.add_argument('--makemfb', action='store_true', default=False,
-#                     help='need to make mfb file')
-# parser.add_argument('--makespec', action='store_true', default=False,
-#                     help='need to make spectrograms file')
-#
-# args = parser.parse_args()
-
-# Set the device to use by setting CUDA_VISIBLE_DEVICES env variable in
-# order to prevent any memory allocation on unused GPUs
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 
 args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -191,8 +70,7 @@ if args.cuda:
 
 # Define visulaize SummaryWriter instance
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
-l2_dist = nn.CosineSimilarity(
-    dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else nn.PairwiseDistance(2)
 
 if args.test_input == 'var':
     transform = transforms.Compose([
@@ -203,33 +81,21 @@ elif args.test_input == 'fix':
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
-# if args.mvnorm:
-#     transform.transforms.append(mvnormal())
-
 file_loader = read_mat
-
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
-                               loader=file_loader, transform=transform, return_uid=True,
-                               sample_type='balanced', )
-indices = list(range(len(train_dir)))
-random.shuffle(indices)
-indices = indices[:args.sample_utt]
-train_part = torch.utils.data.Subset(train_dir, indices)
-
-# pdb.set_trace()
-# veri_dir = ScriptTestDataset(dir=args.train_dir, loader=file_loader, transform=transform, return_uid=True)
-# veri_dir.partition(args.sample_utt)
-
-# test_dir = ScriptTestDataset(dir=args.test_dir, loader=file_loader, transform=transform, return_uid=True)
-# test_dir.partition(args.sample_utt)
-
-valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
-                               valid_uid2feat=train_dir.valid_uid2feat, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
                                loader=file_loader, transform=transform, return_uid=True)
-indices = list(range(len(valid_dir)))
-random.shuffle(indices)
-indices = indices[:args.sample_utt]
-valid_part = torch.utils.data.Subset(valid_dir, indices)
+# indices = list(range(len(train_dir)))
+# random.shuffle(indices)
+# indices = indices[:args.sample_utt]
+# train_part = torch.utils.data.Subset(train_dir, indices)
+
+# valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
+#                                valid_uid2feat=train_dir.valid_uid2feat, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+#                                loader=file_loader, transform=transform, return_uid=True)
+# indices = list(range(len(valid_dir)))
+# random.shuffle(indices)
+# indices = indices[:args.sample_utt]
+# valid_part = torch.utils.data.Subset(valid_dir, indices)
 
 cam_layers = args.cam_layers
 
@@ -244,7 +110,6 @@ bias_layers = []
 biases = []
 handlers = []
 
-
 def extract_layer_bias(module):
     # extract bias of each layer
     if isinstance(module, torch.nn.BatchNorm2d):
@@ -257,19 +122,17 @@ def extract_layer_bias(module):
     else:
         return module.bias.data
 
-
 def _extract_layer_grads(module, in_grad, out_grad):
     # function to collect the gradient outputs
     # from each layer
-    #     print(module._get_name())
-    #     print('Input_grad shape:', in_grad[0].shape)
-    #     print('Output_grad shape:', out_grad[0].shape)
+#     print(module._get_name())
+#     print('Input_grad shape:', in_grad[0].shape)
+#     print('Output_grad shape:', out_grad[0].shape)
     global in_feature_grads
     global out_feature_grads
     if not module.bias is None:
         in_feature_grads.append(in_grad[0])
         out_feature_grads.append(out_grad[0])
-
 
 def _extract_layer_feat(module, input, output):
     # function to collect the gradient outputs from each layer
@@ -281,7 +144,6 @@ def _extract_layer_feat(module, input, output):
     global in_layer_feat
     in_layer_feat.append(input[0])
     out_layer_feat.append(output[0])
-
 
 def _extract_layer_grad(module, in_grad, out_grad):
     # function to collect the gradient outputs from each layer
@@ -331,7 +193,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
     input_grads = []
     inputs_uids = []
-    pbar = tqdm(enumerate(train_loader))
+    pbar = tqdm(enumerate(train_loader), total=len(train_loader))
     global out_feature_grads
     global in_feature_grads
     global in_layer_feat
@@ -343,244 +205,59 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     baseline = None
     zeros = nn.ZeroPad2d(1)
 
-    for batch_idx, (data, label, uid) in pbar:
+    correct = .0
+    total = .0
 
-        # orig = data.detach().numpy().squeeze().astype(np.float32)
-        spks = [train_dir.utt2spk_dict[u] for u in uid]
-        target_label_index = [train_dir.spk_to_idx[s] for s in spks]
-        target_label_index = torch.LongTensor(target_label_index)
+    data_file = file_dir + '/data.h5py'
+    grad_file = file_dir + '/grad.h5py'
 
-        if data.shape[2] > 5 * c.NUM_FRAMES_SPECT:
-            num_half = int(data.shape[2] / (4 * c.NUM_FRAMES_SPECT))
-            rest_frame = data.shape[2] % num_half
-            if rest_frame > 0:
-                x = data[:, :, :-rest_frame, :].chunk(num_half, dim=2)
-            else:
-                x = data.chunk(num_half, dim=2)
-            data = torch.cat(x, dim=0)
+    with h5py.File(data_file, 'w') as df, h5py.File(grad_file, 'w') as gf:
+        for batch_idx, (data, label, uid) in pbar:
 
-        data = Variable(data.cuda(), requires_grad=True)
-        ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
-        baseline = None
+            # orig = data.detach().numpy().squeeze().astype(np.float32)
+            spks = [train_dir.utt2spk_dict[u] for u in uid]
+            target_label_index = [train_dir.spk_to_idx[s] for s in spks]
+            label = torch.LongTensor(target_label_index)
 
-        if len(data) == 1:
-            if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'layer_cam', 'acc_input']:
-                logit, _ = model(data)
-                classifed = logit[0] if args.loss_type == 'asoft' else logit
+            if data.shape[2] > 5 * c.NUM_FRAMES_SPECT:
+                num_half = int(data.shape[2] / (4 * c.NUM_FRAMES_SPECT))
+                rest_frame = data.shape[2] % num_half
+                if rest_frame > 0:
+                    x = data[:, :, :-rest_frame, :].chunk(num_half, dim=2)
+                else:
+                    x = data.chunk(num_half, dim=2)
+                data = torch.cat(x, dim=0)
 
-                if args.softmax:
-                    classifed = softmax(classifed)
+            data = Variable(data.cuda(), requires_grad=True)
+            ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
+            baseline = None
 
-                try:
-                    classifed[0][label.long()].backward()
-                except Exception as e:
-                    print(data.shape, ",", uid)
-                    raise e
-
-                if args.cam == 'gradient':
-                    grad = data.grad  # .cpu().numpy().squeeze().astype(np.float32)
-
-                elif args.cam == 'grad_cam':
-                    grad = torch.zeros_like(data)
-                    # assert len(out_layer_grad) == len(cam_layers), print(len(out_layer_grad), " is not equal to ", len(cam_layers))
-
-                    last_grad = out_layer_grad[0]
-                    last_feat = out_layer_feat[-1]
-
-                    weight = last_grad.mean(dim=(2, 3), keepdim=True)
-                    weight /= weight.sum()
-                    feat = last_feat  # .copy()
-
-                    T = (feat * weight).clamp_min(0).sum(dim=1,
-                                                         keepdim=True)  # .clamp_min(0)
-                    grad += ups(T).abs()
-
-                elif args.cam == 'grad_cam_pp':
-                    # grad cam ++ last
-                    last_grad = out_layer_grad[0].cpu()
-                    last_feat = out_layer_feat[-1].cpu()
-                    first_derivative = classifed[0][label.long()].exp(
-                    ).cpu() * last_grad
-                    alpha = last_grad.pow(2) / (
-                        2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
-                    # weight = alpha * (first_derivative.clamp_min_(0))
-                    weight = alpha * (first_derivative.abs())
-
-                    weight = weight.mean(dim=(2, 3), keepdim=True)
-                    weight /= weight.sum()
-
-                    grad = (last_feat * weight).sum(dim=1, keepdim=True)
-                    grad = ups(grad)
-
-                    # grad_cam_pp -= grad_cam_pp.min()
-                    grad = grad.abs()
-                    grad /= grad.max()
-
-                elif args.cam == 'fullgrad':
-                    # full grad
-                    input_gradient = (data.grad * data)
-                    full_grad = input_gradient.clone().clamp_min(0)
-
-                    L = len(bias_layers)
-
-                    for i, l in enumerate(bias_layers):
-                        bias = biases[L - i - 1]
-                        if len(bias.shape) == 1:
-                            bias = bias.reshape(1, -1, 1, 1)
-                        if len(out_feature_grads[i].shape) == 3:
-                            # pdb.set_trace()
-                            if bias.shape[1] == out_feature_grads[i].shape[-1]:
-                                if bias.shape[1] % model.avgpool.output_size[1] == 0:
-                                    bias = bias.reshape(
-                                        1, -1, 1, model.avgpool.output_size[1])
-                                    grads_shape = out_feature_grads[i].shape
-                                    out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
-                                                                                        model.avgpool.output_size[1])
-                                else:
-                                    out_feature_grads[i] = out_feature_grads[i].reshape(1, bias.shape[1],
-                                                                                        grads_shape[1], -1)
-
-                        try:
-                            bias = bias.expand_as(out_feature_grads[i])
-                        except Exception as e:
-                            pdb.set_trace()
-                        #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
-                        #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                        bias_grad = (
-                            out_feature_grads[i] * bias).mean(dim=1, keepdim=True).clamp_min(0)
-                        bias_grad /= bias_grad.max()
-                        full_grad += ups(bias_grad)
-
-                    # full_grad -= full_grad.min()
-                    # full_grad = full_grad.abs()
-                    full_grad /= full_grad.max()
-                    grad = full_grad.detach().cpu()
-
-                elif args.cam == 'acc_grad':
-                    # pdb.set_trace()
-                    input_gradient = (data.grad * data)
-                    acc_grad = input_gradient.clone().clamp_min(0)  # .cpu()
-                    acc_grad /= acc_grad.max()
-
-                    for i in range(len(out_layer_grad)):
-                        # this_grad = out_layer_grad[i].clone()  # .cpu()
-                        # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
-                        # print(this_grad.shape, this_feat.shape)
-                        # try:
-                        this_grad = out_layer_grad[i] * out_layer_feat[-1 - i]
-                        if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
-                            this_grad = zeros(this_grad)
-
-                        this_grad = ups(this_grad).mean(dim=1, keepdim=True)
-                        # except Exception as e:
-                        #     print(this_grad.shape, this_feat.shape)
-                        this_grad = this_grad.clamp_min(0)
-                        this_grad /= this_grad.max()
-
-                        acc_grad += this_grad
-                    grad = acc_grad / acc_grad.sum()
-
-                elif args.cam == 'layer_cam':
-                    # pdb.set_trace()
-                    input_gradient = (data.grad.clamp_min(0) * data)
-                    acc_grad = input_gradient.clone()  # .cpu()
-                    acc_grad /= acc_grad.max()
-                    # acc_grad = torch.tanh(acc_grad)
-
-                    for i in range(len(out_layer_grad)):
-                        # this_grad = out_layer_grad[i].clone()  # .cpu()
-                        # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
-                        # print(this_grad.shape, this_feat.shape)
-                        # try:
-                        this_grad = out_layer_grad[i].clamp_min(
-                            0) * out_layer_feat[-1 - i]
-                        if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
-                            this_grad = zeros(this_grad)
-
-                        this_grad = ups(this_grad).mean(dim=1, keepdim=True)
-                        acc_grad += this_grad / this_grad.max()
-
-                    acc_grad = acc_grad.clamp_min(0)
-                    grad = torch.tanh(acc_grad * 2 / acc_grad.max())
-
-                elif args.cam == 'acc_input':
-                    # pdb.set_trace()
-                    acc_grad = torch.zeros_like(data)
-                    # acc_grad /= acc_grad.max()
-
-                    for i in range(len(out_layer_feat)):
-                        # this_grad = out_layer_grad[i].clone().cpu()
-                        this_feat = out_layer_feat[-1 - i].clone()
-
-                        if len(this_feat.shape) == 3:
-                            this_feat = this_feat.unsqueeze(0)
-
-                        if args.zero_padding and this_feat.shape[-1] < acc_grad.shape[-1]:
-                            this_feat = zeros(this_feat)
-
-                        this_grad = ups(this_feat).mean(dim=1, keepdim=True)
-                        # except Exception as e:
-                        #     print(this_feat.shape)
-
-                        this_grad = this_grad.clamp_min(0)
-                        this_grad /= this_grad.max() + 1e-6
-
-                        if np.isnan(this_grad.detach().cpu().numpy()).any():
-                            pdb.set_trace()
-
-                        acc_grad += this_grad if args.layer_weight else (len(out_layer_feat) - i) / len(
-                            out_layer_feat) * this_grad
-
-                    grad = acc_grad / acc_grad.sum()
-
-            elif args.cam in ['integrad']:
-
-                if baseline is None:
-                    baseline = 0. * data
-
-                scaled_inputs = [baseline + (float(i) / args.steps) * (data - baseline) for i in
-                                 range(0, args.steps + 1)]
-
-                grads, target_label_idx = calculate_outputs_and_gradients(
-                    scaled_inputs, model, target_label_index)
-                grads = (grads[:-1] + grads[1:]) / 2.0
-                avg_grads = grads.mean(dim=0)
-
-                grad = (data - baseline) * avg_grads  # shape: <grad.shape>
-
-        else:
-            grad = []
-            all_data = []
-            for i in range(len(data)):
-                out_feature_grads = []
-                in_feature_grads = []
-                in_layer_feat = []
-                out_layer_feat = []
-                in_layer_grad = []
-                out_layer_grad = []
-
-                data_a = data[i].unsqueeze(0)
-                data_a = Variable(data_a.cuda(), requires_grad=True)
-
+            if len(data) == 1:
                 if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'layer_cam', 'acc_input']:
-                    logit, _ = model(data_a)
-
-                    if args.loss_type == 'asoft':
-                        classifed, _ = logit
-                    else:
-                        classifed = logit
+                    logit, _ = model(data)
+                    classifed = logit[0] if args.loss_type == 'asoft' else logit
 
                     if args.softmax:
                         classifed = softmax(classifed)
+                    
+                    total += 1
+                    predicted = torch.max(classifed, dim=1)[1]
+                    correct += (predicted.cpu() == label.cpu()).sum().item()
 
-                    classifed[0][label.long()].backward()
+                    try:
+                        classifed[0][label.long()].backward()
+                    except Exception as e:
+                        print(data.shape, ",", uid)
+                        raise e
 
                     if args.cam == 'gradient':
-                        grad_a = data_a.grad  # .cpu().numpy().squeeze().astype(np.float32)
+                        grad = data.grad  # .cpu().numpy().squeeze().astype(np.float32)
+                        # grad -= grad.min()
+                        # grad /= grad.max() + 1e-8
+
                     elif args.cam == 'grad_cam':
-                        grad_a = torch.zeros_like(data_a)
-                        L = len(cam_layers)
-                        # assert len(out_layer_grad) == L, print(len(out_layer_grad))
+                        grad = torch.zeros_like(data)
+                        # assert len(out_layer_grad) == len(cam_layers), print(len(out_layer_grad), " is not equal to ", len(cam_layers))
 
                         last_grad = out_layer_grad[0]
                         last_feat = out_layer_feat[-1]
@@ -589,127 +266,143 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         weight /= weight.sum()
                         feat = last_feat  # .copy()
 
-                        T = (feat * weight).clamp_min(0).sum(dim=1,
-                                                             keepdim=True)  # .clamp_min(0)
+                        T = (feat * weight).sum(dim=1, keepdim=True).clamp_min(0)  # .clamp_min(0)
+                        if args.zero_padding and T.shape[-1] < data.shape[-1]:
+                                T = zeros(T)
 
-                        grad_a += ups(T).abs()
+                        grad += ups(T) #.abs()
+                        # grad -= grad.min()
+                        # grad /= grad.max() + 1e-8
 
                     elif args.cam == 'grad_cam_pp':
                         # grad cam ++ last
-                        last_grad = out_layer_grad[0]
-                        last_feat = out_layer_feat[-1]
-                        first_derivative = classifed[0][label.long()].exp(
-                        ) * last_grad
+                        last_grad = out_layer_grad[0].cpu()
+                        last_feat = out_layer_feat[-1].cpu()
+                        first_derivative = classifed[0][label.long()].exp().cpu() * last_grad
                         alpha = last_grad.pow(2) / (
-                            2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
-                        # weight = alpha * (first_derivative.clamp_min_(0))
-                        weight = alpha * (first_derivative.abs())
+                                2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
+                        weight = alpha * (first_derivative.clamp_min_(0))
+                        # weight = alpha * (first_derivative.abs())
 
                         weight = weight.mean(dim=(2, 3), keepdim=True)
                         weight /= weight.sum()
 
-                        grad_a = (last_feat * weight).sum(dim=1, keepdim=True)
-                        grad_a = ups(grad_a)
+                        grad = (last_feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
+
+                        if args.zero_padding and grad.shape[-1] < data.shape[-1]:
+                                grad = zeros(grad)
+
+                        grad = ups(grad)
 
                         # grad_cam_pp -= grad_cam_pp.min()
-                        grad_a = grad_a.abs()
-                        grad_a /= grad_a.max()
+                        # grad -= grad.min()
+                        # grad /= grad.max() + 1e-8
 
                     elif args.cam == 'fullgrad':
                         # full grad
-                        input_gradient = (data_a.grad * data_a)
-                        full_grad = input_gradient.clone().clamp_min(0)
+                        input_gradient = (data.grad * data)
+                        full_grad = input_gradient.clone().abs()
+                        full_grad -= full_grad.min()
+                        full_grad /= full_grad.max() + 1e-8
 
                         L = len(bias_layers)
-
-                        for j, l in enumerate(bias_layers):
-                            bias = biases[L - j - 1]
+                        for i, l in enumerate(bias_layers):
+                            bias = biases[L - i - 1]
                             if len(bias.shape) == 1:
                                 bias = bias.reshape(1, -1, 1, 1)
-
-                            if len(out_feature_grads[j].shape) == 3:
+                            if len(out_feature_grads[i].shape) == 3:
                                 # pdb.set_trace()
-                                if bias.shape[1] == out_feature_grads[j].shape[-1]:
+                                if bias.shape[1] == out_feature_grads[i].shape[-1]:
                                     if bias.shape[1] % model.avgpool.output_size[1] == 0:
                                         bias = bias.reshape(
                                             1, -1, 1, model.avgpool.output_size[1])
-                                        grads_shape = out_feature_grads[j].shape
-                                        out_feature_grads[j] = out_feature_grads[j].reshape(1, -1, grads_shape[1],
-                                                                                            model.avgpool.output_size[
-                                                                                                1])
+                                        grads_shape = out_feature_grads[i].shape
+                                        out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
+                                                                                            model.avgpool.output_size[1])
                                     else:
-                                        out_feature_grads[j] = out_feature_grads[j].reshape(1, bias.shape[1],
+                                        out_feature_grads[i] = out_feature_grads[i].reshape(1, bias.shape[1],
                                                                                             grads_shape[1], -1)
 
-                            bias = bias.expand_as(out_feature_grads[j])
-
+                            try:
+                                bias = bias.expand_as(out_feature_grads[i])
+                            except Exception as e:
+                                pdb.set_trace()
                             #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
                             #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
-                            bias_grad = (
-                                out_feature_grads[j] * bias).mean(dim=1, keepdim=True).clamp_min(0)
-                            bias_grad /= bias_grad.max()
+                            bias_grad = (out_feature_grads[i] * bias).mean(dim=1, keepdim=True).abs()
+                            bias_grad -= bias_grad.min()
+                            bias_grad /= bias_grad.max() + 1e-8
+
+                            if args.zero_padding and bias_grad.shape[-1] < input_gradient.shape[-1]:
+                                bias_grad = zeros(bias_grad)
+
                             full_grad += ups(bias_grad)
 
                         # full_grad -= full_grad.min()
                         # full_grad = full_grad.abs()
-                        full_grad /= full_grad.max()
-                        grad_a = full_grad
+                        full_grad -= full_grad.min()
+                        full_grad /= full_grad.max() + 1e-8
+                        grad = full_grad#.detach().cpu()
 
                     elif args.cam == 'acc_grad':
                         # pdb.set_trace()
-                        input_gradient = (data_a.grad * data_a)
+                        input_gradient = (data.grad * data)
                         acc_grad = input_gradient.clone().clamp_min(0)  # .cpu()
-                        acc_grad /= acc_grad.max()
+                        acc_grad -= acc_grad.min()
 
                         for i in range(len(out_layer_grad)):
-                            # this_grad = out_layer_grad[i].clone()  # .cpu()
-                            # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
-                            # print(this_grad.shape, this_feat.shape)
-                            # try:
-                            this_grad = ups(
-                                out_layer_grad[i] * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
+                            this_grad = out_layer_grad[i] * out_layer_feat[-1 - i]
+                            if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
+                                this_grad = zeros(this_grad)
+
+                            this_grad = ups(this_grad).mean(dim=1, keepdim=True)
                             # except Exception as e:
                             #     print(this_grad.shape, this_feat.shape)
-
                             this_grad = this_grad.clamp_min(0)
                             this_grad /= this_grad.max()
 
                             acc_grad += this_grad
-                        grad_a = acc_grad / acc_grad.sum()
+                        grad = acc_grad / acc_grad.sum()
 
                     elif args.cam == 'layer_cam':
                         # pdb.set_trace()
-                        input_gradient = (data_a.grad.clamp_min(0) * data_a)
-                        acc_grad = input_gradient.clone()
-                        acc_grad /= acc_grad.max()
+                        input_gradient = (data.grad.clamp_min(0) * data)
+                        acc_grad = input_gradient.clone()  # .cpu()
+                        # acc_grad /= acc_grad.max()
 
                         for i in range(len(out_layer_grad)):
-                            # this_grad = out_layer_grad[i].clone()  # .cpu()
-                            # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
-                            # print(this_grad.shape, this_feat.shape)
-                            # try:
-                            this_grad = ups(out_layer_grad[i].clamp_min(
-                                0) * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
-                            # except Exception as e:
-                            #     print(this_grad.shape, this_feat.shape)
+                            this_grad = out_layer_grad[i].clamp_min(
+                                0) * out_layer_feat[-1 - i]
+                            
+                            if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
+                                this_grad = zeros(this_grad)
 
-                            acc_grad += this_grad / this_grad.max()
-                        acc_grad = acc_grad.clamp_min(0)
-                        grad_a = torch.tanh(acc_grad * 2 / acc_grad.max())
+                            this_grad = ups(this_grad).sum(dim=1, keepdim=True).clamp_min(0)
+                            acc_grad += this_grad #/ this_grad.max()
+
+                        # acc_grad -= acc_grad.min()
+                        # acc_grad /= acc_grad.max() + 1e-8
+                        grad = acc_grad#.detach().cpu()
+
+                        # acc_grad = acc_grad.clamp_min(0)
+                        # grad = torch.tanh(acc_grad * 2 / acc_grad.max())
 
                     elif args.cam == 'acc_input':
                         # pdb.set_trace()
-                        acc_grad = torch.zeros_like(data_a)
+                        acc_grad = torch.zeros_like(data)
                         # acc_grad /= acc_grad.max()
 
                         for i in range(len(out_layer_feat)):
                             # this_grad = out_layer_grad[i].clone().cpu()
                             this_feat = out_layer_feat[-1 - i].clone()
+
                             if len(this_feat.shape) == 3:
                                 this_feat = this_feat.unsqueeze(0)
-                            # try:
-                            this_grad = ups(this_feat).mean(
-                                dim=1, keepdim=True)
+
+                            if args.zero_padding and this_feat.shape[-1] < acc_grad.shape[-1]:
+                                this_feat = zeros(this_feat)
+
+                            this_grad = ups(this_feat).mean(dim=1, keepdim=True)
                             # except Exception as e:
                             #     print(this_feat.shape)
 
@@ -722,74 +415,291 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             acc_grad += this_grad if args.layer_weight else (len(out_layer_feat) - i) / len(
                                 out_layer_feat) * this_grad
 
-                        grad_a = acc_grad / acc_grad.sum()
+                        grad = acc_grad / acc_grad.sum()
 
                 elif args.cam in ['integrad']:
 
                     if baseline is None:
-                        baseline = 0. * data_a
+                        baseline = 0. * data
 
-                    scaled_inputs = [baseline + (float(i) / args.steps) * (data_a - baseline) for i in
-                                     range(0, args.steps + 1)]
+                    scaled_inputs = [baseline + (float(i) / args.steps) * (data - baseline) for i in
+                                    range(1, args.steps + 1)]
 
                     grads, target_label_idx = calculate_outputs_and_gradients(
-                        scaled_inputs, model, target_label_index)
+                        scaled_inputs, model, label)
                     grads = (grads[:-1] + grads[1:]) / 2.0
                     avg_grads = grads.mean(dim=0)
 
-                    grad_a = (data_a - baseline) * \
-                        avg_grads  # shape: <grad.shape>
+                    grad = (data - baseline) * avg_grads  # shape: <grad.shape>
 
-                if grad_a.shape != data_a.shape:
-                    print(grad_a.shape, data_a.shape)
-                    pdb.set_trace()
-                grad.append(grad_a.detach().cpu().squeeze())
-                all_data.append(data_a.detach().squeeze())
+            else:
+                grad = []
+                all_data = []
+                for i in range(len(data)):
+                    out_feature_grads = []
+                    in_feature_grads = []
+                    in_layer_feat = []
+                    out_layer_feat = []
+                    in_layer_grad = []
+                    out_layer_grad = []
 
-            grad = torch.cat(grad, dim=0)
-            data = torch.cat(all_data, dim=0)
+                    data_a = data[i].unsqueeze(0)
+                    data_a = Variable(data_a.cuda(), requires_grad=True)
 
-        out_feature_grads = []
-        in_feature_grads = []
-        in_layer_feat = []
-        out_layer_feat = []
-        in_layer_grad = []
-        out_layer_grad = []
+                    if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'layer_cam', 'acc_input']:
+                        logit, _ = model(data_a)
 
-        grad = grad.cpu().detach().numpy().squeeze().astype(np.float32)
-        data = data.data.cpu().numpy().squeeze().astype(np.float32)
+                        if args.loss_type == 'asoft':
+                            classifed, _ = logit
+                        else:
+                            classifed = logit
 
-        if args.revert:
-            grad = grad.transpose()
-            data = data.transpose()
+                        if args.softmax:
+                            classifed = softmax(classifed)
 
-        input_grads.append([data, grad])
-        inputs_uids.append(uid)
+                        total += 1
+                        predicted = torch.max(classifed, dim=1)[1]
+                        correct += (predicted.cpu() == label.cpu()).sum().item()
 
-        model.zero_grad()
+                        classifed[0][label.long()].backward()
 
-        if batch_idx % args.log_interval == 0:
-            pbar.set_description('Saving {} : [{:8d}/{:8d} ({:3.0f}%)] '.format(
-                uid,
-                batch_idx + 1,
-                len(train_loader.dataset),
-                100. * batch_idx / len(train_loader)))
+                        if args.cam == 'gradient':
+                            grad_a = data_a.grad  # .cpu().numpy().squeeze().astype(np.float32)
+                            # grad_a -= grad_a.min()
+                            # grad_a /= grad_a.max() + 1e-8
 
-        if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
-            num = batch_idx // save_per_num if batch_idx + \
-                1 % save_per_num == 0 else batch_idx // save_per_num + 1
-            # checkpoint_dir / extract / < dataset > / < set >.*.bin
+                        elif args.cam == 'grad_cam':
+                            grad_a = torch.zeros_like(data_a)
+                            L = len(cam_layers)
+                            # assert len(out_layer_grad) == L, print(len(out_layer_grad))
 
-            filename = file_dir + '/%s.%d.bin' % (set_name, num)
-            with open(filename, 'wb') as f:
-                pickle.dump(input_grads, f)
+                            last_grad = out_layer_grad[0]
+                            last_feat = out_layer_feat[-1]
 
-            with open(file_dir + '/inputs.%s.%d.json' % (set_name, num), 'w') as f:
-                json.dump(inputs_uids, f)
+                            weight = last_grad.mean(dim=(2, 3), keepdim=True)
+                            weight /= weight.sum()
+                            feat = last_feat  # .copy()
 
-            input_grads = []
-            inputs_uids = []
+                            T = (feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
+                            if args.zero_padding and T.shape[-1] < grad.shape[-1]:
+                                T = zeros(T)
 
+                            grad_a += ups(T) #.abs()
+                            # grad_a -= grad_a.min()
+                            # grad_a /= grad_a.max() + 1e-8
+
+                        elif args.cam == 'grad_cam_pp':
+                            # grad cam ++ last
+                            last_grad = out_layer_grad[0]
+                            last_feat = out_layer_feat[-1]
+                            first_derivative = classifed[0][label.long()].exp(
+                            ) * last_grad
+                            alpha = last_grad.pow(2) / (
+                                2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
+                            weight = alpha * (first_derivative.clamp_min_(0))
+                            # weight = alpha * (first_derivative.abs())
+
+                            weight = weight.mean(dim=(2, 3), keepdim=True)
+                            weight /= weight.sum()
+
+                            grad_a = (last_feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
+
+                            if args.zero_padding and grad.shape[-1] < data_a.shape[-1]:
+                                grad = zeros(grad)
+
+                            grad_a = ups(grad_a)
+
+                            # grad_cam_pp -= grad_cam_pp.min()
+                            # grad_a = grad_a.abs()
+                            # grad_a /= grad_a.max()
+
+                        elif args.cam == 'fullgrad':
+                            # full grad
+                            input_gradient = (data_a.grad * data_a)
+                            full_grad = input_gradient.clone().abs()
+                            full_grad -= full_grad.min()
+                            full_grad /= full_grad.max() + 1e-8
+
+                            L = len(bias_layers)
+                            for j, l in enumerate(bias_layers):
+                                bias = biases[L - j - 1]
+                                if len(bias.shape) == 1:
+                                    bias = bias.reshape(1, -1, 1, 1)
+
+                                if len(out_feature_grads[j].shape) == 3:
+                                    # pdb.set_trace()
+                                    if bias.shape[1] == out_feature_grads[j].shape[-1]:
+                                        if bias.shape[1] % model.avgpool.output_size[1] == 0:
+                                            bias = bias.reshape(
+                                                1, -1, 1, model.avgpool.output_size[1])
+                                            grads_shape = out_feature_grads[j].shape
+                                            out_feature_grads[j] = out_feature_grads[j].reshape(1, -1, grads_shape[1],
+                                                                                                model.avgpool.output_size[
+                                                                                                    1])
+                                        else:
+                                            out_feature_grads[j] = out_feature_grads[j].reshape(1, bias.shape[1],
+                                                                                                grads_shape[1], -1)
+
+                                bias = bias.expand_as(out_feature_grads[j])
+
+                                #     bias_grad = (out_feature_grads[i]*bias).sum(dim=1, keepdim=True)
+                                #     bias_grad = (out_feature_grads[i]*bias).mean(dim=1, keepdim=True)
+                                bias_grad = (
+                                    out_feature_grads[j] * bias).mean(dim=1, keepdim=True).abs()
+                                bias_grad -= bias_grad.min()
+                                bias_grad /= bias_grad.max() + 1e-8
+
+                                if args.zero_padding and bias_grad.shape[-1] < input_gradient.shape[-1]:
+                                    bias_grad = zeros(bias_grad)
+                                
+                                full_grad += ups(bias_grad)
+
+                            # full_grad -= full_grad.min()
+                            # full_grad = full_grad.abs()
+                            full_grad /= full_grad.max()
+                            grad_a = full_grad
+
+                        elif args.cam == 'acc_grad':
+                            # pdb.set_trace()
+                            input_gradient = (data_a.grad * data_a)
+                            acc_grad = input_gradient.clone().clamp_min(0)  # .cpu()
+                            acc_grad /= acc_grad.max()
+
+                            for i in range(len(out_layer_grad)):
+                                # this_grad = out_layer_grad[i].clone()  # .cpu()
+                                # this_feat = out_layer_feat[-1 - i].clone()  # .cpu()
+                                # print(this_grad.shape, this_feat.shape)
+                                # try:
+                                this_grad = ups(
+                                    out_layer_grad[i] * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
+                                # except Exception as e:
+                                #     print(this_grad.shape, this_feat.shape)
+
+                                this_grad = this_grad.clamp_min(0)
+                                this_grad /= this_grad.max()
+
+                                acc_grad += this_grad
+                            grad_a = acc_grad / acc_grad.sum()
+
+                        elif args.cam == 'layer_cam':
+                            # pdb.set_trace()
+                            input_gradient = (data_a.grad.clamp_min(0) * data_a)
+                            acc_grad = input_gradient.clone()
+                            # acc_grad /= acc_grad.max()
+
+                            for i in range(len(out_layer_grad)):
+                                this_grad = ups(out_layer_grad[i].clamp_min(
+                                    0) * out_layer_feat[-1 - i]).mean(dim=1, keepdim=True)
+
+                                if args.zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
+                                    this_grad = zeros(this_grad)
+
+                                this_grad = ups(this_grad).sum(dim=1, keepdim=True).clamp_min(0)
+
+                                acc_grad += this_grad #/ this_grad.max()
+
+                            grad_a = acc_grad #.clamp_min(0)
+                            # grad_a = torch.tanh(acc_grad * 2 / acc_grad.max())
+
+                        elif args.cam == 'acc_input':
+                            # pdb.set_trace()
+                            acc_grad = torch.zeros_like(data_a)
+                            # acc_grad /= acc_grad.max()
+
+                            for i in range(len(out_layer_feat)):
+                                # this_grad = out_layer_grad[i].clone().cpu()
+                                this_feat = out_layer_feat[-1 - i].clone()
+                                if len(this_feat.shape) == 3:
+                                    this_feat = this_feat.unsqueeze(0)
+                                # try:
+                                this_grad = ups(this_feat).mean(
+                                    dim=1, keepdim=True)
+                                # except Exception as e:
+                                #     print(this_feat.shape)
+
+                                this_grad = this_grad.clamp_min(0)
+                                this_grad /= this_grad.max() + 1e-6
+
+                                if np.isnan(this_grad.detach().cpu().numpy()).any():
+                                    pdb.set_trace()
+
+                                acc_grad += this_grad if args.layer_weight else (len(out_layer_feat) - i) / len(
+                                    out_layer_feat) * this_grad
+
+                            grad_a = acc_grad / acc_grad.sum()
+
+                    elif args.cam in ['integrad']:
+
+                        if baseline is None:
+                            baseline = 0. * data_a
+
+                        scaled_inputs = [baseline + (float(i) / args.steps) * (data_a - baseline) for i in
+                                        range(1, args.steps + 1)]
+
+                        grads, target_label_idx = calculate_outputs_and_gradients(
+                            scaled_inputs, model, label)
+                        grads = (grads[:-1] + grads[1:]) / 2.0
+                        avg_grads = grads.mean(dim=0)
+
+                        grad_a = (data_a - baseline) * \
+                            avg_grads  # shape: <grad.shape>
+
+                    if grad_a.shape != data_a.shape:
+                        print(grad_a.shape, data_a.shape)
+                        pdb.set_trace()
+
+                    grad.append(grad_a.detach().cpu().squeeze())
+                    all_data.append(data_a.detach().squeeze())
+
+                grad = torch.cat(grad, dim=0)
+                data = torch.cat(all_data, dim=0)
+
+            out_feature_grads = []
+            in_feature_grads = []
+            in_layer_feat = []
+            out_layer_feat = []
+            in_layer_grad = []
+            out_layer_grad = []
+
+            grad = grad.cpu().detach().numpy().squeeze().astype(np.float32)
+            data = data.data.cpu().numpy().squeeze().astype(np.float32)
+
+            if args.revert:
+                grad = grad.transpose()
+                data = data.transpose()
+
+            df.create_dataset(uid[0], data=data)
+            gf.create_dataset(uid[0], data=grad)
+
+            inputs_uids.append([uid[0], int(label.numpy()[0])])
+
+            model.zero_grad()
+            if batch_idx % args.log_interval == 0:
+                pbar.set_description('Saving {} : [{:8d}/{:8d} ({:3.0f}%)] '.format(
+                    uid,
+                    batch_idx + 1,
+                    len(train_loader.dataset),
+                    100. * batch_idx / len(train_loader)))
+
+            # if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
+            #     num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
+                # break
+                # checkpoint_dir / extract / < dataset > / < set >.*.bin
+                # filename = file_dir + '/%s.%d.bin' % (set_name, num)
+                # with open(filename, 'wb') as f:
+                #     pickle.dump(input_grads, f)
+                # with open(file_dir + '/uid_idx.%s.%d.json' % (set_name, num), 'w') as f:
+                #     json.dump(inputs_uids, f)
+                # input_grads = []
+                # inputs_uids = []
+            if (batch_idx + 1) == len(train_loader.dataset):
+                df.create_dataset('accuracy', data=np.array([correct/total*100]))
+
+    # pdb.set_trace()
+    with open(file_dir + '/uid_idx.json', 'w') as f:
+        json.dump(inputs_uids, f)
+
+    print('Predict Accuracy: {:.2f}%...'.format(correct/total*100))
     print('Saving pairs in %s.\n' % file_dir)
     torch.cuda.empty_cache()
 
@@ -839,8 +749,7 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
                 100. * batch_idx / len(test_loader)))
 
         if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(test_loader.dataset):
-            num = batch_idx // save_per_num if batch_idx + \
-                1 % save_per_num == 0 else batch_idx // save_per_num + 1
+            num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
             # checkpoint_dir / extract / < dataset > / < set >.*.bin
 
             filename = file_dir + '/%s.%d.bin' % (set_name, num)
@@ -859,28 +768,38 @@ def test_extract(test_loader, model, file_dir, set_name, save_per_num=1500):
 
 
 def main():
-    print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
-    # print the experiment configuration
-    print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-    print('Parsed options: {}'.format(vars(args)))
+    if args.verbose > 1:
+        print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
+        # print the experiment configuration
+        print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
+    
+        options = vars(args)
+        options_keys = list(options.keys())
+        options_keys.sort()
+        options_str = ''
+        for k in options_keys:
+            options_str += '\'{}\': \'{}\', '.format(k, options[k])
+        print('Parsed options: \n {}'.format(options_str))
 
     # instantiate model and initialize weights
-    if os.path.exists(args.check_yaml):
+    if args.check_yaml != None and os.path.exists(args.check_yaml):
+        if args.verbose > 0:
+            print('\nLoading model weights from: {}'.format(args.check_yaml))
         model_kwargs = load_model_args(args.check_yaml)
     else:
         model_kwargs = args_model(args, train_dir)
 
     keys = list(model_kwargs.keys())
     keys.sort()
-    model_options = ["\'%s\': \'%s\'" % (
-        str(k), str(model_kwargs[k])) for k in keys]
-    print('Model options: \n{ %s }' % (', '.join(model_options)))
-    print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
+    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+
+    if args.verbose > 0:
+        print('Model options: \n{ %s }' % (', '.join(model_options)))
+        print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
 
-    train_loader = DataLoader(
-        train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
+    train_loader = DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     # veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     # valid_loader = DataLoader(valid_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     # test_loader = DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
@@ -888,7 +807,8 @@ def main():
     # sitw_dev_loader = DataLoader(sitw_dev_part, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     resume_path = args.check_path + '/checkpoint_{}.pth'
-    print('=> Saving output in {}\n'.format(args.extract_path))
+    if args.verbose > 1:
+        print('=> Saving output in {}\n'.format(args.extract_path))
     epochs = np.arange(args.start_epochs, args.epochs + 1)
 
     for ep in epochs:
@@ -904,13 +824,11 @@ def main():
             # if e == 0:
             #     filtered = checkpoint.state_dict()
             # else:
-            filtered = {k: v for k, v in checkpoint_state_dict.items(
-            ) if 'num_batches_tracked' not in k}
+            filtered = {k: v for k, v in checkpoint_state_dict.items() if 'num_batches_tracked' not in k}
             if list(filtered.keys())[0].startswith('module'):
                 new_state_dict = OrderedDict()
                 for k, v in filtered.items():
-                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                    name = k[7:]
+                    name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
                     new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
 
                 model.load_state_dict(new_state_dict)
@@ -930,28 +848,35 @@ def main():
         global biases
         global handlers
 
-        if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input']:
+        valid_layers = []
+        if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'acc_input', 'layer_cam']:
             for name, m in model.named_modules():
                 try:
                     if name in cam_layers:
+                        valid_layers.append(name)
                         handlers.append(
                             m.register_forward_hook(_extract_layer_feat))
                         handlers.append(
                             m.register_backward_hook(_extract_layer_grad))
-                    #         if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear) or isinstance(m, nn.BatchNorm2d):
+
                     if not ('fc' in name or 'classifier' in name or 'CBAM' in name):
-                        #             print(m)
                         b = extract_layer_bias(m)
                         if (b is not None):
                             biases.append(b)
                             bias_layers.append(name)
-                            #                 biases.append(_extract_layer_bias(m))
-                            #                 print("bias:", _extract_layer_bias(m))
                             m.register_backward_hook(_extract_layer_grads)
-                #                     m.register_forward_hook(_extract_layer_feat)
+
                 except Exception as e:
                     continue
-        print("The number of layers with biases: ", len(biases))
+
+        if args.verbose > 1 and args.cam == 'fullgrad':
+            print("The number of layers with biases: {}".format(len(biases)))
+
+        if args.verbose > 0 :
+            print("Valid layers for {}: {}".format(args.cam, " ".join(valid_layers)))
+
+        valid_layers
+        print('')
 
         file_dir = args.extract_path + '/epoch_%d' % ep
         if args.cam == 'acc_input' and args.layer_weight:
@@ -961,15 +886,11 @@ def main():
             os.makedirs(file_dir)
 
         if not args.test_only:
-            # if args.cuda:
-            #     model_conv1 = model.conv1.weight.cpu().detach().numpy()
-            #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
             train_extract(train_loader, model, file_dir,
                           '%s_train' % args.train_set_name)
             # train_extract(valid_loader, model, file_dir, '%s_valid' % args.train_set_name)
             # test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
-
         # test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
 
 

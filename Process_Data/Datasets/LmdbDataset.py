@@ -14,7 +14,7 @@ import random
 import h5py
 import lmdb
 import numpy as np
-from kaldi_io import read_mat
+from kaldiio import load_mat
 from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
@@ -37,10 +37,11 @@ def _read_from_lmdb(env, key, start=0, stop=-1):
     size: feat-dim"""
     with env.begin(write=False) as txn:
         buf = txn.get(key.encode('ascii'))
-    
+
     data_flat = np.frombuffer(buf, dtype=np.int16)[start:stop]
 
     return data_flat
+
 
 def _read_from_hdf5(reader, key, start=0, stop=-1):
     """read data array from lmdb with key (w/ and w/o fixed size)
@@ -48,6 +49,7 @@ def _read_from_hdf5(reader, key, start=0, stop=-1):
     with h5py.File(reader, 'r') as r:
         data_flat = r.get(key)[:][start:stop]
         return data_flat
+
 
 class LmdbVerifyDataset(Dataset):
     def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load, return_uid=False):
@@ -163,9 +165,9 @@ class LmdbVerifyDataset(Dataset):
 
 
 class LmdbTrainDataset(Dataset):
-    def __init__(self, dir, samples_per_speaker, transform, feat_dim=0,  loader=_read_from_lmdb, 
+    def __init__(self, dir, samples_per_speaker, transform, feat_dim=0,  loader=_read_from_lmdb,
                  num_valid=5, feat_type='wav', sample_type='instance',
-                 segment_len=c.N_SAMPLES, verbose=1, min_frames=50,
+                 segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, sr=16000, verbose=1, min_frames=0,
                  return_uid=False):
 
         # feat_scp = dir + '/feats.scp'
@@ -176,6 +178,8 @@ class LmdbTrainDataset(Dataset):
         lmdb_file = dir + '/feat'
         self.sample_type = sample_type
         self.segment_len = segment_len
+        self.segment_shift = segment_shift
+        self.min_frames = min_frames
 
         assert os.path.exists(lmdb_file)
         assert os.path.exists(spk2utt)
@@ -204,14 +208,15 @@ class LmdbTrainDataset(Dataset):
         total_frames = 0
         self.utt2num_frames = {}
         base_utts = []
+        invalid_uid = set([])
         if self.sample_type != 'balance':
             if os.path.exists(utt2num_frames):
                 with open(utt2num_frames, 'r') as f:
                     for l in f.readlines():
                         uid, num_frames = l.split()
-                        
+
                         if feat_type == 'wav':
-                            num_frames = float(num_frames) * 16000
+                            num_frames = float(num_frames) * sr
 
                         num_frames = int(num_frames)
                         self.utt2num_frames[uid] = num_frames
@@ -219,12 +224,14 @@ class LmdbTrainDataset(Dataset):
                         if num_frames >= min_frames:
                             total_frames += num_frames
                             this_numofseg = int(
-                                np.ceil(float(num_frames) / segment_len))
+                                np.ceil(float(num_frames-segment_len+segment_shift) / segment_shift))
 
                             for i in range(this_numofseg):
-                                end = min((i + 1) * segment_len, num_frames)
-                                start = min(end - segment_len, 0)
+                                start = int(i * segment_shift)
+                                end = int(min(start+segment_len, num_frames))
                                 base_utts.append((uid, start, end))
+                        else:
+                            invalid_uid.add(uid)
 
                     # if int(num_frames) < 50:
                     #     invalid_uid.append(uid)
@@ -241,9 +248,9 @@ class LmdbTrainDataset(Dataset):
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
         if verbose > 0:
-            print('    There are {} utterances in Train Dataset'.format(
-            len(utt2spk_dict.keys())))
-        
+            print('    There are {} utterances in Train Dataset, where {} utterances are removed.'.format(len(utt2spk_dict.keys()),
+                                                                                                          len(invalid_uid)))
+
         if num_valid > 0:
             valid_set = {}
             valid_utt2spk_dict = {}
@@ -262,7 +269,7 @@ class LmdbTrainDataset(Dataset):
 
             if verbose > 0:
                 print('    Spliting {} utterances for Validation.'.format(
-                len(valid_utt2spk_dict.keys())))
+                    len(valid_utt2spk_dict.keys())))
             self.valid_set = valid_set
             self.valid_utt2spk_dict = valid_utt2spk_dict
 
@@ -271,7 +278,7 @@ class LmdbTrainDataset(Dataset):
         #     for i in range(int(np.ceil(utt2len_dict[uid] / c.NUM_FRAMES_SPECT))):
         #         self.all_utts.append(uid)
         self.reader = lmdb.open(lmdb_file, readonly=True, lock=False, readahead=False,
-                        meminit=False)
+                                meminit=False)
         # self.env = env.begin(write=False, buffers=True)  # as txn:
         self.speakers = speakers
         self.dataset = dataset
@@ -317,7 +324,7 @@ class LmdbTrainDataset(Dataset):
             y = self.loader(self.reader, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
 
-        feature = self.transform(y.reshape(1,-1))
+        feature = self.transform(y.reshape(1, -1))
         # print(sid)
         label = sid
 
@@ -328,7 +335,7 @@ class LmdbTrainDataset(Dataset):
 
 
 class LmdbValidDataset(Dataset):
-    def __init__(self, valid_set, spk_to_idx, reader, 
+    def __init__(self, valid_set, spk_to_idx, reader,
                  valid_utt2spk_dict, transform, feat_dim=0, loader=_read_from_lmdb,
                  return_uid=False, verbose=0):
         self.reader = reader
@@ -358,7 +365,7 @@ class LmdbValidDataset(Dataset):
         spk = self.utt2spk_dict[uid]
         y = self.loader(self.reader, uid, self.feat_dim)
 
-        feature = self.transform(y.reshape(1,-1))
+        feature = self.transform(y.reshape(1, -1))
         label = self.spk_to_idx[spk]
 
         if self.return_uid:
@@ -498,9 +505,9 @@ class LmdbTestDataset(Dataset):
 
 
 class EgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False,
+    def __init__(self, dir, feat_dim, transform, loader=load_mat, domain=False,
                  num_meta_spks=0, cls2cls={}, shuffle=False,
-                 random_chunk=[], batch_size=0, verbose=1):
+                 random_chunk=[], batch_size=0, label_dir='', verbose=1):
 
         feat_scp = dir + '/feats.scp'
 
@@ -522,9 +529,10 @@ class EgsDataset(Dataset):
                 except ValueError as v:
                     cls, dom_cls, upath = line.split()
                     dom_cls = int(dom_cls)
-
-                cls = int(cls)
-
+                try:
+                    cls = int(cls)
+                except ValueError as v:
+                    pass
                 if self.common_path == '':
                     self.common_path = '/'.join(upath.split('/')[:-1]) + '/'
 
@@ -539,6 +547,15 @@ class EgsDataset(Dataset):
                     dataset.append((cls, dom_cls, upath))
                     doms.add(dom_cls)
                     spks.add(cls)
+
+        label_feat_scp = label_dir + '/feat.scp'
+        guide_label = []
+        if os.path.exists(label_feat_scp):
+            with open(label_feat_scp, 'r') as u:
+                all_lb_upath = tqdm(u.readlines())
+                for line in all_lb_upath:
+                    lb, lpath = line.split()
+                    guide_label.append((int(lb), lpath))
 
         if num_meta_spks > 0:
             spks = list(spks)
@@ -562,9 +579,16 @@ class EgsDataset(Dataset):
         if verbose > 0:
             print('==> There are {} speakers in Dataset.'.format(len(spks)))
             print('    There are {} egs in Dataset'.format(len(dataset)))
+        if len(guide_label) > 0:
+            if verbose > 0:
+                print('    There are {} guide labels for egs in Dataset'.format(
+                    len(guide_label)))
+            assert len(guide_label) == len(dataset)
 
         self.dataset = np.array(dataset)
         self.rest_dataset = np.array([])
+        self.guide_label = guide_label
+
         self.feat_dim = feat_dim
         self.loader = loader
         self.transform = transform
@@ -573,8 +597,7 @@ class EgsDataset(Dataset):
         self.domain = domain
         self.chunk_size = []
         self.batch_size = batch_size
-        self.shuffle = shuffle
-        self.skip_feature = False
+        self.return_idx = False
 
     def __getitem__(self, idx):
         # time_s = time.time()
@@ -583,26 +606,45 @@ class EgsDataset(Dataset):
         label = int(label)
         dom_label = int(dom_label)
 
-        if self.skip_feature:
-            feature = torch.ones([1, 1, 1])
-        else:
-            y = self.loader(self.common_path + upath)
-            feature = self.transform(y)
-        # if idx == 0:
-        #     print(label, upath)
+        y = self.loader(self.common_path + upath)
+        feature = self.transform(y)
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
+
+        if len(self.guide_label) > 0:
+            _, lpath = self.guide_label[idx]
+            guide_label = kaldi_io.read_vec_flt(lpath)
+            guide_label = torch.tensor(guide_label, dtype=torch.float32)
+
+            if self.domain:
+                return feature, label, dom_label, guide_label
+            else:
+                return feature, label, guide_label
+
+        if self.return_idx:
+            return feature, label, idx
 
         if self.domain:
             return feature, label, dom_label
         else:
             return feature, label
 
+    def __getrandomitem__(self):
+        # time_s = time.time()
+        # print('Starting loading...')
+        idx = np.random.randint(low=0, high=self.__len__())
+        label, dom_label, upath = self.dataset[idx]
+
+        y = self.loader(upath)
+        feature = self.transform(y)
+
+        return feature
+
     def __shuffle__(self):
         shuf_size = min(int(self.batch_size / 4), 16)
         valid_lenght = len(self.dataset) // shuf_size * shuf_size
         dataset_batch = self.dataset[:valid_lenght].reshape(-1, shuf_size, 3)
-        
+
         np.random.shuffle(dataset_batch)
 
     def __len__(self):
@@ -610,7 +652,7 @@ class EgsDataset(Dataset):
 
 
 class CrossEgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False, num_meta_spks=0,
+    def __init__(self, dir, feat_dim, transform, loader=load_mat, domain=False, num_meta_spks=0,
                  random_chunk=[], batch_size=144, enroll_utt=5,
                  label_dir='', verbose=1):
 
@@ -651,21 +693,6 @@ class CrossEgsDataset(Dataset):
 
                 cls2dom2utt[cls][dom_cls].append(upath)
 
-        # label_feat_scp = label_dir + '/feat.scp'
-        # guide_label = []
-        # if os.path.exists(label_feat_scp):
-        #     with open(label_feat_scp, 'r') as u:
-        #         all_lb_upath = tqdm(u.readlines())
-        #         for line in all_lb_upath:
-        #             lb, lpath = line.split()
-        #             guide_label.append((int(lb), lpath))
-        # if verbose > 0:
-        #     print('==> There are {} speakers in Dataset.'.format(len(spks)))
-        #     print('    There are {} egs in Dataset'.format(len(dataset)))
-        # if len(guide_label) > 0:
-        #     if verbose > 0:
-        #         print('    There are {} guide labels for egs in Dataset'.format(len(guide_label)))
-        #     assert len(guide_label) == len(dataset)
         if num_meta_spks > 0:
             spks = list(spks)
             random.shuffle(spks)
@@ -715,7 +742,7 @@ class CrossEgsDataset(Dataset):
                 i += 1
 
         batch_spks = list(batch_spks)[:self.batch_spks]
-        # print(list(batch_spks)[-1])
+        # print('Batch_spks: ', self.batch_spks)
         features = []
         label = []
         for spk_idx in batch_spks:
@@ -775,9 +802,9 @@ class CrossEgsDataset(Dataset):
         # time_e = time.time()
         # print('Using %d for loading egs' % (time_e - time_s))
         # 24, 6, 1, time, feat_dim
-        # print(list(batch_spks)[-1])
         features = torch.stack(features, dim=0).squeeze()
         feat_shape = features.shape
+        # print('Features shape: ', feat_shape)
 
         return features.reshape(feat_shape[0] * feat_shape[1], feat_shape[2], feat_shape[3]), torch.LongTensor(label)
 
@@ -792,16 +819,12 @@ class CrossEgsDataset(Dataset):
 
         return feature
 
-    def __setclssim__(self, most_sim_spk):
-        assert len(most_sim_spk) == self.num_spks
-        self.most_sim_spk = most_sim_spk
-
     def __len__(self):
         return self.dataset_len  # 返回一个epoch的采样数
 
 
 class CrossValidEgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, loader=read_mat, domain=False, num_meta_spks=0,
+    def __init__(self, dir, feat_dim, transform, loader=load_mat, domain=False, num_meta_spks=0,
                  random_chunk=[], batch_size=144, enroll_utt=5, label_dir='', verbose=1):
 
         feat_scp = dir + '/feats.scp'
@@ -889,6 +912,7 @@ class CrossValidEgsDataset(Dataset):
             enroll_utts = set([])
 
             if len(this_dom2utt) == 1:
+                # print('Enroll dom == 1')
                 this_spks_utts = this_dom2utt[list(this_dom2utt.keys())[0]]
 
                 if len(this_spks_utts) == 1:
@@ -964,7 +988,7 @@ class CrossValidEgsDataset(Dataset):
 
 
 class CrossMetaEgsDataset(Dataset):
-    def __init__(self, dir, feat_dim, transform, spks, loader=read_mat, domain=False,
+    def __init__(self, dir, feat_dim, transform, spks, loader=load_mat, domain=False,
                  random_chunk=[], batch_size=144, enroll_utt=5, label_dir='', verbose=1):
 
         feat_scp = dir + '/feats.scp'
@@ -1090,9 +1114,9 @@ class CrossMetaEgsDataset(Dataset):
 
 
 class Hdf5TrainDataset(Dataset):
-    def __init__(self, dir, samples_per_speaker, transform, loader=_read_from_hdf5, 
-                 num_valid=5, feat_type='wav', sample_type='instance', feat_dim=0,
-                 segment_len=c.N_SAMPLES, verbose=1, min_frames=50,
+    def __init__(self, dir, samples_per_speaker, transform, loader=_read_from_hdf5,
+                 num_valid=5, feat_type='wav', sr=16000, sample_type='instance', feat_dim=0,
+                 segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0,
                  return_uid=False):
 
         # feat_scp = dir + '/feats.scp'
@@ -1104,6 +1128,9 @@ class Hdf5TrainDataset(Dataset):
         self.hdf5_file = hdf5_file
         self.sample_type = sample_type
         self.segment_len = segment_len
+        self.segment_shift = segment_shift
+        self.min_frames = min_frames
+
         assert os.path.exists(hdf5_file)
         assert os.path.exists(spk2utt)
 
@@ -1131,14 +1158,16 @@ class Hdf5TrainDataset(Dataset):
         total_frames = 0
         self.utt2num_frames = {}
         base_utts = []
+        invalid_uid = set([])
+
         if self.sample_type != 'balance':
             if os.path.exists(utt2num_frames):
                 with open(utt2num_frames, 'r') as f:
                     for l in f.readlines():
                         uid, num_frames = l.split()
-                        
+
                         if feat_type == 'wav':
-                            num_frames = float(num_frames) * 16000
+                            num_frames = float(num_frames) * sr
 
                         num_frames = int(num_frames)
                         self.utt2num_frames[uid] = num_frames
@@ -1146,12 +1175,14 @@ class Hdf5TrainDataset(Dataset):
                         if num_frames >= min_frames:
                             total_frames += num_frames
                             this_numofseg = int(
-                                np.ceil(float(num_frames) / segment_len))
+                                np.ceil(float(num_frames-segment_len+segment_shift) / segment_shift))
 
                             for i in range(this_numofseg):
-                                end = min((i + 1) * segment_len, num_frames)
-                                start = min(end - segment_len, 0)
+                                start = int(i * segment_shift)
+                                end = int(min(start+segment_len, num_frames))
                                 base_utts.append((uid, start, end))
+                        else:
+                            invalid_uid.add(uid)
 
                     # if int(num_frames) < 50:
                     #     invalid_uid.append(uid)
@@ -1167,9 +1198,9 @@ class Hdf5TrainDataset(Dataset):
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
         if verbose > 0:
-            print('    There are {} utterances in Train Dataset'.format(
-                len(utt2spk_dict.keys())))
-        
+            print('    There are {} utterances in Trainset, where {} utterances are removed.'.format(len(utt2spk_dict.keys()),
+                                                                                                len(invalid_uid)))
+            
         if num_valid > 0:
             valid_set = {}
             valid_utt2spk_dict = {}
@@ -1177,13 +1208,18 @@ class Hdf5TrainDataset(Dataset):
             for spk in speakers:
                 if spk not in valid_set.keys():
                     valid_set[spk] = []
-                    for i in range(num_valid):
+                    if isinstance(num_valid, float) and num_valid < 1.0:
+                        num_valid_utts = len(
+                            dataset[spk]) - int(np.ceil(len(dataset[spk])*(1-num_valid)))
+                    else:
+                        num_valid_utts = num_valid
+
+                    for i in range(num_valid_utts):
                         if len(dataset[spk]) <= 1:
                             break
                         j = np.random.randint(len(dataset[spk]))
                         utt = dataset[spk].pop(j)
                         valid_set[spk].append(utt)
-
                         valid_utt2spk_dict[utt] = utt2spk_dict[utt]
             if verbose > 0:
                 print('    Spliting {} utterances for Validation.'.format(
@@ -1194,12 +1230,12 @@ class Hdf5TrainDataset(Dataset):
         if sample_type == 'instance':
             if verbose > 0:
                 print(
-                    '    The number of sampling utterances is euqal to the number of total utterance.')
+                    '    The number of samples is euqal to the number of total utterance.')
         else:
             samples_per_speaker = max(
                 len(base_utts) / len(speakers), samples_per_speaker)
             if verbose > 0:
-                print('    The number of sampling utterances for each speakers: %d ' % (samples_per_speaker))
+                print('    The number of samples for each speakers: %d ' % (samples_per_speaker))
 
         self.samples_per_speaker = int(samples_per_speaker)
         self.all_utts = list(utt2spk_dict.keys())
@@ -1266,7 +1302,7 @@ class Hdf5ValidDataset(Dataset):
 
         uids = list(valid_utt2spk_dict.keys())
         uids.sort()
-        
+
         if verbose > 1:
             print(uids[:4])
         self.uids = uids
@@ -1283,7 +1319,7 @@ class Hdf5ValidDataset(Dataset):
         spk = self.utt2spk_dict[uid]
         y = self.loader(self.reader, uid, self.feat_dim)
 
-        feature = self.transform(y.reshape(1,-1))
+        feature = self.transform(y.reshape(1, -1))
         label = self.spk_to_idx[spk]
 
         if self.return_uid:

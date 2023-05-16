@@ -38,7 +38,6 @@ from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarI
 from TrainAndTest.common_func import create_model, load_model_args, args_model
 
 # Version conflict
-
 try:
     torch._utils._rebuild_tensor_v2
 except AttributeError:
@@ -112,6 +111,8 @@ parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimen
 parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
 parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
+parser.add_argument('--normalize', action='store_false', default=True,
+                    help='normalize vectors in final layer')
 
 # args for additive margin-softmax
 parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
@@ -373,8 +374,6 @@ def main():
     veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = DataLoader(valid_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     test_loader = DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
-    # sitw_test_loader = DataLoader(sitw_test_part, batch_size=args.batch_size, shuffle=False, **kwargs)
-    # sitw_dev_loader = DataLoader(sitw_dev_part, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     resume_path = args.check_path + '/checkpoint_{}.pth'
     print('=> Saving output in {}\n'.format(args.extract_path))
@@ -399,13 +398,11 @@ def main():
                 for k, v in filtered.items():
                     name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
                     new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
-
                 model.load_state_dict(new_state_dict)
             else:
                 model_dict = model.state_dict()
                 model_dict.update(filtered)
                 model.load_state_dict(model_dict)
-
         else:
             print('=> no checkpoint found at %s' % resume_path.format(e))
             continue
@@ -420,7 +417,7 @@ def main():
             #     model_conv1 = model.conv1.weight.cpu().detach().numpy()
             #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
-            train_extract(train_loader, model, file_dir, '%s_train' % args.train_set_name)
+            train_extract(train_loader, model, file_dir, '%s_train'%args.train_set_name)
             # train_extract(valid_loader, model, file_dir, '%s_valid'%args.train_set_name)
             # test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
 

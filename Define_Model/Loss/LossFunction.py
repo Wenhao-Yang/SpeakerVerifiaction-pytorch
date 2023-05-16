@@ -28,17 +28,16 @@ class CenterLoss(nn.Module):
         feat_dim (int): feature dimension.
     """
 
-    def __init__(self, num_classes=10, feat_dim=2):
+    def __init__(self, num_classes=10, feat_dim=2, alpha=0,):
         super(CenterLoss, self).__init__()
         self.num_classes = num_classes
         self.feat_dim = feat_dim
 
-        centers = torch.randn(self.num_classes, self.feat_dim)
-        centers = torch.nn.functional.normalize(centers, p=2, dim=1)
-        alpha = np.ceil(np.log(0.99 * (num_classes - 2) / (1 - 0.99)))
-        centers *= np.sqrt(alpha)
-
-        self.centers = nn.Parameter(centers)
+        # centers = torch.randn(self.num_classes, self.feat_dim)
+        # centers = torch.nn.functional.normalize(centers, p=2, dim=1)
+        self.alpha = np.ceil(np.log(0.99 * (num_classes - 2) / (1 - 0.99))) if alpha>0 else 0
+        # centers *= np.sqrt(alpha)
+        self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim))
 
     def forward(self, x, labels):
         """
@@ -46,24 +45,32 @@ class CenterLoss(nn.Module):
             x: feature matrix with shape (batch_size, feat_dim).
             labels: ground truth labels with shape (batch_size).
         """
+        if self.alpha:
+            norms = self.centers.data.pow(2).sum(
+                dim=1, keepdim=True).add(1e-12).sqrt()
+            self.centers.data = torch.div(
+                self.centers.data, norms) * self.alpha
         # norms = self.centers.data.norm(p=2, dim=1, keepdim=True).add(1e-14)
         # self.centers.data = self.centers.data / norms * self.alpha
 
-        batch_size = x.size(0)
-        distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
-            torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(
-                self.num_classes, batch_size).t()
-        distmat.addmm_(1, -2, x, self.centers.t())
+        # batch_size = x.size(0)
+        # distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
+        #     torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(
+        #         self.num_classes, batch_size).t()
+        # distmat.addmm_(1, -2, x, self.centers.t())
 
-        classes = torch.arange(self.num_classes).long()
-        # if self.use_gpu: classes = classes.cuda()
-        if self.centers.is_cuda:
-            classes = classes.cuda()
+        # classes = torch.arange(self.num_classes).long()
+        # # if self.use_gpu: classes = classes.cuda()
+        # if self.centers.is_cuda:
+        #     classes = classes.cuda()
 
-        labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
-        mask = labels.eq(classes.expand(batch_size, self.num_classes))
+        # labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
+        # mask = labels.eq(classes.expand(batch_size, self.num_classes))
 
-        dist = distmat * mask.float()
+        # dist = distmat * mask.float()
+        # loss = dist.mean()
+        centers = self.centers[labels]
+        dist = F.pairwise_distance(centers, x, p=2)  # nn.PairwiseDistance(p=2)
         loss = dist.mean()
 
         return loss
@@ -344,7 +351,6 @@ class DistributeLoss(nn.Module):
         negative_label = negative_label.scatter(1, labels, -1)
         negative_label = torch.where(
             negative_label != -1)[1].reshape(positive_dist.shape[0], -1)
-
         negative_dist = dist.gather(dim=1, index=negative_label)
 
         mean = positive_dist.mean()  # .clamp_min(0)
@@ -388,8 +394,8 @@ class DistributeLoss(nn.Module):
             positive_theta = torch.acos(positive_dist)
             negative_theta = torch.acos(negative_dist)
 
-            loss = self.p_target * positive_theta.clamp_min(self.margin).max() + (
-                self.p_target - 1) * negative_theta.clamp_max(0.5 * np.pi - self.margin).min()
+            loss = self.p_target * (positive_theta - self.margin).clamp_min(0).max() + (1 - self.p_target) * (
+                self.margin - negative_theta).clamp_min(0).max()
 
         return loss
 
@@ -498,58 +504,73 @@ class AttentionMining(nn.Module):
         return score_c.mean()
 
 
-class focal_loss(nn.Module):
-    def __init__(self, alpha=0.25, gamma=2, num_classes=3, size_average=True):
-        """
-        focal_loss损失函数, -α(1-yi)**γ *ce_loss(xi,yi)
-        步骤详细的实现了 focal_loss损失函数.
-        :param alpha:   阿尔法α,类别权重.      当α是列表时,为各类别权重,当α为常数时,类别权重为[α, 1-α, 1-α, ....],常用于 目标检测算法中抑制背景类 , retainnet中设置为0.25
-        :param gamma:   伽马γ,难易样本调节参数. retainnet中设置为2
-        :param num_classes:     类别数量
-        :param size_average:    损失计算方式,默认取均值
-        """
+# class focal_loss(nn.Module):
+#     def __init__(self, alpha=0.25, gamma=2, num_classes=3, size_average=True):
+#         """
+#         focal_loss损失函数, -α(1-yi)**γ *ce_loss(xi,yi)
+#         步骤详细的实现了 focal_loss损失函数.
+#         :param alpha:   阿尔法α,类别权重.      当α是列表时,为各类别权重,当α为常数时,类别权重为[α, 1-α, 1-α, ....],常用于 目标检测算法中抑制背景类 , retainnet中设置为0.25
+#         :param gamma:   伽马γ,难易样本调节参数. retainnet中设置为2
+#         :param num_classes:     类别数量
+#         :param size_average:    损失计算方式,默认取均值
+#         """
+#
+#         super(focal_loss, self).__init__()
+#         self.size_average = size_average
+#         if isinstance(alpha,list):
+#             assert len(alpha)==num_classes   # α可以以list方式输入,size:[num_classes] 用于对不同类别精细地赋予权重
+#             print("Focal_loss alpha = {}, 将对每一类权重进行精细化赋值".format(alpha))
+#             self.alpha = torch.Tensor(alpha)
+#         else:
+#             assert alpha<1   #如果α为一个常数,则降低第一类的影响,在目标检测中为第一类
+#             print(" --- Focal_loss alpha = {} ,将对背景类进行衰减,请在目标检测任务中使用 --- ".format(alpha))
+#             self.alpha = torch.zeros(num_classes)
+#             self.alpha[0] += alpha
+#             self.alpha[1:] += (1-alpha) # α 最终为 [ α, 1-α, 1-α, 1-α, 1-α, ...] size:[num_classes]
+#         self.gamma = gamma
+#
+#     def forward(self, preds, labels):
+#         """
+#         focal_loss损失计算
+#         :param preds:   预测类别. size:[B,N,C] or [B,C]    分别对应与检测与分类任务, B 批次, N检测框数, C类别数
+#         :param labels:  实际类别. size:[B,N] or [B]
+#         :return:
+#         """
+#         # assert preds.dim()==2 and labels.dim()==1
+#         preds = preds.view(-1,preds.size(-1))
+#         self.alpha = self.alpha.to(preds.device)
+#         preds_softmax = torch.nn.functional.softmax(preds, dim=1) # 这里并没有直接使用log_softmax, 因为后面会用到softmax的结果(当然你也可以使用log_softmax,然后进行exp操作)
+#         preds_logsoft = torch.log(preds_softmax)
+#         preds_softmax = preds_softmax.gather(1, labels.view(-1, 1))  # 这部分实现nll_loss ( crossempty = log_softmax + nll )
+#         preds_logsoft = preds_logsoft.gather(1, labels.view(-1, 1))
+#         self.alpha = self.alpha.gather(0, labels.view(-1))
+#         loss = -torch.mul(torch.pow((1 - preds_softmax), self.gamma),
+#                           preds_logsoft)  # torch.pow((1-preds_softmax), self.gamma) 为focal loss中 (1-pt)**γ
+#         loss = torch.mul(self.alpha, loss.t())
+#         if self.size_average:
+#             loss = loss.mean()
+#         else:
+#             loss = loss.sum()
+#         return loss
 
-        super(focal_loss, self).__init__()
-        self.size_average = size_average
-        if isinstance(alpha, list):
-            # α可以以list方式输入,size:[num_classes] 用于对不同类别精细地赋予权重
-            assert len(alpha) == num_classes
-            print("Focal_loss alpha = {}, 将对每一类权重进行精细化赋值".format(alpha))
-            self.alpha = torch.Tensor(alpha)
-        else:
-            assert alpha < 1  # 如果α为一个常数,则降低第一类的影响,在目标检测中为第一类
-            print(" --- Focal_loss alpha = {} ,将对背景类进行衰减,请在目标检测任务中使用 --- ".format(alpha))
-            self.alpha = torch.zeros(num_classes)
-            self.alpha[0] += alpha
-            # α 最终为 [ α, 1-α, 1-α, 1-α, 1-α, ...] size:[num_classes]
-            self.alpha[1:] += (1-alpha)
+
+def focal_loss(input_values, gamma):
+    """Computes the focal loss"""
+    p = torch.exp(-input_values)
+    # loss = (1 - p) ** gamma * input_values
+    loss = (1 - p) ** gamma * input_values * 10
+    return loss.mean()
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, weight=None, gamma=2):
+        super(FocalLoss, self).__init__()
+        assert gamma >= 0
         self.gamma = gamma
+        self.weight = weight
 
-    def forward(self, preds, labels):
-        """
-        focal_loss损失计算
-        :param preds:   预测类别. size:[B,N,C] or [B,C]    分别对应与检测与分类任务, B 批次, N检测框数, C类别数
-        :param labels:  实际类别. size:[B,N] or [B]
-        :return:
-        """
-        # assert preds.dim()==2 and labels.dim()==1
-        preds = preds.view(-1, preds.size(-1))
-        self.alpha = self.alpha.to(preds.device)
-        # 这里并没有直接使用log_softmax, 因为后面会用到softmax的结果(当然你也可以使用log_softmax,然后进行exp操作)
-        preds_softmax = torch.nn.functional.softmax(preds, dim=1)
-        preds_logsoft = torch.log(preds_softmax)
-        # 这部分实现nll_loss ( crossempty = log_softmax + nll )
-        preds_softmax = preds_softmax.gather(1, labels.view(-1, 1))
-        preds_logsoft = preds_logsoft.gather(1, labels.view(-1, 1))
-        self.alpha = self.alpha.gather(0, labels.view(-1))
-        loss = -torch.mul(torch.pow((1 - preds_softmax), self.gamma),
-                          preds_logsoft)  # torch.pow((1-preds_softmax), self.gamma) 为focal loss中 (1-pt)**γ
-        loss = torch.mul(self.alpha, loss.t())
-        if self.size_average:
-            loss = loss.mean()
-        else:
-            loss = loss.sum()
-        return loss
+    def forward(self, input, target):
+        return focal_loss(F.cross_entropy(input, target, reduction='none', weight=self.weight), self.gamma)
 
 
 class LabelSmoothing(nn.Module):
@@ -587,8 +608,8 @@ class pAUCLoss(nn.Module):
         loss = self.margin - \
             (target.repeat(nontarget.shape[0]) -
              nontarget.repeat(target.shape[0]))
-        # .reshape(target.shape[0], nontarget.shape[0]) * self.s
-        loss = loss.clamp_min(0)
+        # .reshape(target.shape[0], nontarget.shape[0])
+        loss = self.s * loss.clamp_min(0)
         # print(loss.shape)
         # loss = loss.max(dim=1)[0]
 
@@ -670,6 +691,9 @@ class AttentionTransferLoss(nn.Module):
         elif self.attention_type == 'freq':
             return F.normalize(x.pow(2).mean(1).mean(1).view(x.size(0), -1))
 
+    def normalize(self, x):
+        return F.normalize(x.view(x.size(0), -1))
+
     def min_max(self, x):
         return (x - x.min()) / (x.max() - x.min())
 
@@ -678,6 +702,21 @@ class AttentionTransferLoss(nn.Module):
         if self.norm_type == 'input':
             for s_f, t_f in zip(s_feats, t_feats):
                 loss += (self.at(s_f) - self.at(t_f)).pow(2).mean()
+        elif self.norm_type == 'feat':
+            for s_f, t_f in zip(s_feats, t_feats):
+
+                s_map = s_f.pow(2).mean(dim=1, keepdim=True)  # .clamp_min(0)
+                t_map = t_f.pow(2).mean(dim=1, keepdim=True)  # .clamp_min(0)
+
+                if self.attention_type == 'both':
+                    loss += (self.normalize(s_map) -
+                             self.normalize(t_map)).pow(2).mean()
+                elif self.attention_type == 'time':
+                    loss += (self.normalize(s_map.mean(dim=2, keepdim=True)) -
+                             self.normalize(t_map.mean(dim=2, keepdim=True))).pow(2).mean()
+                elif self.attention_type == 'freq':
+                    loss += (self.normalize(s_map.mean(dim=1, keepdim=True)) -
+                             self.normalize(t_map.mean(dim=1, keepdim=True))).pow(2).mean()
 
         else:
             ups = nn.UpsamplingBilinear2d(s_feats[0].shape[-2:])
@@ -713,19 +752,57 @@ class AttentionTransferLoss(nn.Module):
                          t_map.mean(dim=2, keepdim=True)).pow(2).mean()
                 loss += (s_map.mean(dim=3, keepdim=True) -
                          t_map.mean(dim=3, keepdim=True)).pow(2).mean()
+                loss += (self.normalize(s_map.mean(dim=2, keepdim=True)) -
+                         self.normalize(t_map.mean(dim=2, keepdim=True))).pow(2).mean()
+                loss += (self.normalize(s_map.mean(dim=3, keepdim=True)) -
+                         self.normalize(t_map.mean(dim=3, keepdim=True))).pow(2).mean()
 
                 loss = loss / 2
 
             elif self.attention_type == 'time':
                 # loss += (self.min_max(s_map.mean(dim=3, keepdim=True)) - self.min_max(
                 #     t_map.mean(dim=3, keepdim=True))).pow(2).mean()
-                loss += (s_map.mean(dim=3, keepdim=True) -
-                         t_map.mean(dim=3, keepdim=True)).pow(2).mean()
+                loss += (self.normalize(s_map.mean(dim=3, keepdim=True)) -
+                         self.normalize(t_map.mean(dim=3, keepdim=True))).pow(2).mean()
 
             elif self.attention_type == 'freq':
                 # loss += (self.min_max(s_map.mean(dim=2, keepdim=True)) - self.min_max(
                 #     t_map.mean(dim=2, keepdim=True))).pow(2).mean()
-                loss += (s_map.mean(dim=2, keepdim=True) -
-                         t_map.mean(dim=2, keepdim=True)).pow(2).mean()
+                loss += (self.normalize(s_map.mean(dim=2, keepdim=True)) -
+                         self.normalize(t_map.mean(dim=2, keepdim=True))).pow(2).mean()
 
+        return loss
+
+
+class TripletMarginLoss(nn.Module):
+    """Triplet loss function.
+    """
+    def __init__(self, margin):
+        super(TripletMarginLoss, self).__init__()
+        self.margin = margin
+        self.pdist = PairwiseDistance(2)  # norm 2
+
+    def forward(self, anchor, positive, negative):
+        d_p = self.pdist.forward(anchor, positive)
+        d_n = self.pdist.forward(anchor, negative)
+
+        dist_hinge = torch.clamp(self.margin + d_p - d_n, min=0.0)
+        loss = torch.mean(dist_hinge)
+        return loss
+
+class TripletMarginCosLoss(nn.Module):
+    """Triplet loss function.
+    """
+    def __init__(self, margin):
+        super(TripletMarginCosLoss, self).__init__()
+        self.margin = margin
+        self.pdist = CosineSimilarity(dim=1, eps=1e-6)  # norm 2
+
+    def forward(self, anchor, positive, negative):
+        d_p = self.pdist.forward(anchor, positive)
+        d_n = self.pdist.forward(anchor, negative)
+
+        dist_hinge = torch.clamp(self.margin - d_p + d_n, min=0.0)
+        # loss = torch.sum(dist_hinge)
+        loss = torch.mean(dist_hinge)
         return loss

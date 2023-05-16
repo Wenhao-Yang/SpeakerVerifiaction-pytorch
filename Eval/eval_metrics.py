@@ -4,6 +4,7 @@ For l2 distacne: when the distance is less than the theshold, it should be true;
 For cosine distance: when the distance is greater than the theshold, it's true.
 """
 import os
+import pdb
 from operator import itemgetter
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -148,19 +149,21 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
     # split the target and non-target distance array
     target = []
     non_target = []
-    new_distances = []
+    # new_distances = []
+    if not cos:
+        distances = -np.array(distances)
+    new_distances = np.array(distances) if not cos else -np.array(distances)
 
     for (distance, label) in zip(distances, labels):
-        if not cos:
-            distance = -distance
+        # if not cos:
+        #     distance = -distance
 
-        new_distances.append(-distance)
         if label:
             target.append(distance)
         else:
             non_target.append(distance)
 
-    new_distances = np.array(new_distances).astype(np.float)
+    # new_distances = np.array(new_distances).astype(np.float)
     target = np.sort(target).astype(np.float)
     non_target = np.sort(non_target).astype(np.float)
 
@@ -300,14 +303,14 @@ def plot_DET_curve(pf_max=0.3):
     # 刻度设置
     pticks = [0.00005, 0.0001, 0.0002, 0.0005, 0.001, 0.002,
               0.005, 0.01, 0.02, 0.03, 0.05, 0.07,
-              0.1, 0.15, 0.25, 0.4, 0.8, 0.9,
+              0.1, 0.15, 0.25, 0.4, 0.6, 0.8, 0.9,
               0.95, 0.98, 0.99, 0.995, 0.998, 0.999,
               0.9995, 0.9998, 0.9999, 0.99995, 0.99998, 0.99999]
 
     # 刻度*100
     xlabels = [' 0.005', ' 0.01 ', ' 0.02 ', ' 0.05 ', '  0.1 ', '  0.2 ',
                ' 0.5  ', '  1   ', '  2   ', '  3   ', '  5   ', '  7   ',
-               '  10  ', '  15  ', '  25  ', '  40  ', '  80  ', '  90  ',
+               '  10  ', '  15  ', '  25  ', '  40  ', '  60  ', '  80  ', '  90  ',
                '  95  ', '  98  ', '  99  ', ' 99.5 ', ' 99.8 ', ' 99.9 ',
                ' 99.95', ' 99.98', ' 99.99', '99.995', '99.998', '99.999']
 
@@ -333,17 +336,17 @@ def plot_DET_curve(pf_max=0.3):
     # plt.rc('font', family='Times New Roman')
     plt.rcParams['font.sans-serif'] = ['SimHei']  # 步骤一（替换sans-serif字体）
     plt.rcParams['axes.unicode_minus'] = False
-    plt.title('DET', fontsize=22)
+    plt.title('Detection Error Tradeoff(DET)', fontsize=22)
     plt.xlim(norm.ppf(pfa_min), norm.ppf(pfa_max))
 
     plt.xticks(norm.ppf(pticks[tmin_fa:tmax_fa]), xlabels[tmin_fa:tmax_fa])
-    plt.xlabel('False Alarm probability (in %)', fontsize=18)
+    plt.xlabel('False Positive probability (%)', fontsize=18)
     plt.xticks(fontsize=16)
 
     # FAR
     plt.ylim(norm.ppf(pmiss_min), norm.ppf(pmiss_max))
     plt.yticks(norm.ppf(pticks[tmin_miss:tmax_miss]), ylabels[tmin_miss:tmax_miss])
-    plt.ylabel('Miss probability (in %)', fontsize=18)
+    plt.ylabel('False Negative probability (%)', fontsize=18)
     plt.yticks(fontsize=16)
     plt.grid()
     plt.plot([-40, 1], [-40, 1], alpha=0.5, color='gray', linestyle='--', linewidth=1)
@@ -352,6 +355,7 @@ def plot_DET_curve(pf_max=0.3):
 
 
 def save_det(save_path, score_files=[], names=[], pf_max=0.3):
+    alpha = 0.8 if len(score_files) > 1 else 0
     if len(score_files) > 0 and len(score_files) == len(names):
         det_plt = plot_DET_curve(pf_max=pf_max)
 
@@ -364,16 +368,24 @@ def save_det(save_path, score_files=[], names=[], pf_max=0.3):
                         score, label = line.split()
                         try:
                             s = float(score)
-                            l = int(label)
+
+                            if label in ['True', 'False']:
+                                l = 1 if label == 'True' else 0
+                            else:
+                                l = int(label)
                         except:
-                            l = int(score)
+                            if score in ['True', 'False']:
+                                l = 1 if score == 'True' else 0
+                            else:
+                                l = int(score)
                             s = float(label)
                         scores.append(s)
                         labels.append(l)
 
                 fnrs, fprs, _ = ComputeErrorRates(scores, labels)
                 x, y = norm.ppf(fnrs), norm.ppf(fprs)
-                det_plt.plot(x, y, label=names[i], color=cValue_1[i])
+
+                det_plt.plot(x, y, label=names[i], color=cValue_1[i], alpha=alpha)
 
         det_plt.legend(loc='upper right', fontsize=18)
         det_plt.savefig(save_path + "/det.png")

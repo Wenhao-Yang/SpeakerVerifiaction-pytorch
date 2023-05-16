@@ -21,12 +21,13 @@ https://github.com/CoinCheung/pytorch-loss/blob/master/amsoftmax.py
 import math
 import pdb
 from random import random
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+
+from Define_Model.Loss.LossFunction import LabelSmoothing, FocalLoss
 
 __all__ = ["AngleLinear", "AngleSoftmaxLoss"]
 
@@ -164,7 +165,7 @@ class AdditiveMarginLinear(nn.Module):
             feat_dim, num_classes), requires_grad=True)
         if use_gpu:
             self.W.cuda()
-        nn.init.xavier_normal(self.W, gain=1)
+        nn.init.xavier_normal_(self.W, gain=1)
 
     def forward(self, x):
         # assert x.size()[0] == label.size()[0]
@@ -173,6 +174,10 @@ class AdditiveMarginLinear(nn.Module):
         # pdb.set_trace()
         # x_norm = torch.norm(x, p=2, dim=1, keepdim=True).clamp(min=1e-12)
         # x_norm = torch.div(x, x_norm)
+        if self.normalize:
+            x_norm = F.normalize(x, dim=1)
+        else:
+            x_norm = x
 
         x_norm = F.normalize(x, dim=1)
         # torch.norm(self.W, p=2, dim=0, keepdim=True).clamp(min=1e-12)
@@ -187,7 +192,8 @@ class AdditiveMarginLinear(nn.Module):
         return costh  # .clamp(min=-1.0, max=1.)
 
     def __repr__(self):
-        return "AdditiveMarginLinear(feat_dim=%f, num_classes=%d)" % (self.feat_dim, self.num_classes)
+        return "AdditiveMarginLinear(feat_dim=%f, num_classes=%d, normalize=%s)" % (
+            self.feat_dim, self.num_classes, str(self.normalize))
 
 
 class SubMarginLinear(nn.Module):
@@ -261,15 +267,17 @@ class AMSoftmaxLoss(nn.Module):
 
 
 class DAMSoftmaxLoss(nn.Module):
-    def __init__(self, margin=0.3, s=15, lamda=2):
+    def __init__(self, margin=0.3, s=15, lamda=2, dynamic_s=False):
         super(DAMSoftmaxLoss, self).__init__()
         self.s = s
         self.margin = margin
         self.ce = nn.CrossEntropyLoss()
         self.lamda = lamda
+        self.dynamic_s = dynamic_s
 
     def forward(self, costh, label):
         lb_view = label.view(-1, 1)
+        # pdb.set_trace()
 
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
@@ -280,7 +288,7 @@ class DAMSoftmaxLoss(nn.Module):
         if costh.is_cuda:
             delt_costh = Variable(delt_costh.cuda())
 
-        costh_m_target = costh.gather(1, lb_view)
+        costh_m_target = costh.gather(1, label.reshape(-1, 1))
         costh_m_target = torch.exp(1 - costh_m_target) / self.lamda
 
         delt_costh = delt_costh * costh_m_target
@@ -336,7 +344,7 @@ class ArcSoftmaxLoss(nn.Module):
         costh_m = (theta + delt_theta).cos()
         # print('costh_m max is ', costh_m.max())
         # if self.iteraion < self.all_iteraion:
-        #     costh_m = 0.5 * costh + 0.5 * costh_m
+        #     costh_m = (1-(self.iteraion / self.all_iteraion)) * costh + (self.iteraion / self.all_iteraion) * costh_m
         #     self.iteraion += 1
 
         costh_m_s = self.s * costh_m
@@ -344,17 +352,16 @@ class ArcSoftmaxLoss(nn.Module):
             max_cos = costh.max(dim=1, keepdim=True).values
             costh_m_s = costh_m_s * torch.exp(-max_cos*max_cos*max_cos*max_cos)
         # print('costh_m_s max is ', costh_m_s.max())
-
+        # print(torch.exp(-max_cos*max_cos*max_cos*max_cos))
         loss = self.ce(costh_m_s, label)
 
         return loss
 
     def __repr__(self):
-        return "ArcSoftmaxLoss(margin=%f, s=%d, iteration=%d, all_iteraion=%s, smooth_ratio=%s)" % (self.margin,
-                                                                                                    self.s,
-                                                                                                    self.iteraion,
-                                                                                                    self.all_iteraion,
-                                                                                                    self.smooth_ratio)
+        return "ArcSoftmaxLoss(margin=%f, s=%d, iteration=%d, all_iteraion=%s, focal=%s)" % (self.margin,
+                                                                                             self.s, self.iteraion,
+                                                                                             self.all_iteraion,
+                                                                                             self.focal)
 
 
 class SubArcSoftmaxLoss(nn.Module):
@@ -850,31 +857,24 @@ class ProserLoss(nn.Module):
 
 class MixupLoss(nn.Module):
 
-    def __init__(self, loss, gamma=1, ):
+    def __init__(self, loss, gamma=1):
         super(MixupLoss, self).__init__()
         self.loss = loss
         self.gamma = gamma
 
-    def forward(self, costh, label, half_batch_size=0, lamda_beta=0):
-        # pdb.set_trace()
-        if half_batch_size == len(costh):
-
-            loss = lamda_beta * self.loss(costh,
-                                    label[:half_batch_size]) + (1 - lamda_beta) * self.loss(costh, label[-half_batch_size:])
-
-            return loss 
-        
-        elif half_batch_size > 0:
+    def forward(self, costh, label, half_batch_size, lamda_beta):
+        if half_batch_size > 0 :
             loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
 
             loss = loss + self.gamma * (
                 lamda_beta * self.loss(costh[-half_batch_size:],
                                     label[half_batch_size:int(2 * half_batch_size)])
-                + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:]))
+                        + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:]))
 
             return loss / (1 + self.gamma)
         else:
-            return self.loss(costh, label)
+            loss = self.loss(costh, label)
+            return loss
 
     def __repr__(self):
         return "MixupLoss(loss=%s)" % (self.loss)

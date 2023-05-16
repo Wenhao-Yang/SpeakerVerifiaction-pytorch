@@ -28,7 +28,7 @@ from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMask
     Sinc2Conv, Wav2Conv, Wav2Down
 from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
-    SelfAttentionPooling, MaxStatisticPooling
+    SelfAttentionPooling, MaxStatisticPooling, AttentionStatisticPooling_v2, SelfAttentionPooling_v2
 from Define_Model.ResNet import conv1x1, conv5x5, conv3x3
 from Define_Model.model import get_activation, BasicBlock
 from Define_Model.model import get_input_norm, get_mask_layer, get_filter_layer
@@ -1100,6 +1100,9 @@ class TDNN_v5(nn.Module):
             x = x.squeeze(1).float()
 
         if proser != None and layer_mix == 0:
+            x = self.mixup(x, proser, lamda_beta)
+
+        if proser != None and layer_mix == 1:
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.frame1(x)

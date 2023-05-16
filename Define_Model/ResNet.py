@@ -23,10 +23,10 @@ from torch import nn
 # from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
-from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyNormReweightLayer, FrequencyReweightLayer, TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, TimeReweightLayer, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
     AttentionweightLayer, TimeFreqMaskLayer, \
-    AttentionweightLayer_v2, AttentionweightLayer_v3, AttentionweightLayer_v0
+    AttentionweightLayer_v2, AttentionweightLayer_v3, ReweightLayer, AttentionweightLayer_v0
 from Define_Model.FilterLayer import fDLR, GRL, L2_Norm, Mean_Norm, Inst_Norm, MeanStd_Norm, CBAM
 from Define_Model.MixStyle import SinkhornDistance
 from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling, StatisticPooling, AdaptiveStdPool2d, \
@@ -49,7 +49,7 @@ def conv3x3(in_planes, out_planes, stride=1, groups: int = 1, dilation: int = 1)
                      stride=stride, groups=groups, bias=False, dilation=dilation)
 
 
-def conv5x5(in_planes, out_planes, stride=2, groups=1, dilation=1):
+def conv5x5(in_planes, out_planes, stride=2, groups: int = 1, dilation: int = 1):
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=5, padding=2,
                      stride=stride, bias=False, groups=groups, dilation=dilation)
@@ -909,17 +909,22 @@ class Bottleneck_v2(nn.Module):
 
 
 class ThinResNet(nn.Module):
-    def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
-                 input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
-                 first_bias=True, kernel_size=5, stride=1, padding=2,
-                 dropout_p=0.0, exp=False, filter_fix=False, feat_dim=64, filter=None,
-                 num_classes=1000, embedding_size=128, fast='None', time_dim=1, avg_size=4,
-                 alpha=12, encoder_type='STAP', zero_init_residual=False, groups=1, width_per_group=64,
-                 replace_stride_with_dilation=None, norm_layer=None, downsample=None,
-                 mask='None', mask_len=[5, 10], red_ratio=8,
-                 init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
+    def __init__(self, resnet_size=34, num_classes=1000, 
+                 input_norm='', input_len=300, inst_norm=True, input_dim=257, gain_axis='both',
+                 filter=None, feat_dim=64, sr=16000, stretch_ratio=[1.0], win_length=int(0.025*16000),
+                 nfft=512, exp=False, filter_fix=False,
+                 kernel_size=5, stride=1, padding=2, first_bias=True, 
+                 block_type='None', expansion=1, channels=[16, 32, 64, 128], fast='None', downsample=None, 
+                 red_ratio=8,
+                 zero_init_residual=False, groups=1, width_per_group=64, replace_stride_with_dilation=None, 
+                 dropout_p=0.0, 
+                 encoder_type='STAP', time_dim=1, avg_size=4, embedding_size=128, 
+                 alpha=0,
+                 norm_layer=None, 
+                 mask='None', mask_len=[5, 10], init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
                  mix='mixup',
-                 input_norm='', gain_layer=False, **kwargs):
+                 gain_layer=False, **kwargs):
+        
         super(ThinResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
                        10: [1, 1, 1, 1],
@@ -1032,9 +1037,9 @@ class ThinResNet(nn.Module):
             self.maxpool = None
 
         self.layer1 = self._make_layer(
-            block, self.num_filter[0], layers[0], red_ratio=red_ratio)
+            block, self.num_filter[0], layers[0], red_ratio=red_ratio, input_dim=int(np.ceil(input_dim/self.conv1.stride[1])))
         self.layer2 = self._make_layer(
-            block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio)
+            block, self.num_filter[1], layers[1], stride=2, red_ratio=red_ratio, input_dim=int(np.ceil(input_dim/self.conv1.stride[1]/2)))
         self.layer3 = self._make_layer(
             block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
 
@@ -1054,12 +1059,8 @@ class ThinResNet(nn.Module):
             encode_input_dim = int(freq_dim * last_channel * block.expansion)
         else:
             self.avgpool = None
-            # print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
             encode_input_dim = int(
                 np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
-
-        # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
-        # 300 is the length of features
 
         if encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(
@@ -1075,6 +1076,7 @@ class ThinResNet(nn.Module):
             self.encoder = AttentionStatisticPooling(input_dim=encode_input_dim,
                                                      hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim * 2
+
 
         elif encoder_type in ['ASTP2', 'SASP2']:
             self.encoder = AttentionStatisticPooling_v2(
@@ -1116,7 +1118,7 @@ class ThinResNet(nn.Module):
                 elif isinstance(m, BasicBlock):
                     nn.init.constant_(m.bn2.weight, 0)
 
-    def _make_layer(self, block, planes, blocks, stride=1, red_ratio=2):
+    def _make_layer(self, block, planes, blocks, stride=1, red_ratio=2, input_dim=None):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             if self.downsample in ['None', 'k1']:
@@ -1162,6 +1164,15 @@ class ThinResNet(nn.Module):
                 layers.append(block(self.inplanes, planes,
                               reduction_ratio=red_ratio))
 
+        if self.mask == 'frl' and input_dim != None:
+            layers.append(FrequencyReweightLayer(input_dim=input_dim))
+        elif self.mask == 'fnrl' and input_dim != None:
+            layers.append(FrequencyNormReweightLayer(input_dim=input_dim))
+        elif self.mask == 'trl' and input_dim != None:
+            layers.append(TimeReweightLayer(input_dim=input_dim))
+        elif self.mask == 'ftrl' and input_dim != None:
+            layers.append(FreqTimeReweightLayer(input_dim=input_dim))
+        
         return nn.Sequential(*layers)
 
     def _forward(self, x, feature_map='', proser=None, label=None,
@@ -1217,10 +1228,11 @@ class ThinResNet(nn.Module):
             embeddings = (group1, group2, group3, group4)
 
         if self.avgpool != None:
-            x = self.avgpool(group4)
-        
+            group4 = self.avgpool(group4)
+
         if self.encoder != None:
-            x = self.encoder(x)
+            x = self.encoder(group4)
+
         if proser != None and layer_mix == 7:
             x = self.mix(x, proser, lamda_beta)
         x = x.view(x.size(0), -1)
@@ -1228,6 +1240,9 @@ class ThinResNet(nn.Module):
         x = self.fc1(x)
         if self.alpha:
             x = self.l2_norm(x)
+
+        if proser != None and layer_mix == 8:
+            x = self.mix(x, proser, lamda_beta)
 
         if feature_map == 'last':
             return embeddings, x
@@ -1922,11 +1937,6 @@ class ResNet(nn.Module):
 
         return logits, feat
 
-# model = SimpleResNet(block=BasicBlock, layers=[3, 4, 6, 3])
-# input = torch.torch.randn(128,1,400,64)
-# x_vectors = model.pre_forward(input)
-# outputs = model(x_vectors)
-# print('hello')
 
 # M. Hajibabaei and D. Dai, “Unified hypersphere embedding for speaker recognition,”
 # arXiv preprint arXiv:1807.08312, 2018.
@@ -2007,15 +2017,18 @@ class ResNet20(nn.Module):
 
 class LocalResNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
     def __init__(self, embedding_size, num_classes, block_type='basic',
-                 input_dim=161, input_len=300, gain_layer=False, init_weight='mel',
+                 input_dim=161, input_len=300, gain_layer=False,
+                 exp=False, filter_fix=False, feat_dim=64, sr=16000,
                  relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
-                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 20], **kwargs):
+                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 20],
+                 init_weight='mel', weight_norm='max', scale=0.2, weight_p=0.1,
+                 **kwargs):
 
         super(LocalResNet, self).__init__()
         resnet_type = {8: [1, 1, 1, 0],
@@ -2059,10 +2072,11 @@ class LocalResNet(nn.Module):
         self.input_len = input_len
         self.filter = filter
 
-        if self.filter == 'Avg':
-            self.filter_layer = nn.AvgPool2d(kernel_size=(1, 5), stride=(1, 2))
-        else:
-            self.filter_layer = None
+        input_mask = []
+        filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
+                                        exp=exp, filter_fix=filter_fix)
+        if filter_layer != None:
+            input_mask.append(filter_layer)
 
         self.inst_layer = get_input_norm(input_norm)
 
@@ -2239,43 +2253,36 @@ class LocalResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
-        if self.filter_layer != None:
-            x = self.filter_layer(x)
+    def forward(self, x, feature_map=''):
+        x = self.input_mask(x)
 
-        if self.mask_layer != None:
-            x = self.mask_layer(x)
-
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
+        x = self.relu(self.bn1(self.conv1(x)))
         if self.maxpool != None:
             x = self.maxpool(x)
-        x = self.layer1(x)
+        group1 = self.layer1(x)
 
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = self.relu(x)
-        x = self.layer2(x)
+        x = self.relu(self.bn2(self.conv2(group1)))
+        group2 = self.layer2(x)
 
-        x = self.conv3(x)
-        x = self.bn3(x)
-        x = self.relu(x)
-        x = self.layer3(x)
+        x = self.relu(self.bn3(self.conv3(group2)))
+        group3 = self.layer3(x)
+
+        groups = [group1, group2, group3]
 
         if self.layers[3] != 0:
-            x = self.conv4(x)
-            x = self.bn4(x)
-            x = self.relu(x)
-            x = self.layer4(x)
+            x = self.relu(self.bn4(self.conv4(group3)))
+            group4 = self.layer4(x)
+            groups.append(group4)
 
         if self.dropout_p > 0:
-            x = self.dropout(x)
+            groups[-1] = self.dropout(groups[-1])
 
-        x = self.avgpool(x)
+        if feature_map == 'last':
+            embeddings = groups[-1]
+        elif feature_map == 'attention':
+            embeddings = groups
+
+        x = self.avgpool(groups[-1])
         if self.encoder != None:
             x = self.encoder(x)
 
@@ -2290,19 +2297,18 @@ class LocalResNet(nn.Module):
         if self.alpha:
             x = self.l2_norm(x)
 
-        logits = self.classifier(x)
+        if feature_map == 'last':
+            return embeddings, x
+
+        logits = "" if self.classifier == None else self.classifier(x)
+
+        if feature_map == 'attention':
+            return logits, embeddings
 
         return logits, x
 
-    def xvector(self, x):
-        if self.filter_layer != None:
-            x = self.filter_layer(x)
-
-        if self.inst_layer != None:
-            x = self.inst_layer(x)
-
-        if self.mask_layer != None:
-            x = self.mask_layer(x)
+    def xvector(self, x, embedding_type='near'):
+        x = self.input_mask(x)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -2336,7 +2342,10 @@ class LocalResNet(nn.Module):
 
         x = x.view(x.size(0), -1)
         # x = self.fc1(x)
-        embeddings = self.fc[0](x)
+        if embedding_type == 'near':
+            embeddings = self.fc[0](x)
+        else:
+            embeddings = self.fc(x)
 
         return "", embeddings
 
@@ -2344,7 +2353,7 @@ class LocalResNet(nn.Module):
 # previoud version for test
 # class LocalResNet(nn.Module):
 #     """
-#     Define the ResNet model with A-softmax and AM-softmax loss.
+#     Define the ResNets model with A-softmax and AM-softmax loss.
 #     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
 #     """
 #
@@ -2524,7 +2533,7 @@ class LocalResNet(nn.Module):
 
 class DomainNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
@@ -2567,7 +2576,7 @@ class DomainNet(nn.Module):
 
 class GradResNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
@@ -2763,7 +2772,7 @@ class GradResNet(nn.Module):
 
 class TimeFreqResNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
@@ -2947,7 +2956,7 @@ class TimeFreqResNet(nn.Module):
 
 class MultiResNet(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 

@@ -1,0 +1,28 @@
+# float
+EER(%):         6.87    Threshold:  0.2240  MinDcf-0.01: 0.6404  MinDcf-0.001: 0.8105  Mix2,3: 5.5642, 3.5635
+EER(%):         6.81    Threshold:  0.2882  MinDcf-0.01: 0.6764  MinDcf-0.001: 0.8690  Mix2,3: 5.9200, 4.0041
+EER(%):         7.01    Threshold:  0.2240  MinDcf-0.01: 0.6284  MinDcf-0.001: 0.8387  Mix2,3: 5.8777, 3.6936
+
+# float wav file
+EER(%):         6.21    Threshold:  0.2351  MinDcf-0.01: 0.5558  MinDcf-0.001: 0.8771  Mix2,3: 5.4477, 3.0277
+EER(%):         6.35    Threshold:  0.2472  MinDcf-0.01: 0.5931  MinDcf-0.001: 0.8900  Mix2,3: 5.6478, 3.3498
+EER(%):         6.31    Threshold:  0.2661  MinDcf-0.01: 0.5854  MinDcf-0.001: 0.8584  Mix2,3: 5.4152, 3.1698
+
+# int
+EER(%):         6.44    Threshold:  0.2364  MinDcf-0.01: 0.6166  MinDcf-0.001: 0.8464  Mix2,3: 5.4483, 3.3596
+EER(%):         6.83    Threshold:  0.2617  MinDcf-0.01: 0.6312  MinDcf-0.001: 0.9348  Mix2,3: 6.3892, 4.0330
+EER(%):         6.62    Threshold:  0.2474  MinDcf-0.01: 0.6593  MinDcf-0.001: 0.9184  Mix2,3: 6.0841, 4.0113
+
+# int wav file
+EER(%):         6.04    Threshold:  0.2310  MinDcf-0.01: 0.5668  MinDcf-0.001: 0.8714  Mix2,3: 5.2615, 2.9820
+EER(%):         6.11    Threshold:  0.2444  MinDcf-0.01: 0.6141  MinDcf-0.001: 0.8969  Mix2,3: 5.4826, 3.3670
+EER(%):         6.18    Threshold:  0.2676  MinDcf-0.01: 0.6092  MinDcf-0.001: 0.8529  Mix2,3: 5.2723, 3.2118
+
+# kaldi int klfb without compressed
+EER(%):         7.16    Threshold:  0.2243  MinDcf-0.01: 0.6858  MinDcf-0.001: 0.9429  Mix2,3: 6.7494, 4.6287
+EER(%):         7.26    Threshold:  0.2343  MinDcf-0.01: 0.6619  MinDcf-0.001: 0.8661  Mix2,3: 6.2910, 4.1640
+EER(%):         7.44    Threshold:  0.2602  MinDcf-0.01: 0.6796  MinDcf-0.001: 0.8958  Mix2,3: 6.6681, 4.5313
+
+# kaldi int klfb compressed
+EER(%):         6.93    Threshold:  0.2548  MinDcf-0.01: 0.6749  MinDcf-0.001: 0.9082  Mix2,3: 6.2963, 4.2496
+EER:            6.98    Threshold:  0.2341  mindcf-0.01: 0.6551  mindcf-0.001: 0.8706  mix2,3: 6.0749, 3.9799

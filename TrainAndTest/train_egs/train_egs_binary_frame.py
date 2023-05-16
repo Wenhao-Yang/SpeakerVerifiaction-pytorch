@@ -445,7 +445,11 @@ def main():
     elif args.loss_type == 'amsoft':
         ce_criterion = AMSoftmaxLoss(margin=args.margin, s=args.s)
     elif args.loss_type == 'arcsoft':
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_binary_frame.py
         ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, smooth_ratio=args.smooth_ratio)
+========
+        ce_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s)
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_binary.py
 
     if args.binary_domain:
         xe_criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.8, 0.2]))
@@ -620,7 +624,11 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
     spk_optimizer, dom_optimizer = optimizer
     spk_scheduler, dom_scheduler = scheduler
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_binary_frame.py
     lambda_ = 2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1
+========
+    lambda_ = min(2. / (1 + np.exp(-10. * epoch / args.epochs)) - 1., 0)
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_binary.py
     # model.grl.set_lambda(lambda_)
 
     correct_a = 0.
@@ -638,6 +646,9 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
 
+    speech_dom = args.speech_dom.split(',')
+    speech_dom = [int(x) for x in speech_dom]
+
     for batch_idx, (data, label_a, label_b) in pbar:
 
         if args.cuda:
@@ -645,6 +656,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
 
         data, label_a = Variable(data), Variable(label_a)
 
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_binary_frame.py
         if args.binary_domain:
             if len(speech_dom) == 1:
                 label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
@@ -654,6 +666,16 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
                     multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
 
                 label_b = multi_b
+========
+        if len(speech_dom) == 1:
+            label_b = torch.where(label_b == speech_dom[0], torch.tensor([0]), torch.tensor([1])).long()
+        else:
+            multi_b = torch.ones_like(label_b)
+            for s in speech_dom:
+                multi_b = multi_b * torch.where(label_b == s, torch.tensor([0]), torch.tensor([1])).long()
+
+            label_b = multi_b
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_binary.py
 
         label_b = Variable(label_b)
         true_labels_a = label_a.cuda()
@@ -662,7 +684,15 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler, steps):
         feature_map, spk_embeddings = xvector_model(data, feature_map=True)
 
         # Training the discriminator
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_binary_frame.py
         domain_embeddings = feature_map.detach()
+========
+        if args.submean:
+            domain_embeddings = spk_embeddings - classifier_spk.module.W.transpose(0, 1)[label_a]
+            domain_embeddings = domain_embeddings.detach()
+        else:
+            domain_embeddings = spk_embeddings.detach()
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_binary.py
 
         for i in range(steps):
             # pdb.set_trace()

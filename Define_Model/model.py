@@ -6,7 +6,7 @@
 @Contact: 874681044@qq.com
 @Software: PyCharm
 @File: model.py
-@Overview: The deep speaker model is not entirely the same as ResNet, as there are convolutional layers between blocks.
+@Overview: The deep speaker model is not entirely the same as ResNets, as there are convolutional layers between blocks.
 """
 
 import math
@@ -18,13 +18,12 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, fDLR, MelFbankLayer
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyNormReweightLayer, FrequencyReweightLayer, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, AttentionweightLayer_v0
-
 
 def get_layer_param(model):
     return sum([torch.numel(param) for param in model.parameters()])
@@ -41,23 +40,28 @@ def get_activation(activation):
     return nonlinearity
 
 
-def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool):
+def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool,
+                     stretch_ratio: list = [1.0], init_weight: str = 'mel', win_length=int(0.025*16000),
+                     nfft=512):
     if filter == 'fDLR':
-        filter_layer = fDLR(input_dim=input_dim, sr=sr,
-                            num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        filter_layer = fDLR(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
     elif filter == 'fBLayer':
-        filter_layer = fBLayer(input_dim=input_dim, sr=sr,
-                               num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+        filter_layer = fBLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
     elif filter == 'fBPLayer':
         filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
                                 filter_fix=filter_fix)
     elif filter == 'fLLayer':
-        filter_layer = fLLayer(input_dim=input_dim,
-                               num_filter=feat_dim, exp=exp)
+        filter_layer = fLLayer(input_dim=input_dim, num_filter=feat_dim, exp=exp)
     elif filter == 'Avg':
         filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
     elif filter == 'fbank':
-        filter_layer = MelFbankLayer(sr=sr, num_filter=feat_dim)
+        filter_layer = MelFbankLayer(sr=sr, num_filter=feat_dim, stretch_ratio=stretch_ratio)
+    elif filter == 'spect':
+        filter_layer = SpectrogramLayer(sr=sr, stretch_ratio=stretch_ratio, 
+                                        win_length=win_length, n_fft=nfft)
+    elif filter == 'sparse':
+        filter_layer = SparseFbankLayer(sr=sr, num_filter=feat_dim, stretch_ratio=stretch_ratio,
+                                        init_weight=init_weight)
     else:
         filter_layer = None
 
@@ -96,14 +100,13 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
                                              weight_norm=weight_norm)
     elif mask == 'attention':
-        mask_layer = AttentionweightLayer(
-            input_dim=input_dim, weight=init_weight)
+        mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight,
+                                          weight_norm=weight_norm)
     elif mask == 'attention2':
-        mask_layer = AttentionweightLayer_v2(
-            input_dim=input_dim, weight=init_weight)
+        mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight,
+                                             weight_norm=weight_norm)
     elif mask == 'attention3':
-        mask_layer = AttentionweightLayer_v3(
-            input_dim=input_dim, weight=init_weight)
+        mask_layer = AttentionweightLayer_v3(input_dim=input_dim, weight=init_weight)
     elif mask == 'drop':
         mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=weight_p,
                                      weight=init_weight, scale=scale)
@@ -113,61 +116,18 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
     elif mask == 'drop3':
         mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=weight_p,
                                         weight=init_weight, scale=scale)
+    elif mask == 'frl':
+        mask_layer = FrequencyReweightLayer(input_dim=input_dim)
+    elif mask == 'trl':
+        mask_layer = TimeReweightLayer(input_dim=input_dim)
+    elif mask == 'fnrl':
+        mask_layer = FrequencyNormReweightLayer(input_dim=input_dim)
+    elif mask == 'frrl':
+        mask_layer = FreqTimeReweightLayer(input_dim=input_dim)
     else:
         mask_layer = None
 
     return mask_layer
-
-
-class PairwiseDistance(Function):
-    def __init__(self, p):
-        super(PairwiseDistance, self).__init__()
-        self.norm = p
-
-    def forward(self, x1, x2):
-        assert x1.size() == x2.size()
-        eps = 1e-4 / x1.size(1)
-        diff = torch.abs(x1 - x2)
-        # The distance will be (Sum(|x1-x2|**p)+eps)**1/p
-        out = torch.pow(diff, self.norm).sum(dim=1)
-        return torch.pow(out + eps, 1. / self.norm)
-
-
-class TripletMarginLoss(Function):
-    """Triplet loss function.
-    """
-
-    def __init__(self, margin):
-        super(TripletMarginLoss, self).__init__()
-        self.margin = margin
-        self.pdist = PairwiseDistance(2)  # norm 2
-
-    def forward(self, anchor, positive, negative):
-        d_p = self.pdist.forward(anchor, positive)
-        d_n = self.pdist.forward(anchor, negative)
-
-        dist_hinge = torch.clamp(self.margin + d_p - d_n, min=0.0)
-        loss = torch.mean(dist_hinge)
-        return loss
-
-
-class TripletMarginCosLoss(Function):
-    """Triplet loss function.
-    """
-
-    def __init__(self, margin):
-        super(TripletMarginCosLoss, self).__init__()
-        self.margin = margin
-        self.pdist = CosineSimilarity(dim=1, eps=1e-6)  # norm 2
-
-    def forward(self, anchor, positive, negative):
-        d_p = self.pdist.forward(anchor, positive)
-        d_n = self.pdist.forward(anchor, negative)
-
-        dist_hinge = torch.clamp(self.margin - d_p + d_n, min=0.0)
-        # loss = torch.sum(dist_hinge)
-        loss = torch.mean(dist_hinge)
-        return loss
 
 
 class ReLU20(nn.Hardtanh):
@@ -367,7 +327,7 @@ class DeepSpeakerModel(nn.Module):
 
 class ResSpeakerModel(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     """
 
     def __init__(self, resnet_size, embedding_size, num_classes, feature_dim=64):
@@ -588,7 +548,7 @@ class ResSpeakerModel(nn.Module):
 
 class ResCNNSpeaker(nn.Module):
     """
-    Define the ResNet model with A-softmax and AM-softmax loss.
+    Define the ResNets model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
@@ -805,6 +765,7 @@ class SuperficialResCNN(nn.Module):  # 定义resnet
         return logit, x  # 返回倒数第二层
 
 
+# convert dict attribute to object attribute
 class AttrDict(dict):
     """Dict as attribute trick.
     """

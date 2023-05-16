@@ -164,22 +164,30 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
     other_loss = 0.
 
     ce_criterion, xe_criterion = ce
+    mse = nn.MSELoss()
     pbar = tqdm(enumerate(train_loader))
     output_softmax = nn.Softmax(dim=1)
     lambda_ = (epoch / args.epochs) ** 2
 
     # start_time = time.time()
     # pdb.set_trace()
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
     for batch_idx, (data, label) in pbar:
 
         data = data.transpose(0, 1)
+========
+    for batch_idx, ((data, data_a), label) in pbar:
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
         if args.cuda:
             # label = label.cuda(non_blocking=True)
             # data = data.cuda(non_blocking=True)
+            # label = torch.cat((label, label), dim=0)
             label = label.cuda()
             data = data.cuda()
+            data_a = data_a.cuda()
 
         data, label = Variable(data), Variable(label)
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
         data_shape = data.shape
 
         classfier, feats = model(data)
@@ -189,6 +197,15 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
         # print(prec)
         # cos_theta, phi_theta = classfier
         # classfier_label = classfier
+========
+        data_a = Variable(data_a)
+        with torch.no_grad():
+            classfier_a, feats_a = model(data)
+            feats_a = feats_a.detach()
+
+        classfier, feats = model(data_a)
+        classfier_label = classfier
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
         # print('max logit is ', classfier_label.max())
         if args.loss_ratio > 0 and xe_criterion != None:
             if args.loss_type == 'soft':
@@ -216,12 +233,25 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         loss = 1 / (args.loss_ratio + 1) * end2end_loss + args.loss_ratio / (args.loss_ratio + 1) * supervised_loss
 
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
         other_loss += float(supervised_loss)
         # loss = end2end_loss + loss
+========
+            other_loss += loss_xent
+            loss = loss_xent + loss_cent
+        elif args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
+            # print(classfier.shape, label.shape)
+            loss = xe_criterion(classfier, label)
+        elif args.loss_type == 'arcdist':
+            # pdb.set_trace()
+            loss_cent = args.loss_ratio * ce_criterion(classfier, label)
+            loss_xent = xe_criterion(classfier, label)
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
 
         # predicted_labels = output_softmax(classfier_label)
         # predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
         # if args.lncl:
         #     if args.loss_type in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', 'arcdist']:
         #         predict_loss = xe_criterion(classfier, predicted_one_labels)
@@ -235,6 +265,18 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
         minibatch_correct = float(prec * len(feats) / 100)
         minibatch_acc = float(prec)
+========
+        # feats_a = feats[:int(feats.shape[0]/2)]
+        # feats_b = feats[int(feats.shape[0]/2):]
+        mse_loss = args.loss_ratio * mse(feats, feats_a)
+        loss += mse_loss
+
+
+        predicted_labels = output_softmax(classfier_label)
+        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
+        minibatch_correct = float((predicted_one_labels.cpu() == label.cpu()).sum().item())
+        minibatch_acc = minibatch_correct / len(predicted_one_labels)
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
         correct += minibatch_correct
 
         total_datasize += len(feats)
@@ -288,6 +330,7 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
             if orth_err > 0:
                 epoch_str += ' Orth_err: {:>5d}'.format(int(orth_err))
 
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
             if other_loss != 0:
                 epoch_str += ' Other Loss: {:.4f}'.format(other_loss / (batch_idx + 1))
 
@@ -296,6 +339,17 @@ def train(train_loader, model, ce, optimizer, epoch, scheduler):
 
             epoch_str += ' E2E Loss: {:.4f}'.format(float(end2end_loss.item()))
             epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1), minibatch_acc)
+========
+            if args.loss_type in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter']:
+                epoch_str += ' Center Loss: {:.4f}'.format(loss_xent.float())
+
+            epoch_str += ' Mse Loss: {:.4f}'.format(mse_loss.item())
+
+            if args.loss_type in ['arcdist']:
+                epoch_str += ' Dist Loss: {:.4f}'.format(loss_cent.float())
+            epoch_str += ' Avg Loss: {:.4f} Batch Accuracy: {:.4f}%'.format(total_loss / (batch_idx + 1),
+                                                                            100. * minibatch_acc)
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
             pbar.set_description(epoch_str)
             # break
 
@@ -551,7 +605,11 @@ def main():
         xe_criterion = RingLoss(ring=args.ring)
         args.alpha = 0.0
     elif 'arcdist' in args.loss_type:
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
         # ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.m)
+========
+        ce_criterion = DistributeLoss(stat_type=args.stat_type, margin=args.margin)
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
         xe_criterion = ArcSoftmaxLoss(margin=args.margin, s=args.s, iteraion=iteration, all_iteraion=args.all_iteraion)
     else:
         model.classifier = None
@@ -664,14 +722,23 @@ def main():
         else:
             noise_padding_dir = None
 
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
         train_loader = torch.utils.data.DataLoader(train_dir, batch_size=1,
+========
+        train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size,
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
                                                    collate_fn=PadCollate(dim=pad_dim,
                                                                          num_batch=int(
                                                                              np.ceil(len(train_dir) / args.batch_size)),
                                                                          min_chunk_size=min_chunk_size,
                                                                          max_chunk_size=max_chunk_size,
                                                                          chisquare=args.chisquare,
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
                                                                          noise_padding=noise_padding_dir),
+========
+                                                                         noise_padding=noise_padding_dir,
+                                                                         augment=True),
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
                                                    shuffle=args.shuffle, **kwargs)
         valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=1,
                                                    collate_fn=PadCollate(dim=pad_dim, fix_len=True,
@@ -688,6 +755,7 @@ def main():
     if args.cuda:
         if len(args.gpu_id) > 1:
             print("Continue with gpu: %s ..." % str(args.gpu_id))
+<<<<<<<< HEAD:TrainAndTest/train_egs/train_egs_e2e_domain.py
             # torch.distributed.init_process_group(backend="nccl",
             #                                      init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
             #                                      rank=0,
@@ -698,6 +766,12 @@ def main():
             except RuntimeError as r:
                 torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:32454', rank=0,
                                                      world_size=1)
+========
+            torch.distributed.init_process_group(backend="nccl",
+                                                 init_method='file:///home/ssd2020/yangwenhao/lstm_speaker_verification/data/sharedfile',
+                                                 rank=0,
+                                                 world_size=1)
+>>>>>>>> d9efeaa9b0046c2997b0f2a7a1e8bde3f0707c7f:TrainAndTest/train_egs/train_egs_aug.py
             # if args.gain
             # model = DistributedDataParallel(model.cuda(), find_unused_parameters=True)
             model = DistributedDataParallel(model.cuda())

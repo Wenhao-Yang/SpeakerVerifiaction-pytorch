@@ -21,7 +21,6 @@ Lime/SuResCNN10/data
 *.eps
 *.local
 Misc/.ipynb_checkpoints
-Misc/data
 Score/data/exp
 Score/plda_vz.py
 Misc_de
@@ -34,3 +33,8 @@ Lime/Plot/.ipynb_checkpoints
 Score/data/covar.csv
 RIRS_NOISES
 test.scp
+Misc/data/dev_spk20/dev_spk10_pca64_1/baseline.tar.gz
+Misc/OptimalTransport/test.jpg
+Misc/OptimalTransport/color_transfer.py
+Misc/data/colors
+.ipynb_checkpoints
