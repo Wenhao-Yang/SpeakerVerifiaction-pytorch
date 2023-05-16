@@ -81,3 +81,10 @@ EER(%):         2.25    Threshold:  0.2829  MinDcf-0.01: 0.2068  MinDcf-0.001: 0
 # frl v2 labser7
 EER(%):         2.03    Threshold:  0.2822  MinDcf-0.01: 0.1991  MinDcf-0.001: 0.3022  Mix2,3: 0.6129, 0.1220
 EER(%):         2.10    Threshold:  0.2923  MinDcf-0.01: 0.2083  MinDcf-0.001: 0.3074  Mix2,3: 0.6455, 0.1345
+
+# Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8
+EER(%):         1.50    Threshold:  0.2311  MinDcf-0.01: 0.1619  MinDcf-0.001: 0.2161  Mix2,3: 0.3249, 0.0526
+
+# Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8
+EER(%):         1.45    Threshold:  0.2516  MinDcf-0.01: 0.1434  MinDcf-0.001: 0.2879  Mix2,3: 0.4168, 0.0598
+EER(%):         1.26    Threshold:  0.2520  MinDcf-0.01: 0.1294  MinDcf-0.001: 0.2286  Mix2,3: 0.2872, 0.0372
