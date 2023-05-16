@@ -971,7 +971,21 @@ if [ $stage -le 301 ]; then
     done
     done
     done
+  exit
+fi
 
+if [ $stage -le 302 ]; then
+  model=ThinResNet resnet_size=34
+  # dataset=vox1
+  dataset=vox2
+  train_set=vox2 test_set=vox1
+  feat_type=klsp #--remove-vad \
+  feat=log
+  loss=arcsoft
+  encoder_type=SAP2 embedding_size=256
+  block_type=basic kernel=5,5
+  cam=gradient
+  echo -e "\n\033[1;4;31m stage${stage} Delete for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient grad_cam_pp ;do
   for pro_type in del ; do
   for ((i=0; i<1000; i=i+1)); do
