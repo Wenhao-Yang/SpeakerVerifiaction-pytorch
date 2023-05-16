@@ -941,18 +941,47 @@ if [ $stage -le 301 ]; then
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Delete and Insert for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   
-  for cam in layer_cam ;do
-  for pro_type in del ; do
-  for ((i=12; i<100; i=i+1)); do
+  for cam in layer_cam gradient grad_cam_pp ;do
+  for pro_type in insert ; do
+  for ((i=0; i<100; i=i+2)); do
     threshold=`echo "$i 100" | awk '{printf("%0.4f\n",$1/$2)}'`
-    if [ $i -gt 40 ]; then
-      i=$((i+7))
-    elif [ $i -gt 30 ]; then
-      i=$((i+5))
-    elif [ $i -gt 20 ]; then
-      i=$((i+3))
+  # for threshold in 0.01 0.02 0.04 0.08 0.09; do
+    model_dir=ThinResNet34_ser06/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/arcsoft_sgd_rop/vox2/123456
+    epoch=41
+    python Lime/del_insert.py \
+      --model ${model} --resnet-size ${resnet_size} \
+      --batch-size 1 --test-input var --init-input mean \
+      --pro-type ${pro_type} --threshold ${threshold} \
+      --start-epochs ${epoch} --epochs ${epoch} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+      --input-norm Mean \
+      --kernel-size ${kernel} --stride 2,2 \
+      --channels 16,32,64,128 \
+      --block-type ${block_type} --fast none1 \
+      --encoder-type ${encoder_type} --time-dim 1 --avg-size 5 --dropout-p 0.1 \
+      --embedding-size ${embedding_size} --alpha 0 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --check-path Data/checkpoint/${model_dir} \
+      --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
+      --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
+      --eval-dir Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft/epoch_41 \
+      --gpu-id 0 --verbose 1
+    done
+    done
+    done
+
+  for cam in gradient grad_cam_pp ;do
+  for pro_type in del ; do
+  for ((i=0; i<1000; i=i+1)); do
+    threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
+    if [ $i -gt 200 ]; then
+      i=$((i+49))
+    elif [ $i -gt 100 ]; then
+      i=$((i+9))
     elif [ $i -gt 10 ]; then
-      i=$((i+1))
+      i=$((i+3))
     fi
   # for threshold in 0.01 0.02 0.04 0.08 0.09; do
   # model_dir=${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var
@@ -978,7 +1007,7 @@ if [ $stage -le 301 ]; then
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
       --eval-dir Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft/epoch_41 \
-      --gpu-id 1 --verbose 1
+      --gpu-id 0 --verbose 1
     done
     done
     done
