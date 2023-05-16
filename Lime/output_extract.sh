@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=302
 waited=0
 lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 827849 | wc -l) -eq 2 ]; do
@@ -1021,7 +1021,7 @@ if [ $stage -le 302 ]; then
       --check-yaml Data/checkpoint/${model_dir}/model.2022.07.20.yaml \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft \
       --eval-dir Data/gradient/${model_dir}/epoch_${epoch}_var_${cam}_soft/epoch_41 \
-      --gpu-id 0 --verbose 1
+      --gpu-id 1 --verbose 1
     done
     done
     done
