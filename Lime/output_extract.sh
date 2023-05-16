@@ -29,39 +29,34 @@ if [ $stage -le 1 ]; then
   #  for model in LoResNet10 ; do
   #  python Lime/output_extract.py \
   #    --model LoResNet10 \
-  #    --start-epochs 36 \
-  #    --epochs 36 \
+  #    --start-epochs 36 --epochs 36 \
   #    --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev \
   #    --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test \
   #    --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
-  #    --loss-type center \
+  #    --loss-type center --embedding-size 1024 \
   #    --check-path /home/yangwenhao/local/project/DeepSpeaker-pytorch/Data/checkpoint/LoResNet10/spect_cmvn/center_dp25 \
   #    --extract-path Data/gradient \
   #    --dropout-p 0 \
   #    --gpu-id 0 \
-  #    --embedding-size 1024 \
   #    --sample-utt 2000
 
   python Lime/output_extract.py \
     --model LoResNet10 \
-    --start-epochs 24 \
-    --epochs 24 \
+    --start-epochs 24 --epochs 24 \
     --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_wcmvn \
     --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_wcmvn \
     --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
-    --loss-type soft \
+    --loss-type soft --embedding-size 128 \
     --check-path Data/checkpoint/LoResNet10/spect/soft_wcmvn \
     --extract-path Data/gradient/LoResNet10/spect/soft_wcmvn \
     --dropout-p 0.25 \
     --gpu-id 1 \
-    --embedding-size 128 \
     --sample-utt 5000
 
   for loss in amsoft center; do
     python Lime/output_extract.py \
       --model LoResNet10 \
-      --start-epochs 38 \
-      --epochs 38 \
+      --start-epochs 38 --epochs 38 \
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_wcmvn \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_wcmvn \
       --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
@@ -69,8 +64,7 @@ if [ $stage -le 1 ]; then
       --check-path Data/checkpoint/LoResNet10/spect/${loss}_wcmvn \
       --extract-path Data/gradient/LoResNet10/spect/${loss}_wcmvn \
       --dropout-p 0.25 \
-      --s 15 \
-      --margin 0.35 \
+      --s 15 --margin 0.35 \
       --gpu-id 1 \
       --embedding-size 128 \
       --sample-utt 5000
@@ -85,8 +79,7 @@ if [ $stage -le 2 ]; then
   #  loss=soft
   #  python Lime/output_extract.py \
   #      --model ${model} \
-  #      --start-epochs 30 \
-  #      --epochs 30 \
+  #      --start-epochs 30 --epochs 30 \
   #      --resnet-size 34 \
   #      --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb64_wcmvn \
   #      --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb64_wcmvn \
@@ -106,8 +99,7 @@ if [ $stage -le 2 ]; then
   loss=soft
   python Lime/output_extract.py \
     --model ExResNet34 \
-    --start-epochs 30 \
-    --epochs 30 \
+    --start-epochs 30 --epochs 30 \
     --resnet-size 34 \
     --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/dev_noc \
     --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb64/test_noc \
@@ -120,8 +112,7 @@ if [ $stage -le 2 ]; then
     --extract-path Data/gradient/${model}/${datasets}/${feat}/${loss}_kaldi \
     --dropout-p 0.0 \
     --gpu-id 1 \
-    --time-dim 1 \
-    --avg-size 1 \
+    --time-dim 1 --avg-size 1 \
     --embedding-size 128 \
     --sample-utt 5000
 fi
@@ -134,8 +125,7 @@ if [ $stage -le 3 ]; then
   loss=soft
   python Lime/output_extract.py \
     --model ${model} \
-    --start-epochs 24 \
-    --epochs 24 \
+    --start-epochs 24 --epochs 24 \
     --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/dev_257_wcmvn \
     --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_spect/test_257_wcmvn \
     --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
@@ -150,20 +140,17 @@ fi
 
 if [ $stage -le 4 ]; then
   model=LoResNet
-  train_set=vox2
-  test_set=vox1
+  train_set=vox2 test_set=vox1
   feat=log
   loss=arcsoft
   resnet_size=8
-  encoder_type=None
-  embedding_size=256
+  encoder_type=None embedding_size=256
   block_type=cbam
   kernel=5,7
   python Lime/output_extract.py \
     --model ${model} \
     --resnet-size ${resnet_size} \
-    --start-epochs 40 \
-    --epochs 41 \
+    --start-epochs 40 --epochs 41 \
     --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox2/spect/dev_log \
     --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/vox1/spect/test_log \
     --input-norm Mean \
@@ -172,8 +159,7 @@ if [ $stage -le 4 ]; then
     --channels 64,128,256 \
     --encoder-type ${encoder_type} \
     --block-type ${block_type} \
-    --time-dim 1 \
-    --avg-size 4 \
+    --time-dim 1 --avg-size 4 \
     --embedding-size ${embedding_size} \
     --alpha 0 \
     --loss-type ${loss} \
@@ -188,28 +174,23 @@ fi
 
 if [ $stage -le 12 ]; then
   model=ThinResNet
-  datasets=vox1
-  feat=fb64
+  datasets=vox1 feat=fb64
   loss=soft
   python Lime/output_extract.py \
     --model ThinResNet \
-    --start-epochs 22 \
-    --epochs 23 \
+    --start-epochs 22 --epochs 23 \
     --resnet-size 34 \
     --train-dir ${lstm_dir}/data/${datasets}/pyfb/dev_${feat} \
     --test-dir ${lstm_dir}/data/${datasets}/pyfb/test_${feat} \
     --loss-type ${loss} \
-    --stride 1 \
+    --stride 1 --kernel-size 5,5 \
     --remove-vad \
-    --kernel-size 5,5 \
     --encoder-type None \
     --check-path Data/checkpoint/ThinResNet34/vox1/fb64_None/soft \
     --extract-path Data/gradient/ThinResNet34/vox1/fb64_None/soft \
     --dropout-p 0.0 \
     --gpu-id 0 \
-    --time-dim 1 \
-    --avg-size 1 \
-    --embedding-size 128 \
+    --time-dim 1 --avg-size 1 --embedding-size 128 \
     --sample-utt 5000
 fi
 #stage=300
@@ -217,17 +198,14 @@ fi
 
 if [ $stage -le 20 ]; then
   model=LoResNet10
-  datasets=timit
-  feat=spect
+  datasets=timit feat=spect
   loss=soft
-
   #  python Lime/output_extract.py \
   #    --model LoResNet10 \
   #    --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_noc \
   #    --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/test_noc \
-  #    --start-epochs 15 \
+  #    --start-epochs 15 --epochs 15 \
   #    --check-path Data/checkpoint/LoResNet10/timit_spect/soft_fix \
-  #    --epochs 15 \
   #    --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
   #    --sample-utt 1500 \
   #    --embedding-size 128 \
@@ -240,9 +218,8 @@ if [ $stage -le 20 ]; then
     --model LoResNet10 \
     --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/train_noc \
     --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/timit/spect/test_noc \
-    --start-epochs 15 \
+    --start-epochs 15 --epochs 15 \
     --check-path Data/checkpoint/LoResNet10/timit_spect/soft_var \
-    --epochs 15 \
     --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
     --sample-utt 10000 \
     --embedding-size 128 \
@@ -255,33 +232,27 @@ fi
 if [ $stage -le 21 ]; then
   model=LoResNet
   dataset=timit
-  train_set=timit
-  test_set=timit
+  train_set=timit test_set=timit
   feat_type=spect
   feat=log
   loss=soft
   resnet_size=8
-  encoder_type=None
-  embedding_size=128
+  encoder_type=None embedding_size=128
   block_type=basic
   kernel=5,5
   python Lime/output_extract.py \
     --model ${model} \
     --resnet-size ${resnet_size} \
-    --start-epochs 12 \
-    --epochs 12 \
+    --start-epochs 12 --epochs 12 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/train_${feat} \
-    --train-set-name timit \
-    --test-set-name timit \
+    --train-set-name timit --test-set-name timit \
     --test-dir ${lstm_dir}/data/${dataset}/${feat_type}/test_${feat} \
     --input-norm None \
-    --kernel-size ${kernel} \
-    --stride 2 \
+    --kernel-size ${kernel} --stride 2 \
     --channels 4,16,64 \
     --encoder-type ${encoder_type} \
     --block-type ${block_type} \
-    --time-dim 1 \
-    --avg-size 4 \
+    --time-dim 1 --avg-size 4 \
     --embedding-size ${embedding_size} \
     --alpha 10.8 \
     --loss-type ${loss} \
@@ -296,14 +267,12 @@ fi
 if [ $stage -le 22 ]; then
   model=LoResNet
   dataset=vox2
-  train_set=vox2
-  test_set=vox1
+  train_set=vox2 test_set=vox1
   feat_type=klsp
   feat=log
   loss=arcsoft
   resnet_size=8
-  encoder_type=None
-  embedding_size=256
+  encoder_type=None embedding_size=256
   block_type=cbam
   kernel=5,5
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
@@ -311,11 +280,9 @@ if [ $stage -le 22 ]; then
   python Lime/output_extract.py \
     --model ${model} \
     --resnet-size ${resnet_size} \
-    --start-epochs 61 \
-    --epochs 61 \
+    --start-epochs 61 --epochs 61 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
-    --train-set-name vox2 \
-    --test-set-name vox1 \
+    --train-set-name vox2 --test-set-name vox1 \
     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
     --input-norm Mean \
     --kernel-size ${kernel} \
@@ -323,8 +290,7 @@ if [ $stage -le 22 ]; then
     --channels 64,128,256 \
     --encoder-type ${encoder_type} \
     --block-type ${block_type} \
-    --time-dim 1 \
-    --avg-size 4 \
+    --time-dim 1 --avg-size 4 \
     --embedding-size ${embedding_size} \
     --alpha 0 \
     --loss-type ${loss} \
@@ -332,8 +298,7 @@ if [ $stage -le 22 ]; then
     --check-path Data/checkpoint/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var \
     --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_61_var \
     --gpu-id 1 \
-    --margin 0.2 \
-    --s 30 \
+    --margin 0.2 --s 30 \
     --sample-utt 5994
   exit
 fi
@@ -341,14 +306,12 @@ fi
 if [ $stage -le 23 ]; then
   model=LoResNet
   dataset=vox1
-  train_set=vox1
-  test_set=vox1
+  train_set=vox1 test_set=vox1
   feat_type=klsp
   feat=log
   loss=arcsoft
   resnet_size=8
-  encoder_type=None
-  embedding_size=256
+  encoder_type=None embedding_size=256
   block_type=cbam
   kernel=5,5
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
@@ -358,8 +321,7 @@ if [ $stage -le 23 ]; then
     --resnet-size ${resnet_size} \
     --batch-size 1 \
     --test-input var \
-    --start-epochs 40 \
-    --epochs 40 \
+    --start-epochs 40 --epochs 40 \
     --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
     --train-set-name ${train_set} \
     --test-set-name ${train_set} \
@@ -370,8 +332,7 @@ if [ $stage -le 23 ]; then
     --channels 64,128,256 \
     --encoder-type ${encoder_type} \
     --block-type ${block_type} \
-    --time-dim 1 \
-    --avg-size 4 \
+    --time-dim 1 --avg-size 4 \
     --embedding-size ${embedding_size} \
     --alpha 0 \
     --loss-type ${loss} \
@@ -379,8 +340,7 @@ if [ $stage -le 23 ]; then
     --check-path Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var \
     --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_var/epoch_40_var2 \
     --gpu-id 1 \
-    --margin 0.2 \
-    --s 30 \
+    --margin 0.2 --s 30 \
     --sample-utt 2422 #1211
 
 #  python Lime/output_extract.py \
@@ -398,8 +358,7 @@ if [ $stage -le 23 ]; then
 #    --channels 64,128,256 \
 #    --encoder-type ${encoder_type} \
 #    --block-type ${block_type} \
-#    --time-dim 1 \
-#    --avg-size 4 \
+#    --time-dim 1 --avg-size 4 \
 #    --embedding-size ${embedding_size} \
 #    --alpha 0 \
 #    --loss-type ${loss} \
@@ -407,8 +366,7 @@ if [ $stage -le 23 ]; then
 #    --check-path Data/checkpoint/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_aug_com_var \
 #    --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_dev_aug_com_var/epoch_40_var_40 \
 #    --gpu-id 1 \
-#    --margin 0.2 \
-#    --s 30 \
+#    --margin 0.2 --s 30 \
 #    --sample-utt 1211
   exit
 fi
@@ -416,8 +374,7 @@ fi
 if [ $stage -le 24 ]; then
   model=LoResNet
   dataset=vox1
-  train_set=vox1
-  test_set=vox1
+  train_set=vox1 test_set=vox1
   feat_type=klsp
   feat=log
   loss=arcsoft
@@ -429,8 +386,7 @@ if [ $stage -le 24 ]; then
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for subsets in female male ; do
     python Lime/cam_extract.py \
-      --model ${model} \
-      --resnet-size ${resnet_size} \
+      --model ${model} --resnet-size ${resnet_size} \
       --batch-size 1 \
       --test-input var \
       --start-epochs 50 \
@@ -445,8 +401,7 @@ if [ $stage -le 24 ]; then
       --channels 32,64,128 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
-      --time-dim 1 \
-      --avg-size 4 \
+      --time-dim 1 --avg-size 4 \
       --embedding-size ${embedding_size} \
       --alpha 0 \
       --loss-type ${loss} \
@@ -454,8 +409,7 @@ if [ $stage -le 24 ]; then
       --check-path Data/checkpoint/LoResNet8/vox1/klsp_egs${subsets}_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var \
       --extract-path Data/gradient/LoResNet8/vox1/klsp_egs${subsets}_baseline/arcsoft_sgd_rop/Mean_cbam_AVG_dp20_alpha0_em256_chn32_wd5e4_var/epoch_50_var \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --sample-utt 2422 #1211
     done
   exit
@@ -473,9 +427,8 @@ if [ $stage -le 30 ]; then
   #    --model LoResNet10 \
   #    --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
   #    --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
-  #    --start-epochs 15 \
+  #    --start-epochs 15 --epochs 15 \
   #    --check-path Data/checkpoint/LoResNet10/${datasets}/${feat}/${loss} \
-  #    --epochs 15 \
   #    --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
   #    --sample-utt 4000 \
   #    --embedding-size 128 \
@@ -488,9 +441,8 @@ if [ $stage -le 30 ]; then
   #    --model LoResNet10 \
   #    --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
   #    --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
-  #    --start-epochs 15 \
+  #    --start-epochs 15 --epochs 15 \
   #    --check-path Data/checkpoint/LoResNet10/${datasets}/${feat}/${loss}_var \
-  #    --epochs 15 \
   #    --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
   #    --sample-utt 4000 \
   #    --embedding-size 128 \
@@ -502,9 +454,8 @@ if [ $stage -le 30 ]; then
     --model LoResNet10 \
     --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/dev_noc \
     --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/libri/spect/test_noc \
-    --start-epochs 15 \
+    --start-epochs 15 --epochs 15 \
     --check-path Data/checkpoint/LoResNet10/${datasets}/${feat}/${loss} \
-    --epochs 15 \
     --sitw-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/sitw \
     --sample-utt 4000 \
     --alpha 9.8 \
@@ -525,8 +476,7 @@ if [ $stage -le 40 ]; then
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${datasets}/pyfb/dev_${feat} \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${datasets}/pyfb/test_${feat} \
       --nj 14 \
-      --start-epochs 20 \
-      --epochs 21 \
+      --start-epochs 20 --epochs 21 \
       --model ${model} \
       --embedding-size 128 \
       --sample-utt 5000 \
@@ -549,8 +499,7 @@ if [ $stage -le 50 ]; then
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/dev_fb64 \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_pyfb/test_fb64 \
       --nj 14 \
-      --start-epochs 21 \
-      --epochs 21 \
+      --start-epochs 21 --epochs 21 \
       --model ${model} \
       --embedding-size 128 \
       --sample-utt 5000 \
@@ -577,8 +526,7 @@ if [ $stage -le 60 ]; then
       --train-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/spect/dev \
       --test-dir /home/yangwenhao/local/project/lstm_speaker_verification/data/${dataset}/spect/eval \
       --nj 14 \
-      --start-epochs 24 \
-      --epochs 24 \
+      --start-epochs 24 --epochs 24 \
       --model ${model} \
       --embedding-size 128 \
       --sample-utt 2500 \
@@ -676,8 +624,7 @@ if [ $stage -le 100 ]; then
       --model ${model} \
       --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --start-epochs 61 \
-      --epochs 61 \
+      --start-epochs 61 --epochs 61 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --train-set-name vox2 --test-set-name vox1 \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
@@ -685,11 +632,9 @@ if [ $stage -le 100 ]; then
       --kernel-size ${kernel} \
       --stride 2 \
       --channels 64,128,256 \
-      --encoder-type ${encoder_type} \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
       --block-type ${block_type} \
-      --time-dim 1 \
-      --avg-size 4 \
-      --embedding-size ${embedding_size} \
+      --time-dim 1 --avg-size 4 \
       --alpha 0 \
       --loss-type ${loss} \
       --dropout-p 0.1 \
@@ -697,8 +642,7 @@ if [ $stage -le 100 ]; then
       --check-path Data/checkpoint/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var \
       --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_61_var_${cam} \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --sample-utt 5994
     done
   exit
@@ -708,8 +652,7 @@ if [ $stage -le 101 ]; then
   model=LoResNet resnet_size=8
   dataset=cnceleb
   train_set=cnceleb test_set=cnceleb
-  feat_type=klsp
-  feat=log
+  feat_type=klsp feat=log
   loss=arcsoft
   encoder_type=None embedding_size=256
   block_type=cbam
@@ -750,8 +693,7 @@ if [ $stage -le 200 ]; then
   model=TDNN_v5 resnet_size=8
   dataset=vox2
   train_set=vox2 test_set=vox1
-  feat_type=klfb
-  feat=fb40
+  feat_type=klfb feat=fb40
   loss=arcsoft
   encoder_type=STAP
   embedding_size=512
@@ -788,8 +730,7 @@ fi
 
 if [ $stage -le 201 ]; then
   model=TDNN_v5 resnet_size=8
-  dataset=cnceleb
-  train_set=cnceleb test_set=cnceleb
+  dataset=cnceleb train_set=cnceleb test_set=cnceleb
   feat_type=klfb feat=fb40
   loss=arcsoft
   encoder_type=STAP embedding_size=512
@@ -810,8 +751,7 @@ if [ $stage -le 201 ]; then
        --stride 1 \
        --channels 512,512,512,512,1500 \
        --block-type ${block_type} \
-       --encoder-type ${encoder_type} --embedding-size ${embedding_size} \
-       --alpha 0 \
+       --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha 0 \
        --loss-type ${loss} --margin 0.2 --s 30 \
        --dropout-p 0.0 \
        --check-path Data/checkpoint/TDNN_v5/cnceleb/klfb_egs12_baseline/arcsoft/Mean_STAP_em512_wd5e4_var \
@@ -828,20 +768,16 @@ if [ $stage -le 201 ]; then
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
       --train-set-name cnce --test-set-name cnce \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
-      --input-norm Mean \
-      --input-dim 40 \
+      --input-norm Mean --input-dim 40 --remove-vad \
       --stride 1 \
       --channels 512,512,512,512,1500 \
-      --encoder-type ${encoder_type} \
       --block-type ${block_type} \
-      --embedding-size ${embedding_size} \
-      --alpha 0 \
+      --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha 0 \
       --loss-type ${loss} --margin 0.2 --s 30 \
       --dropout-p 0.0 \
       --check-path Data/checkpoint/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var \
       --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_50_var_${cam} \
       --gpu-id 1 \
-      --remove-vad \
       --sample-utt 3200
     done
   exit
@@ -867,7 +803,7 @@ if [ $stage -le 202 ]; then
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
       --train-set-name vox1 --test-set-name vox1 \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
-      --input-norm Mean --input-dim 40 \
+      --input-norm Mean --input-dim 40 --remove-vad \
       --stride 1 \
       --channels 512,512,512,512,1500 \
       --encoder-type ${encoder_type} \
@@ -879,7 +815,6 @@ if [ $stage -le 202 ]; then
       --check-path Data/checkpoint/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var \
       --extract-path Data/gradient/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/epoch_50_var_${cam} \
       --gpu-id 1 \
-      --remove-vad \
       --sample-utt 1211
     done
   exit
@@ -1033,7 +968,6 @@ if [ $stage -le 350 ]; then
   dataset=vox1
 #  dataset=cnceleb
 #  dataset=aishell2
-
   train_set=vox1 test_set=vox1
 #  test_set=aishell2
 #  feat_type=klfb
