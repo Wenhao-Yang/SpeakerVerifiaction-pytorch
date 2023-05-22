@@ -219,7 +219,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             target_label_index = [train_dir.spk_to_idx[s] for s in spks]
             label = torch.LongTensor(target_label_index)
 
-            if data.shape[2] > 5 * c.NUM_FRAMES_SPECT:
+            if data.shape[2] >= 5 * c.NUM_FRAMES_SPECT:
                 num_half = int(data.shape[2] / (4 * c.NUM_FRAMES_SPECT))
                 rest_frame = data.shape[2] % num_half
                 if rest_frame > 0:
@@ -228,11 +228,12 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     x = data.chunk(num_half, dim=2)
                 data = torch.cat(x, dim=0)
 
-            data = Variable(data.cuda(), requires_grad=True)
+            # data = Variable(data.cuda(), requires_grad=True)
             ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
             baseline = None
 
             if len(data) == 1:
+                data = Variable(data.cuda(), requires_grad=True)
                 if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'layer_cam', 'acc_input']:
                     logit, _ = model(data)
                     classifed = logit[0] if args.loss_type == 'asoft' else logit
