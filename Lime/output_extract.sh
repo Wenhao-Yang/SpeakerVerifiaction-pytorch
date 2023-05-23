@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=302
 waited=0
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
