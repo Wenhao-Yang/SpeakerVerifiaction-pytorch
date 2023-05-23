@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=351
+stage=301
 waited=0
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
@@ -937,18 +937,17 @@ if [ $stage -le 301 ]; then
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   
-  for cam in gradient layer_cam grad_cam_pp fullgrad integrad grad_cam;do # layer_cam 
-    model_dir=ThinResNet34/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
-    epoch=41
-    python Lime/cam_select.py \
-      --batch-size 1 --test-input var \
-      --feat-format wav \
-      --train-dir ${lstm_dir}/data/${dataset}/dev \
-      --train-set-name ${train_set} --test-set-name ${test_set} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
-      --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
-      --input-per-spks 2 --verbose 1
-    done
+  # for cam in gradient ;do # layer_cam 
+  model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
+  python Lime/cam_select.py \
+    --batch-size 1 --test-input var \
+    --feat-format wav \
+    --train-dir ${lstm_dir}/data/${dataset}/dev \
+    --train-set-name ${train_set} --test-set-name ${test_set} \
+    --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+    --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
+    --input-per-spks 2 --verbose 1
+    # done
   exit
 fi
 
