@@ -933,61 +933,64 @@ class ScriptTrainDataset(data.Dataset):
             self.valid_utt2dom_dict = valid_utt2dom_dict
             self.valid_base_utts = valid_base_utts
 
-        if os.path.exists(os.path.join(save_dir, 'train.csv')):
-            if verbose > 0:
-                print('    Loading training samples from:\n\t {} '.format(os.path.join(save_dir, 'train.csv')))
-            train_base_utts = pd.read_csv(os.path.join(save_dir, 'train.csv')).to_numpy().tolist()
-        else:
-            train_base_utts = []
-            for sid in speakers:
-                for uid in dataset[sid]:
-                    num_frames = self.utt2num_frames[uid]
-                    this_numofseg = int(np.ceil(float(num_frames-segment_len+segment_shift) / segment_shift))
+        if not return_uid:
+            if os.path.exists(os.path.join(save_dir, 'train.csv')):
+                if verbose > 0:
+                    print('    Loading training samples from:\n\t {} '.format(os.path.join(save_dir, 'train.csv')))
+                train_base_utts = pd.read_csv(os.path.join(save_dir, 'train.csv')).to_numpy().tolist()
+            else:
+                train_base_utts = []
+                for sid in speakers:
+                    for uid in dataset[sid]:
+                        num_frames = self.utt2num_frames[uid]
+                        this_numofseg = int(np.ceil(float(num_frames-segment_len+segment_shift) / segment_shift))
 
-                    for i in range(this_numofseg):
-                        start = int(i * segment_shift)
-                        end = int(min(start+segment_len, num_frames))
-                        start = int(max(end - num_frames, 0))
+                        for i in range(this_numofseg):
+                            start = int(i * segment_shift)
+                            end = int(min(start+segment_len, num_frames))
+                            start = int(max(end - num_frames, 0))
 
-                        if (end - start) >= (segment_len*0.125) :
+                            if (end - start) >= (segment_len*0.125) :
+                                train_base_utts.append((uid, start, end))
+
+                # self.base_utts = train_base_utts
+                if verbose > 0:
+                    print('    There are {} basic segments for training .'.format(len(train_base_utts)))
+                # random.shuffle(train_base_utts)
+                if self.sample_type != 'instance':
+                    while len(train_base_utts) < samples_per_speaker * self.num_spks:
+                        sid_idx = len(train_base_utts) % self.num_spks
+                        sid = idx_to_spk[sid_idx]
+                        uid = np.random.choice(dataset[sid])
+
+                        this_frames = self.utt2num_frames[uid]
+
+                        if this_frames <= self.segment_len:
+                            start = 0 
+                            end = this_frames
+                        else:
+                            start = np.random.randint(0, this_frames-self.segment_len)
+                            end = start + self.segment_len
+
+                        if (end - start) >= self.min_frames:
                             train_base_utts.append((uid, start, end))
 
-            # self.base_utts = train_base_utts
-            if verbose > 0:
-                print('    There are {} basic segments for training .'.format(len(train_base_utts)))
-            # random.shuffle(train_base_utts)
-            if self.sample_type != 'instance':
-                while len(train_base_utts) < samples_per_speaker * self.num_spks:
-                    sid_idx = len(train_base_utts) % self.num_spks
-                    sid = idx_to_spk[sid_idx]
-                    uid = np.random.choice(dataset[sid])
+                    assert len(train_base_utts) == samples_per_speaker * self.num_spks
+                random.shuffle(train_base_utts)
+                if save_dir != '':
+                    if not os.path.exists(save_dir):
+                        os.makedirs(save_dir)
 
-                    this_frames = self.utt2num_frames[uid]
-
-                    if this_frames <= self.segment_len:
-                        start = 0 
-                        end = this_frames
+                    if torch.distributed.is_initialized() and torch.distributed.get_rank() != 0:
+                        pass
                     else:
-                        start = np.random.randint(0, this_frames-self.segment_len)
-                        end = start + self.segment_len
-
-                    if (end - start) >= self.min_frames:
-                        train_base_utts.append((uid, start, end))
-
-                assert len(train_base_utts) == samples_per_speaker * self.num_spks
-            random.shuffle(train_base_utts)
-            if save_dir != '':
-                if not os.path.exists(save_dir):
-                    os.makedirs(save_dir)
-
-                if torch.distributed.is_initialized() and torch.distributed.get_rank() != 0:
-                    pass
-                else:
-                    train_utts = pd.DataFrame(train_base_utts, columns=['uid', 'start', 'end'])
-                    train_utts.to_csv(os.path.join(save_dir, 'train.csv'), index=None)
-                    if verbose > 0:
-                        print('    Saving train.csv to {}.'.format(os.path.join(save_dir, 'train.csv')))
-
+                        train_utts = pd.DataFrame(train_base_utts, columns=['uid', 'start', 'end'])
+                        train_utts.to_csv(os.path.join(save_dir, 'train.csv'), index=None)
+                        if verbose > 0:
+                            print('    Saving train.csv to {}.'.format(os.path.join(save_dir, 'train.csv')))
+        else:
+            train_base_utts = []
+            
         self.base_utts = train_base_utts
         self.speakers = speakers
         self.utt2spk_dict = utt2spk_dict

@@ -951,6 +951,46 @@ if [ $stage -le 301 ]; then
   exit
 fi
 
+if [ $stage -le 302 ]; then
+  model=ThinResNet resnet_size=34
+  dataset=vox2 # dataset=vox1
+  train_set=vox2 test_set=vox1
+  feat_type=klsp #--remove-vad \
+  feat=log
+  loss=arcsoft
+  encoder_type=SAP2 embedding_size=256
+  block_type=basic kernel=5,5
+  cam=gradient
+  echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  
+  for cam in gradient layer_cam integrad grad_cam grad_cam_pp fullgrad ;do #layer_cam gradient grad_cam layer_cam  grad_cam grad_cam_pp integrad
+    model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
+    epoch=15
+    python Lime/cam_extract.py \
+      --model ${model} --resnet-size ${resnet_size} \
+      --cam ${cam} --softmax --steps 50 \
+      --feat-format wav --nj 16 \
+      --cam-layers bn1 layer1 layer2 layer3 layer4 \
+      --batch-size 1 --test-input var \
+      --start-epochs ${epoch} --epochs ${epoch} \
+      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
+      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+      --input-norm Mean \
+      --kernel-size ${kernel} --stride 2,2 --fast none1 \
+      --channels 16,32,64,128 \
+      --block-type ${block_type} \
+      --encoder-type ${encoder_type} --time-dim 1 --avg-size 5 --dropout-p 0.1 \
+      --embedding-size ${embedding_size} --alpha 0 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --check-path Data/checkpoint/${model_dir} \
+      --check-yaml Data/checkpoint/${model_dir}/model.2023.05.08.yaml \
+      --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
+      --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
+      --input-per-spks 2 --verbose 1 --gpu-id 0
+    done
+  exit
+fi
 
 if [ $stage -le 350 ]; then
   model=ThinResNet resnet_size=18
