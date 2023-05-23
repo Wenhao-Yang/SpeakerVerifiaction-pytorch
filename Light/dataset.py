@@ -12,7 +12,7 @@ import torch
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, ScriptTrainDataset, ScriptValidDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset, LmdbTrainDataset, LmdbValidDataset, Hdf5TrainDataset, Hdf5ValidDataset
 
-from Process_Data.audio_processing import ConcateNumInput, MelFbank, totensor, PadCollate3d
+from Process_Data.audio_processing import ConcateNumInput, MelFbank, totensor, PadCollate3d, stretch
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_WaveInt, read_WaveFloat
 import torchvision.transforms as transforms
 from kaldiio import load_mat

@@ -648,10 +648,7 @@ class ScriptVerifyDataset(data.Dataset):
         uid2feat = {}
         with open(feat_scp, 'r') as f:
             for line in f.readlines():
-                try:
-                    uid, feat_offset = line.split()
-                except Exception as e:
-                    pdb.set_trace()
+                uid, feat_offset = line.split()
                 uid2feat[uid] = feat_offset
 
         utts = set(uid2feat.keys())
@@ -736,8 +733,7 @@ class ScriptVerifyDataset(data.Dataset):
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
-                 vad_select=False, sample_type='instance', sr=16000,
-                 save_dir='',
+                 vad_select=False, sample_type='instance', sr=16000, save_dir='',
                  segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
         self.return_uid = return_uid
         self.domain = domain
@@ -914,7 +910,8 @@ class ScriptTrainDataset(data.Dataset):
                             valid_base_utts.append((utt, start, end))
 
                 valid_utts = pd.DataFrame(valid_base_utts, columns=['uid', 'start', 'end'])
-                valid_utts.to_csv(os.path.join(save_dir, 'valid.csv'), index=None)
+                if save_dir != '':
+                    valid_utts.to_csv(os.path.join(save_dir, 'valid.csv'), index=None)
             else:
                 valid_base_utts = pd.read_csv(os.path.join(save_dir, 'valid.csv')).to_numpy().tolist()
                 valid_uids = set([utt for utt, start, end in valid_base_utts])
@@ -1149,23 +1146,23 @@ class ScriptValidDataset(data.Dataset):
             return len(self.valid_base_utts)
         else:
             return len(self.uids)
-        
+
 
 class ScriptEvalDataset(data.Dataset):
     # dataset for inset and delete
-    def __init__(self, valid_dir, transform, feat_type='kaldi',
+    def __init__(self, select_dir, valid_dir, transform, feat_type='kaldi',
                  return_uid=False, verbose=1):
         
-        uid_file = os.path.join(valid_dir, 'uid_idx.json')
+        uid_file = os.path.join(select_dir, 'uid_idx.json')
         with open(uid_file, 'r') as f:
             uids = json.load(f)
 
-        self.data_file = os.path.join(valid_dir, 'data.h5py')
+        self.data_file = os.path.join(select_dir, 'data.h5py')
         self.grad_file = os.path.join(valid_dir, 'grad.h5py')
 
         # uids.sort()
         if verbose > 0:
-            print('Examples uids: ', uids[:4])
+            print('Examples uids: ', uids[:2])
 
         self.uids = uids
         self.transform = transform
@@ -1178,6 +1175,9 @@ class ScriptEvalDataset(data.Dataset):
 
         with h5py.File(self.grad_file, 'r') as r:
             grad = r.get(uid)[:]
+
+        if data.shape[0] > grad.shape[0]:
+            data = data[:grad.shape[0]]
 
         data = self.transform((data, grad))
         return data, idx

@@ -12,7 +12,6 @@ https://github.com/lawlict/ECAPA-TDNN/blob/master/ecapa_tdnn.py
 
 """
 import random
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -104,8 +103,7 @@ class SE_Connect(nn.Module):
 def SE_Res2Block(channels, kernel_size, stride, padding, dilation, scale):
     return nn.Sequential(
         Conv1dReluBn(channels, channels, kernel_size=1, stride=1, padding=0),
-        Res2Conv1dReluBn(channels, kernel_size, stride,
-                         padding, dilation, scale=scale),
+        Res2Conv1dReluBn(channels, kernel_size, stride, padding, dilation, scale=scale),
         Conv1dReluBn(channels, channels, kernel_size=1, stride=1, padding=0),
         SE_Connect(channels)
     )

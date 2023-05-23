@@ -435,8 +435,8 @@ def conver_to_wav(filename, write_path, format='m4a'):
 
 
 def read_MFB(filename):
-    #audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
-    #audio = audio.flatten()
+    # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
+    # audio = audio.flatten()
     try:
         audio = np.load(filename.replace('.wav', '.npy'))
     except Exception:
@@ -479,28 +479,60 @@ def read_from_npy(filename):
     :param filename: the path of wav files.
     :return:
     """
-    #audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
-    #audio = audio.flatten()
+    # audio, sr = librosa.load(filename, sr=sample_rate, mono=True)
+    # audio = audio.flatten()
     audio = np.load(filename.replace('.wav', '.npy'))
 
     return audio
 
 
-def cam_normalize(grad):
-    """sumary_line
-    
-    Keyword arguments:
-    grad -- cam
-    dim  -- dim for features
-    Return: return_description
-    """
-    dim = grad.shape[-1]
-    grad_t = grad.sum(axis=1)
-    cam_min, cam_max = grad_t.min(), grad_t.max()
+class cam_normalize(object):
+    def __init__(self, norm_type='time') -> None:
+        self.norm_type = str(norm_type)
+        pass
 
-    pre_cam = np.tile((grad_t - cam_min) / (cam_max - cam_min + 1e-8), (1, dim))
-    # pre_cam = np.int64(pre_cam > 0.6)
-    return pre_cam
+    def __call__(self, grad):
+        time_dim = grad.shape[-2]
+        freq_dim = grad.shape[-1]
+
+        if self.norm_type == 'time':
+            grad_t = np.sum(grad, axis=1, keepdims=True)
+            cam_min, cam_max = grad_t.min(), grad_t.max()
+            pre_cam = np.tile((grad_t - cam_min) / (cam_max - cam_min + 1e-8), (1, freq_dim))
+
+        elif self.norm_type == 'freq':
+            grad_f = np.sum(grad, axis=0, keepdims=True)
+            cam_min, cam_max = grad_f.min(), grad_f.max()
+            pre_cam = np.tile((grad_f - cam_min) / (cam_max - cam_min + 1e-8), (time_dim, 1))
+            
+        elif self.norm_type == 'both':
+            grad_f = np.sum(grad, axis=0, keepdims=True)
+            grad_t = np.sum(grad, axis=1, keepdims=True)
+            
+            cam_min, cam_max = grad_f.min(), grad_f.max()
+            pre_cam_f = np.tile((grad_f - cam_min) / (cam_max - cam_min + 1e-8), (time_dim, 1))
+            
+            cam_min, cam_max = grad_t.min(), grad_t.max()
+            pre_cam_t = np.tile((grad_t - cam_min) / (cam_max - cam_min + 1e-8), (1, freq_dim))
+            pre_cam = pre_cam_f * pre_cam_t
+
+        elif self.norm_type == 'avg3':
+            cam = torch.tensor(grad).unsqueeze(0)
+            pre_cam = torch.nn.functional.avg_pool2d(cam, kernel_size=3, stride=1, padding=1).squeeze().numpy()
+            # print(pre_cam.shape)
+
+        elif self.norm_type == 'avg5':
+            cam = torch.tensor(grad).unsqueeze(0)
+            pre_cam = torch.nn.functional.avg_pool2d(cam, kernel_size=5, stride=1, padding=2).squeeze()
+            
+        elif self.norm_type == 'rand':
+            cam = torch.tensor(grad)
+            pre_cam = torch.randn_like(cam).numpy()
+            
+        else:
+            pre_cam = grad
+
+        return pre_cam
 
 
 class CAMNormInput(object):
@@ -508,7 +540,7 @@ class CAMNormInput(object):
                  norm_cam=None, init_input='zero') -> None:
         self.threshold = threshold
         self.pro_type = pro_type
-        self.norm_cam = norm_cam
+        self.norm_cam = cam_normalize(norm_type=norm_cam)
         self.init_input = init_input
 
     def __call__(self, x):
@@ -529,23 +561,24 @@ class CAMNormInput(object):
             start = np.tile(start, (data.shape[0], 1))
 
         final = data.copy()
-
-        if self.norm_cam != None:
-            grad = cam_normalize(grad)
+        grad = self.norm_cam(grad)
 
         if self.pro_type in ['insertion', 'insert']:
             # 值递增，首先插入权值小的部分
             salient_order = np.flip(np.argsort(grad.reshape(H*W)), axis=0)
             threshold = self.threshold 
+            
         elif self.pro_type in ['deletion', 'del']:
             # 值递减，首先删掉权值大的部分
             salient_order = np.argsort(grad.reshape(H*W))                  
             threshold = 1 - self.threshold
-        elif self.pro_type in ['random', 'rand']:
-            salient_order = np.arange(H*W)     
-            np.random.shuffle(salient_order)             
-        elif self.pro_type in ['none']:
-            return final
+
+        # elif self.pro_type in ['random', 'rand']:
+        #     salient_order = np.arange(H*W)
+        #     threshold = self.threshold
+        #     np.random.shuffle(salient_order)             
+        # elif self.pro_type in ['none']:
+        #     return final
         
         coords = salient_order[0:int((H*W)*threshold)]
         start.reshape(H*W)[coords] = final.reshape(H*W)[coords]
@@ -1351,7 +1384,7 @@ def read_audio(filename, sample_rate=c.SAMPLE_RATE):
     audio = audio.flatten()
     return audio
 
-#this is not good
+# this is not good
 # def normalize_frames(m):
 #    return [(v - np.mean(v)) / (np.std(v) + 2e-12) for v in m]
 
@@ -1443,26 +1476,27 @@ class toMFB(object):
 class stretch(object):
     """ 'ratio'.
     """
-    
+
     def __init__(self, ratio=0.8):
         self.ratio = ratio
-        
+
     def __call__(self, input):
 
         input = librosa.effects.time_stretch(input, rate=self.ratio)
         return input
-    
+
 class pitch_shift(object):
     """ 'ratio'.
     """
     def __init__(self, step=1, sr=16000):
         self.step = step
         self.sr = sr
-        
+
     def __call__(self, input):
 
         input = librosa.effects.pitch_shift(input, sr=self.sr, n_steps=self.step)
         return input
+
 
 class totensor(object):
     """Rescales the input PIL.Image to the given 'size'.

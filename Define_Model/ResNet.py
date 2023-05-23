@@ -102,7 +102,7 @@ class Bottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
-    # This variant is also known as ResNet V1.5 and improves accuracy according to
+    # This variant is also known as ResNets V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
     expansion: int = 4
@@ -201,7 +201,7 @@ class SEBottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
-    # This variant is also known as ResNet V1.5 and improves accuracy according to
+    # This variant is also known as ResNets V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
     expansion: int = 4
@@ -495,7 +495,6 @@ class SE_Res2Block(nn.Module):
         if self.downsample is not None:
             identity = self.downsample(x)
 
-        # pdb.set_trace()
         out += identity
         out = F.relu(out)
 
@@ -848,7 +847,7 @@ class Bottleneck_v2(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
-    # This variant is also known as ResNet V1.5 and improves accuracy according to
+    # This variant is also known as ResNets V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
     expansion: int = 4
@@ -1000,7 +999,8 @@ class ThinResNet(nn.Module):
 
         input_mask = []
         filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
-                                        exp=exp, filter_fix=filter_fix)
+                                        exp=exp, filter_fix=filter_fix,
+                                        stretch_ratio=stretch_ratio, win_length=win_length, nfft=nfft)
         if filter_layer != None:
             input_mask.append(filter_layer)
             input_dim = feat_dim
@@ -1017,17 +1017,14 @@ class ThinResNet(nn.Module):
 
         self.input_mask = nn.Sequential(*input_mask)
 
-        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding,
-                               bias=first_bias)
+        self.conv1 = nn.Conv2d(1, self.num_filter[0], kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = self._norm_layer(self.num_filter[0])
         self.relu = nn.ReLU(inplace=True)
 
         if self.fast.startswith('avp'):
-            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
             self.maxpool = nn.AvgPool2d(kernel_size=(
                 3, 3), stride=(1, 2), padding=(1, 1))
         elif self.fast.startswith('av1p'):
-            # self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
             self.maxpool = nn.AvgPool2d(kernel_size=(
                 1, 3), stride=(1, 2), padding=(0, 1))
         elif self.fast.startswith('mxp'):
@@ -1076,13 +1073,10 @@ class ThinResNet(nn.Module):
             self.encoder = AttentionStatisticPooling(input_dim=encode_input_dim,
                                                      hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim * 2
-
-
         elif encoder_type in ['ASTP2', 'SASP2']:
             self.encoder = AttentionStatisticPooling_v2(
                 input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
             self.encoder_output = encode_input_dim * 2
-
         elif encoder_type == 'STAP':
             self.encoder = StatisticPooling(input_dim=encode_input_dim)
             self.encoder_output = encode_input_dim * 2
@@ -1201,17 +1195,14 @@ class ThinResNet(nn.Module):
 
         # print(x.shape)
         group1 = self.layer1(x)
-
         if proser != None and layer_mix == 3:
             group1 = self.mix(group1, proser, lamda_beta)
 
         group2 = self.layer2(group1)
-
         if proser != None and layer_mix == 4:
             group2 = self.mix(group2, proser, lamda_beta)
 
         group3 = self.layer3(group2)
-
         if proser != None and layer_mix == 5:
             group3 = self.mix(group3, proser, lamda_beta)
 
@@ -1272,7 +1263,6 @@ class ThinResNet(nn.Module):
             # half_b_label = torch.masked_select(half_label, mask=select_bool[:, 0])
             # pdb.set_trace()
             lamda_beta = np.random.beta(lamda_beta, lamda_beta)
-
             half_feat = lamda_beta * half_a_feat + \
                 (1 - lamda_beta) * half_b_feat
             # print(x[:half_batch_size].shape, half_feat.shape)
@@ -1339,7 +1329,7 @@ class ThinResNet(nn.Module):
             dim=0)
 
         return x
-    
+
     def mixstyle(self, x, shuf_half_idx_ten, lamda_beta):
         mix_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-mix_size:]
@@ -1348,7 +1338,7 @@ class ThinResNet(nn.Module):
         var = half_feats.var(dim=[2, 3], keepdim=True)
         sig = (var + 1e-6).sqrt()
         mu, sig = mu.detach(), sig.detach()
-        x_normed = (half_feats - mu ) / sig
+        x_normed = (half_feats - mu) / sig
 
         mu2, sig2 = mu[shuf_half_idx_ten], sig[shuf_half_idx_ten]
         mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)
@@ -1368,7 +1358,7 @@ class ThinResNet(nn.Module):
         # out shape = batch_size x 512 x 4 x 4 (cifar10/100)
         feat1 = half_feats.view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
         feat2 = half_feats[shuf_half_idx_ten].view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
-        
+
         sinkhorn = SinkhornDistance(eps=0.1, max_iter=100, reduction=None)
         
         P = sinkhorn(feat1.permute(0,2,1), feat2.permute(0,2,1)).detach()  # optimal plan batch x 16 x 16
@@ -1406,7 +1396,6 @@ class ThinResNet(nn.Module):
 
 
 class RepeatResNet(nn.Module):
-
     def __init__(self, resnet_size=34, block_type='None', expansion=1, channels=[16, 32, 64, 128],
                  input_len=300, inst_norm=True, input_dim=257, sr=16000, gain_axis='both',
                  first_bias=True, kernel_size=5, stride=1, padding=2,
@@ -1541,12 +1530,9 @@ class RepeatResNet(nn.Module):
             encode_input_dim = int(freq_dim * last_channel * block.expansion)
         else:
             self.avgpool = None
-            # print(input_dim, self.conv1.stride[1], last_stride, self.num_filter[3], block.expansion)
+
             encode_input_dim = int(
                 np.ceil(input_dim / self.conv1.stride[1] / 4 / last_stride) * last_channel * block.expansion)
-
-        # self.avgpool = nn.AvgPool2d(kernel_size=(3, 4), stride=(2, 1))
-        # 300 is the length of features
 
         if encoder_type == 'SAP':
             self.encoder = SelfAttentionPooling(
@@ -1940,8 +1926,6 @@ class ResNet(nn.Module):
 
 # M. Hajibabaei and D. Dai, “Unified hypersphere embedding for speaker recognition,”
 # arXiv preprint arXiv:1807.08312, 2018.
-
-
 class ResNet20(nn.Module):
     def __init__(self, num_classes=1000, embedding_size=128, dropout_p=0.0,
                  block=BasicBlock, input_frames=300, **kwargs):

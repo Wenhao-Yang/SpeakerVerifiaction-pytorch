@@ -10,17 +10,17 @@
 @Overview:
 """
 from __future__ import print_function
-from Light.dataset import Sampler_Loaders, SubScriptDatasets
+from Light.dataset import Sampler_Loaders, SubDatasets, SubScriptDatasets
 from Light.model import SpeakerLoss
 from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
 
 import argparse
-import signal
-import yaml
+# import signal
+# import yaml
 import os
 # import os.path as osp
-import pdb
+# import pdb
 import random
 import shutil
 import sys
@@ -44,8 +44,7 @@ from tqdm import tqdm
 import torch.distributed as dist
 
 from Define_Model.Optimizer import EarlyStopping
-from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
-    ScriptVerifyDataset
+from Process_Data.Datasets.KaldiDataset import ScriptVerifyDataset
 import Process_Data.constants as C
 from TrainAndTest.common_func import create_classifier, create_optimizer, create_scheduler, create_model, verification_test, verification_extract, \
     args_parse, args_model, save_model_args
@@ -98,14 +97,18 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     orth_err = 0
     total_other_loss = 0.
 
-    pbar = tqdm(enumerate(train_loader)) if torch.distributed.get_rank(
+    pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True) if torch.distributed.get_rank(
     ) == 0 else enumerate(train_loader)
 
     output_softmax = nn.Softmax(dim=1)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
     # lambda_ = (epoch / config_args['epochs']) ** 2
 
-    # start_time = time.time()
+    if 'augment_pipeline' in config_args:
+        augment_pipeline = []
+        for _, augment in enumerate(config_args['augment_pipeline']):
+            augment_pipeline.append(augment.cuda())
+
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
 
@@ -121,17 +124,44 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             batch_weight = domain_weight[domain_label]
             model.module.loss.xe_criterion.ce.reduction = 'none'
 
+        # print(data.shape)
+        # pdb.set_trace()
+        if 'augment_pipeline' in config_args:
+            with torch.no_grad():
+                wavs_aug_tot = []
+                wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
+                wavs = data.squeeze().cuda()
+
+                for count, augment in enumerate(augment_pipeline):
+                    # Apply augment
+                    wavs_aug = augment(wavs, torch.tensor([data.shape[-1]]*len(data)).cuda())
+                    # Managing speed change
+                    if wavs_aug.shape[1] > wavs.shape[1]:
+                        wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
+                    else:
+                        zero_sig = torch.zeros_like(wavs)
+                        zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
+                        wavs_aug = zero_sig
+
+                    if 'concat_augment' in config_args and config_args['concat_augment']:
+                        wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
+                    else:
+                        wavs = wavs_aug
+                        wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
+                
+                data = torch.cat(wavs_aug_tot, dim=0)
+                # print(data.shape)
+                n_augment = len(wavs_aug_tot)
+                # lens = torch.cat([lens] * n_augment)
+                label = torch.cat([label] * n_augment)
+
         if torch.cuda.is_available():
-            # label = label.cuda(non_blocking=True)
-            # data = data.cuda(non_blocking=True)
             label = label.cuda()
             data = data.cuda()
 
         data, label = Variable(data), Variable(label)
-        # print(data.shape)
         # pdb.set_trace()
         classfier, feats = model(data)
-        # print('max logit is ', classfier_label.max())
 
         loss, other_loss = model.module.loss(classfier, feats, label,
                                              batch_weight=batch_weight, epoch=epoch)
@@ -192,24 +222,16 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         # if torch.distributed.get_rank() == 0:
         if torch.distributed.get_rank() == 0 and (batch_idx + 1) % config_args['log_interval'] == 0:
-            epoch_str = 'Train Epoch {}: [ {:5>3.1f}% ]'.format(
-                epoch, 100. * batch_idx / len(train_loader))
+            epoch_str = 'Train Epoch {} '.format(epoch)
 
             if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
                     config_args['random_chunk'][
                         1]:
                 batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args else data.shape[-2]
-                epoch_str += ' Batch Len: {:>3d}'.format(batch_length)
-
-            epoch_str += ' Accuracy(%): {:>6.2f}%'.format(100. * minibatch_acc)
-
-            if other_loss != 0:
-                epoch_str += ' Other Loss: {:.4f}'.format(other_loss)
-
-            epoch_str += ' Avg Loss: {:.4f}'.format(
-                total_loss / (batch_idx + 1))
 
             pbar.set_description(epoch_str)
+            pbar.set_postfix(batch_length=batch_length, accuracy='{:>6.2f}%'.format(
+                100. * minibatch_acc), average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
 
         # if (batch_idx + 1) == 100:
         #     break
@@ -330,6 +352,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
                                                                   epoch=epoch)
     mix3 = 100. * eer * mindcf_01 * mindcf_001
     mix2 = 100. * eer * mindcf_001
+    mix8 = 100. * eer * mindcf_01
 
     if torch.distributed.get_rank() == 0:
         print('          \33[91mTrain EER: {:.4f}%, Threshold: {:.4f}, '
@@ -343,11 +366,13 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
         writer.add_scalar('Train/mindcf-0.001', mindcf_001, epoch)
         writer.add_scalar('Train/mix3', mix3, epoch)
         writer.add_scalar('Train/mix2', mix2, epoch)
+        writer.add_scalar('Train/mix8', mix8, epoch)
 
     torch.cuda.empty_cache()
 
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
-            'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2}
+            'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2,
+            'mix8': mix8}
 
 
 def main():
@@ -355,15 +380,12 @@ def main():
         description='PyTorch ( Distributed ) Speaker Recognition: Classification')
     parser.add_argument('--local_rank', default=-1, type=int,
                         help='node rank for distributed training')
-
     parser.add_argument('--train-config', default='', type=str,
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=123456,
                         help='random seed (default: 0)')
 
     args = parser.parse_args()
-    # Views the training images and displays the distance on anchor-negative and anchor-positive
-    # test_display_triplet_distance = False
     # print the experiment configuration
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
@@ -372,7 +394,6 @@ def main():
 
     # load train config file args.train_config
     with open(args.train_config, 'r') as f:
-        # config_args = yaml.load(f, Loader=yaml.FullLoader)
         config_args = load_hyperpyyaml(f)
 
     # Create logger & Define visulaize SummaryWriter instance
@@ -397,11 +418,6 @@ def main():
     torch.distributed.barrier()
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-        # opts = vars(config_args)
-        # keys = list(config_args.keys())
-        # keys.sort()
-        # options = ["\'%s\': \'%s\'" % (str(k), str(config_args[k])) for k in keys]
-        # print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
         if train_dir.num_spks != config_args['num_classes']:
             print('Number of Speakers in training set is not equal to the asigned number.\n'.format(
@@ -419,10 +435,6 @@ def main():
     else:
         create_classifier(model, **config_args)
 
-    # model_yaml_path = os.path.join(args.check_path, 'model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime()))
-    # save_model_args(model_kwargs, model_yaml_path)
-    # exit(0)
-
     start_epoch = 0
     check_path = config_args['check_path'] + '/' + str(args.seed)
     if 'finetune' not in config_args or not config_args['finetune']:
@@ -432,7 +444,6 @@ def main():
             torch.save({'state_dict': model.state_dict()}, this_check_path)
 
     # Load checkpoint
-    iteration = 0  # if args.resume else 0
     if 'fintune' in config_args:
         if os.path.isfile(config_args['resume']):
             print('=> loading checkpoint {}'.format(config_args['resume']))
@@ -481,19 +492,19 @@ def main():
         model_para = [{'params': rest_params},
                       {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
-    if 'filter' in config_args:
-        if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
-            filter_params = list(map(id, model.filter_layer.parameters()))
-            rest_params = filter(lambda p: id(
-                p) not in filter_params, model_para[0]['params'])
-            init_wd = config_args['filter_wd'] if args.filter_wd > 0 else config_args['weight_decay']
-            init_lr = config_args['lr'] * \
-                config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
-            print('Set the lr and weight_decay of filter layer to %f and %f' %
-                  (init_lr, init_wd))
-            model_para[0]['params'] = rest_params
-            model_para.append({'params': model.filter_layer.parameters(), 'lr': init_lr,
-                               'weight_decay': init_wd})
+    if 'filter_wd' in config_args:
+        # if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
+        filter_params = list(map(id, model.input_mask[0].parameters()))
+        rest_params = filter(lambda p: id(
+            p) not in filter_params, model_para[0]['params'])
+        init_wd = config_args['filter_wd'] if 'filter_wd' in config_args else config_args['weight_decay']
+        init_lr = config_args['lr'] * \
+            config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
+        print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
+
+        model_para[0]['params'] = rest_params
+        model_para.append({'params': model.input_mask[0].parameters(), 'lr': init_lr,
+                            'weight_decay': init_wd})
 
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
                   'weight_decay': config_args['weight_decay'],
@@ -507,14 +518,12 @@ def main():
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
 
-    # scheduler = create_scheduler(optimizer, config_args)
-
     # Save model config txt
     if torch.distributed.get_rank() == 0:
         with open(os.path.join(check_path,
                                'model.%s.conf' % time.strftime("%Y.%m.%d", time.localtime())),
                   'w') as f:
-            f.write('model: ' + str(model) + '\n')
+            f.write('Model:     ' + str(model) + '\n')
             f.write('Optimizer: ' + str(optimizer) + '\n')
             f.write('Scheduler: ' + str(scheduler) + '\n')
 
@@ -561,13 +570,11 @@ def main():
         print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
 
-    # if config_args['cuda']:
     if len(config_args['gpu_id']) > 1:
         print("Continue with gpu: %s ..." % str(args.local_rank))
-        model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+        # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
             model.cuda(), device_ids=[args.local_rank])
-
     else:
         model = model.cuda()
 
@@ -584,58 +591,37 @@ def main():
 
     try:
         for epoch in range(start, end):
-
-            # if torch. is_distributed():
             train_sampler.set_epoch(epoch)
             valid_sampler.set_epoch(epoch)
             train_extract_sampler.set_epoch(epoch)
-            # extract_sampler.set_epoch(epoch)
 
-            # pdb.set_trace()
             # if torch.distributed.get_rank() == 0:
-            lr_string = '\33[1;34m Ranking {}: Current \'{}\' learning rate: '.format(torch.distributed.get_rank(),
+            lr_string = '\33[1;34m Ranking {}: \'{}\' learning rate: '.format(torch.distributed.get_rank(),
                                                                                       config_args['optimizer'])
-            this_lr = []
-
-            for param_group in optimizer.param_groups:
-                this_lr.append(param_group['lr'])
-                lr_string += '{:.8f} '.format(param_group['lr'])
-
+            this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
+            lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
             print('%s \33[0m' % lr_string)
             all_lr.append(this_lr[0])
             if torch.distributed.get_rank() == 0:
                 writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             torch.distributed.barrier()
-            if not torch.distributed.is_initialized():
-                break
-
-            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
-                select_samples(train_loader, model, config_args,
-                               config_args['select_score'])
+            # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
+            #     select_samples(train_loader, model, config_args,
+            #                    config_args['select_score'])
 
             train(train_loader, model, optimizer,
                   epoch, scheduler, config_args, writer)
-            # if config_args['batch_shuffle']:
-            #     train_dir.__shuffle__()
 
             valid_loss = valid_class(
                 valid_loader, model, epoch, config_args, writer)
-
-            if config_args['early_stopping'] or (
-                    epoch % config_args['test_interval'] == 1 or epoch in config_args['milestones'] or epoch == (end - 1)):
-                valid_test_dict = valid_test(
-                    train_extract_loader, model, epoch, xvector_dir, config_args, writer)
-            else:
-                valid_test_dict = {}
-
-            # valid_test_dict = valid_test(train_extract_loader, model, epoch, xvector_dir)
-            flag_tensor = torch.zeros(1).cuda()
+            valid_test_dict = valid_test(
+                train_extract_loader, model, epoch, xvector_dir, config_args, writer)
             valid_test_dict['Valid_Loss'] = valid_loss
-            if torch.distributed.get_rank() == 0:
-                valid_test_result.append(valid_test_dict)
 
             if torch.distributed.get_rank() == 0 and config_args['early_stopping']:
+                valid_test_result.append(valid_test_dict)
+
                 early_stopping_scheduler(
                     valid_test_dict[config_args['early_meta']], epoch)
 
@@ -646,15 +632,14 @@ def main():
                     if len(all_lr) > 5 and all_lr[-5] >= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 
-            # if torch.distributed.get_rank() == 0:
-            #     flag_tensor += 1
-
+            if torch.distributed.get_rank() == 0:
+                top_k = early_stopping_scheduler.top_k()
+            else:
+                top_k = []
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
-                    end - 1) or early_stopping_scheduler.best_epoch == epoch):
+                    end - 1) or early_stopping_scheduler.best_epoch == epoch or epoch in top_k):
 
-                # if (epoch == 1 or epoch != (end - 2)) and (
-                #     epoch % config_args['test_interval'] == 1 or epoch in milestones or epoch == (end - 1)):
                 model.eval()
                 this_check_path = '{}/checkpoint_{}.pth'.format(
                     check_path, epoch)
@@ -665,17 +650,13 @@ def main():
                             'optimizer': optimizer.state_dict(),
                             }, this_check_path)
 
-                # valid_test(train_extract_loader, model, epoch, xvector_dir)
-                # test(extract_loader, model, epoch, xvector_dir)
+            check_stop = torch.tensor(
+                int(early_stopping_scheduler.early_stop)).cuda()
+            dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
 
-                if config_args['early_stopping']:
-                    pass
-                # elif early_stopping_scheduler.best_epoch == epoch or (
-                #         args.early_stopping == False and epoch % args.test_interval == 1):
-                # elif epoch % config_args['test_interval'] == 1:
-                #     test(extract_loader, model, epoch, xvector_dir)
-
-                if early_stopping_scheduler.early_stop:
+            if check_stop:
+                end = epoch
+                if torch.distributed.get_rank() == 0:
                     print('Best Epoch is %d:' %
                           (early_stopping_scheduler.best_epoch))
                     best_epoch = early_stopping_scheduler.best_epoch
@@ -703,20 +684,12 @@ def main():
                                     '{}/best.pth'.format(check_path))
                     except Exception as e:
                         print(e)
-
-                    flag_tensor += 1
-
-            dist.all_reduce(flag_tensor, op=dist.ReduceOp.SUM)
-            # torch.distributed.barrier()
-            if flag_tensor >= 1:
-                end = epoch
-                # print('Rank      ', torch.distributed.get_rank(), '      stopped')
                 break
 
             if config_args['scheduler'] == 'rop':
                 scheduler.step(valid_loss)
             elif config_args['scheduler'] == 'cyclic':
-                continue
+                pass
             else:
                 scheduler.step()
 
@@ -730,11 +703,8 @@ def main():
         writer.close()
         print("Running %.4f minutes for each epoch.\n" %
               (t / 60 / (max(end - start, 1))))
-    # pdb.set_trace()
-    # torch.distributed.destroy_process_group()
-    # torch.distributed.des
-    time.sleep(10)
-    os.kill(os.getpid(), signal.SIGKILL)
+
+    time.sleep(5)
     exit(0)
 
 

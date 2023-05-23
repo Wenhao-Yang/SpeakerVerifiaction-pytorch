@@ -9,6 +9,7 @@
 @Time: 2020/8/20 16:55
 @Overview:
 """
+import json
 import os
 import random
 import h5py
@@ -1270,14 +1271,14 @@ class Hdf5TrainDataset(Dataset):
 
             start = 0 if self.utt2num_frames[uid] <= self.segment_len else np.random.randint(
                 0, self.utt2num_frames[uid] - self.segment_len)
-            
+
             end = start + self.segment_len
 
         # reader =  h5py.File(self.hdf5_file, 'r') as reader:
         # y = self.loader(self.reader, uid, start=start, stop=end)
         y = self.loader(self.hdf5_file, uid, start=start, stop=end)
             # y = np.concatenate((y, feature), axis=self.c_axis)
-        feature = self.transform(y.reshape(1,-1))
+        feature = self.transform(y.reshape(1, -1))
         # print(sid)
         label = sid
 
@@ -1288,7 +1289,7 @@ class Hdf5TrainDataset(Dataset):
 
 
 class Hdf5ValidDataset(Dataset):
-    def __init__(self, valid_set, spk_to_idx, hdf5_file, 
+    def __init__(self, valid_set, spk_to_idx, hdf5_file,
                  valid_utt2spk_dict, transform, feat_dim=0, loader=_read_from_hdf5,
                  return_uid=False, verbose=0):
         self.reader = hdf5_file
@@ -1326,6 +1327,39 @@ class Hdf5ValidDataset(Dataset):
             return feature, label, uid
 
         return feature, label
+
+    def __len__(self):
+        return len(self.uids)
+
+
+class Hdf5DelectDataset(Dataset):
+    # dataset for inset and delete
+    def __init__(self, select_dir, transform, feat_type='hdf5',
+                 return_uid=False, verbose=1):
+        
+        uid_file = os.path.join(select_dir, 'uid_idx.json')
+        with open(uid_file, 'r') as f:
+            uids = json.load(f)
+
+        self.data_file = os.path.join(select_dir, 'data.h5py')
+
+        # uids.sort()
+        if verbose > 0:
+            print('Examples uids: ', uids[:2])
+
+        self.uids = uids
+        self.transform = transform
+
+    def __getitem__(self, index):
+        uid, idx = self.uids[index]
+
+        with h5py.File(self.data_file, 'r') as r:
+            data = r.get(uid)[:]
+
+        feature = self.transform(data)
+        label = idx
+
+        return feature, label, uid
 
     def __len__(self):
         return len(self.uids)

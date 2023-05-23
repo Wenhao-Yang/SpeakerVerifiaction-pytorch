@@ -12,6 +12,7 @@
 
 import argparse
 import json
+import fcntl
 import os
 import pdb
 import pickle
@@ -75,12 +76,14 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else nn.PairwiseD
 
 if args.test_input == 'var':
     transform = transforms.Compose([
-        CAMNormInput(threshold=args.threshold, pro_type=args.pro_type, init_input=args.init_input),
+        CAMNormInput(threshold=args.threshold, pro_type=args.pro_type, 
+                     norm_cam=args.norm_cam, init_input=args.init_input),
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
 elif args.test_input == 'fix':
     transform = transforms.Compose([
-        CAMNormInput(threshold=args.threshold, pro_type=args.pro_type, init_input=args.init_input),
+        CAMNormInput(threshold=args.threshold, pro_type=args.pro_type,
+                     norm_cam=args.norm_cam, init_input=args.init_input),
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
@@ -88,22 +91,26 @@ file_loader = read_mat
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
                                loader=file_loader, transform=transform, return_uid=True, verbose=0)
 
-valid_dir = ScriptEvalDataset(valid_dir=args.eval_dir, transform=transform)
+valid_dir = ScriptEvalDataset(select_dir=args.select_input_dir,
+                              valid_dir=args.eval_dir, transform=transform)
 
 def valid_eval(valid_loader, model, file_dir, set_name):
     # switch to evaluate mode
     model.eval()
 
-    label_pred = []
+    # label_pred = []
     pbar = tqdm(enumerate(valid_loader))
     output_softmax = nn.Softmax(dim=1)
     correct = .0
     total = .0
 
-    if args.init_input == "zero":
-        result_file = file_dir + '/result.json'
-    else:
-        result_file = file_dir + '/result.%s.json'%(args.init_input)
+    result_file_suffix = ''
+    result_file_suffix += '.' + args.init_input
+    
+    if args.norm_cam != 'none':
+        result_file_suffix += '.' + args.norm_cam
+
+    result_file = file_dir + '/result{}.json'.format(result_file_suffix)
 
     with torch.no_grad():
         for batch_idx, (data, label) in pbar:
@@ -129,15 +136,20 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                     batch_idx + 1,
                     100. * batch_idx / len(valid_loader)))
 
-        if os.path.exists(result_file):
-            with open(result_file, 'r') as f:
+        if not os.path.exists(result_file):
+            results = [[args.pro_type, args.threshold, correct/total*100]]
+            with open(result_file, "w") as f:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                json.dump(results, f)
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        else:
+            with open(result_file, 'r+') as f:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 results = json.load(f)
                 results.append([args.pro_type, args.threshold, correct/total*100])
-        else:
-            results = [[args.pro_type, args.threshold, correct/total*100]]
-
-        with open(result_file, "w") as f:
-            json.dump(results, f)
+                f.seek(0)
+                json.dump(results, f)
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
         # label_pred.append(['accuracy', correct/total*100])
         # filename = file_dir + '/label_pred.%s.%.4f.json' % (args.pro_type, args.threshold)
@@ -148,7 +160,8 @@ def valid_eval(valid_loader, model, file_dir, set_name):
         # with open(filename, 'wb') as f:
         #     pickle.dump(label_pred, f)
         if args.verbose > 0:
-            print('Saving results in %s.\n' % result_file)
+            print('Saving Type {}_{} threshold: {:.4f} in \n\t{}\n'.format(args.pro_type, args.init_input, args.threshold,
+                                                                       result_file.lstrip('Data/gradient/')))
 
         torch.cuda.empty_cache()
 
@@ -218,11 +231,11 @@ def main():
             continue
         model.cuda()
 
-        file_dir = args.extract_path + '/epoch_%d' % e
+        file_dir = args.extract_path # + '/epoch_%d' % e
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
 
-        valid_eval(valid_loader, model, file_dir, '%s_valid'%args.train_set_name)
+        valid_eval(valid_loader, model, file_dir, '%s_valid'% args.train_set_name)
 
 
 if __name__ == '__main__':

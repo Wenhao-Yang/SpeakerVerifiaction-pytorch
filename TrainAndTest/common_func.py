@@ -15,7 +15,7 @@ import pdb
 import time
 
 # import kaldi_io
-import kaldi_io
+from hyperpyyaml import load_hyperpyyaml
 import kaldiio
 import numpy as np
 import torch
@@ -245,7 +245,6 @@ class AverageMeter(object):
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
                          ark_num=50000, gpu=True, mean_vector=True, feat_type='kaldi',
                          verbose=0, xvector=False):
-                         verbose=0, xvector=False, num_utts=50000):
     """
 
     :param extract_loader:
@@ -278,7 +277,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             os.makedirs(xvector_dir)
     # pbar =
     pbar = tqdm(extract_loader, ncols=100) if verbose > 0 else extract_loader
-    
+
     if isinstance(model, DistributedDataParallel):
         if torch.distributed.get_rank() == 0:
             if not os.path.exists(xvector_dir):
@@ -288,7 +287,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             os.makedirs(xvector_dir)
     # pbar =
     pbar = tqdm(extract_loader, ncols=100) if verbose > 0 else extract_loader
-
+    
     uid2vectors = []
     with torch.no_grad():
         if test_input == 'fix':
@@ -316,8 +315,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                             data_part = data_part.cuda() if next(model.parameters()).is_cuda else data_part
                             model_out = encode_func(data_part)
 
-                            model_out = model.xvector(
-                                data_part) if xvector else model(data_part)
                             if isinstance(model_out, tuple):
                                 try:
                                     _, out_part, _, _ = model_out
@@ -333,8 +330,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                         data = data.cuda() if next(model.parameters()).is_cuda else data
                         model_out = encode_func(data)
 
-                        model_out = model.xvector(
-                            data) if xvector else model(data)
                         if isinstance(model_out, tuple):
                             try:
                                 _, out, _, _ = model_out
@@ -418,7 +413,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if isinstance(model_out, tuple):
                     if len(model_out) == 4:
                         _, out, _, _ = model_out
-
                     elif len(model_out) == 2:
                         _, out = model_out
                 else:
@@ -474,7 +468,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
 def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False,
                       verbose=0):
-def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
     # switch to evaluate mode
     labels, distances = [], []
     dist_fn = nn.CosineSimilarity(dim=1).cuda(
@@ -540,7 +533,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch):
                 labels = np.concatenate(valid_labels)
             except Exception as e:
                 print(e)
-                print(all_distances)  # , all_labels)
+                # print(all_distances)  # , all_labels)
             # print('uid2vectors:', len(uid2vectors))
 
             labels = np.array(
@@ -622,6 +615,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     # Data options
     parser.add_argument('--train-dir', type=str, help='path to dataset')
+    parser.add_argument('--sr', default=16000,
+                        type=int, help='replace batchnorm with instance norm')
     parser.add_argument('--coreset-percent', default=0.0,
                         type=float, help='replace batchnorm with instance norm')
     parser.add_argument('--select-score', default='loss',
@@ -641,26 +636,6 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--target-ratio', default=0.5,
                         type=float, help='replace batchnorm with instance norm')
     parser.add_argument('--inter-ratio', default=0.2, type=float,
-                        help='replace batchnorm with instance norm')
-
-    parser.add_argument('--train-dir', type=str,
-                        help='path to dataset')
-    parser.add_argument('--train-test-dir', type=str, help='path to dataset')
-    parser.add_argument('--noise-padding-dir', type=str,
-                        default='', help='path to dataset')
-
-    parser.add_argument('--valid-dir', type=str, help='path to dataset')
-    parser.add_argument('--test-dir', type=str,
-                        help='path to voxceleb1 test dataset')
-    parser.add_argument('--class-weight', type=str, default='',
-                        help='path to voxceleb1 test dataset')
-    parser.add_argument('--max-cls-weight', default=0.8,
-                        type=float, help='replace batchnorm with instance norm')
-    parser.add_argument('--target-ratio', default=0.5,
-                        type=float, help='replace batchnorm with instance norm')
-    parser.add_argument('--inter-ratio', default=0.2, type=float,
-                        help='replace batchnorm with instance norm')
-    parser.add_argument('--coreset-percent', default=0, type=float,
                         help='replace batchnorm with instance norm')
 
     parser.add_argument('--log-scale', action='store_true',
@@ -700,8 +675,10 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         metavar='NJOB', help='num of job')
     parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy', 'wav'],
                         help='number of jobs to make feats (default: 10)')
+    parser.add_argument('--wav-type', type=str, default='int', choices=['int', 'float'],
+                        help='number of jobs to make feats (default: 10)')
 
-    parser.add_argument('--check-path', type=str,
+    parser.add_argument('--check-path',
                         help='folder to output model checkpoints')
     parser.add_argument('--check-yaml', type=str,
                         default='', help='path to model yaml')
@@ -830,23 +807,6 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--fast', type=str, default='None',
                         help='max pooling for fast')
 
-    parser.add_argument('--ring', default=12, type=float,
-                        metavar='RING', help='acoustic feature dimension')
-
-    parser.add_argument('--first-bias', action='store_false',
-                        default=True, help='using Cosine similarity')
-    parser.add_argument('--kernel-size', default='5,5', type=str,
-                        metavar='KE', help='kernel size of conv filters')
-    parser.add_argument('--context', default='5,3,3,5', type=str,
-                        metavar='KE', help='kernel size of conv filters')
-
-    parser.add_argument('--padding', default='', type=str,
-                        metavar='KE', help='padding size of conv filters')
-    parser.add_argument('--stride', default='1', type=str,
-                        metavar='ST', help='stride size of conv filters')
-    parser.add_argument('--fast', type=str, default='None',
-                        help='max pooling for fast')
-
     parser.add_argument('--cos-sim', action='store_true',
                         default=False, help='using Cosine similarity')
     parser.add_argument('--avg-size', type=int, default=4,
@@ -891,6 +851,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     parser.add_argument('--lamda-beta', type=float, default=0.2,
                         help='the alpha for beta distribution')
     parser.add_argument('--mixup-type', type=str, default='input',
+                        help='the mixup type to linear interplotation')
+    parser.add_argument('--mix-type', type=str, default='mixup',
                         help='the mixup type to linear interplotation')
 
     parser.add_argument('--lncl', action='store_true',
@@ -1011,10 +973,13 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     if 'Gradient' in description:
         parser.add_argument('--eval-dir', type=str, help='path to voxceleb1 test dataset')
+        parser.add_argument('--select-input-dir', type=str, help='path to voxceleb1 test dataset')
         parser.add_argument('--threshold', type=float, default=0.1, metavar='E', help='number of epochs to train (default: 10)')
         parser.add_argument('--pro-type', choices=['del', 'insert', 'none', 'rand'], default='insert',
                     help='choose the acoustic features type.')
-        parser.add_argument('--init-input', choices=['zero', 'mean'], default='zero',
+        parser.add_argument('--init-input', choices=['zero', 'mean', 'rand'], default='zero',
+                    help='choose the acoustic features type.')
+        parser.add_argument('--norm-cam', choices=['time', 'freq', 'both', 'avg3', 'avg5', 'none'], default='none',
                     help='choose the acoustic features type.')
         parser.add_argument('--train-set-name', type=str,
                             required=True, help='path to voxceleb1 test dataset')
@@ -1033,7 +998,6 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             default=['conv1', 'layer1.0.conv2', 'conv2',
                                      'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
                             nargs='+', metavar='CAML', help='The channels of convs layers)')
-                            type=list, metavar='CAML', help='The channels of convs layers)')
         parser.add_argument('--layer-weight', action='store_true',
                             default=False, help='backward after softmax normalization')
         parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
@@ -1151,7 +1115,7 @@ def args_model(args, train_dir):
 
     model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
                     'context': context, 'filter_fix': args.filter_fix, 'dilation': dilation,
-                    'expansion': args.expansion, 'first_bias': args.first_bias,
+                    'expansion': args.expansion,
                     'first_2d': args.first_2d, 'red_ratio': args.red_ratio, 'activation': args.activation,
                     'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
                     'filter': args.filter, 'exp': args.exp, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
@@ -1269,7 +1233,6 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
                         help='manual epoch number (useful on restarts)')
 
     parser.add_argument('--alpha', default=1, type=float,
-    parser.add_argument('--alpha', default=12, type=float,
                         metavar='FEAT', help='acoustic feature dimension')
     parser.add_argument('--ring', default=12, type=float,
                         metavar='FEAT', help='acoustic feature dimension')
@@ -1376,7 +1339,7 @@ def save_model_args(model_dict, save_path):
 
 def load_model_args(model_yaml):
     with open(model_yaml, 'r') as f:
-        model_args = yaml.load(f, Loader=yaml.FullLoader)
+        model_args = load_hyperpyyaml(f)
 
     if 'normalize' not in model_args:
         model_args['normalize'] = True
