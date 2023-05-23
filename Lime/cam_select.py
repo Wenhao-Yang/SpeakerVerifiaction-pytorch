@@ -29,7 +29,7 @@ import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from kaldi_io import read_mat
+from kaldiio import load_mat
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -38,7 +38,7 @@ from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 # from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
-from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput
+from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput, read_WaveFloat, read_WaveInt
 from TrainAndTest.common_func import create_model, load_model_args, args_model, args_parse
 
 # Version conflict
@@ -81,8 +81,17 @@ elif args.test_input == 'fix':
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
-file_loader = read_mat
+feat_type = 'kaldi'
+if args.feat_format == 'npy':
+    file_loader = np.load
+elif args.feat_format in ['kaldi', 'klfb', 'klsp']:
+    file_loader = load_mat
+elif args.feat_format == 'wav':
+    file_loader = read_WaveInt if args.wav_type == 'int' else read_WaveFloat
+    feat_type = 'wav'
+
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
+                               feat_type=feat_type,
                                loader=file_loader, transform=transform, return_uid=True)
 
 def train_extract(train_loader, file_dir):

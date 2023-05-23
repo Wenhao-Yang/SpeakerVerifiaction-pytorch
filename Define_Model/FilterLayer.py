@@ -43,7 +43,7 @@ class fDLR(nn.Module):
         centers = np.linspace(0, hz2mel(sr / 2), num_filter + 2)
         centers = mel2hz(centers)
         self.frequency_center = nn.Parameter(torch.from_numpy(centers[1:-1]).float().reshape(num_filter, 1),
-                                             requFires_grad=requires_grad)
+                                             requires_grad=requires_grad)
 
         bandwidth = []
         for i in range(2, len(centers)):
@@ -222,7 +222,7 @@ class MelFbankLayer(nn.Module):
         output = self.t(input.squeeze(1))
 
         output = torch.transpose(output, 2, 3)
-        return torch.log(output + 1e-6)
+        return torch.log10(output + 1e-6)
 
     def __repr__(self):
         return "MelFbankLayer(sr={}, num_filter={}, stretch_ratio={})".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
@@ -339,12 +339,12 @@ class SparseFbankLayer(nn.Module):
         stretch_ratio = np.random.choice(self.stretch_ratio)
         if stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram, stretch_ratio)
-        
+
         # print(specgram.shape)
         # specgram = specgram.pow(2).sum(-1)
         # normalize
         weight = self.SpareFbank.data
-        self.SpareFbank.data = (weight/ weight.norm(p=2, dim=0).reshape(1,-1)).abs()
+        self.SpareFbank.data = (weight / weight.norm(p=2, dim=0).reshape(1,-1)).abs()
 
         output = torch.transpose(specgram.squeeze(1), 1, 2)
         # print(output.shape, self.SpareFbank.shape)
@@ -1046,18 +1046,19 @@ class FrequencyReweightLayer(nn.Module):
 
     def forward(self, x):
         """sumary_line
-        
+
         Keyword arguments:
         X -- batch, channel, time, frequency
         Return: x + U
         """
         # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
         F = 1 + self.activation(self.weight)
-        
+
         return x * F
 
     def __repr__(self):
-        return "FrequencyReweightLayer(input_dim=%d)" % (self.input_dim)   
+        return "FrequencyReweightLayer(input_dim=%d)" % (self.input_dim)
+
 
 class FrequencyNormReweightLayer(nn.Module):
     def __init__(self, input_dim=161):
@@ -1141,8 +1142,7 @@ class AttentionweightLayer_v2(nn.Module):
 
         self.w = nn.Parameter(torch.tensor(2.0))
         self.b = nn.Parameter(torch.tensor(-1.0))
-        # self.s = nn.Parameter(torch.tensor(0.5))
-        # self.drop_p = ynew  # * dropout_p
+
         self.drop_p = nn.Parameter(torch.tensor(
             get_weight(weight, input_dim, weight_norm)).float())
         self.activation = nn.Sigmoid()
@@ -1156,7 +1156,6 @@ class AttentionweightLayer_v2(nn.Module):
         # if x.is_cuda:
         #     drop_weight = drop_weight.cuda()
         drop_weight = self.w * drop_weight + self.b
-        # drop_weight = (drop_weight - drop_weight.mean()) / self.s.clamp(min=0.0625, max=2.0)
         drop_weight = self.activation(drop_weight)
 
         return x * drop_weight

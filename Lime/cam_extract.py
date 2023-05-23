@@ -19,6 +19,7 @@ import pickle
 import random
 import time
 from collections import OrderedDict
+from Process_Data.Datasets.LmdbDataset import Hdf5DelectDataset
 import Process_Data.constants as c
 import h5py
 
@@ -81,9 +82,13 @@ elif args.test_input == 'fix':
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
-file_loader = read_mat
-train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
-                               loader=file_loader, transform=transform, return_uid=True)
+# file_loader = read_mat
+# train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
+#                                loader=file_loader, transform=transform, return_uid=True)
+
+train_dir = Hdf5DelectDataset(select_dir=args.select_input_dir, 
+                              transform=transform)
+
 # indices = list(range(len(train_dir)))
 # random.shuffle(indices)
 # indices = indices[:args.sample_utt]
@@ -131,8 +136,8 @@ def _extract_layer_grads(module, in_grad, out_grad):
     global in_feature_grads
     global out_feature_grads
     if not module.bias is None:
-        in_feature_grads.append(in_grad[0])
-        out_feature_grads.append(out_grad[0])
+        in_feature_grads.append(in_grad[0].detach())
+        out_feature_grads.append(out_grad[0].detach())
 
 def _extract_layer_feat(module, input, output):
     # function to collect the gradient outputs from each layer
@@ -142,8 +147,8 @@ def _extract_layer_feat(module, input, output):
     #     if not module.bias is None:
     global in_layer_feat
     global in_layer_feat
-    in_layer_feat.append(input[0])
-    out_layer_feat.append(output[0])
+    in_layer_feat.append(input[0].detach())
+    out_layer_feat.append(output[0].detach())
 
 def _extract_layer_grad(module, in_grad, out_grad):
     # function to collect the gradient outputs from each layer
@@ -152,8 +157,8 @@ def _extract_layer_grad(module, in_grad, out_grad):
     #     print('Output_grad shape:', out_grad[0].shape)
     global in_layer_grad
     global out_layer_grad
-    in_layer_grad.append(in_grad[0])
-    out_layer_grad.append(out_grad[0])
+    in_layer_grad.append(in_grad[0].detach())
+    out_layer_grad.append(out_grad[0].detach())
 
 
 def calculate_outputs_and_gradients(inputs, model, target_label_idx):
@@ -179,7 +184,7 @@ def calculate_outputs_and_gradients(inputs, model, target_label_idx):
         model.zero_grad()
         output.backward()
 
-        gradient = s.grad
+        gradient = s.grad.detach()#.cpu()
         gradients.append(gradient)
 
     gradients = torch.cat(gradients)
@@ -191,8 +196,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     # switch to evaluate mode
     model.eval()
 
-    input_grads = []
-    inputs_uids = []
+    # input_grads = []
+    # inputs_uids = []
     pbar = tqdm(enumerate(train_loader), total=len(train_loader))
     global out_feature_grads
     global in_feature_grads
@@ -207,19 +212,18 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
     correct = .0
     total = .0
+    max_inputs = 0
 
-    data_file = file_dir + '/data.h5py'
+    # data_file = file_dir + '/data.h5py'
     grad_file = file_dir + '/grad.h5py'
 
-    with h5py.File(data_file, 'w') as df, h5py.File(grad_file, 'w') as gf:
+    with  h5py.File(grad_file, 'w') as gf:
         for batch_idx, (data, label, uid) in pbar:
-
-            # orig = data.detach().numpy().squeeze().astype(np.float32)
-            spks = [train_dir.utt2spk_dict[u] for u in uid]
-            target_label_index = [train_dir.spk_to_idx[s] for s in spks]
-            label = torch.LongTensor(target_label_index)
-
-            if data.shape[2] >= 5 * c.NUM_FRAMES_SPECT:
+            # pdb.set_trace()
+            label = torch.LongTensor(label)
+            max_inputs = max(max_inputs, data.shape[-2])
+            max_lenght =  5 * c.NUM_FRAMES_SPECT
+            if data.shape[2] >= max_lenght:
                 num_half = int(data.shape[2] / (4 * c.NUM_FRAMES_SPECT))
                 rest_frame = data.shape[2] % num_half
                 if rest_frame > 0:
@@ -227,15 +231,21 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 else:
                     x = data.chunk(num_half, dim=2)
                 data = torch.cat(x, dim=0)
-
+            
+            torch.cuda.empty_cache()
             # data = Variable(data.cuda(), requires_grad=True)
             ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
             baseline = None
 
             if len(data) == 1:
-                data = Variable(data.cuda(), requires_grad=True)
                 if args.cam in ['gradient', 'grad_cam', 'grad_cam_pp', 'fullgrad', 'acc_grad', 'layer_cam', 'acc_input']:
-                    logit, _ = model(data)
+                    data = Variable(data.cuda(), requires_grad=True)
+                    try:
+                        logit, _ = model(data)
+                    except Exception as e:
+                        print(data.shape, ",", uid, max_inputs)
+                        pdb.set_trace()
+                        raise e
                     classifed = logit[0] if args.loss_type == 'asoft' else logit
 
                     if args.softmax:
@@ -248,7 +258,9 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     try:
                         classifed[0][label.long()].backward()
                     except Exception as e:
-                        print(data.shape, ",", uid)
+                        print(data.shape, ",", uid, max_inputs)
+                        pdb.set_trace()
+                        print("out_feature_grads:", len(out_feature_grads))
                         raise e
 
                     if args.cam == 'gradient':
@@ -291,7 +303,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         grad = (last_feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
 
                         if args.zero_padding and grad.shape[-1] < data.shape[-1]:
-                                grad = zeros(grad)
+                            grad = zeros(grad)
 
                         grad = ups(grad)
 
@@ -302,7 +314,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     elif args.cam == 'fullgrad':
                         # full grad
                         input_gradient = (data.grad * data)
-                        full_grad = input_gradient.clone().abs()
+                        full_grad = input_gradient.abs()#.cpu()
                         full_grad -= full_grad.min()
                         full_grad /= full_grad.max() + 1e-8
 
@@ -311,13 +323,15 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             bias = biases[L - i - 1]
                             if len(bias.shape) == 1:
                                 bias = bias.reshape(1, -1, 1, 1)
-                            if len(out_feature_grads[i].shape) == 3:
+
+                            grads_shape = out_feature_grads[i].shape
+
+                            if len(grads_shape) == 3:
                                 # pdb.set_trace()
-                                if bias.shape[1] == out_feature_grads[i].shape[-1]:
-                                    if bias.shape[1] % model.avgpool.output_size[1] == 0:
+                                if bias.shape[1] == grads_shape[-1]:
+                                    if model.avgpool != None and bias.shape[1] % model.avgpool.output_size[1] == 0:
                                         bias = bias.reshape(
                                             1, -1, 1, model.avgpool.output_size[1])
-                                        grads_shape = out_feature_grads[i].shape
                                         out_feature_grads[i] = out_feature_grads[i].reshape(1, -1, grads_shape[1],
                                                                                             model.avgpool.output_size[1])
                                     else:
@@ -341,8 +355,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                         # full_grad -= full_grad.min()
                         # full_grad = full_grad.abs()
-                        full_grad -= full_grad.min()
-                        full_grad /= full_grad.max() + 1e-8
+                        # full_grad -= full_grad.min()
+                        # full_grad /= full_grad.max() + 1e-8
                         grad = full_grad#.detach().cpu()
 
                     elif args.cam == 'acc_grad':
@@ -505,8 +519,8 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                             grad_a = (last_feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
 
-                            if args.zero_padding and grad.shape[-1] < data_a.shape[-1]:
-                                grad = zeros(grad)
+                            if args.zero_padding and grad_a.shape[-1] < data_a.shape[-1]:
+                                grad_a = zeros(grad_a)
 
                             grad_a = ups(grad_a)
 
@@ -517,7 +531,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         elif args.cam == 'fullgrad':
                             # full grad
                             input_gradient = (data_a.grad * data_a)
-                            full_grad = input_gradient.clone().abs()
+                            full_grad = input_gradient.cpu().abs()
                             full_grad -= full_grad.min()
                             full_grad /= full_grad.max() + 1e-8
 
@@ -526,14 +540,15 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                                 bias = biases[L - j - 1]
                                 if len(bias.shape) == 1:
                                     bias = bias.reshape(1, -1, 1, 1)
+                                grads_shape = out_feature_grads[j].shape
 
-                                if len(out_feature_grads[j].shape) == 3:
+                                if len(grads_shape) == 3:
                                     # pdb.set_trace()
-                                    if bias.shape[1] == out_feature_grads[j].shape[-1]:
-                                        if bias.shape[1] % model.avgpool.output_size[1] == 0:
+                                    if bias.shape[1] == grads_shape[-1]:
+                                        if model.avgpool != None and bias.shape[1] % model.avgpool.output_size[1] == 0:
                                             bias = bias.reshape(
                                                 1, -1, 1, model.avgpool.output_size[1])
-                                            grads_shape = out_feature_grads[j].shape
+                                            
                                             out_feature_grads[j] = out_feature_grads[j].reshape(1, -1, grads_shape[1],
                                                                                                 model.avgpool.output_size[
                                                                                                     1])
@@ -663,16 +678,14 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
             out_layer_grad = []
 
             grad = grad.cpu().detach().numpy().squeeze().astype(np.float32)
-            data = data.data.cpu().numpy().squeeze().astype(np.float32)
-
+            # data = data.data.cpu().numpy().squeeze().astype(np.float32)
             if args.revert:
                 grad = grad.transpose()
                 data = data.transpose()
 
-            df.create_dataset(uid[0], data=data)
+            # df.create_dataset(uid[0], data=data)
             gf.create_dataset(uid[0], data=grad)
-
-            inputs_uids.append([uid[0], int(label.numpy()[0])])
+            # inputs_uids.append([uid[0], int(label.numpy()[0])])
 
             model.zero_grad()
             if batch_idx % args.log_interval == 0:
@@ -681,26 +694,18 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     batch_idx + 1,
                     len(train_loader.dataset),
                     100. * batch_idx / len(train_loader)))
-
-            # if (batch_idx + 1) % save_per_num == 0 or (batch_idx + 1) == len(train_loader.dataset):
-            #     num = batch_idx // save_per_num if batch_idx + 1 % save_per_num == 0 else batch_idx // save_per_num + 1
-                # break
-                # checkpoint_dir / extract / < dataset > / < set >.*.bin
-                # filename = file_dir + '/%s.%d.bin' % (set_name, num)
-                # with open(filename, 'wb') as f:
-                #     pickle.dump(input_grads, f)
-                # with open(file_dir + '/uid_idx.%s.%d.json' % (set_name, num), 'w') as f:
-                #     json.dump(inputs_uids, f)
-                # input_grads = []
-                # inputs_uids = []
-            if (batch_idx + 1) == len(train_loader.dataset):
-                df.create_dataset('accuracy', data=np.array([correct/total*100]))
+                
+            # if batch_idx % 50 == 1:
 
     # pdb.set_trace()
-    with open(file_dir + '/uid_idx.json', 'w') as f:
-        json.dump(inputs_uids, f)
+    # with open(file_dir + '/uid_idx.json', 'w') as f:
+    #     json.dump(inputs_uids, f)
 
-    print('Predict Accuracy: {:.2f}%...'.format(correct/total*100))
+    try:
+        print('Predict Accuracy: {:.2f}%...'.format(correct/total*100))
+    except Exception as e:
+        pass
+
     print('Saving pairs in %s.\n' % file_dir)
     torch.cuda.empty_cache()
 
@@ -785,20 +790,26 @@ def main():
     # instantiate model and initialize weights
     if args.check_yaml != None and os.path.exists(args.check_yaml):
         if args.verbose > 0:
-            print('\nLoading model weights from: {}'.format(args.check_yaml))
+            print('\nLoading model check yaml from: \n\t{}'.format(args.check_yaml.lstrip('Data/checkpoint/')))
         model_kwargs = load_model_args(args.check_yaml)
     else:
-        model_kwargs = args_model(args, train_dir)
+        print('Error in finding check yaml file:\n{}'.format(args.check_yaml))
+        exit(0)
+        # model_kwargs = args_model(args, train_dir)
 
-    keys = list(model_kwargs.keys())
-    keys.sort()
-    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    if 'embedding_model' in model_kwargs:
+        model = model_kwargs['embedding_model']
+        if 'classifier' in model_kwargs:
+            model.classifier = model_kwargs['classifier']
+    else:
+        if args.verbose > 0: 
+            keys = list(model_kwargs.keys())
+            keys.sort()
+            model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+            print('Model options: \n{ %s }' % (', '.join(model_options)))
+            print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
-    if args.verbose > 0:
-        print('Model options: \n{ %s }' % (', '.join(model_options)))
-        print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
-
-    model = create_model(args.model, **model_kwargs)
+        model = create_model(args.model, **model_kwargs)
 
     train_loader = DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     # veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
@@ -815,7 +826,8 @@ def main():
     for ep in epochs:
         # Load model from Checkpoint file
         if os.path.isfile(resume_path.format(ep)):
-            print('=> loading checkpoint {}'.format(resume_path.format(ep)))
+            if args.verbose > 1:
+                print('=> loading checkpoint {}'.format(resume_path.format(ep)))
             checkpoint = torch.load(resume_path.format(ep))
             checkpoint_state_dict = checkpoint['state_dict']
             if isinstance(checkpoint_state_dict, tuple):
@@ -841,6 +853,12 @@ def main():
         else:
             print('=> no checkpoint found at %s' % resume_path.format(ep))
             continue
+
+        if args.feat_format == 'wav':
+            trans = model.input_mask[0]
+            model.input_mask.__delitem__(0)
+            transform.transforms.append(trans)
+
         model.cuda()
 
         # cam_layers = ['conv1', 'layer1.2.conv2']
@@ -863,23 +881,22 @@ def main():
                     if not ('fc' in name or 'classifier' in name or 'CBAM' in name):
                         b = extract_layer_bias(m)
                         if (b is not None):
-                            biases.append(b)
+                            biases.append(b.detach().cpu())
                             bias_layers.append(name)
                             m.register_backward_hook(_extract_layer_grads)
 
                 except Exception as e:
                     continue
 
-        if args.verbose > 1 and args.cam == 'fullgrad':
+        if args.verbose > 0 and args.cam == 'fullgrad':
             print("The number of layers with biases: {}".format(len(biases)))
 
         if args.verbose > 0 :
             print("Valid layers for {}: {}".format(args.cam, " ".join(valid_layers)))
 
-        valid_layers
         print('')
 
-        file_dir = args.extract_path + '/epoch_%d' % ep
+        file_dir = args.extract_path # + '/epoch_%d' % ep
         if args.cam == 'acc_input' and args.layer_weight:
             file_dir += '_layer_weight'
 

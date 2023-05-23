@@ -1166,7 +1166,7 @@ class ThinResNet(nn.Module):
             layers.append(TimeReweightLayer(input_dim=input_dim))
         elif self.mask == 'ftrl' and input_dim != None:
             layers.append(FreqTimeReweightLayer(input_dim=input_dim))
-        
+
         return nn.Sequential(*layers)
 
     def _forward(self, x, feature_map='', proser=None, label=None,
@@ -1268,7 +1268,7 @@ class ThinResNet(nn.Module):
             # print(x[:half_batch_size].shape, half_feat.shape)
             x = torch.cat([x[:half_batch_size], half_feat], dim=0)
 
-        if proser != None and layer_mix == 8:
+        if proser != None and layer_mix == 9:
             x = self.mix(x, proser, lamda_beta)
 
         logits = "" if self.classifier == None else self.classifier(x)
@@ -1349,11 +1349,11 @@ class ThinResNet(nn.Module):
             dim=0)
 
         return x
-    
+
     def alignmix(self, x, shuf_half_idx_ten, lamda_beta):
         mix_size = shuf_half_idx_ten.shape[0]
         half_feats = x[-mix_size:]
-        half_feats_shape = half_feats.shape # 128 x 128 x 38 x 5 
+        half_feats_shape = half_feats.shape # 128 x 128 x 38 x 5
         # print(half_feats.shape)
         # out shape = batch_size x 512 x 4 x 4 (cifar10/100)
         feat1 = half_feats.view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16

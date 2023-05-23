@@ -371,8 +371,7 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
     torch.cuda.empty_cache()
 
     return {'EER': 100. * eer, 'Threshold': eer_threshold, 'MinDCF_01': mindcf_01,
-            'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2,
-            'mix8': mix8}
+            'MinDCF_001': mindcf_001, 'mix3': mix3, 'mix2': mix2, 'mix8': mix8}
 
 
 def main():

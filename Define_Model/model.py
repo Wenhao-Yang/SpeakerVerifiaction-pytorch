@@ -327,9 +327,8 @@ class DeepSpeakerModel(nn.Module):
 
 class ResSpeakerModel(nn.Module):
     """
-    Define the ResNets model with A-softmax and AM-softmax loss.
+    Define the ResNet model with A-softmax and AM-softmax loss.
     """
-
     def __init__(self, resnet_size, embedding_size, num_classes, feature_dim=64):
         super(ResSpeakerModel, self).__init__()
         resnet_type = {10: [1, 1, 1, 1],
