@@ -186,7 +186,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             conf_str = '{:.4f}'.format(args.threshold)
             
         if args.verbose > 0:
-            print('Saving Type {}_{} threshold:  in \n\t{}\n'.format(this_str, args.init_input, conf_str,
+            print('Saving Type {}_{} <{}> Accuracy: {:.4f}% in \n\t{}\n'.format(this_str, args.init_input, conf_str, this_result[-1],
                                                                        result_file.lstrip('Data/gradient/')))
 
         torch.cuda.empty_cache()
