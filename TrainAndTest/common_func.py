@@ -1037,7 +1037,11 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             default='both', help='path to voxceleb1 test dataset')
         parser.add_argument('--norm-type', type=str, default='input',
                             help='path to voxceleb1 test dataset')
-
+        
+    parser.add_argument('--test-mask', action='store_true',
+                        default=False, help='need to make spectrograms file')
+    parser.add_argument('--mask-sub', type=str,
+                            default='0,1', help='mask input start index')
     if 'Test' in description:
         parser.add_argument('--lightning', action='store_true',
                             default=False, help='need to make mfb file')
@@ -1069,10 +1073,6 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--score-norm', type=str,
                             default='', help='score normalization')
 
-        parser.add_argument('--test-mask', action='store_true',
-                            default=False, help='need to make spectrograms file')
-        parser.add_argument('--mask-sub', type=str,
-                            default='0,1', help='mask input start index')
         # parser.add_argument('--mask-lenght', type=int, default=1, help='mask input start index')
 
         parser.add_argument('--n-train-snts', type=int, default=100000,
