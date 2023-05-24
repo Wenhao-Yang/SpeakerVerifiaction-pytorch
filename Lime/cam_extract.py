@@ -163,7 +163,7 @@ def _extract_layer_grad(module, in_grad, out_grad):
 
 def calculate_outputs_and_gradients(inputs, model, target_label_idx):
     # do the pre-processing
-    predict_idx = None
+    # predict_idx = None
     gradients = []
     for s in inputs:
         s = Variable(s.cuda(), requires_grad=True)
@@ -443,7 +443,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     with torch.no_grad():
                         grads = (grads[:-1] + grads[1:]) / 2.0
                         avg_grads = grads.mean(dim=0)
-                        grad = (data - baseline) * avg_grads  # shape: <grad.shape>
+                        grad = (data.cuda() - baseline) * avg_grads  # shape: <grad.shape>
 
             else:
                 grad = []
@@ -530,7 +530,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                             elif args.cam == 'fullgrad':
                                 # full grad
                                 input_gradient = (data_a.grad * data_a)
-                                full_grad = input_gradient.cpu().abs()
+                                full_grad = input_gradient.abs() #.cpu()
                                 full_grad -= full_grad.min()
                                 full_grad /= full_grad.max() + 1e-8
 
