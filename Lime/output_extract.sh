@@ -1017,7 +1017,7 @@ if [ $stage -le 304 ]; then
     python Lime/del_insert.py \
       --model ${model} --resnet-size ${resnet_size} \
       --batch-size 1 --test-input var --init-input mean \
-      --test-mask --mask-sub ${mask_sub} \
+      --test-mask --mask-sub ${mask_sub} --feat-format wav \
       --pro-type ${pro_type} --threshold ${threshold} \
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
