@@ -98,9 +98,9 @@ if args.test_mask:
         print('Mean set values in frequecy from %d to %d.' % (start, end))
 
 
-file_loader = read_mat
-train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
-                               loader=file_loader, transform=transform, return_uid=True, verbose=0)
+# file_loader = read_mat
+# train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
+#                                loader=file_loader, transform=transform, return_uid=True, verbose=0)
 
 valid_dir = ScriptEvalDataset(select_dir=args.select_input_dir,
                               valid_dir=args.eval_dir, transform=transform)
@@ -193,7 +193,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
 
 def main():
     if args.verbose > 1:
-        print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
+        # print('\nNumber of Speakers: {}.'.format(train_dir.num_spks))
         # print the experiment configuration
         print('Current time is \33[91m{}\33[0m.'.format(str(time.asctime())))
         options = vars(args)
