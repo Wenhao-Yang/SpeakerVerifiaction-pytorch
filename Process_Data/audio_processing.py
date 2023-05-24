@@ -555,10 +555,10 @@ class CAMNormInput(object):
         data, grad = x
         if self.data_preprocess != None:
             # pdb.set_trace()
-            print(data.shape, grad.shape)
+            # print(data.shape, grad.shape)
             data = torch.tensor(data).unsqueeze(1)
             data = self.data_preprocess(data).numpy()
-            # print(data.shape)
+            print(data.shape, grad.shape)
             
         H, W = data.shape
         start = np.zeros(data.shape)
