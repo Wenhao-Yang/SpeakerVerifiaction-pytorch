@@ -1011,8 +1011,7 @@ if [ $stage -le 304 ]; then
     # threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
     threshold=0
     mask_sub="$i,$((i+mask_len))"
-    if [ $i -gt 200 ]; then
-      i=$((i+49))
+
     model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
     epoch=15
     python Lime/del_insert.py \
@@ -1036,9 +1035,9 @@ if [ $stage -le 304 ]; then
       --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
       --gpu-id 1 --verbose 1
-    done
-    done
-    done
+  done
+  done
+  done
   exit
 fi
 
