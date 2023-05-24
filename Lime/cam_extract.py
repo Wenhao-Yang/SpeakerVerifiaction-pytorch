@@ -443,7 +443,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     with torch.no_grad():
                         grads = (grads[:-1] + grads[1:]) / 2.0
                         avg_grads = grads.mean(dim=0)
-                        grad = (data.cuda() - baseline) * avg_grads  # shape: <grad.shape>
+                        grad = (data - baseline).cuda() * avg_grads  # shape: <grad.shape>
 
             else:
                 grad = []
