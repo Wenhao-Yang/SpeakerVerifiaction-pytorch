@@ -700,7 +700,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     #     json.dump(inputs_uids, f)
 
     try:
-        print('Predict Accuracy: {:.2f}%...'.format(correct/total*100))
+        print('Predict Accuracy ({}): {:.2f}%...'.format(args.cam, correct/total*100))
     except Exception as e:
         pass
 
