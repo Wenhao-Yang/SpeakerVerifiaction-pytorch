@@ -963,7 +963,7 @@ if [ $stage -le 302 ]; then
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   
-  for cam in integrad ;do #layer_cam gradient grad_cam layer_cam  grad_cam grad_cam_pp integrad
+  for cam in gradient ;do #layer_cam gradient grad_cam layer_cam  grad_cam grad_cam_pp integrad
     model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
     epoch=15
     python Lime/cam_extract.py \
@@ -978,8 +978,7 @@ if [ $stage -le 302 ]; then
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --input-norm Mean \
       --kernel-size ${kernel} --stride 2,2 --fast none1 \
-      --channels 16,32,64,128 \
-      --block-type ${block_type} \
+      --block-type ${block_type} --channels 16,32,64,128 \
       --encoder-type ${encoder_type} --time-dim 1 --avg-size 5 --dropout-p 0.1 \
       --embedding-size ${embedding_size} --alpha 0 \
       --loss-type ${loss} --margin 0.2 --s 30 \
