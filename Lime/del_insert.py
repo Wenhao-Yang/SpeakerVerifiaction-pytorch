@@ -31,6 +31,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pandas as pd
+from Define_Model.FilterLayer import FreqMaskIndexLayer
 
 from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 # from Define_Model.model import PairwiseDistance
@@ -87,6 +88,16 @@ elif args.test_input == 'fix':
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
+if args.test_mask:
+
+    mask_str = args.mask_sub.split(',')
+    start = int(mask_str[0])
+    end = int(mask_str[1])
+    transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
+    if args.verbose > 0:
+        print('Mean set values in frequecy from %d to %d.' % (start, end))
+
+
 file_loader = read_mat
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
                                loader=file_loader, transform=transform, return_uid=True, verbose=0)
@@ -109,6 +120,9 @@ def valid_eval(valid_loader, model, file_dir, set_name):
     
     if args.norm_cam != 'none':
         result_file_suffix += '.' + args.norm_cam
+        
+    if args.test_mask:
+        result_file_suffix += '.mask'
 
     result_file = file_dir + '/result{}.json'.format(result_file_suffix)
 
@@ -136,8 +150,16 @@ def valid_eval(valid_loader, model, file_dir, set_name):
                     batch_idx + 1,
                     100. * batch_idx / len(valid_loader)))
 
+        if args.test_mask:
+            mask_str = args.mask_sub.split(',')
+            start = int(mask_str[0])
+            end = int(mask_str[1])
+            this_result = [start, end, correct/total*100]
+        else:
+            this_result = [args.pro_type, args.threshold, correct/total*100]
+        
         if not os.path.exists(result_file):
-            results = [[args.pro_type, args.threshold, correct/total*100]]
+            results = [this_result]
             with open(result_file, "w") as f:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 json.dump(results, f)
@@ -146,7 +168,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             with open(result_file, 'r+') as f:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 results = json.load(f)
-                results.append([args.pro_type, args.threshold, correct/total*100])
+                results.append(this_result)
                 f.seek(0)
                 json.dump(results, f)
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
@@ -180,21 +202,27 @@ def main():
 
     # instantiate model and initialize weights
     if args.check_yaml != None and os.path.exists(args.check_yaml):
-        if args.verbose > 1:
-            print('\nLoading model weights from: {}'.format(args.check_yaml))
+        if args.verbose > 0:
+            print('\nLoading model check yaml from: \n\t{}'.format(args.check_yaml.lstrip('Data/checkpoint/')))
         model_kwargs = load_model_args(args.check_yaml)
     else:
-        model_kwargs = args_model(args, train_dir)
+        print('Error in finding check yaml file:\n{}'.format(args.check_yaml))
+        exit(0)
+    if 'embedding_model' in model_kwargs:
+        model = model_kwargs['embedding_model']
+        if 'classifier' in model_kwargs:
+            model.classifier = model_kwargs['classifier']
+    else:
+        if args.verbose > 0: 
+            keys = list(model_kwargs.keys())
+            keys.sort()
+            model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+            print('Model options: \n{ %s }' % (', '.join(model_options)))
+            print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
-    keys = list(model_kwargs.keys())
-    keys.sort()
-    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
-    if args.verbose > 1:
-        print('Model options: \n{ %s }' % (', '.join(model_options)))
-        print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
-
-    model = create_model(args.model, **model_kwargs)
-
+        model = create_model(args.model, **model_kwargs)
+        
+        
     valid_loader = DataLoader(valid_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     resume_path = args.check_path + '/checkpoint_{}.pth'
@@ -229,6 +257,12 @@ def main():
         else:
             print('=> no checkpoint found at %s' % resume_path.format(e))
             continue
+        
+        if args.feat_format == 'wav':
+            # trans = model.input_mask[0]
+            model.input_mask.__delitem__(0) # 从save_dir_输入为feat而不是wav
+            # transform.transforms.append(trans)
+            
         model.cuda()
 
         file_dir = args.extract_path # + '/epoch_%d' % e
