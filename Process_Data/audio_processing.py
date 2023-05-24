@@ -542,6 +542,7 @@ class CAMNormInput(object):
         self.pro_type = pro_type
         self.norm_cam = cam_normalize(norm_type=norm_cam)
         self.init_input = init_input
+        self.data_preprocess = None
 
     def __call__(self, x):
         """sumary_line
@@ -552,6 +553,9 @@ class CAMNormInput(object):
         Return: return_description
         """
         data, grad = x
+        if self.data_preprocess != None:
+            data = self.data_preprocess(data)
+            
         H, W = data.shape
         start = np.zeros(data.shape)
         if self.init_input == 'zero':

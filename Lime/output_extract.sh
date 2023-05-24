@@ -1020,9 +1020,9 @@ if [ $stage -le 304 ]; then
       --test-mask --mask-sub ${mask_sub} --feat-format wav \
       --pro-type ${pro_type} --threshold ${threshold} \
       --start-epochs ${epoch} --epochs ${epoch} \
-      --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
+      --train-dir ${lstm_dir}/data/${dataset}/dev \
       --train-set-name ${train_set} --test-set-name ${test_set} \
-      --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
+      --test-dir ${lstm_dir}/data/${test_set}/test \
       --input-norm Mean \
       --kernel-size ${kernel} --stride 2,2 --channels 16,32,64,128 \
       --block-type ${block_type} --fast none1 \

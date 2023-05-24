@@ -261,11 +261,12 @@ def main():
         else:
             print('=> no checkpoint found at %s' % resume_path.format(e))
             continue
-        
+        pdb.set_trace()
         if args.feat_format == 'wav':
-            # trans = model.input_mask[0]
+            trans = model.input_mask[0]
             model.input_mask.__delitem__(0) # 从save_dir_输入为feat而不是wav
-            # transform.transforms.append(trans)
+            transform.transforms.index(0).data_preprocess = trans
+            
             
         model.cuda()
 
