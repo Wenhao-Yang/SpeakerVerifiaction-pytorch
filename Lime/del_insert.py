@@ -115,11 +115,12 @@ def valid_eval(valid_loader, model, file_dir, set_name):
     correct = .0
     total = .0
 
-    result_file_suffix = ''
+    result_file_suffix = ''             # result.<init>.<norm>.<mask>
     result_file_suffix += '.' + args.init_input
     
-    if args.norm_cam != 'none':
-        result_file_suffix += '.' + args.norm_cam
+    if args.pro_type != 'none':
+        if args.norm_cam != 'none':
+            result_file_suffix += '.' + args.norm_cam
         
     if args.test_mask:
         result_file_suffix += '.mask'
@@ -140,10 +141,6 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             total += 1
             predicted = torch.max(classifed, dim=1)[1]
             correct += (predicted.cpu() == label.cpu()).sum().item()
-
-            # p = output_softmax(classifed)[0].cpu().numpy()
-            # l = label.numpy()
-            # label_pred.append([l, p])
 
             if batch_idx % args.log_interval == 0:
                 pbar.set_description('Eval: [{:8d} ({:3.0f}%)] '.format(
@@ -181,8 +178,15 @@ def valid_eval(valid_loader, model, file_dir, set_name):
 
         # with open(filename, 'wb') as f:
         #     pickle.dump(label_pred, f)
+        if args.pro_type == 'none' and args.test_mask:
+            this_str = 'mask'
+            conf_str = args.mask_sub 
+        else:
+            this_str = args.pro_type
+            conf_str = '{:.4f}'.format(args.threshold)
+            
         if args.verbose > 0:
-            print('Saving Type {}_{} threshold: {:.4f} in \n\t{}\n'.format(args.pro_type, args.init_input, args.threshold,
+            print('Saving Type {}_{} threshold:  in \n\t{}\n'.format(this_str, args.init_input, conf_str,
                                                                        result_file.lstrip('Data/gradient/')))
 
         torch.cuda.empty_cache()

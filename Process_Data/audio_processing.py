@@ -577,8 +577,8 @@ class CAMNormInput(object):
         #     salient_order = np.arange(H*W)
         #     threshold = self.threshold
         #     np.random.shuffle(salient_order)             
-        # elif self.pro_type in ['none']:
-        #     return final
+        elif self.pro_type in ['none']:
+            return final
         
         coords = salient_order[0:int((H*W)*threshold)]
         start.reshape(H*W)[coords] = final.reshape(H*W)[coords]
