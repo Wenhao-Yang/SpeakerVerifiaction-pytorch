@@ -1179,7 +1179,7 @@ class ScriptEvalDataset(data.Dataset):
         with h5py.File(self.grad_file, 'r') as r:
             grad = r.get(uid)[:]
 
-        if data.shape[0] > grad.shape[0]:
+        if len(data.shape) == len(grad.shape) and data.shape[0] > grad.shape[0]:
             data = data[:grad.shape[0]]
 
         data = self.transform((data, grad))
