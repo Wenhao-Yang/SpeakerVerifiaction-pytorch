@@ -554,6 +554,8 @@ class CAMNormInput(object):
         """
         data, grad = x
         if self.data_preprocess != None:
+            pdb.set_trace()
+            data = torch.tensor(data)
             data = self.data_preprocess(data)
             
         H, W = data.shape
