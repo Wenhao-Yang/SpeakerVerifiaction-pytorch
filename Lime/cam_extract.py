@@ -431,18 +431,18 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                             grad = acc_grad / acc_grad.sum()
 
-                    if args.cam in ['integrad']:
-                        if baseline is None:
-                            baseline = 0. * data
+                elif args.cam in ['integrad']:
+                    if baseline is None:
+                        baseline = 0. * data
 
-                        scaled_inputs = [baseline + (float(i) / args.steps) * (data - baseline) for i in
-                                        range(1, args.steps + 1)]
+                    scaled_inputs = [baseline + (float(i) / args.steps) * (data - baseline) for i in
+                                    range(1, args.steps + 1)]
 
-                        grads, target_label_idx = calculate_outputs_and_gradients(
-                            scaled_inputs, model, label)
+                    grads, target_label_idx = calculate_outputs_and_gradients(
+                        scaled_inputs, model, label)
+                    with torch.no_grad():
                         grads = (grads[:-1] + grads[1:]) / 2.0
                         avg_grads = grads.mean(dim=0)
-
                         grad = (data - baseline) * avg_grads  # shape: <grad.shape>
 
             else:
@@ -643,7 +643,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
 
                                 grad_a = acc_grad / acc_grad.sum()
 
-                    if args.cam in ['integrad']:
+                    elif args.cam in ['integrad']:
 
                         if baseline is None:
                             baseline = 0. * data_a
@@ -879,7 +879,7 @@ def main():
                     if not ('fc' in name or 'classifier' in name or 'CBAM' in name):
                         b = extract_layer_bias(m)
                         if (b is not None):
-                            biases.append(b.detach().cpu())
+                            biases.append(b.detach()) #.cpu()
                             bias_layers.append(name)
                             m.register_backward_hook(_extract_layer_grads)
 
