@@ -1007,7 +1007,7 @@ if [ $stage -le 304 ]; then
   mask_len=1
   for cam in layer_cam ;do # grad_cam
   for pro_type in none ; do
-  for ((i=0; i<=0; i=i+1)); do
+  for ((i=0; i<=162; i=i+1)); do
     # threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
     threshold=0
     mask_sub="$i,$((i+mask_len))"
