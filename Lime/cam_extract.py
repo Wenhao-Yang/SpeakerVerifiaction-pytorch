@@ -244,14 +244,14 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                         logit, _ = model(data)
                     except Exception as e:
                         print(data.shape, ",", uid, max_inputs)
-                        
+                        pdb.set_trace()
                         raise e
                     classifed = logit[0] if args.loss_type == 'asoft' else logit
 
                     if args.softmax:
                         classifed = softmax(classifed)
                     
-                    pdb.set_trace()
+                    
                     total += 1
                     predicted = torch.max(classifed, dim=1)[1]
                     correct += (predicted.cpu() == label.cpu()).sum().item()
