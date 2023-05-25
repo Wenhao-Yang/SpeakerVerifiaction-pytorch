@@ -1004,10 +1004,10 @@ if [ $stage -le 304 ]; then
   block_type=basic kernel=5,5
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Delete for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
-  mask_len=1
+  mask_len=2
   for cam in layer_cam ;do # grad_cam
   for pro_type in none ; do
-  for ((i=0; i<=162; i=i+1)); do
+  for ((i=0; i<=161; i=i+1)); do
     # threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
     threshold=0
     mask_sub="$i,$((i+mask_len))"
