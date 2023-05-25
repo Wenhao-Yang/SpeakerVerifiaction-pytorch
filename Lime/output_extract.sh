@@ -1007,9 +1007,9 @@ if [ $stage -le 303 ]; then
   mask_len=2
   for cam in layer_cam gradient integrad ;do # grad_cam
   for pro_type in insert ; do
-  for ((i=0; i<=161; i=i+5)); do
-    # threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
-    threshold=0
+  for ((i=0; i<=100; i=i+5)); do
+    threshold=`echo "$i 100" | awk '{printf("%0.4f\n",$1/$2)}'`
+    # threshold=0
     mask_sub="$i,$((i+mask_len))"
 
     model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
