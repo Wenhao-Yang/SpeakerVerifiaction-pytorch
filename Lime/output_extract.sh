@@ -1003,7 +1003,7 @@ if [ $stage -le 303 ]; then
   encoder_type=SAP2 embedding_size=256
   block_type=basic kernel=5,5
   cam=gradient
-  echo -e "\n\033[1;4;31m stage${stage} Insert for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  echo -e "\n\033[1;4;31m stage${stage} Insert for ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   mask_len=2
   for cam in layer_cam gradient integrad ;do # grad_cam
   for pro_type in insert ; do
