@@ -487,11 +487,16 @@ def read_from_npy(filename):
 
 
 class cam_normalize(object):
-    def __init__(self, norm_type='time') -> None:
+    def __init__(self, norm_type='time', scaled='tanh', gamma=2) -> None:
         self.norm_type = str(norm_type)
+        self.scaled = scaled
+        self.gamma = gamma
         pass
 
     def __call__(self, grad):
+        if self.scaled == 'tanh':
+            grad = np.tanh(self.gamma * grad / grad.max())
+        
         time_dim = grad.shape[-2]
         freq_dim = grad.shape[-1]
 
@@ -537,10 +542,11 @@ class cam_normalize(object):
 
 class CAMNormInput(object):
     def __init__(self, threshold=0.15, pro_type='del', 
-                 norm_cam=None, init_input='zero') -> None:
+                 norm_cam=None, init_input='zero',
+                 scaled='tanh') -> None:
         self.threshold = threshold
         self.pro_type = pro_type
-        self.norm_cam = cam_normalize(norm_type=norm_cam)
+        self.norm_cam = cam_normalize(norm_type=norm_cam, scaled=scaled)
         self.init_input = init_input
         self.data_preprocess = None
 

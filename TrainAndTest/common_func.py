@@ -981,6 +981,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                     help='choose the acoustic features type.')
         parser.add_argument('--norm-cam', choices=['time', 'freq', 'both', 'avg3', 'avg5', 'none'], default='none',
                     help='choose the acoustic features type.')
+        parser.add_argument('--cam-scaled', choices=['tanh', 'none'], default='none',
+                    help='choose the acoustic features type.')
         parser.add_argument('--train-set-name', type=str,
                             required=True, help='path to voxceleb1 test dataset')
         parser.add_argument('--test-set-name', type=str,

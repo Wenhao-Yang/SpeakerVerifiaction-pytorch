@@ -78,13 +78,15 @@ l2_dist = nn.CosineSimilarity(dim=1, eps=1e-6) if args.cos_sim else nn.PairwiseD
 if args.test_input == 'var':
     transform = transforms.Compose([
         CAMNormInput(threshold=args.threshold, pro_type=args.pro_type, 
-                     norm_cam=args.norm_cam, init_input=args.init_input),
+                     norm_cam=args.norm_cam, init_input=args.init_input,
+                     scaled=args.cam_scaled),
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
 elif args.test_input == 'fix':
     transform = transforms.Compose([
         CAMNormInput(threshold=args.threshold, pro_type=args.pro_type,
-                     norm_cam=args.norm_cam, init_input=args.init_input),
+                     norm_cam=args.norm_cam, init_input=args.init_input,
+                     scaled=args.cam_scaled),
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
 
@@ -121,6 +123,9 @@ def valid_eval(valid_loader, model, file_dir, set_name):
     if args.pro_type != 'none':
         if args.norm_cam != 'none':
             result_file_suffix += '.' + args.norm_cam
+            
+        if args.cam_scaled != 'none':
+            result_file_suffix += '.' + args.cam_scaled
         
     if args.test_mask:
         result_file_suffix += '.mask'

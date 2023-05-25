@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=304
+stage=303
 waited=0
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
@@ -992,6 +992,54 @@ if [ $stage -le 302 ]; then
 fi
 
 
+if [ $stage -le 303 ]; then
+  model=ThinResNet resnet_size=34
+  # dataset=vox1
+  dataset=vox2
+  train_set=vox2 test_set=vox1
+  feat_type=klsp #--remove-vad \
+  feat=log
+  loss=arcsoft
+  encoder_type=SAP2 embedding_size=256
+  block_type=basic kernel=5,5
+  cam=gradient
+  echo -e "\n\033[1;4;31m stage${stage} Insert for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  mask_len=2
+  for cam in layer_cam gradient integrad ;do # grad_cam
+  for pro_type in insert ; do
+  for ((i=0; i<=161; i=i+5)); do
+    # threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
+    threshold=0
+    mask_sub="$i,$((i+mask_len))"
+
+    model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
+    epoch=15
+    python Lime/del_insert.py \
+      --model ${model} --resnet-size ${resnet_size} --feat-format wav \
+      --batch-size 1 --test-input var --init-input mean \
+      --pro-type ${pro_type} --threshold ${threshold} --cam-scaled tanh \
+      --start-epochs ${epoch} --epochs ${epoch} \
+      --train-dir ${lstm_dir}/data/${dataset}/dev \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
+      --test-dir ${lstm_dir}/data/${test_set}/test \
+      --input-norm Mean \
+      --kernel-size ${kernel} --stride 2,2 --channels 16,32,64,128 \
+      --block-type ${block_type} --fast none1 \
+      --encoder-type ${encoder_type} --time-dim 1 --avg-size 5 --dropout-p 0.1 \
+      --embedding-size ${embedding_size} --alpha 0 \
+      --loss-type ${loss} --margin 0.2 --s 30 \
+      --check-path Data/checkpoint/${model_dir} \
+      --eval-dir Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
+      --check-yaml Data/checkpoint/${model_dir}/model.2023.05.08.yaml \
+      --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
+      --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
+      --gpu-id 0 --verbose 1
+  done
+  done
+  done
+  exit
+fi
+
 if [ $stage -le 304 ]; then
   model=ThinResNet resnet_size=34
   # dataset=vox1
@@ -1003,7 +1051,7 @@ if [ $stage -le 304 ]; then
   encoder_type=SAP2 embedding_size=256
   block_type=basic kernel=5,5
   cam=gradient
-  echo -e "\n\033[1;4;31m stage${stage} Delete for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
+  echo -e "\n\033[1;4;31m stage${stage} Mask for  ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   mask_len=2
   for cam in layer_cam ;do # grad_cam
   for pro_type in none ; do
