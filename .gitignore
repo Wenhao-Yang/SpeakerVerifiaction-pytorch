@@ -37,4 +37,5 @@ Misc/data/dev_spk20/dev_spk10_pca64_1/baseline.tar.gz
 Misc/OptimalTransport/test.jpg
 Misc/OptimalTransport/color_transfer.py
 Misc/data/colors
+Misc/mipi/data
 .ipynb_checkpoints
