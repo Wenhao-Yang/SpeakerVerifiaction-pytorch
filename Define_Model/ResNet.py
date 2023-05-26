@@ -1093,7 +1093,8 @@ class ThinResNet(nn.Module):
         if self.alpha:
             self.l2_norm = L2_Norm(self.alpha)
         self.classifier = nn.Linear(embedding_size, num_classes)
-
+        self.return_embeddings = True
+        
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -1276,7 +1277,10 @@ class ThinResNet(nn.Module):
         if feature_map == 'attention':
             return logits, embeddings
 
-        return logits, x
+        if self.return_embeddings:
+            return logits, x
+        else:
+            return logits
 
     def xvector(self, x, embedding_type='near'):
         # pdb.set_trace()

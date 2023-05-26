@@ -89,19 +89,6 @@ elif args.test_input == 'fix':
 train_dir = Hdf5DelectDataset(select_dir=args.select_input_dir, 
                               transform=transform)
 
-# indices = list(range(len(train_dir)))
-# random.shuffle(indices)
-# indices = indices[:args.sample_utt]
-# train_part = torch.utils.data.Subset(train_dir, indices)
-
-# valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
-#                                valid_uid2feat=train_dir.valid_uid2feat, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
-#                                loader=file_loader, transform=transform, return_uid=True)
-# indices = list(range(len(valid_dir)))
-# random.shuffle(indices)
-# indices = indices[:args.sample_utt]
-# valid_part = torch.utils.data.Subset(valid_dir, indices)
-
 cam_layers = args.cam_layers
 
 out_feature_grads = []
@@ -161,37 +148,6 @@ def _extract_layer_grad(module, in_grad, out_grad):
     out_layer_grad.append(out_grad[0].detach())
 
 
-def calculate_outputs_and_gradients(inputs, model, target_label_idx):
-    # do the pre-processing
-    # predict_idx = None
-    gradients = []
-    for s in inputs:
-        s = Variable(s.cuda(), requires_grad=True)
-
-        output, _ = model(s)
-        output = F.softmax(output, dim=1)
-
-        if target_label_idx is None:
-            target_label_idx = torch.argmax(output, 1).item()
-
-        index = torch.ones((output.size()[0], 1)) * target_label_idx
-        index = torch.tensor(index, dtype=torch.int64)
-        if s.is_cuda:
-            index = index.cuda()
-
-        output = output.gather(1, index)
-        # clear grad
-        model.zero_grad()
-        output.backward()
-
-        gradient = s.grad.detach()#.cpu()
-        gradients.append(gradient)
-
-    gradients = torch.cat(gradients)
-
-    return gradients, target_label_idx
-
-
 def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
     # switch to evaluate mode
     model.eval()
@@ -233,7 +189,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                 data = torch.cat(x, dim=0)
             
             torch.cuda.empty_cache()
-            # data = Variable(data.cuda(), requires_grad=True)
             ups = torch.nn.UpsamplingBilinear2d(size=data.shape[-2:])
             baseline = None
 
@@ -267,8 +222,6 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                     with torch.no_grad():
                         if args.cam == 'gradient':
                             grad = data.grad  # .cpu().numpy().squeeze().astype(np.float32)
-                            # grad -= grad.min()
-                            # grad /= grad.max() + 1e-8
 
                         elif args.cam == 'grad_cam':
                             grad = torch.zeros_like(data)
@@ -286,8 +239,7 @@ def train_extract(train_loader, model, file_dir, set_name, save_per_num=2500):
                                     T = zeros(T)
 
                             grad += ups(T) #.abs()
-                            # grad -= grad.min()
-                            # grad /= grad.max() + 1e-8
+
 
                         elif args.cam == 'grad_cam_pp':
                             # grad cam ++ last
