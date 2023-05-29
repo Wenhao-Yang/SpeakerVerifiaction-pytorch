@@ -464,30 +464,10 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
 
     # pbar = tqdm(enumerate(test_loader))
     with torch.no_grad():
-        pbar = tqdm(enumerate(test_loader)
-                    ) if verbose > 0 else enumerate(test_loader)
-        for batch_idx, (data_a, data_p, label) in pbar:
-            # .view(-1, 4, embedding_size)
-            data_a = torch.tensor(data_a).cuda()
-            data_p = torch.tensor(data_p).cuda()
-            # dists = dist_fn.forward(data_a, data_p).cpu().numpy()
-
-            if len(data_a.shape) == 2:
-                dists = dist_fn(data_a, data_p)
-            elif dist_type == 'cos':
-                out_a = torch.nn.functional.normalize(data_a, dim=-1)
-                out_p = torch.nn.functional.normalize(data_p, dim=-1)
-
-                dists = torch.matmul(out_a, out_p.transpose(-2, -1))
-            else:
-                dists = (data_a[:, :, None] - data_p[:]).norm(p=2, dim=-1)
-
-            # print(dists.shape)
-            # pdb.set_trace()
-            while len(dists.shape) > 1:
-                dists = dists.mean(dim=-1)
-
-            dists = dists.detach().cpu().numpy()
+        for batch_idx, (data_a, data_p, label) in enumerate(test_loader):
+            out_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
+            out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
+            dists = dist_fn.forward(out_a, out_p).cpu().numpy()
 
             distances.append(dists)
             labels.append(label.numpy())

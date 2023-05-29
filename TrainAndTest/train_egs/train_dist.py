@@ -376,8 +376,8 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
 def main():
     parser = argparse.ArgumentParser(
         description='PyTorch ( Distributed ) Speaker Recognition: Classification')
-    parser.add_argument('--local_rank', default=-1, type=int,
-                        help='node rank for distributed training')
+    # parser.add_argument('--local_rank', default=-1, type=int,
+    #                     help='node rank for distributed training')
     parser.add_argument('--train-config', default='', type=str,
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=123456,
@@ -387,8 +387,10 @@ def main():
     # print the experiment configuration
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
-    torch.cuda.set_device(args.local_rank)
-    torch.multiprocessing.set_sharing_strategy('file_system')
+    local_rank = int(os.environ["LOCAL_RANK"])
+
+    torch.cuda.set_device(local_rank)
+    # torch.multiprocessing.set_sharing_strategy('file_system')
 
     # load train config file args.train_config
     with open(args.train_config, 'r') as f:
@@ -569,10 +571,10 @@ def main():
     end = start + config_args['epochs']
 
     if len(config_args['gpu_id']) > 1:
-        print("Continue with gpu: %s ..." % str(args.local_rank))
+        print("Continue with gpu: %s ..." % str(local_rank))
         # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
-            model.cuda(), device_ids=[args.local_rank])
+            model.cuda(), device_ids=[local_rank])
     else:
         model = model.cuda()
 
