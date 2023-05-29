@@ -10,7 +10,7 @@
 @Overview:
 """
 from __future__ import print_function
-from Light.dataset import Sampler_Loaders, SubDatasets, SubScriptDatasets
+from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
 from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
@@ -132,27 +132,26 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
                 wavs = data.squeeze().cuda()
 
-                for count, augment in enumerate(augment_pipeline):
-                    # Apply augment
-                    wavs_aug = augment(wavs, torch.tensor([data.shape[-1]]*len(data)).cuda())
-                    # Managing speed change
-                    if wavs_aug.shape[1] > wavs.shape[1]:
-                        wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
-                    else:
-                        zero_sig = torch.zeros_like(wavs)
-                        zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
-                        wavs_aug = zero_sig
+                augment = np.random.choice(augment_pipeline)
+                # for count, augment in enumerate(augment_pipeline):
+                # Apply augment
+                wavs_aug = augment(wavs, torch.tensor([data.shape[-1]]*len(data)).cuda())
+                # Managing speed change
+                if wavs_aug.shape[1] > wavs.shape[1]:
+                    wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
+                else:
+                    zero_sig = torch.zeros_like(wavs)
+                    zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
+                    wavs_aug = zero_sig
 
-                    if 'concat_augment' in config_args and config_args['concat_augment']:
-                        wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
-                    else:
-                        wavs = wavs_aug
-                        wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
+                if 'concat_augment' in config_args and config_args['concat_augment']:
+                    wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
+                else:
+                    wavs = wavs_aug
+                    wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
                 
                 data = torch.cat(wavs_aug_tot, dim=0)
-                # print(data.shape)
                 n_augment = len(wavs_aug_tot)
-                # lens = torch.cat([lens] * n_augment)
                 label = torch.cat([label] * n_augment)
 
         if torch.cuda.is_available():
@@ -656,8 +655,7 @@ def main():
             if check_stop:
                 end = epoch
                 if torch.distributed.get_rank() == 0:
-                    print('Best Epoch is %d:' %
-                          (early_stopping_scheduler.best_epoch))
+                    print('Best Epochs : ', top_k)
                     best_epoch = early_stopping_scheduler.best_epoch
                     best_res = valid_test_result[int(best_epoch - 1)]
 

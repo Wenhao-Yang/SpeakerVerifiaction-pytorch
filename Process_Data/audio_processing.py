@@ -1380,7 +1380,7 @@ class truncatedinputfromSpectrogram(object):
                 j = random.randrange(
                     c.NUM_PREVIOUS_FRAME_SPECT, num_frames - c.NUM_NEXT_FRAME_SPECT)
 
-            #j = random.randrange(c.NUM_PREVIOUS_FRAME_SPECT, num_frames - c.NUM_NEXT_FRAME_SPECT)
+            # j = random.randrange(c.NUM_PREVIOUS_FRAME_SPECT, num_frames - c.NUM_NEXT_FRAME_SPECT)
             # If len(frames_features)<NUM__FRAME_SPECT, then apply zero padding.
             if j == 0:
                 frames_slice = np.zeros(
@@ -1462,12 +1462,12 @@ class truncatedinput(object):
 
     def __call__(self, input):
 
-        #min_existing_frames = min(self.libri_batch['raw_audio'].apply(lambda x: len(x)).values)
+        # min_existing_frames = min(self.libri_batch['raw_audio'].apply(lambda x: len(x)).values)
         want_size = int(c.TRUNCATE_SOUND_FIRST_SECONDS * c.SAMPLE_RATE)
         if want_size > len(input):
             output = np.zeros((want_size,))
             output[0:len(input)] = input
-            #print("biho check")
+            # print("biho check")
             return output
         else:
             return input[0:want_size]

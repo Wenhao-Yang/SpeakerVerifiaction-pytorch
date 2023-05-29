@@ -106,7 +106,7 @@ class SelfAttentionPooling_v2(nn.Module):
             x = x.transpose(1, 2)
             x = x.reshape(x_shape[0], x_shape[2], -1)
 
-        assert x.shape[-1] == self.input_dim, print(x.shape, self.input_dim)
+        # assert x.shape[-1] == self.input_dim, print(x.shape, self.input_dim)
 
         alpha = self.Tanh(self.attention_linear(x))
         alpha = self.softmax(self.attention_vector(alpha))
@@ -114,6 +114,7 @@ class SelfAttentionPooling_v2(nn.Module):
         mean = torch.sum(alpha * x, dim=1)
 
         return mean
+
 
 class SelfAttentionPooling_v3(nn.Module):
     def __init__(self, input_dim, hidden_dim):
@@ -143,6 +144,7 @@ class SelfAttentionPooling_v3(nn.Module):
         mean = torch.sum(alpha * x, dim=1)
 
         return mean
+
 
 class AttentionStatisticPooling(nn.Module):
     def __init__(self, input_dim, hidden_dim):
@@ -261,14 +263,14 @@ class MaxStatisticPooling(nn.Module):
             x = x.reshape(x_shape[0], x_shape[-2], -1)
 
         assert x.shape[-1] == self.input_dim, print(x.shape[-1])
-        x = self.max_pooling(x.transpose(1,2)).transpose(1,2)
+        x = self.max_pooling(x.transpose(1, 2)).transpose(1, 2)
 
         mean_x = x.mean(dim=1)
         std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
         mean_std = torch.cat((mean_x, std_x), 1)
         return mean_std
 
-    def __repr__(self): 
+    def __repr__(self):
         return "MaxStatisticPooling(input_dim=%f, kernel_size=%d)" % (self.input_dim, self.kernel_size)
 
 

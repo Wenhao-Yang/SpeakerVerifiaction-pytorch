@@ -100,11 +100,9 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
                                              weight_norm=weight_norm)
     elif mask == 'attention':
-        mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight,
-                                          weight_norm=weight_norm)
+        mask_layer = AttentionweightLayer(input_dim=input_dim, weight=init_weight, weight_norm=weight_norm)
     elif mask == 'attention2':
-        mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight,
-                                             weight_norm=weight_norm)
+        mask_layer = AttentionweightLayer_v2(input_dim=input_dim, weight=init_weight, weight_norm=weight_norm)
     elif mask == 'attention3':
         mask_layer = AttentionweightLayer_v3(input_dim=input_dim, weight=init_weight)
     elif mask == 'drop':
@@ -128,6 +126,88 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = None
 
     return mask_layer
+
+
+def get_encode_layer(encoder_type: str, encode_input_dim: int, hidden_dim: int,
+                     embedding_size: int, time_dim: int):
+    
+    if encoder_type == 'SAP':
+        encoder = SelfAttentionPooling(
+                input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim
+
+    elif encoder_type == 'SAP2':
+        encoder = SelfAttentionPooling_v2(input_dim=encode_input_dim,
+                                                hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim
+
+    elif encoder_type in ['ASTP', 'SASP']:
+        encoder = AttentionStatisticPooling(input_dim=encode_input_dim,
+                                                    hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim * 2
+    elif encoder_type in ['ASTP2', 'SASP2']:
+        encoder = AttentionStatisticPooling_v2(
+            input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim * 2
+    elif encoder_type == 'STAP':
+        encoder = StatisticPooling(input_dim=encode_input_dim)
+        encoder_output = encode_input_dim * 2
+    else:
+        encoder = nn.AdaptiveAvgPool2d((time_dim, None))
+        encoder_output = encode_input_dim * time_dim
+
+    return encoder, encoder_output
+    
+
+class PairwiseDistance(Function):
+    def __init__(self, p):
+        super(PairwiseDistance, self).__init__()
+        self.norm = p
+
+    def forward(self, x1, x2):
+        assert x1.size() == x2.size()
+        eps = 1e-4 / x1.size(1)
+        diff = torch.abs(x1 - x2)
+        # The distance will be (Sum(|x1-x2|**p)+eps)**1/p
+        out = torch.pow(diff, self.norm).sum(dim=1)
+        return torch.pow(out + eps, 1. / self.norm)
+
+
+class TripletMarginLoss(Function):
+    """Triplet loss function.
+    """
+
+    def __init__(self, margin):
+        super(TripletMarginLoss, self).__init__()
+        self.margin = margin
+        self.pdist = PairwiseDistance(2)  # norm 2
+
+    def forward(self, anchor, positive, negative):
+        d_p = self.pdist.forward(anchor, positive)
+        d_n = self.pdist.forward(anchor, negative)
+
+        dist_hinge = torch.clamp(self.margin + d_p - d_n, min=0.0)
+        loss = torch.mean(dist_hinge)
+        return loss
+
+
+class TripletMarginCosLoss(Function):
+    """Triplet loss function.
+    """
+
+    def __init__(self, margin):
+        super(TripletMarginCosLoss, self).__init__()
+        self.margin = margin
+        self.pdist = CosineSimilarity(dim=1, eps=1e-6)  # norm 2
+
+    def forward(self, anchor, positive, negative):
+        d_p = self.pdist.forward(anchor, positive)
+        d_n = self.pdist.forward(anchor, negative)
+
+        dist_hinge = torch.clamp(self.margin - d_p + d_n, min=0.0)
+        # loss = torch.sum(dist_hinge)
+        loss = torch.mean(dist_hinge)
+        return loss
 
 
 class ReLU20(nn.Hardtanh):
@@ -629,6 +709,7 @@ class ResCNNSpeaker(nn.Module):
         for i in range(1, blocks):
             layers.append(block(self.in_planes, planes))
         return nn.Sequential(*layers)
+
 
     def forward(self, x):
         x = self.conv1(x)

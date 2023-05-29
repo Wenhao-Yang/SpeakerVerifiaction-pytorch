@@ -225,6 +225,7 @@ class SpeakerModule(LightningModule):
         # training_step defines the train loop.
         # it is independent of forward
         data, label = batch
+
         logits, embeddings = self.encoder(data)
         loss, other_loss = self.loss(logits, embeddings, label)
 

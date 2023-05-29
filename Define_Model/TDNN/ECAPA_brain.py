@@ -292,7 +292,7 @@ class AttentiveStatisticsPooling(nn.Module):
         mean, std = _compute_statistics(x, attn)
         # Append mean and std of the batch
         pooled_stats = torch.cat((mean, std), dim=1)
-        pooled_stats = pooled_stats  # .unsqueeze(2)
+        pooled_stats = pooled_stats #.unsqueeze(2)
 
         return pooled_stats
 
@@ -413,24 +413,26 @@ class ECAPA_TDNN(torch.nn.Module):
     """
 
     def __init__(
-            self, input_dim, num_classes, embedding_size=192, activation=torch.nn.ReLU,
-            input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
-            init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
-            mask='None', mask_len=[5, 20],
-            channels=[512, 512, 512, 512, 1536],
-            kernel_sizes=[5, 3, 3, 3, 1],
-            dilations=[1, 2, 3, 4, 1],
-            attention_channels=128,
-            res2net_scale=8,
-            se_channels=128,
-            global_context=True,
-            groups=[1, 1, 1, 1, 1], **kwargs):
+        self, input_dim, num_classes, embedding_size=192, activation=torch.nn.ReLU,
+        input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
+        win_length=int(0.025*16000), nfft=512, stretch_ratio=[1.0],
+        init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
+        mask='None', mask_len=[5, 20],
+        channels=[512, 512, 512, 512, 1536],
+        kernel_sizes=[5, 3, 3, 3, 1],
+        dilations=[1, 2, 3, 4, 1],
+        attention_channels=128,
+        res2net_scale=8,
+        se_channels=128,
+        global_context=True,
+        groups=[1, 1, 1, 1, 1], **kwargs):
 
         super().__init__()
         input_mask = []
 
         filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
-                                        exp=exp, filter_fix=filter_fix)
+                                        exp=exp, filter_fix=filter_fix,
+                                        stretch_ratio=stretch_ratio, win_length=win_length, nfft=nfft)
         if filter_layer != None:
             input_mask.append(filter_layer)
         norm_layer = get_input_norm(input_norm, input_dim=input_dim)
@@ -513,7 +515,6 @@ class ECAPA_TDNN(torch.nn.Module):
             Tensor of shape (batch, time, channel).
         """
         # Minimize transpose for efficiency
-        # print(x.shape)
         x = self.input_mask(x)
         # if proser != None and layer_mix == 1:
         #     x = self.mixup(x, proser, lamda_beta)
@@ -539,7 +540,7 @@ class ECAPA_TDNN(torch.nn.Module):
 
         # Final linear transformation
         embeddings = self.fc(x)
-        # embeddings = x.transpose(1, 2).contiguous()
+        # embeddings = x.transpose(1, 2)
 
         logits = self.classifier(embeddings)
 

@@ -41,8 +41,12 @@ parser.add_argument('--seed', type=int, default=123456,
                     help='random seed (default: 0)')
 parser.add_argument('--gpus', type=str, default='0,1',
                     help='gpus(default: 0)')
-args = parser.parse_args()
+parser.add_argument('--dataset-type', type=str,
+                    default='scripts', help='gpus(default: 0)')
+parser.add_argument('--test', action='store_true',
+                    default=False, help='gpus(default: 0)')
 
+args = parser.parse_args()
 # seed
 pl.seed_everything(args.seed)
 
@@ -59,7 +63,7 @@ def main():
     else:
         train_dir, valid_dir, train_extract_dir = SubScriptDatasets(
             config_args)
-        
+
     train_loader, valid_loader, train_extract_loader = SubLoaders(
         train_dir, valid_dir, train_extract_dir, config_args)
 

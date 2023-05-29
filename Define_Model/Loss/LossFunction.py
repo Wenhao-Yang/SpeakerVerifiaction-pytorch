@@ -53,19 +53,7 @@ class CenterLoss(nn.Module):
         # norms = self.centers.data.norm(p=2, dim=1, keepdim=True).add(1e-14)
         # self.centers.data = self.centers.data / norms * self.alpha
 
-        # batch_size = x.size(0)
-        # distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
-        #     torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(
-        #         self.num_classes, batch_size).t()
-        # distmat.addmm_(1, -2, x, self.centers.t())
 
-        # classes = torch.arange(self.num_classes).long()
-        # # if self.use_gpu: classes = classes.cuda()
-        # if self.centers.is_cuda:
-        #     classes = classes.cuda()
-
-        # labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
-        # mask = labels.eq(classes.expand(batch_size, self.num_classes))
 
         # dist = distmat * mask.float()
         # loss = dist.mean()
@@ -351,6 +339,7 @@ class DistributeLoss(nn.Module):
         negative_label = negative_label.scatter(1, labels, -1)
         negative_label = torch.where(
             negative_label != -1)[1].reshape(positive_dist.shape[0], -1)
+
         negative_dist = dist.gather(dim=1, index=negative_label)
 
         mean = positive_dist.mean()  # .clamp_min(0)

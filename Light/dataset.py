@@ -32,7 +32,7 @@ def SubDatasets(config_args):
     elif config_args['test_input'] == 'fix':
         transform_V = transforms.Compose([
             ConcateVarInput(remove_vad=config_args['remove_vad'], num_frames=config_args['chunk_size'],
-                            frame_shift=config_args['chunk_size'],
+                            frame_shift=config_args['frame_shift'],
                             feat_type=config_args['feat_format']),
         ])
 
@@ -89,7 +89,6 @@ def SubScriptDatasets(config_args):
     # if config_args['log_scale']:
     #     transform.transforms.append(tolog())
     #     transform_V.transforms.append(tolog())
-
     # loader_types = {'kaldi': load_mat, 'wav': load_mat, 'npy': np.load}
     # file_loader = loader_types[config_args['feat_format']]
 
@@ -105,7 +104,7 @@ def SubScriptDatasets(config_args):
 
     remove_vad = False if 'remove_vad' not in config_args else config_args['remove_vad']
     transform = transforms.Compose([
-        ConcateNumInput(num_frames=config_args['num_frames'], remove_vad=remove_vad,
+        ConcateNumInput(num_frames=config_args['chunk_size'], remove_vad=remove_vad,
                         feat_type=feat_type),
         totensor()
     ])
@@ -117,14 +116,22 @@ def SubScriptDatasets(config_args):
     domain = config_args['domain'] if 'domain' in config_args else False
     sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
     vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
-    verbose = 1 if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0 else 0
+    verbose = 1 if torch.distributed.is_initialized(
+    ) and torch.distributed.get_rank() == 0 else 0
+    segment_shift = config_args['segment_shift'] if 'segment_shift' in config_args else config_args['num_frames']
+    min_frames = 50 if 'min_frames' not in config_args else config_args['min_frames']
+    if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args:
+        min_frames *= config_args['sr'] / 100
+        min_frames = int(min_frames)
 
     if 'feat_type' in config_args and config_args['feat_type'] == 'lmdb':
         print('Create Lmdb Dataset...')
-        train_dir = LmdbTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 
+        train_dir = LmdbTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'],
                                      transform=transform, num_valid=config_args['num_valid'],
                                      feat_type='wav', sample_type=sample_type,
-                                     segment_len=config_args['num_frames'], verbose=verbose,
+                                     segment_len=config_args['num_frames'],
+                                     segment_shift=segment_shift,
+                                     min_frames=min_frames, verbose=verbose,
                                      return_uid=False)
         
         valid_dir = LmdbValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
@@ -137,7 +144,9 @@ def SubScriptDatasets(config_args):
         train_dir = Hdf5TrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 
                                      transform=transform, num_valid=config_args['num_valid'],
                                      feat_type='wav', sample_type=sample_type,
-                                     segment_len=config_args['num_frames'], verbose=verbose,
+                                     segment_len=config_args['num_frames'], 
+                                     segment_shift=segment_shift,
+                                     min_frames=min_frames, verbose=verbose,
                                      return_uid=False)
         
         valid_dir = Hdf5ValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
@@ -145,16 +154,22 @@ def SubScriptDatasets(config_args):
                                     verbose=verbose,
                                     transform=transform)
     else:
+        save_dir = config_args['check_path'] if 'save_data_dir' not in config_args else config_args['save_data_dir']
         train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
                                     transform=transform, num_valid=config_args['num_valid'], domain=domain,
                                     vad_select=vad_select, sample_type=sample_type,
                                     feat_type=feat_type, verbose=verbose,
-                                    segment_len=config_args['num_frames'])
+                                    save_dir=save_dir,
+                                    segment_len=config_args['num_frames'],
+                                    segment_shift=segment_shift,
+                                    min_frames=min_frames)
 
         valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
                                     dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
                                     valid_uid2feat=train_dir.valid_uid2feat,
                                     valid_utt2spk_dict=train_dir.valid_utt2spk_dict, verbose=verbose,
+                                    save_dir=save_dir,
+                                    feat_type=feat_type,
                                     transform=transform, domain=domain)
 
     feat_type = 'kaldi'
@@ -178,7 +193,7 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
 
     min_chunk_size = int(config_args['random_chunk'][0])
     max_chunk_size = int(config_args['random_chunk'][1])
-    pad_dim = 2 if config_args['feat_format'] == 'kaldi' else 3
+    pad_dim = 2 if config_args['feat_format'] == 'kaldi' or 'trans_fbank' in config_args else 3
 
     # train_sampler = torch.utils.data.distributed.DistributedSampler(train_dir)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
@@ -200,7 +215,7 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                      min_chunk_size=min_chunk_size,
                                                                      max_chunk_size=max_chunk_size,
-                                                                     #  verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                     verbose=0
                                                                      ),
                                                shuffle=False, **kwargs)  # , sampler=valid_sampler
 
@@ -243,7 +258,7 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                collate_fn=PadCollate(dim=pad_dim, fix_len=True,
                                                                      min_chunk_size=min_chunk_size,
                                                                      max_chunk_size=max_chunk_size,
-                                                                     verbose=0,
+                                                                     verbose=0
                                                                      ),
                                                sampler=valid_sampler,
                                                shuffle=False, **kwargs)  # ,

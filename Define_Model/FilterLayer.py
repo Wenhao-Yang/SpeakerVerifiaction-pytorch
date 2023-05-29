@@ -312,7 +312,7 @@ class SparseFbankLayer(nn.Module):
             zero = torch.zeros(1)
             down_slopes = (-1.0 * slopes[:, :-2]) / f_diff[:-1]  # (n_freqs, n_filter)
             up_slopes = slopes[:, 2:] / f_diff[1:]  # (n_freqs, n_filter)
-            sparsebank = torch.max(zero, torch.min(down_slopes, up_slopes))     
+            sparsebank = torch.max(zero, torch.min(down_slopes, up_slopes))
 
         elif init_weight == 'linear':
             all_freqs = torch.linspace(f_min, int(self.sr/2), n_fft // 2 + 1)
@@ -349,7 +349,7 @@ class SparseFbankLayer(nn.Module):
         output = torch.transpose(specgram.squeeze(1), 1, 2)
         # print(output.shape, self.SpareFbank.shape)
         output = torch.matmul(output, self.SpareFbank)
-        
+
         return torch.log(output.unsqueeze(1) + 1e-6)
 
     def __repr__(self):
@@ -820,7 +820,7 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
 
 class DropweightLayer(nn.Module):
     def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2,
-                 power_weight='mean'):
+                 power_weight='none'):
         super(DropweightLayer, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
@@ -1325,7 +1325,6 @@ class CBAM(nn.Module):
         t_output = self.activation(t_output)
         # t_output = input * t_output
         f_output = self.avg_f(input)
-        # f_output = input.mean(dim=3, keepdim=True)
         # f_output = input.mean(dim=3, keepdim=True)
         f_output = self.cov_f(f_output)
         f_output = self.activation(f_output)
