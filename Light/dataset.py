@@ -110,8 +110,10 @@ def SubScriptDatasets(config_args):
     ])
 
     if 'trans_fbank' in config_args and config_args['trans_fbank']:
-        transform.transforms.append(MelFbank(num_filter=config_args['input_dim']))
-        transform_V.transforms.append(MelFbank(num_filter=config_args['input_dim']))
+        transform.transforms.append(
+            MelFbank(num_filter=config_args['input_dim']))
+        transform_V.transforms.append(
+            MelFbank(num_filter=config_args['input_dim']))
 
     domain = config_args['domain'] if 'domain' in config_args else False
     sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
@@ -133,12 +135,12 @@ def SubScriptDatasets(config_args):
                                      segment_shift=segment_shift,
                                      min_frames=min_frames, verbose=verbose,
                                      return_uid=False)
-        
+
         valid_dir = LmdbValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
                                     reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
                                     verbose=verbose,
                                     transform=transform)
-        
+
     elif 'feat_type' in config_args and config_args['feat_type'] == 'hdf5':
         print('Create HDF5 Dataset...')
         train_dir = Hdf5TrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 

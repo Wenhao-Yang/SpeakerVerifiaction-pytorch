@@ -962,7 +962,7 @@ class MelSpectrogram(torch.nn.Module):
         stretch_ratio = np.random.choice(self.stretch_ratio)
         if stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram, stretch_ratio)
-        specgram = specgram.abs().pow(2)# .sum(-1)
+        specgram = specgram.abs().pow(2) # .sum(-1)
         # print(specgram.shape)
         mel_specgram = self.mel_scale(specgram)
         return mel_specgram
@@ -1510,7 +1510,8 @@ class pitch_shift(object):
 
     def __call__(self, input):
 
-        input = librosa.effects.pitch_shift(input, sr=self.sr, n_steps=self.step)
+        input = librosa.effects.pitch_shift(
+            input, sr=self.sr, n_steps=self.step)
         return input
 
 

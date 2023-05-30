@@ -131,7 +131,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 wavs_aug_tot = []
                 wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
                 wavs = data.squeeze().cuda()
-
                 augment = np.random.choice(augment_pipeline)
                 # for count, augment in enumerate(augment_pipeline):
                 # Apply augment

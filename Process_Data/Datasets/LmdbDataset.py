@@ -805,7 +805,6 @@ class CrossEgsDataset(Dataset):
         # 24, 6, 1, time, feat_dim
         features = torch.stack(features, dim=0).squeeze()
         feat_shape = features.shape
-        # print('Features shape: ', feat_shape)
 
         return features.reshape(feat_shape[0] * feat_shape[1], feat_shape[2], feat_shape[3]), torch.LongTensor(label)
 

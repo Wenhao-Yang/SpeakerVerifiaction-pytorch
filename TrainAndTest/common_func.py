@@ -408,9 +408,13 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
         if torch.distributed.get_rank() == 0:
             # pdb.set_trace()
+            
             writer = kaldiio.WriteHelper(
                 'ark,scp:%s,%s' % (ark_file, scp_file))
-
+            for i in all_uid2vectors:
+                print(len(i))
+                print(i[0][0].shape, i[0][1])
+                
             uid2vectors = np.concatenate(all_uid2vectors)
             # print('uid2vectors:', len(uid2vectors))
             for uid, uid_vec in uid2vectors:
