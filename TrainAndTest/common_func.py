@@ -231,8 +231,9 @@ class AverageMeter(object):
 
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
-def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
-                         ark_num=50000, gpu=True, mean_vector=True, feat_type='kaldi',
+def verification_extract(extract_loader, model, xvector_dir, epoch,
+                         test_input='fix', ark_num=50000, gpu=True,
+                         mean_vector=True, feat_type='kaldi',
                          verbose=0, xvector=False):
     """
 
@@ -264,19 +265,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     else:
         if not os.path.exists(xvector_dir):
             os.makedirs(xvector_dir)
-    # pbar =
     pbar = tqdm(extract_loader, ncols=100) if verbose > 0 else extract_loader
 
-    if isinstance(model, DistributedDataParallel):
-        if torch.distributed.get_rank() == 0:
-            if not os.path.exists(xvector_dir):
-                os.makedirs(xvector_dir)
-    else:
-        if not os.path.exists(xvector_dir):
-            os.makedirs(xvector_dir)
-    # pbar =
-    pbar = tqdm(extract_loader, ncols=100) if verbose > 0 else extract_loader
-    
     uid2vectors = []
     with torch.no_grad():
         if test_input == 'fix':
@@ -334,7 +324,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
-                            # , uid[0])
                             uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
                         else:
                             uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
@@ -359,25 +348,22 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
                 if vec_shape[2] >= max_lenght:
-                    # num_half = int(vec_shape[2] / 2)
-                    # half_a = a_data[:, :, :num_half, :]
-                    # half_b = a_data[:, :, -num_half:, :]
-                    # a_data = torch.cat((half_a, half_b), dim=0)
-                    num_segments = int(np.ceil(vec_shape[2] / half_max_length))
-                    data_as = []
-                    for i in range(num_segments):
-                        start = i * half_max_length
-                        end = (i + 1) * half_max_length
-                        end = min(end, vec_shape[2])
-                        if end == vec_shape[2]:
-                            start = max(0, end - half_max_length)
+                    num_half = int(vec_shape[2] / 2)
+                    half_a = a_data[:, :, :num_half, :]
+                    half_b = a_data[:, :, -num_half:, :]
+                    a_data = torch.cat((half_a, half_b), dim=0)
+                    # num_segments = int(np.ceil(vec_shape[2] / half_max_length))
+                    # data_as = []
+                    # for i in range(num_segments):
+                    #     start = i * half_max_length
+                    #     end = (i + 1) * half_max_length
+                    #     end = min(end, vec_shape[2])
+                    #     if end == vec_shape[2]:
+                    #         start = max(0, end - half_max_length)
+    
+                    #     data_as.append(a_data[:, :, start:end, :])
 
-                        data_as.append(a_data[:, :, start:end, :])
-
-                    # num_half = int(vec_shape[2] / 2)
-                    # half_a = a_data[:, :, :num_half, :]
-                    # half_b = a_data[:, :, -num_half:, :]
-                    a_data = torch.cat(data_as, dim=0)
+                    # a_data = torch.cat(data_as, dim=0)
 
                 try:
                     model_out = encode_func(a_data)
@@ -411,9 +397,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 if batch_idx % 100 == 0:
                     torch.cuda.empty_cache()
-                # uid2vectors[a_uid[0]] = out[0]
-    # uids = list(uid2vectors.keys())
-    # print('There are %d vectors' % len(uids))
+
     scp_file = xvector_dir + '/xvectors.scp'
     ark_file = xvector_dir + '/xvectors.ark'
 
@@ -441,8 +425,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
     torch.cuda.empty_cache()
 
 
-def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False,
-                      verbose=0):
+def verification_test(test_loader, dist_type, log_interval, xvector_dir,
+                      epoch, return_dist=False, verbose=0):
     # switch to evaluate mode
     labels, distances = [], []
     dist_fn = nn.CosineSimilarity(dim=1).cuda(
@@ -458,10 +442,6 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
             distances.append(dists)
             labels.append(label.numpy())
             # del out_a, out_p  # , ae, pe
-
-        # if batch_idx % log_interval == 0:
-        #     pbar.set_description('Verification Epoch {}: [{}/{} ({:.0f}%)]'.format(
-        #         epoch, batch_idx * len(data_a), len(test_loader.dataset), 100. * batch_idx / len(test_loader)))
 
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
