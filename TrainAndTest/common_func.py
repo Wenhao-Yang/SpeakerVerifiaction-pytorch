@@ -413,7 +413,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
                 'ark,scp:%s,%s' % (ark_file, scp_file))
             for i in all_uid2vectors:
                 print(len(i))
-                print(i[0][0].shape, i[0][1])
+                print(i[0][1].shape, i[0][0])
                 
             uid2vectors = np.concatenate(all_uid2vectors)
             # print('uid2vectors:', len(uid2vectors))
