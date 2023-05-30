@@ -328,7 +328,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
                         else:
                             uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
 
-                        uid2vectors.append((uid, uid_vec))
+                        uid2vectors.append([uid, uid_vec])
 
                     data = torch.tensor([])
                     num_seg_tensor = [0]
@@ -393,7 +393,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
                     print(a_data.shape, a_uid, out.shape)
                     pdb.set_trace()
 
-                uid2vectors.append((a_uid[0], out[0]))
+                uid2vectors.append([a_uid[0], out[0]])
 
                 if batch_idx % 100 == 0:
                     torch.cuda.empty_cache()
@@ -411,11 +411,12 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
             
             writer = kaldiio.WriteHelper(
                 'ark,scp:%s,%s' % (ark_file, scp_file))
+            
             for i in all_uid2vectors:
-                print(len(i))
-                print(i[0][1].shape, i[0][0])
+                print(len(i), i[0][1].shape, i[0][0])
+                # print()
                 
-            uid2vectors = np.concatenate(all_uid2vectors)
+            uid2vectors = all_uid2vectors[0].extend(all_uid2vectors[1])
             # print('uid2vectors:', len(uid2vectors))
             for uid, uid_vec in uid2vectors:
                 writer(str(uid), uid_vec)
