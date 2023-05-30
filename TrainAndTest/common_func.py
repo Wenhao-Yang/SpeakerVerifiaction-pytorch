@@ -338,17 +338,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                             uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
                         else:
                             uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
-                        # if mean_vector:
-                        #     uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)  # , uid[0])
-                        # else:
-                        #     uid2vectors[uid] = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
-                        if mean_vector:
-                            # , uid[0])
-                            uid_vec = out[num_seg_tensor[i]
-                                :num_seg_tensor[i + 1]].mean(axis=0)
-                        else:
-                            uid_vec = out[num_seg_tensor[i]
-                                :num_seg_tensor[i + 1]]
 
                         uid2vectors.append((uid, uid_vec))
 
@@ -360,7 +349,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             max_lenght = 10 * c.NUM_FRAMES_SPECT
             if feat_type == 'wav':
                 max_lenght *= 160
-
             half_max_length = int(max_lenght / 2)
             for batch_idx, (a_data, a_uid) in enumerate(pbar):
                 vec_shape = a_data.shape
@@ -371,11 +359,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
                 if vec_shape[2] >= max_lenght:
-                    num_half = int(vec_shape[2] / 2)
-                    half_a = a_data[:, :, :num_half, :]
-                    half_b = a_data[:, :, -num_half:, :]
-                    a_data = torch.cat((half_a, half_b), dim=0)
-
+                    # num_half = int(vec_shape[2] / 2)
+                    # half_a = a_data[:, :, :num_half, :]
+                    # half_b = a_data[:, :, -num_half:, :]
+                    # a_data = torch.cat((half_a, half_b), dim=0)
                     num_segments = int(np.ceil(vec_shape[2] / half_max_length))
                     data_as = []
                     for i in range(num_segments):
@@ -395,8 +382,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 try:
                     model_out = encode_func(a_data)
                 except Exception as e:
-                    print('\ninput shape is ', a_data.shape)
                     pdb.set_trace()
+                    print('\ninput shape is ', a_data.shape)
                     raise e
 
                 if isinstance(model_out, tuple):
@@ -425,7 +412,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if batch_idx % 100 == 0:
                     torch.cuda.empty_cache()
                 # uid2vectors[a_uid[0]] = out[0]
-
     # uids = list(uid2vectors.keys())
     # print('There are %d vectors' % len(uids))
     scp_file = xvector_dir + '/xvectors.scp'
