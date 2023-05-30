@@ -160,6 +160,7 @@ def create_model(name, **kwargs):
 
     model = __factory[name](**kwargs)
     create_classifier(model, **kwargs)
+
     return model
 
 
@@ -414,7 +415,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
             # print('uid2vectors:', len(uid2vectors))
             for uid, uid_vec in uid2vectors:
                 writer(str(uid), uid_vec)
-                
+
         torch.distributed.barrier()
     else:
         writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
