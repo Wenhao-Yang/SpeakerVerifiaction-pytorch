@@ -385,9 +385,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
                 out = out.data.cpu().float().numpy()
                 # print(out.shape)
 
-                if len(out.shape) == 3:
-                    out = out.squeeze(0)
-
                 if not (len(out.shape) == 2 and out.shape[0] == 1):
                     print(a_data.shape, a_uid, out.shape)
                     pdb.set_trace()
@@ -399,7 +396,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
 
     scp_file = xvector_dir + '/xvectors.scp'
     ark_file = xvector_dir + '/xvectors.ark'
-
     if torch.distributed.is_initialized():
 
         all_uid2vectors = [None for _ in range(
@@ -407,15 +403,13 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
         if torch.distributed.get_rank() == 0:
             # pdb.set_trace()
-            
             writer = kaldiio.WriteHelper(
                 'ark,scp:%s,%s' % (ark_file, scp_file))
             
             uid2vectors = []
             for i in all_uid2vectors:
                 uid2vectors.extend(i)
-                # print(len(i), i[0][1].shape, i[0][0])
-                # print()
+
             # uid2vectors = all_uid2vectors[0].extend(all_uid2vectors[1])
             # print('uid2vectors:', len(uid2vectors))
             for uid, uid_vec in uid2vectors:
@@ -734,7 +728,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
 
     parser.add_argument('--ring', default=12, type=float,
                         metavar='RING', help='acoustic feature dimension')
-
+    parser.add_argument('--first-bias', action='store_false',
+                        default=True, help='using Cosine similarity')
     parser.add_argument('--kernel-size', default='5,5', type=str,
                         metavar='KE', help='kernel size of conv filters')
     parser.add_argument('--context', default='5,3,3,5', type=str,
