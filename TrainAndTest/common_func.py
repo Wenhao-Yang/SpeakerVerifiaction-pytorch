@@ -362,7 +362,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
                     #         start = max(0, end - half_max_length)
     
                     #     data_as.append(a_data[:, :, start:end, :])
-
                     # a_data = torch.cat(data_as, dim=0)
 
                 try:
@@ -412,15 +411,16 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
             writer = kaldiio.WriteHelper(
                 'ark,scp:%s,%s' % (ark_file, scp_file))
             
+            uid2vectors = []
             for i in all_uid2vectors:
-                print(len(i), i[0][1].shape, i[0][0])
+                uid2vectors.extend(i)
+                # print(len(i), i[0][1].shape, i[0][0])
                 # print()
-                
-            uid2vectors = all_uid2vectors[0].extend(all_uid2vectors[1])
+            # uid2vectors = all_uid2vectors[0].extend(all_uid2vectors[1])
             # print('uid2vectors:', len(uid2vectors))
             for uid, uid_vec in uid2vectors:
                 writer(str(uid), uid_vec)
-
+                
         torch.distributed.barrier()
     else:
         writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
