@@ -122,6 +122,7 @@ def create_scheduler(optimizer, config_args, train_dir=None):
 
     return scheduler
 
+
 # ALSTM  ASiResNet34  ExResNet34  LoResNet  ResNet20  SiResNet34  SuResCNN10  TDNN
 __factory = {
     'AlexNet': AlexNet,
@@ -325,9 +326,11 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
 
                     for i, uid in enumerate(uid_lst):
                         if mean_vector:
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]].mean(axis=0)
+                            uid_vec = out[num_seg_tensor[i]
+                                :num_seg_tensor[i + 1]].mean(axis=0)
                         else:
-                            uid_vec = out[num_seg_tensor[i]:num_seg_tensor[i + 1]]
+                            uid_vec = out[num_seg_tensor[i]
+                                :num_seg_tensor[i + 1]]
 
                         uid2vectors.append([uid, uid_vec])
 
@@ -361,7 +364,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
                     #     end = min(end, vec_shape[2])
                     #     if end == vec_shape[2]:
                     #         start = max(0, end - half_max_length)
-    
+
                     #     data_as.append(a_data[:, :, start:end, :])
                     # a_data = torch.cat(data_as, dim=0)
 
@@ -406,7 +409,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
             # pdb.set_trace()
             writer = kaldiio.WriteHelper(
                 'ark,scp:%s,%s' % (ark_file, scp_file))
-            
+
             uid2vectors = []
             for i in all_uid2vectors:
                 uid2vectors.extend(i)
@@ -867,7 +870,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         help='how many batches to wait before logging training status')
     parser.add_argument('--test-interval', type=int, default=1,
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--select-interval', type=int, default=4, 
+    parser.add_argument('--select-interval', type=int, default=4,
                         help='how many batches to wait before logging training status')
 
     parser.add_argument('--acoustic-feature', choices=['fbank', 'spectrogram', 'mfcc'], default='fbank',
@@ -908,17 +911,20 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='substract center for speaker embeddings')
 
     if 'Gradient' in description:
-        parser.add_argument('--eval-dir', type=str, help='path to voxceleb1 test dataset')
-        parser.add_argument('--select-input-dir', type=str, help='path to voxceleb1 test dataset')
-        parser.add_argument('--threshold', type=float, default=0.1, metavar='E', help='number of epochs to train (default: 10)')
+        parser.add_argument('--eval-dir', type=str,
+                            help='path to voxceleb1 test dataset')
+        parser.add_argument('--select-input-dir', type=str,
+                            help='path to voxceleb1 test dataset')
+        parser.add_argument('--threshold', type=float, default=0.1,
+                            metavar='E', help='number of epochs to train (default: 10)')
         parser.add_argument('--pro-type', choices=['del', 'insert', 'none', 'rand'], default='insert',
-                    help='choose the acoustic features type.')
+                            help='choose the acoustic features type.')
         parser.add_argument('--init-input', choices=['zero', 'mean', 'rand'], default='zero',
-                    help='choose the acoustic features type.')
+                            help='choose the acoustic features type.')
         parser.add_argument('--norm-cam', choices=['time', 'freq', 'both', 'avg3', 'avg5', 'none'], default='none',
-                    help='choose the acoustic features type.')
+                            help='choose the acoustic features type.')
         parser.add_argument('--cam-scaled', choices=['tanh', 'none'], default='none',
-                    help='choose the acoustic features type.')
+                            help='choose the acoustic features type.')
         parser.add_argument('--train-set-name', type=str,
                             required=True, help='path to voxceleb1 test dataset')
         parser.add_argument('--test-set-name', type=str,
@@ -975,16 +981,16 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             default='both', help='path to voxceleb1 test dataset')
         parser.add_argument('--norm-type', type=str, default='input',
                             help='path to voxceleb1 test dataset')
-        
+
     parser.add_argument('--test-mask', action='store_true',
                         default=False, help='need to make spectrograms file')
     parser.add_argument('--mask-sub', type=str,
-                            default='0,1', help='mask input start index')
+                        default='0,1', help='mask input start index')
     parser.add_argument('--mask-type', type=str, default='specaug',
-                        choices=['specaug', 'zero', 'const'],
+                        choices=['specaug', 'zero', 'const', 'blur'],
                         help='mask input start index')
     parser.add_argument('--baseline-file', type=str,
-                            default='0,1', help='mask input start index')
+                        default='0,1', help='mask input start index')
     if 'Test' in description:
         parser.add_argument('--lightning', action='store_true',
                             default=False, help='need to make mfb file')
