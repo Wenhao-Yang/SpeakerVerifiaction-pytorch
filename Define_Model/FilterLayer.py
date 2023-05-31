@@ -724,7 +724,7 @@ class FreqMaskIndexLayer(nn.Module):
             this_mean = this_mean.repeat(1,1,x.shape[2],1)
             x[:, :, :, start:end] = this_mean[:, :, start:end]
         elif x_shape == 3:
-            this_mean = this_mean.repeat(1,x.shape[2],1)
+            this_mean = this_mean.repeat(1,x.shape[1],1)
             x[:, :, start:end] = this_mean[:, :, start:end]
 
         return x
