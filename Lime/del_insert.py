@@ -273,7 +273,7 @@ def main():
                     for l in f.readlines():
                         _, upath = l.split()
                         the_data = read_WaveInt(upath)
-                        the_data = trans(torch.tensor(the_data).reshape(1, 1, 1, -1).float())
+                        the_data = trans(torch.tensor(the_data).reshape(1, 1, -1).float())
                         baselines.append(the_data)
                         
                 baselines = torch.cat(baselines, dim=-2).mean(dim=-2, keepdim=True) 

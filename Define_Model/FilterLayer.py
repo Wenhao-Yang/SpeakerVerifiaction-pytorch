@@ -709,7 +709,7 @@ class FreqMaskIndexLayer(nn.Module):
     def forward(self, x):
         # x [batch, time, frequency]
         x_shape = len(x.shape)
-        print(x.shape)
+        # print(x.shape)
 
         if self.mask_type == 'specaug':
             this_mean = x.mean(dim=-2, keepdim=True)  # .add(1e-6)
