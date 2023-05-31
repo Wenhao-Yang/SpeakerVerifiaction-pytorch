@@ -1053,8 +1053,9 @@ if [ $stage -le 304 ]; then
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Mask for ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   mask_len=2
+  pro_type=none
   for cam in layer_cam ;do # grad_cam
-  for pro_type in none ; do
+  for mask_type in blur ; do
   for ((i=0; i<=161; i=i+4)); do
     # threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
     threshold=0
@@ -1065,7 +1066,7 @@ if [ $stage -le 304 ]; then
     python Lime/del_insert.py \
       --model ${model} --resnet-size ${resnet_size} \
       --batch-size 1 --test-input var --init-input mean \
-      --test-mask --mask-sub ${mask_sub} --mask-type const \
+      --test-mask --mask-sub ${mask_sub} --mask-type ${mask_type} \
       --baseline-file ${lstm_dir}/data/${dataset}/dev/baselines.txt \
       --feat-format wav \
       --pro-type ${pro_type} --threshold ${threshold} \

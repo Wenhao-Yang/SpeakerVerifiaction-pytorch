@@ -23,6 +23,7 @@ from torch.nn.parallel import DistributedDataParallel
 from scipy import interpolate
 from Process_Data.audio_processing import MelSpectrogram
 from torchaudio.transforms import Spectrogram
+import torchvision
 import Process_Data.constants as c
 
 
@@ -705,6 +706,8 @@ class FreqMaskIndexLayer(nn.Module):
         self.mask_value = mask_value
         if mask_type == 'const':
             assert mask_value != None
+        elif mask_type == 'blur':
+            self.mask_value = torchvision.transforms.GaussianBlur(kernel_size=(1,5), sigma=3)
             
     def forward(self, x):
         # x [batch, time, frequency]
@@ -717,15 +720,22 @@ class FreqMaskIndexLayer(nn.Module):
             this_mean = x.mean(dim=-2, keepdim=True) * 0  # .add(1e-6)
         elif self.mask_type == 'const':
             this_mean = self.mask_value 
-            
+        
         start = self.start
         end = start + self.mask_len
-        if x_shape == 4:
-            this_mean = this_mean.repeat(1,1,x.shape[2],1)
-            x[:, :, :, start:end] = this_mean[:, :, start:end]
-        elif x_shape == 3:
-            this_mean = this_mean.repeat(1,x.shape[1],1)
-            x[:, :, start:end] = this_mean[:, :, start:end]
+
+        if self.mask_type != 'blur':
+            if x_shape == 4:
+                this_mean = this_mean.repeat(1,1,x.shape[2],1)
+                x[:, :, :, start:end] = this_mean[:, :, start:end]
+            elif x_shape == 3:
+                this_mean = this_mean.repeat(1,x.shape[1],1)
+                x[:, :, start:end] = this_mean[:, :, start:end]
+        else:
+            if x_shape == 4:
+                x[:, :, :, start:end] = self.mask_value(x[:, :, start:end])
+            elif x_shape == 3:
+                x[:, :, start:end] = self.mask_value(x[:, :, start:end])
 
         return x
 
