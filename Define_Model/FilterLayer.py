@@ -707,22 +707,25 @@ class FreqMaskIndexLayer(nn.Module):
             assert mask_value != None
             
     def forward(self, x):
+        # x [batch, time, frequency]
         x_shape = len(x.shape)
         print(x.shape)
 
         if self.mask_type == 'specaug':
-            this_mean = x.mean(dim=-1, keepdim=True)  # .add(1e-6)
+            this_mean = x.mean(dim=-2, keepdim=True)  # .add(1e-6)
         elif self.mask_type == 'zero':
-            this_mean = x.mean(dim=-1, keepdim=True) * 0  # .add(1e-6)
+            this_mean = x.mean(dim=-2, keepdim=True) * 0  # .add(1e-6)
         elif self.mask_type == 'const':
-            this_mean = self.mask_value #.clone().cuda()  # .add(1e-6)
+            this_mean = self.mask_value 
             
         start = self.start
         end = start + self.mask_len
         if x_shape == 4:
-            x[:, :, :, start:end] = this_mean
+            this_mean = this_mean.repeat(1,1,x.shape[2],1)
+            x[:, :, :, start:end] = this_mean[:, :, start:end]
         elif x_shape == 3:
-            x[:, :, start:end] = this_mean
+            this_mean = this_mean.repeat(1,x.shape[2],1)
+            x[:, :, start:end] = this_mean[:, :, start:end]
 
         return x
 

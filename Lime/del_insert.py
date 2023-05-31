@@ -277,7 +277,7 @@ def main():
                         baselines.append(the_data)
                         
                 baselines = torch.cat(baselines, dim=-2).mean(dim=-2, keepdim=True) 
-            
+                print('Baselines shape: ', baselines.shape)
             start = int(mask_str[0])
             end = int(mask_str[1])
             transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end,
