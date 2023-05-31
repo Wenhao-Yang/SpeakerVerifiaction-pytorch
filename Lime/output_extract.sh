@@ -1084,7 +1084,7 @@ if [ $stage -le 304 ]; then
       --check-yaml Data/checkpoint/${model_dir}/model.2023.05.08.yaml \
       --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
-      --gpu-id 1 --verbose 1
+      --gpu-id 3 --verbose 1
   done
   done
   done
