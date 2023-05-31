@@ -714,7 +714,7 @@ class FreqMaskIndexLayer(nn.Module):
         elif self.mask_type == 'zero':
             this_mean = x.mean(dim=-1, keepdim=True) * 0  # .add(1e-6)
         elif self.mask_type == 'const':
-            this_mean = self.mask_value.clone().cuda()  # .add(1e-6)
+            this_mean = self.mask_value #.clone().cuda()  # .add(1e-6)
             
         start = self.start
         end = start + self.mask_len
