@@ -980,6 +980,11 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                         default=False, help='need to make spectrograms file')
     parser.add_argument('--mask-sub', type=str,
                             default='0,1', help='mask input start index')
+    parser.add_argument('--mask-type', type=str, default='specaug',
+                        choices=['specaug', 'zero', 'const'],
+                        help='mask input start index')
+    parser.add_argument('--baseline-file', type=str,
+                            default='0,1', help='mask input start index')
     if 'Test' in description:
         parser.add_argument('--lightning', action='store_true',
                             default=False, help='need to make mfb file')

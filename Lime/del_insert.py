@@ -37,7 +37,7 @@ from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 # from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptEvalDataset, ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
-from Process_Data.audio_processing import CAMNormInput, ConcateOrgInput, mvnormal, ConcateVarInput
+from Process_Data.audio_processing import CAMNormInput, ConcateOrgInput, mvnormal, ConcateVarInput, read_WaveInt
 from TrainAndTest.common_func import args_parse, create_model, load_model_args, args_model
 
 # Version conflict
@@ -89,16 +89,6 @@ elif args.test_input == 'fix':
                      scaled=args.cam_scaled),
         ConcateVarInput(remove_vad=args.remove_vad),
     ])
-
-if args.test_mask:
-
-    mask_str = args.mask_sub.split(',')
-    start = int(mask_str[0])
-    end = int(mask_str[1])
-    transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
-    if args.verbose > 0:
-        print('Mean set values in frequecy from %d to %d.' % (start, end))
-
 
 # file_loader = read_mat
 # train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
@@ -156,7 +146,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             mask_str = args.mask_sub.split(',')
             start = int(mask_str[0])
             end = int(mask_str[1])
-            this_result = [start, end, correct/total*100]
+            this_result = [start, end, correct/total*100, args.mask_type]
         else:
             this_result = [args.pro_type, args.threshold, correct/total*100]
         
@@ -271,7 +261,32 @@ def main():
             trans = model.input_mask[0]
             model.input_mask.__delitem__(0) # 从save_dir_输入为feat而不是wav
             transform.transforms[0].data_preprocess = trans
+        
+        if args.test_mask:
+            mask_str = args.mask_sub.split(',')
+            mask_type = args.mask_type
+            baselines = None
             
+            if os.path.exists(args.baseline_file):
+                baselines = [] 
+                with open(args.baseline_file, 'r') as f:
+                    for l in f.readlines():
+                        _, upath = l.split()
+                        the_data = read_WaveInt(upath)
+                        the_data = trans(torch.tensor(the_data).reshape(1, 1, 1, -1).float())
+                        baselines.append(the_data)
+                        
+                baselines = torch.cat(baselines, dim=-2).mean(dim=-2, keepdim=True) 
+            
+            start = int(mask_str[0])
+            end = int(mask_str[1])
+            transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end,
+                                                        mask_type=mask_type, mask_value=baselines))
+            if args.verbose > 0:
+                print('mask %s set values in frequecy from %d to %d.' % (mask_type, start, end))
+
+
+
         model.cuda()
 
         file_dir = args.extract_path # + '/epoch_%d' % e

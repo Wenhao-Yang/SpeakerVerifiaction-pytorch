@@ -694,19 +694,30 @@ class FreqMaskLayer(nn.Module):
 
 
 class FreqMaskIndexLayer(nn.Module):
-    def __init__(self, start=0, mask_len=2, normalized=False):
+    def __init__(self, start=0, mask_len=2, normalized=False,
+                 mask_type='specaug', mask_value=None):
         super(FreqMaskIndexLayer, self).__init__()
         self.start = start
         self.mask_len = mask_len
         self.normalized = normalized
-
+        self.mask_type = mask_type
+        
+        self.mask_value = mask_value
+        if mask_type == 'const':
+            assert mask_value != None
+            
     def forward(self, x):
         x_shape = len(x.shape)
 
-        this_mean = x.mean(dim=-1, keepdim=True)  # .add(1e-6)
+        if self.mask_type == 'specaug':
+            this_mean = x.mean(dim=-1, keepdim=True)  # .add(1e-6)
+        elif self.mask_type == 'zero':
+            this_mean = x.mean(dim=-1, keepdim=True) * 0  # .add(1e-6)
+        elif self.mask_type == 'const':
+            this_mean = self.mask_value.clone().cuda()  # .add(1e-6)
+            
         start = self.start
         end = start + self.mask_len
-
         if x_shape == 4:
             x[:, :, :, start:end] = this_mean
         elif x_shape == 3:
@@ -715,7 +726,9 @@ class FreqMaskIndexLayer(nn.Module):
         return x
 
     def __repr__(self):
-        return "FreqMaskIndexLayer(start=%d, mask_len=%d)" % (self.start, self.mask_len)
+        return "FreqMaskIndexLayer(start=%d, mask_len=%d, mask_type=%s)" % (self.start,
+                                                                            self.mask_len,
+                                                                            self.mask_type)
 
 
 class TimeFreqMaskLayer(nn.Module):
