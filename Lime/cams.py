@@ -15,6 +15,51 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
 import captum
+import h5py
+
+
+# read input and saliency from h5py
+def read_hdf5(reader, key):
+    with h5py.File(reader, 'r') as r:
+        data_flat = r.get(key)[:]
+        return data_flat
+
+
+def get_data_grad(uid, data_reader, grad_reader):
+    data = read_hdf5(data_reader, uid)
+    grad = read_hdf5(grad_reader, uid)
+    return data, grad
+
+
+# normalize functions
+def mean_norm(grad):
+    return np.abs(grad).mean(axis=0)
+
+
+def var_norm(grad):
+    return grad.var(axis=0)
+
+
+def clip_mean_norm(grad):
+    return np.clip(grad, a_min=0, a_max=None).mean(axis=0)
+
+
+def sum_norm(grad):
+    cam = np.abs(grad).sum(axis=0)
+    cam = (cam - cam.min()) / (cam.max()-cam.min() + 1e-6)
+    return cam
+
+
+def clip_sum_norm(grad):
+    cam = np.clip(grad, a_min=0, a_max=None).sum(axis=0)
+    cam = (cam - cam.min()) / (cam.max()-cam.min() + 1e-6)
+    return cam
+
+
+def sum_clip_norm(grad):
+    cam = np.clip(grad.sum(axis=0), a_min=0, a_max=None)
+    cam = (cam - cam.min()) / (cam.max()-cam.min() + 1e-6)
+    return cam
 
 
 def InputGradeint(data) -> torch.Tensor:
