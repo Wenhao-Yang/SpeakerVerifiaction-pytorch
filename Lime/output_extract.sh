@@ -1056,7 +1056,7 @@ if [ $stage -le 304 ]; then
   pro_type=none
   for cam in layer_cam ;do # grad_cam
   for mask_type in blur ; do
-  for ((i=0; i<=161; i=i+4)); do
+  for ((i=12; i<=161; i=i+4)); do
     # threshold=`echo "$i 1000" | awk '{printf("%0.4f\n",$1/$2)}'`
     threshold=0
     mask_sub="$i,$((i+mask_len))"
@@ -1085,7 +1085,7 @@ if [ $stage -le 304 ]; then
       --check-yaml Data/checkpoint/${model_dir}/model.2023.05.08.yaml \
       --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
-      --gpu-id 3 --verbose 1
+      --gpu-id 5 --verbose 1
   done
   done
   done
