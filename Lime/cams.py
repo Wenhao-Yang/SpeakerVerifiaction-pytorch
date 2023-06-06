@@ -14,64 +14,109 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
+import captum
+import h5py
+
+
+# read input and saliency from h5py
+def read_hdf5(reader, key):
+    with h5py.File(reader, 'r') as r:
+        data_flat = r.get(key)[:]
+        return data_flat
+
+
+def get_data_grad(uid, data_reader, grad_reader):
+    data = read_hdf5(data_reader, uid)
+    grad = read_hdf5(grad_reader, uid)
+    return data, grad
+
+
+# normalize functions
+def mean_norm(grad):
+    return np.abs(grad).mean(axis=0)
+
+
+def var_norm(grad):
+    return grad.var(axis=0)
+
+
+def clip_mean_norm(grad):
+    return np.clip(grad, a_min=0, a_max=None).mean(axis=0)
+
+
+def sum_norm(grad):
+    cam = np.abs(grad).sum(axis=0)
+    cam = (cam - cam.min()) / (cam.max()-cam.min() + 1e-6)
+    return cam
+
+
+def clip_sum_norm(grad):
+    cam = np.clip(grad, a_min=0, a_max=None).sum(axis=0)
+    cam = (cam - cam.min()) / (cam.max()-cam.min() + 1e-6)
+    return cam
+
+
+def sum_clip_norm(grad):
+    cam = np.clip(grad.sum(axis=0), a_min=0, a_max=None)
+    cam = (cam - cam.min()) / (cam.max()-cam.min() + 1e-6)
+    return cam
 
 
 def InputGradeint(data) -> torch.Tensor:
     return data.grad
-    
+
 
 def Grad_CAM(data, feat_lst, grad_lst,
              zero_padding=False):
-    
+
     grad_cam = feat_lst[-1] * grad_lst[0]
     if len(grad_cam.shape) == 3:
         grad_cam = grad_cam.unsqueeze(0)
-    
+
     if zero_padding and grad.shape[-1] < data.shape[-1]:
-        grad = F.pad(grad, (1,1,1,1), "constant", 0)
-        
+        grad = F.pad(grad, (1, 1, 1, 1), "constant", 0)
+
     grad_cam = F.interpolate(grad_cam, size=data.shape[-2:],
-                              mode='bilinear', align_corners=True)
-    
+                             mode='bilinear', align_corners=True)
+
     return grad_cam
-    
+
 
 def Grad_CAM_pp(data, feat_lst, grad_lst, logits, label,
                 zero_padding=False):
-    
+
     grad_cam = feat_lst[-1] * grad_lst[0]
     if len(grad_cam.shape) == 3:
         grad_cam = grad_cam.unsqueeze(0)
-    
-    
+
     last_grad = grad_lst[0]
     last_feat = feat_lst[-1]
-                            
+
     first_derivative = logits[0][label.long()].exp().cpu() * last_grad
-    
+
     alpha = last_grad.pow(2) / (
-            2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
+        2 * last_grad.pow(2) + (last_grad.pow(3) * last_feat).sum(dim=(2, 3), keepdim=True))
     weight = alpha * (first_derivative.clamp_min_(0))
 
     weight = weight.mean(dim=(2, 3), keepdim=True)
     weight /= weight.sum()
 
     grad = (last_feat * weight).sum(dim=1, keepdim=True).clamp_min(0)
-    
+
     if zero_padding and grad.shape[-1] < data.shape[-1]:
-        grad = F.pad(grad, (1,1,1,1), "constant", 0)
+        grad = F.pad(grad, (1, 1, 1, 1), "constant", 0)
 
     grad_cam_pp = F.interpolate(grad, size=data.shape[-2:],
-                              mode='bilinear', align_corners=True)
-    
+                                mode='bilinear', align_corners=True)
+
     return grad_cam_pp
-    
+
 
 def FullGrad(data, feat_lst, grad_lst, biases_lst, bias_layers, model,
              zero_padding=False):
-    
+
     input_gradient = (data.grad * data)
-    full_grad = input_gradient.abs()#.cpu()
+    full_grad = input_gradient.abs()  # .cpu()
     full_grad -= full_grad.min()
     full_grad /= full_grad.max() + 1e-8
 
@@ -103,44 +148,43 @@ def FullGrad(data, feat_lst, grad_lst, biases_lst, bias_layers, model,
         bias_grad /= bias_grad.max() + 1e-8
 
         if zero_padding and bias_grad.shape[-1] < input_gradient.shape[-1]:
-            bias_grad = F.pad(bias_grad, (1,1,1,1), "constant", 0)
+            bias_grad = F.pad(bias_grad, (1, 1, 1, 1), "constant", 0)
 
         full_grad += F.interpolate(bias_grad, size=data.shape[-2:],
-                              mode='bilinear', align_corners=True)
+                                   mode='bilinear', align_corners=True)
 
     return full_grad
 
 
-
 def Feat_Grad(data, feat_lst, grad_lst,
-             zero_padding=False):
-    
+              zero_padding=False):
+
     input_gradient = (data.grad * data)
-    grad = input_gradient.clamp_min(0)  
+    grad = input_gradient.clamp_min(0)
     grad -= grad.min()
 
     for i in range(len(feat_lst)):
-        
+
         this_grad = grad_lst[i] * feat_lst[-1 - i]
         if zero_padding and this_grad.shape[-1] < input_gradient.shape[-1]:
-            this_grad = F.pad(this_grad, (1,1,1,1), "constant", 0)
+            this_grad = F.pad(this_grad, (1, 1, 1, 1), "constant", 0)
 
         this_grad = F.interpolate(this_grad, size=data.shape[-2:],
-                              mode='bilinear', align_corners=True).mean(dim=1, keepdim=True)
+                                  mode='bilinear', align_corners=True).mean(dim=1, keepdim=True)
 
         this_grad = this_grad.clamp_min(0)
         this_grad /= this_grad.max()
 
         grad += this_grad
-        
+
     feat_grad = grad / grad.sum()
-                            
+
     return feat_grad
 
 
 def Feats(data, feat_lst, grad_lst,
-             zero_padding=False,layer_weight=False):
-    
+          zero_padding=False, layer_weight=False):
+
     grad = torch.zeros_like(data)
     # acc_grad /= acc_grad.max()
 
@@ -151,11 +195,11 @@ def Feats(data, feat_lst, grad_lst,
             this_feat = this_feat.unsqueeze(0)
 
         if zero_padding and this_feat.shape[-1] < grad.shape[-1]:
-            this_feat = F.pad(this_feat, (1,1,1,1), "constant", 0)
+            this_feat = F.pad(this_feat, (1, 1, 1, 1), "constant", 0)
 
         this_grad = F.interpolate(this_feat, size=data.shape[-2:],
-                              mode='bilinear', align_corners=True).mean(dim=1, keepdim=True)
-        
+                                  mode='bilinear', align_corners=True).mean(dim=1, keepdim=True)
+
         this_grad = this_grad.clamp_min(0)
         this_grad /= this_grad.max() + 1e-6
 
@@ -166,8 +210,7 @@ def Feats(data, feat_lst, grad_lst,
             feat_lst) * this_grad
 
     grad = grad / grad.sum()
-        
-        
+
     return grad
 
 
@@ -205,16 +248,16 @@ def InteGrad(data, baseline, steps, model, label):
         baseline = 0. * data
 
     scaled_inputs = [baseline + (float(i) / steps) * (data - baseline) for i in
-                    range(1, steps + 1)]
+                     range(1, steps + 1)]
 
     grads, _ = calculate_outputs_and_gradients(
         scaled_inputs, model, label)
-    
+
     with torch.no_grad():
         grads = (grads[:-1] + grads[1:]) / 2.0
         avg_grads = grads.mean(dim=0)
         grad = (data - baseline).cuda() * avg_grads
-    
+
     return grad
 
 
@@ -225,48 +268,59 @@ def ExpectGrad(data, steps, model, label, samples):
     for i in range(steps):
         alpha = np.random.uniform(0, 1)
         b = np.random.choice(samples)
-        
+
         while b.shape[-2] < data.shape[-2]:
             b = torch.cat([b, b], dim=-2)
-        
-        b = b[:,:,:data.shape[-2], :]    
-        
+
+        b = b[:, :, :data.shape[-2], :]
+
         scaled_inputs.append(data + alpha * (data-b))
         baselines.append(data - b)
-    
+
     baselines = torch.cat(baselines, dim=0)
-    
+
     grads, _ = calculate_outputs_and_gradients(
         scaled_inputs, model, label)
-    
+
     with torch.no_grad():
         grads = (grads[:-1] + grads[1:]) / 2.0
         avg_grads = grads.mean(dim=0)
         grad = baselines.cuda() * avg_grads
-    
+
     return grad
 
 
 def SmoothGrad(data,  model, label,
-               steps=25, 
+               steps=25,
                stdev_spread=0.15, magnitude=True):
     # baseline,
     # if baseline is None:
     #     baseline = 0. * data
-    
+
     # original smooth use a std normal distribution here
     #  stdev = stdev_spread * (np.max(x) - np.min(x))
-    
-    stdev = stdev_spread * (data.max(dim=-2, keepdim=True).values - data.min(dim=-2, keepdim=True).values)
-    scaled_inputs = [data + torch.normal(torch.zeros_like(data), stdev.repeat(1, 1, data.shape[-2], 1))  for i in range(steps)]
+
+    stdev = stdev_spread * \
+        (data.max(dim=-2, keepdim=True).values -
+         data.min(dim=-2, keepdim=True).values)
+    scaled_inputs = [data + torch.normal(torch.zeros_like(
+        data), stdev.repeat(1, 1, data.shape[-2], 1)) for i in range(steps)]
 
     grad, _ = calculate_outputs_and_gradients(
         scaled_inputs, model, label)
-    
+
     with torch.no_grad():
         if magnitude:
             grad = grad.pow(2)
-            
+
         grad = grad.mean(dim=0)
-    
+
+    return grad
+
+
+def GradientShap(data,  model, label, baselines):
+
+    gradshap = captum.attr.GradientShap(model)
+    grad = gradshap.attribute(data, baselines, target=label)
+
     return grad

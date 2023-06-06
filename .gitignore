@@ -40,3 +40,6 @@ Misc/OptimalTransport/color_transfer.py
 Misc/data/colors
 Misc/mipi/data
 .ipynb_checkpoints
+TrainAndTest/wav/ecapa/light.txt
+TrainAndTest/wav/ecapa/pytorch.txt
+TrainAndTest/wav/ecapa/Untitled-1.py

@@ -82,7 +82,7 @@ resnet_size: 34
 block_type: "seblock"
 red_ratio: 2
 encoder_type: "SAP2"
-downsample: "k3"
+downsample: "k1"
 model: ThinResNet
 alpha: 0
 avg_size: 0
