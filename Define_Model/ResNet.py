@@ -23,7 +23,7 @@ from torch import nn
 # from torchvision.models.resnet import Bottleneck
 from torchvision.models.densenet import _DenseBlock
 from torchvision.models.shufflenetv2 import InvertedResidual
-from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyNormReweightLayer, FrequencyReweightLayer, TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, TimeReweightLayer, fBLayer, fBPLayer, fLLayer, \
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, TimeReweightLayer, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, ReweightLayer, AttentionweightLayer_v0
@@ -102,7 +102,7 @@ class Bottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
-    # This variant is also known as ResNets V1.5 and improves accuracy according to
+    # This variant is also known as ResNet V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
     expansion: int = 4
@@ -201,7 +201,7 @@ class SEBottleneck(nn.Module):
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
-    # This variant is also known as ResNets V1.5 and improves accuracy according to
+    # This variant is also known as ResNet V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
     expansion: int = 4
@@ -1161,6 +1161,8 @@ class ThinResNet(nn.Module):
 
         if self.mask == 'frl' and input_dim != None:
             layers.append(FrequencyReweightLayer(input_dim=input_dim))
+        elif self.mask == 'frl2' and input_dim != None:
+            layers.append(FrequencyReweightLayer2(input_dim=input_dim))
         elif self.mask == 'fnrl' and input_dim != None:
             layers.append(FrequencyNormReweightLayer(input_dim=input_dim))
         elif self.mask == 'trl' and input_dim != None:
@@ -1185,9 +1187,7 @@ class ThinResNet(nn.Module):
         if proser != None and layer_mix == 1:
             x = self.mix(x, proser, lamda_beta)
 
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
+        x = self.relu(self.bn1(self.conv1(x)))
         if self.maxpool != None:
             x = self.maxpool(x)
 
