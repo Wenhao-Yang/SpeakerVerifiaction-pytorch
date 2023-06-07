@@ -107,6 +107,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   kernel_size: [7, 7]
+  padding: [3, 3]
   block_type: !ref <block_type>
   downsample: !ref <downsample>
   red_ratio: !ref <red_ratio>
