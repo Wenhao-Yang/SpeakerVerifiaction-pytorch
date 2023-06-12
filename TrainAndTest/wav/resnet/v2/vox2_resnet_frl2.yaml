@@ -68,12 +68,12 @@ patience: 3
 milestones: [10, 20, 30, 40]
 val_check_interval: 5994
 scheduler: rop
-lr: 0.1
+lr: 0.01
 base_lr: 0.00001
 cos_sim: True
 
 early_stopping: True
-early_patience: 15
+early_patience: 10
 early_delta: 0.001
 early_meta: "mix8"
 
@@ -145,7 +145,7 @@ check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_s
 save_data_dir: Data/checkpoint/ThinResNet34/Mean_batch128_seblock_downk5_avg0_SAP2_em256_dp01_alpha0_none_chn32_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist
 
 #_mixup<lamda_beta>_<mixup_type>
-resume: !ref <check_path>/checkpoint_40.pth
+resume: !ref <check_path>/123456/checkpoint_28.pth
 # resume: Data/checkpoint/ThinResNet34/Mean_batch128_cbam_downk3_avg5_SAP2_em256_dp01_alpha0_none1_chn32_wd5e4_vares_dist/arcsoft_sgd_rop/vox1/wave_light/lightning_logs/version_0/checkpoints/last.ckpt
 
 veri_pairs: 9600
