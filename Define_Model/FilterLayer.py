@@ -222,7 +222,7 @@ class MelFbankLayer(nn.Module):
     def forward(self, input):
         output = self.t(input.squeeze(1))
 
-        output = torch.transpose(output, 2, 3)
+        output = torch.transpose(output, -2, -1)
         return torch.log10(output + 1e-6)
 
     def __repr__(self):
@@ -818,7 +818,8 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
         "v2_rclean_imax": c.VOX2_RCLEAN_INPT_MAX,
         "v2_rclean_igmax": c.VOX2_RCLEAN_INGR_MAX,
         "v2_fratio": c.VOX2_FRATIO,
-        "v2_eer": c.V2_EER
+        "v2_eer": c.V2_EER,
+        "v2_frl": c.FRL_V2
     }
 
     assert weight in weights.keys()
@@ -920,77 +921,6 @@ class DropweightLayer_v2(nn.Module):
     def __repr__(self):
 
         return "DropweightLayer_v2(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
-                                                                                         self.dropout_p, self.scale)
-
-
-class DropweightLayer_v3(nn.Module):
-    def __init__(self, dropout_p=0.1, weight='mel', input_dim=161, scale=0.2):
-        super(DropweightLayer_v3, self).__init__()
-        self.input_dim = input_dim
-        self.weight = weight
-        self.dropout_p = dropout_p
-        self.scale = scale
-
-        if weight == 'mel':
-            m = np.arange(0, 2840.0230467083188)
-            m = 700 * (10 ** (m / 2595.0) - 1)
-            n = np.array([m[i] - m[i - 1] for i in range(1, len(m))])
-            n = 1 / n
-            x = np.arange(input_dim) * 8000 / (input_dim - 1)  # [0-8000]
-
-            f = interpolate.interp1d(m[1:], n)
-            xnew = np.arange(np.min(m[1:]), np.max(
-                m[1:]), (np.max(m[1:]) - np.min(m[1:])) / input_dim)
-            ynew = f(xnew)
-            ynew = 1 / ynew  # .max()
-        elif weight == 'clean':
-            ynew = c.VOX1_CLEAN
-        elif weight == 'aug':
-            ynew = c.VOX1_AUG
-        elif weight == 'vox2':
-            ynew = c.VOX2_CLEAN
-        elif weight == 'vox1_cf':
-            ynew = c.VOX1_CFB40
-        elif weight == 'vox2_cf':
-            ynew = c.VOX2_CFB40
-        elif weight == 'vox1_rcf':
-            ynew = c.VOX1_RCFB40
-        elif weight == 'vox2_rcf':
-            ynew = c.VOX2_RCFB40
-        else:
-            raise ValueError(weight)
-
-        ynew = np.array(ynew)
-        ynew /= ynew.max()
-
-        self.drop_p = ynew * self.scale + 1-self.scale - dropout_p
-
-    def forward(self, x):
-        if not self.training:
-            return x
-        else:
-            assert len(
-                self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
-            drop_weight = []
-            for i in self.drop_p:
-                drop_weight.append(torch.nn.functional.dropout(
-                    torch.ones(x.shape[-2]), p=i).float())
-
-            if len(x.shape) == 4:
-                drop_weight = torch.stack(drop_weight, dim=0).reshape(
-                    1, 1, x.shape[-2], x.shape[-1])
-            else:
-                drop_weight = torch.stack(drop_weight, dim=0).reshape(
-                    1, x.shape[-2], x.shape[-1])
-
-            if x.is_cuda:
-                drop_weight = drop_weight.cuda()
-
-            return x * drop_weight
-
-    def __repr__(self):
-
-        return "DropweightLayer_v3(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
                                                                                          self.dropout_p, self.scale)
 
 
@@ -1217,41 +1147,75 @@ class AttentionweightLayer_v2(nn.Module):
 
 
 class AttentionweightLayer_v3(nn.Module):
-    def __init__(self, input_dim=161, weight='mel', power_weight='none'):
+    def __init__(self, weight, input_dim=161,
+                 power_weight='norm'):
         super(AttentionweightLayer_v3, self).__init__()
         self.input_dim = input_dim
         self.weight = weight
+        self.power_weight = power_weight
 
-        self.s = nn.Parameter(torch.tensor(0.125))
-        self.b = nn.Parameter(torch.tensor(1.0))
+        self.w = nn.Parameter(torch.tensor(2.0))
+        self.b = nn.Parameter(torch.tensor(-1.0))
 
         self.drop_p = get_weight(
             weight, input_dim, power_weight)  # * dropout_p
+
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
-
-        assert len(
-            self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+        drop_weight = torch.tensor(self.drop_p).float().unsqueeze(0).unsqueeze(0)
 
         if len(x.shape) == 4:
-            drop_weight = torch.tensor(
-                self.drop_p).reshape(1, 1, 1, -1).float()
-        else:
-            drop_weight = torch.tensor(self.drop_p).reshape(1, 1, -1).float()
+            drop_weight = drop_weight.unsqueeze(0)
+        
         if x.is_cuda:
             drop_weight = drop_weight.cuda()
 
-        drop_weight = (drop_weight - self.b * drop_weight.mean()
-                       ) / self.s.clamp(min=0.0625, max=2.0)
-        drop_weight = self.activation(drop_weight)
+        drop_weight = self.w * drop_weight + self.b
+        drop_weight = 0.5 + self.activation(drop_weight)
 
         return x * drop_weight
 
     def __repr__(self):
 
-        return "AttentionweightLayer_v3(input_dim=%d, weight=%s, s=%.4f, b=%.4f)" % (
-            self.input_dim, self.weight, self.s, self.b)
+        return "AttentionweightLayer_v3(input_dim=%d, weight=%s, w=%.4f, b=%.4f)" % (
+            self.input_dim, self.weight, self.w, self.b)
+
+
+class DropweightLayer_v3(nn.Module):
+    def __init__(self, weight, dropout_p=0.1, input_dim=161,
+                 scale=0.2, power_weight='norm'):
+        super(DropweightLayer_v3, self).__init__()
+        self.input_dim = input_dim
+        self.weight = weight
+        self.dropout_p = dropout_p
+        self.scale = scale
+        self.power_weight = power_weight
+
+        drop_p = get_weight(
+            weight, input_dim, power_weight)
+
+        self.drop_p = drop_p * self.scale + 1 - self.scale - dropout_p
+
+    def forward(self, x):
+        if (not self.training) or torch.Tensor(1).uniform_(0, 1) < 0.5:
+            return x
+        else:
+            # assert len(self.drop_p) == x.shape[-1], print(len(self.drop_p), x.shape)
+            x_mean = torch.mean(x, dim=-2, keepdim=True).repeat(1,1,x.shape[2],1)
+            x_std = torch.std(x, dim=-2, keepdim=True).repeat(1,1,x.shape[2],1)
+            
+            mask_x = torch.normal(x_mean, std=x_std) # mask with normal distributions
+            
+            for i,p in enumerate(self.drop_p):
+                if torch.Tensor(1).uniform_(0, 1) > p:
+                    x[:,:,:,i] = mask_x[:,:,:,i]
+                    
+            return x 
+
+    def __repr__(self):
+        return "DropweightLayer_v3(input_dim=%d, weight=%s, dropout_p==%s, scale=%f)" % (self.input_dim, self.weight,
+                                                                                         self.dropout_p, self.scale)
 
 
 class AttentionweightLayer_v0(nn.Module):
