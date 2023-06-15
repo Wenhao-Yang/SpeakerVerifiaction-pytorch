@@ -650,7 +650,6 @@ class TimeMaskLayer(nn.Module):
             return x
 
         # assert self.mask_len < x.shape[-2]
-
         this_len = np.random.randint(low=0, high=self.mask_len)
         start = np.random.randint(0, x.shape[-2] - this_len)
         x_shape = len(x.shape)
