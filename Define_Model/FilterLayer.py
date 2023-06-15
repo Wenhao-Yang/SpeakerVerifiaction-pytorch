@@ -1172,7 +1172,7 @@ class AttentionweightLayer_v3(nn.Module):
             drop_weight = drop_weight.cuda()
 
         drop_weight = self.w * drop_weight + self.b
-        drop_weight = 0.5 + self.activation(drop_weight)
+        drop_weight = self.activation(drop_weight)
 
         return x * drop_weight
 
