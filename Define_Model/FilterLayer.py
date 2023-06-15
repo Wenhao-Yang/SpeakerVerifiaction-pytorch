@@ -646,7 +646,7 @@ class TimeMaskLayer(nn.Module):
         self.normalized = normalized
 
     def forward(self, x):
-        if not self.training:
+        if not self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
             return x
 
         # assert self.mask_len < x.shape[-2]
@@ -676,7 +676,7 @@ class FreqMaskLayer(nn.Module):
         self.normalized = normalized
 
     def forward(self, x):
-        if not self.training:
+        if not self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
             return x
 
        # assert self.mask_len < x.shape[-1]
