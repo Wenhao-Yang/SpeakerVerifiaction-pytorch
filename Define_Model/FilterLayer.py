@@ -1195,7 +1195,14 @@ class DropweightLayer_v3(nn.Module):
         drop_p = get_weight(
             weight, input_dim, power_weight)
 
-        self.drop_p = drop_p * self.scale + 1 - self.scale - dropout_p
+        # self.drop_p = drop_p * self.scale + 1 - self.scale - dropout_p
+        numofchance = 1 / np.clip(drop_p, a_min=0.1, a_max=None)
+        numofchance = np.ceil(numofchance)
+        all_bins = []
+        for i,b in enumerate(numofchance):
+            all_bins.extend([i]*int(b))
+            
+        self.drop_p = all_bins
 
     def forward(self, x):
         if (not self.training) or torch.Tensor(1).uniform_(0, 1) < 0.5:
@@ -1206,10 +1213,13 @@ class DropweightLayer_v3(nn.Module):
             x_std = torch.std(x, dim=-2, keepdim=True).repeat(1,1,x.shape[2],1)
             
             mask_x = torch.normal(x_mean, std=x_std) # mask with normal distributions
+            mask_xs = np.random.choice(self.drop_p, size=5)
             
-            for i,p in enumerate(self.drop_p):
-                if torch.Tensor(1).uniform_(0, 1) > p:
-                    x[:,:,:,i] = mask_x[:,:,:,i]
+            # for i,p in enumerate(self.drop_p):
+            #     if torch.Tensor(1).uniform_(0, 1) > p:
+            #         x[:,:,:,i] = mask_x[:,:,:,i]
+            for i in set(mask_xs):
+                x[:,:,:,i] = mask_x[:,:,:,i]
                     
             return x 
 
