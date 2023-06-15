@@ -86,9 +86,9 @@ def get_input_norm(input_norm: str, input_dim=None):
 def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
                    weight_p: float, scale: float, weight_norm: str):
     if mask == "time":
-        maks_layer = TimeMaskLayer(mask_len=mask_len[0])
+        mask_layer = TimeMaskLayer(mask_len=mask_len[0])
     elif mask == "freq":
-        maks_layer = FreqMaskLayer(mask_len=mask_len[0])
+        mask_layer = FreqMaskLayer(mask_len=mask_len[0])
     elif mask == "both":
         mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
     elif mask == "time_freq":

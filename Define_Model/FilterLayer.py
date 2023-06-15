@@ -655,11 +655,13 @@ class TimeMaskLayer(nn.Module):
         start = np.random.randint(0, x.shape[-2] - this_len)
         x_shape = len(x.shape)
 
-        this_mean = x.mean(dim=-2, keepdim=True)
+        this_mean = x.mean(dim=-1, keepdim=True).repeat(1,1,1,x_shape[3])
+        
         if x_shape == 4:
-            x[:, :, start:(start + this_len), :] = this_mean
+            x[:, :, start:(start + this_len), :] = this_mean[:, :, start:(start + this_len), :]
+            
         elif x_shape == 3:
-            x[:, start:(start + this_len), :] = this_mean
+            x[:, start:(start + this_len), :] = this_mean[:, start:(start + this_len), :]
 
         return x
 
@@ -668,7 +670,7 @@ class TimeMaskLayer(nn.Module):
 
 
 class FreqMaskLayer(nn.Module):
-    def __init__(self, mask_len=25, normalized=False):
+    def __init__(self, mask_len=5, normalized=False):
         super(FreqMaskLayer, self).__init__()
         self.mask_len = mask_len
         self.normalized = normalized
@@ -682,11 +684,12 @@ class FreqMaskLayer(nn.Module):
         start = np.random.randint(0, x.shape[-1] - this_len)
         x_shape = len(x.shape)
 
-        this_mean = x.mean(dim=-1, keepdim=True)  # .add(1e-6)
+        this_mean = x.mean(dim=-2, keepdim=True).repeat(1,1,x_shape[2],1)  # .add(1e-6)
+        
         if x_shape == 4:
-            x[:, :, :, start:(start + this_len)] = this_mean
+            x[:, :, :, start:(start + this_len)] = this_mean[:, :, :, start:(start + this_len)]
         elif x_shape == 3:
-            x[:, :, start:(start + this_len)] = this_mean
+            x[:, :, start:(start + this_len)] = this_mean[:, :, start:(start + this_len)]
 
         return x
 
