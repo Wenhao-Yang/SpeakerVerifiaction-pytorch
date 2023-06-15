@@ -682,13 +682,13 @@ class FreqMaskLayer(nn.Module):
        # assert self.mask_len < x.shape[-1]
         this_len = np.random.randint(low=0, high=self.mask_len)
         start = np.random.randint(0, x.shape[-1] - this_len)
-        x_shape = len(x.shape)
+        x_shape = x.shape
 
         this_mean = x.mean(dim=-2, keepdim=True).repeat(1,1,x_shape[2],1)  # .add(1e-6)
         
-        if x_shape == 4:
+        if len(x_shape) == 4:
             x[:, :, :, start:(start + this_len)] = this_mean[:, :, :, start:(start + this_len)]
-        elif x_shape == 3:
+        elif len(x_shape) == 3:
             x[:, :, start:(start + this_len)] = this_mean[:, :, start:(start + this_len)]
 
         return x
