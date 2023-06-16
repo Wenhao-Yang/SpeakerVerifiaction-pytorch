@@ -821,7 +821,8 @@ def get_weight(weight: str, input_dim: int, power_weight: str):
         "v2_rclean_igmax": c.VOX2_RCLEAN_INGR_MAX,
         "v2_fratio": c.VOX2_FRATIO,
         "v2_eer": c.V2_EER,
-        "v2_frl": c.FRL_V2
+        "v2_frl": c.FRL_V2,
+        "v2_intems": c.INTE_MEAN_STD_v2
     }
 
     assert weight in weights.keys()
