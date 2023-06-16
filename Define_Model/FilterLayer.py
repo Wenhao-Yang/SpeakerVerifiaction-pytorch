@@ -1215,7 +1215,7 @@ class DropweightLayer_v3(nn.Module):
             x_std = torch.std(x, dim=-2, keepdim=True).repeat(1,1,x.shape[2],1)
             
             mask_x = torch.normal(x_mean, std=x_std) # mask with normal distributions
-            mask_xs = np.random.choice(self.drop_p, size=5)
+            mask_xs = np.random.choice(self.drop_p, size=8)
             
             # for i,p in enumerate(self.drop_p):
             #     if torch.Tensor(1).uniform_(0, 1) > p:
