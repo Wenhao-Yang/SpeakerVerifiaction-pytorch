@@ -1199,7 +1199,7 @@ class DropweightLayer_v3(nn.Module):
             weight, input_dim, power_weight)
 
         # self.drop_p = drop_p * self.scale + 1 - self.scale - dropout_p
-        numofchance = 1 / np.clip(drop_p, a_min=0.1, a_max=None)
+        numofchance = 1 / np.clip(drop_p, a_min=0.05, a_max=None)
         numofchance = np.ceil(numofchance)
         all_bins = []
         for i,b in enumerate(numofchance):
@@ -1216,13 +1216,21 @@ class DropweightLayer_v3(nn.Module):
             x_std = torch.std(x, dim=-2, keepdim=True).repeat(1,1,x.shape[2],1)
             
             mask_x = torch.normal(x_mean, std=x_std) # mask with normal distributions
-            mask_xs = np.random.choice(self.drop_p, size=8)
-            
+            # all drop
             # for i,p in enumerate(self.drop_p):
             #     if torch.Tensor(1).uniform_(0, 1) > p:
             #         x[:,:,:,i] = mask_x[:,:,:,i]
+            
+            # specaug-like mask 
+            mask_xs = np.random.choice(self.drop_p, size=5)
             for i in set(mask_xs):
                 x[:,:,:,i] = mask_x[:,:,:,i]
+                
+            # specaug mask 
+            # mask_xs = np.random.choice(self.drop_p)
+            # for i in range(mask_xs, mask_xs+5):
+            #     if i < len(x.shapp[-1]):
+            #         x[:,:,:,i] = mask_x[:,:,:,i]
                     
             return x 
 
