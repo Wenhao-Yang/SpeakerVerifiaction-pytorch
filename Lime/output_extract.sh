@@ -881,13 +881,10 @@ if [ $stage -le 300 ]; then
   # dataset=vox1
   dataset=vox2
   train_set=vox2 test_set=vox1
-  feat_type=klfb
-  feat=log
+  feat_type=klfb feat=log
   loss=arcsoft
-
   encoder_type=SAP2 embedding_size=256
-  block_type=basic
-  kernel=5,5
+  block_type=basic kernel=5,5
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   for cam in gradient ;do
@@ -907,8 +904,7 @@ if [ $stage -le 300 ]; then
       --channels 32,64,128,256 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
-      --time-dim 1 \
-      --avg-size 5 \
+      --time-dim 1 --avg-size 5 \
       --embedding-size ${embedding_size} \
       --alpha 0 \
       --loss-type ${loss} \
@@ -1054,6 +1050,9 @@ if [ $stage -le 304 ]; then
   echo -e "\n\033[1;4;31m stage${stage} Mask for ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
   mask_len=2
   pro_type=none
+
+  select_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
+
   for cam in layer_cam ;do # grad_cam
   for mask_type in blur ; do
   for ((i=12; i<=161; i=i+4)); do
@@ -1074,16 +1073,10 @@ if [ $stage -le 304 ]; then
       --train-dir ${lstm_dir}/data/${dataset}/dev \
       --train-set-name ${train_set} --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/test \
-      --input-norm Mean \
-      --kernel-size ${kernel} --stride 2,2 --channels 16,32,64,128 \
-      --block-type ${block_type} --fast none1 \
-      --encoder-type ${encoder_type} --time-dim 1 --avg-size 5 --dropout-p 0.1 \
-      --embedding-size ${embedding_size} --alpha 0 \
-      --loss-type ${loss} --margin 0.2 --s 30 \
       --check-path Data/checkpoint/${model_dir} \
       --eval-dir Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
       --check-yaml Data/checkpoint/${model_dir}/model.2023.05.08.yaml \
-      --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
+      --select-input-dir Data/gradient/${select_dir}/vox2_dev4 \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
       --gpu-id 5 --verbose 1
   done
