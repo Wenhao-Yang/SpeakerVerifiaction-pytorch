@@ -1229,7 +1229,7 @@ class DropweightLayer_v3(nn.Module):
             # specaug mask 
             mask_xs = np.random.choice(self.drop_p)
             for i in range(mask_xs, mask_xs+5):
-                if i < len(x.shapp[-1]):
+                if i < len(x.shape[-1]):
                     x[:,:,:,i] = mask_x[:,:,:,i]
                     
             return x 
