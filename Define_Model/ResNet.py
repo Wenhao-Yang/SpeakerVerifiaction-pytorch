@@ -1094,7 +1094,7 @@ class ThinResNet(nn.Module):
             self.l2_norm = L2_Norm(self.alpha)
         self.classifier = nn.Linear(embedding_size, num_classes)
         self.return_embeddings = True
-        
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -1394,7 +1394,7 @@ class ThinResNet(nn.Module):
             dim=0)
 
         return x
-    
+
     # Allow for accessing forward method in a inherited class
     forward = _forward
 

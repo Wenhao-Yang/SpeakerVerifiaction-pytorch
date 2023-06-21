@@ -936,7 +936,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
         parser.add_argument('--cam', type=str, default='gradient',
                             choices=['gradient', 'grad_cam', 'grad_cam_pp',
                                      'fullgrad', 'acc_grad', 'layer_cam',
-                                     'acc_input', 'integrad'],
+                                     'acc_input', 'integrad', 'integrad2',
+                                     'mask', 'exptgrad', 'igos'],
                             help='path to voxceleb1 test dataset')
         parser.add_argument('--cam-layers',
                             default=['conv1', 'layer1.0.conv2', 'conv2',
@@ -954,6 +955,15 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             default=False, help='using Cosine similarity')
         parser.add_argument('--steps', type=int, default=100,
                             help='Dimensionality of the embedding')
+        parser.add_argument('--lambda-a', type=float, default=0.01,
+                            help='Dimensionality of the embedding')
+        parser.add_argument('--lambda-b', type=float, default=0.2,
+                            help='Dimensionality of the embedding')
+        parser.add_argument('--tv-beta', type=int, default=3,
+                            help='Dimensionality of the embedding')
+        parser.add_argument('--sub-sample', type=int, default=2,
+                            help='Dimensionality of the embedding')
+
         parser.add_argument('--softmax', action='store_true', default=False,
                             help='backward after softmax normalization')
 

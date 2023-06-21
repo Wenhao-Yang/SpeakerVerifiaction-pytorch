@@ -276,10 +276,10 @@ class SpectrogramLayer(nn.Module):
 class SparseFbankLayer(nn.Module):
     def __init__(self, sr, num_filter, n_fft=512, stretch_ratio=[1.0], log_scale=True,
                  win_length=None, hop_length=None, f_max=None, f_min: float = 0.0,
-                 pad = 0, n_mels = 80, init_weight = 'mel',
-                 window_fn = torch.hann_window, power: float = 2.0, normalized: bool = False,
+                 pad=0, n_mels=80, init_weight='mel',
+                 window_fn=torch.hann_window, power: float = 2.0, normalized: bool = False,
                  center: bool = True, pad_mode: str = "reflect",
-                 onesided: bool = True, norm = None, wkwargs = None,):
+                 onesided: bool = True, norm=None, wkwargs=None,):
 
         super(SparseFbankLayer, self).__init__()
         self.num_filter = num_filter
@@ -320,14 +320,15 @@ class SparseFbankLayer(nn.Module):
             m_pts = torch.linspace(f_min, int(self.sr/2), num_filter+2)
 
             f_diff = m_pts[1:] - m_pts[:-1]  # (n_filter + 1)
-            slopes = m_pts.unsqueeze(0) - all_freqs.unsqueeze(1)  # (n_freqs, n_filter + 2)
+            # (n_freqs, n_filter + 2)
+            slopes = m_pts.unsqueeze(0) - all_freqs.unsqueeze(1)
             # create overlapping triangles
             zero = torch.zeros(1)
             down_slopes = (-1.0 * slopes[:, :-2]) / f_diff[:-1]  # (n_freqs, n_filter)
             up_slopes = slopes[:, 2:] / f_diff[1:]  # (n_freqs, n_filter)
             sparsebank = torch.min(down_slopes, up_slopes).clamp_min(0)
-            sparsebank = torch.where(sparsebank > 0, 1, 0)       
-        
+            sparsebank = torch.where(sparsebank > 0, 1, 0)
+
         elif init_weight == 'rand':
             sparsebank = torch.randn(n_fft // 2 + 1, num_filter)
 
@@ -1157,8 +1158,8 @@ class AttentionweightLayer_v3(nn.Module):
         self.weight = weight
         self.power_weight = power_weight
 
-        self.w = nn.Parameter(torch.tensor(2.0))
-        self.b = nn.Parameter(torch.tensor(-1.0))
+        self.w = 4.0 #nn.Parameter(torch.tensor(2.0))
+        self.b = -2 #nn.Parameter(torch.tensor(-1.0))
 
         self.drop_p = get_weight(
             weight, input_dim, power_weight)  # * dropout_p
@@ -1176,6 +1177,13 @@ class AttentionweightLayer_v3(nn.Module):
 
         drop_weight = self.w * drop_weight + self.b
         drop_weight = self.activation(drop_weight)
+
+        # maxfix_mean
+        # beta = drop_weight.mean()
+        # drop_weight = drop_weight.clamp_max(beta)/beta
+        
+        # maxfix
+        drop_weight /= drop_weight.max()
 
         return x * drop_weight
 

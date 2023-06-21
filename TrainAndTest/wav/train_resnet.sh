@@ -60,9 +60,11 @@ if [ $stage -le 0 ]; then
     # sleep 5
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet_frl2.yaml --seed=${seed}
 
-    CUDA_VISIBLE_DEVICES=0,3 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_drop3_scale2.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_student.yaml --seed=${seed}
 
-    # sleep 5
+    sleep 5
+    CUDA_VISIBLE_DEVICES=0,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_drop3.yaml --seed=${seed}
+
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_drop3_scale5.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet_student.yaml --seed=${seed}
