@@ -1222,15 +1222,15 @@ class DropweightLayer_v3(nn.Module):
             #         x[:,:,:,i] = mask_x[:,:,:,i]
             
             # specaug-like mask 
-            # mask_xs = np.random.choice(self.drop_p, size=5)
-            # for i in set(mask_xs):
-            #     x[:,:,:,i] = mask_x[:,:,:,i]
+            mask_xs = np.random.choice(self.drop_p, size=5)
+            for i in set(mask_xs):
+                x[:,:,:,i] = mask_x[:,:,:,i]
                 
             # specaug mask 
-            mask_xs = np.random.choice(self.drop_p)
-            for i in range(mask_xs, mask_xs+5):
-                if i < x.shape[-1]:
-                    x[:,:,:,i] = mask_x[:,:,:,i]
+            # mask_xs = np.random.choice(self.drop_p)
+            # for i in range(mask_xs, mask_xs+5):
+            #     if i < x.shape[-1]:
+            #         x[:,:,:,i] = mask_x[:,:,:,i]
                     
             return x 
 
