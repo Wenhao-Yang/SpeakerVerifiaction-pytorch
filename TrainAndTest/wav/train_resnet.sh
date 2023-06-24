@@ -28,7 +28,7 @@ if [ $stage -le 0 ]; then
 
   # seed=123456
   for lamda_beta in 0.2 ; do
-  for seed in 123458 ; do
+  for seed in 123456 123457 123458 ; do
    for dim in 80 ; do
    echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_egs_dist.py --train-config=TrainAndTest/wav/resnet/aidata_float.yaml --seed=${seed}
@@ -60,10 +60,11 @@ if [ $stage -le 0 ]; then
     # sleep 5
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet_frl2.yaml --seed=${seed}
 
-    CUDA_VISIBLE_DEVICES=0,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_student.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=0,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_student.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_freq.yaml --seed=${seed}
 
-    sleep 5
-    CUDA_VISIBLE_DEVICES=0,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_drop3.yaml --seed=${seed}
+    # sleep 5
+    # CUDA_VISIBLE_DEVICES=0,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_drop3.yaml --seed=${seed}
 
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/frl/vox1_int_drop3_scale5.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet.yaml --seed=${seed}
