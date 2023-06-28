@@ -93,8 +93,12 @@ elif args.test_input == 'fix':
 # file_loader = read_mat
 # train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks,
 #                                loader=file_loader, transform=transform, return_uid=True, verbose=0)
+if args.cam in ['mask', 'igos']:
+    grad_reverse = True
+else:
+    grad_reverse = False
 
-valid_dir = ScriptEvalDataset(select_dir=args.select_input_dir,
+valid_dir = ScriptEvalDataset(select_dir=args.select_input_dir, grad_reverse=grad_reverse,
                               valid_dir=args.eval_dir, transform=transform)
 
 def valid_eval(valid_loader, model, file_dir, set_name):
@@ -149,7 +153,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             this_result = [start, end, correct/total*100, args.mask_type]
         else:
             this_result = [args.pro_type, args.threshold, correct/total*100]
-        
+
         if not os.path.exists(result_file):
             results = [this_result]
             with open(result_file, "w") as f:
@@ -179,7 +183,7 @@ def valid_eval(valid_loader, model, file_dir, set_name):
         else:
             this_str = args.pro_type
             conf_str = '{:.4f}'.format(args.threshold)
-            
+
         if args.verbose > 0:
             print('Saving Type {}_{} <{}> Accuracy: {:.4f}% in \n\t{}\n'.format(this_str, args.init_input, conf_str, this_result[2],
                                                                        result_file.lstrip('Data/gradient/')))
@@ -220,8 +224,8 @@ def main():
             print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
         model = create_model(args.model, **model_kwargs)
-        
-        
+
+
     valid_loader = DataLoader(valid_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     resume_path = args.check_path + '/checkpoint_{}.pth'
@@ -279,7 +283,6 @@ def main():
                 baselines = torch.cat(baselines, dim=-2).mean(dim=-2, keepdim=True) 
                 if args.verbose > 1:
                     print('Baselines shape: ', baselines.shape)
-            
             start = int(mask_str[0])
             end   = int(mask_str[1])
             transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end,

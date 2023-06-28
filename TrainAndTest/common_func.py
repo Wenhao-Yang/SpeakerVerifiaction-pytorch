@@ -921,7 +921,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='choose the acoustic features type.')
         parser.add_argument('--init-input', choices=['zero', 'mean', 'rand'], default='zero',
                             help='choose the acoustic features type.')
-        parser.add_argument('--norm-cam', choices=['time', 'freq', 'both', 'avg3', 'avg5', 'none'], default='none',
+        parser.add_argument('--norm-cam', default='none', #choices=['time', 'freq', 'both', 'avg3', 'avg5', 'none'], 
                             help='choose the acoustic features type.')
         parser.add_argument('--cam-scaled', choices=['tanh', 'none'], default='none',
                             help='choose the acoustic features type.')
@@ -937,7 +937,7 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             choices=['gradient', 'grad_cam', 'grad_cam_pp',
                                      'fullgrad', 'acc_grad', 'layer_cam',
                                      'acc_input', 'integrad', 'integrad2',
-                                     'mask', 'exptgrad', 'igos'],
+                                     'mask', 'exptgrad', 'igos', 'gradientshap'],
                             help='path to voxceleb1 test dataset')
         parser.add_argument('--cam-layers',
                             default=['conv1', 'layer1.0.conv2', 'conv2',
