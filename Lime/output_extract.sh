@@ -933,8 +933,7 @@ if [ $stage -le 301 ]; then
   model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/aishell2/wave_fb80_dist2/123456
 
   python Lime/cam_select.py \
-    --batch-size 1 --test-input var \
-    --feat-format wav \
+    --batch-size 1 --test-input var --feat-format wav \
     --train-dir ${lstm_dir}/data/${dataset}/dev \
     --train-set-name ${train_set} --test-set-name ${test_set} \
     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \

@@ -735,11 +735,20 @@ class ScriptTrainDataset(data.Dataset):
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
                  vad_select=False, sample_type='instance', sr=16000, save_dir='',
                  segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
+        
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
         self.segment_len = segment_len
+        
+        if segment_len == c.N_SAMPLES and feat_type == 'wav':
+            self.segment_len = segment_len * sr / 100
+        
         self.segment_shift = segment_shift
+        
+        if segment_shift == c.N_SAMPLES and feat_type == 'wav':
+            self.segment_shift = segment_shift * sr / 100
+            
         self.min_frames = min_frames
 
         self.feat_type = feat_type
