@@ -966,6 +966,7 @@ if [ $stage -le 302 ]; then
       --start-epochs ${epoch} --epochs ${epoch} \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev \
       --train-set-name ${train_set} --test-set-name ${test_set} \
+      --baseline-file ${lstm_dir}/data/${dataset}/dev/baselines.txt \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --check-path Data/checkpoint/${model_dir} \
       --check-yaml Data/checkpoint/${model_dir}/model.2023.06.29.yaml \
