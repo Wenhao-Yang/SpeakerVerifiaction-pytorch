@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=304
+stage=301
 waited=0
 lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 while [ $(ps 12700 | wc -l) -eq 2 ]; do
@@ -892,28 +892,23 @@ if [ $stage -le 300 ]; then
       --model ${model} \
       --resnet-size ${resnet_size} \
       --cam ${cam} \
-      --start-epochs 60 \
-      --epochs 60 \
+      --start-epochs 60 --epochs 60 \
       --train-dir ${lstm_dir}/data/${dataset}/${feat_type}/dev_fb40 \
-      --train-set-name ${train_set} \
-      --test-set-name ${test_set} \
+      --train-set-name ${train_set} --test-set-name ${test_set} \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test_fb40 \
       --input-norm Mean \
-      --kernel-size ${kernel} \
-      --stride 2,1 \
+      --kernel-size ${kernel} --stride 2,1 \
       --channels 32,64,128,256 \
       --encoder-type ${encoder_type} \
       --block-type ${block_type} \
       --time-dim 1 --avg-size 5 \
-      --embedding-size ${embedding_size} \
-      --alpha 0 \
+      --embedding-size ${embedding_size} --alpha 0 \
       --loss-type ${loss} \
       --dropout-p 0.1 \
       --check-path Data/checkpoint/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var \
       --extract-path Data/gradient/${model}${resnet_size}/${train_set}/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/epoch_60_var_${cam} \
       --gpu-id 1 \
-      --margin 0.2 \
-      --s 30 \
+      --margin 0.2 --s 30 \
       --remove-vad \
       --sample-utt 5994
     done
@@ -923,26 +918,29 @@ fi
 if [ $stage -le 301 ]; then
   model=ThinResNet resnet_size=34
   # dataset=vox1
-  dataset=vox2
-  train_set=vox2 test_set=vox1
+  # dataset=vox2 train_set=vox2 test_set=vox1
+  dataset=aishell2 train_set=aishell2 test_set=aishell2
+
   feat_type=wav #--remove-vad \ ${feat_type}
-  feat=log
-  loss=arcsoft
+  feat=log loss=arcsoft
   encoder_type=SAP2 embedding_size=256
   block_type=basic kernel=5,5
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
-  
   # for cam in gradient ;do # layer_cam 
-  model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
+  # model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
+
+  model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop
+/aishell2/wave_fb80_dist2/123456
+
   python Lime/cam_select.py \
     --batch-size 1 --test-input var \
     --feat-format wav \
     --train-dir ${lstm_dir}/data/${dataset}/dev \
     --train-set-name ${train_set} --test-set-name ${test_set} \
     --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
-    --select-input-dir Data/gradient/${model_dir}/vox2_dev4 \
-    --input-per-spks 2 --verbose 1
+    --select-input-dir Data/gradient/${model_dir}/${train_set}_dev4 \
+    --input-per-spks 4 --verbose 1
     # done
   exit
 fi
