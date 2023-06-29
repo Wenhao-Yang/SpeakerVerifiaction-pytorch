@@ -739,16 +739,14 @@ class ScriptTrainDataset(data.Dataset):
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
-        self.segment_len = segment_len
         
         if segment_len == c.N_SAMPLES and feat_type == 'wav':
-            self.segment_len = segment_len * sr / 100
-        
-        self.segment_shift = segment_shift
-        
+            segment_len = segment_len * sr / 100
         if segment_shift == c.N_SAMPLES and feat_type == 'wav':
-            self.segment_shift = segment_shift * sr / 100
-            
+            segment_shift = segment_shift * sr / 100
+        
+        self.segment_len = segment_len
+        self.segment_shift = segment_shift    
         self.min_frames = min_frames
 
         self.feat_type = feat_type
