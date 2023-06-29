@@ -835,7 +835,7 @@ class ScriptTrainDataset(data.Dataset):
         if verbose > 0:
             print('==> There are {} speakers in Dataset.'.format(len(speakers)))
 
-        if not os.path.exists(os.path.join(save_dir, 'spk2idx')):
+        if save_dir == '' or (not os.path.exists(os.path.join(save_dir, 'spk2idx'))):
             spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
             with open(os.path.join(save_dir, 'spk2idx'), 'w') as f:
                 json.dump(spk_to_idx, f)
@@ -877,7 +877,7 @@ class ScriptTrainDataset(data.Dataset):
             valid_utt2dom_dict = {}
             valid_base_utts = []
 
-            if not os.path.exists(os.path.join(save_dir, 'valid.csv')):
+            if save_dir == '' or (not os.path.exists(os.path.join(save_dir, 'valid.csv'))):
                 for spk in speakers:
                     if spk not in valid_set.keys():
                         valid_set[spk] = []
@@ -933,7 +933,7 @@ class ScriptTrainDataset(data.Dataset):
             self.valid_utt2dom_dict = valid_utt2dom_dict
             self.valid_base_utts = valid_base_utts
 
-        if os.path.exists(os.path.join(save_dir, 'train.csv')):
+        if save_dir != '' and os.path.exists(os.path.join(save_dir, 'train.csv')):
             if verbose > 0:
                 print('    Loading training samples from:\n\t {} '.format(os.path.join(save_dir, 'train.csv')))
             train_base_utts = pd.read_csv(os.path.join(save_dir, 'train.csv')).to_numpy().tolist()
@@ -974,7 +974,7 @@ class ScriptTrainDataset(data.Dataset):
                     if (end - start) >= self.min_frames:
                         train_base_utts.append((uid, start, end))
 
-                assert len(train_base_utts) >= samples_per_speaker * self.num_spks
+                assert len(train_base_utts) >= samples_per_speaker * self.num_spks, print(len(train_base_utts), samples_per_speaker * self.num_spks)
             random.shuffle(train_base_utts)
             if save_dir != '':
                 if not os.path.exists(save_dir):
@@ -1150,8 +1150,8 @@ class ScriptValidDataset(data.Dataset):
 
 class ScriptEvalDataset(data.Dataset):
     # dataset for inset and delete
-    def __init__(self, select_dir, valid_dir, transform, feat_type='kaldi',
-                 return_uid=False, verbose=1):
+    def __init__(self, select_dir, valid_dir, transform, grad_reverse=False,
+                 feat_type='kaldi', return_uid=False, verbose=1):
         
         uid_file = os.path.join(select_dir, 'uid_idx.json')
         with open(uid_file, 'r') as f:
@@ -1165,6 +1165,7 @@ class ScriptEvalDataset(data.Dataset):
             print('Examples uids: ', uids[:2])
 
         self.uids = uids
+        self.grad_reverse = grad_reverse
         self.transform = transform
 
     def __getitem__(self, index):
@@ -1179,6 +1180,8 @@ class ScriptEvalDataset(data.Dataset):
         if len(data.shape) == len(grad.shape) and data.shape[0] > grad.shape[0]:
             data = data[:grad.shape[0]]
 
+        if self.grad_reverse:
+            grad = 1 - grad
         data = self.transform((data, grad))
         return data, idx
         
