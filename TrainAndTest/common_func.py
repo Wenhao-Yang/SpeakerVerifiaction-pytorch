@@ -438,8 +438,11 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir,
     # pbar = tqdm(enumerate(test_loader))
     with torch.no_grad():
         for batch_idx, (data_a, data_p, label) in enumerate(test_loader):
-            out_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
-            out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
+            # out_a = torch.tensor(data_a).cuda()  # .view(-1, 4, embedding_size)
+            # out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
+            out_a = data_a.cuda()  # .view(-1, 4, embedding_size)
+            out_p = data_p.cuda()  # .view(-1, 4, embedding_size)
+            
             dists = dist_fn.forward(out_a, out_p).cpu().numpy()
 
             distances.append(dists)
