@@ -496,21 +496,26 @@ class cam_normalize(object):
     def __call__(self, grad):
         if self.scaled == 'tanh':
             grad = np.tanh(self.gamma * grad / grad.max())
-        
+
         time_dim = grad.shape[-2]
         freq_dim = grad.shape[-1]
 
-        if self.norm_type == 'time':
+        if 'relu' in self.norm_type:
+            grad = np.clip(grad, a_min=0, a_max=None)
+        elif 'abs' in self.norm_type:
+            grad = np.abs(grad)
+
+        if 'time' in self.norm_type:
             grad_t = np.sum(grad, axis=1, keepdims=True)
             cam_min, cam_max = grad_t.min(), grad_t.max()
             pre_cam = np.tile((grad_t - cam_min) / (cam_max - cam_min + 1e-8), (1, freq_dim))
 
-        elif self.norm_type == 'freq':
+        elif 'freq' in self.norm_type:
             grad_f = np.sum(grad, axis=0, keepdims=True)
             cam_min, cam_max = grad_f.min(), grad_f.max()
             pre_cam = np.tile((grad_f - cam_min) / (cam_max - cam_min + 1e-8), (time_dim, 1))
             
-        elif self.norm_type == 'both':
+        elif 'both' in self.norm_type:
             grad_f = np.sum(grad, axis=0, keepdims=True)
             grad_t = np.sum(grad, axis=1, keepdims=True)
             
@@ -521,19 +526,19 @@ class cam_normalize(object):
             pre_cam_t = np.tile((grad_t - cam_min) / (cam_max - cam_min + 1e-8), (1, freq_dim))
             pre_cam = pre_cam_f * pre_cam_t
 
-        elif self.norm_type == 'avg3':
+        elif 'avg3' in self.norm_type:
             cam = torch.tensor(grad).unsqueeze(0)
             pre_cam = torch.nn.functional.avg_pool2d(cam, kernel_size=3, stride=1, padding=1).squeeze().numpy()
             # print(pre_cam.shape)
 
-        elif self.norm_type == 'avg5':
+        elif 'avg5' in self.norm_type:
             cam = torch.tensor(grad).unsqueeze(0)
             pre_cam = torch.nn.functional.avg_pool2d(cam, kernel_size=5, stride=1, padding=2).squeeze()
             
-        elif self.norm_type == 'rand':
+        elif 'rand' in self.norm_type:
             cam = torch.tensor(grad)
             pre_cam = torch.randn_like(cam).numpy()
-            
+
         else:
             pre_cam = grad
 
@@ -567,7 +572,10 @@ class CAMNormInput(object):
         
         if len(grad) < len(data):
             data = data[:len(grad)]
-            
+
+        if self.pro_type in ['none']:
+            return data
+
         H, W = data.shape
         start = np.zeros(data.shape)
         if self.init_input == 'zero':
@@ -591,10 +599,7 @@ class CAMNormInput(object):
 
         # elif self.pro_type in ['random', 'rand']:
         #     salient_order = np.arange(H*W)
-        #     threshold = self.threshold
         #     np.random.shuffle(salient_order)             
-        elif self.pro_type in ['none']:
-            return final
         
         coords = salient_order[0:int((H*W)*threshold)]
         start.reshape(H*W)[coords] = final.reshape(H*W)[coords]
@@ -898,27 +903,28 @@ def pad_tensor(vec, pad, dim):
 class MelSpectrogram(torch.nn.Module):
     r"""Create MelSpectrogram for a raw audio signal.
     """
-    __constants__ = ["sample_rate", "n_fft", "win_length", "hop_length", "pad", "n_mels", "f_min"]
+    __constants__ = ["sample_rate", "n_fft", "win_length",
+                     "hop_length", "pad", "n_mels", "f_min"]
 
     def __init__(self, sample_rate: int = 16000,
-        n_fft: int = 400,
-        stretch_ratio=[1.0],
-        win_length: Optional[int] = None,
-        hop_length: Optional[int] = None,
-        f_min: float = 0.0,
-        f_max: Optional[float] = None,
-        pad: int = 0,
-        n_mels: int = 128,
-        window_fn: Callable[..., torch.Tensor] = torch.hann_window,
-        power: float = 2.0,
-        normalized: bool = False,
-        wkwargs: Optional[dict] = None,
-        center: bool = True,
-        pad_mode: str = "reflect",
-        onesided: bool = True,
-        norm: Optional[str] = None,
-        mel_scale: str = "htk",
-    ) -> None:
+                 n_fft: int = 400,
+                 stretch_ratio=[1.0],
+                 win_length: Optional[int] = None,
+                 hop_length: Optional[int] = None,
+                 f_min: float = 0.0,
+                 f_max: Optional[float] = None,
+                 pad: int = 0,
+                 n_mels: int = 128,
+                 window_fn: Callable[..., torch.Tensor] = torch.hann_window,
+                 power: float = 2.0,
+                 normalized: bool = False,
+                 wkwargs: Optional[dict] = None,
+                 center: bool = True,
+                 pad_mode: str = "reflect",
+                 onesided: bool = True,
+                 norm: Optional[str] = None,
+                 mel_scale: str = "htk",
+                 ) -> None:
         super(MelSpectrogram, self).__init__()
         self.sample_rate = sample_rate
         self.stretch_ratio = stretch_ratio
@@ -945,9 +951,11 @@ class MelSpectrogram(torch.nn.Module):
             pad_mode=pad_mode,
             onesided=onesided,
         )
-        self.stretch = TimeStretch(hop_length=self.hop_length, n_freq=self.n_fft // 2 + 1, fixed_rate=None)
+        self.stretch = TimeStretch(
+            hop_length=self.hop_length, n_freq=self.n_fft // 2 + 1, fixed_rate=None)
         self.mel_scale = MelScale(
-            self.n_mels, self.sample_rate, self.f_min, self.f_max, self.n_fft // 2 + 1, norm, #mel_scale
+            self.n_mels, self.sample_rate, self.f_min, self.f_max, self.n_fft // 2 +
+            1, norm, # mel_scale
         )
 
     def forward(self, waveform: torch.Tensor) -> torch.Tensor:
@@ -962,8 +970,11 @@ class MelSpectrogram(torch.nn.Module):
         stretch_ratio = np.random.choice(self.stretch_ratio)
         if stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram, stretch_ratio)
-        specgram = specgram.abs().pow(2) # .sum(-1)
-        # print(specgram.shape)
+        
+        specgram = specgram.abs().pow(2)
+        if specgram.shape[-1] ==2:
+            specgram = specgram.sum(-1)
+
         mel_specgram = self.mel_scale(specgram)
         return mel_specgram
 
