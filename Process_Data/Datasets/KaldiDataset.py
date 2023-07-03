@@ -573,11 +573,18 @@ class KaldiExtractDataset(data.Dataset):
                 for line in all_cls:
                     # utt_path = line.split(' ')
                     utt_path = line.split()
-                    upath_idx = 11 if len(utt_path) > 2 else 1
+
+                    if len(utt_path) == 2:
+                        upath_idx = 1 
+                    elif len(utt_path) == 15: 
+                        upath_idx = 4 
+                    else:
+                        upath_idx = -11
 
                     uid = utt_path[0]
+
                     if uid in trials_utts:
-                        uid2feat[uid] = utt_path[-upath_idx]
+                        uid2feat[uid] = utt_path[upath_idx]
 
         else:
             if verbose > 0:
@@ -589,8 +596,16 @@ class KaldiExtractDataset(data.Dataset):
                 for line in all_cls:
                     # utt_path = line.split(' ')
                     utt_path = line.split()
+
+                    if len(utt_path) == 2:
+                        upath_idx = 1 
+                    elif len(utt_path) == 15: 
+                        upath_idx = 4 
+                    else:
+                        upath_idx = -11
+                            
                     uid = utt_path[0]
-                    uid2feat[uid] = utt_path[-1]
+                    uid2feat[uid] = utt_path[upath_idx]
 
         uid2vad = {}
         if vad_select:
@@ -746,7 +761,7 @@ class ScriptTrainDataset(data.Dataset):
             segment_shift = segment_shift * sr / 100
         
         self.segment_len = segment_len
-        self.segment_shift = segment_shift    
+        self.segment_shift = segment_shift
         self.min_frames = min_frames
 
         self.feat_type = feat_type
@@ -892,6 +907,9 @@ class ScriptTrainDataset(data.Dataset):
                             numofutt = len(dataset[spk]) - int(np.ceil((1-num_valid) * len(dataset[spk])))
                         else:
                             numofutt = num_valid
+
+                        if numofutt >= 0.5*len(dataset[spk]):
+                            continue
 
                         for i in range(numofutt):
                             j = np.random.randint(len(dataset[spk]))
