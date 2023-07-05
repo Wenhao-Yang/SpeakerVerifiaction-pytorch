@@ -956,7 +956,7 @@ if [ $stage -le 302 ]; then
     # epoch=15
     # model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/aishell2/wave_fb80_dist2/123456
     # epoch=29
-    model_dir=Mean_batch64_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/aishell2/wave_fb80_dist2_aug/123456
+    model_dir=ThinResNet34/Mean_batch64_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/aishell2/wave_fb80_dist2_aug/123456
     epoch=48
 
     python Lime/cam_extract.py \
@@ -972,7 +972,7 @@ if [ $stage -le 302 ]; then
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --check-path Data/checkpoint/${model_dir} \
       --check-yaml Data/checkpoint/${model_dir}/model.2023.07.03.yaml \
-      --select-input-dir Data/gradient/${model_dir}/${select_dir}_dev4 \
+      --select-input-dir Data/gradient/${select_dir}/${dataset}_dev4 \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
       --input-per-spks 2 --verbose 1 --gpu-id 0
     done
