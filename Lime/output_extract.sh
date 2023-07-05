@@ -957,8 +957,7 @@ shell2/wave_fb80_dist2/123456
     # epoch=15
     # model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/aishell2/wave_fb80_dist2/123456
     # epoch=29
-    model_dir=Mean_batch64_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/
-aishell2/wave_fb80_dist2_aug/123456
+    model_dir=Mean_batch64_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/aishell2/wave_fb80_dist2_aug/123456
     epoch=48
 
     python Lime/cam_extract.py \
