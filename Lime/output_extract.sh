@@ -949,13 +949,17 @@ if [ $stage -le 302 ]; then
   block_type=basic kernel=5,5
   cam=gradient
   echo -e "\n\033[1;4;31m stage${stage} Training ${model}_${encoder_type} in ${train_set}_${test_set} with ${loss}\033[0m\n"
-  
+  select_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/ai
+shell2/wave_fb80_dist2/123456
+
   for cam in integrad2 ;do #layer_cam gradient grad_cam layer_cam  grad_cam grad_cam_pp integrad
     # model_dir=ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456
     # epoch=15
-
-    model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/aishell2/wave_fb80_dist2/123456
-    epoch=29
+    # model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/aishell2/wave_fb80_dist2/123456
+    # epoch=29
+    model_dir=Mean_batch64_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/
+aishell2/wave_fb80_dist2_aug/123456
+    epoch=48
 
     python Lime/cam_extract.py \
       --model ${model} --resnet-size ${resnet_size} \
@@ -969,8 +973,8 @@ if [ $stage -le 302 ]; then
       --baseline-file ${lstm_dir}/data/${dataset}/dev/baselines.txt \
       --test-dir ${lstm_dir}/data/${test_set}/${feat_type}/test \
       --check-path Data/checkpoint/${model_dir} \
-      --check-yaml Data/checkpoint/${model_dir}/model.2023.06.29.yaml \
-      --select-input-dir Data/gradient/${model_dir}/${dataset}_dev4 \
+      --check-yaml Data/checkpoint/${model_dir}/model.2023.07.03.yaml \
+      --select-input-dir Data/gradient/${model_dir}/${select_dir}_dev4 \
       --extract-path Data/gradient/${model_dir}/epoch_${epoch}_var/${cam}_soft \
       --input-per-spks 2 --verbose 1 --gpu-id 0
     done
