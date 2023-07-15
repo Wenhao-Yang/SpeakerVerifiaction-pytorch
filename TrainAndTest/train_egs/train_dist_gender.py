@@ -111,10 +111,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
-
+        batch_weight = None    
         if not return_domain:
             data, label = data_cols
-            batch_weight = None
+            
         else:
             data, label, domain_label = data_cols
             # domain_weight = torch.Tensor(C.DOMAIN_WEIGHT).cuda()
