@@ -157,6 +157,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         if torch.cuda.is_available():
             label = label.cuda()
             data = data.cuda()
+            domain_label = domain_label.cuda()
 
         data, label = Variable(data), Variable(label)
         # pdb.set_trace()
