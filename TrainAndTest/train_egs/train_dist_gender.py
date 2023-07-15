@@ -597,10 +597,10 @@ def main():
     end = start + config_args['epochs']
 
     if len(config_args['gpu_id']) > 1:
-        print("Continue with gpu: %s ..." % str(args.local_rank))
+        print("Continue with gpu: %s ..." % str(local_rank))
         # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
-            model.cuda(), device_ids=[args.local_rank])
+            model.cuda(), device_ids=[local_rank])
     else:
         model = model.cuda()
 
