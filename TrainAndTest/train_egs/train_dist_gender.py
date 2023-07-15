@@ -267,7 +267,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
     # lambda_ = (epoch / config_args['epochs']) ** 2
 
     with torch.no_grad():
-        for batch_idx, (data, label, domain_label) in enumerate(valid_loader):
+        for batch_idx, (data, label) in enumerate(valid_loader):
 
             if torch.cuda.is_available():
                 data = data.cuda()
