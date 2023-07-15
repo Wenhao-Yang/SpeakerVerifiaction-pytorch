@@ -400,8 +400,8 @@ def valid(valid_loader, train_extract_loader,
 def main():
     parser = argparse.ArgumentParser(
         description='PyTorch ( Distributed ) Speaker Recognition: Classification')
-    parser.add_argument('--local_rank', default=-1, type=int,
-                        help='node rank for distributed training')
+    # parser.add_argument('--local_rank', default=-1, type=int,
+    #                     help='node rank for distributed training')
     parser.add_argument('--train-config', default='', type=str,
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=123456,
