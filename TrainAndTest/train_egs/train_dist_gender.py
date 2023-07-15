@@ -638,8 +638,8 @@ def main():
             #     select_samples(train_loader, model, config_args,
             #                    config_args['select_score'])
 
-            # train(train_loader, model, optimizer,
-            #       epoch, scheduler, config_args, writer)
+            train(train_loader, model, optimizer,
+                  epoch, scheduler, config_args, writer)
 
             valid_loss = valid_class(
                 valid_loader, model, epoch, config_args, writer)
