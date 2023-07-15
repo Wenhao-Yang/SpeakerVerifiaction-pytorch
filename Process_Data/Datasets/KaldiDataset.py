@@ -1051,7 +1051,7 @@ class ScriptTrainDataset(data.Dataset):
             print('    Sample {} * {} = {} segments for speakers.'.format(
                 self.samples_per_speaker, len(self.speakers), self.samples_per_speaker * len(self.speakers)))
 
-        if self.return_uid or self.domain:
+        if self.return_uid:
             self.utt_dataset = []
             for i in range(self.num_spks):
                 # self.samples_per_speaker
@@ -1065,16 +1065,12 @@ class ScriptTrainDataset(data.Dataset):
 
     def __getitem__(self, idx):
         # start_time = time.time()
-        if self.return_uid or self.domain:
+        if self.return_uid:
             uid, label = self.utt_dataset[idx]
             y = self.loader(self.uid2feat[uid])
             feature = self.transform(y)
-
-            if self.domain:
-                label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
-                return feature, label, label_b
-            else:
-                return feature, label, uid
+    
+            return feature, label, uid
 
         (uid, start, end) = self.base_utts[idx]
         if self.feat_type != 'wav':
@@ -1092,10 +1088,14 @@ class ScriptTrainDataset(data.Dataset):
         label = self.spk_to_idx[sid]
         feature = self.transform(y)
 
-        return feature, label
+        if self.domain:
+            label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
+            return feature, label, label_b
+        else:
+            return feature, label
 
     def __len__(self):
-        if self.return_uid or self.domain:
+        if self.return_uid:
             return len(self.utt_dataset)
         
         elif self.sample_type == 'instance':

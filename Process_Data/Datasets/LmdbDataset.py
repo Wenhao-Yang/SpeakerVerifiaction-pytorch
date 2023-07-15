@@ -530,10 +530,9 @@ class EgsDataset(Dataset):
                 except ValueError as v:
                     cls, dom_cls, upath = line.split()
                     dom_cls = int(dom_cls)
-                try:
-                    cls = int(cls)
-                except ValueError as v:
-                    pass
+
+                cls = int(cls)
+                
                 if self.common_path == '':
                     self.common_path = '/'.join(upath.split('/')[:-1]) + '/'
 
@@ -743,7 +742,6 @@ class CrossEgsDataset(Dataset):
                 i += 1
 
         batch_spks = list(batch_spks)[:self.batch_spks]
-        # print('Batch_spks: ', self.batch_spks)
         features = []
         label = []
         for spk_idx in batch_spks:
