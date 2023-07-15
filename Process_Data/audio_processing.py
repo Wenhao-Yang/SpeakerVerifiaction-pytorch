@@ -1146,7 +1146,7 @@ class PadCollate3d:
 
     def __init__(self, dim=0, min_chunk_size=200, max_chunk_size=400, normlize=True,
                  num_batch=0,
-                 fix_len=False, augment=False, verbose=1):
+                 fix_len=False, augment=False, verbose=1, **kwargs):
         """
         args:
             dim - the dimension to be padded (dimension of time in sequences)
