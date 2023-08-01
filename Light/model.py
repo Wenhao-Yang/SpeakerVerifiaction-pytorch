@@ -112,15 +112,24 @@ class SpeakerLoss(nn.Module):
             xe_criterion = MMD_Loss()
             # args.alpha = 0.0
 
-        if 'second_loss' in config_args and config_args['second_loss'] == 'center':
-            ce_criterion = CenterLoss(num_classes=config_args['num_classes'],
+
+        if 'second_loss' in config_args:
+            if config_args['second_loss'] == 'center':
+                ce_criterion = CenterLoss(num_classes=config_args['num_classes'],
                                       feat_dim=config_args['embedding_size'],
                                       alpha=config_args['center_alpha'] if 'center_alpha' in config_args else 0)
-        elif 'second_loss' in config_args and config_args['second_loss'] == 'ring':
-            ce_criterion = RingLoss(ring=config_args['ring'])
-        elif 'second_loss' in config_args and config_args['second_loss'] == 'dist':
-            ce_criterion = DistributeLoss(stat_type=config_args['stat_type'],
-                                          margin=config_args['m'])
+            elif config_args['second_loss'] == 'ring':
+                ce_criterion = RingLoss(ring=config_args['ring'])
+            elif config_args['second_loss'] == 'dist':
+                ce_criterion = DistributeLoss(stat_type=config_args['stat_type'],
+                                            margin=config_args['m'])
+            elif config_args['second_loss'] == 'gender':
+                ce_criterion = nn.CrossEntropyLoss()
+            
+            self.second_loss = config_args['second_loss']
+        
+        else:
+            self.second_loss = 'none'
 
         self.softmax = nn.Softmax(dim=1)
         self.ce_criterion = ce_criterion
@@ -131,7 +140,8 @@ class SpeakerLoss(nn.Module):
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']
 
-    def forward(self, classfier, feats, label, batch_weight=None, epoch=0,
+    def forward(self, classfier, feats, label,
+                second_label=None, batch_weight=None, epoch=0,
                 half_data=0, lamda_beta=0):
 
         config_args = self.config_args
@@ -152,9 +162,14 @@ class SpeakerLoss(nn.Module):
                 self.xe_criterion.ce.reduction = 'mean'
 
             if self.ce_criterion != None:
-                loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
-                other_loss += float(loss_cent)
-                loss = loss + loss_cent
+                if self.second_loss == 'gender' and second_label != None:
+                    loss_cent = self.loss_ratio * self.ce_criterion(feats, second_label)
+                    other_loss += float(loss_cent)
+                    loss = loss + loss_cent
+                elif self.second_loss in ['dist', 'ring', 'center']:
+                    loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
+                    other_loss += float(loss_cent)
+                    loss = loss + loss_cent
 
         # if self.lncl:
         #     predicted_labels = self.softmax(classfier.clone())
@@ -225,7 +240,6 @@ class SpeakerModule(LightningModule):
         # training_step defines the train loop.
         # it is independent of forward
         data, label = batch
-
         logits, embeddings = self.encoder(data)
         loss, other_loss = self.loss(logits, embeddings, label)
 
