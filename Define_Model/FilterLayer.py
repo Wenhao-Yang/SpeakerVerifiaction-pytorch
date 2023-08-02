@@ -1074,6 +1074,83 @@ class FrequencyGenderReweightLayer2(nn.Module):
 
     def __repr__(self):
         return "FrequencyGenderReweightLayer2(input_dim=%d)" % (self.input_dim)
+    
+class FrequencyGenderReweightLayer3(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FrequencyGenderReweightLayer2, self).__init__()
+        self.input_dim = input_dim
+        # {'f': 0, 'm': 1}
+        female_w = torch.FloatTensor(c.INTE_FEMALE)
+        male_w = torch.FloatTensor(c.INTE_MALE)
+        
+        weight = torch.stack([female_w, male_w]).unsqueeze(0).unsqueeze(0)
+        self.weight = nn.Parameter(weight, requires_grad=False)
+        
+        self.gender_classifier = nn.Linear(input_dim, 2)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        freq_std     = x.std(dim=-2)
+        gender_score = self.gender_classifier(freq_std.squeeze(1))
+        gender_score = F.softmax(gender_score, dim=1).unsqueeze(1).unsqueeze(3)
+        
+        f = 0.25 + self.activation(self.weight)
+        # linear inteplolation
+        f = gender_score * f
+        f = f.mean(dim=2, keepdim=True)
+        
+        # max selection
+        # gender_index = torch.max(gender_score, dim=1)[1]
+        # f = f[:,:,gender_index].transpose(0,2)
+        
+        return x * f
+
+    def __repr__(self):
+        return "FrequencyGenderReweightLayer3(input_dim=%d)" % (self.input_dim)
+    
+
+class FrequencyGenderReweightLayer4(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FrequencyGenderReweightLayer2, self).__init__()
+        self.input_dim = input_dim
+        # {'f': 0, 'm': 1}
+        female_w = torch.FloatTensor(c.INTE_FEMALE)
+        male_w = torch.FloatTensor(c.INTE_MALE)
+        
+        weight = torch.stack([female_w, male_w]).unsqueeze(0).unsqueeze(0)
+        self.weight = nn.Parameter(weight, requires_grad=False)
+        
+        self.gender_classifier = nn.Linear(input_dim, 2)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        freq_std     = x.std(dim=-2)
+        gender_score = self.gender_classifier(freq_std.squeeze(1))
+        gender_score = F.softmax(gender_score, dim=1).unsqueeze(1).unsqueeze(3)
+        f = 0.25 + self.activation(self.weight)
+        
+        # max selection
+        gender_index = torch.max(gender_score, dim=1)[1]
+        f = f[:,:,gender_index].transpose(0,2)
+        
+        return x * f
+
+    def __repr__(self):
+        return "FrequencyGenderReweightLayer4(input_dim=%d)" % (self.input_dim)
 
 
 class FrequencyNormReweightLayer(nn.Module):
