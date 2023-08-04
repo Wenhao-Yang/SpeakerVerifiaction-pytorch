@@ -18,7 +18,7 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
@@ -124,6 +124,8 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = FrequencyGenderReweightLayer3(input_dim=input_dim)
     elif mask == 'fgrl4':
         mask_layer = FrequencyGenderReweightLayer4(input_dim=input_dim)
+    elif mask == 'fgrl5':
+        mask_layer = FrequencyGenderReweightLayer5(input_dim=input_dim)
     elif mask == 'trl':
         mask_layer = TimeReweightLayer(input_dim=input_dim)
     elif mask == 'fnrl':
