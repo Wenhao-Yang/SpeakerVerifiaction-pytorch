@@ -410,7 +410,6 @@ def main():
     else:
         writer = None
     # Dataset
-    print(config_args['train_dir'])
     train_dir, valid_dir, train_extract_dir = SubScriptDatasets(config_args)
     train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
         train_dir, valid_dir, train_extract_dir, config_args)
