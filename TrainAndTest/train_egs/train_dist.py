@@ -384,6 +384,7 @@ def main():
 
     args = parser.parse_args()
     # print the experiment configuration
+    print(args.train_config)
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
     local_rank = int(os.environ["LOCAL_RANK"])
