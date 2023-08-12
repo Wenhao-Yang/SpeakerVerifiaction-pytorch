@@ -112,7 +112,7 @@ loss_ratio: 1
 lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
-margin: 0.2
+margin: 0.15
 # m: 0.2
 s: 30
 lamda_beta: 0.2
@@ -121,7 +121,7 @@ lamda_beta: 0.2
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_wde4_varesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_wde4_varesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist15
 #_mixup<lamda_beta>_<mixup_type>
 
 save_data_dir: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_wde4_varesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist
