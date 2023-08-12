@@ -88,7 +88,7 @@ dropout_p: 0.1
 activation: relu
 num_classes: 670
 
-embedding_model: !new:Define_Model.TDNN.TDNN_v5
+embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
   filter: "fbank"
   sr: 16000
   win_length: 400
