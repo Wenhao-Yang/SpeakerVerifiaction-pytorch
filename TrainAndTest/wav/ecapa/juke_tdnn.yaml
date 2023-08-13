@@ -13,7 +13,7 @@ datasets: jukebox
 testset: jukebox
 feat_type: wave
 loss: arcsoft
-input_dim: 40
+input_dim: 80
 feat: int
 wav_type: int
 subset: ""
