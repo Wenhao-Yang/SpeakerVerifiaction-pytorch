@@ -82,7 +82,7 @@ encoder_type: "STAP"
 downsample: "k1"
 model: TDNN
 alpha: 0
-embedding_size: 512
+embedding_size: 256
 batch_size: 128
 dropout_p: 0.1
 activation: relu
