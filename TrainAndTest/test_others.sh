@@ -3100,7 +3100,7 @@ fi
 if [ $stage -le 600 ]; then
   model=ThinResNet resnet_size=18
 
-  train_set=vox2 test_set=vox1
+  train_set=vox2 test_set=jukebox
   train_subset=
   subset=test test_input=var test_subset=test
   gpu_id=5
@@ -3111,7 +3111,7 @@ for seed in 123456  ; do
   for epoch in 35 ; do     #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist/123456
     yaml_name=model.2023.06.27.yaml
-
+    for test_subset in test test_sep; do
     for trials in trials_all; do
       python -W ignore TrainAndTest/train_egs/test_egs.py \
         --train-dir ${lstm_dir}/data/${train_set}/${sname} \
@@ -3138,6 +3138,7 @@ for seed in 123456  ; do
         --gpu-id ${gpu_id} --score-suffix ${trials} \
         --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
         --cos-sim --extract
+    done
     done
 
  done
