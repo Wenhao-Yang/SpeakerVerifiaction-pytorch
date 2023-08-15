@@ -3103,7 +3103,7 @@ if [ $stage -le 600 ]; then
   train_set=vox2 test_set=vox1
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=
+  gpu_id=5
 echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
 for seed in 123456  ; do
