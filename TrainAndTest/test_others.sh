@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=301
+stage=600
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3095,4 +3095,52 @@ if [ $stage -le 500 ]; then
 #|    aidata-test    |  5.86±0.13  |             | 0.4554±0.0058 | 0.7793±0.0189 | # mixup0_0.2
 #|    aidata-test    |  5.23±0.16  |             | 0.4232±0.0072 | 0.7721±0.0056 | # clean + half_mixup0_0.2
 #|    aidata-test    |  5.14±0.02  |             | 0.4364±0.0147 | 0.7679±0.0181 | # clean + half_mixup0_0.5
+fi
+
+if [ $stage -le 600 ]; then
+  model=ThinResNet resnet_size=18
+
+  train_set=vox2 test_set=vox1
+  train_subset=
+  subset=test test_input=var test_subset=test
+  gpu_id=
+echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
+
+for seed in 123456  ; do
+  sname=dev
+  for epoch in 35 ; do     #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+    model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist/123456
+    yaml_name=model.2023.06.27.yaml
+
+    for trials in trials_all; do
+      python -W ignore TrainAndTest/train_egs/test_egs.py \
+        --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+        --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+        --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials \
+        --feat-format wav --nj 4 \
+        --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+        --xvector-dir Data/xvector/${model_dir}/${test_set}_${test_subset}_${test_input} \
+        --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+        --gpu-id ${gpu_id} \
+        --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+        --cos-sim --test
+    done
+
+    for trials in easy ; do
+      python -W ignore TrainAndTest/train_egs/test_egs.py \
+        --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+        --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+        --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials \
+        --feat-format wav --nj 4 \
+        --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+        --xvector-dir Data/xvector/${model_dir}/${test_set}_${test_subset}_${test_input} \
+        --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+        --gpu-id ${gpu_id} --score-suffix ${trials} \
+        --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+        --cos-sim --extract
+    done
+
+ done
+done
+
 fi

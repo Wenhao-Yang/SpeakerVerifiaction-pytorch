@@ -21,10 +21,9 @@ import time
 # Version conflict
 import warnings
 from collections import OrderedDict
+from hyperpyyaml import load_hyperpyyaml
 
-import kaldi_io
 import kaldiio
-
 import numpy as np
 import psutil
 import torch
@@ -36,7 +35,7 @@ from torch.autograd import Variable
 from tqdm import tqdm
 
 # from Define_Model.Loss.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
-import Define_Model
+# import Define_Model
 from Define_Model.FilterLayer import FreqMaskIndexLayer
 from Define_Model.TDNN.Slimmable import FLAGS
 from Define_Model.model import PairwiseDistance
@@ -44,7 +43,7 @@ from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal, read_WaveFloat, read_WaveInt
-from TrainAndTest.common_func import create_model, verification_extract, load_model_args, args_model, args_parse
+from TrainAndTest.common_func import create_classifier, create_model, verification_extract, load_model_args, args_model, args_parse
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
@@ -276,7 +275,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
-# torch.multiprocessing.set_sharing_strategy('file_system')
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 if args.cuda:
     torch.cuda.manual_seed_all(args.seed)
@@ -290,8 +289,22 @@ assert os.path.exists(args.resume), print(
 kwargs = {'num_workers': args.nj, 'pin_memory': False} if args.cuda else {}
 sys.stdout = NewLogger(os.path.join(os.path.dirname(args.resume), 'test.log'))
 
-l2_dist = nn.CosineSimilarity(
-    dim=1, eps=1e-6) if args.cos_sim else PairwiseDistance(2)
+l2_dist = nn.CosineSimilarity(dim=-1, eps=1e-6) if args.cos_sim else nn.PairwiseDistance(p=2)
+
+# pdb.set_trace()
+feat_type = 'kaldi'
+if args.feat_format == 'kaldi':
+    # file_loader = read_mat
+    file_loader = kaldiio.load_mat
+    torch.multiprocessing.set_sharing_strategy('file_system')
+elif args.feat_format == 'npy':
+    file_loader = np.load
+elif args.feat_format == 'wav':
+    file_loader = read_WaveInt
+    feat_type = 'wav'
+
+if not args.valid:
+    args.num_valid = 0
 
 if args.test_input == 'var':
     transform = transforms.Compose([
@@ -304,11 +317,13 @@ if args.test_input == 'var':
 elif args.test_input == 'fix':
     transform = transforms.Compose([
         ConcateVarInput(num_frames=args.chunk_size,
-                        frame_shift=args.frame_shift, remove_vad=args.remove_vad),
+                        frame_shift=args.frame_shift, remove_vad=args.remove_vad,
+                        feat_type=feat_type),
     ])
     transform_T = transforms.Compose([
         ConcateVarInput(num_frames=args.chunk_size,
-                        frame_shift=args.frame_shift, remove_vad=args.remove_vad),
+                        frame_shift=args.frame_shift, remove_vad=args.remove_vad,
+                        feat_type=feat_type),
     ])
 else:
     raise ValueError('input length must be var or fix.')
@@ -329,20 +344,7 @@ if args.test_mask:
     if args.verbose > 0:
         print('Mean set values in frequecy from %d to %d.' % (start, end))
 
-# pdb.set_trace()
-feat_type = 'kaldi'
-if args.feat_format == 'kaldi':
-    # file_loader = read_mat
-    file_loader = kaldiio.load_mat
-    torch.multiprocessing.set_sharing_strategy('file_system')
-elif args.feat_format == 'npy':
-    file_loader = np.load
-elif args.feat_format == 'wav':
-    file_loader = read_WaveInt
-    feat_type = 'wav'
 
-if not args.valid:
-    args.num_valid = 0
 
 train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
                                feat_type=feat_type,
@@ -660,62 +662,19 @@ if __name__ == '__main__':
         print('Parsed options: \n{ %s }' % (', '.join(options)))
         print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
 
-    global FLAGS
-    if 'Slimmable' in args.model:
-        width_mult_list = sorted(
-            [float(x) for x in args.width_mult_list.split(',')], reverse=True)
-        FLAGS.width_mult_list = width_mult_list
-        print('Slimmable width: ', width_mult_list)
-    else:
-        width_mult_list = [1]
-        FLAGS.width_mult_list = width_mult_list
+    with open(args.check_yaml, 'r') as f:
+        config_args = load_hyperpyyaml(f)
 
-    if os.path.exists(args.check_yaml):
-        model_kwargs = load_model_args(args.check_yaml)
-    else:
-        model_kwargs = args_model(args, train_dir)
+    if 'embedding_model' in config_args:
+        model = config_args['embedding_model']
 
-        # # instantiate model and initialize weights
-        # kernel_size = args.kernel_size.split(',')
-        # kernel_size = [int(x) for x in kernel_size]
-        # if args.padding == '':
-        #     padding = [int((x - 1) / 2) for x in kernel_size]
-        # else:
-        #     padding = args.padding.split(',')
-        #     padding = [int(x) for x in padding]
-        #
-        # kernel_size = tuple(kernel_size)
-        # padding = tuple(padding)
-        # stride = args.stride.split(',')
-        # stride = [int(x) for x in stride]
-        #
-        # channels = args.channels.split(',')
-        # channels = [int(x) for x in channels]
-        # context = args.context.split(',')
-        # context = [int(x) for x in context]
-        # dilation = args.dilation.split(',')
-        # dilation = [int(x) for x in dilation]
-        #
-        # mask_len = [int(x) for x in args.mask_len.split(',')] if len(args.mask_len) > 1 else []
-        # width_mult_list = sorted([float(x) for x in args.width_mult_list.split(',')], reverse=True)
-        #
-        # model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-        #                 'mask': args.mask_layer, 'mask_len': mask_len, 'block_type': args.block_type,
-        #                 'dilation': dilation, 'first_2d': args.first_2d,
-        #                 'expansion': args.expansion,
-        #                 'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
-        #                 'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
-        #                 'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-        #                 'downsample': args.downsample, 'normalize': args.normalize,
-        #                 'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-        #                 'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-        #                 'channels': channels, 'width_mult_list': width_mult_list,
-        #                 'context': context, 'init_weight': args.init_weight,
-        #                 'alpha': args.alpha, 'dropout_p': args.dropout_p,
-        #                 'loss_type': args.loss_type, 'm': args.m, 'margin': args.margin, 's': args.s, }
+    if 'classifier' in config_args:
+        model.classifier = config_args['classifier']
+    else:
+        create_classifier(model, **config_args)
 
     if args.verbose > 1:
-        print('Model options: {}'.format(model_kwargs))
+        # print('Model options: {}'.format(model_kwargs))
         dist_type = 'cos' if args.cos_sim else 'l2'
         print('Testing with %s distance, ' % dist_type)
 
@@ -724,13 +683,8 @@ if __name__ == '__main__':
     train_xvector_dir = os.path.join(args.xvector_dir, 'train')
 
     if args.valid or args.extract:
-        model = create_model(args.model, **model_kwargs)
-        # if args.loss_type == 'asoft':
-        #     model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
-        # elif args.loss_type in ['amsoft', 'arcsoft']:
-        #     model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
+        # model = create_model(args.model, **model_kwargs)
 
-        assert os.path.isfile(args.resume), print(args.resume)
         if args.verbose > 0:
             print('=> loading checkpoint {}'.format(args.resume))
         checkpoint = torch.load(args.resume)
@@ -764,7 +718,6 @@ if __name__ == '__main__':
         model_dict.update(filtered)
         model.load_state_dict(model_dict)
         # model.dropout.p = args.dropout_p
-        #
         try:
             model.dropout.p = args.dropout_p
         except:
@@ -789,84 +742,48 @@ if __name__ == '__main__':
             if args.score_norm != '':
                 train_verify_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=args.test_batch_size,
                                                                   shuffle=False, **kwargs)
-
-                for width_mult in FLAGS.width_mult_list:
-                    # FLAGS.width_mult = width_mult
-                    model.apply(lambda m: setattr(m, 'width_mult', width_mult))
-
-                    this_xvector_dir = train_xvector_dir + \
-                        'width%f' % width_mult if width_mult != 1.0 else train_xvector_dir
-
-                    verification_extract(train_verify_loader, model,
-                                         xvector_dir=this_xvector_dir, epoch=start,
-                                         test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
-                                         mean_vector=args.mean_vector,
-                                         xvector=args.xvector)
+                verification_extract(train_verify_loader, model, xvector_dir=train_xvector_dir, epoch=start,
+                                     test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
+                                     mean_vector=args.mean_vector,
+                                     xvector=args.xvector)
 
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
 
             # extract(verify_loader, model, args.xvector_dir)
-            for width_mult in FLAGS.width_mult_list:
-                # FLAGS.width_mult = width_mult
-                model.apply(lambda m: setattr(m, 'width_mult', width_mult))
-                this_xvector_dir = test_xvector_dir + \
-                    'width%f' % width_mult if width_mult != 1.0 else test_xvector_dir
-
-                verification_extract(verify_loader, model, xvector_dir=this_xvector_dir,
-                                     epoch=start,
-                                     test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
-                                     mean_vector=args.mean_vector,
-                                     xvector=args.xvector)
+            verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
+                                 test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
+                                 mean_vector=args.mean_vector,
+                                 xvector=args.xvector)
 
     if args.test:
-
         file_loader = kaldiio.load_mat
         # file_loader = read_vec_flt
         return_uid = True if args.score_norm != '' else False
-        for width_mult in FLAGS.width_mult_list:
-            # FLAGS.width_mult = width_mult
-            # model.apply(lambda m: setattr(m, 'width_mult', width_mult))
-            this_xvector_dir = test_xvector_dir + \
-                'width%f' % width_mult if width_mult != 1.0 else test_xvector_dir
+        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
+                                       xvectors_dir=test_xvector_dir,
+                                       loader=file_loader, return_uid=return_uid,
+                                       verbose=args.verbose)
 
-            test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
-                                           xvectors_dir=this_xvector_dir,
-                                           loader=file_loader, return_uid=return_uid)
+        test_loader = torch.utils.data.DataLoader(test_dir,
+                                                  batch_size=1 if not args.mean_vector else args.test_batch_size * 128,
+                                                  shuffle=False, **kwargs)
 
-            test_loader = torch.utils.data.DataLoader(test_dir,
-                                                      batch_size=1 if not args.mean_vector else args.test_batch_size * 64,
-                                                      shuffle=False, **kwargs)
+        train_stats_pickle = os.path.join(test_xvector_dir,
+                                          'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
 
-            train_stats_pickle = os.path.join(this_xvector_dir,
-                                              'cohort_%d_%d.pickle' % (args.n_train_snts, args.cohort_size))
+        if args.score_norm == '':
+            train_stats = None
+        elif os.path.isfile(train_stats_pickle):
+            with open(train_stats_pickle, 'rb') as f:
+                train_stats = pickle.load(f)
+        else:
+            train_stats = cohort(train_xvector_dir, test_xvector_dir)
 
-            if os.path.isfile(train_stats_pickle):
-                with open(train_stats_pickle, 'rb') as f:
-                    train_stats = pickle.load(f)
-            else:
-                this_train_xvector_dir = train_xvector_dir + \
-                    'width%f' % width_mult if width_mult != 1.0 else train_xvector_dir
-                train_stats = cohort(
-                    this_train_xvector_dir, this_xvector_dir) if args.score_norm != '' else None
-
-            if len(FLAGS.width_mult_list) > 1:
-                print('Model width: ', width_mult)
-
-            test(test_loader, xvector_dir=this_xvector_dir,
-                 test_cohort_scores=train_stats)
+        test(test_loader, xvector_dir=args.xvector_dir, test_cohort_scores=train_stats)
 
     stop_time = time.time()
     t = float(stop_time - start_time)
     if args.verbose > 0:
         print("Running %.4f minutes for testing.\n" % (t / 60))
 
-# python TrainAndTest/Spectrogram/train_surescnn10_kaldi.py > Log/SuResCNN10/spect_161/
-
-# test easy spectrogram soft 161 vox1
-#   Test ERR is 1.6076%, Threshold is 0.31004807353019714
-#   mindcf-0.01 0.2094, mindcf-0.001 0.3767.
-
-# test hard spectrogram soft 161 vox1
-#   Test ERR is 2.9182%, Threshold is 0.35036733746528625
-#   mindcf-0.01 0.3369, mindcf-0.001 0.5494.

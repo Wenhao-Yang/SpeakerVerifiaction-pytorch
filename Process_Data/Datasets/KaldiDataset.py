@@ -650,7 +650,8 @@ class KaldiExtractDataset(data.Dataset):
 
 
 class ScriptVerifyDataset(data.Dataset):
-    def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load, return_uid=False):
+    def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load,
+                 return_uid=False, verbose=0):
 
         feat_scp = xvectors_dir + '/xvectors.scp'
         trials = dir + '/%s' % trials_file
@@ -668,7 +669,8 @@ class ScriptVerifyDataset(data.Dataset):
 
         utts = set(uid2feat.keys())
 
-        # print('\n==> There are {} utterances in Verification trials.'.format(len(uid2feat)))
+        if verbose > 0:
+            print('\n==> There are {} utterances in Verification set.'.format(len(uid2feat)))
 
         trials_pair = []
         positive_pairs = 0
@@ -692,8 +694,8 @@ class ScriptVerifyDataset(data.Dataset):
         trials_pair = np.array(trials_pair)
         assert len(trials_pair) > 0
         # trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
-        # print('    There are {} pairs in trials with {} positive pairs'.format(len(trials_pair),
-        #                                                                        positive_pairs))
+        if verbose > 0:
+            print('    There are {} pairs in trials with {} positive pairs. Skpipped {} pairs.'.format(len(trials_pair), positive_pairs, skip_pairs))
 
         self.uid2feat = uid2feat
         self.trials_pair = trials_pair
