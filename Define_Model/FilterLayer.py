@@ -1163,7 +1163,7 @@ class FrequencyGenderReweightLayer4(nn.Module):
         
         f = gender_score/2 * f
         f = f.mean(dim=2, keepdim=True)
-        f =  f / freq_std.unsqueeze(1).unsqueeze(1)
+        f =  f / self.activation(freq_std.unsqueeze(1).unsqueeze(1))
 
         f = f / f.mean(dim=3, keepdim=True)
         
