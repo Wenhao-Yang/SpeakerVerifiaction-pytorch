@@ -18,12 +18,13 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyGenderReweightLayer6, FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, AttentionweightLayer_v0
+from Define_Model.Pooling import SelfAttentionPooling
 
 def get_layer_param(model):
     return sum([torch.numel(param) for param in model.parameters()])
@@ -116,16 +117,18 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
                                         weight=init_weight, scale=scale)
     elif mask == 'frl':
         mask_layer = FrequencyReweightLayer(input_dim=input_dim)
-    elif mask == 'frl2':
+    elif mask in ['frl2', 'frl21']:
         mask_layer = FrequencyReweightLayer2(input_dim=input_dim)
     elif mask == 'fgrl2':
         mask_layer = FrequencyGenderReweightLayer2(input_dim=input_dim)
     elif mask == 'fgrl3':
         mask_layer = FrequencyGenderReweightLayer3(input_dim=input_dim)
-    elif mask == 'fgrl4':
+    elif mask in ['fgrl4', 'fgrl42', 'fgrl4frl2']:
         mask_layer = FrequencyGenderReweightLayer4(input_dim=input_dim)
-    elif mask == 'fgrl5':
+    elif mask == ['fgrl5', 'fgrl52']:
         mask_layer = FrequencyGenderReweightLayer5(input_dim=input_dim)
+    elif mask == 'fgrl6':
+        mask_layer = FrequencyGenderReweightLayer6(input_dim=input_dim)
     elif mask == 'trl':
         mask_layer = TimeReweightLayer(input_dim=input_dim)
     elif mask == 'fnrl':
