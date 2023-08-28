@@ -1179,7 +1179,7 @@ class FrequencyGenderReweightLayer6(nn.Module):
         self.input_dim = input_dim
         # {'f': 0, 'm': 1}
         female_w = torch.FloatTensor(c.INTE_FEMALE)
-        male_w = torch.FloatTensor(c.INTE_MALE)
+        male_w   = torch.FloatTensor(c.INTE_MALE)
         
         weight = torch.stack([female_w, male_w]).unsqueeze(0).unsqueeze(0)
         self.weight = nn.Parameter(weight, requires_grad=False)
@@ -1239,12 +1239,7 @@ class FrequencyGenderReweightLayer5(nn.Module):
         """
         # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
         freq_std     = x.std(dim=-2)
-        if freq_std.shape[1] == 1:
-            freq_std = freq_std.squeeze(1)
-        else:
-            freq_std = freq_std.mean(dim=1)
-
-        gender_score = self.gender_classifier(freq_std)
+        gender_score = self.gender_classifier(freq_std.squeeze(1))
         gender_score = F.softmax(gender_score, dim=1)
         
         f = 0.25 + self.activation(self.weight)
@@ -1260,8 +1255,8 @@ class FrequencyGenderReweightLayer5(nn.Module):
 
     def __repr__(self):
         return "FrequencyGenderReweightLayer5(input_dim=%d)" % (self.input_dim)
-
-
+    
+    
 class FrequencyNormReweightLayer(nn.Module):
     def __init__(self, input_dim=161):
         super(FrequencyNormReweightLayer, self).__init__()
