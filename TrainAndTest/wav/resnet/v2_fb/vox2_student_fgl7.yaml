@@ -105,7 +105,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
   mask: !ref <mask>
-  mask_ckp: Misc/exp_log/gfa/model/gender_16utt_sapfc_2s.pth
+  mask_ckp: "Misc/exp_log/gfa/model/gender_16utt_sapfc_2s.pth"
   input_norm: !ref <input_norm>
   block_type: !ref <block_type>
   downsample: !ref <downsample>
