@@ -1259,7 +1259,7 @@ class FrequencyGenderReweightLayer5(nn.Module):
 
 class FrequencyGenderReweightLayer7(nn.Module):
     def __init__(self, ckp_path, input_dim=80, fix_param=True):
-        super(FrequencyGenderReweightLayer6, self).__init__()
+        super(FrequencyGenderReweightLayer7, self).__init__()
         self.input_dim = input_dim
         # {'f': 0, 'm': 1}
         female_w = torch.FloatTensor(c.INTE_FEMALE)
