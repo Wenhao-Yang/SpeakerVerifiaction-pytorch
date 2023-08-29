@@ -921,7 +921,7 @@ class ThinResNet(nn.Module):
                  alpha=0,
                  norm_layer=None, 
                  mask='None', mask_len=[5, 10], init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
-                 mix='mixup',
+                 mix='mixup', mask_ckp='',
                  gain_layer=False, **kwargs):
         
         super(ThinResNet, self).__init__()
@@ -1010,7 +1010,7 @@ class ThinResNet(nn.Module):
             input_mask.append(norm_layer)
         mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
                                     init_weight=init_weight, weight_p=weight_p,
-                                    scale=scale, weight_norm=weight_norm)
+                                    scale=scale, weight_norm=weight_norm, mask_ckp=mask_ckp)
 
         if mask_layer != None:
             input_mask.append(mask_layer)

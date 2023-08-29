@@ -6,7 +6,7 @@
 @Contact: 874681044@qq.com
 @Software: PyCharm
 @File: model.py
-@Overview: The deep speaker model is not entirely the same as ResNets, as there are convolutional layers between blocks.
+@Overview: The deep speaker model is not entirely the same as ResNet, as there are convolutional layers between blocks.
 """
 
 import math
@@ -18,13 +18,13 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyGenderReweightLayer6, FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyGenderReweightLayer6, FrequencyGenderReweightLayer7,FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
     AttentionweightLayer, TimeFreqMaskLayer, \
     AttentionweightLayer_v2, AttentionweightLayer_v3, AttentionweightLayer_v0
-from Define_Model.Pooling import SelfAttentionPooling
+from Define_Model.Pooling import AttentionStatisticPooling, AttentionStatisticPooling_v2, SelfAttentionPooling, SelfAttentionPooling_v2, StatisticPooling
 
 def get_layer_param(model):
     return sum([torch.numel(param) for param in model.parameters()])
@@ -85,7 +85,7 @@ def get_input_norm(input_norm: str, input_dim=None):
 
 
 def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
-                   weight_p: float, scale: float, weight_norm: str):
+                   weight_p: float, scale: float, weight_norm: str, mask_ckp='', **kwargs):
     if mask == "time":
         mask_layer = TimeMaskLayer(mask_len=mask_len[0])
     elif mask == "freq":
@@ -129,6 +129,8 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = FrequencyGenderReweightLayer5(input_dim=input_dim)
     elif mask == 'fgrl6':
         mask_layer = FrequencyGenderReweightLayer6(input_dim=input_dim)
+    elif mask == 'fgrl7':
+        mask_layer = FrequencyGenderReweightLayer7(ckp_path=mask_ckp, input_dim=input_dim)
     elif mask == 'trl':
         mask_layer = TimeReweightLayer(input_dim=input_dim)
     elif mask == 'fnrl':
