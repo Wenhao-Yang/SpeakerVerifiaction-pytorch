@@ -407,6 +407,46 @@ class CBAMBlock_v2(nn.Module):
         return out
 
 
+class Conv1dReLUBn(nn.Module):
+    def __init__(self, kernel_size=3, input_channels=80, output_channels=64, stride=1,
+                dilation=1):
+        super(Conv1dReLUBn, self).__init__()
+        padding = kernel_size//2 * dilation
+        self.conv1 = nn.Conv1d(in_channels=input_channels, out_channels=output_channels, 
+                               kernel_size=kernel_size, dilation=dilation,
+                               stride=stride, padding=padding)
+        self.relu = nn.ReLU()
+        self.bn = nn.BatchNorm1d(output_channels)
+        
+    def forward(self, x):    
+        x = x.transpose(1,2)
+        
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.bn(x)
+        
+        return x.transpose(1,2)
+    
+class ResidualConv1dReLUBn(nn.Module):
+    def __init__(self, kernel_size=3, output_channels=64, stride=1,
+                dilation=1):
+        super(ResidualConv1dReLUBn, self).__init__()
+        padding = kernel_size//2 * dilation
+        self.conv1 = nn.Conv1d(in_channels=output_channels, out_channels=output_channels, 
+                               kernel_size=kernel_size, dilation=dilation,
+                               stride=stride, padding=padding)
+        self.relu = nn.ReLU()
+        self.bn = nn.BatchNorm1d(output_channels)
+        
+    def forward(self, x):    
+        x0 = x.transpose(1,2)
+        
+        x = self.conv1(x0)
+        x = self.relu(x)
+        x = self.bn(x) + x0
+        
+        return x.transpose(1,2)
+    
 class Res2Conv2dReluBn(nn.Module):
     '''
     in_channels == out_channels == channels
