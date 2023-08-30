@@ -1281,7 +1281,7 @@ class FrequencyGenderReweightLayer7(nn.Module):
         Return: x + U
         """
         gender_score = self.gender_classifier(x)
-        gender_score = F.softmax(gender_score, dim=1)
+        gender_score = F.softmax(gender_score, dim=1).unsqueeze(1).unsqueeze(3)
         
         # semi-hard inteplolation
         # gender_index = torch.max(gender_score, dim=1)[1]
