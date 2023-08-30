@@ -1282,13 +1282,14 @@ class FrequencyGenderReweightLayer7(nn.Module):
         """
         gender_score = self.gender_classifier(x)
         gender_score = F.softmax(gender_score, dim=1)
+        
         # semi-hard inteplolation
-        gender_index = torch.max(gender_score, dim=1)[1]
-        gender_index = torch.nn.functional.one_hot(gender_index, num_classes=2).float()
-        gender_score = (gender_score + gender_index).unsqueeze(1).unsqueeze(3)
+        # gender_index = torch.max(gender_score, dim=1)[1]
+        # gender_index = torch.nn.functional.one_hot(gender_index, num_classes=2).float()
+        # gender_score = (gender_score + gender_index).unsqueeze(1).unsqueeze(3)
         
         f = 0.5 + self.activation(self.weight)
-        f = gender_score/2 * f
+        f = gender_score * f
         f = f.sum(dim=2, keepdim=True)
         
         # f = gender_score/2 * self.weight
