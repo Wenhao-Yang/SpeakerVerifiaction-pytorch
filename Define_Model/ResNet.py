@@ -418,7 +418,10 @@ class Conv1dReLUBn(nn.Module):
         self.relu = nn.ReLU()
         self.bn = nn.BatchNorm1d(output_channels)
         
-    def forward(self, x):    
+    def forward(self, x):
+        if len(x.shape[1]) == 1:
+            x = x.squeeze(1)
+                
         x = x.transpose(1,2)
         
         x = self.conv1(x)
