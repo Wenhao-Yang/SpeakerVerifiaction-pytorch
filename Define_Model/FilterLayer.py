@@ -1289,7 +1289,7 @@ class FrequencyGenderReweightLayer7(nn.Module):
         # gender_index = torch.nn.functional.one_hot(gender_index, num_classes=2).float()
         # gender_score = (gender_score + gender_index).unsqueeze(1).unsqueeze(3)
         
-        f = 0.5 + self.activation(self.weight)
+        f = 0.25 + self.activation(self.weight)
         f = gender_score * f
         f = f.sum(dim=2, keepdim=True)
         
