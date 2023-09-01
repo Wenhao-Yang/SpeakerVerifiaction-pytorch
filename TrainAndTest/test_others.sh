@@ -3114,7 +3114,7 @@ for seed in 123456  ; do
     # model_dir=ThinResNet18/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist2_fgrl5/123456
     # yaml_name=model.2023.08.04.yaml
 
-    for test_subset in all; do
+    for test_subset in test; do
       for trials in trials_all; do
         python -W ignore TrainAndTest/train_egs/test_egs.py \
           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
