@@ -1291,7 +1291,7 @@ class FrequencyGenderReweightLayer7(nn.Module):
         
         f = 0.25 + self.activation(self.weight)
         f = gender_score * f
-        f = f.sum(dim=2, keepdim=True)
+        f = f.mean(dim=2, keepdim=True)
         
         # f = gender_score/2 * self.weight
         # f = 0.5 + self.activation(f)
