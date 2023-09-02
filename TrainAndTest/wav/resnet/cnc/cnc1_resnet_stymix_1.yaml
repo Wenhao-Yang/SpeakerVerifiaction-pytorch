@@ -90,7 +90,7 @@ downsample: 'k1'
 model: ThinResNet
 kernel_size:
 alpha: 0
-avg_size: 5
+avg_size: 1
 embedding_size: 256
 batch_size: 256
 dropout_p: 0.05
