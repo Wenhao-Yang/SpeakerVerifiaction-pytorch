@@ -30,9 +30,19 @@ input_per_spks: 768
 
 test_input: fix
 log_scale: False
-random_chunk: [32000, 32000]
+sr: 16000
+# transform
 chunk_size: 48000
-frame_shift: 48000
+
+# padding
+random_chunk: [32000, 32000]
+frame_shift: 48000 # test shift
+
+# train dataset config
+num_frames: 48000
+segment_shift: 32000
+
+# sample_type: instance
 extract: True
 nj: 8
 shuffle: False
