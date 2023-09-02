@@ -63,7 +63,7 @@ scheduler: cyclic
 lr: 0.002
 base_lr: 0.00000001
 cos_sim: True
-cyclic_epoch: 4
+cyclic_epoch: 5
 
 
 early_stopping: True
@@ -83,7 +83,7 @@ alpha: 0
 avg_size: 5
 embedding_size: 256
 batch_size: 256
-dropout_p: 0.1
+dropout_p: 0.05
 activation: relu
 channels: 32,64,128,256
 fast: none1
@@ -125,24 +125,26 @@ loss_ratio: 1
 lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
-margin: 0.15
+margin: 0.2
 # m: 0.2
 s: 30
 lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
-mixup_layer: 1
-mixup_type: manifold
+mixup_layer: [1]
+mixup_type: style
+batmix_ratio: 1
+mix_ratio: 0.5
 
 # stat_type: margin1
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde5_var2ses_bashuf2_dist
+check_path: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp05_alpha<alpha>_<fast>_wde5_var2ses_bashuf2_dist
 #  _mani<mixup_layer>_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 
-save_data_dir: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde5_var2ses_bashuf2_dist
+save_data_dir: !ref Data/checkpoint/<model><resnet_size>/<datasets>/<feat_type>_egs<subset>_baseline/<loss>_<optimizer>_<scheduler>/<input_norm>_batch<batch_size>_<block_type>_red<red_ratio>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp05_alpha<alpha>_<fast>_wde5_var2ses_bashuf2_dist
 
 resume: ''
 #  !ref <check_path>/checkpoint_40.pth
