@@ -23,7 +23,6 @@ train_trials_path: !ref <data_root_dir>/data/<testset>/test/trials_2w
 train_trials: trials
 num_valid: 0.05
 valid_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev_valid
-num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
 input_norm: Mean
@@ -97,7 +96,6 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   nfft: 512
   feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
-  mask: !ref <mask>
   input_norm: !ref <input_norm>
   block_type: !ref <block_type>
   downsample: !ref <downsample>
