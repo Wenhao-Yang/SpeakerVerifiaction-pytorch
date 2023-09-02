@@ -14,7 +14,7 @@ testset: cnceleb
 feat_type: wave
 loss: arcsoft
 input_dim: 80
-feat: !ref fb<input_dim>
+feat: int
 subset: ''
 
 train_dir: !ref <data_root_dir>/data/<datasets>/egs/<feat_type>/dev<subset>
@@ -39,6 +39,7 @@ shuffle: False
 batch_shuffle: True
 
 feat_format: wav
+wav_type: int
 remove_vad: False
 
 
