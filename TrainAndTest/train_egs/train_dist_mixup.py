@@ -232,8 +232,8 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
 def main():
     parser = argparse.ArgumentParser(
         description='PyTorch ( Distributed ) Speaker Recognition: Classification')
-    parser.add_argument('--local_rank', default=-1, type=int,
-                        help='node rank for distributed training')
+    # parser.add_argument('--local_rank', default=-1, type=int,
+    #                     help='node rank for distributed training')
 
     parser.add_argument('--train-config', default='', type=str,
                         help='node rank for distributed training')
