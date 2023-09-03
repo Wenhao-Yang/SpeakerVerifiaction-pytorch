@@ -851,19 +851,21 @@ class ProserLoss(nn.Module):
 
 class MixupLoss(nn.Module):
 
-    def __init__(self, loss, gamma=1):
+    def __init__(self, loss, gamma=1, margin_lamda=False):
         super(MixupLoss, self).__init__()
         self.loss = loss
         self.gamma = gamma
+        self.margin_lamda = margin_lamda
 
-    def forward(self, costh, label, half_batch_size, lamda_beta):
+    def forward(self, costh, label, half_batch_size, lamda_beta): 
+        margin_lamda = lamda_beta if self.margin_lamda else 1
         if half_batch_size > 0 :
             loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
 
             loss = loss + self.gamma * (
                 lamda_beta * self.loss(costh[-half_batch_size:],
-                                    label[half_batch_size:int(2 * half_batch_size)])
-                        + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:]))
+                                    label[half_batch_size:int(2 * half_batch_size)], lamda_beta=margin_lamda)
+                        + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:], lamda_beta=margin_lamda))
 
             return loss / (1 + self.gamma)
         else:
