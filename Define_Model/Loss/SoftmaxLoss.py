@@ -320,7 +320,7 @@ class ArcSoftmaxLoss(nn.Module):
         self.all_iteraion = all_iteraion
         self.smooth_ratio = smooth_ratio
 
-    def forward(self, costh, label):
+    def forward(self, costh, label, lamda_beta=1):
         lb_view = label.view(-1, 1)
         theta = costh.acos()
         # print('theta is ', theta.max())
@@ -329,7 +329,7 @@ class ArcSoftmaxLoss(nn.Module):
             lb_view = lb_view.cpu()
 
         delt_theta = torch.zeros(costh.size()).scatter_(
-            1, lb_view.data, self.margin)
+            1, lb_view.data, lamda_beta*self.margin)
 
         # pdb.set_trace()
         if costh.is_cuda:
