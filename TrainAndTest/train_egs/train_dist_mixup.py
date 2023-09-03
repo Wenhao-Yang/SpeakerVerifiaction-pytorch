@@ -265,7 +265,7 @@ def main():
         mixup_layer_str = str(config_args['mixup_layer'])
 
     lambda_str = '_lamda' + str(args.lamda_beta)
-    mixup_str = '_%s'%(config_args['mixup_type'][:4]) + mixup_layer_str + lambda_str
+    mixup_str = '_%s'%(config_args['mixup_type']) + mixup_layer_str + lambda_str
     if 'batmix_ratio' in config_args and config_args['batmix_ratio'] != 0.5:
         mixup_str += '_batmix{:.2f}'.format(config_args['batmix_ratio'])
 
