@@ -94,6 +94,10 @@ if [ $stage -le 0 ]; then
     # python Light/main.py --config-yaml=TrainAndTest/wav/resnet/vox1_int_light.yaml --seed=${seed} --gpus=0,1
 
     # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/mani_layers/cnc1_resnet_baseline.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymixtime_1.yaml --seed=${seed}
+
+    sleep 5
+
     CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix_1.yaml --seed=${seed}
   done
   done

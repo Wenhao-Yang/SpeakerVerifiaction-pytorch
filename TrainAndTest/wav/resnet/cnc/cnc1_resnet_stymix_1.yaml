@@ -98,6 +98,7 @@ activation: relu
 channels: 32,64,128,256
 fast: none1
 num_classes: 797
+mix: style
 
 embedding_model: !new:Define_Model.ResNet.ThinResNet
   resnet_size: !ref <resnet_size>
@@ -123,6 +124,8 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   embedding_size: !ref <embedding_size>
   num_classes: !ref <num_classes>
   activation: relu
+  mix: !ref <mix>
+
 
 classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
   feat_dim: !ref <embedding_size>
@@ -141,7 +144,7 @@ lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
 mixup_layer: [1]
-mixup_type: style
+mixup_type: !ref <mix>
 batmix_ratio: 1
 mix_ratio: 0.5
 
