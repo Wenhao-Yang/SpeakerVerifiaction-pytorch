@@ -1004,7 +1004,8 @@ class ThinResNet(nn.Module):
             "mixup": self.mixup,
             "addup": self.addup,
             "style": self.mixstyle,
-            "align": self.alignmix
+            "align": self.alignmix,
+            "style_time": self.mixstyle_time,
         }
         self.mix = mix_types[mix]
 
@@ -1385,6 +1386,26 @@ class ThinResNet(nn.Module):
 
         mu = half_feats.mean(dim=[2, 3], keepdim=True)
         var = half_feats.var(dim=[2, 3], keepdim=True)
+        sig = (var + 1e-6).sqrt()
+        mu, sig = mu.detach(), sig.detach()
+        x_normed = (half_feats - mu) / sig
+
+        mu2, sig2 = mu[shuf_half_idx_ten], sig[shuf_half_idx_ten]
+        mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)
+        sig_mix = sig*lamda_beta + sig2 * (1-lamda_beta)
+
+        x = torch.cat(
+            [x[:-mix_size], x_normed*sig_mix + mu_mix],
+            dim=0)
+
+        return x
+
+    def mixstyle_time(self, x, shuf_half_idx_ten, lamda_beta):
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+
+        mu = half_feats.mean(dim=2, keepdim=True)
+        var = half_feats.var(dim=2, keepdim=True)
         sig = (var + 1e-6).sqrt()
         mu, sig = mu.detach(), sig.detach()
         x_normed = (half_feats - mu) / sig
