@@ -269,6 +269,10 @@ def main():
     if 'batmix_ratio' in config_args and config_args['batmix_ratio'] != 0.5:
         mixup_str += '_batmix{:.2f}'.format(config_args['batmix_ratio'])
 
+    if 'mix_ratio' in config_args and config_args['mix_ratio'] != 0.5:
+        mixup_str += '_mixrt{:.2f}'.format(config_args['mix_ratio'])
+        
+    
     config_args['lamda_beta'] = args.lamda_beta
 
     check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
