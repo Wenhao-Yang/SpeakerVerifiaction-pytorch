@@ -1353,8 +1353,54 @@ class FrequencyGenderReweightLayer8(nn.Module):
 
     def __repr__(self):
         return "FrequencyGenderReweightLayer8(input_dim=%d)" % (self.input_dim)
+
+
+class FrequencyGenderReweightLayer9(nn.Module):
+    def __init__(self, ckp_path, input_dim=80, fix_param=True):
+        super(FrequencyGenderReweightLayer9, self).__init__()
+        self.input_dim = input_dim
+        # {'f': 0, 'm': 1}
+        female_w = torch.FloatTensor(c.INTE_FEMALE)
+        male_w   = torch.FloatTensor(c.INTE_MALE)
+        weight = torch.stack([female_w, male_w]).unsqueeze(0).unsqueeze(0)
+        self.weight = nn.Parameter(weight, requires_grad=False)
+        
+        self.vad = nn.Sequential(
+            nn.Linear(input_dim, 1),
+            nn.ReLU6()
+        )
+
+        self.gender_classifier = torch.load(ckp_path)
+        self.activation = nn.Sigmoid()
+        
+        if fix_param:
+            self.fix_params()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        gender_score = self.gender_classifier(x)
+        gender_score = F.softmax(gender_score, dim=1).unsqueeze(1).unsqueeze(3)
+        # semi-hard inteplolation
     
-    
+        f = gender_score * self.weight
+        f_vad = self.vad(x)
+        f = 0.5 + self.activation(f_vad * f.sum(dim=2, keepdim=True))
+        
+        return x * f
+
+    def fix_params(self):
+        for p in self.parameters():
+            p.requires_grad = False
+
+    def __repr__(self):
+        return "FrequencyGenderReweightLayer9(input_dim=%d)" % (self.input_dim)
+
+
 class FrequencyNormReweightLayer(nn.Module):
     def __init__(self, input_dim=161):
         super(FrequencyNormReweightLayer, self).__init__()
