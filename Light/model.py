@@ -135,7 +135,7 @@ class SpeakerLoss(nn.Module):
         self.ce_criterion = ce_criterion
         if 'mixup_type' in config_args and config_args['mixup_type'] != '':
             if 'margin_lamda' in config_args:
-                margin_lamda = margin_lamda
+                margin_lamda = config_args['margin_lamda']
             else:
                 margin_lamda = False
 
