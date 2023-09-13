@@ -78,6 +78,7 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
 
     output_softmax = nn.Softmax(dim=1)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
+    mix_epoch = config_args['mix_epoch'] if 'mix_epoch' in config_args else config_args['epochs']
 
     for batch_idx, data_cols in pbar:
         # if not return_domain:
@@ -89,18 +90,17 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
         mixup_percent = 0.5 if 'batmix_ratio' not in config_args else config_args['batmix_ratio']
         half_data = int(len(data) * mixup_percent)
 
-        if 'mix_ratio'in config_args and np.random.uniform(0, 1) <= config_args['mix_ratio']:
+        if 'mix_ratio'in config_args and np.random.uniform(0, 1) <= config_args['mix_ratio'] and epoch <= mix_epoch:
+
             if config_args['mixup_type'].startswith('style'):
                 # rand_idx = torch.randperm(half_data)
                 # label = torch.cat([label, label[half_data:][rand_idx]], dim=0)
-                
                 perm = torch.arange(half_data-1, -1, -1)  # inverse index crossdomain mixup
                 perm_b, perm_a = perm.chunk(2)
                 perm_b = perm_b[torch.randperm(perm_b.shape[0])]
                 perm_a = perm_a[torch.randperm(perm_a.shape[0])]
                 rand_idx = torch.cat([perm_b, perm_a], 0)
                 label = torch.cat([label, label[-half_data:][rand_idx]], dim=0)
-
             elif config_args['mixup_type'] != '':
                 rand_idx = torch.randperm(half_data)
                 label = torch.cat([label, label[-half_data:][rand_idx]], dim=0)

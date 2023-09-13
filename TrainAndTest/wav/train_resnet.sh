@@ -101,7 +101,12 @@ if [ $stage -le 0 ]; then
     # sleep 5
 
     # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix_1.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix_margin34.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix34.yaml --seed=${seed}
+
+    CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix34_margin.yaml --seed=${seed}
+    sleep 5
+
+    CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix34_epoch.yaml --seed=${seed}
 
     # CUDA_VISIBLE_DEVICES=2,5 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymixtime_margin_1.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=2,5 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymixtime_margin_3.yaml --seed=${seed}

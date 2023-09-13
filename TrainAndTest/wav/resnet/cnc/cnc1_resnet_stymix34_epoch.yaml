@@ -82,7 +82,7 @@ early_delta: 0.001
 early_meta: "mix8"
 
 ## model Setttings
-resnet_size: 34
+resnet_size: 18
 block_type: 'seblock'
 red_ratio: 2
 encoder_type: 'SAP2'
@@ -93,7 +93,7 @@ alpha: 0
 avg_size: 1
 embedding_size: 256
 batch_size: 256
-dropout_p: 0.1
+dropout_p: 0.05
 activation: relu
 channels: 32,64,128,256
 fast: none1
@@ -147,12 +147,14 @@ mixup_layer: [3,4]
 mixup_type: !ref <mix>
 batmix_ratio: 0.5
 mix_ratio: 0.2
+mix_epoch: 5
+# margin_lamda: True
 
 # stat_type: margin1
 
 # Checkpoints
 loss_str: ''
-check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_k7_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde5_2sesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist2_margin
+check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_k7_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp05_alpha<alpha>_<fast>_wde5_2sesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist2_epoch<mix_epoch>
 #  _mani<mixup_layer>_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 
