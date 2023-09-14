@@ -2008,28 +2008,25 @@ fi
 if [ $stage -le 201 ]; then
   feat_type=klsp
   model=ThinResNet resnet_size=10
+  datasets=vox2 testset=vox1 test_subset=test
   feat=log
   loss=arcsoft
-  encod=AVG
-  alpha=0
-  datasets=vox2 testset=vox1 test_subset=test
+  encod=AVG alpha=0 avg_size=5
+  
   input_norm=Mean
 #  test_subset=
-  block_type=basic
-  encoder_type=SAP2 embedding_size=256
+  block_type=basic encoder_type=SAP2 embedding_size=256
 
 #  sname=dev #dev_aug_com
   sname=dev #_aug_com
   downsample=k1
-  fast=none1
-  chn=16
+  fast=none1 chn=16
 #  mask_layer=rvec
 #  mask_layer=baseline
   mask_layer=rvec mask_len=5,10 weight_norm=max
   weight=rclean_max
   scheduler=rop optimizer=sgd
   batch_size=256
-  avg_size=5
 #  123456 123457 123458
 #  10 18 34 50
 #  for mask_layer in attention0 ;do
