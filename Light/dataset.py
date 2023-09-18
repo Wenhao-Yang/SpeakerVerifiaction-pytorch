@@ -12,7 +12,7 @@ import torch
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, ScriptTrainDataset, ScriptValidDataset
 from Process_Data.Datasets.LmdbDataset import EgsDataset, LmdbTrainDataset, LmdbValidDataset, Hdf5TrainDataset, Hdf5ValidDataset
 
-from Process_Data.audio_processing import ConcateNumInput, MelFbank, totensor, PadCollate3d, stretch
+from Process_Data.audio_processing import BandPass, ConcateNumInput, MelFbank, totensor, PadCollate3d, stretch
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_WaveInt, read_WaveFloat
 import torchvision.transforms as transforms
 from kaldiio import load_mat
@@ -108,6 +108,10 @@ def SubScriptDatasets(config_args):
                         feat_type=feat_type),
         totensor()
     ])
+
+    if 'bandpass' in config_args:
+        transform.transforms.insert(0, BandPass(low=config_args['bandpass'][0], high=config_args['bandpass'][1],
+                 sr=config_args['sr']))
 
     if 'trans_fbank' in config_args and config_args['trans_fbank']:
         transform.transforms.append(

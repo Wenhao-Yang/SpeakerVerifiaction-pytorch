@@ -89,6 +89,22 @@ def butter_bandpass_filter(data, cutoff, fs, order=15):
     return y  # Filter requirements.
 
 
+class BandPass(object):
+    def __init__(self, low=300, high=3000,
+                 sr=16000, band_pass_prob=0.2) -> None:
+        self.low = low
+        self.high = high
+        self.sr = sr
+        self.band_pass_prob = band_pass_prob
+        
+    def __call__(self, waveform):
+        if np.random.uniform(0, 1) < self.band_pass_prob:
+            waveform = butter_bandpass_filter(waveform, cutoff=[self.low, self.high], 
+                                          fs=self.sr)
+
+        return waveform
+
+
 def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
                use_delta=c.USE_DELTA,
                use_scale=c.USE_SCALE,
