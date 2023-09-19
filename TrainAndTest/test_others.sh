@@ -3097,7 +3097,7 @@ if [ $stage -le 600 ]; then
   train_set=vox1 test_set=vox1 # #jukebox cnceleb
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=2
+  gpu_id=1
 echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
 for seed in 123456  ; do
@@ -3141,7 +3141,7 @@ for seed in 123456  ; do
           --xvector-dir Data/xvector/${model_dir}/${test_set}_${test_subset}_${test_input} \
           --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
           --gpu-id ${gpu_id} --score-suffix ${trials} \
-          --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+          --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
           --cos-sim --extract
       done
     done
