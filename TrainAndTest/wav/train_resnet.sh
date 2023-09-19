@@ -9,7 +9,7 @@ while [ `ps 207506 | wc -l` -eq 2 ]; do
 done
 #stage=10
 
-lstm_dir=/home/work2020/yangwenhao/project/lstm_speaker_verification
+lstm_dir=/home/yangwenhao/project/lstm_speaker_verification
 
 if [ $stage -le 0 ]; then
   model=ThinResNet
@@ -38,6 +38,7 @@ if [ $stage -le 0 ]; then
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/aidata_int_original.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/fbank/ResNets/aidata_cm.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox1_int_original.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,2 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/vox1_int_band.yaml --seed=${seed}
 
     # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/vox2_int_brain_trans.yaml --seed=${seed}
 # 
@@ -101,7 +102,7 @@ if [ $stage -le 0 ]; then
     # sleep 5
 
     # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix_1.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix34.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix34.yaml --seed=${seed}
 
     # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc/cnc1_resnet_stymix34_margin.yaml --seed=${seed}
     # sleep 5
