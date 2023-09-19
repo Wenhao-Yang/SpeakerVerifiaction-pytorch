@@ -387,7 +387,6 @@ def main():
     all_seed(args.seed)
     torch.distributed.init_process_group(backend='nccl')
     local_rank = int(os.environ["LOCAL_RANK"])
-
     torch.cuda.set_device(local_rank)
     # torch.multiprocessing.set_sharing_strategy('file_system')
 

@@ -303,6 +303,13 @@ elif args.feat_format == 'wav':
     file_loader = read_WaveInt
     feat_type = 'wav'
 
+    if args.chunk_size // 16000 <= 0:
+        args.chunk_size = args.chunk_size * 160
+
+    if args.frame_shift // 16000 <= 0:
+        args.frame_shift = args.frame_shift * 160
+
+
 if not args.valid:
     args.num_valid = 0
 

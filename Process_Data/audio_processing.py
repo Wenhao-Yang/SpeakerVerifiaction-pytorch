@@ -988,7 +988,7 @@ class MelSpectrogram(torch.nn.Module):
             specgram = self.stretch(specgram, stretch_ratio)
         
         specgram = specgram.abs().pow(2)
-        if specgram.shape[-1] ==2:
+        if specgram.shape[-1] == 2:
             specgram = specgram.sum(-1)
 
         mel_specgram = self.mel_scale(specgram)
