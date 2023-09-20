@@ -92,7 +92,6 @@ class TripleConv2(nn.Module):
 
         # if self.last_activation:
         #     x_1 = self.last_activation_func(x_1)
-
         return x_1
 
 
