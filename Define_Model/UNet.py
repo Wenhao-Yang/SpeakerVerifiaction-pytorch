@@ -38,14 +38,29 @@ class DoubleConv2(nn.Module):
             activation_func()
         )
 
+        if in_channels != out_channels:
+            self.downsample = nn.Sequential(
+                nn.Conv2d(in_channels=in_channels, out_channels=out_channels, 
+                      kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm2d(out_channels),      
+            )
+        else:
+            self.downsample = None
+
+
         # self.last_activation = last_activation
         # self.last_activation_func = 
 
     def forward(self, x):
+        identity = x
+
         x_1 = self.layer1(x)
+        
+        if self.downsample is not None:
+            identity = self.downsample(x)
 
         if self.short_connection:
-            x_1 = x_1 + x
+            x_1 = x_1 + identity
 
         # if self.last_activation:
         #     x_1 = self.last_activation_func(x_1)
