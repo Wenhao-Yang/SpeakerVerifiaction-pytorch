@@ -24,6 +24,7 @@ class DoubleConv2(nn.Module):
                            'leaky': nn.LeakyReLU}
         padding = (kernel_size-1) // 2
         activation_func = activation_type[activation]
+
         self.short_connection = short_connection
 
         self.layer1 = nn.Sequential(
@@ -116,37 +117,38 @@ class UNet(nn.Module):
 
         if block_type == 'double':
             block = DoubleConv2
+
         elif block_type == 'triple':
             block = TripleConv2
         
         self.layer1 = block(in_channels=1, out_channels=channels[0],
-                                  activation=activation_type, short_connection=short_connection,
+                                  activation=activation, short_connection=short_connection,
                                   )
 
         self.layer2 = nn.Sequential(
             nn.MaxPool2d(kernel_size=2, stride=2),
             block(in_channels=channels[0], out_channels=channels[1],
-                                  activation=activation_type, short_connection=short_connection,
+                                  activation=activation, short_connection=short_connection,
                                   )
         )
 
         self.layer3 = nn.Sequential(
             nn.MaxPool2d(kernel_size=2, stride=2),
             block(in_channels=channels[1], out_channels=channels[2],
-                                  activation=activation_type, short_connection=short_connection,
+                                  activation=activation, short_connection=short_connection,
                                   )
         )
 
         self.layer4 = nn.Sequential(
             nn.MaxPool2d(kernel_size=2, stride=2),
             block(in_channels=channels[2], out_channels=channels[3],
-                                  activation=activation_type, short_connection=short_connection,
+                                  activation=activation, short_connection=short_connection,
                                   )
         )
         
         self.layer5 = nn.Sequential(
             block(in_channels=channels[3], out_channels=channels[3],
-                                  activation=activation_type, short_connection=short_connection,
+                                  activation=activation, short_connection=short_connection,
                                   ),
             nn.ConvTranspose2d(in_channels=channels[3], out_channels=channels[2],
                                kernel_size=2, stride=2, padding=0),
@@ -156,7 +158,7 @@ class UNet(nn.Module):
 
         self.layer6 = nn.Sequential(
             block(in_channels=channels[3], out_channels=channels[2],
-                                  activation=activation_type, short_connection=short_connection,
+                                  activation=activation, short_connection=short_connection,
                                   ),
             nn.ConvTranspose2d(in_channels=channels[2], out_channels=channels[1],
                                kernel_size=2, stride=2, padding=0),
@@ -166,7 +168,7 @@ class UNet(nn.Module):
 
         self.layer7 = nn.Sequential(
             block(in_channels=channels[2], out_channels=channels[1],
-                                  activation=activation_type, short_connection=short_connection,
+                                  activation=activation, short_connection=short_connection,
                                   ),
             nn.ConvTranspose2d(in_channels=channels[1], out_channels=channels[0],
                                kernel_size=2, stride=2, padding=0),
@@ -176,7 +178,7 @@ class UNet(nn.Module):
 
         self.layer8 = nn.Sequential(
             block(in_channels=channels[1], out_channels=channels[0],
-                                  activation=activation_type, short_connection=short_connection,
+                                  activation=activation, short_connection=short_connection,
                                   ),
             nn.Conv2d(in_channels=channels[0], out_channels=1,
                       kernel_size=3, stride=1, padding=1, padding_mode='reflect'),
