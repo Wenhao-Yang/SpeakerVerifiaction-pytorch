@@ -166,7 +166,7 @@ class UNet(nn.Module):
                                   ),
             nn.ConvTranspose2d(in_channels=channels[3], out_channels=channels[2],
                                kernel_size=2, stride=2, padding=0),
-            nn.BatchNorm2d(channels[0]),
+            nn.BatchNorm2d(channels[2]),
             activation_func()
         )
 
@@ -176,7 +176,7 @@ class UNet(nn.Module):
                                   ),
             nn.ConvTranspose2d(in_channels=channels[2], out_channels=channels[1],
                                kernel_size=2, stride=2, padding=0),
-            nn.BatchNorm2d(channels[0]),
+            nn.BatchNorm2d(channels[1]),
             activation_func(),
         )
 
