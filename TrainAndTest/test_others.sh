@@ -3116,8 +3116,10 @@ for seed in 123456  ; do
     # model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_aug5/123456
     # epoch=31 yaml_name=model.2023.09.15.yaml
     # aug5_bandpass
-    model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_aug5band/123456
-    epoch=33 yaml_name=model.2023.09.18.yaml
+    # model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_aug5band/123456
+    # epoch=33 yaml_name=model.2023.09.18.yaml
+    model_dir=ThinResNet34/Mean_batch128_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_band/123456
+    epoch=43 yaml_name=model.2023.09.19.yaml
 
     for test_subset in test_orgchn2dist3; do #test_radio_chn2
       for trials in trials_all; do
