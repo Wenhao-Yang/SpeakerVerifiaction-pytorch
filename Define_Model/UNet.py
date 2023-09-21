@@ -133,7 +133,8 @@ class UNet(nn.Module):
         # channels = [32, 64, 128, 256]
         channels_type = {
             16: [16, 32, 64, 128],
-            32: [32, 64, 128, 256]
+            32: [32, 64, 128, 256],
+            64: [64, 128, 256, 512]
         }
 
         activation_type = {'relu':  nn.ReLU,
