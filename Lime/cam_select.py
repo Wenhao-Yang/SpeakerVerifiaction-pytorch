@@ -109,7 +109,7 @@ def train_extract(train_loader, file_dir):
 
             data = data.numpy().squeeze().astype(np.float32)
 
-            df.create_dataset(uid[0], data=data)
+            df.create_dataset(uid[0], data=data, compression="gzip")
             inputs_uids.append([uid[0], int(label.numpy()[0])])
 
             if batch_idx % args.log_interval == 0:
