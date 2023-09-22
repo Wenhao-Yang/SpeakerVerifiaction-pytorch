@@ -177,16 +177,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
             optimizer.step()  # update parameters of net
             optimizer.zero_grad()  # reset gradient
 
-            if config_args['model'] == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
-                if isinstance(model, DistributedDataParallel):
-                    # The key method to constrain the first two convolutions, perform after every SGD step
-                    model.module.step_ftdnn_layers()
-                    orth_err += model.module.get_orth_errors()
-                else:
-                    # The key method to constrain the first two convolutions, perform after every SGD step
-                    model.step_ftdnn_layers()
-                    orth_err += model.get_orth_errors()
-
         # optimizer.step()
         if config_args['scheduler'] == 'cyclic':
             scheduler.step()
@@ -195,10 +185,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
         if torch.distributed.get_rank() == 0 and (batch_idx + 1) % config_args['log_interval'] == 0:
             epoch_str = 'Train Epoch {} '.format(epoch)
 
-            if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
-                    config_args['random_chunk'][
-                        1]:
-                batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args else data.shape[-2]
+            batch_length = data.shape[-2]
 
             pbar.set_description(epoch_str)
             pbar.set_postfix(batch_length=batch_length, average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
