@@ -104,11 +104,14 @@ add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_snr_high: 20
    rir_scale_factor: 1.0
 
+identity: !new:Define_Model.FilterLayer.Identity
+
 augment_pipeline: [
    !ref <add_rev>,
    !ref <add_noise>,
    !ref <add_rev_noise>,
-   !ref <add_musan_noise>
+   !ref <add_musan_noise>,
+   !ref <identity>
 ]
 
 # augment_pipeline: [ ]

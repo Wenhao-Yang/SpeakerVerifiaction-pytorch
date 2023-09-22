@@ -358,6 +358,14 @@ class SparseFbankLayer(nn.Module):
     def __repr__(self):
         return "SparseFbankLayer(sr={}, num_filter={}, stretch_ratio={}, init_weight={},)".format(self.sr, self.num_filter, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]), self.init_weight)
 
+
+class Identity(nn.Module):
+    def __init__(self, **kwargs):
+        super(Identity, self).__init__()
+        self.identity = nn.Identity()
+    def forward(self, x, length):
+        return self.identity(x)
+    
 # https://github.com/mravanelli/SincNet
 class SincConv_fast(nn.Module):
     """Sinc-based convolution
