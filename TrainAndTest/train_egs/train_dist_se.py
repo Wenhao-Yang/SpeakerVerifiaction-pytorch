@@ -250,7 +250,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
     # torch.distributed.all_reduce()
     total_loss = np.sum(all_total_loss)
     total_batch = np.sum(all_total_batch)
-    all_other_loss = np.sum(all_other_loss)
+    # all_other_loss = np.sum(all_other_loss)
 
     valid_loss = total_loss / total_batch
 
@@ -259,11 +259,6 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
         torch.cuda.empty_cache()
 
         this_epoch_str = '          \33[91mValid Loss: {:.6f}'.format(valid_loss)
-
-        if all_other_loss != 0:
-            this_epoch_str += ' {} Loss: {:6f}'.format(
-                config_args['loss_type'], all_other_loss / len(valid_loader))
-
         this_epoch_str += '.\33[0m'
         print(this_epoch_str)
 
