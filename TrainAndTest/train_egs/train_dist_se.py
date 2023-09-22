@@ -233,9 +233,9 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
             augment = np.random.choice(augment_pipeline)
             aug_data = augment(data.squeeze(), torch.tensor([1]*len(data)).cuda())
 
-            aug_feat = trans(aug_data.unsqueeze(1).float())
+            aug_feat = trans(aug_data.unsqueeze(1).float()).unsqueeze(1)
             # pdb.set_trace()
-            print(aug_feat.shape)
+            # print(aug_feat.shape)
             denoise_feat = model(aug_feat)
             loss = mse(denoise_feat, real_feat)
             total_loss += float(loss.item())
