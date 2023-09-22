@@ -1,0 +1,131 @@
+# @Author: yangwenhao
+# @Contact: 874681044@qq.com
+# @Software: VSCode
+# @File: aidata_resnet.yaml
+# @Time: 2023/09/22 09:15
+# @Overview:
+
+data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
+root_path: '/home/yangwenhao/project/SpeakerVerification-pytorch/Data/gradient'
+
+## Dataset
+seed: 123456
+
+train_set: vox2
+subset: dev
+
+input_path: !ref <root_path>/ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456/vox2_dev16
+
+sr: 16000
+train_duration: 51040
+test_duration:  51040
+
+batch_size: 16
+nj: 6
+### Training settings
+epochs: 40
+
+# optimizer
+optimizer: adam
+lr_decay: 0
+weight_decay: 0.00005
+dampening: 0
+nesterov: False
+momentum: 0.9
+accu_steps: 1
+
+# Scheduler
+patience: 3
+milestones: [10, 20, 30, 40]
+val_check_interval: 5994
+scheduler: cyclic
+lr: 0.1
+base_lr: 0.00001
+cos_sim: True
+
+early_stopping: True
+early_patience: 12
+early_delta: 0.001
+
+
+
+model_name: UNet
+channels: 16
+activation: 'relu'
+short_connection: False
+block_type: 'double'
+
+
+model: !new:Define_Model.UNet.UNet
+  channels: !ref <channels>
+  activation: !ref <activation>
+  short_connection: !ref <short_connection>
+  block_type: !ref <block_type>
+
+loss: !new:torch.nn.MSELoss
+
+rir_folder: '/data2022/yangwenhao/dataset'
+musan_lst: '/home/yangwenhao/project/SpeakerVerification-pytorch/Misc/audio_processing/musan_4s_nospeech.csv'
+
+
+add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
+   openrir_folder: !ref <rir_folder>
+   openrir_max_noise_len: 3.0  # seconds
+   reverb_prob: 1.0
+   noise_prob: 0.0
+   noise_snr_low: 0
+   noise_snr_high: 15
+   rir_scale_factor: 1.0
+
+add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+   openrir_folder: !ref <rir_folder>
+   openrir_max_noise_len: 3.0  # seconds
+   reverb_prob: 0.0
+   noise_prob: 1.0
+   noise_snr_low: 0
+   noise_snr_high: 15
+   rir_scale_factor: 1.0
+
+add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+   openrir_folder: !ref <rir_folder>
+   openrir_max_noise_len: 3.0  # seconds
+   reverb_prob: 1.0
+   noise_prob: 1.0
+   noise_snr_low: 0
+   noise_snr_high: 15
+   rir_scale_factor: 1.0
+
+add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+   openrir_folder: !ref <musan_lst>
+   openrir_max_noise_len: 4.0  # seconds
+   reverb_prob: 0.0
+   noise_prob: 1.0
+   noise_snr_low: 0
+   noise_snr_high: 20
+   rir_scale_factor: 1.0
+
+augment_pipeline: [
+   !ref <add_rev>,
+   !ref <add_noise>,
+   !ref <add_rev_noise>,
+   !ref <add_musan_noise>
+]
+
+# augment_pipeline: [ ]
+concat_augment: True
+
+fbank: !new:Define_Model.Filterlayer.MelFbankLayer:
+  sr: !ref <sr>
+  num_filter: 80
+  stretch_ratio: [1]
+
+mean_norm: !new:Define_Model.Filterlayer.Mean_Norm
+
+transforms: [
+  !ref <fbank>,
+  !ref <mean_norm>
+]
+
+check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_activation
+
+

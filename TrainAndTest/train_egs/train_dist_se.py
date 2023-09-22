@@ -10,7 +10,7 @@
 @Overview:
 """
 from __future__ import print_function
-from Light.dataset import Sampler_Loaders, SubScriptDatasets
+from Light.dataset import Sampler_Loaders, ScriptGenderDatasets, SubScriptDatasets
 from Light.model import SpeakerLoss
 from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
@@ -101,7 +101,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
     pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True) if torch.distributed.get_rank(
     ) == 0 else enumerate(train_loader)
 
-    mse = nn.MSELoss()
+    mse = config_args['loss']
 
     if 'augment_pipeline' in config_args:
         augment_pipeline = []
@@ -224,15 +224,15 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
     total_loss = 0.
     total_other_loss = 0.
     # ce_criterion, xe_criterion = ce
-    mse = nn.MSELoss()
+    mse = config_args['loss']
 
-    correct = 0.
-    total_datasize = 0.
+    # correct = 0.
+    # total_datasize = 0.
     # lambda_ = (epoch / config_args['epochs']) ** 2
-    if 'augment_pipeline' in config_args:
-        augment_pipeline = []
-        for _, augment in enumerate(config_args['augment_pipeline']):
-            augment_pipeline.append(augment.cuda())
+    # if 'augment_pipeline' in config_args:
+    augment_pipeline = []
+    for _, augment in enumerate(config_args['augment_pipeline']):
+        augment_pipeline.append(augment.cuda())
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
@@ -319,29 +319,29 @@ def main():
     else:
         writer = None
     # Dataset
-    train_dir, valid_dir, train_extract_dir = SubScriptDatasets(config_args)
-    train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
-        train_dir, valid_dir, train_extract_dir, config_args)
+    # train_dir, valid_dir, train_extract_dir = SubScriptDatasets(config_args)
+    # train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
+    #     train_dir, valid_dir, train_extract_dir, config_args)
+    train_loader, eval_loader, train_sampler, train_dataset = ScriptGenderDatasets(config_args)
 
     torch.distributed.barrier()
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
-        print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
-        if train_dir.num_spks != config_args['num_classes']:
-            print('Number of Speakers in training set is not equal to the asigned number.\n'.format(
-                train_dir.num_spks))
+        # print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
+        # if train_dir.num_spks != config_args['num_classes']:
+        #     print('Number of Speakers in training set is not equal to the asigned number.\n'.format(
+        #         train_dir.num_spks))
 
-        print('Testing with %s distance, ' %
-              ('cos' if config_args['cos_sim'] else 'l2'))
+        # print('Testing with %s distance, ' %
+        #       ('cos' if config_args['cos_sim'] else 'l2'))
 
     # model = create_model(config_args['model'], **model_kwargs)
-    if 'embedding_model' in config_args:
-        model = config_args['embedding_model']
-
-    if 'classifier' in config_args:
-        model.classifier = config_args['classifier']
-    else:
-        create_classifier(model, **config_args)
+    # if 'embedding_model' in config_args:
+    model = config_args['model']
+    trans = nn.Sequential(
+        config_args['transforms'])
+    
+    # loss_func = config_args['loss']
 
     start_epoch = 0
     check_path = config_args['check_path'] + '/' + str(args.seed)
@@ -378,41 +378,41 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
-    model.loss = SpeakerLoss(config_args)
+    # model.loss = SpeakerLoss(config_args)
 
     model_para = [{'params': model.parameters()}]
-    if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
-        assert config_args['lr_ratio'] > 0
-        model_para.append({'params': model.loss.xe_criterion.parameters(
-        ), 'lr': config_args['lr'] * config_args['lr_ratio']})
+    # if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
+    #     assert config_args['lr_ratio'] > 0
+    #     model_para.append({'params': model.loss.xe_criterion.parameters(
+    #     ), 'lr': config_args['lr'] * config_args['lr_ratio']})
 
-    if 'second_wd' in config_args and config_args['second_wd'] > 0:
-        # if config_args['loss_type in ['asoft', 'amsoft']:
-        classifier_params = list(map(id, model.classifier.parameters()))
-        rest_params = filter(lambda p: id(
-            p) not in classifier_params, model.parameters())
+    # if 'second_wd' in config_args and config_args['second_wd'] > 0:
+    #     # if config_args['loss_type in ['asoft', 'amsoft']:
+    #     classifier_params = list(map(id, model.classifier.parameters()))
+    #     rest_params = filter(lambda p: id(
+    #         p) not in classifier_params, model.parameters())
 
-        init_lr = config_args['lr'] * \
-            config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
-        init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
-        print('Set the lr and weight_decay of classifier to %f and %f' %
-              (init_lr, init_wd))
-        model_para = [{'params': rest_params},
-                      {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
+    #     init_lr = config_args['lr'] * \
+    #         config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
+    #     init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
+    #     print('Set the lr and weight_decay of classifier to %f and %f' %
+    #           (init_lr, init_wd))
+    #     model_para = [{'params': rest_params},
+    #                   {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
-    if 'filter_wd' in config_args:
-        # if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
-        filter_params = list(map(id, model.input_mask[0].parameters()))
-        rest_params = filter(lambda p: id(
-            p) not in filter_params, model_para[0]['params'])
-        init_wd = config_args['filter_wd'] if 'filter_wd' in config_args else config_args['weight_decay']
-        init_lr = config_args['lr'] * \
-            config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
-        print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
+    # if 'filter_wd' in config_args:
+    #     # if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
+    #     filter_params = list(map(id, model.input_mask[0].parameters()))
+    #     rest_params = filter(lambda p: id(
+    #         p) not in filter_params, model_para[0]['params'])
+    #     init_wd = config_args['filter_wd'] if 'filter_wd' in config_args else config_args['weight_decay']
+    #     init_lr = config_args['lr'] * \
+    #         config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
+    #     print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
 
-        model_para[0]['params'] = rest_params
-        model_para.append({'params': model.input_mask[0].parameters(), 'lr': init_lr,
-                            'weight_decay': init_wd})
+    #     model_para[0]['params'] = rest_params
+    #     model_para.append({'params': model.input_mask[0].parameters(), 'lr': init_lr,
+    #                         'weight_decay': init_wd})
 
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
                   'weight_decay': config_args['weight_decay'],
@@ -422,7 +422,8 @@ def main():
 
     optimizer = create_optimizer(
         model_para, config_args['optimizer'], **opt_kwargs)
-    scheduler = create_scheduler(optimizer, config_args, train_dir)
+    
+    scheduler = create_scheduler(optimizer, config_args, train_dataset)
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
                                              min_delta=config_args['early_delta'])
 
@@ -496,7 +497,7 @@ def main():
     except:
         pass
 
-    xvector_dir = check_path.replace('checkpoint', 'xvector')
+    # xvector_dir = check_path.replace('checkpoint', 'xvector')
     start_time = time.time()
 
     all_lr = []
@@ -505,8 +506,6 @@ def main():
     try:
         for epoch in range(start, end):
             train_sampler.set_epoch(epoch)
-            valid_sampler.set_epoch(epoch)
-            train_extract_sampler.set_epoch(epoch)
 
             # if torch.distributed.get_rank() == 0:
             lr_string = '\33[1;34m Ranking {}: \'{}\' learning rate: '.format(torch.distributed.get_rank(),
@@ -524,19 +523,18 @@ def main():
             #                    config_args['select_score'])
 
             train(train_loader, model, optimizer,
-                  epoch, scheduler, config_args, writer)
+                  epoch, scheduler, config_args, writer, trans)
 
             valid_loss = valid_class(
-                valid_loader, model, epoch, config_args, writer)
-            valid_test_dict = valid_test(
-                train_extract_loader, model, epoch, xvector_dir, config_args, writer)
-            valid_test_dict['Valid_Loss'] = valid_loss
+                eval_loader, model, epoch, config_args, writer, trans)
+            # valid_test_dict = valid_test(
+            #     train_extract_loader, model, epoch, xvector_dir, config_args, writer)
+            # valid_test_dict['Valid_Loss'] = valid_loss
 
             if torch.distributed.get_rank() == 0 and config_args['early_stopping']:
-                valid_test_result.append(valid_test_dict)
+                valid_test_result.append(valid_loss)
 
-                early_stopping_scheduler(
-                    valid_test_dict[config_args['early_meta']], epoch)
+                early_stopping_scheduler(valid_loss, epoch)
 
                 if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
                     early_stopping_scheduler.early_stop = True
@@ -574,17 +572,7 @@ def main():
                     best_epoch = early_stopping_scheduler.best_epoch
                     best_res = valid_test_result[int(best_epoch - 1)]
 
-                    best_str = 'EER(%):       ' + \
-                        '{:>6.2f} '.format(best_res['EER'])
-                    best_str += '   Threshold: ' + \
-                        '{:>7.4f} '.format(best_res['Threshold'])
-                    best_str += ' MinDcf-0.01: ' + \
-                        '{:.4f} '.format(best_res['MinDCF_01'])
-                    best_str += ' MinDcf-0.001: ' + \
-                        '{:.4f} '.format(best_res['MinDCF_001'])
-                    best_str += ' Mix2,3: ' + \
-                        '{:.4f}, {:.4f}'.format(
-                            best_res['mix2'], best_res['mix3'])
+                    best_str = 'Loss(%):  ' + '{:>6.2f} '.format(best_res)
                     print(best_str)
 
                     with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:

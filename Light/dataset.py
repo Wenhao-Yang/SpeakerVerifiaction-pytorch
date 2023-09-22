@@ -8,9 +8,11 @@
 @Time: 2023/02/23 18:22
 @Overview: 
 '''
+import json
+import os
 import torch
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, ScriptTrainDataset, ScriptValidDataset
-from Process_Data.Datasets.LmdbDataset import EgsDataset, LmdbTrainDataset, LmdbValidDataset, Hdf5TrainDataset, Hdf5ValidDataset
+from Process_Data.Datasets.LmdbDataset import EgsDataset, GenderDataset, LmdbTrainDataset, LmdbValidDataset, Hdf5TrainDataset, Hdf5ValidDataset
 
 from Process_Data.audio_processing import BandPass, ConcateNumInput, MelFbank, totensor, PadCollate3d, stretch
 from Process_Data.audio_processing import ConcateVarInput, tolog, ConcateOrgInput, PadCollate, read_WaveInt, read_WaveFloat
@@ -281,3 +283,94 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                        sampler=train_extract_sampler, **extract_kwargs)
 
     return train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler
+
+
+def ScriptGenderDatasets(config_args):
+
+    lstm_path = config_args['data_root_dir']
+    train_set = config_args['train_set']
+    subset    = config_args['subset']
+
+    input_path = config_args['input_path']
+
+    uid2spk = {}
+    with open(lstm_path + '/data/{}/{}/utt2spk'.format(train_set, subset), 'r') as f:
+        for l in f.readlines():
+            uid, sid = l.split()
+            uid2spk[uid] = sid
+        
+    sid2gender, uid2gender = {}, {}
+    spk_file = lstm_path + '/data/{}/{}/spk2gender'.format(train_set, subset)
+    if os.path.exists(spk_file):
+        with open(spk_file, 'r') as f:
+            for l in f.readlines():
+                sid, gender = l.split()[:2]
+                sid2gender[sid] = gender
+
+        for uid in uid2spk:
+            this_sid = uid2spk[uid]
+            uid2gender[uid] = sid2gender[this_sid] if this_sid in sid2gender else 'null'
+
+    spk2utt = {}
+    with open(lstm_path + '/data/{}/{}/spk2utt'.format(train_set, subset), 'r') as f:
+        for l in f.readlines():
+            sid_uid = l.split()
+            # if uid in some_data:
+            spk2utt[sid_uid[0]] = sid_uid[1:]
+
+    # load selected input uids
+    data_reader = input_path + '/data.h5py'
+    assert os.path.exists(data_reader), print(data_reader)
+
+    uid_reader = input_path + '/uid_idx.json'
+    assert os.path.exists(uid_reader)
+    with open(uid_reader, 'r') as f:
+        uididx = json.load(f)
+        
+    some_data = [uid for uid,idx in uididx]
+    some_data.sort()
+
+    print("Length of data: ", len(some_data))
+    for uid in some_data:
+        if uid2gender[uid] == 'null':
+            print(uid, end=' ')
+            
+    all_sid = [uid2spk[uid] for uid in some_data]
+    all_sid.sort()
+    train_sid = set(all_sid[:-int(len(all_sid)*0.2)])
+
+    train_uid = []
+    eval_uid  = []
+
+    num_utts = num_total = len(some_data)
+    num_eval = int(np.floor(num_total*0.2))
+
+    spk_counts = {sid:num_utts for sid in spk2utt}
+    for uid in some_data:
+        sid = uid2spk[uid]
+        if sid in train_sid and spk_counts[sid] > num_eval:
+            train_uid.append(uid) 
+        else:
+            eval_uid.append(uid)
+            
+        spk_counts[uid2spk[uid]] -= 1
+
+    print(len(train_uid), len(eval_uid))
+
+    train_duration = config_args['train_duration'] #51040
+    test_duration  = config_args['test_duration'] #51040
+
+    train_dataset = GenderDataset(train_uid, uid2gender, data_reader, 
+                                seg_duration=train_duration)
+    eval_dataset  = GenderDataset(eval_uid, uid2gender, data_reader, if_train=False,
+                                seg_duration=test_duration)
+
+    batch_size = config_args['batch_size'] #16
+    kwargs = {'num_workers': config_args['nj'], 'pin_memory': False}
+    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, 
+                                               sampler=train_sampler, **kwargs)
+    
+    eval_loader  = torch.utils.data.DataLoader(eval_dataset,  batch_size=batch_size, **kwargs)
+
+    return train_loader, eval_loader, train_sampler, train_dataset

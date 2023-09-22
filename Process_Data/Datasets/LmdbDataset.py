@@ -19,6 +19,7 @@ from kaldiio import load_mat
 from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
+from Lime.cams import read_hdf5
 
 import Process_Data.constants as c
 
@@ -1359,3 +1360,32 @@ class Hdf5DelectDataset(Dataset):
 
     def __len__(self):
         return len(self.uids)
+    
+
+class GenderDataset(torch.utils.data.Dataset):#需要继承data.Dataset
+    def __init__(self, some_data, uid2gender, data_reader, seg_duration=32000, if_train=True):
+        # TODO
+        # 1. Initialize file path or list of file names.
+        self.some_data   = list(some_data)
+        self.uid2gender  = uid2gender
+        self.data_reader = data_reader
+        self.if_train = if_train
+        self.seg_duration = seg_duration
+        self.gender2idx  = {'f': torch.LongTensor([0]), 'm': torch.LongTensor([1])}
+        
+        pass
+    def __getitem__(self, index):
+        # TODO
+        uid = self.some_data[index]
+        data     = read_hdf5(self.data_reader, uid)
+        start = np.random.randint(0, len(data)-self.seg_duration)
+        if self.if_train:
+            data = data[start:(start+self.seg_duration)]
+        else:
+            data = data[:self.seg_duration]
+        
+        return torch.tensor(data).reshape(1, -1).float(), self.gender2idx[self.uid2gender[uid]]
+    
+    def __len__(self):
+        # You should change 0 to the total size of your dataset.
+        return len(self.some_data)
