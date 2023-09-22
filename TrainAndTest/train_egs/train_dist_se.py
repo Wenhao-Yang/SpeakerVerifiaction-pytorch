@@ -124,7 +124,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
                     # augment = np.random.choice(augment_pipeline)
                     # for count, augment in enumerate(augment_pipeline):
                     # Apply augment
-                    wavs_aug = augment(wavs, torch.tensor([1]*len(data)).cuda())
+                    wavs_aug = augment(wavs, torch.tensor([1.0]*len(data)).cuda())
                     # wavs_aug = augment(wavs, torch.tensor([data.shape[-1]]*len(data)).cuda())
                     # Managing speed change
                     if wavs_aug.shape[1] > wavs.shape[1]:
@@ -233,7 +233,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
 
             aug_data = []
             for augment in np.random.choice(augment_pipeline, size=num_pipes, replace=False):
-                aug_data.append(augment(data.squeeze(), torch.tensor([1]*len(data)).cuda()))
+                aug_data.append(augment(data.squeeze(), torch.tensor([1.0]*len(data)).cuda()))
                 # aug_data.append(augment(data.squeeze(), torch.tensor([data.shape[-1]]*len(data)).cuda()))
             
             aug_data = torch.cat(aug_data, dim=0)
