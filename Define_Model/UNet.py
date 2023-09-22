@@ -41,7 +41,7 @@ class DoubleConv2(nn.Module):
         if in_channels != out_channels:
             self.downsample = nn.Sequential(
                 nn.Conv2d(in_channels=in_channels, out_channels=out_channels, 
-                      kernel_size=1, stride=1, padding=0, bias=False),
+                      kernel_size=3, stride=1, padding=1, bias=False, padding_mode='reflect'),
                 nn.BatchNorm2d(out_channels),      
             )
         else:
