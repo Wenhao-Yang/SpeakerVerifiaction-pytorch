@@ -39,6 +39,7 @@ patience: 3
 milestones: [10, 20, 30, 40]
 val_check_interval: 5994
 scheduler: cyclic
+cyclic_epoch: 4
 lr: 0.1
 base_lr: 0.00001
 cos_sim: True
@@ -46,7 +47,6 @@ cos_sim: True
 early_stopping: True
 early_patience: 12
 early_delta: 0.001
-
 
 
 model_name: UNet
