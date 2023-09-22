@@ -127,14 +127,16 @@ class TripleConv2(nn.Module):
 
 class UNet(nn.Module):
     def __init__(self, channels=16, activation='relu',
-                 short_connection=False, block_type='double', **kwargs):
+                 short_connection=False, block_type='double', 
+                 depth=3, **kwargs):
         
         super(UNet, self).__init__()
+        self.depth = depth
         # channels = [32, 64, 128, 256]
         channels_type = {
-            16: [16, 32, 64, 128],
-            32: [32, 64, 128, 256],
-            64: [64, 128, 256, 512]
+            16: [16, 32, 64, 128, 256],
+            32: [32, 64, 128, 256, 512],
+            64: [64, 128, 256, 512, 1024]
         }
 
         activation_type = {'relu':  nn.ReLU,
@@ -175,16 +177,44 @@ class UNet(nn.Module):
                                   activation=activation, short_connection=short_connection,
                                   )
         )
-        
-        self.layer5 = nn.Sequential(
-            block(in_channels=channels[3], out_channels=channels[3],
+
+        if self.depth > 3:
+            self.layer4_2 = nn.Sequential(
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            block(in_channels=channels[3], out_channels=channels[4],
+                                  activation=activation, short_connection=short_connection,
+                                  )
+            )
+
+            self.layer5_0 = nn.Sequential(
+            block(in_channels=channels[4], out_channels=channels[4],
+                                  activation=activation, short_connection=short_connection,
+                                  ),
+            nn.ConvTranspose2d(in_channels=channels[4], out_channels=channels[3],
+                               kernel_size=2, stride=2, padding=0),
+            nn.BatchNorm2d(channels[3]),
+            activation_func()
+            )
+
+            self.layer5 = nn.Sequential(
+            block(in_channels=channels[4], out_channels=channels[3],
                                   activation=activation, short_connection=short_connection,
                                   ),
             nn.ConvTranspose2d(in_channels=channels[3], out_channels=channels[2],
                                kernel_size=2, stride=2, padding=0),
             nn.BatchNorm2d(channels[2]),
             activation_func()
-        )
+            )
+        else:
+            self.layer5 = nn.Sequential(
+                block(in_channels=channels[3], out_channels=channels[3],
+                                    activation=activation, short_connection=short_connection,
+                                    ),
+                nn.ConvTranspose2d(in_channels=channels[3], out_channels=channels[2],
+                                kernel_size=2, stride=2, padding=0),
+                nn.BatchNorm2d(channels[2]),
+                activation_func()
+            )
 
         self.layer6 = nn.Sequential(
             block(in_channels=channels[3], out_channels=channels[2],
@@ -240,7 +270,14 @@ class UNet(nn.Module):
         x_4 = self.layer4(x_3)
         # print(x_4.shape)
 
-        x_5 = self.layer5(x_4)
+        if self.depth > 3:
+            x_41 = self.layer4_2(x_4)
+            x_50 = self.layer5_0(x_41)
+
+            x_5 = self.layer5(torch.cat([x_50, x_41], dim=1))
+
+        else:
+            x_5 = self.layer5(x_4)
         # print(x_5.shape)
         
         
