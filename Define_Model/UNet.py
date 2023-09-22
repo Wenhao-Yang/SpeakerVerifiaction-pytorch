@@ -274,7 +274,7 @@ class UNet(nn.Module):
             x_41 = self.layer4_2(x_4)
             x_50 = self.layer5_0(x_41)
 
-            x_5 = self.layer5(torch.cat([x_50, x_41], dim=1))
+            x_5 = self.layer5(torch.cat([x_50, x_4], dim=1))
 
         else:
             x_5 = self.layer5(x_4)
