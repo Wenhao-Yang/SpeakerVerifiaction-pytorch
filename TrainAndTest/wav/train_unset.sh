@@ -9,5 +9,6 @@ while [ $(ps 106034 | wc -l) -eq 2 ]; do
 done
 
 if [ $stage -le 0 ]; then
+    seed=1234
     CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/v2_unet.yaml --seed=${seed}
 fi
