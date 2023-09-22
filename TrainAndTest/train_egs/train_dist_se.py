@@ -124,8 +124,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
                     # augment = np.random.choice(augment_pipeline)
                     # for count, augment in enumerate(augment_pipeline):
                     # Apply augment
-                    # wavs_aug = augment(wavs, torch.tensor([1]*len(data)).cuda())
-                    wavs_aug = augment(wavs, torch.tensor([data.shape[-1]]*len(data)).cuda())
+                    wavs_aug = augment(wavs, torch.tensor([1]*len(data)).cuda())
+                    # wavs_aug = augment(wavs, torch.tensor([data.shape[-1]]*len(data)).cuda())
                     # Managing speed change
                     if wavs_aug.shape[1] > wavs.shape[1]:
                         wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
