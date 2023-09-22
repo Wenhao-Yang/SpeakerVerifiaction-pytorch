@@ -218,6 +218,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
     # total_datasize = 0.
     # lambda_ = (epoch / config_args['epochs']) ** 2
     # if 'augment_pipeline' in config_args:
+    num_pipes = 2
     augment_pipeline = []
     for _, augment in enumerate(config_args['augment_pipeline']):
         augment_pipeline.append(augment.cuda())
@@ -229,14 +230,22 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
                 data = data.cuda()
 
             real_feat = trans(data.squeeze())
+            real_feat = torch.stack([real_feat]*num_pipes)
 
-            augment = np.random.choice(augment_pipeline)
-            aug_data = augment(data.squeeze(), torch.tensor([1]*len(data)).cuda())
+            print(real_feat.shape)
 
+            aug_data = []
+            for augment in np.random.choice(augment_pipeline, size=num_pipes, replace=False):
+                aug_data.append(augment(data.squeeze(), torch.tensor([1]*len(data)).cuda()))
+            
+            aug_data = torch.stack(aug_data)
             aug_feat = trans(aug_data.unsqueeze(1).float()).unsqueeze(1)
+
             # pdb.set_trace()
             # print(aug_feat.shape)
             denoise_feat = model(aug_feat)
+
+            print(denoise_feat.shape)
             loss = mse(denoise_feat, real_feat)
             total_loss += float(loss.item())
             
