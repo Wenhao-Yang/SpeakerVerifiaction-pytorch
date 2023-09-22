@@ -368,7 +368,7 @@ def ScriptGenderDatasets(config_args):
     batch_size = config_args['batch_size'] #16
     kwargs = {'num_workers': config_args['nj'], 'pin_memory': False}
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, 
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, 
                                                sampler=train_sampler, **kwargs)
     
     eval_loader  = torch.utils.data.DataLoader(eval_dataset,  batch_size=batch_size, **kwargs)
