@@ -119,7 +119,7 @@ fbank: !new:Define_Model.FilterLayer.MelFbankLayer
   num_filter: 80
   stretch_ratio: [1]
 
-mean_norm: !new:Define_Model.Filterlayer.Mean_Norm
+mean_norm: !new:Define_Model.FilterLayer.Mean_Norm
 
 transforms: [
   !ref <fbank>,
