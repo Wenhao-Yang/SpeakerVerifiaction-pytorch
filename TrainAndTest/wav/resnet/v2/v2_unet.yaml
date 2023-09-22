@@ -114,7 +114,7 @@ augment_pipeline: [
 # augment_pipeline: [ ]
 concat_augment: True
 
-fbank: !new:Define_Model.Filterlayer.MelFbankLayer
+fbank: !new:Define_Model.FilterLayer.MelFbankLayer
   sr: !ref <sr>
   num_filter: 80
   stretch_ratio: [1]
