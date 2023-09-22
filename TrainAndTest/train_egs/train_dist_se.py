@@ -230,22 +230,24 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
                 data = data.cuda()
 
             real_feat = trans(data.squeeze())
-            real_feat = torch.stack([real_feat]*num_pipes)
+            real_feat = torch.stack([real_feat]*num_pipes, dim=0)
 
-            print(real_feat.shape)
+            print('real_feat.shape: ', real_feat.shape)
 
             aug_data = []
             for augment in np.random.choice(augment_pipeline, size=num_pipes, replace=False):
                 aug_data.append(augment(data.squeeze(), torch.tensor([1]*len(data)).cuda()))
             
-            aug_data = torch.stack(aug_data)
+            aug_data = torch.stack(aug_data, dim=0)
             aug_feat = trans(aug_data.unsqueeze(1).float()).unsqueeze(1)
+
+            print('aug_feat.shape: ', real_feat.shape)
 
             # pdb.set_trace()
             # print(aug_feat.shape)
             denoise_feat = model(aug_feat)
 
-            print(denoise_feat.shape)
+            print('denoise_feat.shape', denoise_feat.shape)
             loss = mse(denoise_feat, real_feat)
             total_loss += float(loss.item())
             
