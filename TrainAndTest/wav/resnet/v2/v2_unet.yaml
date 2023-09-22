@@ -129,3 +129,4 @@ transforms: [
 check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_activation
 
 
+gpu_id: 0,1
