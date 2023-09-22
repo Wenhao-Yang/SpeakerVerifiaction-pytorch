@@ -235,6 +235,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
 
             aug_feat = trans(aug_data.unsqueeze(1).float())
             # pdb.set_trace()
+            print(aug_feat.shape)
             denoise_feat = model(aug_feat)
             loss = mse(denoise_feat, real_feat)
             total_loss += float(loss.item())
