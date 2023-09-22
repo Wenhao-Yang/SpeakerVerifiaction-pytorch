@@ -297,6 +297,8 @@ def main():
         if not os.path.exists(check_path):
             print('Making checkpath...', check_path)
             os.makedirs(check_path)
+        else:
+            print('Checkpath exists...', check_path)
 
         shutil.copy(args.train_config, check_path + '/model.%s.yaml' %
                     time.strftime("%Y.%m.%d", time.localtime()))
