@@ -215,12 +215,12 @@ class UNet(nn.Module):
             # nn.ReLU(),
         )
 
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                if activation == 'relu':
-                    nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                else:
-                    nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='leaky_relu')
+        # for m in self.modules():
+        #     if isinstance(m, nn.Conv2d):
+        #         if activation == 'relu':
+        #             nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        #         else:
+        #             nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='leaky_relu')
                 # nn.init.normal_(m.weight, mean=0., std=1.)
             # elif isinstance(m, nn.BatchNorm2d):
             #     nn.init.constant_(m.weight, 1)
