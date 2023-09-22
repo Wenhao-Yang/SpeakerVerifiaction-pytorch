@@ -355,7 +355,7 @@ def ScriptGenderDatasets(config_args):
             
         spk_counts[uid2spk[uid]] -= 1
 
-    print(len(train_uid), len(eval_uid))
+    # print(len(train_uid), len(eval_uid))
 
     train_duration = config_args['train_duration'] #51040
     test_duration  = config_args['test_duration'] #51040
