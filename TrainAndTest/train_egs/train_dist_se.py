@@ -92,11 +92,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
     # switch to train mode
     model.train()
 
-    correct = 0.
-    total_datasize = 0.
     total_loss = 0.
     orth_err = 0
-    total_other_loss = 0.
 
     pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True) if torch.distributed.get_rank(
     ) == 0 else enumerate(train_loader)
@@ -150,8 +147,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
                 real_feat = torch.cat([feat] * n_augment).unsqueeze(1)
 
         if torch.cuda.is_available():
-            input_feat = input_feat.cuda()
-            real_feat = real_feat.cuda()
+            input_feat = input_feat.detach().cuda()
+            real_feat = real_feat.detach().cuda()
 
         denoise_feat = model(input_feat)
         loss = mse(denoise_feat, real_feat)
