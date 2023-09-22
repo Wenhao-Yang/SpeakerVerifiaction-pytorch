@@ -87,7 +87,7 @@ class TripleConv2(nn.Module):
             nn.BatchNorm2d(out_channels),
             activation_func(),
             nn.Conv2d(in_channels=out_channels, out_channels=out_channels,
-                      kernel_size=1, stride=1, padding=0, padding_mode='reflect'),
+                      kernel_size=3, stride=1, padding=1, padding_mode='reflect'),
             nn.BatchNorm2d(out_channels),
             activation_func(),
             nn.Conv2d(in_channels=out_channels, out_channels=out_channels,
