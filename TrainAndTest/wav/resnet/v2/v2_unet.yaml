@@ -28,7 +28,7 @@ epochs: 40
 # optimizer
 optimizer: adam
 lr_decay: 0
-weight_decay: 0.00005
+weight_decay: 0.00001
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -40,8 +40,8 @@ milestones: [10, 20, 30, 40]
 val_check_interval: 5994
 scheduler: cyclic
 cyclic_epoch: 4
-lr: 0.1
-base_lr: 0.00001
+lr: 0.001
+base_lr: 0.00000001
 cos_sim: True
 
 early_stopping: True
