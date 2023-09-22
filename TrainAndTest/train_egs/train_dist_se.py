@@ -165,7 +165,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
 
         # compute gradient and update weights
         loss.backward()
-        break
+        # break
 
         if 'grad_clip' in config_args and config_args['grad_clip'] > 0:
             this_lr = config_args['lr']
