@@ -149,8 +149,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
         if torch.cuda.is_available():
             input_feat = input_feat.detach().cuda()
             real_feat = real_feat.detach().cuda()
-
-            print(input_feat.shape, real_feat.shape)
+            # print(input_feat.shape, real_feat.shape)
 
         denoise_feat = model(input_feat)
         loss = mse(denoise_feat, real_feat)
@@ -480,7 +479,7 @@ def main():
         print("Continue with gpu: %s ..." % str(local_rank))
         # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
-            model.cuda(), device_ids=[local_rank], find_unused_parameters=True)
+            model.cuda(), device_ids=[local_rank])#, find_unused_parameters=True)
     else:
         model = model.cuda()
 

@@ -96,7 +96,7 @@ class TripleConv2(nn.Module):
             activation_func()
         )
 
-        if in_channels != out_channels:
+        if in_channels != out_channels and short_connection:
             self.downsample = nn.Sequential(
                 nn.Conv2d(in_channels=in_channels, out_channels=out_channels, 
                       kernel_size=1, stride=1, padding=0, bias=False),

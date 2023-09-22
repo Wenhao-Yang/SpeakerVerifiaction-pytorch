@@ -52,7 +52,7 @@ early_delta: 0.001
 model_name: UNet
 channels: 16
 activation: 'relu'
-short_connection: False
+short_connection: True
 block_type: 'double'
 
 
