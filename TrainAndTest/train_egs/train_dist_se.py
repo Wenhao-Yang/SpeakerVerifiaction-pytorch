@@ -567,7 +567,7 @@ def main():
                     best_epoch = early_stopping_scheduler.best_epoch
                     best_res = valid_test_result[int(best_epoch - 1)]
 
-                    best_str = 'Loss(%):  ' + '{:>6.2f} '.format(best_res)
+                    best_str = 'Loss(%):  ' + '{:>6.6f} '.format(best_res)
                     print(best_str)
 
                     with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:

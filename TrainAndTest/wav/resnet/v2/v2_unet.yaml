@@ -55,6 +55,7 @@ channels: 32
 activation: 'leaky'
 short_connection: True
 block_type: 'double'
+depth: 4
 
 
 model: !new:Define_Model.UNet.UNet
@@ -130,7 +131,7 @@ transforms: [
   !ref <mean_norm>
 ]
 
-check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_<activation_grad>_clip<grad_clip>_snr20
+check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_depth<depth>_<activation_grad>_clip<grad_clip>_snr20
 
 
 gpu_id: 0,1
