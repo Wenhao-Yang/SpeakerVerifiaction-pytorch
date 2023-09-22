@@ -42,7 +42,7 @@ scheduler: cyclic
 cyclic_epoch: 2
 lr: 0.001
 base_lr: 0.00000001
-grad_clip: 10
+# grad_clip: 10
 cos_sim: True
 
 early_stopping: True
@@ -51,7 +51,7 @@ early_delta: 0.001
 
 
 model_name: UNet
-channels: 16
+channels: 32
 activation: 'leaky'
 short_connection: True
 block_type: 'double'
@@ -76,7 +76,7 @@ add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
    reverb_prob: 1.0
    noise_prob: 0.0
    noise_snr_low: 0
-   noise_snr_high: 20
+   noise_snr_high: 15
    rir_scale_factor: 1.0
 
 add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
@@ -94,7 +94,7 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    reverb_prob: 1.0
    noise_prob: 1.0
    noise_snr_low: 0
-   noise_snr_high: 20
+   noise_snr_high: 15
    rir_scale_factor: 1.0
 
 add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
@@ -131,8 +131,9 @@ transforms: [
   !ref <mean_norm>
 ]
 
-check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_depth<depth>_<activation>_grad_clip<grad_clip>_snr20
-
+check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_depth<depth>_<activation>
+# _snr20
+# _grad_clip<grad_clip>
 
 gpu_id: 0,1
 log_interval: 10
