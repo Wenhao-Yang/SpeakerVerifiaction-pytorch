@@ -51,7 +51,7 @@ early_delta: 0.001
 
 
 model_name: UNet
-channels: 32
+channels: 16
 activation: 'leaky'
 short_connection: True
 block_type: 'double'
