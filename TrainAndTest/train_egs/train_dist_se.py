@@ -95,7 +95,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
     total_loss = 0.
     orth_err = 0
 
-    pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True, nrows=250) if torch.distributed.get_rank(
+    pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True, ncols=200) if torch.distributed.get_rank(
     ) == 0 else enumerate(train_loader)
 
     mse = config_args['loss']
