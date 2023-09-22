@@ -230,7 +230,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
                 data = data.cuda()
 
             real_feat = trans(data.squeeze())
-            real_feat = torch.cat([real_feat]*num_pipes, dim=0)
+            real_feat = torch.cat([real_feat]*num_pipes, dim=0).unsqueeze(1)
 
             print('real_feat.shape: ', real_feat.shape)
 
@@ -241,7 +241,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
             aug_data = torch.cat(aug_data, dim=0)
             aug_feat = trans(aug_data.unsqueeze(1).float()).unsqueeze(1)
 
-            print('aug_feat.shape: ', real_feat.shape)
+            print('aug_feat.shape: ', aug_feat.shape)
 
             # pdb.set_trace()
             # print(aug_feat.shape)
