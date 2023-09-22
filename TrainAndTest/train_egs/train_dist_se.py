@@ -338,8 +338,12 @@ def main():
     # model = create_model(config_args['model'], **model_kwargs)
     # if 'embedding_model' in config_args:
     model = config_args['model']
+    
     trans = nn.Sequential(
-        config_args['transforms'])
+        OrderedDict([
+          ('fbank', config_args['transforms'][0]),
+          ('mean', config_args['transforms'][1]),
+        ]))
     
     # loss_func = config_args['loss']
 
