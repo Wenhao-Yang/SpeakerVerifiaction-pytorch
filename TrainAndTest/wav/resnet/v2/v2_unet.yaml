@@ -14,10 +14,10 @@ seed: 123456
 train_set: vox2
 subset: dev
 
-input_path: !ref <root_path>/ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456/vox2_dev16
+input_path: !ref <root_path>/ThinResNet34_ser07/Mean_batch128_cbam_downk5_avg0_SAP2_em256_dp01_alpha0_none1_chn32_wde4_varesmix8/arcsoft_sgd_rop/vox2/wave_sp161_dist/123456/vox2_dev64
 
 sr: 16000
-train_duration: 51040
+train_duration: 40800
 test_duration:  51040
 
 batch_size: 16
@@ -131,7 +131,7 @@ transforms: [
   !ref <mean_norm>
 ]
 
-check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_depth<depth>_<activation>
+check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_depth<depth>_<activation>_2s
 # _snr20
 # _grad_clip<grad_clip>
 
