@@ -546,8 +546,7 @@ def main():
                 top_k = early_stopping_scheduler.top_k()
             else:
                 top_k = []
-            if torch.distributed.get_rank() == 0 and (
-                    epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
+            if torch.distributed.get_rank() == 0 and (epoch == (
                     end - 1) or early_stopping_scheduler.best_epoch == epoch or epoch in top_k):
 
                 model.eval()
