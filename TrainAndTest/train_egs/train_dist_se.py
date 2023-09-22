@@ -165,6 +165,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
 
         # compute gradient and update weights
         loss.backward()
+        break
 
         if 'grad_clip' in config_args and config_args['grad_clip'] > 0:
             this_lr = config_args['lr']
@@ -230,7 +231,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
             real_feat = trans(data.squeeze())
 
             augment = np.random.choice(augment_pipeline)
-            aug_data = augment(data, torch.tensor([1]*len(data)).cuda())
+            aug_data = augment(data.squeeze(), torch.tensor([1]*len(data)).cuda())
 
             aug_feat = trans(aug_data.unsqueeze(1).float())
             # pdb.set_trace()
