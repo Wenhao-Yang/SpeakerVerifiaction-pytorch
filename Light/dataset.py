@@ -371,6 +371,6 @@ def ScriptGenderDatasets(config_args):
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, 
                                                sampler=train_sampler, **kwargs)
     
-    eval_loader  = torch.utils.data.DataLoader(eval_dataset,  batch_size=batch_size, **kwargs)
+    eval_loader  = torch.utils.data.DataLoader(eval_dataset,  batch_size=int(batch_size*4), **kwargs)
 
     return train_loader, eval_loader, train_sampler, train_dataset
