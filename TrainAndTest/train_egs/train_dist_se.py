@@ -103,6 +103,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
 
     mse = config_args['loss']
 
+    trans = trans.cuda()
+
     if 'augment_pipeline' in config_args:
         augment_pipeline = []
         for _, augment in enumerate(config_args['augment_pipeline']):
@@ -225,7 +227,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer, trans):
     total_other_loss = 0.
     # ce_criterion, xe_criterion = ce
     mse = config_args['loss']
-
+    trans = trans.cuda()
     # correct = 0.
     # total_datasize = 0.
     # lambda_ = (epoch / config_args['epochs']) ** 2
