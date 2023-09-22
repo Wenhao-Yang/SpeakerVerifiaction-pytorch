@@ -187,7 +187,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
         if torch.distributed.get_rank() == 0 and (batch_idx + 1) % config_args['log_interval'] == 0:
             epoch_str = 'Train Epoch {} '.format(epoch)
 
-            batch_length = data.shape[-2]
+            batch_length = input_feat.shape[-2]
 
             pbar.set_description(epoch_str)
             pbar.set_postfix(batch_length=batch_length, average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
