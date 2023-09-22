@@ -39,7 +39,7 @@ patience: 3
 milestones: [10, 20, 30, 40]
 val_check_interval: 5994
 scheduler: cyclic
-cyclic_epoch: 4
+cyclic_epoch: 2
 lr: 0.001
 base_lr: 0.00000001
 grad_clip: 10
