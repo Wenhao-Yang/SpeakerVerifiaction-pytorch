@@ -150,6 +150,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer,
             input_feat = input_feat.detach().cuda()
             real_feat = real_feat.detach().cuda()
 
+            print(input_feat.shape, real_feat.shape)
+
         denoise_feat = model(input_feat)
         loss = mse(denoise_feat, real_feat)
 
