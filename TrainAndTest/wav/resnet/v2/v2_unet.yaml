@@ -96,7 +96,7 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    rir_scale_factor: 1.0
 
 add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
-   openrir_folder: !ref <musan_lst>
+   noise_csv: !ref <musan_lst>
    openrir_max_noise_len: 4.0  # seconds
    reverb_prob: 0.0
    noise_prob: 1.0
