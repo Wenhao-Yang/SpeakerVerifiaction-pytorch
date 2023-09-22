@@ -75,7 +75,7 @@ add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
    reverb_prob: 1.0
    noise_prob: 0.0
    noise_snr_low: 0
-   noise_snr_high: 15
+   noise_snr_high: 20
    rir_scale_factor: 1.0
 
 add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
@@ -84,7 +84,7 @@ add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    reverb_prob: 0.0
    noise_prob: 1.0
    noise_snr_low: 0
-   noise_snr_high: 15
+   noise_snr_high: 20
    rir_scale_factor: 1.0
 
 add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
@@ -93,7 +93,7 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    reverb_prob: 1.0
    noise_prob: 1.0
    noise_snr_low: 0
-   noise_snr_high: 15
+   noise_snr_high: 20
    rir_scale_factor: 1.0
 
 add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
@@ -130,7 +130,7 @@ transforms: [
   !ref <mean_norm>
 ]
 
-check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_activation_grad_clip<grad_clip>
+check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_<activation_grad>_clip<grad_clip>_snr20
 
 
 gpu_id: 0,1
