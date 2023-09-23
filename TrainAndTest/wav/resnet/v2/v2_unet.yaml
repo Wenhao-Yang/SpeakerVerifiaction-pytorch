@@ -20,7 +20,7 @@ sr: 16000
 train_duration: 40800
 test_duration:  51040
 
-batch_size: 8
+batch_size: 16
 nj: 6
 ### Training settings
 epochs: 40
