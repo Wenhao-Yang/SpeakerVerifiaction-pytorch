@@ -366,12 +366,13 @@ class AttentionEncoder(nn.Module):
 class UNet(nn.Module):
     def __init__(self, channels=16, activation='relu',
                  short_connection=False, block_type='double', 
-                 downsample='max', attention='True',
+                 downsample='max', attention=True,
                  depth=3, **kwargs):
         
         super(UNet, self).__init__()
         self.depth = depth
         self.downsample = downsample
+        self.attention = attention
         # channels = [32, 64, 128, 256]
         channels_type = {
             16: [16, 32, 64, 128, 256],
