@@ -11,7 +11,8 @@
 
 import torch
 import torch.nn as nn
-
+import numpy as np
+import torch.nn.functional as F
 
 class DoubleConv2(nn.Module):
     def __init__(self, in_channels=1, out_channels=16, 
