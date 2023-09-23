@@ -342,7 +342,7 @@ class AttentionEncoder(nn.Module):
             self, in_channels=512, n_layers=2, n_head=8, d_k=64, d_v=64,
             out_channels=512, d_inner=2048, dropout=0.1, n_position=624, scale_emb=False):
 
-        super(AttentionEncoder).__init__()
+        super(AttentionEncoder, self).__init__()
         self.encoder = TransformerEncoder(d_word_vec=in_channels, d_model=out_channels,
                                           n_layers=n_layers, n_head=n_head, d_k=d_k, d_v=d_v,
                                           d_inner=d_inner, dropout=dropout, n_position=n_position,
