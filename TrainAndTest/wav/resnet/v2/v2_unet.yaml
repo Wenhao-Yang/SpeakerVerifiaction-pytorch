@@ -20,7 +20,7 @@ sr: 16000
 train_duration: 40800
 test_duration:  51040
 
-batch_size: 16
+batch_size: 8
 nj: 6
 ### Training settings
 epochs: 40
@@ -58,12 +58,14 @@ block_type: 'double'
 depth: 4
 downsample: both
 
+
 model: !new:Define_Model.UNet.UNet
   channels: !ref <channels>
   activation: !ref <activation>
   downsample: !ref <downsample>
   short_connection: !ref <short_connection>
   block_type: !ref <block_type>
+  attention: True
 
 loss: !new:torch.nn.MSELoss
 
@@ -132,7 +134,7 @@ transforms: [
   !ref <mean_norm>
 ]
 
-check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_depth<depth>_down<downsample>_<activation>_2s
+check_path: !ref Data/checkpoint/<model_name><channels>/<block_type>_depth<depth>_down<downsample>_attention_<activation>_2s
 # _snr20
 # _grad_clip<grad_clip>
 
