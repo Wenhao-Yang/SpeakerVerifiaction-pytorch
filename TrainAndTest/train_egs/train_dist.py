@@ -105,6 +105,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     # lambda_ = (epoch / config_args['epochs']) ** 2
 
     if 'augment_pipeline' in config_args:
+        num_pipes = 1
         augment_pipeline = []
         for _, augment in enumerate(config_args['augment_pipeline']):
             augment_pipeline.append(augment.cuda())
@@ -131,23 +132,25 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 wavs_aug_tot = []
                 wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
                 wavs = data.squeeze().cuda()
-                augment = np.random.choice(augment_pipeline)
-                # for count, augment in enumerate(augment_pipeline):
-                # Apply augment
-                wavs_aug = augment(wavs, torch.tensor([data.shape[-1]]*len(data)).cuda())
-                # Managing speed change
-                if wavs_aug.shape[1] > wavs.shape[1]:
-                    wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
-                else:
-                    zero_sig = torch.zeros_like(wavs)
-                    zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
-                    wavs_aug = zero_sig
 
-                if 'concat_augment' in config_args and config_args['concat_augment']:
-                    wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
-                else:
-                    wavs = wavs_aug
-                    wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
+                # augment = np.random.choice(augment_pipeline)
+                # for count, augment in enumerate(augment_pipeline):
+                for augment in np.random.choice(augment_pipeline, size=num_pipes, replace=False):
+                    # Apply augment
+                    wavs_aug = augment(wavs, torch.tensor([1.0]*len(data)).cuda())
+                    # Managing speed change
+                    if wavs_aug.shape[1] > wavs.shape[1]:
+                        wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
+                    else:
+                        zero_sig = torch.zeros_like(wavs)
+                        zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
+                        wavs_aug = zero_sig
+
+                    if 'concat_augment' in config_args and config_args['concat_augment']:
+                        wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
+                    else:
+                        wavs = wavs_aug
+                        wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
                 
                 data = torch.cat(wavs_aug_tot, dim=0)
                 n_augment = len(wavs_aug_tot)
@@ -231,7 +234,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             pbar.set_postfix(batch_length=batch_length, accuracy='{:>6.2f}%'.format(
                 100. * minibatch_acc), average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
 
-        # if (batch_idx + 1) == 10:
+        # if (batch_idx + 1) == 100:
         #     break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
@@ -628,10 +631,10 @@ def main():
                 early_stopping_scheduler(
                     valid_test_dict[config_args['early_meta']], epoch)
 
-                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
+                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end and all_lr[-4] <= 0.1 ** 3 * config_args['lr']:
                     early_stopping_scheduler.early_stop = True
 
-                if config_args['scheduler'] != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
+                if config_args['scheduler'] != 'cyclic' and all_lr[-4] <= 0.1 ** 3 * config_args['lr']:
                     if len(all_lr) > 5 and all_lr[-5] >= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
 

@@ -965,6 +965,9 @@ class ScriptTrainDataset(data.Dataset):
                 print('    Loading training samples from:\n\t {} '.format(os.path.join(save_dir, 'train.csv')))
             train_base_utts = pd.read_csv(os.path.join(save_dir, 'train.csv')).to_numpy().tolist()
         else:
+            if verbose > 0:
+                print('    Generate samples, segment length: {}, shift: {}'.format(segment_len, segment_shift))
+            
             train_base_utts = []
             for sid in speakers:
                 for uid in dataset[sid]:
@@ -974,7 +977,7 @@ class ScriptTrainDataset(data.Dataset):
                     for i in range(this_numofseg):
                         start = int(i * segment_shift)
                         end = int(min(start+segment_len, num_frames))
-                        start = int(max(end - num_frames, 0))
+                        start = int(max(end - segment_len, 0))
 
                         if (end - start) >= (segment_len*0.125) :
                             train_base_utts.append((uid, start, end))
