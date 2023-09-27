@@ -631,12 +631,15 @@ def main():
                 early_stopping_scheduler(
                     valid_test_dict[config_args['early_meta']], epoch)
 
-                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end and all_lr[-4] <= 0.1 ** 3 * config_args['lr']:
+                if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
                     early_stopping_scheduler.early_stop = True
 
-                if config_args['scheduler'] != 'cyclic' and all_lr[-4] <= 0.1 ** 3 * config_args['lr']:
+                if config_args['scheduler'] != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
                     if len(all_lr) > 5 and all_lr[-5] >= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
+                
+                if this_lr[0] <= 0.1 ** 3 * config_args['lr'] and all_lr[-5] > this_lr[0]:
+                    early_stopping_scheduler.early_stop = False
 
             if torch.distributed.get_rank() == 0:
                 top_k = early_stopping_scheduler.top_k()
