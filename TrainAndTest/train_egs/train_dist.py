@@ -97,7 +97,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     orth_err = 0
     total_other_loss = 0.
 
-    pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True) if torch.distributed.get_rank(
+    pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True, ncols=150) if torch.distributed.get_rank(
     ) == 0 else enumerate(train_loader)
 
     output_softmax = nn.Softmax(dim=1)
