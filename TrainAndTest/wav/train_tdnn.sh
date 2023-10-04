@@ -96,7 +96,7 @@ if [ $stage -le 10 ]; then
       # CUDA_VISIBLE_DEVICES=2,7 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc1_resnet_hdf5_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
       # sleep 5
       # CUDA_VISIBLE_DEVICES=1,7 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox2_resnet_hdf5.yaml --seed=${seed}
-      CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_fb/vox2_resnet_chn32_aug.yaml --seed=${seed}
+      # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_fb/vox2_resnet_chn32_aug.yaml --seed=${seed}
 
       # CUDA_VISIBLE_DEVICES=5,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/juke_tdnn.yaml --seed=${seed}
       #  CUDA_VISIBLE_DEVICES=4 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41425 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox2_ecapa.yaml --seed=${seed} --lamda-beta ${lamda_beta}
