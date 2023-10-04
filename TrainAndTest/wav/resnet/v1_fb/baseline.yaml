@@ -90,7 +90,7 @@ model: ThinResNet
 kernel_size:
 alpha: 0
 avg_size: 1
-embedding_size: 512
+embedding_size: 256
 batch_size: 128
 dropout_p: 0.1
 activation: relu
