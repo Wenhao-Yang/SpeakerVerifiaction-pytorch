@@ -86,8 +86,8 @@ downsample: "k1"
 model: ThinResNet
 alpha: 0
 avg_size: 1
-embedding_size: 256
-batch_size: 128
+embedding_size: 512
+batch_size: 192
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256

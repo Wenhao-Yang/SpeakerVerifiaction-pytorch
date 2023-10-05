@@ -40,7 +40,7 @@ if [ $stage -le 0 ]; then
     # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/vox1_int_original.yaml --seed=${seed}
 
     # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/vox1_int_band.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=4,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41705 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/baseline.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=4,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41705 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/baseline.yaml --seed=${seed}
 
     # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/vox1_int_aug5.yaml --seed=${seed}
 
@@ -65,7 +65,7 @@ if [ $stage -le 0 ]; then
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet_frl.yaml --seed=${seed}
     # sleep 5
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet_frl2.yaml --seed=${seed}
-    # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet_thin.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2/vox2_resnet_thin.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=5,6 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_fb/vox2_resnet_student.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_fb/vox2_student_fgl5.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=0,4 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_fb/vox2_student_frl2.yaml --seed=${seed}
