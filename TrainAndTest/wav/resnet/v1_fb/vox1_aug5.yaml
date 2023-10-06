@@ -84,13 +84,13 @@ early_meta: "mix8"
 resnet_size: 34
 block_type: "seblock"
 red_ratio: 2
-encoder_type: "SAP2"
+encoder_type: "SASP2"
 downsample: "k1"
 model: ThinResNet
 kernel_size:
 alpha: 0
 avg_size: 1
-embedding_size: 512
+embedding_size: 256
 batch_size: 64
 dropout_p: 0.1
 activation: relu
