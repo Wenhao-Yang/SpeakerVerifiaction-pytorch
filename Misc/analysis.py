@@ -11,7 +11,13 @@
 """
 import os
 import numpy as np
+import h5py
 
+def read_hdf5(reader, key):
+    with h5py.File(reader, 'r') as r:
+        data_flat = r.get(key)[:]
+        return data_flat
+    
 def format_eer_file(file_path):
     assert os.path.exists(file_path)
     eer = []
