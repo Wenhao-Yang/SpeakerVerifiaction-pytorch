@@ -34,7 +34,7 @@ input_per_spks: 512
 test_input: fix
 log_scale: False
 sr: 16000
-# bandpass: [300, 3000]
+bandpass: [300, 3000]
 # transform
 chunk_size: 64000
 
@@ -59,7 +59,7 @@ epochs: 60
 # optimizer
 optimizer: sgd
 lr_decay: 0
-weight_decay: 0.00005
+weight_decay: 0.00002
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -114,7 +114,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   kernel_size: [7, 7]
   padding: [3, 3]
   stride: [1, 2]
-  channels: [16, 32, 64, 128]
+  channels: [32, 64, 128, 256]
   dropout_p: !ref <dropout_p>
   avg_size: !ref <avg_size>
   encoder_type: !ref <encoder_type>
@@ -145,7 +145,7 @@ mixup_type: ""
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e5_varesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist2_radio
+check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wd2e5_varesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist2_radioband
 
 save_data_dir: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wd5e5_varesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist2_radio
 
