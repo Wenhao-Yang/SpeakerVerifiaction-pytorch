@@ -685,22 +685,29 @@ class FreqMaskLayer(nn.Module):
         self.normalized = normalized
 
     def forward(self, x):
-        if not self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
+        if not self.training or torch.Tensor(1).uniform_(0, 1) < 0.8:
             return x
 
        # assert self.mask_len < x.shape[-1]
-        this_len = np.random.randint(low=0, high=self.mask_len)
-        start = np.random.randint(0, x.shape[-1] - this_len)
+        this_len = np.random.randint(low=1, high=self.mask_len+1)
+        start    = np.random.randint(0, x.shape[-1] - this_len)
         x_shape = x.shape
 
-        this_mean = x.mean(dim=-2, keepdim=True).repeat(1,1,x_shape[2],1)  # .add(1e-6)
-        
-        if len(x_shape) == 4:
-            x[:, :, :, start:(start + this_len)] = this_mean[:, :, :, start:(start + this_len)]
-        elif len(x_shape) == 3:
-            x[:, :, start:(start + this_len)] = this_mean[:, :, start:(start + this_len)]
+        weight = torch.ones(x_shape[-1])
+        weight[start:(start + this_len)] = 0 
+        weight /= weight.mean()
 
-        return x
+        if x.is_cuda:
+            weight = weight.cuda()
+
+        return x * weight
+
+        # this_mean = x.mean(dim=-2, keepdim=True).repeat(1,1,x_shape[2],1)  # .add(1e-6)
+        # if len(x_shape) == 4:
+        #     x[:, :, :, start:(start + this_len)] = this_mean[:, :, :, start:(start + this_len)]
+        # elif len(x_shape) == 3:
+        #     x[:, :, start:(start + this_len)] = this_mean[:, :, start:(start + this_len)]
+        # return x
 
     def __repr__(self):
         return "FreqMaskLayer(mask_len=%f)" % self.mask_len
@@ -764,7 +771,7 @@ class TimeFreqMaskLayer(nn.Module):
         self.normalized = normalized
 
     def forward(self, x):
-        if not self.training:
+        if not self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
             return x
 
         # assert self.mask_len < x.shape[-2]
