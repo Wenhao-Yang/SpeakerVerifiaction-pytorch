@@ -1451,8 +1451,8 @@ class FrequencyGenderReweightLayer22(nn.Module):
         f = self.weight * soft_gender_score
         f = f.sum(dim=2, keepdim=True)
         
-        f = self.activation(f)
-        f = f / f.mean()
+        f = 0.5 + self.activation(f)
+        # f = f / f.mean()
     
         return x * f
 
