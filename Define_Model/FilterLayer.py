@@ -1424,11 +1424,14 @@ class FrequencyGenderReweightLayer22(nn.Module):
         self.weight = nn.Parameter(torch.randn(1, 1, 2, input_dim)+1)
         # self.
         self.gender_classifier = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=2, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=8, out_channels=2, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(2)
         )
         
+        self.avg = nn.AvgPool2d(kernel_size=3, stride=1, padding=1)
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
@@ -1446,15 +1449,17 @@ class FrequencyGenderReweightLayer22(nn.Module):
         gender_score = self.gender_classifier(x).mean(dim=2, keepdim=True)
         gender_score = gender_score.transpose(1,2)
 
-        soft_gender_score = F.softmax(gender_score, dim=3)#.unsqueeze(1).unsqueeze(3)
+        soft_gender_score = F.softmax(gender_score, dim=2)#.unsqueeze(1).unsqueeze(3)
         
-        f = self.weight * soft_gender_score
+        f = self.weight * soft_gender_score#.mean(dim=3, keepdim=True)
+        f = self.avg(f)
+        f = self.activation(f)
         f = f.sum(dim=2, keepdim=True)
         
-        f = 0.5 + self.activation(f)
-        # f = f / f.mean()
+        f = f / f.mean()
+        return x * f #, f
     
-        return x * f
+        # return xf * x_std / xf_std
 
     def __repr__(self):
         return "FrequencyGenderReweightLayer22(input_dim=%d)" % (self.input_dim)
