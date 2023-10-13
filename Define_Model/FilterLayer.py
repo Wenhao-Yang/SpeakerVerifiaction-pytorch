@@ -1416,6 +1416,50 @@ class FrequencyGenderReweightLayer9(nn.Module):
         return "FrequencyGenderReweightLayer9(input_dim=%d)" % (self.input_dim)
 
 
+class FrequencyGenderReweightLayer22(nn.Module):
+    def __init__(self, input_dim=80):
+        super(FrequencyGenderReweightLayer22, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.randn(1, 1, 2, input_dim)+1)
+        # self.
+        self.gender_classifier = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=2, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(2)
+        )
+        
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        # freq_std = x.std(dim=-2)
+        # if freq_std.shape[1] != 1:
+        #     freq_std = freq_std.mean(dim=1, keepdim=True)
+
+        gender_score = self.gender_classifier(x).mean(dim=2, keepdim=True)
+        gender_score = gender_score.transpose(1,2)
+
+        soft_gender_score = F.softmax(gender_score, dim=3)#.unsqueeze(1).unsqueeze(3)
+        
+        f = self.weight * soft_gender_score
+        f = f.sum(dim=2, keepdim=True)
+        
+        f = self.activation(f)
+        f = f / f.mean()
+    
+        return x * f
+
+    def __repr__(self):
+        return "FrequencyGenderReweightLayer22(input_dim=%d)" % (self.input_dim)
+    
+
 class FrequencyNormReweightLayer(nn.Module):
     def __init__(self, input_dim=161):
         super(FrequencyNormReweightLayer, self).__init__()
