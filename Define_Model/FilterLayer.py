@@ -1421,15 +1421,19 @@ class FrequencyGenderReweightLayer22(nn.Module):
         super(FrequencyGenderReweightLayer22, self).__init__()
         self.input_dim = input_dim
 
-        self.weight = nn.Parameter(torch.randn(1, 1, 2, input_dim)+1)
+        # self.weight = nn.Parameter(torch.randn(1, 1, 2, input_dim)+1)
         # self.
-        self.gender_classifier = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=8, out_channels=2, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(2)
-        )
+        # self.gender_classifier = nn.Sequential(
+        #     nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1),
+        #     nn.ReLU(),
+        #     nn.Conv2d(in_channels=8, out_channels=2, kernel_size=3, stride=1, padding=1),
+        #     nn.ReLU(),
+        #     nn.BatchNorm2d(2)
+        # )
+        
+        # )
+        self.key   = nn.Linear(input_dim, 2)
+        self.value = nn.Linear(input_dim, 2)
         
         self.avg = nn.AvgPool2d(kernel_size=3, stride=1, padding=1)
         self.activation = nn.Sigmoid()
@@ -1445,19 +1449,30 @@ class FrequencyGenderReweightLayer22(nn.Module):
         # freq_std = x.std(dim=-2)
         # if freq_std.shape[1] != 1:
         #     freq_std = freq_std.mean(dim=1, keepdim=True)
-
-        gender_score = self.gender_classifier(x).mean(dim=2, keepdim=True)
-        gender_score = gender_score.transpose(1,2)
-
-        soft_gender_score = F.softmax(gender_score, dim=2)#.unsqueeze(1).unsqueeze(3)
+        k = self.key(x).squeeze(1)
+        v = self.value(x).squeeze(1)
+        q = x.squeeze(1)
         
-        f = self.weight * soft_gender_score#.mean(dim=3, keepdim=True)
-        f = self.avg(f)
-        f = self.activation(f)
-        f = f.sum(dim=2, keepdim=True)
+        e = torch.bmm(k, v.permute(0,2,1))
+        s = torch.nn.functional.softmax(e, dim=2) / math.sqrt(2)
+        s = torch.bmm(s, q) 
+        s = self.avg(s) - s.mean(dim=1, keepdim=True)
+        f = 0.5 + self.activation(s) #.mean(dim=1, keepdim=True)
         
-        f = f / f.mean()
-        return x * f #, f
+        return x*f.unsqueeze(1)
+
+        # gender_score = self.gender_classifier(x).mean(dim=2, keepdim=True)
+        # gender_score = gender_score.transpose(1,2)
+
+        # soft_gender_score = F.softmax(gender_score, dim=2)#.unsqueeze(1).unsqueeze(3)
+        
+        # f = self.weight * soft_gender_score#.mean(dim=3, keepdim=True)
+        # f = self.avg(f)
+        # f = self.activation(f)
+        # f = f.sum(dim=2, keepdim=True)
+        
+        # f = f / f.mean()
+        # return x * f #, f
     
         # return xf * x_std / xf_std
 
