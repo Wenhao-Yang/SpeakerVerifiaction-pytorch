@@ -91,7 +91,6 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
         half_data = int(len(data) * mixup_percent)
 
         if 'mix_ratio'in config_args and np.random.uniform(0, 1) <= config_args['mix_ratio'] and epoch <= mix_epoch:
-
             if config_args['mixup_type'].startswith('style'):
                 # rand_idx = torch.randperm(half_data)
                 # label = torch.cat([label, label[half_data:][rand_idx]], dim=0)

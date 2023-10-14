@@ -1002,12 +1002,13 @@ class ThinResNet(nn.Module):
         self.mix_type = mix
         mix_types = {
             "mixup": self.mixup,
+            "manifold": self.mixup,
             "addup": self.addup,
             "style": self.mixstyle,
             "align": self.alignmix,
             "style_time": self.mixstyle_time,
             "style_base": self.mixbase,
-            "cutmix": self.cutmixbase,
+            "cutmix": self.cutmix,
             "cutmixstyle": self.cutmixstylebase,
         }
         self.mix = mix_types[mix]
