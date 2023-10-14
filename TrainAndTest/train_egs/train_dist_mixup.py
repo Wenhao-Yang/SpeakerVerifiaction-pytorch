@@ -85,7 +85,6 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
         data, label = data_cols
         batch_weight = None
 
-        
         lamda_beta = np.random.beta(config_args['lamda_beta'], config_args['lamda_beta'])
         mixup_percent = 0.5 if 'batmix_ratio' not in config_args else config_args['batmix_ratio']
         half_data = int(len(data) * mixup_percent)

@@ -142,6 +142,7 @@ proser_gamma: 1
 mixup_layer: [1]
 mixup_type: !ref <mix>
 # stat_type: margin1
+mix_ratio: 0.25
 
 # Checkpoints
 loss_str: ""
