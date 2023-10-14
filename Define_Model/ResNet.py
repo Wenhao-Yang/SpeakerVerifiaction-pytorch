@@ -1006,6 +1006,9 @@ class ThinResNet(nn.Module):
             "style": self.mixstyle,
             "align": self.alignmix,
             "style_time": self.mixstyle_time,
+            "style_base": self.mixbase,
+            "cutmix": self.cutmixbase,
+            "cutmixstyle": self.cutmixstylebase,
         }
         self.mix = mix_types[mix]
 
@@ -1399,6 +1402,91 @@ class ThinResNet(nn.Module):
             dim=0)
 
         return x
+    
+    def mixbase(self, x, shuf_half_idx_ten, lamda_beta):
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+
+        mu = half_feats.mean(dim=[1], keepdim=True)
+        var = half_feats.var(dim=[1], keepdim=True)
+        sig = (var + 1e-6).sqrt()
+        mu, sig = mu.detach(), sig.detach()
+
+        x_normed = (half_feats - mu) / sig
+        x_normed2 = x_normed[shuf_half_idx_ten].detach()
+
+        mu2, sig2 = mu[shuf_half_idx_ten], sig[shuf_half_idx_ten]
+        
+        # mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)
+        # sig_mix = sig*lamda_beta + sig2 * (1-lamda_beta)
+
+        x_normed2 = x_normed*lamda_beta + x_normed2 * (1-lamda_beta)
+
+        x = torch.cat(
+            [x[:-mix_size], x_normed2*sig2 + mu2],
+            dim=0)
+
+        return x
+    
+    def cutmix(self, x, shuf_half_idx_ten, lamda_beta):
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+
+        lam_t = int(np.ceil(half_feats.shape[2] * np.sqrt(lamda_beta)))
+        lam_f = int(np.ceil(half_feats.shape[3] * np.sqrt(lamda_beta)))
+        t_start = np.random.randint(0, half_feats.shape[2])
+        f_start = np.random.randint(0, half_feats.shape[3])
+
+        half_feats_shuf = half_feats[shuf_half_idx_ten].clone().detach()
+        if lam_t > 0:
+            end_t = t_start + lam_t
+            half_feats[:, :, t_start:end_t] = half_feats_shuf[:, :,t_start:end_t]
+
+        if lam_f > 0:
+            end_f = f_start + lam_f
+            half_feats[:, :, :, f_start:end_f] = half_feats_shuf[:, :,:, f_start:end_f]
+
+        x = torch.cat(
+            [x[:-mix_size], half_feats],
+            dim=0)
+
+        return x
+    
+    def cutmixstylebase(self, x, shuf_half_idx_ten, lamda_beta):
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+
+        mu = half_feats.mean(dim=[1], keepdim=True)
+        var = half_feats.var(dim=[1], keepdim=True)
+
+        lam_t = int(np.ceil(mu.shape[2] * np.sqrt(lamda_beta)))
+        lam_f = int(np.ceil(mu.shape[3] * np.sqrt(lamda_beta)))
+        t_start = np.random.randint(0, mu.shape[2])
+        f_start = np.random.randint(0, mu.shape[3])
+
+        sig = (var + 1e-6).sqrt()
+        mu, sig = mu.detach(), sig.detach()
+
+        x_normed = (half_feats - mu) / sig
+        x_normed2 = x_normed[shuf_half_idx_ten].detach()
+
+        mu2, sig2 = mu[shuf_half_idx_ten], sig[shuf_half_idx_ten]
+
+        # mu_mix = mu*lamda_beta + mu2 * (1-lamda_beta)
+        # sig_mix = sig*lamda_beta + sig2 * (1-lamda_beta)
+        if lam_t > 0:
+            end_t = t_start + lam_t
+            x_normed[:, :, t_start:end_t] = x_normed2[:, :,t_start:end_t]
+
+        if lam_f > 0:
+            end_f = f_start + lam_f
+            x_normed[:, :, :, f_start:end_f] = x_normed2[:, :,:, f_start:end_f]
+
+        x = torch.cat(
+            [x[:-mix_size], x_normed*sig2 + mu2],
+            dim=0)
+
+        return x
 
     def mixstyle_time(self, x, shuf_half_idx_ten, lamda_beta):
         mix_size = shuf_half_idx_ten.shape[0]
@@ -1426,20 +1514,24 @@ class ThinResNet(nn.Module):
         half_feats_shape = half_feats.shape # 128 x 128 x 38 x 5
         # print(half_feats.shape)
         # out shape = batch_size x 512 x 4 x 4 (cifar10/100)
-        feat1 = half_feats.view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
-        feat2 = half_feats[shuf_half_idx_ten].view(half_feats_shape[0], self.num_filter[-1], -1) # batch_size x 512 x 16
+        # batch_size x 512 x 16
+        feat1 = half_feats.view(half_feats_shape[0], self.num_filter[-1], -1)
+        feat2 = half_feats[shuf_half_idx_ten].view(
+            half_feats_shape[0], self.num_filter[-1], -1)
 
         sinkhorn = SinkhornDistance(eps=0.1, max_iter=100, reduction=None)
-        
-        P = sinkhorn(feat1.permute(0,2,1), feat2.permute(0,2,1)).detach()  # optimal plan batch x 16 x 16
-        # P = P*(half_feats_shape[2]*half_feats_shape[3]) # assignment matrix 
-        P = P*(feat1.shape[-1]) # assignment matrix 
 
-        align_mix = random.randint(0,1) # uniformly choose at random, which alignmix to perform
-    
+        P = sinkhorn(feat1.permute(0, 2, 1), feat2.permute(
+            0, 2, 1)).detach()  # optimal plan batch x 16 x 16
+        # P = P*(half_feats_shape[2]*half_feats_shape[3]) # assignment matrix
+        P = P*(feat1.shape[-1]) # assignment matrix
+
+        # uniformly choose at random, which alignmix to perform
+        align_mix = random.randint(0, 1)
         if (align_mix == 0):
             # \tilde{A} = A'R^{T}
-            f1 = torch.matmul(feat2, P.permute(0,2,1).cuda()).view(half_feats_shape) # batch_tf*channel x tf*channel_tf*channel
+            f1 = torch.matmul(feat2, P.permute(0, 2, 1).cuda()).view(
+                half_feats_shape) # batch_tf*channel x tf*channel_tf*channel
             final = feat1.view(half_feats_shape)*lamda_beta + f1*(1-lamda_beta)
 
         elif (align_mix == 1):

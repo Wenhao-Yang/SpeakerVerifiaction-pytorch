@@ -234,7 +234,6 @@ def main():
         description='PyTorch ( Distributed ) Speaker Recognition: Classification')
     # parser.add_argument('--local_rank', default=-1, type=int,
     #                     help='node rank for distributed training')
-
     parser.add_argument('--train-config', default='', type=str,
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=123456,
@@ -271,8 +270,8 @@ def main():
 
     if 'mix_ratio' in config_args and config_args['mix_ratio'] != 0.5:
         mixup_str += '_mixrt{:.2f}'.format(config_args['mix_ratio'])
-        
-    
+
+
     config_args['lamda_beta'] = args.lamda_beta
 
     check_path = config_args['check_path'] + mixup_str + '/' + str(args.seed)
