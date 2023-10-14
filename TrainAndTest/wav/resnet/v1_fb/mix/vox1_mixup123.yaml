@@ -141,7 +141,7 @@ proser_gamma: 1
 #_<proser_gamma>
 mixup_layer: [1, 2, 3]
 mixup_type: !ref <mix>
-mix_ratio: 0.25
+mix_ratio: 0.5
 # stat_type: margin1
 
 # Checkpoints
