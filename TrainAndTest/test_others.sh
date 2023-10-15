@@ -3094,21 +3094,21 @@ fi
 
 if [ $stage -le 600 ]; then
   model=ThinResNet resnet_size=18
-  train_set=vox1 test_set=vox1 # #jukebox cnceleb
+  # train_set=vox1 test_set=vox1 # #jukebox cnceleb
+  train_set=vox2 test_set=vox1 # #jukebox cnceleb
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=1
+  gpu_id=2
 echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
 for seed in 123456  ; do
   sname=dev
   for epoch in 23 ; do     #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    # model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist/123456
-    # epoch=23 yaml_name=model.2023.06.27.yaml
+    model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist/123456
+    epoch=35 yaml_name=model.2023.06.27.yaml
 
     # model_dir=ThinResNet18/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist2_fgrl5/123456
     # yaml_name=model.2023.08.04.yaml
-    
     # baseline
     # model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2/123456
     # epoch=25 yaml_name=model.2023.09.10.yaml
@@ -3118,10 +3118,10 @@ for seed in 123456  ; do
     # aug5_bandpass
     # model_dir=ThinResNet34/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_aug5band/123456
     # epoch=33 yaml_name=model.2023.09.18.yaml
-    model_dir=ThinResNet34/Mean_batch128_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_band/123456
-    epoch=43 yaml_name=model.2023.09.19.yaml
+    # model_dir=ThinResNet34/Mean_batch128_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_band/123456
+    # epoch=43 yaml_name=model.2023.09.19.yaml
 
-    for test_subset in test_orgchn2dist3; do #test_radio_chn2
+    for test_subset in dev; do #test_radio_chn2
       for trials in trials_all; do
         python -W ignore TrainAndTest/train_egs/test_egs.py \
           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
@@ -3136,7 +3136,7 @@ for seed in 123456  ; do
           --cos-sim --test
       done
 
-      for trials in original radio radiocross rdist3 rdist3cross radiodist3; do
+      for trials in easy hard male female ; do
         python -W ignore TrainAndTest/train_egs/test_egs.py \
           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
           --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
