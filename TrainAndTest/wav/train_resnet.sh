@@ -42,10 +42,10 @@ if [ $stage -le 0 ]; then
     # CUDA_VISIBLE_DEVICES=3,7 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/vox1_int_freq.yaml --seed=${seed}
 
     # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/vox1_int_fgrl22.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=5,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/v1_fb/mix/vox1_mixup123.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=5,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/v1_fb/mix/vox1_mixup0.yaml --seed=${seed}
     
-    sleep
-    CUDA_VISIBLE_DEVICES=5,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/v1_fb/mix/vox1_cutmix1.yaml --seed=${seed}
+    # sleep
+    # CUDA_VISIBLE_DEVICES=5,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/v1_fb/mix/vox1_cutmix1.yaml --seed=${seed}
     
     # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/vox1_int_radio.yaml --seed=${seed}
     # sleep 5
