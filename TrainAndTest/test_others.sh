@@ -3125,21 +3125,21 @@ for seed in 123456  ; do
     epoch=31 yaml_name=model.2023.10.10.yaml
 
     for test_subset in dev; do #test_radio_chn2
-      for trials in trials_all; do
-        python -W ignore TrainAndTest/train_egs/test_egs.py \
-          --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-          --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-          --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-          --feat-format wav --nj 4 \
-          --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
-          --xvector-dir Data/xvector/${model_dir}/${test_set}_${test_subset}_${test_input} \
-          --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-          --gpu-id ${gpu_id} \
-          --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
-          --cos-sim --test
-      done
+      # for trials in trials_all; do
+      #   python -W ignore TrainAndTest/train_egs/test_egs.py \
+      #     --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+      #     --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+      #     --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+      #     --feat-format wav --nj 4 \
+      #     --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+      #     --xvector-dir Data/xvector/${model_dir}/${test_set}_${test_subset}_${test_input} \
+      #     --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+      #     --gpu-id ${gpu_id} \
+      #     --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+      #     --cos-sim --test
+      # done
 
-      for trials in easy hard male female ; do #easy hard 
+      for trials in male2 female2 ; do #easy hard 
         python -W ignore TrainAndTest/train_egs/test_egs.py \
           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
           --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
