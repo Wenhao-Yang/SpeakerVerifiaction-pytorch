@@ -3124,7 +3124,7 @@ for seed in 123456  ; do
     model_dir=ThinResNet34/Mean_batch128_seblock_downk1_avg1_SASP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2/123456
     epoch=31 yaml_name=model.2023.10.10.yaml
 
-    for test_subset in test; do #test_radio_chn2
+    for test_subset in dev; do #test_radio_chn2
       for trials in trials_all; do
         python -W ignore TrainAndTest/train_egs/test_egs.py \
           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
@@ -3139,7 +3139,7 @@ for seed in 123456  ; do
           --cos-sim --test
       done
 
-      for trials in original male female ; do #easy hard 
+      for trials in easy hard male female ; do #easy hard 
         python -W ignore TrainAndTest/train_egs/test_egs.py \
           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
           --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
