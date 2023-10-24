@@ -105,7 +105,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     # lambda_ = (epoch / config_args['epochs']) ** 2
 
     if 'augment_pipeline' in config_args:
-        num_pipes = 1
+        num_pipes = config_args['num_pipes'] if 'num_pipes' in config_args else 1
         augment_pipeline = []
         for _, augment in enumerate(config_args['augment_pipeline']):
             augment_pipeline.append(augment.cuda())
@@ -557,7 +557,6 @@ def main():
 
             if 'scheduler' in checkpoint:
                 scheduler.load_state_dict(checkpoint['scheduler'])
-                
             if 'optimizer' in checkpoint:
                 optimizer.load_state_dict(checkpoint['optimizer'])
                 for state in optimizer.state.values():
@@ -637,9 +636,9 @@ def main():
                 if config_args['scheduler'] != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
                     if len(all_lr) > 5 and all_lr[-5] >= this_lr[0]:
                         early_stopping_scheduler.early_stop = True
-                
-                if this_lr[0] <= 0.1 ** 3 * config_args['lr'] and all_lr[-5] > this_lr[0]:
-                    early_stopping_scheduler.early_stop = False
+
+                    if this_lr[0] <= 0.1 ** 3 * config_args['lr'] and all_lr[-5] > this_lr[0]:
+                        early_stopping_scheduler.early_stop = False
 
             if torch.distributed.get_rank() == 0:
                 top_k = early_stopping_scheduler.top_k()

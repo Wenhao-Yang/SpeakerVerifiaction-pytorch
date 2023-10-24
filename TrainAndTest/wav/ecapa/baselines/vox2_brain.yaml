@@ -5,7 +5,7 @@
 # @Time: 2022/09/30 09:15
 # @Overview:
 
-data_root_dir: /home/yangwenhao/local/project/lstm_speaker_verification
+data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 
 ## Dataset
 seed: 123456
@@ -29,14 +29,23 @@ num_valid: 2
 test_dir: !ref <data_root_dir>/data/<testset>/test
 trials: trials
 input_norm: Mean
-input_per_spks: 1024
 
 test_input: fix
 log_scale: False
-random_chunk: [48000, 48000]
-chunk_size: 48000
-frame_shift: 48000
-num_frames: 48000
+sr: 16000
+# transform
+chunk_size: 64000
+
+# padding
+random_chunk: [32000, 32000]
+frame_shift: 48000 # test shift
+
+# train dataset config
+num_frames: 64000
+segment_shift: 32000
+
+# sample_type: instance
+input_per_spks: 768
 extract: True
 nj: 6
 shuffle: False
@@ -70,8 +79,8 @@ cos_sim: True
 
 early_stopping: True
 early_patience: 20
-early_delta: 0.0001
-early_meta: "mix2"
+early_delta: 0.001
+early_meta: "mix8"
 
 ## model Setttings
 model: ECAPA_brain
@@ -86,15 +95,6 @@ channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 encoder_type: "SASP2"
 num_classes: 5994
 
-# embedding_model: !new:Define_Model.TDNN.ECAPA_TDNN.ECAPA_TDNN
-#   input_dim: !ref <input_dim>
-#   input_norm: !ref <input_norm>
-#   channels: [512, 512, 512, 512, 1536]
-#   encoder_type: "SASP2"
-#   embedding_size: !ref <embedding_size>
-#   num_classes: !ref <num_classes>
-#   activation: relu
-
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
   sr: 16000
@@ -102,10 +102,6 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   num_classes: !ref <num_classes>
-
-# classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
-#   feat_dim: !ref <embedding_size>
-#   num_classes: !ref <num_classes>
 
 classifier: !new:Define_Model.TDNN.ECAPA_brain.Classifier
   input_size: !ref <embedding_size>
@@ -126,7 +122,7 @@ lamda_beta: 2
 proser_gamma: 1
 #_<proser_gamma>
 mixup_layer: [1, 2, 3]
-mixup_type: manifold
+mixup_type: ''
 # stat_type: margin1
 
 # Checkpoints
