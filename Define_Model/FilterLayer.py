@@ -268,7 +268,7 @@ class SpectrogramLayer(nn.Module):
         if stretch_ratio != 1.0 and self.training:
             specgram = self.stretch(specgram, stretch_ratio)
 
-        return torch.log(specgram + 1e-6).transpose(-1, -2)
+        return torch.log10(specgram + 1e-6).transpose(-1, -2)
 
     def __repr__(self):
         return "SpectrogramLayer(sr={}, stretch_ratio={})".format(self.sr, '/'.join(['{:4>.2f}'.format(i) for i in self.stretch_ratio]))
