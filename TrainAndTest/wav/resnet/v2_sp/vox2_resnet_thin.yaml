@@ -72,7 +72,7 @@ val_check_interval: 5994
 scheduler: cyclic
 
 lr: 0.001
-base_lr: 0.00000001
+base_lr: 0.000001
 cyclic_epoch: 3
 # step_size: 65000
 cos_sim: True
