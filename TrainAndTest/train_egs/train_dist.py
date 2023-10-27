@@ -602,8 +602,7 @@ def main():
 
             # if torch.distributed.get_rank() == 0:
             this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
-            all_lr.append(this_lr[0])
-            
+            all_lr.append(this_lr[0]) 
             if torch.distributed.get_rank() == 0:
                 lr_string = '\33[1;34m \'{}\' learning rate: '.format(config_args['optimizer'])
                 lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])

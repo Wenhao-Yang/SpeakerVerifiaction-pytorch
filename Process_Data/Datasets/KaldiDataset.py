@@ -752,7 +752,7 @@ class ScriptTrainDataset(data.Dataset):
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
                  vad_select=False, sample_type='instance', sr=16000, save_dir='',
                  segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
-        
+
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
@@ -979,7 +979,7 @@ class ScriptTrainDataset(data.Dataset):
                         end = int(min(start+segment_len, num_frames))
                         start = int(max(end - segment_len, 0))
 
-                        if (end - start) >= (segment_len*0.125) :
+                        if (end - start) >= (segment_len*0.125):
                             train_base_utts.append((uid, start, end))
 
             # self.base_utts = train_base_utts

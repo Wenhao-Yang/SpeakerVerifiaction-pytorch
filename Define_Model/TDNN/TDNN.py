@@ -1106,23 +1106,23 @@ class TDNN_v5(nn.Module):
             x = self.mixup(x, proser, lamda_beta)
 
         x = self.frame1(x)
-        if proser != None and layer_mix == 1:
-            x = self.mixup(x, proser, lamda_beta)
-
-        x = self.frame2(x)
         if proser != None and layer_mix == 2:
             x = self.mixup(x, proser, lamda_beta)
 
-        x = self.frame3(x)
+        x = self.frame2(x)
         if proser != None and layer_mix == 3:
             x = self.mixup(x, proser, lamda_beta)
 
-        x = self.frame4(x)
+        x = self.frame3(x)
         if proser != None and layer_mix == 4:
             x = self.mixup(x, proser, lamda_beta)
 
-        x = self.frame5(x)
+        x = self.frame4(x)
         if proser != None and layer_mix == 5:
+            x = self.mixup(x, proser, lamda_beta)
+
+        x = self.frame5(x)
+        if proser != None and layer_mix == 6:
             x = self.mixup(x, proser, lamda_beta)
 
         if self.dropout_layer:
@@ -1130,7 +1130,7 @@ class TDNN_v5(nn.Module):
 
         # print(x.shape)
         x = self.encoder(x)
-        if proser != None and layer_mix == 6:
+        if proser != None and layer_mix == 7:
             x = self.mixup(x, proser, lamda_beta)
 
         embedding_a = self.segment6(x)
@@ -1138,7 +1138,7 @@ class TDNN_v5(nn.Module):
         #     x = self.mixup(x, proser, lamda_beta)
 
         embedding_b = self.segment7(embedding_a)
-        if proser != None and layer_mix == 7:
+        if proser != None and layer_mix == 8:
             x = self.mixup(x, proser, lamda_beta)
 
         if self.alpha:

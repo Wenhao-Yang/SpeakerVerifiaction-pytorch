@@ -1012,6 +1012,67 @@ class ReweightLayer(nn.Module):
     def __repr__(self):
         return "ReweightLayer(input_dim=%d, weight=%s)" % (self.input_dim, self.weight)
 
+
+class RedropLayer(nn.Module):
+    def __init__(self, input_dim=80, mask_len=5, weight='v2_v12base1'):
+        super(RedropLayer, self).__init__()
+        self.input_dim = input_dim
+        self.weight = weight
+
+        if weight == 'v2_stbase1':
+            ynew = np.array(c.INTE_STBASE1)
+        elif weight == 'v2_v12base1':
+            ynew = np.array(c.INTE_V12BASE)
+        else:
+            raise ValueError(weight)
+
+        # self.weight = ynew
+        # idx_number = np.ceil(np.clip(ynew, a_max=None, a_min=1) * 10)
+
+        idx_number = np.ceil(ynew/ynew.min() * 2)
+        choice_size = int(np.ceil(idx_number.sum() * mask_len / input_dim))
+
+        all_idxs = []
+        for i in range(len(idx_number)):
+            all_idxs.extend([i]*int(idx_number[i]))
+
+        self.all_idxs = all_idxs
+        self.choice_size = choice_size
+        self.mask_len = mask_len
+    
+    def forward(self, x):
+        # assert len(
+            # self.weight) == x.shape[-1], print(len(self.weight), x.shape)
+        if not self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
+            return x
+        
+        this_len = np.random.randint(low=1, high=self.mask_len+1)
+        start    = np.random.choice(self.all_idxs)
+
+        while start + this_len > self.input_dim:
+            start    = np.random.choice(self.all_idxs)
+
+        # normal speechaug
+        # x_norm = torch.normal(mean=x.mean(dim=[2], keepdim=True).repeat(1,1,x.shape[-2],1),
+        #                       std=x.std(dim=[2], keepdim=True)).detach()
+        # x[:, :, :, start:(start+this_len)] = x_norm[:, :, :, start:(start+this_len)]
+
+        # return x
+        
+        # zero speechaug
+        weight = torch.ones(self.input_dim)
+        weight[start:(start+this_len)] = 0 
+        weight /= weight.mean()
+
+        if x.is_cuda:
+            weight = weight.cuda()
+
+        return x * weight
+
+    def __repr__(self):
+        return "RedropLayer(input_dim=%d, weight=%s)" % (self.input_dim, self.weight)
+
+
 # On The Importance Of Different Frequency Bins For speaker verification
 class FrequencyReweightLayer(nn.Module):
     def __init__(self, input_dim=161):
@@ -1254,7 +1315,12 @@ class FrequencyGenderReweightLayer5(nn.Module):
         """
         # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
         freq_std     = x.std(dim=-2)
-        gender_score = self.gender_classifier(freq_std.squeeze(1))
+        if freq_std.shape[1] == 1:
+            freq_std = freq_std.squeeze(1)
+        else:
+            freq_std = freq_std.mean(dim=1)
+
+        gender_score = self.gender_classifier(freq_std)
         gender_score = F.softmax(gender_score, dim=1)
         
         f = 0.25 + self.activation(self.weight)
@@ -1414,6 +1480,31 @@ class FrequencyGenderReweightLayer9(nn.Module):
 
     def __repr__(self):
         return "FrequencyGenderReweightLayer9(input_dim=%d)" % (self.input_dim)
+
+
+class FrequencyNormReweightLayer(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FrequencyNormReweightLayer, self).__init__()
+        self.input_dim = input_dim
+
+        self.weight = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        F = 1 + self.activation(self.weight)
+        F = F / F.mean()
+        
+        return x * F
+
+    def __repr__(self):
+        return "FrequencyNormReweightLayer(input_dim=%d)" % (self.input_dim)
 
 
 class FrequencyGenderReweightLayer22(nn.Module):

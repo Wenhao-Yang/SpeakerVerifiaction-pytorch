@@ -18,7 +18,7 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer22, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyGenderReweightLayer6, FrequencyGenderReweightLayer7, FrequencyGenderReweightLayer8, FrequencyGenderReweightLayer9,FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer22, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyGenderReweightLayer6, FrequencyGenderReweightLayer7, FrequencyGenderReweightLayer8, FrequencyGenderReweightLayer9,FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, RedropLayer, ReweightLayer, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
@@ -115,8 +115,13 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
     elif mask == 'drop3':
         mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=weight_p,
                                         weight=init_weight, scale=scale)
+    elif mask == 'crl':
+        mask_layer = ReweightLayer(input_dim=input_dim, weight=init_weight)
     elif mask == 'frl':
         mask_layer = FrequencyReweightLayer(input_dim=input_dim)
+    elif mask == 'cdl':
+        mask_layer = RedropLayer(input_dim=input_dim, mask_len=mask_len[0],
+                                 weight=init_weight)
     elif mask in ['frl2', 'frl21']:
         mask_layer = FrequencyReweightLayer2(input_dim=input_dim)
     elif mask == 'fgrl2':

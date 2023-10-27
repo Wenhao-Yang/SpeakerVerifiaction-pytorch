@@ -328,8 +328,13 @@ class ArcSoftmaxLoss(nn.Module):
         if lb_view.is_cuda:
             lb_view = lb_view.cpu()
 
-        delt_theta = torch.zeros(costh.size()).scatter_(
-            1, lb_view.data, lamda_beta*self.margin)
+        if isinstance(lamda_beta, torch.Tensor):
+            if len(lamda_beta.shape) == 1:
+                lamda_beta = lamda_beta.unsqueeze(1).cpu()
+
+        delt_theta = lamda_beta * torch.zeros(costh.size()).scatter_(
+            1, lb_view.data, self.margin)
+
 
         # pdb.set_trace()
         if costh.is_cuda:
@@ -857,7 +862,7 @@ class MixupLoss(nn.Module):
         self.gamma = gamma
         self.margin_lamda = margin_lamda
 
-    def forward(self, costh, label, half_batch_size, lamda_beta): 
+    def forward(self, costh, label, half_batch_size, lamda_beta=0): 
         margin_lamda = lamda_beta if self.margin_lamda else 1
         if half_batch_size > 0 :
             loss = self.loss(costh[:half_batch_size], label[:half_batch_size])

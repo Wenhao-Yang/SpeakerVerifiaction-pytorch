@@ -567,7 +567,9 @@ class CAMNormInput(object):
                  scaled='tanh') -> None:
         self.threshold = threshold
         self.pro_type = pro_type
-        self.norm_cam = cam_normalize(norm_type=norm_cam, scaled=scaled)
+        self.norm_cam = norm_cam
+
+        self.norm_cam_layer = cam_normalize(norm_type=norm_cam, scaled=scaled)
         self.init_input = init_input
         self.data_preprocess = None
 
@@ -593,7 +595,7 @@ class CAMNormInput(object):
             return data
 
         H, W = data.shape
-        start = np.zeros(data.shape)
+        # start = np.zeros(data.shape)
         if self.init_input == 'zero':
             start = np.zeros(data.shape)
         elif self.init_input == 'mean':
@@ -601,7 +603,14 @@ class CAMNormInput(object):
             start = np.tile(start, (data.shape[0], 1))
 
         final = data.copy()
-        grad = self.norm_cam(grad)
+
+        if 'data_mean' in self.norm_cam:
+            data_mean = data.mean(axis=0, keepdims=True)
+            grad = grad * (data - data_mean)
+        elif 'data' in self.norm_cam:
+            grad = grad * data
+
+        grad = self.norm_cam_layer(grad)
 
         if self.pro_type in ['insertion', 'insert']:
             # 值递增，首先插入权值小的部分
@@ -779,7 +788,7 @@ class ConcateNumInput(object):
             output = np.concatenate(
                 (output, output), axis=self.c_axis)
             repeats += 1
-            assert repeats < 10
+            assert repeats < 10, print(frames_features.shape)
 
         if len(output) / self.num_frames >= self.input_per_file:
             for i in range(self.input_per_file):

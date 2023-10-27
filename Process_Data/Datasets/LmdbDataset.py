@@ -14,6 +14,7 @@ import os
 import random
 import h5py
 import lmdb
+import pandas as pd
 import numpy as np
 from kaldiio import load_mat
 from torch.utils.data import Dataset

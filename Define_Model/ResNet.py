@@ -1584,8 +1584,8 @@ class ThinResNet(nn.Module):
 
         sinkhorn = SinkhornDistance(eps=0.1, max_iter=100, reduction=None)
 
-        P = sinkhorn(feat1.permute(0, 2, 1), feat2.permute(
-            0, 2, 1)).detach()  # optimal plan batch x 16 x 16
+        P = sinkhorn(feat1.permute(0, 2, 1),
+                     feat2.permute(0, 2, 1)).detach()  # optimal plan batch x 16 x 16
         # P = P*(half_feats_shape[2]*half_feats_shape[3]) # assignment matrix
         P = P*(feat1.shape[-1]) # assignment matrix
 
