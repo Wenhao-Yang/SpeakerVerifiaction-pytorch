@@ -2,7 +2,7 @@
 
 stage=0
 waited=0
-while [ `ps 207506 | wc -l` -eq 2 ]; do
+while [ `ps 149916 | wc -l` -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -46,7 +46,9 @@ if [ $stage -le 0 ]; then
     
     # sleep
     # CUDA_VISIBLE_DEVICES=5,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/v1_fb/mix/vox1_cutmix1.yaml --seed=${seed}
-    CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=6 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/v1_loc_spect.yaml --seed=${seed}
+    # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=6 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/v1_loc_spect.yaml --seed=${seed}
+
+    CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=6 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_sp/v2_loc_spect.yaml --seed=${seed}
     # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/v1_spect.yaml --seed=${seed}
     
     # CUDA_VISIBLE_DEVICES=0,2 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v1_fb/vox1_int_radio.yaml --seed=${seed}
