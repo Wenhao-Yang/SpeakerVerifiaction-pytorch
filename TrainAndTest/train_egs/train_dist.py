@@ -601,13 +601,13 @@ def main():
             train_extract_sampler.set_epoch(epoch)
 
             # if torch.distributed.get_rank() == 0:
-            lr_string = '\33[1;34m Ranking {}: \'{}\' learning rate: '.format(torch.distributed.get_rank(),
-                                                                                      config_args['optimizer'])
             this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
-            lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
-            print('%s \33[0m' % lr_string)
             all_lr.append(this_lr[0])
+            
             if torch.distributed.get_rank() == 0:
+                lr_string = '\33[1;34m \'{}\' learning rate: '.format(config_args['optimizer'])
+                lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
+                print('%s \33[0m' % lr_string)
                 writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             torch.distributed.barrier()
