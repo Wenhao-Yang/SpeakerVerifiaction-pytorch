@@ -2232,11 +2232,13 @@ class LocalResNet(nn.Module):
 
     def __init__(self, embedding_size, num_classes, block_type='basic',
                  input_dim=161, input_len=300, gain_layer=False,
-                 exp=False, filter_fix=False, feat_dim=64, sr=16000,
-                 relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0., encoder_type='None',
-                 input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast=False,
-                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 20],
-                 init_weight='mel', weight_norm='max', scale=0.2, weight_p=0.1,
+                 exp=False, filter_fix=False, feat_dim=64,
+                 sr=16000, stretch_ratio=[1.0], win_length=int(0.025*16000), nfft=512,
+                 relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
+                 encoder_type='None',
+                 input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast='None',
+                 avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 5],
+                 init_weight='mel', weight_norm='max', scale=0.2, weight_p=0.1, mask_ckp='',
                  **kwargs):
 
         super(LocalResNet, self).__init__()
@@ -2283,40 +2285,23 @@ class LocalResNet(nn.Module):
 
         input_mask = []
         filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
-                                        exp=exp, filter_fix=filter_fix)
+                                        exp=exp, filter_fix=filter_fix,
+                                        stretch_ratio=stretch_ratio, win_length=win_length, nfft=nfft)
         if filter_layer != None:
             input_mask.append(filter_layer)
+            input_dim = feat_dim
 
-        self.inst_layer = get_input_norm(input_norm)
+        norm_layer = get_input_norm(input_norm, input_dim)
+        if norm_layer != None:
+            input_mask.append(norm_layer)
+        mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
+                                    init_weight=init_weight, weight_p=weight_p,
+                                    scale=scale, weight_norm=weight_norm, mask_ckp=mask_ckp)
 
-        if self.mask == "time":
-            self.maks_layer = TimeMaskLayer(mask_len=mask_len[0])
-        elif self.mask == "freq":
-            self.maks_layer = FreqMaskLayer(mask_len=mask_len[0])
-        elif self.mask == "time_freq":
-            self.mask_layer = nn.Sequential(
-                TimeMaskLayer(mask_len=mask_len[0]),
-                FreqMaskLayer(mask_len=mask_len[1])
-            )
-        elif self.mask == "both":
-            self.mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
-        elif self.mask == 'drop':
-            self.mask_layer = DropweightLayer(dropout_p=0.25)
-        elif self.mask == 'gau_noise':
-            self.mask_layer = GaussianNoiseLayer(dropout_p=0.01)
-        elif self.mask == 'mus_noise':
-            self.mask_layer = MusanNoiseLayer(snr=15)
-        elif self.mask == 'attention':
-            self.mask_layer = AttentionweightLayer(
-                input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'attention2':
-            self.mask_layer = AttentionweightLayer_v2(
-                input_dim=input_dim, weight=init_weight)
-        elif self.mask == 'attention3':
-            self.mask_layer = AttentionweightLayer_v3(
-                input_dim=input_dim, weight=init_weight)
-        else:
-            self.mask_layer = None
+        if mask_layer != None:
+            input_mask.append(mask_layer)
+
+        self.input_mask = nn.Sequential(*input_mask)
 
         self.inplanes = channels[0]
         self.conv1 = nn.Conv2d(
@@ -2351,7 +2336,7 @@ class LocalResNet(nn.Module):
         if layers[3] != 0:
             assert len(channels) == 4
             self.inplanes = channels[3]
-            stride = 1 if self.fast else 2
+            stride = 1 if self.fast in ['avp1', 'mxp1', 'none1', 'av1p1'] else 2
             self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=stride,
                                    padding=padding, bias=False)
             self.bn4 = nn.BatchNorm2d(channels[3])
@@ -2462,12 +2447,15 @@ class LocalResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x, feature_map=''):
+    def forward(self, x, feature_map='', proser=None, label=None,
+                 lamda_beta=0.2, mixup_alpha=-1):
+        
         x = self.input_mask(x)
 
         x = self.relu(self.bn1(self.conv1(x)))
         if self.maxpool != None:
             x = self.maxpool(x)
+
         group1 = self.layer1(x)
 
         x = self.relu(self.bn2(self.conv2(group1)))
