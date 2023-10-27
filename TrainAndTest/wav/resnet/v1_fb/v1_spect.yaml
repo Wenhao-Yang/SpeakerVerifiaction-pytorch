@@ -80,14 +80,14 @@ early_meta: "mix8"
 
 ## model Setttings
 resnet_size: 34
-block_type: "seblock"
+block_type: "cbam_v2"
 red_ratio: 2
 encoder_type: "SAP2"
 downsample: "k5"
 model: ThinResNet
 kernel_size:
 alpha: 0
-avg_size: 4
+avg_size: 1
 embedding_size: 256
 batch_size: 128
 dropout_p: 0.1

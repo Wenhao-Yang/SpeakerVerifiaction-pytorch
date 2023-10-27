@@ -1789,22 +1789,22 @@ class CBAM(nn.Module):
 
         self.cov_t = nn.Conv2d(inplanes, planes, kernel_size=(
             7, 1), stride=1, padding=(3, 0))
-        self.avg_t = nn.AdaptiveAvgPool2d((None, 1))
+        # self.avg_t = nn.AdaptiveAvgPool2d((None, 1))
 
         self.cov_f = nn.Conv2d(inplanes, planes, kernel_size=(
             1, 7), stride=1, padding=(0, 3))
-        self.avg_f = nn.AdaptiveAvgPool2d((1, None))
+        # self.avg_f = nn.AdaptiveAvgPool2d((1, None))
 
         self.activation = nn.Sigmoid()
 
     def forward(self, input):
-        t_output = self.avg_t(input)
-        # t_output = input.mean(dim=2, keepdim=True)
+        # t_output = self.avg_t(input)
+        t_output = input.mean(dim=2, keepdim=True)
         t_output = self.cov_t(t_output)
         t_output = self.activation(t_output)
         # t_output = input * t_output
-        f_output = self.avg_f(input)
-        # f_output = input.mean(dim=3, keepdim=True)
+        # f_output = self.avg_f(input)
+        f_output = input.mean(dim=3, keepdim=True)
         f_output = self.cov_f(f_output)
         f_output = self.activation(f_output)
         # f_output = input * f_output
