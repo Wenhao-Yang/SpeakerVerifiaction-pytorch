@@ -1151,7 +1151,7 @@ class ThinResNet(nn.Module):
             block, self.num_filter[2], layers[2], stride=2, red_ratio=red_ratio)
 
         last_stride = 1 if self.fast in [
-            'avp1', 'mxp1', 'none1', 'av1p1'] else 2
+            'avp1', 'mxp1', 'none1', 'av1p1', 'av1p'] else 2
         self.layer4 = self._make_layer(
             block, self.num_filter[3], layers[3], stride=last_stride, red_ratio=red_ratio)
 
