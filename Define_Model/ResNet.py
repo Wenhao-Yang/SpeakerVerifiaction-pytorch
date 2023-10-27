@@ -2230,11 +2230,12 @@ class LocalResNet(nn.Module):
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
-    def __init__(self, embedding_size, num_classes, block_type='basic',
+    def __init__(self, embedding_size, num_classes, 
+                 resnet_size=8, block_type='basic',
                  input_dim=161, input_len=300, gain_layer=False,
                  exp=False, filter_fix=False, feat_dim=64,
                  sr=16000, stretch_ratio=[1.0], win_length=int(0.025*16000), nfft=512,
-                 relu_type='relu', resnet_size=8, channels=[64, 128, 256], dropout_p=0.,
+                 relu_type='relu', channels=[64, 128, 256], dropout_p=0.,
                  encoder_type='None',
                  input_norm=None, alpha=12, stride=2, transform=False, time_dim=1, fast='None',
                  avg_size=4, kernal_size=5, padding=2, filter=None, mask='None', mask_len=[5, 5],
@@ -2336,7 +2337,13 @@ class LocalResNet(nn.Module):
         if layers[3] != 0:
             assert len(channels) == 4
             self.inplanes = channels[3]
-            stride = 1 if self.fast in ['avp1', 'mxp1', 'none1', 'av1p1'] else 2
+            if self.fast in ['avp1', 'mxp1', 'none1', 'av1p1']:
+                stride = 1 
+            elif self.fast in ['none21']:
+                stride = [2, 1] 
+            else:
+                stride = 2
+
             self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=(5, 5), stride=stride,
                                    padding=padding, bias=False)
             self.bn4 = nn.BatchNorm2d(channels[3])

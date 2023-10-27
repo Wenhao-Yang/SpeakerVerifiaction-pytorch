@@ -79,7 +79,7 @@ early_delta: 0.001
 early_meta: "mix8"
 
 ## model Setttings
-resnet_size: 18
+resnet_size: 34
 block_type: "seblock"
 red_ratio: 2
 encoder_type: "SAP2"
