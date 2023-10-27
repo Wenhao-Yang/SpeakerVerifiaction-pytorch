@@ -394,19 +394,7 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
             # pdb.set_trace()
             writer = kaldiio.WriteHelper(
                 'ark,scp:%s,%s' % (ark_file, scp_file))
-
-            # uid2vectors = []
-            # for i in all_uid2vectors:
-            #     uid2vectors.extend(i)
-            for uidvec in all_uid2vectors:
-                print(len(uidvec))
-                print(uidvec[0])
-                # for u,v  in uidvec:
-                #     print(v.shape, end=' ')
-
             uid2vectors = np.concatenate(all_uid2vectors)
-            # uid2vectors = all_uid2vectors[0].extend(all_uid2vectors[1])
-            # print('uid2vectors:', len(uid2vectors))
             for uid, uid_vec in uid2vectors:
                 writer(str(uid), uid_vec)
 
