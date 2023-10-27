@@ -87,7 +87,7 @@ downsample: "k5"
 model: ThinResNet
 kernel_size:
 alpha: 0
-avg_size: 1
+avg_size: 4
 embedding_size: 256
 batch_size: 128
 dropout_p: 0.1
@@ -146,7 +146,7 @@ mixup_type: ""
 loss_str: ""
 check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wd5e5_vares<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_sp<input_dim>_dist2
 
-save_data_dir: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wd5e5_vares<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_sp<input_dim>_dist2
+save_data_dir:  Data/checkpoint/ThinResNet34/Mean_batch128_seblock_downk5_avg1_SAP2_em256_dp01_alpha0_none1_chn32_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_sp161_dist2
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
