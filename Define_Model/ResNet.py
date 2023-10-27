@@ -2231,7 +2231,7 @@ class LocalResNet(nn.Module):
     """
 
     def __init__(self, embedding_size, num_classes, 
-                 resnet_size=8, block_type='basic',
+                 resnet_size=8, block_type='basic', red_ratio=2,
                  input_dim=161, input_len=300, gain_layer=False,
                  exp=False, filter_fix=False, feat_dim=64,
                  sr=16000, stretch_ratio=[1.0], win_length=int(0.025*16000), nfft=512,
@@ -2438,7 +2438,7 @@ class LocalResNet(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def _make_layer(self, block, planes, blocks, stride=1):
+    def _make_layer(self, block, planes, blocks, stride=1, red_ratio=2):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
@@ -2447,7 +2447,8 @@ class LocalResNet(nn.Module):
             )
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample))
+        layers.append(block(self.inplanes, planes, stride, downsample,
+                            reduction_ratio=red_ratio))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
             layers.append(block(self.inplanes, planes))
