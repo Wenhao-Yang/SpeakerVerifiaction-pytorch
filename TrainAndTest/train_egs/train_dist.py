@@ -234,7 +234,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             pbar.set_postfix(batch_length=batch_length, accuracy='{:>6.2f}%'.format(
                 100. * minibatch_acc), average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
 
-        if (batch_idx + 1) == 100:
+        if (batch_idx + 1) == 20:
             break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
@@ -391,7 +391,7 @@ def main():
     torch.distributed.init_process_group(backend='nccl')
     local_rank = int(os.environ["LOCAL_RANK"])
     torch.cuda.set_device(local_rank)
-    # torch.multiprocessing.set_sharing_strategy('file_system')
+    torch.multiprocessing.set_sharing_strategy('file_system')
 
     # load train config file args.train_config
     with open(args.train_config, 'r') as f:
