@@ -1074,7 +1074,7 @@ class ThinResNet(nn.Module):
                 3, 3), stride=(1, 2), padding=(1, 1))
         elif self.fast.startswith('av1p'):
             self.maxpool = nn.AvgPool2d(kernel_size=(
-                1, 3), stride=(1, 2), padding=(0, 1))
+                1, 2), stride=(1, 2), padding=(0, 0))
         elif self.fast.startswith('mxp'):
             self.maxpool = nn.MaxPool2d(kernel_size=(
                 3, 3), stride=(1, 2), padding=(1, 1))

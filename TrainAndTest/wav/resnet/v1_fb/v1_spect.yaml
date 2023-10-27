@@ -93,7 +93,7 @@ batch_size: 128
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
-fast: none1
+fast: av1p
 num_classes: 1211
   # mask: frl
 
@@ -112,7 +112,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   fast: !ref <fast>
   alpha: !ref <alpha>
   kernel_size: [7, 7]
-  stride: [2, 2]
+  stride: [1, 2]
   channels: [32, 64, 128, 256]
   dropout_p: !ref <dropout_p>
   avg_size: !ref <avg_size>
