@@ -233,9 +233,8 @@ class AverageMeter(object):
 
 # def l2_alpha(C):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
-def verification_extract(extract_loader, model, xvector_dir, epoch,
-                         test_input='fix', ark_num=50000, gpu=True,
-                         mean_vector=True, feat_type='kaldi',
+def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
+                         ark_num=50000, gpu=True, mean_vector=True, feat_type='kaldi',
                          verbose=0, xvector=False):
     """
 
@@ -356,17 +355,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
                     half_a = a_data[:, :, :num_half, :]
                     half_b = a_data[:, :, -num_half:, :]
                     a_data = torch.cat((half_a, half_b), dim=0)
-                    # num_segments = int(np.ceil(vec_shape[2] / half_max_length))
-                    # data_as = []
-                    # for i in range(num_segments):
-                    #     start = i * half_max_length
-                    #     end = (i + 1) * half_max_length
-                    #     end = min(end, vec_shape[2])
-                    #     if end == vec_shape[2]:
-                    #         start = max(0, end - half_max_length)
-
-                    #     data_as.append(a_data[:, :, start:end, :])
-                    # a_data = torch.cat(data_as, dim=0)
 
                 try:
                     model_out = encode_func(a_data)
@@ -395,9 +383,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
 
                 uid2vectors.append([a_uid[0], out[0]])
 
-                if batch_idx % 100 == 0:
-                    torch.cuda.empty_cache()
-
     scp_file = xvector_dir + '/xvectors.scp'
     ark_file = xvector_dir + '/xvectors.ark'
     if torch.distributed.is_initialized():
@@ -410,10 +395,10 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
             writer = kaldiio.WriteHelper(
                 'ark,scp:%s,%s' % (ark_file, scp_file))
 
-            uid2vectors = []
-            for i in all_uid2vectors:
-                uid2vectors.extend(i)
-
+            # uid2vectors = []
+            # for i in all_uid2vectors:
+            #     uid2vectors.extend(i)
+            uid2vectors = np.concatenate(all_uid2vectors)
             # uid2vectors = all_uid2vectors[0].extend(all_uid2vectors[1])
             # print('uid2vectors:', len(uid2vectors))
             for uid, uid_vec in uid2vectors:
@@ -428,8 +413,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch,
     torch.cuda.empty_cache()
 
 
-def verification_test(test_loader, dist_type, log_interval, xvector_dir,
-                      epoch, return_dist=False, verbose=0):
+def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, return_dist=False,
+                      verbose=0):
     # switch to evaluate mode
     labels, distances = [], []
     dist_fn = nn.CosineSimilarity(dim=1).cuda(
