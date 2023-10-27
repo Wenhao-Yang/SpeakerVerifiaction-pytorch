@@ -266,7 +266,7 @@ class SEBottleneck_v2(nn.Module):
     def __init__(self, inplanes: int, planes: int, stride: int = 1, downsample: Optional[nn.Module] = None,
                  groups: int = 1, base_width: int = 64, dilation: int = 1,
                  norm_layer: Optional[Callable[..., nn.Module]] = None, reduction_ratio: int = 4, **kwargs) -> None:
-        super(SEBottleneck, self).__init__()
+        super(SEBottleneck_v2, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(planes * (base_width / 64.)) * groups
