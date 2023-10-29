@@ -698,7 +698,7 @@ class SE_Res2Block(nn.Module):
         self.conv1 = Res2Conv2dBnRelu(
             inplanes, kernel_size, padding, dilation, stride=stride, scale=scale)
         self.conv2 = Res2Conv2dBn(
-            planes=planes, kernel_size=3, padding=1, dilation=1, stride=1, scale=scale)
+            channels=planes, kernel_size=3, padding=1, dilation=1, stride=1, scale=scale)
 
         # Squeeze-and-Excitation
         self.se_layer = SqueezeExcitation(
