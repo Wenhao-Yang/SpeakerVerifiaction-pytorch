@@ -688,17 +688,21 @@ class SE_Res2Block(nn.Module):
     expansion: int = 1
 
     def __init__(self, inplanes, planes, kernel_size=3, padding=1, stride=1, dilation=1,
-                 scale=4, reduction_ratio=2, downsample=None, **kwargs):
+                 scale=8, reduction_ratio=2, downsample=None, **kwargs):
         super(SE_Res2Block, self).__init__()
         self.scale = scale
         self.stride = stride
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.downsample = downsample
-        self.conv1 = Res2Conv2dBnRelu(
-            inplanes, kernel_size, padding, dilation, stride=stride, scale=scale)
+        # self.conv1 = Res2Conv2dBnRelu(
+        #     inplanes, kernel_size, padding, dilation, stride=stride, scale=scale)
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+
         self.conv2 = Res2Conv2dBn(
-            channels=planes, kernel_size=3, padding=1, dilation=1, stride=1, scale=scale)
+            channels=planes, kernel_size=kernel_size, padding=1, dilation=1, stride=1, scale=scale)
 
         # Squeeze-and-Excitation
         self.se_layer = SqueezeExcitation(
@@ -707,7 +711,11 @@ class SE_Res2Block(nn.Module):
     def forward(self, x):
         identity = x
 
+        # out = self.conv1(x)
         out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
         out = self.conv2(out)
 
         if self.downsample is not None:
