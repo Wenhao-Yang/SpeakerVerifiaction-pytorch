@@ -33,6 +33,7 @@ input_norm: Mean
 test_input: fix
 log_scale: False
 sr: 16000
+bandpass: [20, 3000]
 # transform
 chunk_size: 64000
 
