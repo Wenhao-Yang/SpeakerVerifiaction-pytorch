@@ -447,7 +447,8 @@ def main():
     # Load checkpoint
     if 'fintune' in config_args:
         if os.path.isfile(config_args['resume']):
-            print('=> loading checkpoint {}'.format(config_args['resume']))
+            if torch.distributed.get_rank() == 0:
+                print('=> loading checkpoint {}'.format(config_args['resume']))
             checkpoint = torch.load(config_args['resume'])
             start_epoch = checkpoint['epoch']
 
@@ -529,46 +530,49 @@ def main():
             f.write('Scheduler: ' + str(scheduler) + '\n')
 
     if 'resume' in config_args:
-        if os.path.isfile(config_args['resume']):
-            if torch.distributed.get_rank() == 0:
-                print('=> loading checkpoint {}'.format(config_args['resume']))
-            checkpoint = torch.load(config_args['resume'])
-            start_epoch = checkpoint['epoch']
+        if 'fintune' in config_args:
+            pass
+        else:
+            if os.path.isfile(config_args['resume']):
+                if torch.distributed.get_rank() == 0:
+                    print('=> loading checkpoint {}'.format(config_args['resume']))
+                checkpoint = torch.load(config_args['resume'])
+                start_epoch = checkpoint['epoch']
 
-            checkpoint_state_dict = checkpoint['state_dict']
-            if isinstance(checkpoint_state_dict, tuple):
-                checkpoint_state_dict = checkpoint_state_dict[0]
+                checkpoint_state_dict = checkpoint['state_dict']
+                if isinstance(checkpoint_state_dict, tuple):
+                    checkpoint_state_dict = checkpoint_state_dict[0]
 
-            filtered = {k: v for k, v in checkpoint_state_dict.items(
-            ) if 'num_batches_tracked' not in k}
+                filtered = {k: v for k, v in checkpoint_state_dict.items(
+                ) if 'num_batches_tracked' not in k}
 
-            # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-            if list(filtered.keys())[0].startswith('module'):
-                new_state_dict = OrderedDict()
-                for k, v in filtered.items():
-                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                    new_state_dict[k[7:]] = v  # 新字典的key值对应的value为一一对应的值。
+                # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
+                if list(filtered.keys())[0].startswith('module'):
+                    new_state_dict = OrderedDict()
+                    for k, v in filtered.items():
+                        # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
+                        new_state_dict[k[7:]] = v  # 新字典的key值对应的value为一一对应的值。
 
-                model.load_state_dict(new_state_dict)
-            else:
-                model_dict = model.state_dict()
-                model_dict.update(filtered)
-                model.load_state_dict(model_dict)
+                    model.load_state_dict(new_state_dict)
+                else:
+                    model_dict = model.state_dict()
+                    model_dict.update(filtered)
+                    model.load_state_dict(model_dict)
 
-            if 'scheduler' in checkpoint:
-                scheduler.load_state_dict(checkpoint['scheduler'])
-            if 'optimizer' in checkpoint:
-                optimizer.load_state_dict(checkpoint['optimizer'])
-                for state in optimizer.state.values():
-                    for k, v in state.items():
-                        if torch.is_tensor(v):
-                            state[k] = v.cuda()
+                if 'scheduler' in checkpoint:
+                    scheduler.load_state_dict(checkpoint['scheduler'])
+                if 'optimizer' in checkpoint:
+                    optimizer.load_state_dict(checkpoint['optimizer'])
+                    # for state in optimizer.state.values():
+                    #     for k, v in state.items():
+                    #         if torch.is_tensor(v):
+                    #             state[k] = v.cuda()
 
             # model.dropout.p = args.dropout_p
-        else:
-            if torch.distributed.get_rank() == 0:
-                print('=> no checkpoint found at {}'.format(
-                    config_args['resume']))
+            else:
+                if torch.distributed.get_rank() == 0:
+                    print('=> no checkpoint found at {}'.format(
+                        config_args['resume']))
 
     start = 1 + start_epoch
     if torch.distributed.get_rank() == 0:

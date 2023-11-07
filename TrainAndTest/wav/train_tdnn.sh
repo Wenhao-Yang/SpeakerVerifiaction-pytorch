@@ -96,7 +96,12 @@ if [ $stage -le 10 ]; then
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_sp/vox2_brain.yaml --seed=${seed}
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox2_brain_band.yaml --seed=${seed}
       # sleep 5
-      CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox2_brain_aug64band.yaml --seed=${seed}
+      # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox2_brain_aug64band.yaml --seed=${seed}
+
+      CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_fineaug64.yaml --seed=${seed}
+
+      sleep 5
+      CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_fineaug64band.yaml --seed=${seed}
 
 
       # CUDA_VISIBLE_DEVICES=2,7 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc1_resnet_hdf5_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
