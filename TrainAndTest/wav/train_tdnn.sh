@@ -2,7 +2,7 @@
 
 stage=10
 waited=0
-while [ $(ps 106034 | wc -l) -eq 2 ]; do
+while [ $(ps 113292 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -100,8 +100,14 @@ if [ $stage -le 10 ]; then
 
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_fineaug64.yaml --seed=${seed}
 
+      CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_fineaug32.yaml --seed=${seed}
+
+      sleep
+      CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_fineaug16.yaml --seed=${seed}
+
       # sleep 5
-      CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_fineaug64band.yaml --seed=${seed}
+      # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_fineaug64band.yaml --seed=${seed}
+      
 
 
       # CUDA_VISIBLE_DEVICES=2,7 python -m torch.distributed.launch --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/resnet/cnc1_resnet_hdf5_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
