@@ -90,7 +90,7 @@ def butter_bandpass_filter(data, cutoff, fs, order=15):
 
 
 class BandPass(object):
-    def __init__(self, low=300, high=3000,
+    def __init__(self, low=300, high=[3000],
                  sr=16000, band_pass_prob=0.2) -> None:
         self.low = low
         self.high = high
@@ -99,7 +99,8 @@ class BandPass(object):
         
     def __call__(self, waveform):
         if np.random.uniform(0, 1) < self.band_pass_prob:
-            waveform = butter_bandpass_filter(waveform, cutoff=[self.low, self.high], 
+            high = np.random.choice(self.high)
+            waveform = butter_bandpass_filter(waveform, cutoff=[self.low, high], 
                                           fs=self.sr)
 
         return waveform

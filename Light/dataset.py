@@ -114,7 +114,7 @@ def SubScriptDatasets(config_args):
     if 'bandpass' in config_args:
         band_pass_prob = config_args['band_pass_prob'] if 'band_pass_prob' in config_args else 0.2
         transform.transforms.insert(0, BandPass(low=config_args['bandpass'][0],
-                                                high=config_args['bandpass'][1],
+                                                high=config_args['bandpass'][1:],
                                                 sr=config_args['sr'],
                                                 band_pass_prob=band_pass_prob))
 
