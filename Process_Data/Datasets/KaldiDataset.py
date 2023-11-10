@@ -1053,8 +1053,11 @@ class ScriptTrainDataset(data.Dataset):
         self.c_axis = 0 if feat_type != 'wav' else 1
         self.feat_shape = (0, self.feat_dim) if feat_type != 'wav' else (1, 0)
         if verbose > 0:
-            print('    Sample {} * {} = {} segments for speakers.'.format(
-                self.samples_per_speaker, len(self.speakers), self.samples_per_speaker * len(self.speakers)))
+            if sample_type == 'instance':
+                print('    Sample {} segments for speakers.'.format(len(train_base_utts)))
+            else:
+                print('    Sample {} * {} = {} segments for speakers.'.format(
+                    self.samples_per_speaker, len(self.speakers), self.samples_per_speaker * len(self.speakers)))
 
         if self.return_uid:
             self.utt_dataset = []
