@@ -480,7 +480,28 @@ def main():
         model_para.append({'params': model.loss.xe_criterion.parameters(
         ), 'lr': config_args['lr'] * config_args['lr_ratio']})
 
-    if 'second_wd' in config_args and config_args['second_wd'] > 0:
+    if 'multi_lr' in config_args:
+        name2lr = config_args['multi_lr']
+        lr2ps = {name2lr[k]:[] for k in set(name2lr.keys())}
+        lr_list = list(lr2ps.keys())
+        lr_list.sort()
+
+        default_lr = config_args['lr']
+        # model_para = []
+        for n,p in model.named_parameters():
+            
+            this_key = default_lr
+            for key in name2lr:
+                if key in n:
+                    this_key = name2lr[key]
+            
+            lr2ps[this_key].append(p)
+            
+        model_para = [{'params': lr2ps[lr], 'lr': lr} for lr in lr_list]
+
+        config_args['lr_list'] = lr_list
+
+    elif 'second_wd' in config_args and config_args['second_wd'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:
         classifier_params = list(map(id, model.classifier.parameters()))
         rest_params = filter(lambda p: id(

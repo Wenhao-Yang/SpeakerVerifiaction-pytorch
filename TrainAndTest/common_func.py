@@ -198,8 +198,14 @@ def create_scheduler(optimizer, config_args, train_dir=None):
             step_size = config_args['cyclic_epoch'] * int(
                 np.ceil(len(train_dir) / config_args['batch_size']))
 
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
-                                          max_lr=config_args['lr'],
+        if 'lr_list' in config_args:
+            max_lr  = config_args['lr_list']
+            base_lr = [config_args['base_lr']]*len(max_lr)
+        else:
+            base_lr = config_args['base_lr']
+            max_lr  = config_args['lr']
+
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=base_lr, max_lr=max_lr,
                                           step_size_up=step_size,
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
