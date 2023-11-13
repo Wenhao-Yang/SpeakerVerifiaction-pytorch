@@ -111,8 +111,15 @@ def create_scheduler(optimizer, config_args, train_dir=None):
             if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
                 step_size = int(step_size * config_args['coreset_percent'])
 
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=config_args['base_lr'],
-                                          max_lr=config_args['lr'],
+        if 'lr_list' in config_args:
+            max_lr  = config_args['lr_list']
+            base_lr = [config_args['base_lr']]*len(max_lr)
+        else:
+            base_lr = config_args['base_lr']
+            max_lr  = config_args['lr']
+
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=base_lr,
+                                          max_lr=max_lr,
                                           step_size_up=step_size,
                                           cycle_momentum=cycle_momentum,
                                           mode='triangular2')
@@ -179,41 +186,6 @@ def create_classifier(encode_model, **kwargs):
         encode_model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'],
                                                     dummy_classes=kwargs['num_center'],
                                                     num_classes=kwargs['num_classes'])
-
-
-def create_scheduler(optimizer, config_args, train_dir=None):
-    milestones = config_args['milestones']
-    if config_args['scheduler'] == 'exp':
-        gamma = np.power(config_args['base_lr'] / config_args['lr'],
-                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
-    elif config_args['scheduler'] == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(
-            optimizer, patience=config_args['patience'], min_lr=1e-5)
-    elif config_args['scheduler'] == 'cyclic':
-        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
-        if 'step_size' in config_args:
-            step_size = config_args['step_size']
-        else:
-            step_size = config_args['cyclic_epoch'] * int(
-                np.ceil(len(train_dir) / config_args['batch_size']))
-
-        if 'lr_list' in config_args:
-            max_lr  = config_args['lr_list']
-            base_lr = [config_args['base_lr']]*len(max_lr)
-        else:
-            base_lr = config_args['base_lr']
-            max_lr  = config_args['lr']
-
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=base_lr, max_lr=max_lr,
-                                          step_size_up=step_size,
-                                          cycle_momentum=cycle_momentum,
-                                          mode='triangular2')
-    else:
-        scheduler = lr_scheduler.MultiStepLR(
-            optimizer, milestones=milestones, gamma=0.1)
-
-    return scheduler
 
 
 class AverageMeter(object):
