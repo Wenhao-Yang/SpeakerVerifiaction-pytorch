@@ -79,7 +79,7 @@ def SubScriptDatasets(config_args):
     if config_args['test_input'] == 'var':
         transform_V = transforms.Compose([
             ConcateOrgInput(
-                remove_vad=config_args['remove_vad'], feat_type=config_args['feat_format']),
+                remove_vad=config_args['remove_vad']) #, feat_type=config_args['feat_format']),
         ])
     elif config_args['test_input'] == 'fix':
         transform_V = transforms.Compose([

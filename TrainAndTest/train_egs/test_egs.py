@@ -339,41 +339,6 @@ if args.mvnorm:
     transform.transforms.append(mvnormal())
     transform_T.transforms.append(mvnormal())
 
-if args.test_mask:
-    mask_str = args.mask_sub
-    # print(mask_str)
-    mask_str = mask_str.split(',')
-    start = int(mask_str[0])
-    end = int(mask_str[1])
-    transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
-    transform_T.transforms.append(
-        FreqMaskIndexLayer(start=start, mask_len=end))
-    if args.verbose > 0:
-        print('Mean set values in frequecy from %d to %d.' % (start, end))
-
-
-
-train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
-                               feat_type=feat_type,
-                               transform=transform, num_valid=args.num_valid, verbose=args.verbose)
-
-if args.score_norm != '':
-    train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, filer_loader=file_loader,
-                                            feat_type=feat_type, verbose=args.verbose, trials_file='')
-
-verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
-                                  vad_select=args.vad_select, extract_trials=args.extract_trials,
-                                  feat_type=feat_type,
-                                  verbose=args.verbose)
-
-if args.valid:
-    valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader,
-                                   spk_to_idx=train_dir.spk_to_idx,
-                                   valid_uid2feat=train_dir.valid_uid2feat,
-                                   valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
-                                   transform=transform, verbose=args.verbose)
-
-
 def valid(valid_loader, model):
     model.eval()
 
@@ -436,8 +401,8 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
             data_a, data_p, label = this_batch
 
         # .cuda()  # .view(-1, 4, embedding_size)
-        data_a = torch.tensor(data_a)
-        data_p = torch.tensor(data_p)  # .cuda()  # .view(-
+        data_a = torch.tensor(data_a).cuda()
+        data_p = torch.tensor(data_p).cuda()  # .cuda()  # .view(-
 
         # if out_p.shape[-1] != args.embedding_size:
         #     out_p = out_p.reshape(-1, args.embedding_size)
@@ -467,8 +432,8 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
         elif len(dists.shape) == 2:
             dists = dists.mean(dim=-1)
 
-        dists = dists.numpy()
-        label = label.numpy()
+        dists = dists.cpu().numpy()
+        label = label.cpu().numpy()
 
         if test_cohort_scores != None:
             enroll_mean_std = np.array(
@@ -513,7 +478,7 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
 
         del data_a, data_p
 
-    labels = np.array([sublabel for label in labels for sublabel in label])
+    labels    = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
 
     time_stamp = time.strftime("%Y.%m.%d.%X", time.localtime(
@@ -534,12 +499,14 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     test_set_name = '-'
     for i, dir in enumerate(test_directorys):
         if dir == 'data':
-            try:
-                test_subset = test_directorys[i + 3].split('_')[0]
-            except Exception as e:
-                test_subset = test_directorys[i + 2].split('_')[0]
+            # try:
+            #     test_subset = test_directorys[i + 3].split('_')[0]
+            # except Exception as e:
+            #     test_subset = test_directorys[i + 2].split('_')[0]
+            test_set_name = "-".join(test_directorys[(i+1):])
+            test_set_name = test_set_name.replace('_', '-')
 
-            test_set_name = "-".join((test_directorys[i + 1], test_subset))
+            # test_set_name = "-".join((test_directorys[i + 1], test_subset))
     if args.score_suffix != '':
         test_set_name = '-'.join((test_set_name, args.score_suffix))
 
@@ -547,17 +514,18 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     if args.verbose > 0:
         result_str += 'For %s_distance, %d pairs:\n' % (dist_type, len(labels))
     result_str += '\33[91m'
+    tab_line = '+----------------------------+------------+------------+--------------+---------------+---------------------+\n'
     if args.verbose > 0:
-        result_str += '+-------------------------+--------------+--------------+----------------+----------------+----------------------+\n'
+        result_str +=  tab_line
 
-        result_str += '| {: <23s} |  {: >10s}  |  {: >10s}  |  {: >12s}  |  {: >12s}  | {: >19s}  |\n'.format('Test Set',
+        result_str += '| {: <26s} |  {: >8s}  | {: >8s}  | {: >8s}  | {: >8s}  | {: >19s} |\n'.format('Test Set',
                                                                                          'EER (%)',
                                                                                          'Threshold',
                                                                                          'MinDCF-0.01',
                                                                                          'MinDCF-0.001',
                                                                                          'Date')
     if args.verbose > 0:
-        result_str += '+-------------------------+--------------+--------------+----------------+----------------+----------------------+\n'
+        result_str += tab_line
 
     eer = '{:.4f}'.format(eer * 100.)
     threshold = '{:.4f}'.format(eer_threshold)
@@ -565,14 +533,14 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     mindcf_001 = '{:.4f}'.format(mindcf_001)
     date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-    result_str += '| {: <23s} |  {: >10s}  |  {: >10s}  |  {: >12s}  |  {: >12s}  | {: >19s}  |'.format(test_set_name,
+    result_str += '| {: <26s} |  {: >8s}  | {: >8s}  | {: >8s}  | {: >8s}  | {: >19s} |'.format(test_set_name,
                                                                                    eer,
                                                                                    threshold,
                                                                                    mindcf_01,
                                                                                    mindcf_001,
                                                                                    date)
     if args.verbose > 0:
-        result_str += '\n+-------------------------+--------------+--------------+----------------+----------------+----------------------+'
+        result_str += '\n' + tab_line
     result_str += '\33[0m'
 
     print(result_str)
@@ -660,36 +628,48 @@ if __name__ == '__main__':
     opts = vars(args)
     keys = list(opts.keys())
     keys.sort()
-
     options = []
     for k in keys:
         options.append("\'%s\': \'%s\'" % (str(k), str(opts[k])))
-
     if args.verbose > 1:
         print('Parsed options: \n{ %s }' % (', '.join(options)))
-        print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
-
-    with open(args.check_yaml, 'r') as f:
-        config_args = load_hyperpyyaml(f)
-
-    if 'embedding_model' in config_args:
-        model = config_args['embedding_model']
-
-    if 'classifier' in config_args:
-        model.classifier = config_args['classifier']
-    else:
-        create_classifier(model, **config_args)
-
+        # print('Number of Speakers: {}.\n'.format(train_dir.num_spks))
     if args.verbose > 1:
         # print('Model options: {}'.format(model_kwargs))
         dist_type = 'cos' if args.cos_sim else 'l2'
         print('Testing with %s distance, ' % dist_type)
 
     start_time = time.time()
-    test_xvector_dir = os.path.join(args.xvector_dir, 'test')
+    test_xvector_dir  = os.path.join(args.xvector_dir, 'test')
     train_xvector_dir = os.path.join(args.xvector_dir, 'train')
 
     if args.valid or args.extract:
+        train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
+                               feat_type=feat_type,
+                               transform=transform, num_valid=args.num_valid, verbose=args.verbose)
+
+        if args.score_norm != '' and os.path.isdir(args.train_extract_dir):
+            train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, 
+                                                    filer_loader=file_loader, feat_type=feat_type,
+                                                    verbose=args.verbose, trials_file='')
+
+        if args.valid:
+            valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader,
+                                        spk_to_idx=train_dir.spk_to_idx,
+                                        valid_uid2feat=train_dir.valid_uid2feat,
+                                        valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                        transform=transform, verbose=args.verbose)
+
+        with open(args.check_yaml, 'r') as f:
+            config_args = load_hyperpyyaml(f)
+
+        if 'embedding_model' in config_args:
+            model = config_args['embedding_model']
+
+        if 'classifier' in config_args:
+            model.classifier = config_args['classifier']
+        else:
+            create_classifier(model, **config_args)
         # model = create_model(args.model, **model_kwargs)
 
         if args.verbose > 0:
@@ -725,16 +705,29 @@ if __name__ == '__main__':
         model_dict.update(filtered)
         model.load_state_dict(model_dict)
         # model.dropout.p = args.dropout_p
-        try:
-            model.dropout.p = args.dropout_p
-        except:
-            pass
+
+        if args.test_mask:
+            mask_str = args.mask_sub
+            # print(mask_str)
+            mask_str = mask_str.split(',')
+            start = int(mask_str[0])
+            end = int(mask_str[1])
+            # transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end))
+            # transform_T.transforms.append(
+                # FreqMaskIndexLayer(start=start, mask_len=end))
+            trans = model.input_mask
+            model.input_mask.add_module(str(len(trans)), 
+                                        FreqMaskIndexLayer(start=start, mask_len=end))
+            if args.verbose > 0:
+                print('Mean set values in frequecy from %d to %d.' % (start, end))
+
+                if args.verbose > 1:
+                    print("==> input-mask: \n", model.input_mask)
 
         # print(model)
         if args.cuda:
             model.cuda()
         # train_loader = torch.utils.data.DataLoader(train_dir, batch_size=args.batch_size, shuffle=True, **kwargs)
-
         if args.valid:
             valid_loader = torch.utils.data.DataLoader(valid_dir, batch_size=args.test_batch_size, shuffle=False,
                                                        **kwargs)
@@ -752,8 +745,10 @@ if __name__ == '__main__':
                 verification_extract(train_verify_loader, model, xvector_dir=train_xvector_dir, epoch=start,
                                      test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                      mean_vector=args.mean_vector,
-                                     xvector=args.xvector)
-
+                                     xvector=args.xvector, input_mean=args.input_mean)
+            verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
+                                  feat_type=feat_type, trials_file=args.trials,
+                                  verbose=args.verbose)
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
 
@@ -761,14 +756,13 @@ if __name__ == '__main__':
             verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
                                  test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                  mean_vector=args.mean_vector,
-                                 xvector=args.xvector)
+                                 xvector=args.xvector, input_mean=args.input_mean)
 
     if args.test:
         file_loader = kaldiio.load_mat
         # file_loader = read_vec_flt
         return_uid = True if args.score_norm != '' else False
-        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
-                                       xvectors_dir=test_xvector_dir,
+        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,  xvectors_dir=test_xvector_dir,
                                        loader=file_loader, return_uid=return_uid,
                                        verbose=args.verbose)
 

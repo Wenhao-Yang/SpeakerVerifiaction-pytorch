@@ -213,7 +213,8 @@ class AverageMeter(object):
 #     return np.log(0.99 * (C - 2) / (1 - 0.99))
 def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='fix',
                          ark_num=50000, gpu=True, mean_vector=True, feat_type='kaldi',
-                         verbose=0, xvector=False):
+                         verbose=0, xvector=False,
+                         input_mean=False):
     """
 
     :param extract_loader:
@@ -259,7 +260,6 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if vec_shape[1] != 1:
                     a_data = a_data.reshape(
                         vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
-
                 data = torch.cat((data, a_data), dim=0)
                 num_seg_tensor.append(num_seg_tensor[-1] + len(a_data))
                 uid_lst.append(a_uid[0])
@@ -326,6 +326,8 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
                 if vec_shape[1] != 1:
                     a_data = a_data.reshape(
                         vec_shape[0] * vec_shape[1], 1, vec_shape[2], vec_shape[3])
+                if input_mean:
+                    a_data = a_data - a_data.mean()
 
                 a_data = a_data.cuda() if next(model.parameters()).is_cuda else a_data
                 if vec_shape[2] >= max_lenght:
@@ -399,7 +401,7 @@ def verification_test(test_loader, dist_type, log_interval, xvector_dir, epoch, 
             # out_p = torch.tensor(data_p).cuda()  # .view(-1, 4, embedding_size)
             out_a = data_a.cuda()  # .view(-1, 4, embedding_size)
             out_p = data_p.cuda()  # .view(-1, 4, embedding_size)
-            
+
             dists = dist_fn.forward(out_a, out_p).cpu().numpy()
 
             distances.append(dists)
@@ -891,8 +893,10 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             required=True, help='path to voxceleb1 test dataset')
         parser.add_argument('--sample-utt', type=int, default=120,
                             metavar='SU', help='Dimensionality of the embedding')
-        parser.add_argument(
-            '--extract-path', help='folder to output model grads, etc')
+        parser.add_argument('--extract-path', help='folder to output model grads, etc')
+        parser.add_argument('--input-feature', type=str, default='fbank',
+                            choices=['fbank', 'fbank_norm'],
+                            help='path to voxceleb1 test dataset')
         parser.add_argument('--cam', type=str, default='gradient',
                             choices=['gradient', 'grad_cam', 'grad_cam_pp',
                                      'fullgrad', 'acc_grad', 'layer_cam',
@@ -977,7 +981,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             help='The optimizer to use (default: Adagrad)')
         parser.add_argument('--skip-test', action='store_false',
                             default=True, help='need to make mfb file')
-
+        parser.add_argument('--input-mean', action='store_true', default=False,
+                            help='need to make spectrograms file')
         parser.add_argument('--mvnorm', action='store_true', default=False,
                             help='need to make spectrograms file')
         parser.add_argument('--valid', action='store_true', default=False,

@@ -404,8 +404,13 @@ def main():
             print('Making checkpath...', check_path)
             os.makedirs(check_path)
 
-        shutil.copy(args.train_config, check_path + '/model.%s.yaml' %
-                    time.strftime("%Y.%m.%d", time.localtime()))
+        new_yaml_name = check_path + '/model.%s.yaml' % time.strftime("%Y.%m.%d", time.localtime())
+        shutil.copy(args.train_config, new_yaml_name)
+        with open(new_yaml_name, 'a') as f:
+            import socket
+            f.write('\nhostname: {}'.format(socket.gethostname()))
+            f.write('\noriginal_yaml: {}'.format(args.train_config))
+
         writer = SummaryWriter(logdir=check_path, filename_suffix='SV')
         sys.stdout = NewLogger(
             os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
@@ -464,10 +469,14 @@ def main():
                     new_state_dict[k[7:]] = v  # 新字典的key值对应的value为一一对应的值。
 
                 model.load_state_dict(new_state_dict)
+                del new_state_dict
             else:
                 model_dict = model.state_dict()
                 model_dict.update(filtered)
                 model.load_state_dict(model_dict)
+                del model_dict
+
+            del checkpoint_state_dict, filtered, checkpoint
             # model.dropout.p = args.dropout_p
         else:
             print('=> no checkpoint found at {}'.format(config_args['resume']))
@@ -487,17 +496,30 @@ def main():
         lr_list.sort()
 
         default_lr = config_args['lr']
-        # model_para = []
+        model_para = []
+
+        if 'second_wd' in config_args:
+            init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
+            classifier_params = {'params': [], 'weight_decay': init_wd}
+
         for n,p in model.named_parameters():
             
             this_key = default_lr
             for key in name2lr:
                 if key in n:
                     this_key = name2lr[key]
+
+            if 'second_wd' in config_args and 'classifier' in n:
+                classifier_params['params'].append(p)
+                classifier_params['lr'] = this_key
+            else:
+                lr2ps[this_key].append(p)
             
-            lr2ps[this_key].append(p)
-            
-        model_para = [{'params': lr2ps[lr], 'lr': lr} for lr in lr_list]
+        model_para.extend([{'params': lr2ps[lr], 'lr': lr} for lr in lr_list])
+        if 'second_wd' in config_args:
+            model_para.append(classifier_params)
+            # if 'classifier' not in set(name2lr.keys()):
+            lr_list.append(classifier_params['lr'])
 
         config_args['lr_list'] = lr_list
 
@@ -588,7 +610,6 @@ def main():
                     #     for k, v in state.items():
                     #         if torch.is_tensor(v):
                     #             state[k] = v.cuda()
-
             # model.dropout.p = args.dropout_p
             else:
                 if torch.distributed.get_rank() == 0:
@@ -627,7 +648,7 @@ def main():
 
             # if torch.distributed.get_rank() == 0:
             this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
-            all_lr.append(this_lr[0]) 
+            all_lr.append(max(this_lr)) 
             if torch.distributed.get_rank() == 0:
                 lr_string = '\33[1;34m \'{}\' learning rate: '.format(config_args['optimizer'])
                 lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
@@ -677,21 +698,27 @@ def main():
                     check_path, epoch)
                 model_state_dict = model.module.state_dict() \
                     if isinstance(model, DistributedDataParallel) else model.state_dict()
-                torch.save({'epoch': epoch, 'state_dict': model_state_dict,
+                    
+                torch.save({'epoch': epoch, 'state_dict': model_state_dict},
+                           this_check_path)
+
+                this_optim_path = '{}/optim_{}.pth'.format(
+                    check_path, epoch)
+                torch.save({'epoch': epoch,
                             'scheduler': scheduler.state_dict(),
                             'optimizer': optimizer.state_dict(),
-                            }, this_check_path)
+                            }, this_optim_path)
 
             check_stop = torch.tensor(
                 int(early_stopping_scheduler.early_stop)).cuda()
             dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
 
-            if check_stop:
+            if check_stop or epoch == end - 1:
                 end = epoch
                 if torch.distributed.get_rank() == 0:
                     print('Best Epochs : ', top_k)
                     best_epoch = early_stopping_scheduler.best_epoch
-                    best_res = valid_test_result[int(best_epoch - 1)]
+                    best_res = valid_test_result[int(best_epoch - start)]
 
                     best_str = 'EER(%):       ' + \
                         '{:>6.2f} '.format(best_res['EER'])

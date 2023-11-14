@@ -3094,11 +3094,11 @@ fi
 
 if [ $stage -le 600 ]; then
   model=ThinResNet resnet_size=18
-  train_set=vox1 test_set=vox1 # #jukebox cnceleb
+  train_set=vox2 test_set=vox1 # #jukebox cnceleb
   # train_set=vox2 test_set=vox1 # #jukebox cnceleb
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=3
+  gpu_id=5
 echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
 for seed in 123456  ; do
@@ -3121,25 +3121,28 @@ for seed in 123456  ; do
     # epoch=33 yaml_name=model.2023.09.18.yaml
     # model_dir=ThinResNet34/Mean_batch128_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_band/123456
     # epoch=43 yaml_name=model.2023.09.19.yaml
-    model_dir=ThinResNet34/Mean_batch128_seblock_downk1_avg1_SASP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2/123456
-    epoch=31 yaml_name=model.2023.10.10.yaml
+    # model_dir=ThinResNet34/Mean_batch128_seblock_downk1_avg1_SASP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2/123456
+    # epoch=31 yaml_name=model.2023.10.10.yaml
 
-    for test_subset in dev; do #test_radio_chn2
-      # for trials in trials_all; do
-      #   python -W ignore TrainAndTest/train_egs/test_egs.py \
-      #     --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-      #     --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-      #     --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-      #     --feat-format wav --nj 4 \
-      #     --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
-      #     --xvector-dir Data/xvector/${model_dir}/${test_set}_${test_subset}_${test_input} \
-      #     --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-      #     --gpu-id ${gpu_id} \
-      #     --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
-      #     --cos-sim --test
-      # done
+    model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64radio/123456
+    epoch=12 yaml_name=model.2023.11.13.yaml
 
-      for trials in male2 female2 ; do #easy hard 
+    for test_subset in all; do #test_radio_chn2
+      for trials in trials_all; do
+        python -W ignore TrainAndTest/train_egs/test_egs.py \
+          --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+          --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+          --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+          --feat-format wav --nj 4 \
+          --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+          --xvector-dir Data/xvector/${model_dir}/${test_set}_${test_subset}_${test_input} \
+          --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+          --gpu-id ${gpu_id} \
+          --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+          --cos-sim --test
+      done
+
+      for trials in original easy hard ; do #easy hard 
         python -W ignore TrainAndTest/train_egs/test_egs.py \
           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
           --train-extract-dir ${lstm_dir}/data/${train_set}/dev \

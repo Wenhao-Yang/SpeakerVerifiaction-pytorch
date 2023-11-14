@@ -21,7 +21,6 @@ https://github.com/CoinCheung/pytorch-loss/blob/master/amsoftmax.py
 import math
 import pdb
 from random import random
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -862,7 +861,7 @@ class MixupLoss(nn.Module):
         self.gamma = gamma
         self.margin_lamda = margin_lamda
 
-    def forward(self, costh, label, half_batch_size, lamda_beta=0): 
+    def forward(self, costh, label, half_batch_size, lamda_beta=0):
         margin_lamda = lamda_beta if self.margin_lamda else 1
         if half_batch_size > 0 :
             loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
