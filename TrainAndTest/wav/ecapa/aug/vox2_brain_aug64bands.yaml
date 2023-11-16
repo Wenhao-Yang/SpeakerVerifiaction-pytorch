@@ -33,7 +33,8 @@ input_norm: Mean
 test_input: fix
 log_scale: False
 sr: 16000
-bandpass: [20, 3000, 4000, 6000]
+band_pass_prob: 0.25
+bandpass: [20, 3000, 4000, 6000, 7000]
 # transform
 chunk_size: 64000
 
@@ -189,7 +190,7 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug64band3
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug64band4025
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist
 #_lamda<lamda_beta>
