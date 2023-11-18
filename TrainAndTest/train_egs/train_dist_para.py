@@ -277,7 +277,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
                 label = label.cuda()
 
             # pdb.set_trace()
-            classfier, feats = model(data, policy)
+            classfier, feats = model(data)
             # classfier, feats = model(data)
             loss, other_loss = model.module.loss(classfier, feats, label)
 
