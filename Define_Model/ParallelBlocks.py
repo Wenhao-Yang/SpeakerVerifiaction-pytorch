@@ -47,6 +47,8 @@ class Parallel(nn.Module):
             self.agent_model = copy.deepcopy(model)
             for n,p in self.agent_model.named_modules():
                 p.requires_grad = False
+        else:
+            self.agent_model = agent_model
 
         # print(self.model.classifier.weight.shape)
         self.agent_model.classifier = nn.Linear(self.model.classifier.weight.shape[1],
