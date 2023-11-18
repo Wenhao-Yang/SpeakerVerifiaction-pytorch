@@ -52,7 +52,7 @@ class Parallel(nn.Module):
 
         # print(self.model.classifier.weight.shape)
         self.agent_model.classifier = nn.Linear(self.model.classifier.weight.shape[1],
-                                                layers)
+                                                layers*2)
         
         for n,p in self.model.named_modules():
             p.requires_grad = False
@@ -65,8 +65,10 @@ class Parallel(nn.Module):
         self.classifier = copy.deepcopy(model.classifier)
 
     def forward(self, x, policy=None):
+
         policy, _ = self.agent_model(x)
-        policy = gumbel_softmax(policy)
+        policy = policy.view(policy.size(0), -1, 2)
+        policy = gumbel_softmax(policy)[:,:,1]
 
         x = self.model.input_mask(x)
 
