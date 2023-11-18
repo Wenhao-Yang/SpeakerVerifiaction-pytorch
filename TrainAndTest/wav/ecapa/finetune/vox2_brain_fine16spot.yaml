@@ -95,6 +95,7 @@ channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 encoder_type: "SASP2"
 num_classes: 5994
 
+layers: 4
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
   sr: 16000
