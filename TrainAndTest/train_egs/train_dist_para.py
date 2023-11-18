@@ -633,11 +633,11 @@ def main():
         # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
             model.cuda(), device_ids=[local_rank])
-        agent_model = DistributedDataParallel(
-            agent_model.cuda(), device_ids=[local_rank])
+        # agent_model = DistributedDataParallel(
+        #     agent_model.cuda(), device_ids=[local_rank])
     else:
         model = model.cuda()
-        agent_model = agent_model.cuda()
+        # agent_model = agent_model.cuda()
 
     try:
         print('Dropout is {}.'.format(model.dropout_p))
