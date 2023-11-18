@@ -47,8 +47,8 @@ class Parallel(nn.Module):
         for n,p in self.agent_model.named_modules():
             p.requires_grad = False
 
-        print(self.model.classifier.weight.shape)
-        self.agent_model.classifier = nn.Linear(self.model.classifier.weight.shape[0],
+        # print(self.model.classifier.weight.shape)
+        self.agent_model.classifier = nn.Linear(self.model.classifier.weight.shape[1],
                                                 layers)
         
         for n,p in self.model.named_modules():
