@@ -73,9 +73,11 @@ class Parallel(nn.Module):
         x = self.model.input_mask(x)
 
         policy, _ = self.agent_model(x)
-        policy = policy.view(policy.size(0), -1, 2)
         if self.layers == 2*len(self.blocks):
+            policy = policy.view(policy.size(0), -1, 2)
             policy = gumbel_softmax(policy)[:,:,1]
+        else:
+            policy = gumbel_softmax(policy)
 
         if len(x.shape) == 4:
             x = x.squeeze(1).float()
