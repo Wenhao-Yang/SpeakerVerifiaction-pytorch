@@ -444,6 +444,11 @@ def main():
     else:
         create_classifier(model, **config_args)
 
+    if 'agent_model' in config_args:
+        agent_model = config_args['agent_model']
+    else:
+        agent_model = None
+
     start_epoch = 0
     check_path = config_args['check_path'] + '/' + str(args.seed)
     if 'finetune' not in config_args or not config_args['finetune']:
@@ -484,7 +489,7 @@ def main():
         else:
             print('=> no checkpoint found at {}'.format(config_args['resume']))
 
-    model = Parallel(model, layers=config_args['layers'])
+    model = Parallel(model, layers=config_args['layers'], agent_model=agent_model)
     model.loss = SpeakerLoss(config_args)
 
     model_para = [{'params': model.parameters()}]

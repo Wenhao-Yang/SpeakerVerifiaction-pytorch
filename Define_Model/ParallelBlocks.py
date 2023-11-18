@@ -38,14 +38,15 @@ def gumbel_softmax(logits, temperature = 5):
 
 
 class Parallel(nn.Module):
-    def __init__(self, model, layers):
+    def __init__(self, model, layers, agent_model=None):
         super(Parallel, self).__init__()
 
         self.model = copy.deepcopy(model)
-        self.agent_model = copy.deepcopy(model)
 
-        for n,p in self.agent_model.named_modules():
-            p.requires_grad = False
+        if agent_model == None:
+            self.agent_model = copy.deepcopy(model)
+            for n,p in self.agent_model.named_modules():
+                p.requires_grad = False
 
         # print(self.model.classifier.weight.shape)
         self.agent_model.classifier = nn.Linear(self.model.classifier.weight.shape[1],
