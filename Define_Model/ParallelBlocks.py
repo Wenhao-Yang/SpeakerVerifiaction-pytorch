@@ -46,7 +46,7 @@ class Parallel(nn.Module):
 
         for n,p in self.agent_model.named_modules():
             p.requires_grad = False
-        self.agent_model.classifier = nn.Linear(self.model.embeddings_size,
+        self.agent_model.classifier = nn.Linear(self.model.classifier.weight.shape[0],
                                                 layers)
         
         for n,p in self.model.named_modules():
