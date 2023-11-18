@@ -632,7 +632,7 @@ def main():
         print("Continue with gpu: %s ..." % str(local_rank))
         # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
-            model.cuda(), device_ids=[local_rank])
+            model.cuda(), device_ids=[local_rank], find_unused_parameters=True)
         # agent_model = DistributedDataParallel(
         #     agent_model.cuda(), device_ids=[local_rank])
     else:
