@@ -21,6 +21,7 @@ from python_speech_features import hz2mel, mel2hz
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 from scipy import interpolate
+from Define_Model.ParallelBlocks import gumbel_softmax
 from Define_Model.Pooling import SelfAttentionPooling_v2
 from Process_Data.audio_processing import MelSpectrogram
 from torchaudio.transforms import Spectrogram
@@ -986,11 +987,12 @@ class ReweightLayer(nn.Module):
         self.weight = weight
 
         if weight == 'v1_f2m':
-            ynew = c.VOX1_F2M
+            ynew = np.array(c.VOX1_F2M)
+        elif weight == 'v2_stu1':
+            ynew = np.array(c.INTE_STUDENT1)
         else:
             raise ValueError(weight)
 
-        ynew = np.array(ynew)
         self.weight = nn.Parameter(torch.tensor(ynew), requires_grad=False)
         # self.drop_p = ynew  # * dropout_p
 
@@ -1290,6 +1292,45 @@ class FrequencyGenderReweightLayer6(nn.Module):
 
     def __repr__(self):
         return "FrequencyGenderReweightLayer6(input_dim=%d)" % (self.input_dim)
+    
+
+class FrequencyGenderReweightLayer62(nn.Module):
+    def __init__(self, input_dim=80):
+        super(FrequencyGenderReweightLayer62, self).__init__()
+        self.input_dim = input_dim
+        # {'f': 0, 'm': 1}
+        female_w = torch.FloatTensor(c.INTE_FEMALE)
+        male_w   = torch.FloatTensor(c.INTE_MALE)
+        
+        weight = torch.stack([female_w, male_w]).unsqueeze(0).unsqueeze(0)
+        self.weight = nn.Parameter(weight)
+        
+        self.encoder = SelfAttentionPooling_v2(input_dim=input_dim,
+                                                   hidden_dim=int(input_dim/2))
+        
+        self.gender_classifier = nn.Linear(input_dim, 2)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        freq_std     = self.encoder(x)
+        gender_score = self.gender_classifier(freq_std)
+        gender_score = gumbel_softmax(gender_score).contiguous().float()
+        
+        f = 1.0 + self.activation(self.weight)
+        # semi-hard inteplolation
+        f = gender_score.unsqueeze(1).unsqueeze(3) * f
+        f = f.sum(dim=2, keepdim=True)
+        
+        return x * f
+
+    def __repr__(self):
+        return "FrequencyGenderReweightLayer62(input_dim=%d)" % (self.input_dim)
 
 
 class FrequencyGenderReweightLayer5(nn.Module):
@@ -1434,6 +1475,56 @@ class FrequencyGenderReweightLayer8(nn.Module):
 
     def __repr__(self):
         return "FrequencyGenderReweightLayer8(input_dim=%d)" % (self.input_dim)
+    
+
+class FrequencyGenderReweightLayer82(nn.Module):
+    def __init__(self, ckp_path, input_dim=80, fix_param=True):
+        super(FrequencyGenderReweightLayer82, self).__init__()
+        self.input_dim = input_dim
+        # {'f': 0, 'm': 1}
+        # female_w = torch.FloatTensor(c.INTE_FEMALE)
+        # male_w   = torch.FloatTensor(c.INTE_MALE)
+        weight = torch.ones(2, input_dim).unsqueeze(0).unsqueeze(0)
+        
+        self.weight = nn.Parameter(weight, requires_grad=True)
+        
+        self.gender_classifier = torch.load(ckp_path)
+        self.activation = nn.Sigmoid()
+        
+        if fix_param:
+            self.fix_params()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        gender_score = self.gender_classifier(x)
+        gender_score = gumbel_softmax(gender_score).contiguous().float()
+        gender_score = gender_score.unsqueeze(1).unsqueeze(3)
+        
+        # semi-hard inteplolation
+        # gender_index = torch.max(gender_score, dim=1)[1]
+        # gender_index = torch.nn.functional.one_hot(gender_index, num_classes=2).float()
+        # gender_score = (gender_score + gender_index).unsqueeze(1).unsqueeze(3)
+        
+        f = 1.0 + self.activation(self.weight)
+        f = gender_score * f
+        f = f.sum(dim=2, keepdim=True)
+        
+        # f = gender_score/2 * self.weight
+        # f = 0.5 + self.activation(f)
+        
+        return x * f
+
+    def fix_params(self):
+        for p in self.parameters():
+            p.requires_grad = False
+
+    def __repr__(self):
+        return "FrequencyGenderReweightLayer82(input_dim=%d)" % (self.input_dim)
 
 
 class FrequencyGenderReweightLayer9(nn.Module):
