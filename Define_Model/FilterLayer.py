@@ -1203,9 +1203,10 @@ class FrequencyGenderReweightLayer3(nn.Module):
     
 
 class FrequencyGenderReweightLayer4(nn.Module):
-    def __init__(self, input_dim=161):
+    def __init__(self, input_dim=161, bias=0.25):
         super(FrequencyGenderReweightLayer4, self).__init__()
         self.input_dim = input_dim
+        self.bias = bias
         # {'f': 0, 'm': 1}
         female_w = torch.FloatTensor(c.INTE_FEMALE)
         male_w = torch.FloatTensor(c.INTE_MALE)
@@ -1233,7 +1234,7 @@ class FrequencyGenderReweightLayer4(nn.Module):
         gender_score = self.gender_classifier(freq_std)
         gender_score = F.softmax(gender_score, dim=1)
         
-        f = 0.25 + self.activation(self.weight)
+        f = self.bias + self.activation(self.weight)
         # f = self.activation(self.weight)
         # semi-hard inteplolation
         gender_index = torch.max(gender_score, dim=1)[1]
@@ -1248,7 +1249,7 @@ class FrequencyGenderReweightLayer4(nn.Module):
         return x * f
 
     def __repr__(self):
-        return "FrequencyGenderReweightLayer4(input_dim=%d)" % (self.input_dim)
+        return "FrequencyGenderReweightLayer4(input_dim=%d, bias=%f)" % (self.input_dim, self.bias)
 
 
 class FrequencyGenderReweightLayer6(nn.Module):
@@ -1340,7 +1341,6 @@ class FrequencyGenderReweightLayer5(nn.Module):
         # {'f': 0, 'm': 1}
         # female_w = torch.FloatTensor(c.INTE_FEMALE)
         # male_w = torch.FloatTensor(c.INTE_MALE)
-        
         # weight = torch.stack([female_w, male_w]).unsqueeze(0).unsqueeze(0)
         self.weight = nn.Parameter(torch.ones(1, 1, 2, input_dim))
         
@@ -1485,7 +1485,6 @@ class FrequencyGenderReweightLayer82(nn.Module):
         # female_w = torch.FloatTensor(c.INTE_FEMALE)
         # male_w   = torch.FloatTensor(c.INTE_MALE)
         weight = torch.ones(2, input_dim).unsqueeze(0).unsqueeze(0)
-        
         self.weight = nn.Parameter(weight, requires_grad=True)
         
         self.gender_classifier = torch.load(ckp_path)
@@ -1603,17 +1602,6 @@ class FrequencyGenderReweightLayer22(nn.Module):
         super(FrequencyGenderReweightLayer22, self).__init__()
         self.input_dim = input_dim
 
-        # self.weight = nn.Parameter(torch.randn(1, 1, 2, input_dim)+1)
-        # self.
-        # self.gender_classifier = nn.Sequential(
-        #     nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1),
-        #     nn.ReLU(),
-        #     nn.Conv2d(in_channels=8, out_channels=2, kernel_size=3, stride=1, padding=1),
-        #     nn.ReLU(),
-        #     nn.BatchNorm2d(2)
-        # )
-        
-        # )
         self.key   = nn.Linear(input_dim, 2)
         self.value = nn.Linear(input_dim, 2)
         
