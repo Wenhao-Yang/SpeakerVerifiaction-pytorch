@@ -3122,10 +3122,10 @@ for seed in 123456  ; do
     # ecapa band 
     # model_dir=ThinResNet34/Mean_batch128_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox1/wave_fb80_dist2_band/123456
     # epoch=43 yaml_name=model.2023.09.19.yaml
-    # model_dir=ThinResNet18/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist2/123456
-    # epoch=18 yaml_name=model.2023.08.01.yaml
-    model_dir=ThinResNet18/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist2_fgrl82/123456
-    epoch=38 yaml_name=model.2023.11.19.yaml
+    model_dir=ThinResNet18/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist2/123456
+    epoch=18 yaml_name=model.2023.08.01.yaml
+    # model_dir=ThinResNet18/Mean_batch128_k7_seblock_downk1_avg1_SAP2_em256_dp01_alpha0_none1_wd5e5_varesmix8/arcsoft_sgd_rop/vox2/wave_fb80_dist2_fgrl82/123456
+    # epoch=38 yaml_name=model.2023.11.19.yaml
 
     # model_dir=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_band4025/123456
     # epoch=23 yaml_name=model.2023.11.16.yaml
