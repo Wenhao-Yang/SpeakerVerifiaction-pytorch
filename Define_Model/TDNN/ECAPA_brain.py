@@ -417,7 +417,7 @@ class ECAPA_TDNN(torch.nn.Module):
         input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
         win_length=int(0.025*16000), nfft=512, stretch_ratio=[1.0],
         init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
-        mask='None', mask_len=[5, 20],
+        mask='None', mask_len=[5, 20], mask_ckp='',
         channels=[512, 512, 512, 512, 1536],
         kernel_sizes=[5, 3, 3, 3, 1],
         dilations=[1, 2, 3, 4, 1],
@@ -440,7 +440,7 @@ class ECAPA_TDNN(torch.nn.Module):
             input_mask.append(norm_layer)
         mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
                                     init_weight=init_weight, weight_p=weight_p,
-                                    scale=scale, weight_norm=weight_norm)
+                                    scale=scale, weight_norm=weight_norm, mask_ckp=mask_ckp)
         if mask_layer != None:
             input_mask.append(mask_layer)
         self.input_mask = nn.Sequential(*input_mask)
