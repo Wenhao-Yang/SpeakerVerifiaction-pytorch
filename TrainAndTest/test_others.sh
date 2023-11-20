@@ -3150,7 +3150,7 @@ for seed in 123456  ; do
       #     --cos-sim --test
       # done
 
-      for trials in female male ; do # original easy hard
+      for trials in females males ; do # original easy hard
         python -W ignore TrainAndTest/train_egs/test_egs.py \
           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
           --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
