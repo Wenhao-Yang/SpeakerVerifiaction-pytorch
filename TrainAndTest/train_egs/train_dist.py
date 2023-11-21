@@ -676,7 +676,7 @@ def main():
                     valid_test_dict[config_args['early_meta']], epoch)
 
                 if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
-                    if config_args['scheduler'] != 'cyclic' or ('cyclic_epoch' in config_args and epoch - start >= config_args['cyclic_epoch']):
+                    if config_args['scheduler'] != 'cyclic' or ('cyclic_epoch' in config_args and epoch - start >= 2*config_args['cyclic_epoch']):
                         early_stopping_scheduler.early_stop = True
 
                 if config_args['scheduler'] != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
