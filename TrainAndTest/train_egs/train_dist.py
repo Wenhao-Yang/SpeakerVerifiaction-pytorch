@@ -12,6 +12,7 @@
 from __future__ import print_function
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
+from Process_Data.audio_processing import AdaptiveBandPass
 from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
 
@@ -179,6 +180,9 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         # print(loss.shape)
         total_loss += float(loss.item())
         total_other_loss += other_loss
+
+        if isinstance(augment_pipeline[0], AdaptiveBandPass):
+            augment_pipeline[0].update(1/(float(loss.item())+1))
 
         if torch.distributed.get_rank() == 0:
             writer.add_scalar('Train/All_Loss', float(loss.item()),

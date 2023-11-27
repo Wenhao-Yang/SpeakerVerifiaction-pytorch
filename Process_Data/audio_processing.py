@@ -105,6 +105,55 @@ class BandPass(object):
 
         return waveform
 
+class AdaptiveBandPass(object):
+    def __init__(self, low=300, high=[2000, 3000, 4000, 5000, 6000, 7000],
+                 sr=16000, band_pass_prob=0.2, order=15,
+                theta=0.1) -> None:
+        self.low  = low
+        self.high = high
+        self.sr = sr
+        self.band_pass_prob = band_pass_prob
+
+        self.soss = {}
+        self.high_p       = np.ones(len(high))
+        self.high_count = np.ones(len(high))
+        
+        for h in high:
+            self.soss[h] = butter_bandpass([self.low, h], sr, order=order)
+            
+        self.this_high = None
+        self.theta = theta
+        
+    def __call__(self, waveform):        
+        if np.random.uniform(0, 1) < self.band_pass_prob:
+            torch_cuda = isinstance(waveform, torch.cuda.FloatTensor)
+            if torch_cuda:
+                waveform = waveform.cpu()
+            
+            # if np.random.uniform(0, 1) >= self.theta:
+            p = self.high_p #- np.max(self.high_p)
+            p = np.exp(p) / self.theta
+            p = p / np.sum(p, axis=0)
+
+            high_idx = np.random.choice(len(self.high), 1, p=p)[0]
+            high = self.high[high_idx]
+            
+            self.this_high = high
+            waveform = sosfilt(self.soss[high], waveform)         
+            
+            if torch_cuda:
+                waveform = torch.tensor(waveform).cuda()
+
+        return waveform
+    
+    def update(self, reward):
+        
+        if len(self.high_p) > 1:
+            for i in range(len(self.high)):
+                if self.high[i] == self.this_high:
+                    self.high_p[i] = ( self.high_p[i] * self.high_count[i] + reward ) / ( self.high_count[i] + 1 )
+                    self.high_count[i] += 1
+
 
 def make_Fbank(filename, write_path,  # sample_rate=c.SAMPLE_RATE,
                use_delta=c.USE_DELTA,
