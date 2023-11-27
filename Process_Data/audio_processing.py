@@ -107,7 +107,7 @@ class BandPass(object):
 
 class AdaptiveBandPass(object):
     def __init__(self, low=300, high=[2000, 3000, 4000, 5000, 6000, 7000],
-                 sr=16000, band_pass_prob=0.2, order=15,
+                 sr=16000, band_pass_prob=0.2, order=8,
                 theta=0.1) -> None:
         self.low  = low
         self.high = high
