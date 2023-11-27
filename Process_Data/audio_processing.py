@@ -124,7 +124,7 @@ class AdaptiveBandPass(object):
         self.this_high = None
         self.theta = theta
         
-    def __call__(self, waveform):        
+    def __call__(self, waveform, length=None):        
         if np.random.uniform(0, 1) < self.band_pass_prob:
             torch_cuda = isinstance(waveform, torch.cuda.FloatTensor)
             if torch_cuda:

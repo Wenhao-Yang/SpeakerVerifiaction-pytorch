@@ -109,7 +109,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         num_pipes = config_args['num_pipes'] if 'num_pipes' in config_args else 1
         augment_pipeline = []
         for _, augment in enumerate(config_args['augment_pipeline']):
-            augment_pipeline.append(augment.cuda())
+            if isinstance(augment, AdaptiveBandPass):
+                augment_pipeline.append(augment)
+            else:
+                augment_pipeline.append(augment.cuda())
 
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
