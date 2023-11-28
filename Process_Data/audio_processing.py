@@ -105,6 +105,16 @@ class BandPass(object):
 
         return waveform
 
+def lowpass(waveform, cutoff, sr=16000):
+    waveform = torchaudio.functional.resample(waveform, orig_freq=sr,
+                                              new_freq=cutoff*2, lowpass_filter_width=9) 
+    
+    waveform = torchaudio.functional.resample(waveform, orig_freq=cutoff*2,
+                                              new_freq=sr) 
+    
+    return waveform
+
+
 class AdaptiveBandPass(object):
     def __init__(self, low=300, high=[2000, 3000, 4000, 5000, 6000, 7000],
                  sr=16000, band_pass_prob=0.2, order=15,
