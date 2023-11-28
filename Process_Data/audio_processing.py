@@ -142,8 +142,7 @@ class AdaptiveBandPass(object):
             
             # if np.random.uniform(0, 1) >= self.theta:
             # p = self.high_p #- np.max(self.high_p)
-            p = np.exp(self.high_p) / self.theta
-            p = p / np.sum(p, axis=0)
+            p = self.p()
 
             high_idx = np.random.choice(len(self.high), 1, p=p)[0]
             high = self.high[high_idx]
@@ -155,6 +154,13 @@ class AdaptiveBandPass(object):
                 waveform = torch.tensor(waveform).cuda()
 
         return waveform
+    
+    def p(self):
+        prob = np.exp(self.high_p) / self.theta
+        prob = prob / np.sum(prob, axis=0)
+
+        return prob
+
     
     def update(self, reward):
         
