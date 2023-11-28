@@ -117,7 +117,7 @@ def lowpass(waveform, cutoff, sr=16000):
 
 class AdaptiveBandPass(object):
     def __init__(self, low=300, high=[2000, 3000, 4000, 5000, 6000, 7000],
-                 sr=16000, band_pass_prob=0.2, order=15,
+                 sr=16000, band_pass_prob=0.2, order=8,
                 theta=0.1) -> None:
         self.low  = low
         self.high = high
@@ -129,7 +129,7 @@ class AdaptiveBandPass(object):
         self.high_count = np.ones(len(high))
         
         for h in high:
-            self.soss[h] = butter_bandpass([self.low, h], sr, order=order)
+            self.soss[h] = butter_bandpass([self.low, h], sr, order=order).astype(np.float32)
             
         self.this_high = None
         self.theta = theta
@@ -141,8 +141,8 @@ class AdaptiveBandPass(object):
                 waveform = waveform.cpu()
             
             # if np.random.uniform(0, 1) >= self.theta:
-            p = self.high_p #- np.max(self.high_p)
-            p = np.exp(p) / self.theta
+            # p = self.high_p #- np.max(self.high_p)
+            p = np.exp(self.high_p) / self.theta
             p = p / np.sum(p, axis=0)
 
             high_idx = np.random.choice(len(self.high), 1, p=p)[0]
