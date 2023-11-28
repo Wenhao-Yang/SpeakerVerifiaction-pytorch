@@ -3,6 +3,7 @@
 import os
 import pathlib
 import pdb
+import time
 import traceback
 import random
 from typing import Any, Callable, Optional
@@ -1249,18 +1250,12 @@ class PadCollate3d:
         self.fix_len = fix_len
         self.normlize = normlize
 
-        if self.fix_len:
-            self.frame_len = np.random.randint(
-                low=self.min_chunk_size, high=self.max_chunk_size)
-        else:
-            assert num_batch > 0
-            batch_len = np.arange(self.min_chunk_size,
-                                  self.max_chunk_size + 1, 20)
-            self.batch_len = np.array(batch_len)
-
-            if verbose > 0:
-                print('==> Generating %d lengths with Average: %d.' %
-                      (len(batch_len), np.mean(self.batch_len)))
+        batch_len = np.arange(self.min_chunk_size, self.max_chunk_size + 1,
+                              max(int((self.max_chunk_size - self.min_chunk_size) / 10), 20))
+        self.batch_len = batch_len
+        if verbose > 0:
+            print('==> Generating %d lengths with Average: %d.' % (
+                len(batch_len), np.mean(self.batch_len)))
 
     def pad_collate(self, batch):
         """
@@ -1282,15 +1277,19 @@ class PadCollate3d:
             #     np.random.shuffle(self.batch_len)
             frame_len = random.choice(self.batch_len)
         # pad according to max_len
-        # print()
         xs = torch.stack(list(map(lambda x: x[0], batch)), dim=0)
+        xs_shape = xs.shape
 
-        if frame_len < batch[0][0].shape[-2]:
+        if frame_len < xs_shape[self.dim]:
             start = np.random.randint(
-                low=0, high=batch[0][0].shape[-2] - frame_len)
+                low=0, high=xs_shape[self.dim] - frame_len)
             end = start + frame_len
-            xs = xs[:, :, start:end, :].contiguous()
+            if self.dim == 2:
+                xs = xs[:, :, start:end, :].contiguous()
+            elif self.dim == 3:
+                xs = xs[:, :, :, start:end].contiguous()
         else:
+            # print(frame_len, xs.shape[-2])
             xs = xs.contiguous()
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
@@ -1298,12 +1297,6 @@ class PadCollate3d:
             zs = torch.stack(list(map(lambda x: x[2], batch)), dim=0)
         else:
             zs = torch.LongTensor(list(map(lambda x: x[2], batch)))
-
-        # map_batch = map(lambda x_y: (pad_tensor(x_y[0], pad=frame_len, dim=self.dim - 1), x_y[1]), batch)
-        # pad_batch = list(map_batch)
-        #
-        # xs = torch.stack(list(map(lambda x: x[0], pad_batch)), dim=0)
-        # ys = torch.LongTensor(list(map(lambda x: x[1], pad_batch)))
 
         return xs, ys, zs
 

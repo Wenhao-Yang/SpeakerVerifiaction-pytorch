@@ -126,6 +126,9 @@ def SubScriptDatasets(config_args):
 
     domain = config_args['domain'] if 'domain' in config_args else False
     sample_type = 'half_balance' if 'sample_type' not in config_args else config_args['sample_type']
+
+    sample_score = config_args['sample_score'] if 'sample_score' in config_args else ''
+
     vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
     verbose = 1 if torch.distributed.is_initialized(
     ) and torch.distributed.get_rank() == 0 else 0
@@ -171,6 +174,7 @@ def SubScriptDatasets(config_args):
                                     vad_select=vad_select, sample_type=sample_type,
                                     feat_type=feat_type, verbose=verbose,
                                     save_dir=save_dir,
+                                    sample_score=sample_score,
                                     segment_len=config_args['num_frames'],
                                     segment_shift=segment_shift,
                                     min_frames=min_frames)
@@ -248,7 +252,8 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
 
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dir)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
-    train_paddfunc = PadCollate3d if return_domain else PadCollate
+    return_score = True if 'sample_ratio' in config_args and config_args['sample_ratio'] > 0 else False
+    train_paddfunc = PadCollate3d if return_domain or return_score else PadCollate
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
                                                collate_fn=train_paddfunc(dim=pad_dim,

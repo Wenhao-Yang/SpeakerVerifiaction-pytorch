@@ -117,7 +117,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
 
-        if not return_domain:
+        if 'sample_score' in config_args and 'sample_ratio' in config_args:
+            data, label, scores = data_cols
+            batch_weight = None
+        elif not return_domain:
             data, label = data_cols
             batch_weight = None
         else:
@@ -139,9 +142,31 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
                 # augment = np.random.choice(augment_pipeline)
                 # for count, augment in enumerate(augment_pipeline):
-                for augment in np.random.choice(augment_pipeline, size=num_pipes, replace=False):
+                if 'sample_score' in config_args and 'sample_ratio' in config_args:
+                    sample_ratio = int(config_args['sample_ratio'] * len(wavs))
+                    # plain sum
+                    
+                    if 'batch_sample' not in config_args or config_args['batch_sample'] == 'norm':
+                        scores = scores/scores.sum()
+                        score_idx = np.random.choice(len(wavs), sample_ratio,
+                                                        p=scores.squeeze().numpy(), replace=False)
+                    else:
+                        if config_args['batch_sample'] == 'max':
+                            score_idx = np.argsort(scores)[0][-sample_ratio:]
+                        elif config_args['batch_sample'] == 'soft':
+                            scores = scores.squeeze().unsqueeze(0)
+                            scores = output_softmax(scores/scores.mean()) #overflow
+                            score_idx = np.random.choice(len(wavs), sample_ratio,
+                                                        p=scores.squeeze().numpy(), replace=False)
+                        elif config_args['batch_sample'] == 'rand':
+                            score_idx = np.random.choice(len(wavs), sample_ratio, replace=False)
+                    
+                    wavs = wavs[score_idx]
+
+                p = None if 'augment_prob' not in config_args else config_args['augment_prob']
+                for augment in np.random.choice(augment_pipeline, size=num_pipes, p=p, replace=False):
                     # Apply augment
-                    wavs_aug = augment(wavs, torch.tensor([1.0]*len(data)).cuda())
+                    wavs_aug = augment(wavs, torch.tensor([1.0]*len(wavs)).cuda())
                     # Managing speed change
                     if wavs_aug.shape[1] > wavs.shape[1]:
                         wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
@@ -157,8 +182,15 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                         wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
                 
                 data = torch.cat(wavs_aug_tot, dim=0)
-                n_augment = len(wavs_aug_tot)
-                label = torch.cat([label] * n_augment)
+                if 'sample_score' in config_args and 'sample_ratio' in config_args:
+                    n_augment = len(wavs_aug_tot)-1
+                    new_label = [label]
+                    new_label.extend([label[score_idx]] * n_augment)
+                else:
+                    n_augment = len(wavs_aug_tot)
+                    new_label = [label] * n_augment
+
+                label = torch.cat(new_label)
 
         if torch.cuda.is_available():
             label = label.cuda()
@@ -501,7 +533,11 @@ def main():
 
     if 'multi_lr' in config_args:
         name2lr = config_args['multi_lr']
-        lr2ps = {name2lr[k]:[] for k in set(name2lr.keys())}
+        lr2ps = {}
+        for k in set(name2lr.keys()):
+            if name2lr[k] != 0:
+                lr2ps[name2lr[k]] = []
+
         lr_list = list(lr2ps.keys())
         lr_list.sort()
 
@@ -518,6 +554,8 @@ def main():
             for key in name2lr:
                 if key in n:
                     this_key = name2lr[key]
+            if this_key == 0:
+                continue
 
             if 'second_wd' in config_args and 'classifier' in n:
                 classifier_params['params'].append(p)
@@ -526,12 +564,14 @@ def main():
                 lr2ps[this_key].append(p)
             
         model_para.extend([{'params': lr2ps[lr], 'lr': lr} for lr in lr_list])
-        if 'second_wd' in config_args:
+        if 'second_wd' in config_args and 'lr' in classifier_params:
             model_para.append(classifier_params)
             # if 'classifier' not in set(name2lr.keys()):
             lr_list.append(classifier_params['lr'])
 
         config_args['lr_list'] = lr_list
+        if torch.distributed.get_rank() == 0:
+            print('learning rate lst: ', lr_list)
 
     elif 'second_wd' in config_args and config_args['second_wd'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:
@@ -571,7 +611,8 @@ def main():
         model_para, config_args['optimizer'], **opt_kwargs)
     scheduler = create_scheduler(optimizer, config_args, train_dir)
     early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
-                                             min_delta=config_args['early_delta'])
+                                             min_delta=config_args['early_delta'],
+                                             top_k_epoch=config_args['top_k_epoch'] if 'top_k_epoch' in config_args else 5)
 
     # Save model config txt
     if torch.distributed.get_rank() == 0:
@@ -686,7 +727,7 @@ def main():
                     valid_test_dict[config_args['early_meta']], epoch)
 
                 if early_stopping_scheduler.best_epoch + early_stopping_scheduler.patience >= end and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
-                    if config_args['scheduler'] != 'cyclic' or ('cyclic_epoch' in config_args and epoch - start >= 2*config_args['cyclic_epoch']):
+                    if config_args['scheduler'] != 'cyclic' or ('cyclic_epoch' in config_args and epoch - start >= 6*config_args['cyclic_epoch']):
                         early_stopping_scheduler.early_stop = True
 
                 if config_args['scheduler'] != 'cyclic' and this_lr[0] <= 0.1 ** 3 * config_args['lr']:
@@ -763,6 +804,9 @@ def main():
             else:
                 scheduler.step()
 
+            if torch.distributed.get_rank() == 0 and epoch == start:
+                print("INFO: Epoch time: {:.4f} minutes.".format(float(time.time() - start_time) / 60))
+
     except KeyboardInterrupt:
         end = epoch
 
@@ -771,8 +815,8 @@ def main():
 
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
         writer.close()
-        print("Running %.4f minutes for each epoch.\n" %
-              (t / 60 / (max(end - start, 1))))
+        # print("Running %.4f minutes for each epoch.\n" %
+        #       (t / 60 / (max(end - start, 1))))
 
     time.sleep(5)
     exit(0)

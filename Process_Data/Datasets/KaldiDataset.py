@@ -750,7 +750,7 @@ class ScriptVerifyDataset(data.Dataset):
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
-                 vad_select=False, sample_type='instance', sr=16000, save_dir='',
+                 vad_select=False, sample_type='instance', sr=16000, save_dir='', sample_score='',
                  segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
 
         self.return_uid = return_uid
@@ -765,6 +765,7 @@ class ScriptTrainDataset(data.Dataset):
         self.segment_len = segment_len
         self.segment_shift = segment_shift
         self.min_frames = min_frames
+        self.sample_score = sample_score
 
         self.feat_type = feat_type
         self.sample_type = sample_type  # balance or instance
@@ -960,10 +961,15 @@ class ScriptTrainDataset(data.Dataset):
             self.valid_utt2dom_dict = valid_utt2dom_dict
             self.valid_base_utts = valid_base_utts
 
-        if save_dir != '' and os.path.exists(os.path.join(save_dir, 'train.csv')):
+        if self.sample_score == '':
+            save_csv = os.path.join(save_dir, 'train.csv')
+        else:
+            save_csv = os.path.join(save_dir, 'train.{}.csv'.format(self.sample_score))
+
+        if self.sample_score != '' or save_dir != '' and os.path.exists(save_csv):
             if verbose > 0:
-                print('    Loading training samples from:\n\t {} '.format(os.path.join(save_dir, 'train.csv')))
-            train_base_utts = pd.read_csv(os.path.join(save_dir, 'train.csv')).to_numpy().tolist()
+                print('    Loading training samples from:\n\t {} '.format(save_csv))
+            train_base_utts = pd.read_csv(save_csv).to_numpy().tolist()
         else:
             if verbose > 0:
                 print('    Generate samples, segment length: {}, shift: {}'.format(segment_len, segment_shift))
@@ -1080,7 +1086,12 @@ class ScriptTrainDataset(data.Dataset):
     
             return feature, label, uid
 
-        (uid, start, end) = self.base_utts[idx]
+        this_utt = self.base_utts[idx]
+        (uid, start, end) = this_utt[:3]
+
+        sid = self.utt2spk_dict[uid]
+        label = self.spk_to_idx[sid]
+
         if self.feat_type != 'wav':
             y = self.loader(self.uid2feat[uid])
         else:
@@ -1095,7 +1106,11 @@ class ScriptTrainDataset(data.Dataset):
         sid = self.utt2spk_dict[uid]
         label = self.spk_to_idx[sid]
         feature = self.transform(y)
-
+        if len(this_utt) > 3:
+            # print(this_utt)
+            score = torch.tensor(this_utt[3:]).float()
+            return feature, label, score
+        
         if self.domain:
             label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
             return feature, label, label_b
