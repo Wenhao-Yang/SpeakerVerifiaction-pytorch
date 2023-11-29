@@ -163,7 +163,11 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     
                     wavs = wavs[score_idx]
 
-                p = None if 'augment_prob' not in config_args else config_args['augment_prob']
+                if 'augment_prob' not in config_args:
+                     p = None  
+                else: 
+                    p = np.array(config_args['augment_prob'])
+                    p = p / p.sum()
                 for augment in np.random.choice(augment_pipeline, size=num_pipes, p=p, replace=False):
                     # Apply augment
                     wavs_aug = augment(wavs, torch.tensor([1.0]*len(wavs)).cuda())
@@ -308,9 +312,39 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
     correct = 0.
     total_datasize = 0.
     # lambda_ = (epoch / config_args['epochs']) ** 2
+    if 'valid_pipeline' in config_args:
+        augment_pipeline = []
+        for _, augment in enumerate(config_args['valid_pipeline']):
+            augment_pipeline.append(augment.cuda())
 
     with torch.no_grad():
         for batch_idx, (data, label) in enumerate(valid_loader):
+            if 'valid_augpipe' in config_args:
+                with torch.no_grad():
+                    wavs_aug_tot = []
+                    wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
+                    wavs = data.squeeze().cuda()
+
+                    for augment in augment_pipeline:
+                        # Apply augment
+                        wavs_aug = augment(wavs, torch.tensor([1.0]*len(wavs)).cuda())
+                        # Managing speed change
+                        if wavs_aug.shape[1] > wavs.shape[1]:
+                            wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
+                        else:
+                            zero_sig = torch.zeros_like(wavs)
+                            zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
+                            wavs_aug = zero_sig
+
+                        if 'concat_augment' in config_args and config_args['concat_augment']:
+                            wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
+                        else:
+                            wavs = wavs_aug
+                            wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
+                    
+                    data = torch.cat(wavs_aug_tot, dim=0)
+                    n_augment = len(wavs_aug_tot)
+                    label = torch.cat([label] * n_augment)
 
             if torch.cuda.is_available():
                 data = data.cuda()
@@ -352,6 +386,9 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
     all_other_loss = np.sum(all_other_loss)
 
     valid_loss = total_loss / total_batch
+    if 'valid_update' in config_args:
+        config_args['aug_prob'].update(valid_loss)
+
     valid_accuracy = 100. * correct / total_datasize
 
     if torch.distributed.get_rank() == 0:
@@ -537,7 +574,7 @@ def main():
         for k in set(name2lr.keys()):
             if name2lr[k] != 0:
                 lr2ps[name2lr[k]] = []
-
+                
         lr_list = list(lr2ps.keys())
         lr_list.sort()
 
