@@ -216,6 +216,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         minibatch_correct = float(
             (predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
+        
+        if 'augment_prob' in config_args:
+            config_args['augment_prob'].update(1/(float(loss.item())+1) * 0.5 + (minibatch_acc - correct/(total_datasize+1))*0.5)
+
         correct += minibatch_correct
 
         total_datasize += len(predicted_one_labels)
@@ -226,8 +230,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         if isinstance(augment_pipeline[0], AdaptiveBandPass):
             augment_pipeline[0].update(1/(float(loss.item())+1))
         
-        if 'augment_prob' in config_args:
-            config_args['augment_prob'].update(1/(float(loss.item())+1) * 0.5 + minibatch_acc*0.5)
+        
 
         if torch.distributed.get_rank() == 0:
             writer.add_scalar('Train/All_Loss', float(loss.item()),
@@ -296,7 +299,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     # if isinstance(augment_pipeline[0], AdaptiveBandPass):
     #     this_epoch_str += ' Adaptive probbility: {}'.format(augment_pipeline[0].p())
     if 'augment_prob' in config_args:
-        this_epoch_str += ' Aug probbility: {}'.format(config_args['augment_prob'].p())
+        this_epoch_str += ' Aug probbility: {}'.format(config_args['augment_prob'].p)
 
     this_epoch_str += '.\33[0m'
 
