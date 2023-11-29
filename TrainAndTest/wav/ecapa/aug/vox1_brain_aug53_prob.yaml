@@ -161,7 +161,7 @@ augment_pipeline: [
 ]
 # augment_prob: [0.07294483, 0.1666942 , 0.16950445, 0.12785874, 0.46299776]
 # augment_prob: [0.2, 0.2, 0.2, 0.2, 0.2]
-augment_prob: !new: TrainAndTest.common_func.Policy
+augment_prob: !new:TrainAndTest.common_func.Policy
    p: [0.2, 0.2, 0.2, 0.2, 0.2]
    sample_ratio: 0.6
 
