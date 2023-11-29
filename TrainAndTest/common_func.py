@@ -1312,7 +1312,7 @@ class Policy(object):
         if np.random.uniform(0,1) < self.theta:
             idx = np.random.choice(len(self.p), self.sample_num, replace=False)
         else:
-            idx = (np.argsort(self.p)[0])[-self.sample_num:]
+            idx = np.argsort(self.p)[-self.sample_num:]
         
         return idx
     
