@@ -397,6 +397,10 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
     all_other_loss = np.sum(all_other_loss)
 
     valid_loss = total_loss / total_batch
+
+    if 'augment_prob' in config_args:
+            config_args['augment_prob'].update(2/(valid_loss+1))
+
     if 'valid_update' in config_args:
         config_args['aug_prob'].update(valid_loss)
 
