@@ -164,11 +164,14 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     wavs = wavs[score_idx]
 
                 if 'augment_prob' not in config_args:
-                     p = None  
+                    augs = np.random.choice(augment_pipeline, size=num_pipes, replace=False)
                 else: 
-                    p = np.array(config_args['augment_prob'])
-                    p = p / p.sum()
-                for augment in np.random.choice(augment_pipeline, size=num_pipes, p=p, replace=False):
+                    this_lr = optimizer.param_groups[0]['lr']
+                    idx = config_args['augment_prob'](ratio=this_lr)
+                    augs = [augment_pipeline[i] for i in idx]
+
+                    # p = p / p.sum()
+                for augment in augs:
                     # Apply augment
                     wavs_aug = augment(wavs, torch.tensor([1.0]*len(wavs)).cuda())
                     # Managing speed change

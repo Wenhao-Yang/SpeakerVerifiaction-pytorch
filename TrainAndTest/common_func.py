@@ -1275,3 +1275,69 @@ class ModelArgs(object):
     def __init__(self, config_args):
         for i in config_args:
             self.__setattr__(i, config_args[i])
+
+
+class Policy(object):
+    def __init__(self, p, sample_ratio=0.75,
+                 theta=0.1, tau=0.1, p_type='theta') -> None:
+        self.p = np.array(p).astype(np.float32)
+        self.sample_num = int(sample_ratio*len(self.p))
+        assert self.sample_num > 0
+
+        self.this_idx = []
+        self.count = np.ones(len(p))
+
+        self.rewards = 0
+
+        self.theta = theta
+        self.tau = tau
+        self.p_type = p_type
+
+        pass
+
+    def __call__(self, ratio=None):
+
+        if self.p_type == 'theta':
+            idx = self.theta_greedy()
+
+        elif self.p_type == 'softmax':
+            idx = self.softmax()
+        
+        self.this_idx.append([idx,ratio])
+
+        return idx
+    
+    def theta_greedy(self):
+
+        if np.random.uniform(0,1) < self.theta:
+            idx = np.random.choice(len(self.p), self.sample_num, replace=False)
+        else:
+            idx = np.argsort(self.p)[0][-self.sample_num:]
+        
+        return idx
+    
+    def softmax(self):
+        p /= p.max()
+
+        p = np.exp(self.p / self.tau) #overflow
+        p = p / p.sum()
+
+        idx = np.random.choice(len(self.p), self.sample_num,
+                                     p=p, replace=False)
+        
+        return idx
+
+
+    def update(self, reward):
+        last_idx, ratio = self.this_idx[-1]
+        if ratio != None:
+            assert ratio > 0 and ratio <=1
+            reward *= -1 / np.log10(ratio)
+
+        self.rewards += reward
+
+        for i in last_idx:
+            self.p[i] = ( self.p[i] * self.count[i] + reward ) / ( self.count[i] + 1 )
+            self.count[i] += 1
+        
+        pass
