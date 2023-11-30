@@ -164,12 +164,16 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     wavs = wavs[score_idx]
 
                 if 'augment_prob' not in config_args:
-                    augs = np.random.choice(augment_pipeline, size=num_pipes, replace=False)
+                    augs_idx = np.random.choice(len(augment_pipeline), size=num_pipes, replace=False)
                 else: 
                     this_lr = optimizer.param_groups[0]['lr']
-                    idx = config_args['augment_prob'](ratio=this_lr)
-                    augs = [augment_pipeline[i] for i in idx]
+                    augs_idx = config_args['augment_prob'](ratio=this_lr)
 
+                augs_idx = set(augs_idx)
+                other_idx = set(np.arange(len(augment_pipeline))) - augs_idx
+                augs = [augment_pipeline[i] for i in augs_idx]
+                other_augments = [augment_pipeline[i] for i in other_idx]
+            
                     # p = p / p.sum()
                 for augment in augs:
                     # Apply augment
@@ -187,6 +191,20 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     else:
                         wavs = wavs_aug
                         wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
+
+                if 'rest_prob' in config_args:
+                    for aug_i in range(len(wavs_aug_tot-1)):
+                        if np.random.uniform(0,1) < config_args['rest_prob']:
+                            augment = np.random.choice(other_augments)
+                            wavs_aug = augment(wavs_aug_tot[aug_i], torch.tensor([1.0]*len(wavs)).cuda())
+                            if wavs_aug.shape[1] > wavs.shape[1]:
+                                wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
+                            else:
+                                zero_sig = torch.zeros_like(wavs)
+                                zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
+                                wavs_aug = zero_sig
+
+                            wavs_aug_tot[aug_i] = wavs_aug
                 
                 data = torch.cat(wavs_aug_tot, dim=0)
                 if 'sample_score' in config_args and 'sample_ratio' in config_args:

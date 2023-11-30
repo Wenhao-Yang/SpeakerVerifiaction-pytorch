@@ -149,7 +149,7 @@ add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    reverb_prob: 0.0
    noise_prob: 1.0
    noise_snr_low: 0
-   noise_snr_high: 20
+   noise_snr_high: 15
    rir_scale_factor: 1.0
 
 augment_pipeline: [
@@ -163,6 +163,7 @@ augment_pipeline: [
 # augment_pipeline: [ ]
 concat_augment: True
 num_pipes: 3
+rest_prob: 0.2
 
 # loss
 loss_ratio: 1
@@ -183,7 +184,7 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5<num_pipes>
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5<num_pipes>_otheraug
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_dist
 #_lamda<lamda_beta>
