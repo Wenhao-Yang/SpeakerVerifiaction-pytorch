@@ -193,7 +193,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                         wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
 
                 if 'rest_prob' in config_args:
-                    for aug_i in range(len(wavs_aug_tot-1)):
+                    for aug_i in range(len(wavs_aug_tot)-1):
                         if np.random.uniform(0,1) < config_args['rest_prob']:
                             augment = np.random.choice(other_augments)
                             wavs_aug = augment(wavs_aug_tot[aug_i], torch.tensor([1.0]*len(wavs)).cuda())
