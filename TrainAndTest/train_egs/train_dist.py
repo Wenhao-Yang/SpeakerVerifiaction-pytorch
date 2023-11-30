@@ -218,7 +218,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
         
         if 'augment_prob' in config_args:
-            config_args['augment_prob'].update(1/(float(loss.item())+1) * 0.5 + (minibatch_acc - correct/(total_datasize+1))*0.5)
+            config_args['augment_prob'].update(1/(float(loss.item())+1) * 5 + (minibatch_acc - correct/(total_datasize+1))*5)
 
         correct += minibatch_correct
 
@@ -399,7 +399,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
     valid_loss = total_loss / total_batch
 
     if 'augment_prob' in config_args:
-            config_args['augment_prob'].update(2/(valid_loss+1))
+            config_args['augment_prob'].update(20/(valid_loss+1))
 
     if 'valid_update' in config_args:
         config_args['aug_prob'].update(valid_loss)
