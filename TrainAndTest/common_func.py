@@ -1303,7 +1303,7 @@ class Policy(object):
         elif self.p_type == 'softmax':
             idx = self.softmax()
         
-        self.this_idx.append([idx,ratio])
+        self.this_idx.append([idx, ratio])
 
         return idx
     
@@ -1331,7 +1331,10 @@ class Policy(object):
     def update(self, reward):
         last_idx, ratio = self.this_idx[-1]
         if ratio != None:
+
             assert ratio > 0 and ratio <=1
+            this_ratio = np.sum([r for _,r in self.this_idx[-1000:]])
+
             reward *= -1 / np.log10(ratio)
 
         self.rewards += reward
