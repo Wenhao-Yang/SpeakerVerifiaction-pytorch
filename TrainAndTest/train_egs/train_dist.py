@@ -196,7 +196,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     for aug_i in range(len(wavs_aug_tot)-1):
                         if np.random.uniform(0,1) < config_args['rest_prob']:
                             augment = np.random.choice(other_augments)
-                            wavs_aug = augment(wavs_aug_tot[aug_i], torch.tensor([1.0]*len(wavs)).cuda())
+                            wavs_aug = augment(wavs_aug_tot[aug_i].squeeze().cuda(), torch.tensor([1.0]*len(wavs)).cuda())
                             if wavs_aug.shape[1] > wavs.shape[1]:
                                 wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
                             else:
