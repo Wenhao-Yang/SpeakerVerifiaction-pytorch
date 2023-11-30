@@ -204,7 +204,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                                 zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
                                 wavs_aug = zero_sig
 
-                            wavs_aug_tot[aug_i] = wavs_aug
+                            wavs_aug_tot[aug_i] = wavs_aug.unsqueeze(1).unsqueeze(1)
                 
                 data = torch.cat(wavs_aug_tot, dim=0)
                 if 'sample_score' in config_args and 'sample_ratio' in config_args:
