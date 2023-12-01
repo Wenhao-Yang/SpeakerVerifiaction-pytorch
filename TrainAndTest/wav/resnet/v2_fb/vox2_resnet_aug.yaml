@@ -91,7 +91,7 @@ kernel_size:
 alpha: 0
 avg_size: 0
 embedding_size: 256
-batch_size: 64
+batch_size: 96
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
