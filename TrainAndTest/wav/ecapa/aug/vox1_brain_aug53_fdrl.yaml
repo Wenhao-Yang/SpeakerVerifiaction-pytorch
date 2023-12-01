@@ -94,7 +94,7 @@ channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 #channels: [1024,1024,1024,1024,3072]
 encoder_type: "SASP2"
 num_classes: 1211
-mask: fdrl
+mask: fdrl2
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   mask: !ref <mask>

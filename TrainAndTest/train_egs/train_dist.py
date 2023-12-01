@@ -652,6 +652,7 @@ def main():
         init_lr = config_args['lr'] * \
             config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
         init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
+        
         if torch.distributed.get_rank() == 0:
             print('Set the lr and weight_decay of classifier to %f and %f' %
               (init_lr, init_wd))
