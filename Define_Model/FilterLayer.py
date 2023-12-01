@@ -1136,7 +1136,7 @@ class FrequencyDecayReweightLayer(nn.Module):
 
 class FrequencyDecayReweightLayer2(nn.Module):
     def __init__(self, input_dim=161):
-        super(FrequencyDecayReweightLayer, self).__init__()
+        super(FrequencyDecayReweightLayer2, self).__init__()
         self.input_dim = input_dim
         
         self.decay_classifier = nn.Sequential(
