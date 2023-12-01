@@ -55,9 +55,10 @@ remove_vad: False
 epochs: 40
 
 # optimizer
-optimizer: sgd
+optimizer: adam
 lr_decay: 0
-weight_decay: 0.00001
+weight_decay: 0.00002
+second_wd: 0.0002
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -67,9 +68,11 @@ accu_steps: 1
 patience: 3
 milestones: [10, 20, 30, 40]
 val_check_interval: 5994
-scheduler: rop
-lr: 0.1
-base_lr: 0.00001
+scheduler: cyclic
+lr: 0.001
+base_lr: 0.00000001
+cyclic_epoch: 3
+step_size: 65000
 cos_sim: True
 
 early_stopping: True
@@ -80,7 +83,7 @@ early_meta: "mix8"
 ## model Setttings
 resnet_size: 34
 block_type: "seblock"
-red_ratio: 2
+red_ratio: 4
 encoder_type: "SASP2"
 downsample: "k1"
 model: ThinResNet
@@ -112,7 +115,7 @@ embedding_model: !new:Define_Model.ResNet.ThinResNet
   fast: !ref <fast>
   alpha: !ref <alpha>
   stride: [1, 2]
-  channels: [16, 32, 64, 128]
+  channels: [32, 64, 128, 256]
   dropout_p: !ref <dropout_p>
   avg_size: !ref <avg_size>
   encoder_type: !ref <encoder_type>
