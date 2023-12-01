@@ -174,7 +174,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 augs = [augment_pipeline[i] for i in augs_idx]
                 other_augments = [augment_pipeline[i] for i in other_idx]
             
-                    # p = p / p.sum()
+                # p = p / p.sum()
                 for augment in augs:
                     # Apply augment
                     wavs_aug = augment(wavs, torch.tensor([1.0]*len(wavs)).cuda())
@@ -652,7 +652,8 @@ def main():
         init_lr = config_args['lr'] * \
             config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
         init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
-        print('Set the lr and weight_decay of classifier to %f and %f' %
+        if torch.distributed.get_rank() == 0:
+            print('Set the lr and weight_decay of classifier to %f and %f' %
               (init_lr, init_wd))
         model_para = [{'params': rest_params},
                       {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
@@ -665,7 +666,8 @@ def main():
         init_wd = config_args['filter_wd'] if 'filter_wd' in config_args else config_args['weight_decay']
         init_lr = config_args['lr'] * \
             config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
-        print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
+        if torch.distributed.get_rank() == 0:
+            print('Set the lr and weight_decay of filter layer to %f and %f' % (init_lr, init_wd))
 
         model_para[0]['params'] = rest_params
         model_para.append({'params': model.input_mask[0].parameters(), 'lr': init_lr,
