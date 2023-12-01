@@ -113,9 +113,11 @@ def SubScriptDatasets(config_args):
 
     if 'bandpass' in config_args:
         band_pass_prob = config_args['band_pass_prob'] if 'band_pass_prob' in config_args else 0.2
+        order = 15 if 'band_order' not in config_args else config_args['band_order']
+
         transform.transforms.insert(0, BandPass(low=config_args['bandpass'][0],
                                                 high=config_args['bandpass'][1:],
-                                                sr=config_args['sr'],
+                                                sr=config_args['sr'], order=order,
                                                 band_pass_prob=band_pass_prob))
 
     if 'trans_fbank' in config_args and config_args['trans_fbank']:
