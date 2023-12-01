@@ -92,19 +92,30 @@ def butter_bandpass_filter(data, cutoff, fs, order=15):
 
 class BandPass(object):
     def __init__(self, low=300, high=[3000],
-                 sr=16000, band_pass_prob=0.2) -> None:
+                 sr=16000, band_pass_prob=0.2, order=15) -> None:
         self.low = low
         self.high = high
         self.sr = sr
         self.band_pass_prob = band_pass_prob
+
+        self.soss = {}
+        for h in high:
+            self.soss[h] = butter_bandpass([self.low, h], sr, order=order).astype(np.float32)
         
     def __call__(self, waveform):
         if np.random.uniform(0, 1) < self.band_pass_prob:
+            torch_cuda = isinstance(waveform, torch.cuda.FloatTensor)
+            if torch_cuda:
+                waveform = waveform.cpu()
+                
             high = np.random.choice(self.high)
-            waveform = butter_bandpass_filter(waveform, cutoff=[self.low, high], 
-                                          fs=self.sr)
+            waveform = sosfilt(self.soss[high], waveform)         
+            
+            if torch_cuda:
+                waveform = torch.tensor(waveform).cuda()
 
         return waveform
+
 
 def lowpass(waveform, cutoff, sr=16000):
     waveform = torchaudio.functional.resample(waveform, orig_freq=sr,
