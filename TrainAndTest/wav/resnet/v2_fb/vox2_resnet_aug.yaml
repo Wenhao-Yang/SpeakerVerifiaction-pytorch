@@ -34,7 +34,7 @@ sr: 16000
 chunk_size: 64000
 
 # padding
-random_chunk: [48000, 48000]
+random_chunk: [32000, 32000]
 frame_shift: 48000 # test shift
 
 # train dataset config
@@ -200,7 +200,7 @@ lamda_beta: 0.2
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_k7_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde5_3sesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist_aug5<num_pipes>
+check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_k7_<block_type>_down<downsample>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_wde5_2sesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist_aug5<num_pipes>
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist
 
