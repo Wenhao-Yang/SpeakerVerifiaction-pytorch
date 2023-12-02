@@ -1124,7 +1124,7 @@ class FrequencyDecayReweightLayer(nn.Module):
         """
         # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
         freq_std   = x.std(dim=-2, keepdim=True)
-        freq_score = (freq_std - self.decay_std) / self.theta
+        freq_score = (self.decay_std - freq_std) / self.theta
 
         f = 0.5 + self.activation(freq_score)
 
@@ -1157,7 +1157,7 @@ class FrequencyDecayReweightLayer2(nn.Module):
         """
         # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
         freq_std   = x.std(dim=-2, keepdim=True)
-        freq_score = (freq_std - self.decay_std) / self.theta
+        freq_score = (self.decay_std - freq_std) / self.theta
 
         sign = torch.sign(self.decay_classifier(freq_std))
 
