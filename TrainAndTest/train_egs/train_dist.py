@@ -97,6 +97,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
     total_loss = 0.
     orth_err = 0
     total_other_loss = 0.
+    loss_nan = 0
 
     pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True, ncols=150) if torch.distributed.get_rank(
     ) == 0 else enumerate(train_loader)
@@ -252,7 +253,14 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                               int((epoch - 1) * len(train_loader) + batch_idx + 1))
 
         if np.isnan(loss.item()):
-            raise ValueError('Loss value is NaN!')
+            optimizer.zero_grad()  # reset gradient
+            loss_nan += 1
+            if loss_nan  > 100:
+                raise ValueError('Loss value is NaN!')
+            else:
+                if torch.distributed.get_rank() == 0:
+                    print('==> Loss value is NaN! for {} step',format(loss_nan))
+                continue
 
         # compute gradient and update weights
         loss.backward()
@@ -699,7 +707,7 @@ def main():
         else:
             if os.path.isfile(config_args['resume']):
                 if torch.distributed.get_rank() == 0:
-                    print('=> loading checkpoint {}'.format(config_args['resume']))
+                    print('=> loading  model   check: {}'.format(config_args['resume']))
                 checkpoint = torch.load(config_args['resume'])
                 start_epoch = checkpoint['epoch']
 
@@ -731,6 +739,15 @@ def main():
                     #     for k, v in state.items():
                     #         if torch.is_tensor(v):
                     #             state[k] = v.cuda()
+
+            if 'resume_optim' in config_args and os.path.isfile(config_args['resume_optim']):
+                if torch.distributed.get_rank() == 0:
+                    print('=> loading optmizer check {}'.format(config_args['resume_optim']))
+                optm_check = torch.load(config_args['resume_optim'])
+                if 'scheduler' in checkpoint:
+                    scheduler.load_state_dict(optm_check['scheduler'])
+                if 'optimizer' in checkpoint:
+                    optimizer.load_state_dict(optm_check['optimizer'])
             # model.dropout.p = args.dropout_p
             else:
                 if torch.distributed.get_rank() == 0:
