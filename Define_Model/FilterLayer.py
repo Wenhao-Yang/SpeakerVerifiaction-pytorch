@@ -1105,12 +1105,6 @@ class FrequencyDecayReweightLayer(nn.Module):
         super(FrequencyDecayReweightLayer, self).__init__()
         self.input_dim = input_dim
         
-        # self.decay_classifier = nn.Sequential(
-        #     nn.Linear(input_dim, input_dim),
-        #     nn.ReLU(),
-        #     nn.BatchNorm1d()
-        # )
-
         self.decay_std = nn.Parameter(torch.ones(1, 1, 1, input_dim))
         self.theta = 1.0
         self.activation = nn.Sigmoid()
