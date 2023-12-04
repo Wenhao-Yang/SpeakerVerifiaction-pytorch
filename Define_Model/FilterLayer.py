@@ -1106,7 +1106,7 @@ class FrequencyDecayReweightLayer(nn.Module):
         self.input_dim = input_dim
         
         self.decay_std = nn.Parameter(torch.ones(1, 1, 1, input_dim))
-        self.theta = 1.0
+        self.theta = 0.5
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
