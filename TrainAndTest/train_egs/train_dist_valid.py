@@ -286,9 +286,9 @@ def train(train_loader, valid_loader, model, optimizer, epoch, scheduler,
 
         step += 1
 
-        if 'valid_step' in config_args and step % config_args['valid_step']:
+        if 'valid_step' in config_args and step+1 % config_args['valid_step'] == 0:
             valid_loss = valid_class(
-                valid_loader, model, epoch, config_args, writer)
+                valid_loader, model, epoch, config_args, writer, step=step)
             
         # if (batch_idx + 1) == 20:
         #     break
@@ -317,7 +317,7 @@ def train(train_loader, valid_loader, model, optimizer, epoch, scheduler,
     return step, valid_loss
 
 
-def valid_class(valid_loader, model, epoch, config_args, writer):
+def valid_class(valid_loader, model, epoch, config_args, writer, step=None):
     # switch to evaluate mode
     model.eval()
 
@@ -413,6 +413,8 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
     valid_accuracy = 100. * correct / total_datasize
 
     if torch.distributed.get_rank() == 0:
+        epoch = epoch if step == None else step
+
         writer.add_scalar('Train/Valid_Loss', valid_loss, epoch)
         writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
         torch.cuda.empty_cache()
@@ -770,7 +772,7 @@ def main():
             #     select_samples(train_loader, model, config_args,
             #                    config_args['select_score'])
 
-            this_step,valid_loss = train(train_loader, valid_loader, model, optimizer,
+            this_step, valid_loss = train(train_loader, valid_loader, model, optimizer,
                   epoch, scheduler, config_args, writer, this_step)
 
             # valid_loss = valid_class(
