@@ -81,7 +81,7 @@ early_meta: "mix8"
 
 ## model Setttings
 resnet_size: 34
-block_type: "se2block"
+block_type: "seblock"
 red_ratio: 2
 encoder_type: "SAP2"
 downsample: "k5"
@@ -90,7 +90,7 @@ kernel_size:
 alpha: 0
 avg_size: 4
 embedding_size: 256
-batch_size: 64
+batch_size: 32
 dropout_p: 0.1
 activation: relu
 channels: 32,64,128,256
