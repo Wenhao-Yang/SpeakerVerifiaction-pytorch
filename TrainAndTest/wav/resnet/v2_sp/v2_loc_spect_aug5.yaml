@@ -57,7 +57,7 @@ epochs: 60
 # optimizer
 optimizer: sgd
 lr_decay: 0
-weight_decay: 0.00005
+weight_decay: 0.00001
 dampening: 0
 nesterov: False
 momentum: 0.9
@@ -205,7 +205,7 @@ mixup_type: ""
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wd5e5_vares<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_sp<input_dim>_dist2_aug53
+check_path: !ref Data/checkpoint/<model><resnet_size>/<input_norm>_batch<batch_size>_<block_type>_avg<avg_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_<fast>_chn32_wde5_vares<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_sp<input_dim>_dist2_aug53
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist
 #_lamda<lamda_beta>
