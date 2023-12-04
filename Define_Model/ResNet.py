@@ -2393,7 +2393,7 @@ class ResNet20(nn.Module):
 
 class LocalResNet(nn.Module):
     """
-    Define the ResNets model with A-softmax and AM-softmax loss.
+    Define the ResNet model with A-softmax and AM-softmax loss.
     Added dropout as https://github.com/nagadomi/kaggle-cifar10-torch7 after average pooling and fc layer.
     """
 
