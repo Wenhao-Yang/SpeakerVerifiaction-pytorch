@@ -1119,7 +1119,7 @@ class FrequencyDecayReweightLayer(nn.Module):
         """
         # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
         freq_std   = x.std(dim=-2, keepdim=True)
-        freq_score = (self.decay_std - freq_std) / self.theta
+        freq_score = (self.decay_std - freq_std) / self.theta.clamp_min(0.25)
         # freq_score = torch.nn.functional.tanhshrink(freq_score).clamp_max(1)
         # f = freq_score.exp()
         f = 0.5 + self.activation(freq_score)
