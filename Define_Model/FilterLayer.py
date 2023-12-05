@@ -1106,7 +1106,7 @@ class FrequencyDecayReweightLayer(nn.Module):
         self.input_dim = input_dim
         
         self.decay_std = nn.Parameter(torch.ones(1, 1, 1, input_dim))
-        self.theta = 0.5
+        self.theta = 1.0
         self.activation = nn.Sigmoid()
 
     def forward(self, x):
@@ -1119,6 +1119,7 @@ class FrequencyDecayReweightLayer(nn.Module):
         # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
         freq_std   = x.std(dim=-2, keepdim=True)
         freq_score = (self.decay_std - freq_std) / self.theta
+        freq_score = torch.nn.functional.tanhshrink(freq_score)
 
         f = 0.5 + self.activation(freq_score)
 
@@ -1161,6 +1162,37 @@ class FrequencyDecayReweightLayer2(nn.Module):
     def __repr__(self):
         return "FrequencyDecayReweightLayer2(input_dim=%d)" % (self.input_dim)
     
+
+class FrequencyDecayReweightLayer3(nn.Module):
+    def __init__(self, input_dim=161):
+        super(FrequencyDecayReweightLayer3, self).__init__()
+        self.input_dim = input_dim
+        
+        self.decay_std = nn.Parameter(torch.ones(1, 1, 1, input_dim))
+        self.theta = 0.5
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x):
+        """sumary_line
+        
+        Keyword arguments:
+        X -- batch, channel, time, frequency
+        Return: x + U
+        """
+        # assert self.weight.shape[-1] == x.shape[-1], print(self.weight.shape, x.shape)
+        freq_std   = x.std(dim=-2, keepdim=True)
+        freq_score = (self.decay_std - freq_std) / self.theta
+        freq_score = torch.nn.functional.tanhshrink(freq_score)
+        # torch.clamp_max(freq_score, )
+
+        f = 0.5 + self.activation(freq_score)
+
+        return x * f
+
+    def __repr__(self):
+        return "FrequencyDecayReweightLayer3(input_dim=%d)" % (self.input_dim)
+    
+
 
 class FrequencyReweightLayer2(nn.Module):
     def __init__(self, input_dim=161):
