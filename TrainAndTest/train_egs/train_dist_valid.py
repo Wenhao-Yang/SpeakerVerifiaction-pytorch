@@ -210,6 +210,16 @@ def train(train_loader, valid_loader, model, optimizer, epoch, scheduler,
         loss, other_loss = model.module.loss(classfier, feats, label,
                                              batch_weight=batch_weight, epoch=epoch)
 
+        if np.isnan(loss.item()):
+            optimizer.zero_grad()  # reset gradient
+            loss_nan += 1
+            if loss_nan  > 100:
+                raise ValueError('Loss value is NaN!')
+            else:
+                if torch.distributed.get_rank() == 0:
+                    print('==> Loss value is NaN! for {} step'.format(loss_nan))
+                continue
+            
         predicted_labels = output_softmax(classfier.clone())
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
@@ -233,9 +243,6 @@ def train(train_loader, valid_loader, model, optimizer, epoch, scheduler,
         if torch.distributed.get_rank() == 0:
             writer.add_scalar('Train/All_Loss', float(loss.item()),
                               int((epoch - 1) * len(train_loader) + batch_idx + 1))
-
-        if np.isnan(loss.item()):
-            raise ValueError('Loss value is NaN!')
 
         # compute gradient and update weights
         loss.backward()
