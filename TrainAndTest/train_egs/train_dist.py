@@ -214,10 +214,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     # Apply augment
                     wavs_aug = augment(wavs[data_idx], torch.tensor([1.0]*len(wavs[[data_idx]])).cuda())
                     # Managing speed change
-                    if wavs_aug.shape[1] > wavs.shape[1]:
-                        wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
+                    if wavs_aug.shape[1] > wavs[data_idx].shape[1]:
+                        wavs_aug = wavs_aug[:, 0 : wavs[data_idx].shape[1]]
                     else:
-                        zero_sig = torch.zeros_like(wavs)
+                        zero_sig = torch.zeros_like(wavs[data_idx])
                         zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
                         wavs_aug = zero_sig
 
