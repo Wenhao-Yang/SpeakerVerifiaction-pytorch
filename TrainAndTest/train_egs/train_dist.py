@@ -115,7 +115,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             else:
                 augment_pipeline.append(augment.cuda())
 
-        if isinstance(config_args['augment_prob'], list):
+        if 'augment_prob' in config_args and isinstance(config_args['augment_prob'], list):
             p = np.array(config_args['augment_prob'])
             rp = 1/p
             rp /= rp.sum()
@@ -198,7 +198,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     augs_idx = np.array(augs_idx)
                     sample_idxs = [np.where(np.sum(augs_idx == i, axis=1) >= 1)[0] for i in range(len(augment_pipeline))]
                     augs_idx = [i for i in range(len(augment_pipeline))]
-
                 else: 
                     this_lr = optimizer.param_groups[0]['lr']
                     augs_idx = config_args['augment_prob'](ratio=this_lr)
