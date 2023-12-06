@@ -115,6 +115,16 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             else:
                 augment_pipeline.append(augment.cuda())
 
+        if isinstance(config_args['augment_prob'], list):
+            p = np.array(config_args['augment_prob'])
+            rp = 1/p
+            rp /= rp.sum()
+            min_score, max_score = 0.1, 20
+            max_diff = max_score - min_score
+
+            augp_a = (rp - p) / max_diff
+            augp_b = p - augp_a * min_score
+
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
 
@@ -138,37 +148,61 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         if 'augment_pipeline' in config_args:
             with torch.no_grad():
                 wavs_aug_tot = []
+                labels_aug_tot = []
                 wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
+                labels_aug_tot.append(label.cuda())
+
                 wavs = data.squeeze().cuda()
+                wav_label = label.squeeze().cuda()
 
                 # augment = np.random.choice(augment_pipeline)
                 # for count, augment in enumerate(augment_pipeline):
                 if 'sample_score' in config_args and 'sample_ratio' in config_args:
-                    sample_ratio = int(config_args['sample_ratio'] * len(wavs))
-                    # plain sum
-                    
-                    if 'batch_sample' not in config_args or config_args['batch_sample'] == 'norm':
-                        scores = scores/scores.sum()
-                        score_idx = np.random.choice(len(wavs), sample_ratio,
-                                                        p=scores.squeeze().numpy(), replace=False)
-                    else:
-                        if config_args['batch_sample'] == 'max':
-                            score_idx = np.argsort(scores)[0][-sample_ratio:]
-                        elif config_args['batch_sample'] == 'soft':
-                            scores = scores.squeeze().unsqueeze(0)
-                            scores = output_softmax(scores/scores.mean()) #overflow
+                    if config_args['sample_ratio'] < 1:
+                        sample_ratio = int(config_args['sample_ratio'] * len(wavs))
+                        # plain sum
+                        
+                        if 'batch_sample' not in config_args or config_args['batch_sample'] == 'norm':
+                            scores = scores/scores.sum()
                             score_idx = np.random.choice(len(wavs), sample_ratio,
-                                                        p=scores.squeeze().numpy(), replace=False)
-                        elif config_args['batch_sample'] == 'rand':
-                            score_idx = np.random.choice(len(wavs), sample_ratio, replace=False)
-                    
-                    wavs = wavs[score_idx]
+                                                            p=scores.squeeze().numpy(), replace=False)
+                        else:
+                            if config_args['batch_sample'] == 'max':
+                                score_idx = np.argsort(scores)[0][-sample_ratio:]
+                            elif config_args['batch_sample'] == 'soft':
+                                scores = scores.squeeze().unsqueeze(0)
+                                scores = output_softmax(scores/scores.mean()) #overflow
+                                score_idx = np.random.choice(len(wavs), sample_ratio,
+                                                            p=scores.squeeze().numpy(), replace=False)
+                            elif config_args['batch_sample'] == 'rand':
+                                score_idx = np.random.choice(len(wavs), sample_ratio, replace=False)
+                        
+                        scores = scores[score_idx]
+                        wavs = wavs[score_idx]
+                        wav_label = wav_label[score_idx]
 
                 if 'augment_prob' not in config_args:
                     augs_idx = np.random.choice(len(augment_pipeline), size=num_pipes, replace=False)
+                    sample_idxs = [np.arange(len(wavs))] * len(augs_idx)
+
+                elif isinstance(config_args['augment_prob'], list):
+                    augs_idx = []
+                    for s in scores:
+                        this_p = augp_a * float(s) + augp_b
+                        this_p /= this_p.sum()
+                        augs_idx.append(np.random.choice(len(augment_pipeline), size=num_pipes, 
+                                                    p=this_p, replace=False))
+
+                    # max_id = np.array([[i, np.sum([i==j for j in augs_idx])] for i in range(len(augment_pipeline))])
+                    # augs_idx = max_id[:, 0][np.argsort(max_id[:, 1])[-num_pipes:]]
+                    augs_idx = np.array(augs_idx)
+                    sample_idxs = [np.where(np.sum(augs_idx == i, axis=1) >= 1)[0] for i in range(len(augment_pipeline))]
+                    augs_idx = [i for i in range(len(augment_pipeline))]
+
                 else: 
                     this_lr = optimizer.param_groups[0]['lr']
                     augs_idx = config_args['augment_prob'](ratio=this_lr)
+                    sample_idxs = [np.arange(len(data))] * len(augs_idx)
 
                 augs_idx = set(augs_idx)
                 other_idx = set(np.arange(len(augment_pipeline))) - augs_idx
@@ -176,9 +210,9 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 other_augments = [augment_pipeline[i] for i in other_idx]
             
                 # p = p / p.sum()
-                for augment in augs:
+                for data_idx, augment in zip(sample_idxs, augs):
                     # Apply augment
-                    wavs_aug = augment(wavs, torch.tensor([1.0]*len(wavs)).cuda())
+                    wavs_aug = augment(wavs[data_idx], torch.tensor([1.0]*len(wavs)).cuda())
                     # Managing speed change
                     if wavs_aug.shape[1] > wavs.shape[1]:
                         wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
@@ -189,9 +223,11 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
                     if 'concat_augment' in config_args and config_args['concat_augment']:
                         wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
+                        labels_aug_tot.append(wav_label[data_idx])
                     else:
                         wavs = wavs_aug
-                        wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
+                        wavs_aug_tot[0] = wavs_aug.unsqueeze(1).unsqueeze(1)
+                        labels_aug_tot[0] = wav_label[data_idx]
 
                 if 'rest_prob' in config_args:
                     for aug_i in range(len(wavs_aug_tot)-1):
@@ -208,22 +244,20 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                             wavs_aug_tot[aug_i] = wavs_aug.unsqueeze(1).unsqueeze(1)
                 
                 data = torch.cat(wavs_aug_tot, dim=0)
-                if 'sample_score' in config_args and 'sample_ratio' in config_args:
-                    n_augment = len(wavs_aug_tot)-1
-                    new_label = [label]
-                    new_label.extend([label[score_idx]] * n_augment)
-                else:
-                    n_augment = len(wavs_aug_tot)
-                    new_label = [label] * n_augment
-
-                label = torch.cat(new_label)
+                # if 'sample_score' in config_args and 'sample_ratio' in config_args:
+                #     n_augment = len(wavs_aug_tot)-1
+                #     new_label = [label]
+                #     new_label.extend([label[score_idx]] * n_augment)
+                # else:
+                #     n_augment = len(wavs_aug_tot)
+                #     new_label = [label] * n_augment
+                label = torch.cat(labels_aug_tot)
 
         if torch.cuda.is_available():
             label = label.cuda()
-            data = data.cuda()
+            data  = data.cuda()
 
         data, label = Variable(data), Variable(label)
-        # pdb.set_trace()
         classfier, feats = model(data)
 
         loss, other_loss = model.module.loss(classfier, feats, label,
@@ -245,18 +279,16 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         minibatch_correct = float(
             (predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
-        
-        if 'augment_prob' in config_args:
-            config_args['augment_prob'].update(1/(float(loss.item())+1) * 5 + (minibatch_acc - correct/(total_datasize+1))*5)
-
         correct += minibatch_correct
+
+        # if 'augment_prob' in config_args:
+        #     config_args['augment_prob'].update(1/(float(loss.item())+1) * 5 + (minibatch_acc - correct/(total_datasize+1))*5)
         total_datasize += len(predicted_one_labels)
         # print(loss.shape)
         total_loss += float(loss.item())
-        
         total_other_loss += other_loss
-        if isinstance(augment_pipeline[0], AdaptiveBandPass):
-            augment_pipeline[0].update(1/(float(loss.item())+1))
+        # if isinstance(augment_pipeline[0], AdaptiveBandPass):
+        #     augment_pipeline[0].update(1/(float(loss.item())+1))
 
         if torch.distributed.get_rank() == 0:
             writer.add_scalar('Train/All_Loss', float(loss.item()),
@@ -657,7 +689,7 @@ def main():
         init_lr = config_args['lr'] * \
             config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
         init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
-        
+
         if torch.distributed.get_rank() == 0:
             print('Set the lr and weight_decay of classifier to %f and %f' %
               (init_lr, init_wd))

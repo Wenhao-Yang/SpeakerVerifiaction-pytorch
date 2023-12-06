@@ -750,7 +750,8 @@ class ScriptVerifyDataset(data.Dataset):
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
-                 vad_select=False, sample_type='instance', sr=16000, save_dir='', sample_score='',
+                 vad_select=False, sample_type='instance', sr=16000, save_dir='',
+                 sample_score='',
                  segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
 
         self.return_uid = return_uid

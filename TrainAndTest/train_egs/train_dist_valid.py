@@ -96,6 +96,7 @@ def train(train_loader, valid_loader, model, optimizer, epoch, scheduler,
     total_loss = 0.
     orth_err = 0
     total_other_loss = 0.
+    valid_loss = None
 
     pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True, ncols=150) if torch.distributed.get_rank(
     ) == 0 else enumerate(train_loader)
@@ -319,6 +320,8 @@ def train(train_loader, valid_loader, model, optimizer, epoch, scheduler,
         writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
         writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
 
+    valid_loss = valid_class(
+            valid_loader, model, epoch, config_args, writer, step=step)
     torch.cuda.empty_cache()
 
     return step, valid_loss
@@ -426,14 +429,14 @@ def valid_class(valid_loader, model, epoch, config_args, writer, step=None):
         writer.add_scalar('Train/Valid_Accuracy', valid_accuracy, epoch)
         torch.cuda.empty_cache()
 
-        this_epoch_str = '          \33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(
+        this_epoch_str = '          \n\33[91mValid Accuracy: {:.6f}%, Avg loss: {:.6f}'.format(
             valid_accuracy, valid_loss)
 
         if all_other_loss != 0:
             this_epoch_str += ' {} Loss: {:6f}'.format(
                 config_args['loss_type'], all_other_loss / len(valid_loader))
 
-        this_epoch_str += '.\33[0m'
+        this_epoch_str += '.\33[0m\n'
         print(this_epoch_str)
 
     return valid_loss

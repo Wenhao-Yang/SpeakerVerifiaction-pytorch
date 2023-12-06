@@ -159,11 +159,16 @@ augment_pipeline: [
    !ref <add_noise>,
    !ref <add_rev_noise>,
 ]
-# augment_prob: [0.07294483, 0.1666942 , 0.16950445, 0.12785874, 0.46299776]
+
+augment_prob: [0.07294483, 0.1666942 , 0.16950445, 0.12785874, 0.46299776]
+sample_score: loss.clip
+sample_ratio: 1.0
+batch_sample: rand
+
 # augment_prob: [0.2, 0.2, 0.2, 0.2, 0.2]
-augment_prob: !new:TrainAndTest.common_func.Policy
-   p: [0.2, 0.2, 0.2, 0.2, 0.2]
-   sample_ratio: 0.6
+# augment_prob: !new:TrainAndTest.common_func.Policy
+#    p: [0.2, 0.2, 0.2, 0.2, 0.2]
+#    sample_ratio: 0.6
 
 # augment_pipeline: [ ]
 concat_augment: True
