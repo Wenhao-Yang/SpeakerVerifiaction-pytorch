@@ -212,7 +212,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 # p = p / p.sum()
                 for data_idx, augment in zip(sample_idxs, augs):
                     # Apply augment
-                    wavs_aug = augment(wavs[data_idx], torch.tensor([1.0]*len(wavs)).cuda())
+                    wavs_aug = augment(wavs[data_idx], torch.tensor([1.0]*len(wavs[[data_idx]])).cuda())
                     # Managing speed change
                     if wavs_aug.shape[1] > wavs.shape[1]:
                         wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
