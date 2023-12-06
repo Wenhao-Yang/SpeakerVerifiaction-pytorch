@@ -55,7 +55,7 @@ feat_format: wav
 remove_vad: False
 
 ### Training settings
-epochs: 60
+epochs: 30
 
 # optimizer
 optimizer: adam
@@ -78,7 +78,7 @@ step_size: 65000
 cos_sim: True
 
 early_stopping: True
-early_patience: 20
+early_patience: 15
 early_delta: 0.001
 early_meta: "mix8"
 
@@ -162,12 +162,15 @@ augment_pipeline: [
    !ref <add_rev>,
    !ref <add_noise>,
    !ref <add_rev_noise>,
-   !ref <add_musan_noise>
 ]
 
 # augment_pipeline: [ ]
 concat_augment: True
 num_pipes: 3
+
+bandpass: [20, 3000]
+band_pass_prob: 0.5
+band_order: 8
 
 # loss
 loss_ratio: 1
@@ -188,9 +191,9 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug64radio
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_band05_aug53radio64
 
-save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_radsnr05
+save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_64radsnr05
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>

@@ -93,6 +93,7 @@ if [ $stage -le 10 ]; then
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox2_brain_aug64.yaml --seed=${seed}
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox2_brain_aug64.yaml --seed=${seed}
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox2_brain_augradio.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=0,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox2_band05_augradio.yaml --seed=${seed}
 
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_sp/vox2_brain.yaml --seed=${seed}
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox2_brain_band.yaml --seed=${seed}
@@ -110,7 +111,7 @@ if [ $stage -le 10 ]; then
 
       # CUDA_VISIBLE_DEVICES=0,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_brain_aug53_fdrl.yaml --seed=${seed}
 
-      CUDA_VISIBLE_DEVICES=0,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_brain_aug53_prob.yaml --seed=${seed}
+      # CUDA_VISIBLE_DEVICES=0,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_brain_aug53_prob.yaml --seed=${seed}
 
       # CUDA_VISIBLE_DEVICES=0,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug53.yaml --seed=${seed}
 
