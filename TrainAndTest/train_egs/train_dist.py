@@ -341,8 +341,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             pbar.set_postfix(batch_length=batch_length, accuracy='{:>6.2f}%'.format(
                 100. * minibatch_acc), average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
 
-        # if (batch_idx + 1) == 20:
-        #     break
+        if (batch_idx + 1) == 20:
+            break
 
     this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
         correct) / total_datasize, total_loss / len(train_loader))
@@ -453,8 +453,8 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
 
     valid_loss = total_loss / total_batch
 
-    if 'augment_prob' in config_args:
-            config_args['augment_prob'].update(20/(valid_loss+1))
+    if 'augment_prob' in config_args and not isinstance(config_args['augment_prob'], list):
+        config_args['augment_prob'].update(20/(valid_loss+1))
 
     if 'valid_update' in config_args:
         config_args['aug_prob'].update(valid_loss)
