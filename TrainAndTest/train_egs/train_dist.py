@@ -353,7 +353,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         
     # if isinstance(augment_pipeline[0], AdaptiveBandPass):
     #     this_epoch_str += ' Adaptive probbility: {}'.format(augment_pipeline[0].p())
-    if 'augment_prob' in config_args:
+    if 'augment_prob' in config_args and not isinstance(config_args['augment_prob'], list):
         this_epoch_str += ' Aug probbility: {}'.format(config_args['augment_prob'].p)
 
     this_epoch_str += '.\33[0m'
