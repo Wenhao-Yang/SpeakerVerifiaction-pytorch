@@ -206,7 +206,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 augs_idx = set(augs_idx)
                 other_idx = set(np.arange(len(augment_pipeline))) - augs_idx
                 augs = [augment_pipeline[i] for i in augs_idx]
-                other_augments = [augment_pipeline[i] for i in other_idx]
+                # other_augments = [augment_pipeline[i] for i in other_idx]
             
                 # p = p / p.sum()
                 for data_idx, augment in zip(sample_idxs, augs):
@@ -228,20 +228,20 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                         wavs_aug_tot[0] = wavs_aug.unsqueeze(1).unsqueeze(1)
                         labels_aug_tot[0] = wav_label[data_idx]
 
-                if 'rest_prob' in config_args:
-                    for aug_i in range(len(wavs_aug_tot)-1):
-                        if np.random.uniform(0,1) < config_args['rest_prob']:
-                            augment = np.random.choice(other_augments)
-                            wavs_aug = augment(wavs_aug_tot[aug_i].squeeze().cuda(), torch.tensor([1.0]*len(wavs)).cuda())
-                            if wavs_aug.shape[1] > wavs.shape[1]:
-                                wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
-                            else:
-                                zero_sig = torch.zeros_like(wavs)
-                                zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
-                                wavs_aug = zero_sig
+                # if 'rest_prob' in config_args:
+                #     for aug_i in range(len(wavs_aug_tot)-1):
+                #         if np.random.uniform(0,1) < config_args['rest_prob']:
+                #             augment = np.random.choice(other_augments)
+                #             wavs_aug = augment(wavs_aug_tot[aug_i].squeeze().cuda(), torch.tensor([1.0]*len(wavs)).cuda())
+                #             if wavs_aug.shape[1] > wavs.shape[1]:
+                #                 wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
+                #             else:
+                #                 zero_sig = torch.zeros_like(wavs)
+                #                 zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
+                #                 wavs_aug = zero_sig
 
-                            wavs_aug_tot[aug_i] = wavs_aug.unsqueeze(1).unsqueeze(1)
-                
+                #             wavs_aug_tot[aug_i] = wavs_aug.unsqueeze(1).unsqueeze(1)
+            
                 data = torch.cat(wavs_aug_tot, dim=0)
                 # if 'sample_score' in config_args and 'sample_ratio' in config_args:
                 #     n_augment = len(wavs_aug_tot)-1
@@ -352,8 +352,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         
     # if isinstance(augment_pipeline[0], AdaptiveBandPass):
     #     this_epoch_str += ' Adaptive probbility: {}'.format(augment_pipeline[0].p())
-    if 'augment_prob' in config_args and not isinstance(config_args['augment_prob'], list):
-        this_epoch_str += ' Aug probbility: {}'.format(config_args['augment_prob'].p)
+    # if 'augment_prob' in config_args and not isinstance(config_args['augment_prob'], list):
+    #     this_epoch_str += ' Aug probbility: {}'.format(config_args['augment_prob'].p)
 
     this_epoch_str += '.\33[0m'
 
@@ -452,8 +452,8 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
 
     valid_loss = total_loss / total_batch
 
-    if 'augment_prob' in config_args and not isinstance(config_args['augment_prob'], list):
-        config_args['augment_prob'].update(20/(valid_loss+1))
+    # if 'augment_prob' in config_args and not isinstance(config_args['augment_prob'], list):
+    #     config_args['augment_prob'].update(20/(valid_loss+1))
 
     if 'valid_update' in config_args:
         config_args['aug_prob'].update(valid_loss)
