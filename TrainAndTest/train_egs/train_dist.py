@@ -166,16 +166,25 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                             scores = scores/scores.sum()
                             score_idx = np.random.choice(len(wavs), sample_ratio,
                                                             p=scores.squeeze().numpy(), replace=False)
-                        else:
-                            if config_args['batch_sample'] == 'max':
-                                score_idx = np.argsort(scores)[0][-sample_ratio:]
-                            elif config_args['batch_sample'] == 'soft':
-                                scores = scores.squeeze().unsqueeze(0)
-                                scores = output_softmax(scores/scores.mean()) #overflow
-                                score_idx = np.random.choice(len(wavs), sample_ratio,
+                        elif config_args['batch_sample'] == 'norm_mean':
+                            if 'score_mean_ratio' in config_args:
+                                scores -= scores.mean() * config_args['score_mean_ratio']
+                            else:
+                                scores -= scores.mean()
+                                
+                            scores = scores.abs()
+                            scores = scores/scores.sum()
+                            score_idx = np.random.choice(len(wavs), sample_ratio,
                                                             p=scores.squeeze().numpy(), replace=False)
-                            elif config_args['batch_sample'] == 'rand':
-                                score_idx = np.random.choice(len(wavs), sample_ratio, replace=False)
+                        elif config_args['batch_sample'] == 'max':
+                            score_idx = np.argsort(scores)[0][-sample_ratio:]
+                        elif config_args['batch_sample'] == 'soft':
+                            scores = scores.squeeze().unsqueeze(0)
+                            scores = output_softmax(scores/scores.mean()) #overflow
+                            score_idx = np.random.choice(len(wavs), sample_ratio,
+                                                        p=scores.squeeze().numpy(), replace=False)
+                        elif config_args['batch_sample'] == 'rand':
+                            score_idx = np.random.choice(len(wavs), sample_ratio, replace=False)
                         
                         scores = scores[score_idx]
                         wavs = wavs[score_idx]
