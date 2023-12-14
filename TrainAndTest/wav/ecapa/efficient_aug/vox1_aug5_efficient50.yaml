@@ -20,6 +20,7 @@ wav_type: int
 subset: ""
 sample_type: instance
 sample_score: loss
+batch_sample: norm_mean
 sample_ratio: 0.5
 
 train_dir: !ref <data_root_dir>/data/<datasets>/dev
