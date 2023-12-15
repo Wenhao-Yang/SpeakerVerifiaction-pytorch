@@ -176,6 +176,12 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                             scores = scores/scores.sum()
                             score_idx = np.random.choice(len(wavs), sample_ratio,
                                                             p=scores.squeeze().numpy(), replace=False)
+                        elif config_args['batch_sample'] == 'norm_max':
+                            scores -= scores.max()
+                            scores = scores.abs()
+                            scores = scores/scores.sum()
+                            score_idx = np.random.choice(len(wavs), sample_ratio,
+                                                            p=scores.squeeze().numpy(), replace=False)
                         elif config_args['batch_sample'] == 'max':
                             score_idx = np.argsort(scores)[0][-sample_ratio:]
                         elif config_args['batch_sample'] == 'soft':
