@@ -185,7 +185,13 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                                                         p=scores.squeeze().numpy(), replace=False)
                         elif config_args['batch_sample'] == 'rand':
                             score_idx = np.random.choice(len(wavs), sample_ratio, replace=False)
-                        
+
+                        if 'repeat_batch' in config_args:
+                            # repeat sampled samples to make batch_size equal 
+                            while len(score_idx) < len(wavs):
+                                score_idx = np.concatenate((score_idx, score_idx))
+                            score_idx = score_idx[:len(wavs)]
+
                         scores = scores[score_idx]
                         wavs = wavs[score_idx]
                         wav_label = wav_label[score_idx]
