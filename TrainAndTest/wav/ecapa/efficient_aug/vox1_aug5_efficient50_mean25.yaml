@@ -23,7 +23,7 @@ sample_score: loss
 sample_ratio: 0.5
 batch_sample: norm_mean
 score_mean_ratio: 1.5
-repeat_batch: True
+# repeat_batch: True
 
 train_dir: !ref <data_root_dir>/data/<datasets>/dev
 # <subset>_<feat>
