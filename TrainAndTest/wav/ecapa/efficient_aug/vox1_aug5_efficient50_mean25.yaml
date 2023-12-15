@@ -22,7 +22,7 @@ sample_type: instance
 sample_score: loss
 sample_ratio: 0.5
 batch_sample: norm_mean
-score_mean_ratio: 1.25
+score_mean_ratio: 1.5
 repeat_batch: True
 
 train_dir: !ref <data_root_dir>/data/<datasets>/dev
@@ -194,7 +194,7 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5_<sample_score>05_<batch_sample>125_repeat
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5_<sample_score>05_<batch_sample>1.5
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_dist
 #_lamda<lamda_beta>
