@@ -37,6 +37,7 @@ class SpeakerLoss(nn.Module):
         self.lncl = True if 'lncl' in config_args and config_args['lncl'] == True else False
         iteration = 0
 
+        self.reduction = 'mean'
         ce_criterion = nn.CrossEntropyLoss()
         loss_type = set(['soft', 'asoft', 'center', 'variance', 'gaussian', 'coscenter', 'mulcenter',
                          'amsoft', 'subam',  'damsoft', 'subdam',
@@ -145,9 +146,14 @@ class SpeakerLoss(nn.Module):
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']
 
-    def forward(self, classfier, feats, label,
+    def forward(self, outputs, label,
                 second_label=None, batch_weight=None, epoch=0,
-                half_data=0, lamda_beta=0):
+                half_data=0, lamda_beta=0, other=False):
+        
+        if isinstance(outputs, tuple):
+            classfier, feats = outputs
+        else:
+            classfier = outputs
 
         config_args = self.config_args
         other_loss = 0.
@@ -159,6 +165,7 @@ class SpeakerLoss(nn.Module):
                 loss = self.xe_criterion(
                     classfier, label, half_batch_size=half_data, lamda_beta=lamda_beta)
             else:
+                self.xe_criterion.reduction = self.reduction
                 loss = self.xe_criterion(classfier, label)
 
             if batch_weight != None:
@@ -194,8 +201,10 @@ class SpeakerLoss(nn.Module):
 
         #     loss = (1 - alpha_t) * loss + alpha_t * predict_loss + \
         #         config_args['beta'] * torch.mean(-torch.log(mp))
-
-        return loss, other_loss
+        if other:
+            return loss, other_loss
+        else:
+            return loss
 
 
 def get_trials(trials):

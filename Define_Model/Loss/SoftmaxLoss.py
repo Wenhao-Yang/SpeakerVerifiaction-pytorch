@@ -307,6 +307,7 @@ class ArcSoftmaxLoss(nn.Module):
         self.margin = margin
         self.focal = focal
         self.dynamic_s = dynamic_s
+        self.reduction = 'mean'
 
         if smooth_ratio > 0:
             self.ce = LabelSmoothing(smooth_ratio)
@@ -351,6 +352,8 @@ class ArcSoftmaxLoss(nn.Module):
             max_cos = costh.max(dim=1, keepdim=True).values
             costh_m_s = costh_m_s * torch.exp(-max_cos*max_cos*max_cos*max_cos)
         # print('costh_m_s max is ', costh_m_s.max())
+        self.ce.reduction = self.reduction
+
         loss = self.ce(costh_m_s, label)
 
         return loss
@@ -861,7 +864,7 @@ class MixupLoss(nn.Module):
         self.gamma = gamma
         self.margin_lamda = margin_lamda
 
-    def forward(self, costh, label, half_batch_size, lamda_beta=0):
+    def forward(self, costh, label, half_batch_size=0, lamda_beta=0):
         margin_lamda = lamda_beta if self.margin_lamda else 1
         if half_batch_size > 0 :
             loss = self.loss(costh[:half_batch_size], label[:half_batch_size])

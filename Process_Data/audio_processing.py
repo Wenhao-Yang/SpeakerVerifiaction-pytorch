@@ -641,7 +641,7 @@ class cam_normalize(object):
 
 class CAMNormInput(object):
     def __init__(self, threshold=0.15, pro_type='del', 
-                 norm_cam=None, init_input='zero',
+                 norm_cam='none', init_input='zero',
                  scaled='tanh') -> None:
         self.threshold = threshold
         self.pro_type = pro_type
@@ -1095,7 +1095,7 @@ class MelFbank(object):
         output = self.t(input.squeeze(1))
 
         output = torch.transpose(output, 1, 2)
-        return torch.log(output + 1e-6)
+        return torch.log10(output + 1e-6)
 
 
 class PadCollate:

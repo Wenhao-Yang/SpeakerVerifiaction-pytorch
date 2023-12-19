@@ -181,7 +181,7 @@ class SEBlock(nn.Module):
     torch.Size([8, 120, 64])
     """
 
-    def __init__(self, in_channels, se_channels, out_channels):
+    def __init__(self, in_channels, se_channels, out_channels, dropout_p=0):
         super(SEBlock, self).__init__()
 
         self.conv1 = Conv1d(
@@ -192,6 +192,7 @@ class SEBlock(nn.Module):
             in_channels=se_channels, out_channels=out_channels, kernel_size=1
         )
         self.sigmoid = torch.nn.Sigmoid()
+        self.drop = torch.nn.Dropout1d(dropout_p)
 
     def forward(self, x, lengths=None):
         """ Processes the input tensor x and returns an output tensor."""
@@ -205,7 +206,7 @@ class SEBlock(nn.Module):
             s = x.mean(dim=2, keepdim=True)
 
         s = self.relu(self.conv1(s))
-        s = self.sigmoid(self.conv2(s))
+        s = self.drop(self.sigmoid(self.conv2(s)))
 
         return s * x
 
@@ -335,6 +336,7 @@ class SERes2NetBlock(nn.Module):
         dilation=1,
         activation=torch.nn.ReLU,
         groups=1,
+        dropout_p=0.0,
     ):
         super().__init__()
         self.out_channels = out_channels
@@ -357,7 +359,8 @@ class SERes2NetBlock(nn.Module):
             activation=activation,
             groups=groups,
         )
-        self.se_block = SEBlock(out_channels, se_channels, out_channels)
+        self.se_block = SEBlock(out_channels, se_channels, out_channels,
+                                dropout_p=dropout_p)
 
         self.shortcut = None
         if in_channels != out_channels:
@@ -413,21 +416,24 @@ class ECAPA_TDNN(torch.nn.Module):
     """
 
     def __init__(
-        self, input_dim, num_classes, embedding_size=192, activation=torch.nn.ReLU,
-        input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
-        win_length=int(0.025*16000), nfft=512, stretch_ratio=[1.0],
-        init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
-        mask='None', mask_len=[5, 20], mask_ckp='',
-        channels=[512, 512, 512, 512, 1536],
-        kernel_sizes=[5, 3, 3, 3, 1],
-        dilations=[1, 2, 3, 4, 1],
-        attention_channels=128,
-        res2net_scale=8,
-        se_channels=128,
-        global_context=True,
-        groups=[1, 1, 1, 1, 1], **kwargs):
+            self, input_dim, num_classes, embedding_size=192, activation=torch.nn.ReLU,
+            input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
+            win_length=int(0.025*16000), nfft=512, stretch_ratio=[1.0],
+            init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
+            mask='None', mask_len=[5, 20], mask_ckp='',
+            channels=[512, 512, 512, 512, 1536],
+            kernel_sizes=[5, 3, 3, 3, 1],
+            dilations=[1, 2, 3, 4, 1],
+            dropouts=[0, 0, 0],
+            attention_channels=128,
+            res2net_scale=8,
+            se_channels=128,
+            global_context=True,
+            groups=[1, 1, 1, 1, 1], **kwargs):
 
         super().__init__()
+        self.embedding_size = embedding_size
+
         input_mask = []
 
         filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
@@ -474,6 +480,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     dilation=dilations[i],
                     activation=activation,
                     groups=groups[i],
+                    dropout_p=dropouts[i-1],
                 )
             )
 
@@ -506,7 +513,8 @@ class ECAPA_TDNN(torch.nn.Module):
         self.classifier = Classifier(
             input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
 
-    def forward(self, x, lengths=None):
+    def forward(self, x, lengths=None, last=False,
+                freeze=False):
         """Returns the embedding vector.
 
         Arguments
@@ -514,37 +522,72 @@ class ECAPA_TDNN(torch.nn.Module):
         x : torch.Tensor
             Tensor of shape (batch, time, channel).
         """
-        # Minimize transpose for efficiency
-        x = self.input_mask(x)
-        # if proser != None and layer_mix == 1:
-        #     x = self.mixup(x, proser, lamda_beta)
-        if len(x.shape) == 4:
-            x = x.squeeze(1).float()
-        x = x.transpose(1, 2)
+        if freeze:
+            with torch.no_grad():
+                x = self.input_mask(x)
+                if len(x.shape) == 4:
+                    x = x.squeeze(1).float()
+                x = x.transpose(1, 2)
 
-        xl = []
-        for layer in self.blocks:
-            try:
-                x = layer(x, lengths=lengths)
-            except TypeError:
-                x = layer(x)
-            xl.append(x)
+                xl = []
+                for layer in self.blocks:
+                    try:
+                        x = layer(x, lengths=lengths)
+                    except TypeError:
+                        x = layer(x)
+                    xl.append(x)
+                    
+                x = torch.cat(xl[1:], dim=1)
+                x = self.mfa(x)
+                x = self.asp(x, lengths=lengths)
+                x = self.asp_bn(x)
+                embeddings = self.fc(x)
+        else:
+            # Minimize transpose for efficiency
+            x = self.input_mask(x)
+            # if proser != None and layer_mix == 1:
+            #     x = self.mixup(x, proser, lamda_beta)
+            if len(x.shape) == 4:
+                x = x.squeeze(1).float()
+            x = x.transpose(1, 2)
 
-        # Multi-layer feature aggregation
-        x = torch.cat(xl[1:], dim=1)
-        x = self.mfa(x)
+            xl = []
+            for layer in self.blocks:
+                try:
+                    x = layer(x, lengths=lengths)
+                except TypeError:
+                    x = layer(x)
+                xl.append(x)
 
-        # Attentive Statistical Pooling
-        x = self.asp(x, lengths=lengths)
-        x = self.asp_bn(x)
+            # Multi-layer feature aggregation
+            x = torch.cat(xl[1:], dim=1)
+            x = self.mfa(x)
 
-        # Final linear transformation
-        embeddings = self.fc(x)
-        # embeddings = x.transpose(1, 2)
+            # Attentive Statistical Pooling
+            x = self.asp(x, lengths=lengths)
+            x = self.asp_bn(x)
+
+            # Final linear transformation
+            embeddings = self.fc(x)
+            # embeddings = x.transpose(1, 2).contiguous()
 
         logits = self.classifier(embeddings)
 
         return logits, embeddings
+
+    def get_embedding_dim(self):
+        return self.embedding_size
+
+    def get_grads(self) -> torch.Tensor:
+        """
+        Returns all the gradients concatenated in a single tensor.
+        :return: gradients tensor (??)
+        """
+        grads = []
+        for pp in list(self.parameters()):
+            if pp.requires_grad: # only using the parameter that require the gradient
+                grads.append(pp.grad.view(-1))
+        return torch.cat(grads)
 
 
 class Classifier(torch.nn.Module):
