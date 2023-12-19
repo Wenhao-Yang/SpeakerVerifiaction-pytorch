@@ -48,9 +48,9 @@ segment_shift: 32000
 
 # sample_type: instance
 input_per_spks: 768
-coreset_percent: 0.1
+coreset_percent: 0.5
 extract: True
-nj: 8
+nj: 6
 shuffle: False
 batch_shuffle: True
 
@@ -116,7 +116,7 @@ augment_speed: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
   speeds: [95, 100, 105]
 
-rir_folder: /home/yangwenhao/project/lstm_speaker_verification/data/rir #!ref <data_folder> # Change it if needed
+# rir_folder: /home/yangwenhao/project/lstm_speaker_verification/data/rir #!ref <data_folder> # Change it if needed
 # rir_folder: '/data2022/yangwenhao/dataset'
 # musan_lst: '/home/yangwenhao/project/SpeakerVerification-pytorch/Misc/audio_processing/musan_4s_nospeech.csv'
 
@@ -150,14 +150,14 @@ rir_folder: /home/yangwenhao/project/lstm_speaker_verification/data/rir #!ref <d
 #    noise_num_workers: 4
 #    rir_scale_factor: 1.0
 
-# # add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
-# #    noise_csv: !ref <musan_lst>
-# #    openrir_max_noise_len: 3.0  # seconds
-# #    reverb_prob: 0.0
-# #    noise_prob: 1.0
-# #    noise_snr_low: 0
-# #    noise_snr_high: 20
-# #    rir_scale_factor: 1.0
+# add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+#    noise_csv: !ref <musan_lst>
+#    openrir_max_noise_len: 3.0  # seconds
+#    reverb_prob: 0.0
+#    noise_prob: 1.0
+#    noise_snr_low: 0
+#    noise_snr_high: 20
+#    rir_scale_factor: 1.0
 
 # augment_pipeline: [
 #    !ref <augment_wavedrop>,
