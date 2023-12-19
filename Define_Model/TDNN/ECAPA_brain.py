@@ -192,7 +192,7 @@ class SEBlock(nn.Module):
             in_channels=se_channels, out_channels=out_channels, kernel_size=1
         )
         self.sigmoid = torch.nn.Sigmoid()
-        self.drop = torch.nn.Dropout1d(dropout_p)
+        self.drop_p = dropout_p
 
     def forward(self, x, lengths=None):
         """ Processes the input tensor x and returns an output tensor."""
@@ -206,7 +206,8 @@ class SEBlock(nn.Module):
             s = x.mean(dim=2, keepdim=True)
 
         s = self.relu(self.conv1(s))
-        s = self.drop(self.sigmoid(self.conv2(s)))
+        s = self.sigmoid(self.conv2(s))
+        s = torch.nn.functional.dropout(s, p=self.drop_p)
 
         return s * x
 
