@@ -33,7 +33,7 @@ class SpeakerLoss(nn.Module):
     def __init__(self, config_args):
         super().__init__()
 
-        self.config_args = config_args
+        self.config_args = {}
         self.lncl = True if 'lncl' in config_args and config_args['lncl'] == True else False
         iteration = 0
 
@@ -43,6 +43,8 @@ class SpeakerLoss(nn.Module):
                          'amsoft', 'subam',  'damsoft', 'subdam',
                          'arcsoft', 'subarc', 'minarcsoft', 'minarcsoft2', 'wasse', 'mmd', 'ring', 'arcdist',
                          'aDCF', ])
+
+        self.config_args['loss_type'] = config_args['loss_type']
 
         if config_args['loss_type'] == 'soft':
             xe_criterion = None
@@ -155,12 +157,11 @@ class SpeakerLoss(nn.Module):
         else:
             classfier = outputs
 
-        config_args = self.config_args
         other_loss = 0.
 
-        if config_args['loss_type'] in ['soft', 'asoft']:
+        if self.config_args['loss_type'] in ['soft', 'asoft']:
             loss = self.ce_criterion(classfier, label)
-        elif config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
+        elif self.config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
             if isinstance(self.xe_criterion, MixupLoss):
                 loss = self.xe_criterion(
                     classfier, label, half_batch_size=half_data, lamda_beta=lamda_beta)
