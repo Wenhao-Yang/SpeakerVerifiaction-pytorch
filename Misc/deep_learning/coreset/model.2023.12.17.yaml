@@ -4,6 +4,9 @@
 # @File: aidata_resnet.yaml
 # @Time: 2022/09/30 09:15
 # @Overview:
+__set_tseed: !apply:torch.manual_seed [123456]
+__set_nseed: !apply:numpy.random.seed [123456]
+__set_rseed: !apply:random.seed [123456]
 
 data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 data_dir: '/home/yangwenhao/project/SpeakerVerification-pytorch'
@@ -48,9 +51,9 @@ segment_shift: 32000
 
 # sample_type: instance
 input_per_spks: 768
-coreset_percent: 0.5
+coreset_percent: 0.25
 extract: True
-nj: 6
+nj: 4
 shuffle: False
 batch_shuffle: True
 
@@ -90,7 +93,7 @@ model: ECAPA_brain
 kernel_size:
 alpha: 0
 embedding_size: 192
-batch_size: 96
+batch_size: 64
 dropout_p: 0.0
 activation: relu
 channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
@@ -107,7 +110,6 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   channels: [256, 256, 256, 256, 768]
   num_classes: !ref <num_classes>
 
-
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
   speeds: [100]
@@ -117,38 +119,38 @@ augment_speed: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   speeds: [95, 100, 105]
 
 # rir_folder: /home/yangwenhao/project/lstm_speaker_verification/data/rir #!ref <data_folder> # Change it if needed
-# rir_folder: '/data2022/yangwenhao/dataset'
+rir_folder: '/data2022/yangwenhao/dataset'
 # musan_lst: '/home/yangwenhao/project/SpeakerVerification-pytorch/Misc/audio_processing/musan_4s_nospeech.csv'
 
-# add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
-#    openrir_folder: !ref <rir_folder>
-#    openrir_max_noise_len: 3.0  # seconds
-#    reverb_prob: 1.0
-#    noise_prob: 0.0
-#    noise_snr_low: 0
-#    noise_snr_high: 15
-#    noise_num_workers: 4
-#    rir_scale_factor: 1.0
+add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
+   openrir_folder: !ref <rir_folder>
+   openrir_max_noise_len: 3.0  # seconds
+   reverb_prob: 1.0
+   noise_prob: 0.0
+   noise_snr_low: 0
+   noise_snr_high: 15
+   noise_num_workers: 4
+   rir_scale_factor: 1.0
 
-# add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
-#    openrir_folder: !ref <rir_folder>
-#    openrir_max_noise_len: 3.0  # seconds
-#    reverb_prob: 0.0
-#    noise_prob: 1.0
-#    noise_snr_low: 0
-#    noise_snr_high: 15
-#    noise_num_workers: 4
-#    rir_scale_factor: 1.0
+add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+   openrir_folder: !ref <rir_folder>
+   openrir_max_noise_len: 3.0  # seconds
+   reverb_prob: 0.0
+   noise_prob: 1.0
+   noise_snr_low: 0
+   noise_snr_high: 15
+   noise_num_workers: 4
+   rir_scale_factor: 1.0
 
-# add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
-#    openrir_folder: !ref <rir_folder>
-#    openrir_max_noise_len: 3.0  # seconds
-#    reverb_prob: 1.0
-#    noise_prob: 1.0
-#    noise_snr_low: 0
-#    noise_snr_high: 15
-#    noise_num_workers: 4
-#    rir_scale_factor: 1.0
+add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+   openrir_folder: !ref <rir_folder>
+   openrir_max_noise_len: 3.0  # seconds
+   reverb_prob: 1.0
+   noise_prob: 1.0
+   noise_snr_low: 0
+   noise_snr_high: 15
+   noise_num_workers: 4
+   rir_scale_factor: 1.0
 
 # add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
 #    noise_csv: !ref <musan_lst>
@@ -159,13 +161,13 @@ augment_speed: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
 #    noise_snr_high: 20
 #    rir_scale_factor: 1.0
 
-# augment_pipeline: [
-#    !ref <augment_wavedrop>,
-#    !ref <augment_speed>,
-#    !ref <add_rev>,
-#    !ref <add_noise>,
-#    !ref <add_rev_noise>,
-# ]
+augment_pipeline: [
+   !ref <augment_wavedrop>,
+   !ref <augment_speed>,
+   !ref <add_rev>,
+   !ref <add_noise>,
+   !ref <add_rev_noise>,
+]
 
 # augment_pipeline: [ ]
 concat_augment: True
