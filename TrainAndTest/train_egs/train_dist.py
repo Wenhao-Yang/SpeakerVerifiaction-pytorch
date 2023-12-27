@@ -274,8 +274,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         data, label = Variable(data), Variable(label)
         classfier, feats = model(data)
 
-        loss, other_loss = model.module.loss(classfier, feats, label,
-                                             batch_weight=batch_weight, epoch=epoch)
+        loss, other_loss = model.module.loss((classfier, feats), label,
+                                             batch_weight=batch_weight, epoch=epoch, other=True)
         
         if np.isnan(loss.item()):
             optimizer.zero_grad()  # reset gradient
@@ -432,7 +432,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
 
             # pdb.set_trace()
             classfier, feats = model(data)
-            loss, other_loss = model.module.loss(classfier, feats, label)
+            loss, other_loss = model.module.loss((classfier, feats), label, other=True)
 
             total_loss += float(loss.item())
             total_other_loss += other_loss

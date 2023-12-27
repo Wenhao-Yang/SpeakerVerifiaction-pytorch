@@ -44,6 +44,113 @@ class BatchNorm1d(_BatchNorm1d):
         super().__init__(skip_transpose=True, *args, **kwargs)
 
 
+class DropBlock1d(nn.Module):
+    """DropBlock layer.
+
+    Arguments
+    ----------
+    drop_prob : float
+        The drop probability.
+    block_size : int
+        The size of the block.
+    """
+
+    def __init__(self, drop_prob, block_size, linear_step=0):
+        super(DropBlock1d, self).__init__()
+        self.drop_prob = 1 - drop_prob
+        self.block_size = block_size
+        self.linear_step = linear_step
+        self.this_step = 0
+    
+    def forward(self, x):
+        if self.training and self.drop_prob > 0:
+            if self.block_size <= 0:
+                raise ValueError("Block size should be greater than 0")
+            
+            # batch_size, channels, time = x.size()            
+            gamma = self._compute_gamma(x)
+
+            # sample mask
+            mask = torch.bernoulli(torch.ones_like(x) * gamma)
+
+            # place mask on input device
+            mask = mask.to(x.device)
+
+            # compute block mask
+            block_mask = self._compute_block_mask(mask)
+
+            # apply block mask
+            out = x * block_mask
+
+            # scale output
+            out = out * block_mask.numel() / block_mask.sum()
+
+            return out
+        else:
+            return x
+
+    def _compute_block_mask(self, mask):
+        block_mask = F.max_pool1d(mask,
+                                  kernel_size=self.block_size,
+                                  stride=1,
+                                  padding=self.block_size // 2)
+
+        if self.block_size % 2 == 0:
+            block_mask = block_mask[:, :, :-1]
+
+        block_mask = 1 - block_mask.squeeze(1)
+
+        return block_mask
+
+    def _compute_gamma(self, x):
+        # linear drop of dropout probability
+        if self.linear_step > 0:
+            
+            if self.this_step <= self.linear_step:
+                drop_prob = 1 - (1 - self.drop_prob) * self.this_step / self.linear_step
+                self.this_step += 1
+            else:
+                drop_prob = self.drop_prob                
+
+        invalid = (1 - drop_prob) / self.block_size
+        valid = (x.shape[-1]) / (x.shape[-1] - self.block_size + 1)
+        
+        return invalid * valid
+
+
+class DropAttention1d(nn.Module):
+    """DropBlock layer.
+
+    Arguments
+    ----------
+    drop_prob : float
+        The drop probability.
+    block_size : int
+        The size of the block.
+    """
+
+    def __init__(self, drop_prob):
+        super(DropAttention1d, self).__init__()
+        self.drop_prob = drop_prob
+        
+    def forward(self, s):
+        if self.training and self.drop_prob > 0:
+            # T = torch.zeros_like(s)
+            # T.scatter_(dim=1, index=torch.topk(s, k=int(s.shape[1]*self.drop_prob), dim=1)[1], src=torch.ones_like(s))
+            T = s * 0.2 + 0.9 - self.drop_prob
+            # sample mask
+            mask = torch.bernoulli(T)
+
+            # place mask on input device
+            mask = mask.to(s.device)
+            # scale output
+            out = mask * mask.numel() / mask.sum()
+
+            return s * out
+        else:
+            return s
+
+
 class TDNNBlock(nn.Module):
     """An implementation of TDNN.
 
@@ -181,7 +288,8 @@ class SEBlock(nn.Module):
     torch.Size([8, 120, 64])
     """
 
-    def __init__(self, in_channels, se_channels, out_channels, dropout_p=0):
+    def __init__(self, in_channels, se_channels, out_channels,
+                 dropout_type='vanilla', dropout_p=0):
         super(SEBlock, self).__init__()
 
         self.conv1 = Conv1d(
@@ -192,7 +300,11 @@ class SEBlock(nn.Module):
             in_channels=se_channels, out_channels=out_channels, kernel_size=1
         )
         self.sigmoid = torch.nn.Sigmoid()
-        self.drop_p = dropout_p
+
+        if dropout_type == 'vanilla':
+            self.drop = torch.nn.Dropout1d(dropout_p)
+        elif dropout_type =='attention':
+            self.drop = DropAttention1d(dropout_p)
 
     def forward(self, x, lengths=None):
         """ Processes the input tensor x and returns an output tensor."""
@@ -206,8 +318,8 @@ class SEBlock(nn.Module):
             s = x.mean(dim=2, keepdim=True)
 
         s = self.relu(self.conv1(s))
-        s = self.sigmoid(self.conv2(s))
-        s = torch.nn.functional.dropout(s, p=self.drop_p)
+        s = self.drop(self.sigmoid(self.conv2(s)))
+        # s = torch.nn.functional.dropout(s, p=self.drop_p)
 
         return s * x
 
@@ -337,7 +449,7 @@ class SERes2NetBlock(nn.Module):
         dilation=1,
         activation=torch.nn.ReLU,
         groups=1,
-        dropout_p=0.0,
+        dropout_type='vanilla', dropout_p=0.0,
     ):
         super().__init__()
         self.out_channels = out_channels
@@ -361,7 +473,7 @@ class SERes2NetBlock(nn.Module):
             groups=groups,
         )
         self.se_block = SEBlock(out_channels, se_channels, out_channels,
-                                dropout_p=dropout_p)
+                                dropout_type=dropout_type, dropout_p=dropout_p)
 
         self.shortcut = None
         if in_channels != out_channels:
@@ -425,7 +537,7 @@ class ECAPA_TDNN(torch.nn.Module):
             channels=[512, 512, 512, 512, 1536],
             kernel_sizes=[5, 3, 3, 3, 1],
             dilations=[1, 2, 3, 4, 1],
-            dropouts=[0, 0, 0],
+            dropouts=[0, 0, 0], dropout_type='vanilla',
             attention_channels=128,
             res2net_scale=8,
             se_channels=128,
@@ -481,7 +593,215 @@ class ECAPA_TDNN(torch.nn.Module):
                     dilation=dilations[i],
                     activation=activation,
                     groups=groups[i],
-                    dropout_p=dropouts[i-1],
+                    dropout_type=dropout_type, dropout_p=dropouts[i-1],
+                )
+            )
+
+        # Multi-layer feature aggregation
+        self.mfa = TDNNBlock(
+            channels[-1],
+            channels[-1],
+            kernel_sizes[-1],
+            dilations[-1],
+            activation,
+            groups=groups[-1],
+        )
+
+        # Attentive Statistical Pooling
+        self.asp = AttentiveStatisticsPooling(
+            channels[-1],
+            attention_channels=attention_channels,
+            global_context=global_context,
+        )
+        self.asp_bn = BatchNorm1d(input_size=channels[-1] * 2)
+
+        # Final linear transformation
+        # self.fc = Conv1d(
+        #     in_channels=channels[-1] * 2,
+        #     out_channels=embedding_size,
+        #     kernel_size=1,)
+
+        self.fc = nn.Linear(channels[-1] * 2, embedding_size)
+
+        self.classifier = Classifier(
+            input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
+
+    def forward(self, x, lengths=None, last=False,
+                freeze=False):
+        """Returns the embedding vector.
+
+        Arguments
+        ---------
+        x : torch.Tensor
+            Tensor of shape (batch, time, channel).
+        """
+        if freeze:
+            with torch.no_grad():
+                x = self.input_mask(x)
+                if len(x.shape) == 4:
+                    x = x.squeeze(1).float()
+                x = x.transpose(1, 2)
+
+                xl = []
+                for layer in self.blocks:
+                    try:
+                        x = layer(x, lengths=lengths)
+                    except TypeError:
+                        x = layer(x)
+                    xl.append(x)
+                    
+                x = torch.cat(xl[1:], dim=1)
+                x = self.mfa(x)
+                x = self.asp(x, lengths=lengths)
+                x = self.asp_bn(x)
+                embeddings = self.fc(x)
+        else:
+            # Minimize transpose for efficiency
+            x = self.input_mask(x)
+            # if proser != None and layer_mix == 1:
+            #     x = self.mixup(x, proser, lamda_beta)
+            if len(x.shape) == 4:
+                x = x.squeeze(1).float()
+            x = x.transpose(1, 2)
+
+            xl = []
+            for layer in self.blocks:
+                try:
+                    x = layer(x, lengths=lengths)
+                except TypeError:
+                    x = layer(x)
+                xl.append(x)
+
+            # Multi-layer feature aggregation
+            x = torch.cat(xl[1:], dim=1)
+            x = self.mfa(x)
+
+            # Attentive Statistical Pooling
+            x = self.asp(x, lengths=lengths)
+            x = self.asp_bn(x)
+
+            # Final linear transformation
+            embeddings = self.fc(x)
+            # embeddings = x.transpose(1, 2).contiguous()
+
+        logits = self.classifier(embeddings)
+
+        return logits, embeddings
+
+    def get_embedding_dim(self):
+        return self.embedding_size
+
+    def get_grads(self) -> torch.Tensor:
+        """
+        Returns all the gradients concatenated in a single tensor.
+        :return: gradients tensor (??)
+        """
+        grads = []
+        for pp in list(self.parameters()):
+            if pp.requires_grad: # only using the parameter that require the gradient
+                grads.append(pp.grad.view(-1))
+        return torch.cat(grads)
+
+
+class ECAPA_DBTDNN(torch.nn.Module):
+    """An implementation of the speaker embedding model in a paper.
+    "ECAPA-TDNN: Emphasized Channel Attention, Propagation and Aggregation in
+    TDNN Based Speaker Verification" (https://arxiv.org/abs/2005.07143).
+
+    Arguments
+    ---------
+    device : str
+        Device used, e.g., "cpu" or "cuda".
+    activation : torch class
+        A class for constructing the activation layers.
+    channels : list of ints
+        Output channels for TDNN/SERes2Net layer.
+    kernel_sizes : list of ints
+        List of kernel sizes for each layer.
+    dilations : list of ints
+        List of dilations for kernels in each layer.
+    lin_neurons : int
+        Number of neurons in linear layers.
+    groups : list of ints
+        List of groups for kernels in each layer.
+
+    Example
+    -------
+    >>> input_feats = torch.rand([5, 120, 80])
+    >>> compute_embedding = ECAPA_TDNN(80, lin_neurons=192)
+    >>> outputs = compute_embedding(input_feats)
+    >>> outputs.shape
+    torch.Size([5, 1, 192])
+    """
+
+    def __init__(
+            self, input_dim, num_classes, embedding_size=192, activation=torch.nn.ReLU,
+            input_norm='', filter=None, sr=16000, feat_dim=80, exp=False, filter_fix=False,
+            win_length=int(0.025*16000), nfft=512, stretch_ratio=[1.0],
+            init_weight='mel', scale=0.2, weight_p=0.1, weight_norm='max',
+            mask='None', mask_len=[5, 20],
+            channels=[512, 512, 512, 512, 1536],
+            kernel_sizes=[5, 3, 3, 3, 1],
+            dilations=[1, 2, 3, 4, 1],
+            dropouts=[0, 0, 0], block_size=5, linear_step=0,
+            attention_channels=128,
+            res2net_scale=8,
+            se_channels=128,
+            global_context=True,
+            groups=[1, 1, 1, 1, 1], **kwargs):
+
+        super().__init__()
+        self.embedding_size = embedding_size
+        self.num_classes = num_classes
+        
+        input_mask = []
+        filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
+                                        exp=exp, filter_fix=filter_fix,
+                                        stretch_ratio=stretch_ratio, win_length=win_length, nfft=nfft)
+        if filter_layer != None:
+            input_mask.append(filter_layer)
+        norm_layer = get_input_norm(input_norm, input_dim=input_dim)
+        if norm_layer != None:
+            input_mask.append(norm_layer)
+        mask_layer = get_mask_layer(mask=mask, mask_len=mask_len, input_dim=input_dim,
+                                    init_weight=init_weight, weight_p=weight_p,
+                                    scale=scale, weight_norm=weight_norm)
+        if mask_layer != None:
+            input_mask.append(mask_layer)
+        self.input_mask = nn.Sequential(*input_mask)
+
+        assert len(channels) == len(kernel_sizes)
+        assert len(channels) == len(dilations)
+        self.channels = channels
+        self.blocks = nn.ModuleList()
+
+        # The initial TDNN layer
+        self.blocks.append(
+            TDNNBlock(
+                input_dim,
+                channels[0],
+                kernel_sizes[0],
+                dilations[0],
+                activation,
+                groups[0],
+            )
+        )
+
+        # SE-Res2Net layers
+        for i in range(1, len(channels) - 1):
+            self.blocks.append(
+                nn.Sequential(
+                    SERes2NetBlock(
+                        channels[i - 1],
+                        channels[i],
+                        res2net_scale=res2net_scale,
+                        se_channels=se_channels,
+                        kernel_size=kernel_sizes[i],
+                        dilation=dilations[i],
+                        activation=activation,
+                        groups=groups[i],
+                    ),
+                    DropBlock1d(drop_prob=dropouts[i-1], block_size=block_size, linear_step=linear_step),
                 )
             )
 
