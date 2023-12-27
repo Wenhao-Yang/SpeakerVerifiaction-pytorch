@@ -104,13 +104,12 @@ class DropBlock1d(nn.Module):
 
     def _compute_gamma(self, x):
         # linear drop of dropout probability
+        drop_prob = self.drop_prob
         if self.linear_step > 0:
             
             if self.this_step <= self.linear_step:
                 drop_prob = 1 - (1 - self.drop_prob) * self.this_step / self.linear_step
-                self.this_step += 1
-            else:
-                drop_prob = self.drop_prob                
+                self.this_step += 1              
 
         invalid = (1 - drop_prob) / self.block_size
         valid = (x.shape[-1]) / (x.shape[-1] - self.block_size + 1)
