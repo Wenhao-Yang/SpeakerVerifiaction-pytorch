@@ -846,7 +846,7 @@ def main():
             
             if 'linear_snr' in config_args:
                 total_snr = np.linspace(config_args['snr_start'], config_args['snr_stop'],
-                                       , config_args['snr_num'])
+                                       config_args['snr_num'])
                 snr_idx = min(epoch-1, config_args['snr_num']-1)
                 this_snr = total_snr[snr_idx]
                 
