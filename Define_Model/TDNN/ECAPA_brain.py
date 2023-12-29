@@ -150,6 +150,37 @@ class DropAttention1d(nn.Module):
             return s
 
 
+class AttentionDrop1d(nn.Module):
+    """AttentionDrop channel layer.
+
+    Arguments
+    ----------
+    drop_prob : float
+        The drop probability.
+    block_size : int
+        The size of the block.
+    """
+
+    def __init__(self, drop_prob):
+        super(AttentionDrop1d, self).__init__()
+        self.drop_prob = drop_prob
+        
+    def forward(self, s):
+        if self.training and self.drop_prob > 0:
+            # T = torch.zeros_like(s)
+            # T.scatter_(dim=1, index=torch.topk(s, k=int(s.shape[1]*self.drop_prob), dim=1)[1], src=torch.ones_like(s))
+            T = 1 - (s - s.min()) / (s.max() - s.min())
+            mask = torch.bernoulli(torch.ones_like(s) * self.drop_prob).to(s.device)
+            mask_zero = 1 - mask
+            
+            mask = s * mask + mask_zero
+            # scale output
+            out = mask * mask.numel() / mask.sum()
+
+            return s * out
+        else:
+            return s
+
 class TDNNBlock(nn.Module):
     """An implementation of TDNN.
 
@@ -304,6 +335,8 @@ class SEBlock(nn.Module):
             self.drop = torch.nn.Dropout1d(dropout_p)
         elif dropout_type =='attention':
             self.drop = DropAttention1d(dropout_p)
+        elif dropout_type =='attendrop':
+            self.drop = AttentionDrop1d(dropout_p)
 
     def forward(self, x, lengths=None):
         """ Processes the input tensor x and returns an output tensor."""
@@ -545,9 +578,13 @@ class ECAPA_TDNN(torch.nn.Module):
 
         super().__init__()
         self.embedding_size = embedding_size
+        if len(dropouts) == 3:
+            self.dropouts = [0]
+            self.dropouts.extend(dropouts)
+        else:
+            self.dropouts = dropouts
 
         input_mask = []
-
         filter_layer = get_filter_layer(filter=filter, input_dim=input_dim, sr=sr, feat_dim=feat_dim,
                                         exp=exp, filter_fix=filter_fix,
                                         stretch_ratio=stretch_ratio, win_length=win_length, nfft=nfft)
@@ -569,16 +606,31 @@ class ECAPA_TDNN(torch.nn.Module):
         self.blocks = nn.ModuleList()
 
         # The initial TDNN layer
-        self.blocks.append(
-            TDNNBlock(
-                input_dim,
-                channels[0],
-                kernel_sizes[0],
-                dilations[0],
-                activation,
-                groups[0],
+        if self.dropouts[0] == 0:
+            self.blocks.append(
+                TDNNBlock(
+                    input_dim,
+                    channels[0],
+                    kernel_sizes[0],
+                    dilations[0],
+                    activation,
+                    groups[0],
+                )
             )
-        )
+        else:
+            self.blocks.append(
+                nn.Sequential(
+                    TDNNBlock(
+                        input_dim,
+                        channels[0],
+                        kernel_sizes[0],
+                        dilations[0],
+                        activation,
+                        groups[0],
+                    ),
+                    nn.Dropout1d(self.dropouts[0])
+                )
+            )
 
         # SE-Res2Net layers
         for i in range(1, len(channels) - 1):
@@ -592,7 +644,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     dilation=dilations[i],
                     activation=activation,
                     groups=groups[i],
-                    dropout_type=dropout_type, dropout_p=dropouts[i-1],
+                    dropout_type=dropout_type, dropout_p=self.dropouts[i],
                 )
             )
 

@@ -102,7 +102,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   num_classes: !ref <num_classes>
-  channels: [256,256,256,256, 768]
+  channels: [256, 256, 256, 256, 768]
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
@@ -163,8 +163,12 @@ augment_pipeline: [
 # augment_pipeline: [ ]
 concat_augment: True
 num_pipes: 3
-sample_score: loss
-sample_ratio: 0.75
+# sample_score: loss
+# sample_ratio: 0.75
+linear_snr:  True
+snr_start: 20 
+snr_stop: 10
+snr_num: 6
 # rest_prob: 0.2
 
 # loss
@@ -186,7 +190,7 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5<num_pipes>_<sample_score>75
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5<num_pipes>_linearsnr2010
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_dist
 #_lamda<lamda_beta>

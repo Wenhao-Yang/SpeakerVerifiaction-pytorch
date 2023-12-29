@@ -843,6 +843,16 @@ def main():
             # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
             #     select_samples(train_loader, model, config_args,
             #                    config_args['select_score'])
+            
+            if 'linear_snr' in config_args:
+                total_snr = np.linspace(config_args['snr_start'], config_args['snr_stop'],
+                                       , config_args['snr_num'])
+                snr_idx = min(epoch-1, config_args['snr_num']-1)
+                this_snr = total_snr[snr_idx]
+                
+                for aug in config_args['augment_pipeline']:
+                    if hasattr(aug, 'add_noise'):
+                        aug.add_noise.snr_high = this_snr
 
             train(train_loader, model, optimizer,
                   epoch, scheduler, config_args, writer)
