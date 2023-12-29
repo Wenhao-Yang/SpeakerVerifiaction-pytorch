@@ -829,21 +829,6 @@ def main():
             train_sampler.set_epoch(epoch)
             valid_sampler.set_epoch(epoch)
             train_extract_sampler.set_epoch(epoch)
-
-            # if torch.distributed.get_rank() == 0:
-            this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
-            all_lr.append(max(this_lr)) 
-            if torch.distributed.get_rank() == 0:
-                lr_string = '\33[1;34m \'{}\' learning rate: '.format(config_args['optimizer'])
-                lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
-                print('%s \33[0m' % lr_string)
-                writer.add_scalar('Train/lr', this_lr[0], epoch)
-
-            torch.distributed.barrier()
-            # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
-            #     select_samples(train_loader, model, config_args,
-            #                    config_args['select_score'])
-            
             if 'linear_snr' in config_args:
                 total_snr = np.linspace(config_args['snr_start'], config_args['snr_stop'],
                                        config_args['snr_num'])
@@ -853,6 +838,25 @@ def main():
                 for aug in config_args['augment_pipeline']:
                     if hasattr(aug, 'add_noise'):
                         aug.add_noise.snr_high = this_snr
+                
+                snr_str = ' snr: {:.2f}'.format(this_snr)
+            else:
+                snr_str = ''
+
+            # if torch.distributed.get_rank() == 0:
+            this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
+            all_lr.append(max(this_lr)) 
+            if torch.distributed.get_rank() == 0:
+                lr_string = '\33[1;34m \'{}\' learning rate: '.format(config_args['optimizer'])
+                lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
+                lr_string += snr_str
+                print('%s \33[0m' % lr_string)
+                writer.add_scalar('Train/lr', this_lr[0], epoch)
+
+            torch.distributed.barrier()
+            # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
+            #     select_samples(train_loader, model, config_args,
+            #                    config_args['select_score'])
 
             train(train_loader, model, optimizer,
                   epoch, scheduler, config_args, writer)
