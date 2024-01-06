@@ -200,7 +200,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     augs_idx = np.random.choice(len(augment_pipeline), size=num_pipes, replace=False)
                     sample_idxs = [np.arange(len(wavs))] * len(augs_idx)
 
-                elif isinstance(config_args['augment_prob'], list):
+                elif isinstance(config_args['augment_prob'], list) and 'sample_score' in config_args:
                     augs_idx = []
                     for s in scores:
                         this_p = augp_a * float(s) + augp_b
@@ -210,6 +210,19 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
                     # max_id = np.array([[i, np.sum([i==j for j in augs_idx])] for i in range(len(augment_pipeline))])
                     # augs_idx = max_id[:, 0][np.argsort(max_id[:, 1])[-num_pipes:]]
+                    augs_idx = np.array(augs_idx)
+                    sample_idxs = [np.where(np.sum(augs_idx == i, axis=1) >= 1)[0] for i in range(len(augment_pipeline))]
+                    augs_idx = [i for i in range(len(augment_pipeline))]
+
+                elif isinstance(config_args['augment_prob'], list):
+                    augs_idx = []
+                    this_p = np.array(config_args['augment_prob'])
+                    this_p /= this_p.sum()
+
+                    for i in range(len(wavs)):
+                        augs_idx.append(np.random.choice(len(augment_pipeline), size=num_pipes, 
+                                                    p=this_p, replace=False))
+
                     augs_idx = np.array(augs_idx)
                     sample_idxs = [np.where(np.sum(augs_idx == i, axis=1) >= 1)[0] for i in range(len(augment_pipeline))]
                     augs_idx = [i for i in range(len(augment_pipeline))]

@@ -9,7 +9,7 @@ data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 
 ## Dataset
 seed: 123456
-datasets: vox1
+datasets: vox2
 testset: vox1
 feat_type: wave
 loss: arcsoft
@@ -33,6 +33,7 @@ input_norm: Mean
 test_input: fix
 log_scale: False
 sr: 16000
+
 # transform
 chunk_size: 64000
 
@@ -55,7 +56,7 @@ feat_format: wav
 remove_vad: False
 
 ### Training settings
-epochs: 18
+epochs: 60
 
 # optimizer
 optimizer: adam
@@ -74,7 +75,7 @@ scheduler: cyclic
 lr: 0.001
 base_lr: 0.00000001
 cyclic_epoch: 3
-# step_size: 65000
+step_size: 65000
 cos_sim: True
 
 early_stopping: True
@@ -93,7 +94,7 @@ activation: relu
 channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 #channels: [1024,1024,1024,1024,3072]
 encoder_type: "SASP2"
-num_classes: 1211
+num_classes: 5994
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
@@ -102,7 +103,11 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   num_classes: !ref <num_classes>
-  channels: [256, 256, 256, 256, 768]
+
+classifier: !new:Define_Model.TDNN.ECAPA_brain.Classifier
+  input_size: !ref <embedding_size>
+  lin_neurons: !ref <embedding_size>
+  out_neurons: !ref <num_classes>
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
@@ -149,7 +154,7 @@ add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    reverb_prob: 0.0
    noise_prob: 1.0
    noise_snr_low: 0
-   noise_snr_high: 15
+   noise_snr_high: 20
    rir_scale_factor: 1.0
 
 augment_pipeline: [
@@ -161,16 +166,11 @@ augment_pipeline: [
 ]
 
 # augment_pipeline: [ ]
-augment_prob: [1.0, 1.0, 1.0, 1.0, 1.0]
 concat_augment: True
 num_pipes: 3
-# sample_score: loss
-# sample_ratio: 0.75
-# linear_snr:  True
-# snr_start: 10 
-# snr_stop: 15
-# snr_num: 6
-# rest_prob: 0.2
+bandpass: [20, 3000]
+band_pass_prob: 0.5
+band_order: 8
 
 # loss
 loss_ratio: 1
@@ -191,10 +191,9 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5<num_pipes>_uniform
-#_linearsnr1015
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_band05_aug5<num_pipes>
 
-save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_dist
+save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
