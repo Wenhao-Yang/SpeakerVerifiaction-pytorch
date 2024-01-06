@@ -124,6 +124,7 @@ add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_prob: 0.0
    noise_snr_low: 0
    noise_snr_high: 15
+   noise_num_workers: 4
    rir_scale_factor: 1.0
 
 add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
@@ -133,6 +134,7 @@ add_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_prob: 1.0
    noise_snr_low: 0
    noise_snr_high: 15
+   noise_num_workers: 4
    rir_scale_factor: 1.0
 
 add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
@@ -142,6 +144,7 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_prob: 1.0
    noise_snr_low: 0
    noise_snr_high: 15
+   noise_num_workers: 4
    rir_scale_factor: 1.0
 
 add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
@@ -151,6 +154,7 @@ add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_prob: 1.0
    noise_snr_low: 0
    noise_snr_high: 15
+   noise_num_workers: 4
    rir_scale_factor: 1.0
 
 augment_pipeline: [
