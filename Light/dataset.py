@@ -254,7 +254,7 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
 
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dir)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
-    return_score = True if 'sample_ratio' in config_args and config_args['sample_ratio'] > 0 else False
+    return_score = True if 'adaptive_select' not in config_args and 'sample_ratio' in config_args and config_args['sample_ratio'] > 0 else False
     train_paddfunc = PadCollate3d if return_domain or return_score else PadCollate
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],

@@ -19,6 +19,7 @@ Authors
 
 # import os
 import torch  # noqa: F401
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from speechbrain.dataio.dataio import length_to_mask
@@ -130,10 +131,10 @@ class DropAttention1d(nn.Module):
 
     def __init__(self, drop_prob):
         super(DropAttention1d, self).__init__()
-        self.drop_prob = drop_prob
+        self.p = drop_prob
         
     def forward(self, s):
-        if self.training and self.drop_prob > 0:
+        if self.training and self.p > 0:
             # T = torch.zeros_like(s)
             # T.scatter_(dim=1, index=torch.topk(s, k=int(s.shape[1]*self.drop_prob), dim=1)[1], src=torch.ones_like(s))
             T = s * 0.2 + 0.9 - self.drop_prob
@@ -163,14 +164,14 @@ class AttentionDrop1d(nn.Module):
 
     def __init__(self, drop_prob):
         super(AttentionDrop1d, self).__init__()
-        self.drop_prob = drop_prob
+        self.p = drop_prob
         
     def forward(self, s):
-        if self.training and self.drop_prob > 0:
+        if self.training and self.p > 0:
             # T = torch.zeros_like(s)
             # T.scatter_(dim=1, index=torch.topk(s, k=int(s.shape[1]*self.drop_prob), dim=1)[1], src=torch.ones_like(s))
             T = 1 - (s - s.min()) / (s.max() - s.min())
-            mask = torch.bernoulli(torch.ones_like(s) * self.drop_prob).to(s.device)
+            mask = torch.bernoulli(torch.ones_like(s) * self.p).to(s.device)
             mask_zero = 1 - mask
             
             mask = s * mask + mask_zero
@@ -180,6 +181,131 @@ class AttentionDrop1d(nn.Module):
             return s * out
         else:
             return s
+
+
+class NoiseInject(nn.Module):
+    """DropBlock layer.
+
+    Arguments
+    ----------
+    drop_prob : float
+        The drop probability.
+    block_size : int
+        The size of the block.
+    """
+
+    def __init__(self, drop_prob=[0.2, 0.4], linear_step=0):
+        super(NoiseInject, self).__init__()
+        self.drop_prob = drop_prob[0]
+        self.add_prob = drop_prob[1]
+        self.linear_step = linear_step
+        self.this_step = 0
+    
+    def forward(self, x):
+        if self.training:
+            if self.drop_prob > 0:
+                # torch.randn(x.shape)
+                mul_noise = 2 * torch.cuda.FloatTensor(x.shape).uniform_() - 1
+                # mul_noise = mul_noise.to(x.device)
+                x = (1 + self.drop_prob * np.random.beta(2, 5) * mul_noise ) * x
+
+            if self.add_prob > 0:
+                add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
+                # torch.randn(x.shape)
+                # add_noise = add_noise.to(x.device)
+                x = x + self.add_prob * np.random.beta(2, 5) * add_noise
+            
+            return x
+        else:
+            return x
+
+
+class ImpulseNoiseInject(nn.Module):
+    """DropBlock layer.
+
+    Arguments
+    ----------
+    drop_prob : float
+        The drop probability.
+    block_size : int
+        The size of the block.
+    """
+
+    def __init__(self, drop_prob=[0.2, 0.4, 0.5, 0.5], linear_step=0):
+        super(ImpulseNoiseInject, self).__init__()
+        self.drop_prob = drop_prob[0]
+        self.mul_impulse = drop_prob[2]
+
+        self.add_prob = drop_prob[1]
+        self.add_impulse = drop_prob[3]
+        self.linear_step = linear_step
+        self.this_step = 0
+    
+    def forward(self, x):
+        if self.training:
+            if self.drop_prob > 0:
+                # torch.randn(x.shape)
+                mul_noise = 2 * torch.cuda.FloatTensor(x.shape).uniform_() - 1
+                mask = torch.bernoulli(torch.ones(x.shape) * self.mul_impulse)
+                mask = mask.to(x.device)
+
+                mul_noise = mask * mul_noise
+                # mul_noise = mul_noise.to(x.device)
+                x = (1 + self.drop_prob * np.random.beta(2, 5) * mul_noise ) * x
+
+            if self.add_prob > 0:
+                add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
+                mask = torch.bernoulli(torch.ones(x.shape) * self.add_impulse)
+                mask = mask.to(x.device)
+
+                add_noise = mask * add_noise
+                # add_noise = add_noise.to(x.device)
+                x = x + self.add_prob * np.random.beta(2, 5) * add_noise
+            
+            return x
+        else:
+            return x
+        
+
+class AttentionNoiseInject(nn.Module):
+    """AttentionNoiseInject layer.
+
+    Arguments
+    ----------
+    drop_prob : float
+        The drop probability.
+    block_size : int
+        The size of the block.
+    """
+
+    def __init__(self, drop_prob=[0.2, 0.4], linear_step=0):
+        super(AttentionNoiseInject, self).__init__()
+        self.drop_prob = drop_prob[0]
+        self.add_prob = drop_prob[1]
+        self.linear_step = linear_step
+        self.this_step = 0
+    
+    def forward(self, x):
+        if self.training:
+            time_attention = x.abs().mean(dim=1, keepdim=True)
+            time_attention = time_attention / time_attention.max()
+
+            if self.drop_prob > 0:
+                # torch.randn(x.shape)
+                mul_noise = 2 * torch.cuda.FloatTensor(x.shape).uniform_() - 1
+                # mul_noise = mul_noise.to(x.device)
+                x = (1 + self.drop_prob * np.random.beta(2, 5) * mul_noise * time_attention ) * x
+
+            if self.add_prob > 0:
+                add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
+                # torch.randn(x.shape)
+                # add_noise = add_noise.to(x.device)
+                x = x + self.add_prob * np.random.beta(2, 5) * add_noise * time_attention
+            
+            return x
+        else:
+            return x
+
 
 class TDNNBlock(nn.Module):
     """An implementation of TDNN.
@@ -319,7 +445,8 @@ class SEBlock(nn.Module):
     """
 
     def __init__(self, in_channels, se_channels, out_channels,
-                 dropout_type='vanilla', dropout_p=0):
+                 dropout_type='vanilla', dropout_p=0,
+                 linear_step=0):
         super(SEBlock, self).__init__()
 
         self.conv1 = Conv1d(
@@ -330,13 +457,18 @@ class SEBlock(nn.Module):
             in_channels=se_channels, out_channels=out_channels, kernel_size=1
         )
         self.sigmoid = torch.nn.Sigmoid()
+        self.this_step = 0
+        self.linear_step = linear_step
+        self.dropout_p = dropout_p
 
-        if dropout_type == 'vanilla':
+        if 'vanilla' in dropout_type:
             self.drop = torch.nn.Dropout1d(dropout_p)
-        elif dropout_type =='attention':
+        elif 'attention' in dropout_type:
             self.drop = DropAttention1d(dropout_p)
-        elif dropout_type =='attendrop':
+        elif 'attendrop' in dropout_type:
             self.drop = AttentionDrop1d(dropout_p)
+        else:
+            self.drop = None
 
     def forward(self, x, lengths=None):
         """ Processes the input tensor x and returns an output tensor."""
@@ -350,8 +482,15 @@ class SEBlock(nn.Module):
             s = x.mean(dim=2, keepdim=True)
 
         s = self.relu(self.conv1(s))
-        s = self.drop(self.sigmoid(self.conv2(s)))
-        # s = torch.nn.functional.dropout(s, p=self.drop_p)
+        s = self.sigmoid(self.conv2(s))
+        
+        # linear create dropout
+        if self.drop != None:
+            if self.linear_step > 0:
+                if self.this_step <= self.linear_step:
+                    self.drop.p = self.dropout_p * self.this_step / self.linear_step
+                    self.this_step += 1         
+            s = self.drop(s)
 
         return s * x
 
@@ -481,7 +620,7 @@ class SERes2NetBlock(nn.Module):
         dilation=1,
         activation=torch.nn.ReLU,
         groups=1,
-        dropout_type='vanilla', dropout_p=0.0,
+        dropout_type='vanilla', dropout_p=0.0, linear_step=0
     ):
         super().__init__()
         self.out_channels = out_channels
@@ -505,7 +644,8 @@ class SERes2NetBlock(nn.Module):
             groups=groups,
         )
         self.se_block = SEBlock(out_channels, se_channels, out_channels,
-                                dropout_type=dropout_type, dropout_p=dropout_p)
+                                dropout_type=dropout_type, dropout_p=dropout_p,
+                                linear_step=linear_step)
 
         self.shortcut = None
         if in_channels != out_channels:
@@ -569,7 +709,7 @@ class ECAPA_TDNN(torch.nn.Module):
             channels=[512, 512, 512, 512, 1536],
             kernel_sizes=[5, 3, 3, 3, 1],
             dilations=[1, 2, 3, 4, 1],
-            dropouts=[0, 0, 0], dropout_type='vanilla',
+            dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0,
             attention_channels=128,
             res2net_scale=8,
             se_channels=128,
@@ -606,31 +746,33 @@ class ECAPA_TDNN(torch.nn.Module):
         self.blocks = nn.ModuleList()
 
         # The initial TDNN layer
-        if self.dropouts[0] == 0:
-            self.blocks.append(
-                TDNNBlock(
+        tdnn_layer1 = [
+            TDNNBlock(
                     input_dim,
                     channels[0],
                     kernel_sizes[0],
                     dilations[0],
                     activation,
-                    groups[0],
-                )
-            )
+                    groups[0],) 
+            ]
+        
+        if 'attenoise' in dropout_type:
+            if isinstance(self.dropouts[0], float):
+                tdnn_layer1.append(AttentionNoiseInject(drop_prob=self.dropouts[0:2]))
+            else:
+                tdnn_layer1.append(AttentionNoiseInject(drop_prob=self.dropouts[0]))
+        elif 'noiseinject' in dropout_type:
+            if isinstance(self.dropouts[0], float):
+                tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0:2]))
+            else:
+                tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0]))
+        elif 'vanilla' in dropout_type and self.dropouts[0] > 0:
+            tdnn_layer1.append(nn.Dropout1d(self.dropouts[0]))
+
+        if len(tdnn_layer1) > 1:
+            self.blocks.append(nn.Sequential(*tdnn_layer1))
         else:
-            self.blocks.append(
-                nn.Sequential(
-                    TDNNBlock(
-                        input_dim,
-                        channels[0],
-                        kernel_sizes[0],
-                        dilations[0],
-                        activation,
-                        groups[0],
-                    ),
-                    nn.Dropout1d(self.dropouts[0])
-                )
-            )
+            self.blocks.append(tdnn_layer1[0])
 
         # SE-Res2Net layers
         for i in range(1, len(channels) - 1):
@@ -645,6 +787,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     activation=activation,
                     groups=groups[i],
                     dropout_type=dropout_type, dropout_p=self.dropouts[i],
+                    linear_step=linear_step,
                 )
             )
 
