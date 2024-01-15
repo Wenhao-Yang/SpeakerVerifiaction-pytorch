@@ -110,7 +110,7 @@ class DropBlock1d(nn.Module):
             
             if self.this_step <= self.linear_step:
                 drop_prob = 1 - (1 - self.drop_prob) * self.this_step / self.linear_step
-                self.this_step += 1              
+                self.this_step += 1
 
         invalid = (1 - drop_prob) / self.block_size
         valid = (x.shape[-1]) / (x.shape[-1] - self.block_size + 1)
