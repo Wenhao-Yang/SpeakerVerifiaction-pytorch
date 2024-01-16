@@ -747,10 +747,15 @@ def main():
     optimizer = create_optimizer(
         model_para, config_args['optimizer'], **opt_kwargs)
     scheduler = create_scheduler(optimizer, config_args, train_dir)
-    early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
-                                             min_delta=config_args['early_delta'],
-                                             top_k_epoch=config_args['top_k_epoch'] if 'top_k_epoch' in config_args else 5)
-
+    
+    top_k_epoch = config_args['top_k_epoch'] if 'top_k_epoch' in config_args else 5
+    if 'early_stopping' in config_args:
+        early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
+                                                min_delta=config_args['early_delta'],
+                                                top_k_epoch=top_k_epoch)
+    else:
+        early_stopping_scheduler = None
+        
     # Save model config txt
     if torch.distributed.get_rank() == 0:
         with open(os.path.join(check_path,
@@ -835,7 +840,7 @@ def main():
     start_time = time.time()
 
     all_lr = []
-    valid_test_result = []
+    valid_test_result = {}
 
     try:
         for epoch in range(start, end):
@@ -878,11 +883,12 @@ def main():
                 valid_loader, model, epoch, config_args, writer)
             valid_test_dict = valid_test(
                 train_extract_loader, model, epoch, xvector_dir, config_args, writer)
+            
             valid_test_dict['Valid_Loss'] = valid_loss
+            valid_test_result[epoch] = valid_test_dict
+            
 
-            if torch.distributed.get_rank() == 0 and config_args['early_stopping']:
-                valid_test_result.append(valid_test_dict)
-
+            if torch.distributed.get_rank() == 0 and early_stopping_scheduler != None:
                 early_stopping_scheduler(
                     valid_test_dict[config_args['early_meta']], epoch)
 
@@ -898,13 +904,15 @@ def main():
                         if this_lr[0] <= 0.1 ** 3 * config_args['lr'] and all_lr[-5] > this_lr[0]:
                             early_stopping_scheduler.early_stop = False
 
-            if torch.distributed.get_rank() == 0:
                 top_k = early_stopping_scheduler.top_k()
             else:
-                top_k = []
+                current_results = [[valid_test_result[e], e] for e in valid_test_result]
+                tops = torch.tensor(current_results)
+                top_k = tops[torch.argsort(tops[:, 0])][:top_k_epoch, 1].long().tolist()
+
             if torch.distributed.get_rank() == 0 and (
                     epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
-                    end - 1) or early_stopping_scheduler.best_epoch == epoch or epoch in top_k):
+                    end - 1) or epoch in top_k):
 
                 model.eval()
                 this_check_path = '{}/checkpoint_{}.pth'.format(
@@ -921,17 +929,21 @@ def main():
                             'scheduler': scheduler.state_dict(),
                             'optimizer': optimizer.state_dict(),
                             }, this_optim_path)
-
-            check_stop = torch.tensor(
-                int(early_stopping_scheduler.early_stop)).cuda()
-            dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
+                
+            if early_stopping_scheduler != None:
+                check_stop = torch.tensor(
+                    int(early_stopping_scheduler.early_stop)).cuda()
+                dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
+            else:
+                check_stop = False
 
             if check_stop or epoch == end - 1:
                 end = epoch
                 if torch.distributed.get_rank() == 0:
                     print('Best Epochs : ', top_k)
-                    best_epoch = early_stopping_scheduler.best_epoch
-                    best_res = valid_test_result[int(best_epoch - start)]
+                    
+                    best_epoch = top_k[0]
+                    best_res = valid_test_result[best_epoch]
 
                     best_str = 'EER(%):       ' + \
                         '{:>6.2f} '.format(best_res['EER'])
@@ -948,13 +960,6 @@ def main():
 
                     with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
                         f.write(best_str + '\n')
-
-                    try:
-                        shutil.copy('{}/checkpoint_{}.pth'.format(check_path,
-                                                                  early_stopping_scheduler.best_epoch),
-                                    '{}/best.pth'.format(check_path))
-                    except Exception as e:
-                        print(e)
                 break
 
             if config_args['scheduler'] == 'rop':
