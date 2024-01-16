@@ -906,7 +906,7 @@ def main():
 
                 top_k = early_stopping_scheduler.top_k()
             else:
-                current_results = [[valid_test_result[e], e] for e in valid_test_result]
+                current_results = [[valid_test_result[e]['Valid_Loss'], e] for e in valid_test_result]
                 tops = torch.tensor(current_results)
                 top_k = tops[torch.argsort(tops[:, 0])][:top_k_epoch, 1].long().tolist()
 
