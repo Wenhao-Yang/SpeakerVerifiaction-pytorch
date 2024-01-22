@@ -220,6 +220,44 @@ class NoiseInject(nn.Module):
             return x
 
 
+class RadioNoiseInject(nn.Module):
+    """DropBlock layer.
+
+    Arguments
+    ----------
+    drop_prob : float
+        The drop probability.
+    block_size : int
+        The size of the block.
+    """
+
+    def __init__(self, drop_prob=[0.2, 0.4], linear_step=0):
+        super(RadioNoiseInject, self).__init__()
+        self.drop_prob = drop_prob[0]
+        self.add_prob = drop_prob[1]
+        self.linear_step = linear_step
+        self.this_step = 0
+    
+    def forward(self, x):
+        if self.training:
+            if self.drop_prob > 0:
+                # torch.randn(x.shape)
+                mul_noise = 0.8 * torch.cuda.FloatTensor(x.shape).normal_()
+                mul_noise = torch.exp(mul_noise).mean(dim=2, keepdim=True)
+                x = self.drop_prob * np.random.beta(2, 5) * mul_noise * x
+
+            if self.add_prob > 0:
+                add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
+                # torch.randn(x.shape)
+                # add_noise = add_noise.to(x.device)
+                x = x + self.add_prob * np.random.beta(2, 5) * add_noise
+            
+            return x
+        else:
+            return x
+
+
+
 class ImpulseNoiseInject(nn.Module):
     """DropBlock layer.
 
