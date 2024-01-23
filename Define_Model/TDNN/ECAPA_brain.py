@@ -20,6 +20,7 @@ Authors
 # import os
 import torch  # noqa: F401
 import numpy as np
+from scipy.stats import burr12
 import torch.nn as nn
 import torch.nn.functional as F
 from speechbrain.dataio.dataio import length_to_mask
@@ -244,13 +245,20 @@ class RadioNoiseInject(nn.Module):
                 # torch.randn(x.shape)
                 mul_noise = 0.8 * torch.cuda.FloatTensor(x.shape).normal_()
                 mul_noise = torch.exp(mul_noise).mean(dim=2, keepdim=True)
-                x = self.drop_prob * np.random.beta(2, 5) * mul_noise * x
 
-            if self.add_prob > 0:
-                add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
+                r = burr12.rvs(2, 1, size=x.shape[1])
+                ones = torch.bernoulli(torch.ones(x.shape[1]) * 0.3).numpy()
+                r = np.where(ones == 1, 1, r)
+                mul_noise = torch.tensor(r).float()
+                mul_noise = mul_noise.to(x.device)
+
+                x = (1 + np.random.beta(2, 5) * (mul_noise-1)) * x
+
+            # if self.add_prob > 0:
+                # add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
                 # torch.randn(x.shape)
                 # add_noise = add_noise.to(x.device)
-                x = x + self.add_prob * np.random.beta(2, 5) * add_noise
+                # x = x + self.add_prob * np.random.beta(2, 5) * add_noise
             
             return x
         else:
@@ -804,6 +812,9 @@ class ECAPA_TDNN(torch.nn.Module):
                 tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0:2]))
             else:
                 tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0]))
+        elif 'radionoise' in dropout_type:
+            tdnn_layer1.append(RadioNoiseInject(drop_prob=self.dropouts[0]))
+
         elif 'vanilla' in dropout_type and self.dropouts[0] > 0:
             tdnn_layer1.append(nn.Dropout1d(self.dropouts[0]))
 
