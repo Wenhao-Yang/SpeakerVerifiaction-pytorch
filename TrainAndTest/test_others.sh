@@ -3216,7 +3216,7 @@ if [ $stage -le 601 ]; then
               --xvector-dir ${xvector_dir} \
               --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
               --gpu-id ${gpu_id} \
-              --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+              --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
               --cos-sim --test
           done
 
