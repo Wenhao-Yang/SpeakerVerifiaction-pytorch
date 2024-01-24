@@ -3227,7 +3227,7 @@ if [ $stage -le 601 ]; then
               --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
               --feat-format wav --nj 4 \
               --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
-              --xvector-dir${xvector_dir} \
+              --xvector-dir ${xvector_dir} \
               --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
               --gpu-id ${gpu_id} --score-suffix ${trials} \
               --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
