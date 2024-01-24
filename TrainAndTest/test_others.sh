@@ -3186,6 +3186,7 @@ if [ $stage -le 601 ]; then
   for epoch in 24 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
     for seed in 1234 ; do
+    for model_name in ecapa_aug53 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise; do
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
         if [[ $model_name == ecapa_aug53 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53/${seed}
@@ -3233,6 +3234,7 @@ if [ $stage -le 601 ]; then
               --cos-sim --extract
           done
       done
+    done
     done
  done
 fi
