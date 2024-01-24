@@ -3185,24 +3185,24 @@ if [ $stage -le 601 ]; then
   sname=dev
   for epoch in 24 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
-    for seed in 1234 ; do
+    for seed in 1235 ; do
     for model_name in ecapa_aug53 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise; do
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
         if [[ $model_name == ecapa_aug53 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53/${seed}
-          epoch=24 yaml_name=model.2024.01.16.yaml
+          epoch=24 yaml_name=model.2024.01.17.yaml #yaml_name=model.2024.01.16.yaml
         elif [[ $model_name == ecapa_aug53_dp111 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111/${seed}
-          epoch=24 yaml_name=model.2024.01.17.yaml
+          epoch=24 yaml_name=model.2024.01.18.yaml #yaml_name=model.2024.01.17.yaml
         elif [[ $model_name == ecapa_aug53_dp111_attenoise10100 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111_attenoise10100/${seed}
-          epoch=24 yaml_name=model.2024.01.20.yaml
+          epoch=24 yaml_name=model.2024.01.20.yaml #yaml_name=model.2024.01.20.yaml
         elif [[ $model_name == ecapa_aug53_attenoise10100 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise10100/${seed}
-          epoch=24 yaml_name=model.2024.01.18.yaml
+          epoch=24 yaml_name=model.2024.01.18.yaml #yaml_name=model.2024.01.18.yaml
         elif [[ $model_name == ecapa_aug53_radionoise ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise/${seed}
-          epoch=24 yaml_name=model.2024.01.23.yaml
+          epoch=24 yaml_name=model.2024.01.23.yaml #yaml_name=model.2024.01.23.yaml
         fi
 
           xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
