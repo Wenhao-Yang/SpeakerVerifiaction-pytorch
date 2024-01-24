@@ -3180,62 +3180,59 @@ if [ $stage -le 601 ]; then
   train_subset=
   subset=test test_input=var test_subset=test
   gpu_id=3
-echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
-
+  echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
   sname=dev
   for epoch in 24 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
     for seed in 1234 ; do
-    for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
-      if [[ $model_name == ecapa_aug53 ]];then
-        model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53/${seed}
-        epoch=24 yaml_name=model.2024.01.16.yaml
-      if [[ $model_name == ecapa_aug53_dp111 ]];then
-        model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111/${seed}
-        epoch=24 yaml_name=model.2024.01.17.yaml
-      if [[ $model_name == ecapa_aug53_dp111_attenoise10100 ]];then
-        model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111_attenoise10100/${seed}
-        epoch=24 yaml_name=model.2024.01.20.yaml
-      if [[ $model_name == ecapa_aug53_attenoise10100 ]];then
-        model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise10100/${seed}
-        epoch=24 yaml_name=model.2024.01.18.yaml
-      if [[ $model_name == ecapa_aug53_radionoise ]];then
-        model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise/${seed}
-        epoch=24 yaml_name=model.2024.01.23.yaml
-      fi
+      for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
+        if [[ $model_name == ecapa_aug53 ]];then
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53/${seed}
+          epoch=24 yaml_name=model.2024.01.16.yaml
+        if [[ $model_name == ecapa_aug53_dp111 ]];then
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111/${seed}
+          epoch=24 yaml_name=model.2024.01.17.yaml
+        if [[ $model_name == ecapa_aug53_dp111_attenoise10100 ]];then
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111_attenoise10100/${seed}
+          epoch=24 yaml_name=model.2024.01.20.yaml
+        if [[ $model_name == ecapa_aug53_attenoise10100 ]];then
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise10100/${seed}
+          epoch=24 yaml_name=model.2024.01.18.yaml
+        if [[ $model_name == ecapa_aug53_radionoise ]];then
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise/${seed}
+          epoch=24 yaml_name=model.2024.01.23.yaml
+        fi
 
-      xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
-      for trials in trials_all; do
-        python -W ignore TrainAndTest/train_egs/test_egs.py \
-          --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-          --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-          --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-          --feat-format wav --nj 4 \
-          --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
-          --xvector-dir ${xvector_dir} \
-          --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-          --gpu-id ${gpu_id} \
-          --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
-          --cos-sim --test
-      done
+          xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
+          for trials in trials_all; do
+            python -W ignore TrainAndTest/train_egs/test_egs.py \
+              --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+              --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+              --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+              --feat-format wav --nj 4 \
+              --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+              --xvector-dir ${xvector_dir} \
+              --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+              --gpu-id ${gpu_id} \
+              --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+              --cos-sim --test
+          done
 
-      for trials in original ; do # original easy hard
-        python -W ignore TrainAndTest/train_egs/test_egs.py \
-          --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-          --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-          --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
-          --feat-format wav --nj 4 \
-          --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
-          --xvector-dir${xvector_dir} \
-          --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-          --gpu-id ${gpu_id} --score-suffix ${trials} \
-          --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-          --cos-sim --extract
+          for trials in original ; do # original easy hard
+            python -W ignore TrainAndTest/train_egs/test_egs.py \
+              --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+              --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+              --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
+              --feat-format wav --nj 4 \
+              --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+              --xvector-dir${xvector_dir} \
+              --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+              --gpu-id ${gpu_id} --score-suffix ${trials} \
+              --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+              --cos-sim --extract
+          done
       done
     done
-
  done
-done
-
 fi
