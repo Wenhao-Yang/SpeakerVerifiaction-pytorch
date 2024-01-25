@@ -104,7 +104,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   num_classes: !ref <num_classes>
   channels: [256, 256, 256, 256, 768]
   dropout_type: radionoise
-  dropouts: [[1, 1], 0.0, 0.0, 0.0]
+  dropouts: [[1, 0], 0.0, 0.0, 0.0]
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
