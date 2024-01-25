@@ -275,7 +275,6 @@ class RadioNoiseInject(nn.Module):
         return "RadioNoiseInject(mul_prob={}, add_prob={})".format(self.drop_prob, self.add_prob)
 
 
-
 class ImpulseNoiseInject(nn.Module):
     """DropBlock layer.
 
