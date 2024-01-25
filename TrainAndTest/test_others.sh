@@ -3241,7 +3241,7 @@ fi
 
 if [ $stage -le 602 ]; then
   model=ThinResNet resnet_size=18
-  train_set=vox2 test_set=vox1 # #jukebox cnceleb
+  train_set=vox1 test_set=vox1 # #jukebox cnceleb
 
   train_subset=
   subset=test test_input=var test_subset=test
