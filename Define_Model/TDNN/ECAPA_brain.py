@@ -241,6 +241,9 @@ class RadioNoiseInject(nn.Module):
     
     def forward(self, x):
         if self.training:
+            time_attention = x.abs().mean(dim=1, keepdim=True)
+            time_attention = time_attention / time_attention.max()
+            
             if self.drop_prob > 0:
                 # torch.randn(x.shape)
                 mul_noise = 0.8 * torch.cuda.FloatTensor(x.shape).normal_()
@@ -254,11 +257,11 @@ class RadioNoiseInject(nn.Module):
 
                 x = (1 + np.random.beta(2, 5) * (mul_noise-1)) * x
 
-            # if self.add_prob > 0:
-                # add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
+            if self.add_prob > 0:
+                add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
                 # torch.randn(x.shape)
                 # add_noise = add_noise.to(x.device)
-                # x = x + self.add_prob * np.random.beta(2, 5) * add_noise
+                x = x + self.add_prob * np.random.beta(2, 5) * add_noise * time_attention
             
             return x
         else:
