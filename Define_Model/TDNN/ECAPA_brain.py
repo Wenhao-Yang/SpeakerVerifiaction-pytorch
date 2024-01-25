@@ -60,7 +60,7 @@ class DropBlock1d(nn.Module):
     def __init__(self, drop_prob, block_size, linear_step=0):
         super(DropBlock1d, self).__init__()
         self.drop_prob = 1 - drop_prob
-        self.block_size = block_size
+        self.drop_prob = block_size
         self.linear_step = linear_step
         self.this_step = 0
     
@@ -117,6 +117,10 @@ class DropBlock1d(nn.Module):
         valid = (x.shape[-1]) / (x.shape[-1] - self.block_size + 1)
         
         return invalid * valid
+    
+    def __repr__(self):
+        return "DropBlock1d(drop_prob={}, drop_prob={}, linear_step={})".format(self.drop_prob, self.drop_prob,
+                                                                self.linear_step)
 
 
 class DropAttention1d(nn.Module):
@@ -219,6 +223,9 @@ class NoiseInject(nn.Module):
             return x
         else:
             return x
+        
+    def __repr__(self):
+        return "NoiseInject(mul_prob={}, add_prob={})".format(self.drop_prob, self.add_prob)
 
 
 class RadioNoiseInject(nn.Module):
@@ -246,9 +253,6 @@ class RadioNoiseInject(nn.Module):
             
             if self.drop_prob > 0:
                 # torch.randn(x.shape)
-                mul_noise = 0.8 * torch.cuda.FloatTensor(x.shape).normal_()
-                mul_noise = torch.exp(mul_noise).mean(dim=2, keepdim=True)
-
                 r = burr12.rvs(2, 1, size=(x.shape[0], x.shape[1]))
                 ones = torch.bernoulli(torch.ones(r.shape) * 0.3).numpy()
                 r = np.where(ones == 1, 1, r)
@@ -266,6 +270,9 @@ class RadioNoiseInject(nn.Module):
             return x
         else:
             return x
+        
+    def __repr__(self):
+        return "RadioNoiseInject(mul_prob={}, add_prob={})".format(self.drop_prob, self.add_prob)
 
 
 
@@ -354,6 +361,9 @@ class AttentionNoiseInject(nn.Module):
             return x
         else:
             return x
+        
+    def __repr__(self):
+        return "AttentionNoiseInject(mul_prob={}, add_prob={})".format(self.drop_prob, self.add_prob)
 
 
 class TDNNBlock(nn.Module):
