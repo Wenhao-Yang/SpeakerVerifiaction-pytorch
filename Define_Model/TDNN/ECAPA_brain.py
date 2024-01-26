@@ -60,7 +60,7 @@ class DropBlock1d(nn.Module):
     def __init__(self, drop_prob, block_size, linear_step=0):
         super(DropBlock1d, self).__init__()
         self.drop_prob = 1 - drop_prob
-        self.drop_prob = block_size
+        self.block_size = block_size
         self.linear_step = linear_step
         self.this_step = 0
     
