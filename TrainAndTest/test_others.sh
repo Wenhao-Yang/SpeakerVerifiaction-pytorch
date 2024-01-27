@@ -3289,7 +3289,7 @@ if [ $stage -le 602 ]; then
             yaml_name=model.2024.01.26.yaml
           elif [[ $seed == 1235 ]];then
             yaml_name=model.2024.01.27.yaml
-          if [[ $seed == 1236 ]];then
+          elif [[ $seed == 1236 ]];then
             yaml_name=model.2024.01.27.yaml
           fi
         fi
