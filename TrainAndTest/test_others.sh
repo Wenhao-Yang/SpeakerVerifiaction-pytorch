@@ -3253,7 +3253,7 @@ if [ $stage -le 602 ]; then
     # vox1 1235 1236
     for model_name in ecapa_aug53_radionoise10100 ; do # ecapa_aug53 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
-      for seed in 1235 ; do
+      for seed in 1234 1235 1236 ; do
         if [[ $model_name == ecapa_aug53 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_aug53/${seed}
           if [[ $seed == 1236 ]];then
