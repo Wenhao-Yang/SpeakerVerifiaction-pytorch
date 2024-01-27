@@ -3284,7 +3284,7 @@ if [ $stage -le 602 ]; then
           #yaml_name=model.2024.01.23.yaml
           #yaml_name=model.2024.01.23.yaml
         elif [[ $model_name == ecapa_aug53_radionoise10100 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise/${seed}
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise10100/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.01.26.yaml
           elif [[ $seed == 1235 ]];then
