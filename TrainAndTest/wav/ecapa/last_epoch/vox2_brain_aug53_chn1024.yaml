@@ -55,7 +55,7 @@ feat_format: wav
 remove_vad: False
 
 ### Training settings
-epochs: 60
+epochs: 24
 
 # optimizer
 optimizer: adam
@@ -74,13 +74,13 @@ scheduler: cyclic
 lr: 0.001
 base_lr: 0.00000001
 cyclic_epoch: 3
-step_size: 65000
+# step_size: 65000
 cos_sim: True
 
-early_stopping: True
-early_patience: 20
-early_delta: 0.001
-early_meta: "mix8"
+# early_stopping: True
+# early_patience: 20
+# early_delta: 0.001
+# early_meta: "mix8"
 
 ## model Setttings
 model: ECAPA_brain
@@ -188,7 +188,7 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5<num_pipes>
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_chn1024_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5<num_pipes>
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist
 #_lamda<lamda_beta>
