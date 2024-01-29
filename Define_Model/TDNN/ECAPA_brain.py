@@ -259,7 +259,7 @@ class RadioNoiseInject(nn.Module):
                 mul_noise = torch.tensor(r).float().unsqueeze(2)
                 mul_noise = mul_noise.to(x.device)
 
-                x = (1 + np.random.beta(2, 5) * (mul_noise-1)) * x
+                x = (1 + self.drop_prob * np.random.beta(2, 5) * (mul_noise-1)) * x
 
             if self.add_prob > 0:
                 add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
