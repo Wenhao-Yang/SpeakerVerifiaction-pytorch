@@ -3203,6 +3203,15 @@ if [ $stage -le 601 ]; then
         elif [[ $model_name == ecapa_aug53_radionoise ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise/${seed}
           epoch=24 yaml_name=model.2024.01.24.yaml #yaml_name=model.2024.01.23.yaml #yaml_name=model.2024.01.23.yaml
+        elif [[ $model_name == ecapa_aug53_radionoise10100 ]];then
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise10100/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.01.26.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.01.27.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.01.27.yaml
+          fi
         fi
 
           xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
@@ -3251,7 +3260,7 @@ if [ $stage -le 602 ]; then
   sname=dev_orgsnr1
   for epoch in 24 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
-    for model_name in ecapa_aug53_radionoise10100 ; do # ecapa_aug53 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
+    for model_name in ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise ; do # ecapa_aug53 
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
       for seed in 1234 1235 1236 ; do
         if [[ $model_name == ecapa_aug53 ]];then
@@ -3264,33 +3273,40 @@ if [ $stage -le 602 ]; then
             yaml_name=model.2024.01.20.yaml
           fi
         elif [[ $model_name == ecapa_aug53_dp111 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111/${seed}
-          yaml_name=model.2024.01.18.yaml
-          #yaml_name=model.2024.01.18.yaml
-          #yaml_name=model.2024.01.17.yaml
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_aug53_dp111/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.01.24.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.01.26.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.01.28.yaml
+          fi
         elif [[ $model_name == ecapa_aug53_dp111_attenoise10100 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111_attenoise10100/${seed}
-          yaml_name=model.2024.01.21.yaml
-          #yaml_name=model.2024.01.20.yaml
-          #yaml_name=model.2024.01.20.yaml
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_aug53_dp111_attenoise10100/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.01.25.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.01.27.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.01.29.yaml
+          fi
         elif [[ $model_name == ecapa_aug53_attenoise10100 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise10100/${seed}
-          yaml_name=model.2024.01.19.yaml
-          #yaml_name=model.2024.01.18.yaml
-          #yaml_name=model.2024.01.18.yaml
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_aug53_attenoise10100/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.01.25.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.01.26.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.01.28.yaml
+          fi
         elif [[ $model_name == ecapa_aug53_radionoise ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise/${seed}
-          yaml_name=model.2024.01.24.yaml
-          #yaml_name=model.2024.01.23.yaml
-          #yaml_name=model.2024.01.23.yaml
-        elif [[ $model_name == ecapa_aug53_radionoise10100 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise10100/${seed}
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_aug53_radionoise/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.01.26.yaml
           elif [[ $seed == 1235 ]];then
             yaml_name=model.2024.01.27.yaml
           elif [[ $seed == 1236 ]];then
-            yaml_name=model.2024.01.27.yaml
+            yaml_name=model.2024.01.29.yaml
           fi
         fi
           xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
