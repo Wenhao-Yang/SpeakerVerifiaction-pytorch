@@ -55,7 +55,7 @@ feat_format: wav
 remove_vad: False
 
 ### Training settings
-epochs: 24
+epochs: 18
 
 # optimizer
 optimizer: adam
