@@ -9,7 +9,7 @@ data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
 
 ## Dataset
 seed: 123456
-datasets: vox2
+datasets: vox1
 testset: vox1
 feat_type: wave
 loss: arcsoft
@@ -20,7 +20,7 @@ wav_type: int
 subset: ""
 sample_type: instance
 
-train_dir: !ref <data_root_dir>/data/<datasets>/dev
+train_dir: !ref <data_root_dir>/data/<datasets>/dev_orgsnr1
 # <subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
 train_trials: trials
@@ -55,7 +55,7 @@ feat_format: wav
 remove_vad: False
 
 ### Training settings
-epochs: 60
+epochs: 18
 
 # optimizer
 optimizer: adam
@@ -74,7 +74,7 @@ scheduler: cyclic
 lr: 0.001
 base_lr: 0.00000001
 cyclic_epoch: 3
-step_size: 65000
+# step_size: 65000
 cos_sim: True
 
 early_stopping: True
@@ -93,7 +93,7 @@ activation: relu
 channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 #channels: [1024,1024,1024,1024,3072]
 encoder_type: "SASP2"
-num_classes: 5994
+num_classes: 1211
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
@@ -101,13 +101,8 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
-  channels: [1024,1024,1024,1024,3072]
   num_classes: !ref <num_classes>
-
-classifier: !new:Define_Model.TDNN.ECAPA_brain.Classifier
-  input_size: !ref <embedding_size>
-  lin_neurons: !ref <embedding_size>
-  out_neurons: !ref <num_classes>
+  channels: [256, 256, 256, 256, 768]
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
@@ -119,7 +114,7 @@ augment_speed: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
 
 # rir_folder: /home/yangwenhao/project/lstm_speaker_verification/data/rir #!ref <data_folder> # Change it if needed
 rir_folder: '/data2022/yangwenhao/dataset'
-# musan_lst: '/home/yangwenhao/project/SpeakerVerification-pytorch/Misc/audio_processing/musan_4s_nospeech.csv'
+musan_lst: '/home/yangwenhao/project/SpeakerVerification-pytorch/Misc/audio_processing/musan_4s_nospeech.csv'
 
 add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
    openrir_folder: !ref <rir_folder>
@@ -148,14 +143,14 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_snr_high: 15
    rir_scale_factor: 1.0
 
-# add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
-#    noise_csv: !ref <musan_lst>
-#    openrir_max_noise_len: 3.0  # seconds
-#    reverb_prob: 0.0
-#    noise_prob: 1.0
-#    noise_snr_low: 0
-#    noise_snr_high: 20
-#    rir_scale_factor: 1.0
+add_musan_noise: !new:speechbrain.lobes.augment.EnvCorrupt
+   noise_csv: !ref <musan_lst>
+   openrir_max_noise_len: 3.0  # seconds
+   reverb_prob: 0.0
+   noise_prob: 1.0
+   noise_snr_low: 0
+   noise_snr_high: 15
+   rir_scale_factor: 1.0
 
 augment_pipeline: [
    !ref <augment_wavedrop>,
@@ -167,7 +162,14 @@ augment_pipeline: [
 
 # augment_pipeline: [ ]
 concat_augment: True
-num_pipes: 3
+num_pipes: 2
+bandpass: [20, 3000]
+band_pass_prob: 0.5
+band_order: 8
+
+# sample_score: loss
+# sample_ratio: 0.75
+# rest_prob: 0.2
 
 # loss
 loss_ratio: 1
@@ -188,9 +190,9 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug5<num_pipes>
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_orgsnr1_band05_aug5<num_pipes>
 
-save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist
+save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_dist_orgsnr1
 #_lamda<lamda_beta>
 #_mixup<lamda_beta>_<mixup_type>
 # _red<red_ratio>
