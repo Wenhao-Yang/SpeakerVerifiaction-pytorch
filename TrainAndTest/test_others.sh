@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=604
+stage=602
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3260,9 +3260,9 @@ if [ $stage -le 602 ]; then
   sname=dev_orgsnr1
   for epoch in 24 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
-    for model_name in ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise ; do # ecapa_aug53 
+    for model_name in ecapa_aug53_radionoise ; do # ecapa_aug53 
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
-      for seed in 1234 1235 1236 ; do
+      for seed in 1236 ; do
         if [[ $model_name == ecapa_aug53 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_aug53/${seed}
           if [[ $seed == 1236 ]];then
@@ -3427,7 +3427,7 @@ fi
 
 if [ $stage -le 604 ]; then
   model=ECAPA_brain 
-  train_set=vox2 test_set=vox1 # #jukebox cnceleb
+  train_set=vox1 test_set=vox1 # #jukebox cnceleb
 
   train_subset=
   subset=test test_input=var test_subset=test
