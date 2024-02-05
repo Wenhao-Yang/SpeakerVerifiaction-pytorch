@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=604
+stage=602
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3254,7 +3254,7 @@ if [ $stage -le 602 ]; then
 
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=0
+  gpu_id=1
   echo -e "\n\033[1;4;31m Stage${stage}: Test ${model}${resnet_size} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
   sname=dev_orgsnr1
