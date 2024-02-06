@@ -197,7 +197,12 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                         wav_label = wav_label[score_idx]
 
                 if 'augment_prob' not in config_args:
-                    augs_idx = np.random.choice(len(augment_pipeline), size=num_pipes, replace=False)
+                    if num_pipes <= len(augment_pipeline):
+                        augs_idx = np.random.choice(len(augment_pipeline), size=num_pipes, replace=False)
+                    else:
+                        augs_idx = np.random.choice(len(augment_pipeline), size=num_pipes-len(augment_pipeline), replace=False)
+                        augs_idx = np.concatenate([augs_idx, np.arange(len(augment_pipeline))])
+
                     sample_idxs = [np.arange(len(wavs))] * len(augs_idx)
 
                 elif isinstance(config_args['augment_prob'], list) and 'sample_score' in config_args:
@@ -231,8 +236,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     augs_idx = config_args['augment_prob'](ratio=this_lr)
                     sample_idxs = [np.arange(len(data))] * len(augs_idx)
 
-                augs_idx = set(augs_idx)
-                other_idx = set(np.arange(len(augment_pipeline))) - augs_idx
+                # augs_idx = set(augs_idx)
+                # other_idx = set(np.arange(len(augment_pipeline))) - augs_idx
                 augs = [augment_pipeline[i] for i in augs_idx]
                 # other_augments = [augment_pipeline[i] for i in other_idx]
             
@@ -267,7 +272,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 #                 zero_sig = torch.zeros_like(wavs)
                 #                 zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
                 #                 wavs_aug = zero_sig
-
                 #             wavs_aug_tot[aug_i] = wavs_aug.unsqueeze(1).unsqueeze(1)
             
                 data = torch.cat(wavs_aug_tot, dim=0)
