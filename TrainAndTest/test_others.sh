@@ -3437,7 +3437,7 @@ if [ $stage -le 604 ]; then
   sname=dev_orgsnr1
   for epoch in 18 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
-    for model_name in aug51 aug52 aug53 aug54 aug55; do #ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
+    for model_name in aug56; do # aug51 aug52 aug53 aug54 aug55 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
       for seed in 1234 ; do
         if [[ $model_name == aug51 ]];then
@@ -3467,6 +3467,11 @@ if [ $stage -le 604 ]; then
         elif [[ $model_name == aug55 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_band05_aug55/${seed}
           yaml_name=model.2024.02.04.yaml
+          #yaml_name=model.2024.01.23.yaml
+          #yaml_name=model.2024.01.23.yaml
+        elif [[ $model_name == aug56 ]];then
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_band05_aug56/${seed}
+          yaml_name=model.2024.02.06.yaml
           #yaml_name=model.2024.01.23.yaml
           #yaml_name=model.2024.01.23.yaml
         fi
