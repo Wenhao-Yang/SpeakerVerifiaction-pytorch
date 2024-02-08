@@ -72,7 +72,7 @@ if [ $stage -le 10 ]; then
   loss=arcsoft encod=ASTP2 embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 0.2;do
-    for seed in 1234 ; do
+    for seed in 1236 1236 ; do
     for data_type in hdf5 ; do
     # for type in mani style align ;do
     #  feat=fb${input_dim}
@@ -139,11 +139,11 @@ if [ $stage -le 10 ]; then
 
       # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53_attenoise.yaml --seed=${seed}
 
-      # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug51.yaml --seed=${seed}
-      # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug52.yaml --seed=${seed}
-      # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug54.yaml --seed=${seed}
-      # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug53.yaml --seed=${seed}
-      # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug55.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug51.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug52.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug53.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug54.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug55.yaml --seed=${seed}
       CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug56.yaml --seed=${seed}
 
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=12 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/resnet/v2_sp/vox2_brain.yaml --seed=${seed}
