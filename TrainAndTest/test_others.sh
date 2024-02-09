@@ -3368,7 +3368,7 @@ if [ $stage -le 603 ]; then
           elif [[ $seed == 1235 ]];then
             yaml_name=model.2024.01.21.yaml
           elif [[ $seed == 1234 ]];then
-            yaml_name=model.2024.01.2.yaml
+            yaml_name=model.2024.01.29.yaml
           fi
         elif [[ $model_name == ecapa_aug53_attenoise10100 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_chn768_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug53_attenoise/${seed}
