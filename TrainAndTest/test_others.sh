@@ -3362,13 +3362,13 @@ if [ $stage -le 603 ]; then
       for seed in 1234 ; do
         if [[ $model_name == ecapa_aug53 ]];then
           # model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_chn768_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug53/${seed}
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53/${seed}
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/${train_set}/wave_fb80_dist_aug53/${seed}
           if [[ $seed == 123456 ]];then
             yaml_name=model.2024.01.15.yaml
           elif [[ $seed == 1235 ]];then
             yaml_name=model.2024.01.21.yaml
           elif [[ $seed == 1234 ]];then
-            yaml_name=model.2024.01.16.yaml
+            yaml_name=model.2024.01.2.yaml
           fi
         elif [[ $model_name == ecapa_aug53_attenoise10100 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_chn768_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug53_attenoise/${seed}
@@ -3377,7 +3377,7 @@ if [ $stage -le 603 ]; then
           #yaml_name=model.2024.01.18.yaml
         elif [[ $model_name == ecapa_aug53_attenoise1050 ]];then
           # model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_chn768_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug53_attenoise1050/${seed}
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise1050/${seed}
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/${train_set}/wave_fb80_dist_aug53_attenoise1050/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.07.yaml
           else
@@ -3386,7 +3386,7 @@ if [ $stage -le 603 ]; then
           #yaml_name=model.2024.01.18.yaml
           #yaml_name=model.2024.01.18.yaml
         elif [[ $model_name == ecapa_aug53_dp111 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111/${seed}
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/${train_set}/wave_fb80_dist_aug53_dp111/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.05.yaml
           else
@@ -3395,7 +3395,7 @@ if [ $stage -le 603 ]; then
           #yaml_name=model.2024.01.18.yaml
           #yaml_name=model.2024.01.17.yaml
         elif [[ $model_name == ecapa_aug53_dp05 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp05/${seed}
+          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/${train_set}/wave_fb80_dist_aug53_dp05/${seed}
           yaml_name=model.2024.02.07.yaml
           #yaml_name=model.2024.01.18.yaml
           #yaml_name=model.2024.01.17.yaml
