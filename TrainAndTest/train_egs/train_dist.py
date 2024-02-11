@@ -296,6 +296,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         
         if np.isnan(loss.item()):
             optimizer.zero_grad()  # reset gradient
+            torch.cuda.empty_cache()
             loss_nan += 1
             if loss_nan  > 100:
                 raise ValueError('Loss value is NaN!')
