@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=603
+stage=604
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3452,49 +3452,69 @@ if [ $stage -le 604 ]; then
 
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=1
+  gpu_id=2
   echo -e "\n\033[1;4;31m Stage${stage}: Test ${model} in ${test_set}_egs with ${loss} with ${input_norm} normalization \033[0m\n"
 
   sname=dev_orgsnr1
   for epoch in 18 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
-    for model_name in aug56; do # aug51 aug52 aug53 aug54 aug55 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
+    for model_name in aug51 aug52 aug53 aug54 aug55 aug56; do # aug51 aug52 aug53 aug54 aug55 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
-      for seed in 1234 ; do
+      for seed in 1234 1235 1236 ; do
         if [[ $model_name == aug51 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_band05_aug51/${seed}
           if [[ $seed == 1234 ]];then
-            epoch=17 yaml_name=model.2024.02.01.yaml
+            yaml_name=model.2024.02.01.yaml
           elif [[ $seed == 1235 ]];then
-            yaml_name=model.2024.01.21.yaml
+            yaml_name=model.2024.02.08.yaml
           elif [[ $seed == 1236 ]];then
-            yaml_name=model.2024.01.20.yaml
+            yaml_name=model.2024.02.10.yaml
           fi
         elif [[ $model_name == aug52 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_band05_aug52/${seed}
-          epoch=18 yaml_name=model.2024.02.02.yaml
-          #yaml_name=model.2024.01.18.yaml
-          #yaml_name=model.2024.01.18.yaml
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.02.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.08.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.10.yaml
+          fi
         elif [[ $model_name == aug53 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_band05_aug53/${seed}
-          yaml_name=model.2024.02.03.yaml
-          #yaml_name=model.2024.01.18.yaml
-          #yaml_name=model.2024.01.17.yaml
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.03.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.09.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.10.yaml
+          fi
         elif [[ $model_name == aug54 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_band05_aug54/${seed}
-          yaml_name=model.2024.02.02.yaml
-          #yaml_name=model.2024.01.20.yaml
-          #yaml_name=model.2024.01.20.yaml
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.02.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.09.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.10.yaml
+          fi
         elif [[ $model_name == aug55 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_band05_aug55/${seed}
-          yaml_name=model.2024.02.04.yaml
-          #yaml_name=model.2024.01.23.yaml
-          #yaml_name=model.2024.01.23.yaml
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.04.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.09.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.11.yaml
+          fi
         elif [[ $model_name == aug56 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_band05_aug56/${seed}
-          yaml_name=model.2024.02.06.yaml
-          #yaml_name=model.2024.01.23.yaml
-          #yaml_name=model.2024.01.23.yaml
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.06.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.09.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.11.yaml
+          fi
         fi
           xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
           for trials in trials_all; do
