@@ -341,7 +341,7 @@ class AttentionNoiseInject(nn.Module):
         self.this_step = 0
     
     def forward(self, x):
-        if self.training:
+        if self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
             time_attention = x.abs().mean(dim=1, keepdim=True)
             time_attention = time_attention / time_attention.max()
 
