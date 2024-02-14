@@ -619,8 +619,8 @@ def main():
 
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
-    else:
-        create_classifier(model, **config_args)
+    # else:
+    #     create_classifier(model, **config_args)
 
     start_epoch = 0
     check_path = config_args['check_path'] + '/' + str(args.seed)
