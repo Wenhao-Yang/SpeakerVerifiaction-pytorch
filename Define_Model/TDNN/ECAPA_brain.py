@@ -341,21 +341,27 @@ class AttentionNoiseInject(nn.Module):
         self.this_step = 0
     
     def forward(self, x):
-        if self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
+        if self.training:
             time_attention = x.abs().mean(dim=1, keepdim=True)
             time_attention = time_attention / time_attention.max()
 
+            ones_prob = (torch.ones(x.shape[0],1,1).uniform_(0, 1) < 0.8).float()
+            ones_prob = ones_prob.to(x.device)
+            
             if self.drop_prob > 0:
                 # torch.randn(x.shape)
                 mul_noise = 2 * torch.cuda.FloatTensor(x.shape).uniform_() - 1
+                mul_noise = self.drop_prob * np.random.beta(2, 5) * mul_noise * time_attention * ones_prob
+
                 # mul_noise = mul_noise.to(x.device)
-                x = (1 + self.drop_prob * np.random.beta(2, 5) * mul_noise * time_attention ) * x
+                x = (1 +  mul_noise) * x
 
             if self.add_prob > 0:
                 add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
+                add_noise = self.add_prob * np.random.beta(2, 5) * add_noise * time_attention * ones_prob
                 # torch.randn(x.shape)
                 # add_noise = add_noise.to(x.device)
-                x = x + self.add_prob * np.random.beta(2, 5) * add_noise * time_attention
+                x = x + add_noise
             
             return x
         else:
