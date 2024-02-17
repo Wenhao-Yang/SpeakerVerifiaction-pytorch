@@ -72,7 +72,7 @@ if [ $stage -le 10 ]; then
   loss=arcsoft encod=ASTP2 embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 0.2;do
-    for seed in 1236 ; do
+    for seed in 1234 ; do
     for data_type in hdf5 ; do
     # for type in mani style align ;do
     #  feat=fb${input_dim}
@@ -138,7 +138,8 @@ if [ $stage -le 10 ]; then
 
       # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53_dp111.yaml --seed=${seed}
 
-      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=6 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53_attenoise.yaml --seed=${seed}
+      # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=6 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53_attenoise.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=6 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53_attenoise_vanilla.yaml --seed=${seed}
       #  gpu_id=0,1
 
       # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/aug/vox1_band05_aug51.yaml --seed=${seed}
