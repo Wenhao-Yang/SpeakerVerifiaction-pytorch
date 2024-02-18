@@ -529,6 +529,8 @@ class SEBlock(nn.Module):
             self.drop = torch.nn.Dropout1d(dropout_p)
         elif 'attention' in dropout_type:
             self.drop = DropAttention1d(dropout_p)
+        elif 'dropblock' in dropout_type:
+            self.drop = DropBlock1d(dropout_p)
         elif 'attendrop' in dropout_type:
             self.drop = AttentionDrop1d(dropout_p)
         else:
@@ -553,8 +555,12 @@ class SEBlock(nn.Module):
             if self.linear_step > 0:
                 if self.this_step <= self.linear_step:
                     self.drop.p = self.dropout_p * self.this_step / self.linear_step
-                    self.this_step += 1         
-            s = self.drop(s)
+                    self.this_step += 1
+
+            if isinstance(self.drop,  DropBlock1d):   
+                x = self.drop(x)
+            else:    
+                s = self.drop(s)       
 
         return s * x
 
@@ -832,7 +838,6 @@ class ECAPA_TDNN(torch.nn.Module):
                 tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0]))
         elif 'radionoise' in dropout_type:
             tdnn_layer1.append(RadioNoiseInject(drop_prob=self.dropouts[0]))
-
         elif 'vanilla' in dropout_type and self.dropouts[0] > 0:
             tdnn_layer1.append(nn.Dropout1d(self.dropouts[0]))
 
