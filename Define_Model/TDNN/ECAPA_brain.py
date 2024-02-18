@@ -46,6 +46,25 @@ class BatchNorm1d(_BatchNorm1d):
         super().__init__(skip_transpose=True, *args, **kwargs)
 
 
+class Dropout1d(nn.Module):
+    def __init__(self, drop_prob, linear_step=0):
+        super(Dropout1d).__init__()
+        self.drop_prob = drop_prob
+        self.linear_step = linear_step
+        self.this_step = 0
+
+    def forward(self, x):
+        if self.training and self.drop_prob > 0:
+            drop_prob = self.drop_prob
+            if self.linear_step > 0:
+                
+                if self.this_step <= self.linear_step:
+                    drop_prob = self.drop_prob * self.this_step / self.linear_step
+                    self.this_step += 1
+
+            x = F.dropout1d(x, p=drop_prob)
+        return x
+
 class DropBlock1d(nn.Module):
     """DropBlock layer.
 
@@ -75,10 +94,8 @@ class DropBlock1d(nn.Module):
             # sample mask
             # mask = torch.bernoulli(torch.ones_like(x) * gamma)
             mask = torch.bernoulli(torch.ones(x.shape[0], 1, *x.shape[2:]) * gamma)
-
             # place mask on input device
             mask = mask.to(x.device)
-
             # compute block mask
             block_mask = self._compute_block_mask(mask)
 
@@ -108,8 +125,8 @@ class DropBlock1d(nn.Module):
     def _compute_gamma(self, x):
         # linear drop of dropout probability
         drop_prob = self.drop_prob
+
         if self.linear_step > 0:
-            
             if self.this_step <= self.linear_step:
                 drop_prob = 1 - (1 - self.drop_prob) * self.this_step / self.linear_step
                 self.this_step += 1
@@ -135,12 +152,14 @@ class DropAttention1d(nn.Module):
         The size of the block.
     """
 
-    def __init__(self, drop_prob):
+    def __init__(self, drop_prob, linear_step=0):
         super(DropAttention1d, self).__init__()
-        self.p = drop_prob
+        self.drop_prob = drop_prob
+        self.linear_step = linear_step
+        self.this_step = 0
         
     def forward(self, s):
-        if self.training and self.p > 0:
+        if self.training and self.drop_prob > 0:
             # T = torch.zeros_like(s)
             # T.scatter_(dim=1, index=torch.topk(s, k=int(s.shape[1]*self.drop_prob), dim=1)[1], src=torch.ones_like(s))
             T = s * 0.2 + 0.9 - self.drop_prob
@@ -527,11 +546,11 @@ class SEBlock(nn.Module):
         self.dropout_p = dropout_p
 
         if 'vanilla' in dropout_type:
-            self.drop = torch.nn.Dropout1d(dropout_p)
+            self.drop = Dropout1d(drop_prob=dropout_p, linear_step=linear_step)
         elif 'attention' in dropout_type:
             self.drop = DropAttention1d(dropout_p)
         elif 'dropblock' in dropout_type:
-            self.drop = DropBlock1d(dropout_p)
+            self.drop = DropBlock1d(dropout_p, linear_step=linear_step)
         elif 'attendrop' in dropout_type:
             self.drop = AttentionDrop1d(dropout_p)
         else:
@@ -840,9 +859,9 @@ class ECAPA_TDNN(torch.nn.Module):
         elif 'radionoise' in dropout_type:
             tdnn_layer1.append(RadioNoiseInject(drop_prob=self.dropouts[0]))
         elif 'dropblock' in dropout_type:
-            tdnn_layer1.append(DropBlock1d(drop_prob=self.dropouts[0]))
+            tdnn_layer1.append(DropBlock1d(drop_prob=self.dropouts[0], linear_step=linear_step))
         elif 'vanilla' in dropout_type and self.dropouts[0] > 0:
-            tdnn_layer1.append(nn.Dropout1d(self.dropouts[0]))
+            tdnn_layer1.append(Dropout1d(drop_prob=self.dropouts[0], linear_step=linear_step))
 
         if len(tdnn_layer1) > 1:
             self.blocks.append(nn.Sequential(*tdnn_layer1))
