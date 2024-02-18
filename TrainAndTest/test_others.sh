@@ -3360,7 +3360,7 @@ if [ $stage -le 603 ]; then
 
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=3
+  gpu_id=0
 
   sname=dev
   for epoch in 18 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
