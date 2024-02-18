@@ -57,7 +57,7 @@ class DropBlock1d(nn.Module):
         The size of the block.
     """
 
-    def __init__(self, drop_prob, block_size, linear_step=0):
+    def __init__(self, drop_prob, block_size=5, linear_step=0):
         super(DropBlock1d, self).__init__()
         self.drop_prob = 1 - drop_prob
         self.block_size = block_size
@@ -73,7 +73,8 @@ class DropBlock1d(nn.Module):
             gamma = self._compute_gamma(x)
 
             # sample mask
-            mask = torch.bernoulli(torch.ones_like(x) * gamma)
+            # mask = torch.bernoulli(torch.ones_like(x) * gamma)
+            mask = torch.bernoulli(torch.ones(x.shape[0], 1, *x.shape[2:]) * gamma)
 
             # place mask on input device
             mask = mask.to(x.device)
@@ -100,7 +101,7 @@ class DropBlock1d(nn.Module):
         if self.block_size % 2 == 0:
             block_mask = block_mask[:, :, :-1]
 
-        block_mask = 1 - block_mask.squeeze(1)
+        block_mask = 1 - block_mask #.squeeze(1)
 
         return block_mask
 
@@ -838,6 +839,8 @@ class ECAPA_TDNN(torch.nn.Module):
                 tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0]))
         elif 'radionoise' in dropout_type:
             tdnn_layer1.append(RadioNoiseInject(drop_prob=self.dropouts[0]))
+        elif 'dropblock' in dropout_type:
+            tdnn_layer1.append(DropBlock1d(drop_prob=self.dropouts[0]))
         elif 'vanilla' in dropout_type and self.dropouts[0] > 0:
             tdnn_layer1.append(nn.Dropout1d(self.dropouts[0]))
 
