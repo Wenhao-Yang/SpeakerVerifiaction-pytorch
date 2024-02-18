@@ -669,7 +669,7 @@ class ScriptVerifyDataset(data.Dataset):
 
         utts = set(uid2feat.keys())
 
-        if verbose > 0:
+        if verbose > 1:
             print('\n==> There are {} utterances in Verification set.'.format(len(uid2feat)))
 
         trials_pair = []
@@ -694,8 +694,11 @@ class ScriptVerifyDataset(data.Dataset):
         trials_pair = np.array(trials_pair)
         assert len(trials_pair) > 0
         # trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
+        if verbose > 1:
+            print('    There are {} pairs in trials with {} positive pairs.'.format(len(trials_pair), positive_pairs))
+            
         if verbose > 0:
-            print('    There are {} pairs in trials with {} positive pairs. Skpipped {} pairs.'.format(len(trials_pair), positive_pairs, skip_pairs))
+            print('    Skpipped {} pairs.'.format(skip_pairs))
 
         self.uid2feat = uid2feat
         self.trials_pair = trials_pair

@@ -764,7 +764,7 @@ if __name__ == '__main__':
         return_uid = True if args.score_norm != '' else False
         test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,  xvectors_dir=test_xvector_dir,
                                        loader=file_loader, return_uid=return_uid,
-                                       verbose=args.verbose)
+                                       verbose=1)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
                                                   batch_size=1 if not args.mean_vector else args.test_batch_size * 128,
