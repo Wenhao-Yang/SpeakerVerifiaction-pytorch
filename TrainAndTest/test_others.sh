@@ -3361,14 +3361,16 @@ if [ $stage -le 603 ]; then
   train_subset=
   subset=test test_input=var test_subset=test
   gpu_id=3
-  echo -e "\n\033[1;4;31m Stage${stage}: Test ${model} in dataset: ${test_set}_${test_subset} \033[0m\n"
 
   sname=dev
   for epoch in 18 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
-    for model_name in ecapa_aug53_attenoise1050_probones08 ; do #ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
-      for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
-      for seed in 1236 ; do
+    for model_name in ecapa_aug53 ecapa_aug53_dp05 ; do #ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
+      # for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2  
+      echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in dataset: ${test_set}_${test_subset} \033[0m\n"
+
+      for test_subset in all ; do #test_radio_chn2
+      for seed in 1234 ; do
         if [[ $model_name == ecapa_aug53 ]];then
           # model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_chn768_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug53/${seed}
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/${train_set}/wave_fb80_dist_aug53/${seed}
@@ -3392,8 +3394,6 @@ if [ $stage -le 603 ]; then
           else
             yaml_name=model.2024.01.18.yaml
           fi
-          #yaml_name=model.2024.01.18.yaml
-          #yaml_name=model.2024.01.18.yaml
         elif [[ $model_name == ecapa_aug53_attenoise510 ]];then
           # model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_chn768_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug53_attenoise1050/${seed}
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/${train_set}/wave_fb80_dist_aug53_attenoise510/${seed}
@@ -3417,23 +3417,19 @@ if [ $stage -le 603 ]; then
           else
             yaml_name=model.2024.01.18.yaml
           fi
-          #yaml_name=model.2024.01.18.yaml
-          #yaml_name=model.2024.01.17.yaml
         elif [[ $model_name == ecapa_aug53_dp05 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/${train_set}/wave_fb80_dist_aug53_dp05/${seed}
-          yaml_name=model.2024.02.07.yaml
-          #yaml_name=model.2024.01.18.yaml
-          #yaml_name=model.2024.01.17.yaml
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.07.yaml
+          else
+            yaml_name=model.2024.01.18.yaml
+          fi
         elif [[ $model_name == ecapa_aug53_dp111_attenoise10100 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111_attenoise10100/${seed}
           yaml_name=model.2024.01.21.yaml
-          #yaml_name=model.2024.01.20.yaml
-          #yaml_name=model.2024.01.20.yaml
         elif [[ $model_name == ecapa_aug53_radionoise ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise/${seed}
           yaml_name=model.2024.01.24.yaml
-          #yaml_name=model.2024.01.23.yaml
-          #yaml_name=model.2024.01.23.yaml
         fi
           xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
           for trials in trials_all; do
@@ -3450,7 +3446,8 @@ if [ $stage -le 603 ]; then
               --cos-sim --test
           done
 
-          for trials in original ; do # original easy hard
+          # for trials in original ; do # original easy hard
+          for trials in original easy hard voxsrc2020 voxsrc2021 voxsrc2022; do # original 
             python -W ignore TrainAndTest/train_egs/test_egs.py \
               --train-dir ${lstm_dir}/data/${train_set}/${sname} \
               --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
