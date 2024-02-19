@@ -872,7 +872,7 @@ class SpecAugmentLayer(nn.Module):
                     f_0 = np.random.randint(0, self.num_f - f + 1)
 
                     inverted_factor = self.num_f / (self.num_f - f)
-                    print('freq', f_0, f_0+f)
+                    # print('freq', f_0, f_0+f)
                     
                     inputs[:, :, f_0:f_0+f].fill_(0.)
                     inputs.mul_(inverted_factor)
@@ -887,7 +887,7 @@ class SpecAugmentLayer(nn.Module):
                     t = np.random.randint(0, self.T + 1)
                     t_0 = np.random.randint(0, self.num_t - t + 1)
                     
-                    print('time', t_0, t_0+t)
+                    # print('time', t_0, t_0+t)
 
                     inputs[:, t_0:t_0+t, :].fill_(0.)
         if input_squeeze:
