@@ -896,7 +896,8 @@ class SpecAugmentLayer(nn.Module):
         return inputs
     
     def __repr__(self):
-        return "SpecAugmentLayer(p_freq={}, p_time={}, rows={}, cols={})" % str(self.p_f, self.p_t, self.rows,self.cols)
+        return "SpecAugmentLayer(p_freq={}, p_time={}, rows={}, cols={})" % (self.p_f, self.p_t,
+                                                                             self.rows, self.cols)
 
 
 def get_weight(weight: str, input_dim: int, power_weight: str):
