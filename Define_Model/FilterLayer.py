@@ -846,7 +846,7 @@ class SpecAugmentLayer(nn.Module):
             inputs = inputs.squeeze(1)
             input_squeeze = True
 
-        ones_prob = (torch.ones(inputs.shape[0],1,1).uniform_(0, 1) < 0.8).float()
+        ones_prob = (torch.ones(inputs.shape[0],1,1).uniform_(0, 1) < 0.5).float()
         ones_prob = ones_prob.to(inputs.device)
 
         mask = torch.ones_like(inputs)
