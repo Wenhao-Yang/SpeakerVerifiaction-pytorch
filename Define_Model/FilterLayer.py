@@ -896,7 +896,7 @@ class SpecAugmentLayer(nn.Module):
         return inputs
     
     def __repr__(self):
-        return "SpecAugmentLayer(p_freq={}, p_time={}, rows={}, cols={})" % (self.p_f, self.p_t,
+        return "SpecAugmentLayer(p_freq={}, p_time={}, rows={}, cols={})".format(self.p_f, self.p_t,
                                                                              self.rows, self.cols)
 
 
