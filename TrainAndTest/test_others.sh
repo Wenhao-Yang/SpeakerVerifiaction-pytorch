@@ -3311,11 +3311,11 @@ if [ $stage -le 602 ]; then
         elif [[ $model_name == ecapa_aug53_db10 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_db10/${seed}
           if [[ $seed == 1234 ]];then
-            yaml_name=model.2024.01.18.yaml
+            yaml_name=model.2024.02.18.yaml
           elif [[ $seed == 1235 ]];then
-            yaml_name=model.2024.01.19.yaml
+            yaml_name=model.2024.02.19.yaml
           elif [[ $seed == 1236 ]];then
-            yaml_name=model.2024.01.19.yaml
+            yaml_name=model.2024.02.19.yaml
           fi
         elif [[ $model_name == ecapa_aug53_attenoise10100 ]];then
           model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_orgsnr1_aug53_attenoise10100/${seed}
