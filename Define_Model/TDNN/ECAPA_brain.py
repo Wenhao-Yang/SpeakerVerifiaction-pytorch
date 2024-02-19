@@ -125,8 +125,8 @@ class DropBlock1d(nn.Module):
     def _compute_gamma(self, x):
         # linear drop of dropout probability
         drop_prob = self.drop_prob
-
         if self.linear_step > 0:
+
             if self.this_step <= self.linear_step:
                 drop_prob = 1 - (1 - self.drop_prob) * self.this_step / self.linear_step
                 self.this_step += 1
@@ -859,7 +859,7 @@ class ECAPA_TDNN(torch.nn.Module):
                 tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0]))
         elif 'radionoise' in dropout_type:
             tdnn_layer1.append(RadioNoiseInject(drop_prob=self.dropouts[0]))
-        elif 'dropblock' in dropout_type:
+        elif 'dropblock' in dropout_type and self.dropouts[0] > 0:
             tdnn_layer1.append(DropBlock1d(drop_prob=self.dropouts[0], linear_step=linear_step))
         elif 'vanilla' in dropout_type and self.dropouts[0] > 0:
             tdnn_layer1.append(Dropout1d(drop_prob=self.dropouts[0], linear_step=linear_step))
