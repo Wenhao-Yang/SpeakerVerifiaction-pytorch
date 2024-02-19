@@ -99,7 +99,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
   sr: 16000
   mask: 'specaug'
-  mask_len : [0.1, 0.1]
+  mask_len : [0.05, 0.0625]
   feat_dim: !ref <input_dim>
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
