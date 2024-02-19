@@ -546,7 +546,8 @@ class SEBlock(nn.Module):
         self.dropout_p = dropout_p
 
         if 'vanilla' in dropout_type:
-            self.drop = Dropout1d(drop_prob=dropout_p, linear_step=linear_step)
+            # self.drop = Dropout1d(drop_prob=dropout_p, linear_step=linear_step)
+            self.drop = nn.Dropout1d(dropout_p)
         elif 'attention' in dropout_type:
             self.drop = DropAttention1d(dropout_p)
         elif 'dropblock' in dropout_type:
