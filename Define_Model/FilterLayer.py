@@ -846,6 +846,12 @@ class SpecAugmentLayer(nn.Module):
             inputs = inputs.squeeze(1)
             input_squeeze = True
 
+        ones_prob = (torch.ones(inputs.shape[0],1,1).uniform_(0, 1) < 0.8).float()
+        ones_prob = ones_prob.to(inputs.device)
+
+        mask = torch.ones_like(inputs)
+        mask = mask.to(inputs.device)
+
         if self.p_f > 0. and self.p_t > 0.:
 
             if not self.init:
@@ -874,8 +880,8 @@ class SpecAugmentLayer(nn.Module):
                     inverted_factor = self.num_f / (self.num_f - f)
                     # print('freq', f_0, f_0+f)
                     
-                    inputs[:, :, f_0:f_0+f].fill_(0.)
-                    inputs.mul_(inverted_factor)
+                    mask[:, :, f_0:f_0+f].fill_(0.)
+                    mask.mul_(inverted_factor)
 
             if self.p_t > 0.:
                 if self.random_cols:
@@ -889,7 +895,11 @@ class SpecAugmentLayer(nn.Module):
                     
                     # print('time', t_0, t_0+t)
 
-                    inputs[:, t_0:t_0+t, :].fill_(0.)
+                    mask[:, t_0:t_0+t, :].fill_(0.)
+        
+        mask = (1-mask) * ones_prob + 1
+        inputs = inputs * mask
+
         if input_squeeze:
             inputs = inputs.unsqueeze(1)
 
