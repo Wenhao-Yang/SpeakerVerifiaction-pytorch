@@ -18,7 +18,7 @@ from torch.autograd import Function
 from torch.autograd import Variable
 from torch.nn import CosineSimilarity
 
-from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyDecayReweightLayer, FrequencyDecayReweightLayer2, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer22, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyGenderReweightLayer6, FrequencyGenderReweightLayer62, FrequencyGenderReweightLayer7, FrequencyGenderReweightLayer8, FrequencyGenderReweightLayer82, FrequencyGenderReweightLayer9,FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, RedropLayer, ReweightLayer, SlideMean_Norm, SparseFbankLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
+from Define_Model.FilterLayer import FreqTimeReweightLayer, FrequencyDecayReweightLayer, FrequencyDecayReweightLayer2, FrequencyGenderReweightLayer2, FrequencyGenderReweightLayer22, FrequencyGenderReweightLayer3, FrequencyGenderReweightLayer4, FrequencyGenderReweightLayer5, FrequencyGenderReweightLayer6, FrequencyGenderReweightLayer62, FrequencyGenderReweightLayer7, FrequencyGenderReweightLayer8, FrequencyGenderReweightLayer82, FrequencyGenderReweightLayer9,FrequencyNormReweightLayer, FrequencyReweightLayer, FrequencyReweightLayer2, MeanStd_Norm, Mean_Norm, Inst_Norm, RedropLayer, ReweightLayer, SlideMean_Norm, SparseFbankLayer, SpecAugmentLayer, SpectrogramLayer, TimeReweightLayer, fDLR, MelFbankLayer
 from Define_Model.Loss.SoftmaxLoss import AngleLinear
 from Define_Model.FilterLayer import TimeMaskLayer, FreqMaskLayer, SqueezeExcitation, GAIN, fBLayer, fBPLayer, fLLayer, \
     RevGradLayer, DropweightLayer, DropweightLayer_v2, DropweightLayer_v3, GaussianNoiseLayer, MusanNoiseLayer, \
@@ -92,6 +92,10 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
         mask_layer = FreqMaskLayer(mask_len=mask_len[0])
     elif mask == "both":
         mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
+
+    elif mask == 'specaug':
+        mask_layer = SpecAugmentLayer(frequency=mask_len[1], frame=mask_len[0])
+
     elif mask == "time_freq":
         mask_layer = nn.Sequential(
             TimeMaskLayer(mask_len=mask_len[0]),
