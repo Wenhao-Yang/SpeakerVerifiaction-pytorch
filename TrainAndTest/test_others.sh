@@ -3374,7 +3374,7 @@ fi
 
 if [ $stage -le 603 ]; then
   model=ECAPA_brain 
-  train_set=vox2  test_set=himia #test_set=vox1 # #jukebox cnceleb
+  train_set=vox2 test_set=vox1 #test_set=himia # # #jukebox cnceleb
 
   train_subset=
   subset=test test_input=var test_subset=test
@@ -3387,7 +3387,7 @@ if [ $stage -le 603 ]; then
       # for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2  
       echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in dataset: ${test_set}_${test_subset} \033[0m\n"
 
-      for test_subset in test ; do #test_radio_chn2
+      for test_subset in all_radsnr1 ; do #test
       # for test_subset in srctest ; do #test_radio_chn2
       # for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
       for seed in 1234 ; do
@@ -3482,8 +3482,8 @@ if [ $stage -le 603 ]; then
           done
 
           # for trials in original ; do # original easy hard
-          # for trials in original easy hard voxsrc2020 voxsrc2021 voxsrc2022; do # original 
-          for trials in 1m mic ; do # original easy hard
+          for trials in original easy hard ; do # voxsrc2020 voxsrc2021 voxsrc2022
+          # for trials in 1m mic ; do # original easy hard
             python -W ignore TrainAndTest/train_egs/test_egs.py \
               --train-dir ${lstm_dir}/data/${train_set}/${sname} \
               --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
