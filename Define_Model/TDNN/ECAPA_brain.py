@@ -210,6 +210,8 @@ class SEBlock(nn.Module):
             self.drop = DropBlock1d(dropout_p, linear_step=linear_step)
         elif 'attendrop' in dropout_type:
             self.drop = AttentionDrop1d(dropout_p)
+        elif 'attenoise' in dropout_type and isinstance(dropout_p, list):
+            self.drop = AttentionNoiseInject(drop_prob=dropout_p)
         else:
             self.drop = None
 
@@ -234,7 +236,7 @@ class SEBlock(nn.Module):
                     self.drop.p = self.dropout_p * self.this_step / self.linear_step
                     self.this_step += 1
 
-            if isinstance(self.drop,  DropBlock1d):   
+            if isinstance(self.drop,  DropBlock1d) or isinstance(self.drop, AttentionNoiseInject):   
                 x = self.drop(x)
             else:    
                 s = self.drop(s)

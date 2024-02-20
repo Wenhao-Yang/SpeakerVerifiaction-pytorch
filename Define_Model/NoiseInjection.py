@@ -344,13 +344,14 @@ class AttentionNoiseInject(nn.Module):
         self.add_prob = drop_prob[1]
         self.linear_step = linear_step
         self.this_step = 0
+        self.batch_prob = 0.8 if len(drop_prob) < 3 else drop_prob[2]
     
     def forward(self, x):
         if self.training:
             time_attention = x.abs().mean(dim=1, keepdim=True)
             time_attention = time_attention / time_attention.max()
 
-            ones_prob = (torch.ones(x.shape[0],1,1).uniform_(0, 1) < 0.8).float()
+            ones_prob = (torch.ones(x.shape[0],1,1).uniform_(0, 1) < self.batch_prob).float()
             ones_prob = ones_prob.to(x.device)
 
             if self.drop_prob > 0:
@@ -359,7 +360,7 @@ class AttentionNoiseInject(nn.Module):
                 mul_noise = self.drop_prob * np.random.beta(2, 5) * mul_noise * time_attention * ones_prob
 
                 # mul_noise = mul_noise.to(x.device)
-                x = (1 +  mul_noise) * x
+                x = (1 + mul_noise) * x
 
             # ones_prob = (torch.ones(x.shape[0],1,1).uniform_(0, 1) < 0.7).float()
             # ones_prob = ones_prob.to(x.device)
@@ -375,7 +376,7 @@ class AttentionNoiseInject(nn.Module):
             return x
         
     def __repr__(self):
-        return "AttentionNoiseInject(mul_prob={}, add_prob={}, ones_prob2=0.8)".format(self.drop_prob, self.add_prob)
+        return "AttentionNoiseInject(mul_prob={}, add_prob={}, batch_prob={})".format(self.drop_prob, self.add_prob, self.batch_prob)
 
 
 class SelfAttentionNoiseInject(nn.Module):
