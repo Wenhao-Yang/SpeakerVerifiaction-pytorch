@@ -3467,23 +3467,25 @@ if [ $stage -le 603 ]; then
           yaml_name=model.2024.01.24.yaml
         fi
           xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
-          for trials in trials_all; do
-            python -W ignore TrainAndTest/train_egs/test_egs.py \
-              --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-              --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-              --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-              --feat-format wav --nj 4 \
-              --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
-              --xvector-dir ${xvector_dir} \
-              --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-              --gpu-id ${gpu_id} \
-              --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-              --cos-sim --test
-          done
+          # for trials in trials_all; do
+          #   python -W ignore TrainAndTest/train_egs/test_egs.py \
+          #     --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+          #     --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+          #     --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+          #     --feat-format wav --nj 4 \
+          #     --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+          #     --xvector-dir ${xvector_dir} \
+          #     --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+          #     --gpu-id ${gpu_id} \
+          #     --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+          #     --cos-sim --test
+          # done
 
           # for trials in original ; do # original easy hard
           for trials in original easy hard ; do # voxsrc2020 voxsrc2021 voxsrc2022
           # for trials in 1m mic ; do # original easy hard
+          # for trials in original easy hard voxsrc2020 voxsrc2021 voxsrc2022; do # original 
+          # for trials in 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 ; do # original easy hard
             python -W ignore TrainAndTest/train_egs/test_egs.py \
               --train-dir ${lstm_dir}/data/${train_set}/${sname} \
               --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
