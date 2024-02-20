@@ -3383,7 +3383,7 @@ if [ $stage -le 603 ]; then
   sname=dev
   for epoch in 18 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
-    for model_name in ecapa_aug53 ecapa_aug53_attenoise510 ecapa_aug53_attenoise1050_probones08_vanilla05 ; do #ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
+    for model_name in ecapa_aug53_dp05 ; do #ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise
       # for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2  
       echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in dataset: ${test_set}_${test_subset} \033[0m\n"
 
