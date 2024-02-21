@@ -18,7 +18,7 @@ from Define_Model.Pooling import SelfAttentionPooling_v2
 
 class Dropout1d(nn.Module):
     def __init__(self, drop_prob, linear_step=0):
-        super(Dropout1d).__init__()
+        super(Dropout1d, self).__init__()
         self.drop_prob = drop_prob
         self.linear_step = linear_step
         self.this_step = 0
@@ -35,6 +35,29 @@ class Dropout1d(nn.Module):
             x = F.dropout1d(x, p=drop_prob)
         return x
 
+class MagnitudeDropout1d(nn.Module):
+    def __init__(self, drop_prob, linear_step=0):
+        super(MagnitudeDropout1d, self).__init__()
+        self.drop_prob = drop_prob
+        self.linear_step = linear_step
+        self.this_step = 0
+
+    def forward(self, x):
+        if self.training and self.drop_prob > 0:
+            freq_mag = x.abs().mean(dim=-1, keepdim=True)
+            freq_mag = freq_mag / freq_mag.mean(dim=1, keepdim=True)
+
+            drop_prob = self.drop_prob
+            if self.linear_step > 0:
+                if self.this_step <= self.linear_step:
+                    drop_prob = self.drop_prob * self.this_step / self.linear_step
+                    self.this_step += 1
+
+            gamma = 1 - freq_mag * drop_prob
+            mask = torch.bernoulli(gamma)
+            x = x * mask * mask.numel() / mask.sum()
+            # x = F.dropout1d(x, p=drop_prob)
+        return x
 
 class DropBlock1d(nn.Module):
     """DropBlock layer.
