@@ -23,7 +23,7 @@ import numpy as np
 from scipy.stats import burr12
 import torch.nn as nn
 import torch.nn.functional as F
-from Define_Model.NoiseInjection import AttentionDrop1d, NoiseInject, DropBlock1d, Dropout1d, DropAttention1d, AttentionNoiseInject, RadioNoiseInject
+from Define_Model.NoiseInjection import AttentionDrop1d, MagnitudeDropout1d, NoiseInject, DropBlock1d, Dropout1d, DropAttention1d, AttentionNoiseInject, RadioNoiseInject
 from speechbrain.dataio.dataio import length_to_mask
 from speechbrain.nnet.CNN import Conv1d as _Conv1d
 from speechbrain.nnet.normalization import BatchNorm1d as _BatchNorm1d
@@ -204,6 +204,9 @@ class SEBlock(nn.Module):
         if 'vanilla' in dropout_type:
             # self.drop = Dropout1d(drop_prob=dropout_p, linear_step=linear_step)
             self.drop = nn.Dropout1d(dropout_p)
+        elif 'magnitude' in dropout_type:
+            # self.drop = Dropout1d(drop_prob=dropout_p, linear_step=linear_step)
+            self.drop = MagnitudeDropout1d(dropout_p)
         elif 'attention' in dropout_type:
             self.drop = DropAttention1d(dropout_p)
         elif 'dropblock' in dropout_type:
