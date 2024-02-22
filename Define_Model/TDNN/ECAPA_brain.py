@@ -23,7 +23,7 @@ import numpy as np
 from scipy.stats import burr12
 import torch.nn as nn
 import torch.nn.functional as F
-from Define_Model.NoiseInjection import AttentionDrop1d, MagnitudeDropout1d, NoiseInject, DropBlock1d, Dropout1d, DropAttention1d, AttentionNoiseInject, RadioNoiseInject
+from Define_Model.NoiseInjection import AttentionDrop1d, MagCauchyNoiseInject, MagnitudeDropout1d, NoiseInject, DropBlock1d, Dropout1d, DropAttention1d, AttentionNoiseInject, RadioNoiseInject
 from speechbrain.dataio.dataio import length_to_mask
 from speechbrain.nnet.CNN import Conv1d as _Conv1d
 from speechbrain.nnet.normalization import BatchNorm1d as _BatchNorm1d
@@ -518,6 +518,8 @@ class ECAPA_TDNN(torch.nn.Module):
                 tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0:2]))
             else:
                 tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0]))
+        elif 'magcauchy' in dropout_type:
+            tdnn_layer1.append(MagCauchyNoiseInject(drop_prob=self.dropouts[0]))
         elif 'radionoise' in dropout_type:
             tdnn_layer1.append(RadioNoiseInject(drop_prob=self.dropouts[0]))
         elif 'dropblock' in dropout_type and self.dropouts[0] > 0:
