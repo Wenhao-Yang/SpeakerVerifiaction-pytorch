@@ -2,7 +2,7 @@
 
 stage=10
 waited=0
-while [ $(ps 113292 | wc -l) -eq 2 ]; do
+while [ $(ps 210656 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -113,7 +113,6 @@ if [ $stage -le 10 ]; then
       # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_attenoise.yaml --seed=${seed}
       # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_mag.yaml --seed=${seed}
       CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_magcauchy.yaml --seed=${seed}
-
 
       # CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_attenoise_vanilla.yaml --seed=${seed}
 
