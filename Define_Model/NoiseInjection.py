@@ -433,7 +433,8 @@ class MagCauchyNoiseInject(nn.Module):
             if self.drop_prob > 0:
                 # torch.randn(x.shape)
                 mul_noise = 2 * torch.cuda.FloatTensor(x.shape).uniform_() - 1
-                r = stats.skewcauchy.rvs(-0.084, 0, 0.176, size=(x.shape[0], x.shape[1]))
+                # r = stats.skewcauchy.rvs(-0.084, 0, 0.176, size=(x.shape[0], x.shape[1]))
+                r = stats.norm.rvs(0, 1/3, size=(x.shape[0], x.shape[1]))
                 mul_noise = torch.tensor(r).float().unsqueeze(2)
                 mul_noise = mul_noise.to(x.device)
                 mul_noise = self.drop_prob * np.random.beta(2, 5) * mul_noise * time_attention * ones_prob
