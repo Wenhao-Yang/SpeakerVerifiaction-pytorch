@@ -174,7 +174,10 @@ def create_model(name, **kwargs):
 
 def create_classifier(encode_model, **kwargs):
     if kwargs['loss_type'] in ['asoft', 'amsoft', 'damsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2', 'aDCF']:
-        encode_model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
+        if hasattr(encode_model, 'classifier') and isinstance(encode_model.classifier, ECAPA_brain.Classifier):
+            pass
+        else:
+            encode_model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
                                                        normalize=kwargs['normalize'] if 'normalize' in kwargs else True,
                                                        num_classes=kwargs['num_classes'])
     elif 'sub' in kwargs['loss_type']:
