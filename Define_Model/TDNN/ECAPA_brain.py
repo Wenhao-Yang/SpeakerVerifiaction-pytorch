@@ -200,6 +200,7 @@ class SEBlock(nn.Module):
         self.this_step = 0
         self.linear_step = linear_step
         self.dropout_p = dropout_p
+        self.drop_after = False if 'before' in dropout_type else True
 
         if 'vanilla' in dropout_type:
             # self.drop = Dropout1d(drop_prob=dropout_p, linear_step=linear_step)
@@ -221,6 +222,20 @@ class SEBlock(nn.Module):
     def forward(self, x, lengths=None):
         """ Processes the input tensor x and returns an output tensor."""
         L = x.shape[-1]
+
+        # linear create dropout
+        if self.drop != None:
+            if self.linear_step > 0:
+                if self.this_step <= self.linear_step:
+                    self.drop.p = self.dropout_p * self.this_step / self.linear_step
+                    self.this_step += 1
+
+        if self.drop_after:
+            pass
+        else:
+            if isinstance(self.drop,  DropBlock1d) or isinstance(self.drop, AttentionNoiseInject):   
+                x = self.drop(x)
+
         if lengths is not None:
             mask = length_to_mask(lengths * L, max_len=L, device=x.device)
             mask = mask.unsqueeze(1)
@@ -231,14 +246,8 @@ class SEBlock(nn.Module):
 
         s = self.relu(self.conv1(s))
         s = self.sigmoid(self.conv2(s))
-        
-        # linear create dropout
-        if self.drop != None:
-            if self.linear_step > 0:
-                if self.this_step <= self.linear_step:
-                    self.drop.p = self.dropout_p * self.this_step / self.linear_step
-                    self.this_step += 1
 
+        if self.drop_after:   
             if isinstance(self.drop,  DropBlock1d) or isinstance(self.drop, AttentionNoiseInject):   
                 x = self.drop(x)
             else:    

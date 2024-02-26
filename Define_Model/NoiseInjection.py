@@ -439,7 +439,7 @@ class MagCauchyNoiseInject(nn.Module):
                 
                 # 0.3 to set zeros
                 ones = torch.bernoulli(torch.ones(r.shape) * 0.3).numpy()
-                r = np.where(ones == 1, 1, r)
+                r = np.where(ones == 1, 1, r-1)
                 
                 mul_noise = torch.tensor(r).float().unsqueeze(2)
                 mul_noise = mul_noise.to(x.device)
