@@ -3183,7 +3183,7 @@ if [ $stage -le 601 ]; then
   sname=dev
   for epoch in 24 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     # vox1 1235 1236
-    for model_name in ecapa_aug53_burr10 ecapa_aug53_multilayer10 ecapa_aug53_inspecaug05 ; do
+    for model_name in ecapa_aug53_burr10 ecapa_aug53_inspecaug05 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
       for seed in 1234 1235 1236 ; do
