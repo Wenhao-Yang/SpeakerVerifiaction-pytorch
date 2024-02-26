@@ -230,9 +230,7 @@ class SEBlock(nn.Module):
                     self.drop.p = self.dropout_p * self.this_step / self.linear_step
                     self.this_step += 1
 
-        if self.drop_after:
-            pass
-        else:
+        if not self.drop_after and self.drop != None:
             if isinstance(self.drop,  DropBlock1d) or isinstance(self.drop, AttentionNoiseInject):   
                 x = self.drop(x)
 
@@ -247,7 +245,7 @@ class SEBlock(nn.Module):
         s = self.relu(self.conv1(s))
         s = self.sigmoid(self.conv2(s))
 
-        if self.drop_after:   
+        if self.drop_after and self.drop != None:   
             if isinstance(self.drop,  DropBlock1d) or isinstance(self.drop, AttentionNoiseInject):   
                 x = self.drop(x)
             else:    
