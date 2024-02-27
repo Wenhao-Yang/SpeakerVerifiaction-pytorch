@@ -222,13 +222,13 @@ class NoiseInject(nn.Module):
         self.add_prob = drop_prob[1]
         self.linear_step = linear_step
         self.this_step = 0
+        self.batch_prob = 0.8 if len(drop_prob) < 3 else drop_prob[2]
     
     def forward(self, x):
         if self.training:
             
-            ones_prob = (torch.ones(x.shape[0]).uniform_(0, 1) < 0.8).float()
+            ones_prob = (torch.ones(x.shape[0],1,1).uniform_(0, 1) < self.batch_prob).float()
             ones_prob = ones_prob.to(x.device)
-            ones_prob = ones_prob.reshape(-1, 1, 1)
 
             if len(x.shape) == 4:
                 ones_prob = ones_prob.unsqueeze(1)
@@ -253,7 +253,7 @@ class NoiseInject(nn.Module):
             return x
         
     def __repr__(self):
-        return "NoiseInject(mul_prob={}, add_prob={})".format(self.drop_prob, self.add_prob)
+        return "NoiseInject(mul_prob={}, add_prob={}, batch_prob={})".format(self.drop_prob, self.add_prob, self.batch_prob)
 
 
 class RadioNoiseInject(nn.Module):
