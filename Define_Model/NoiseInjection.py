@@ -400,6 +400,76 @@ class AttentionNoiseInject(nn.Module):
         
     def __repr__(self):
         return "AttentionNoiseInject(mul_prob={}, add_prob={}, batch_prob={})".format(self.drop_prob, self.add_prob, self.batch_prob)
+    
+
+class PartialAttentionNoiseInject(nn.Module):
+    """AttentionNoiseInject layer.
+
+    Arguments
+    ----------
+    drop_prob : float
+        The drop probability.
+    block_size : int
+        The size of the block.
+    """
+
+    def __init__(self, drop_prob=[0.2, 0.4], linear_step=0):
+        super(PartialAttentionNoiseInject, self).__init__()
+        self.drop_prob = drop_prob[0]
+        self.add_prob = drop_prob[1]
+        self.linear_step = linear_step
+        self.this_step = 0
+        self.batch_prob = 0.8 if len(drop_prob) < 3 else drop_prob[2]
+        self.batch_part_prob = 0.8 if len(drop_prob) < 4 else drop_prob[3]
+    
+    def forward(self, x):
+        if self.training:
+            time_attention = x.abs().mean(dim=1, keepdim=True)
+            time_attention = time_attention / time_attention.max()
+
+            ones_prob = (torch.ones(x.shape[0],1,1).uniform_(0, 1) < self.batch_prob).float()
+            ones_prob = ones_prob.to(x.device)
+
+            # partial noise injection
+            part_prob = self.batch_part_prob
+            t_dim, f_dim = x.shape[1:]
+            part_ones = torch.ones(1, x.shape[1],x.shape[2])
+            part_ones = part_ones.to(x.device)
+
+            st, sf = np.random.uniform(0, np.sqrt(part_prob), size=2)
+            st, sf = int(st * t_dim), int(sf * f_dim)
+
+            et = int(t_dim * (1-np.sqrt(part_prob))) + st
+            ef = int(f_dim * (1-np.sqrt(part_prob))) + sf
+
+            part_ones[:, :, st:et].fill_(0.)
+            part_ones[:, sf:ef, :].fill_(0.)
+
+            ones_prob = ones_prob * part_ones
+
+            if self.drop_prob > 0:
+                # torch.randn(x.shape)
+                mul_noise = 2 * torch.cuda.FloatTensor(x.shape).uniform_() - 1
+                mul_noise = self.drop_prob * np.random.beta(2, 5) * mul_noise * time_attention * ones_prob
+
+                # mul_noise = mul_noise.to(x.device)
+                x = (1 + mul_noise) * x
+
+            # ones_prob = (torch.ones(x.shape[0],1,1).uniform_(0, 1) < 0.7).float()
+            # ones_prob = ones_prob.to(x.device)
+            if self.add_prob > 0:
+                add_noise = torch.cuda.FloatTensor(x.shape).normal_() 
+                add_noise = self.add_prob * np.random.beta(2, 5) * add_noise * time_attention * ones_prob
+                # torch.randn(x.shape)
+                # add_noise = add_noise.to(x.device)
+                x = x + add_noise
+            
+            return x
+        else:
+            return x
+        
+    def __repr__(self):
+        return "PartialAttentionNoiseInject(mul_prob={}, add_prob={}, batch_prob={})".format(self.drop_prob, self.add_prob, self.batch_prob)
 
 
 class MagCauchyNoiseInject(nn.Module):

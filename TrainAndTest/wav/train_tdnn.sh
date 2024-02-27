@@ -2,7 +2,7 @@
 
 stage=10
 waited=0
-while [ $(ps 210656 | wc -l) -eq 2 ]; do
+while [ $(ps 288394 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -109,6 +109,7 @@ if [ $stage -le 10 ]; then
 
       #  CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_dp111.yaml --seed=${seed}
       # CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_noise.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_pattenoise.yaml --seed=${seed}
 
       #  CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_attenoise.yaml --seed=${seed}
       # CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_attenoise.yaml --seed=${seed}
@@ -122,7 +123,7 @@ if [ $stage -le 10 ]; then
       # CUDA_VISIBLE_DEVICES=0,6 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=4175 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_radionoise.yaml --seed=${seed}
 
       # CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53.yaml --seed=${seed}
-      CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53_noise.yaml --seed=${seed}
+      # CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53_noise.yaml --seed=${seed}
 
       # CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox2_brain_aug53_chn1024.yaml --seed=${seed}
 
