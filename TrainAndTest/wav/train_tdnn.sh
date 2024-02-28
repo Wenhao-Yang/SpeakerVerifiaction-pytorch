@@ -72,7 +72,7 @@ if [ $stage -le 10 ]; then
   loss=arcsoft encod=ASTP2 embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
   for lamda_beta in 0.2;do
-    for seed in 1234 1235 1236 ; do
+    for seed in 1236 ; do
     for data_type in hdf5 ; do
     # for type in mani style align ;do
     #  feat=fb${input_dim}
@@ -108,8 +108,8 @@ if [ $stage -le 10 ]; then
       #  CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53.yaml --seed=${seed}
 
       #  CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_dp111.yaml --seed=${seed}
-      # CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_noise.yaml --seed=${seed}
-      CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_pattenoise.yaml --seed=${seed}
+      CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_noise.yaml --seed=${seed}
+      # CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_pattenoise.yaml --seed=${seed}
 
       #  CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_attenoise.yaml --seed=${seed}
       # CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_attenoise.yaml --seed=${seed}
