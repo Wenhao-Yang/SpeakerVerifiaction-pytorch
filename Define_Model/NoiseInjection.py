@@ -216,19 +216,33 @@ class NoiseInject(nn.Module):
         The size of the block.
     """
 
-    def __init__(self, drop_prob=[0.2, 0.4], linear_step=0):
+    def __init__(self, drop_prob=[0.2, 0.4], linear_step=0, noise_norm='none'):
         super(NoiseInject, self).__init__()
         self.drop_prob = drop_prob[0]
         self.add_prob = drop_prob[1]
         self.linear_step = linear_step
         self.this_step = 0
         self.batch_prob = 0.8 if len(drop_prob) < 3 else drop_prob[2]
+        self.noise_norm = noise_norm
     
     def forward(self, x):
         if self.training:
             
             ones_prob = (torch.ones(x.shape[0],1,1).uniform_(0, 1) < self.batch_prob).float()
             ones_prob = ones_prob.to(x.device)
+
+            if self.noise_norm == 'magnitude':
+                magnitude = x.abs() #.mean(dim=1, keepdim=True)
+                magnitude = magnitude / magnitude.mean()
+                ones_prob = magnitude * ones_prob
+            elif self.noise_norm == 'time':
+                magnitude = x.abs().mean(dim=1, keepdim=True)
+                magnitude = magnitude / magnitude.mean()
+                ones_prob = magnitude * ones_prob
+            elif self.noise_norm == 'frequency':
+                magnitude = x.abs().mean(dim=2, keepdim=True)
+                magnitude = magnitude / magnitude.mean()
+                ones_prob = magnitude * ones_prob
 
             if len(x.shape) == 4:
                 ones_prob = ones_prob.unsqueeze(1)
