@@ -470,7 +470,7 @@ class ECAPA_TDNN(torch.nn.Module):
             channels=[512, 512, 512, 512, 1536],
             kernel_sizes=[5, 3, 3, 3, 1],
             dilations=[1, 2, 3, 4, 1],
-            dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0,
+            dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0, noise_norm='none',
             attention_channels=128,
             res2net_scale=8,
             se_channels=128,
@@ -523,10 +523,10 @@ class ECAPA_TDNN(torch.nn.Module):
             else:
                 tdnn_layer1.append(AttentionNoiseInject(drop_prob=self.dropouts[0]))
         elif 'noiseinject' in dropout_type:
-            if isinstance(self.dropouts[0], float):
-                tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0:2]))
-            else:
-                tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0]))
+            # if isinstance(self.dropouts[0], float):
+            #     tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0:2]))
+            # else:
+            tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0], noise_norm=noise_norm))
         elif 'magcauchy' in dropout_type:
             tdnn_layer1.append(MagCauchyNoiseInject(drop_prob=self.dropouts[0]))
         elif 'radionoise' in dropout_type:
