@@ -74,7 +74,7 @@ def main():
             # pytorch 1.6 use true_divide instead of /=
             avg[k] = torch.true_divide(avg[k], num)
 
-    save_model = os.path.join(args.check_path, 'avg{}.pth'.format(num))
+    save_model = os.path.join(args.check_path, 'checkpoint_avg{}.pth'.format(num))
     print('Saving to {}'.format(save_model))
     
     torch.save({'epoch': epochs, 'state_dict': avg} , save_model)
