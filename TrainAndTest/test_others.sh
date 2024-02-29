@@ -3189,6 +3189,7 @@ if [ $stage -le 601 ]; then
 
     for model_name in ecapa_aug53 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_attenoise10100_prob08 ecapa_aug53_pattenoise10100_prob08 ecapa_aug53_noise10100_prob08 ecapa_aug53_burr10 ecapa_aug53_inspecaug05 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise1010 ecapa_aug53_radionoise10100 ; do
     common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1
+    
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
       for seed in 1234 1235 1236 ; do
