@@ -799,20 +799,20 @@ class ScriptTrainDataset(data.Dataset):
 
         total_frames = 0
         self.utt2num_frames = {}
-        if self.sample_type != 'balance':
-            if os.path.exists(utt2num_frames):
-                with open(utt2num_frames, 'r') as f:
-                    for l in f.readlines():
-                        uid, num_frames = l.split()
-                        if uid in uid2vad:
-                            num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
-                        if feat_type == 'wav':
-                            num_frames = float(num_frames) * sr
+        # if self.sample_type != 'balance':
+        if os.path.exists(utt2num_frames):
+            with open(utt2num_frames, 'r') as f:
+                for l in f.readlines():
+                    uid, num_frames = l.split()
+                    if uid in uid2vad:
+                        num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
+                    if feat_type == 'wav':
+                        num_frames = float(num_frames) * sr
 
-                        num_frames = int(num_frames)
-                        self.utt2num_frames[uid] = num_frames
-                        if num_frames < self.min_frames:
-                            invalid_uid.add(uid)
+                    num_frames = int(num_frames)
+                    self.utt2num_frames[uid] = num_frames
+                    if num_frames < self.min_frames:
+                        invalid_uid.add(uid)
 
         dataset = {}
         with open(spk2utt, 'r') as u:
@@ -868,7 +868,7 @@ class ScriptTrainDataset(data.Dataset):
             spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
-                
+
             with open(os.path.join(save_dir, 'spk2idx'), 'w') as f:
                 json.dump(spk_to_idx, f)
         else:
