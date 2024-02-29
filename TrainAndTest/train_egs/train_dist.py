@@ -886,8 +886,12 @@ def main():
 
             valid_loss = valid_class(
                 valid_loader, model, epoch, config_args, writer)
-            valid_test_dict = valid_test(
-                train_extract_loader, model, epoch, xvector_dir, config_args, writer)
+            
+            if early_stopping_scheduler != None or epoch in [start, end-1]:
+                valid_test_dict = valid_test(
+                    train_extract_loader, model, epoch, xvector_dir, config_args, writer)
+            else:
+                valid_test_dict = {}
             
             valid_test_dict['Valid_Loss'] = valid_loss
             valid_test_result[epoch] = valid_test_dict
@@ -947,7 +951,11 @@ def main():
                 if torch.distributed.get_rank() == 0:
                     print('Best Epochs : ', top_k)
                     
-                    best_epoch = top_k[0]
+                    if early_stopping_scheduler != None:
+                        best_epoch = top_k[0]
+                    else:
+                        best_epoch = -1
+
                     best_res = valid_test_result[best_epoch]
 
                     best_str = 'EER(%):       ' + \
