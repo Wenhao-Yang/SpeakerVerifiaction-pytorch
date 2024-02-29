@@ -3181,20 +3181,37 @@ if [ $stage -le 601 ]; then
   gpu_id=5
   
   sname=dev
-  for epoch in 24 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+  # for epoch in 24 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+  for epoch in avg3 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+
     # vox1 1235 1236
-    for model_name in ecapa_aug53_attenoise10100_prob08 ecapa_aug53_pattenoise10100_prob08 ecapa_aug53_noise10100_prob08 ecapa_aug53_burr10 ecapa_aug53_inspecaug05 ecapa_aug53_dp111_before ; do
+    # for model_name in ecapa_aug53_attenoise10100_prob08 ecapa_aug53_pattenoise10100_prob08 ecapa_aug53_noise10100_prob08 ecapa_aug53_burr10 ecapa_aug53_inspecaug05 ecapa_aug53_dp111_before ; do
+
+    for model_name in ecapa_aug53 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_attenoise10100_prob08 ecapa_aug53_pattenoise10100_prob08 ecapa_aug53_noise10100_prob08 ecapa_aug53_burr10 ecapa_aug53_inspecaug05 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise1010 ecapa_aug53_radionoise10100 ; do
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
       for seed in 1234 1235 1236 ; do
         if [[ $model_name == ecapa_aug53 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53/${seed}
-          epoch=24 yaml_name=model.2024.01.17.yaml #yaml_name=model.2024.01.17.yaml #yaml_name=model.2024.01.16.yaml
+          model_dir=${common_path}/wave_fb80_dist_aug53/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.16.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.17.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.17.yaml
+          fi
         elif [[ $model_name == ecapa_aug53_dp111 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111/${seed}
-          epoch=24 yaml_name=model.2024.01.18.yaml #yaml_name=model.2024.01.18.yaml #yaml_name=model.2024.01.17.yaml
+          model_dir=${common_path}/wave_fb80_dist_aug53_dp111/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.17.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.18.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.18.yaml
+          fi
         elif [[ $model_name == ecapa_aug53_burr10 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_burr1210/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_burr1210/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.24.yaml
           elif [[ $seed == 1235 ]];then
@@ -3203,7 +3220,7 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.24.yaml
           fi
         elif [[ $model_name == ecapa_aug53_magdp111 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_mag111/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_mag111/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.21.yaml
           elif [[ $seed == 1235 ]];then
@@ -3212,7 +3229,7 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.22.yaml
           fi
         elif [[ $model_name == ecapa_aug53_dp111_before ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111_before/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_dp111_before/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.26.yaml
           elif [[ $seed == 1235 ]];then
@@ -3221,7 +3238,7 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.27.yaml
           fi
         elif [[ $model_name == ecapa_aug53_multilayer10 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise_multilayers1/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_attenoise_multilayers1/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.20.yaml
           elif [[ $seed == 1235 ]];then
@@ -3230,7 +3247,7 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.21.yaml
           fi
         elif [[ $model_name == ecapa_aug53_inspecaug05 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_inspecaug05/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_inspecaug05/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.19.yaml
           elif [[ $seed == 1235 ]];then
@@ -3239,7 +3256,7 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.20.yaml
           fi
         elif [[ $model_name == ecapa_aug53_noise10100_prob08 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_noise10100_prob08/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_noise10100_prob08/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.27.yaml
           elif [[ $seed == 1235 ]];then
@@ -3248,7 +3265,7 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.29.yaml
           fi
         elif [[ $model_name == ecapa_aug53_attenoise10100_prob08 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise10100_prob08/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_attenoise10100_prob08/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.27.yaml
           elif [[ $seed == 1235 ]];then
@@ -3257,7 +3274,7 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.27.yaml
           fi
         elif [[ $model_name == ecapa_aug53_pattenoise10100_prob08 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_pattenoise10100_prob08/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_pattenoise10100_prob08/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.28.yaml
           elif [[ $seed == 1235 ]];then
@@ -3266,7 +3283,7 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.28.yaml
           fi
         elif [[ $model_name == ecapa_aug53_attenoise10100_before ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise10100_before/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_attenoise10100_before/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.02.25.yaml
           elif [[ $seed == 1235 ]];then
@@ -3275,16 +3292,34 @@ if [ $stage -le 601 ]; then
             yaml_name=model.2024.02.26.yaml
           fi
         elif [[ $model_name == ecapa_aug53_dp111_attenoise10100 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_dp111_attenoise10100/${seed}
-          epoch=24 yaml_name=model.2024.01.21.yaml #yaml_name=model.2024.01.20.yaml #yaml_name=model.2024.01.20.yaml
+          model_dir=${common_path}/wave_fb80_dist_aug53_dp111_attenoise10100/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.20.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.20.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.21.yaml
+          fi
         elif [[ $model_name == ecapa_aug53_attenoise10100 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_attenoise10100/${seed}
-          epoch=24 yaml_name=model.2024.01.19.yaml #yaml_name=model.2024.01.18.yaml #yaml_name=model.2024.01.18.yaml
-        elif [[ $model_name == ecapa_aug53_radionoise ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise/${seed}
-          epoch=24 yaml_name=model.2024.01.24.yaml #yaml_name=model.2024.01.23.yaml #yaml_name=model.2024.01.23.yaml
+          model_dir=${common_path}/wave_fb80_dist_aug53_attenoise10100/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.18.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.18.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.19.yaml
+          fi
+        elif [[ $model_name == ecapa_aug53_radionoise1010 ]];then
+          model_dir=${common_path}/wave_fb80_dist_aug53_radionoise/${seed}
+          if [[ $seed == 1234 ]];then
+            yaml_name=model.2024.02.23.yaml
+          elif [[ $seed == 1235 ]];then
+            yaml_name=model.2024.02.23.yaml
+          elif [[ $seed == 1236 ]];then
+            yaml_name=model.2024.02.24.yaml
+          fi
         elif [[ $model_name == ecapa_aug53_radionoise10100 ]];then
-          model_dir=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_dist_aug53_radionoise10100/${seed}
+          model_dir=${common_path}/wave_fb80_dist_aug53_radionoise10100/${seed}
           if [[ $seed == 1234 ]];then
             yaml_name=model.2024.01.26.yaml
           elif [[ $seed == 1235 ]];then
@@ -3318,7 +3353,7 @@ if [ $stage -le 601 ]; then
               --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
               --xvector-dir ${xvector_dir} \
               --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-              --gpu-id ${gpu_id} --score-suffix ${trials} \
+              --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
               --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
               --cos-sim --extract
           done
