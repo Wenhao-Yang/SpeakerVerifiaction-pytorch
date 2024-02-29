@@ -702,7 +702,13 @@ if __name__ == '__main__':
             )
 
         model_dict = model.state_dict()
+        if 'classifier.W' in filtered and 'classifier.W' not in model_dict:
+            model.classifier = None
+            create_classifier(model, **config_args)
+            model_dict = model.state_dict()
+
         model_dict.update(filtered)
+
         model.load_state_dict(model_dict)
         # model.dropout.p = args.dropout_p
 
