@@ -3189,27 +3189,27 @@ if [ $stage -le 601 ]; then
 
     for model_name in ecapa_aug53 ecapa_aug53_dp111 ecapa_aug53_attenoise10100 ecapa_aug53_attenoise10100_prob08 ecapa_aug53_pattenoise10100_prob08 ecapa_aug53_noise10100_prob08 ecapa_aug53_burr10 ecapa_aug53_inspecaug05 ecapa_aug53_dp111_attenoise10100 ecapa_aug53_radionoise1010 ecapa_aug53_radionoise10100 ; do
     common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1
-    
+
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
       for seed in 1234 1235 1236 ; do
         if [[ $model_name == ecapa_aug53 ]];then
           model_dir=${common_path}/wave_fb80_dist_aug53/${seed}
           if [[ $seed == 1234 ]];then
-            yaml_name=model.2024.02.16.yaml
+            yaml_name=model.2024.01.16.yaml
           elif [[ $seed == 1235 ]];then
-            yaml_name=model.2024.02.17.yaml
+            yaml_name=model.2024.01.17.yaml
           elif [[ $seed == 1236 ]];then
-            yaml_name=model.2024.02.17.yaml
+            yaml_name=model.2024.01.17.yaml
           fi
         elif [[ $model_name == ecapa_aug53_dp111 ]];then
           model_dir=${common_path}/wave_fb80_dist_aug53_dp111/${seed}
           if [[ $seed == 1234 ]];then
-            yaml_name=model.2024.02.17.yaml
+            yaml_name=model.2024.01.17.yaml
           elif [[ $seed == 1235 ]];then
-            yaml_name=model.2024.02.18.yaml
+            yaml_name=model.2024.01.18.yaml
           elif [[ $seed == 1236 ]];then
-            yaml_name=model.2024.02.18.yaml
+            yaml_name=model.2024.01.18.yaml
           fi
         elif [[ $model_name == ecapa_aug53_burr10 ]];then
           model_dir=${common_path}/wave_fb80_dist_aug53_burr1210/${seed}
@@ -3295,29 +3295,29 @@ if [ $stage -le 601 ]; then
         elif [[ $model_name == ecapa_aug53_dp111_attenoise10100 ]];then
           model_dir=${common_path}/wave_fb80_dist_aug53_dp111_attenoise10100/${seed}
           if [[ $seed == 1234 ]];then
-            yaml_name=model.2024.02.20.yaml
+            yaml_name=model.2024.01.20.yaml
           elif [[ $seed == 1235 ]];then
-            yaml_name=model.2024.02.20.yaml
+            yaml_name=model.2024.01.20.yaml
           elif [[ $seed == 1236 ]];then
-            yaml_name=model.2024.02.21.yaml
+            yaml_name=model.2024.01.21.yaml
           fi
         elif [[ $model_name == ecapa_aug53_attenoise10100 ]];then
           model_dir=${common_path}/wave_fb80_dist_aug53_attenoise10100/${seed}
           if [[ $seed == 1234 ]];then
-            yaml_name=model.2024.02.18.yaml
+            yaml_name=model.2024.01.18.yaml
           elif [[ $seed == 1235 ]];then
-            yaml_name=model.2024.02.18.yaml
+            yaml_name=model.2024.01.18.yaml
           elif [[ $seed == 1236 ]];then
-            yaml_name=model.2024.02.19.yaml
+            yaml_name=model.2024.01.19.yaml
           fi
         elif [[ $model_name == ecapa_aug53_radionoise1010 ]];then
           model_dir=${common_path}/wave_fb80_dist_aug53_radionoise/${seed}
           if [[ $seed == 1234 ]];then
-            yaml_name=model.2024.02.23.yaml
+            yaml_name=model.2024.01.23.yaml
           elif [[ $seed == 1235 ]];then
-            yaml_name=model.2024.02.23.yaml
+            yaml_name=model.2024.01.23.yaml
           elif [[ $seed == 1236 ]];then
-            yaml_name=model.2024.02.24.yaml
+            yaml_name=model.2024.01.24.yaml
           fi
         elif [[ $model_name == ecapa_aug53_radionoise10100 ]];then
           model_dir=${common_path}/wave_fb80_dist_aug53_radionoise10100/${seed}
@@ -3330,7 +3330,7 @@ if [ $stage -le 601 ]; then
           fi
         fi
 
-          xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}
+          xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
           for trials in trials_all; do
             python -W ignore TrainAndTest/train_egs/test_egs.py \
               --train-dir ${lstm_dir}/data/${train_set}/${sname} \
