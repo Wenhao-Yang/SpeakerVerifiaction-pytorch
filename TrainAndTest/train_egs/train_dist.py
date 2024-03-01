@@ -954,7 +954,7 @@ def main():
                     if early_stopping_scheduler != None:
                         best_epoch = top_k[0]
                     else:
-                        best_epoch = end - 1
+                        best_epoch = end
 
                     best_res = valid_test_result[best_epoch]
 
