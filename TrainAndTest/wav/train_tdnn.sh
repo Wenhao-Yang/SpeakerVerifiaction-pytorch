@@ -119,9 +119,13 @@ if [ $stage -le 10 ]; then
       #   CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/v1_half/add_noise/noise_add${add}.yaml --seed=${seed}
       # done
 
-      for add in 01 02 20 100 ; do
-        CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/v1_half/mul_noise/noise_mul${add}.yaml --seed=${seed}
+      for add in magnitude time frequency ; do
+        CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/v1_half/noise_norm/${add}.yaml --seed=${seed}
       done
+
+      # for add in 01 02 20 100 ; do
+      #   CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/v1_half/mul_noise/noise_mul${add}.yaml --seed=${seed}
+      # done
 
 
       # CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/last_epoch/vox1_brain_aug53_pattenoise.yaml --seed=${seed}
