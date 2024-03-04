@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=601
+stage=605
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3744,4 +3744,81 @@ if [ $stage -le 604 ]; then
     done
     done
  done
+fi
+
+
+if [ $stage -le 605 ]; then
+  model=ThinResNet resnet_size=18
+  train_set=vox1 test_set=vox1 # #jukebox cnceleb
+  train_subset=
+  subset=test test_input=var test_subset=test
+  gpu_id=3
+  
+  sname=dev_half
+  for epoch in avg3 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+
+    for model_name in baseline channel_dropout noise1010 attenoise1010 noise0110 noise0210 noise2010 noise10010 noise1001 noise1002 noise1020 noise10100 noise10100 noise1010 noise1010_magnitude noise1010_time noise1010_frequency; do
+
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_half_aug53
+    echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
+      for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
+      for seed in 1234 1235 1236 ; do
+        if [[ $model_name == baseline ]];then
+          model_dir=${common_path}/${seed}
+          yaml_name=${common_path}/model.yaml
+
+        elif [[ $model_name == channel_dropout ]];then
+          model_dir=${common_path}_dp111/${seed}
+          yaml_name=${common_path}_dp111/model.yaml
+          
+        elif [[ $model_name == noise1010_magnitude ]];then
+          model_dir=${common_path}_noise1010_prob10_magnitude/${seed}
+          yaml_name=${common_path}_noise1010_prob10_magnitude/model.yaml
+
+        elif [[ $model_name == noise1010_time ]];then
+          model_dir=${common_path}_noise1010_prob10_time/${seed}
+          yaml_name=${common_path}_noise1010_prob10_time/model.yaml
+
+        elif [[ $model_name == noise1010_frequency ]];then
+          model_dir=${common_path}_noise1010_prob10_frequency/${seed}
+          yaml_name=${common_path}_noise1010_prob10_frequency/model.yaml
+          
+        else
+          model_dir=${common_path}_${model_name}/${seed}
+          yaml_name=${common_path}_${model_name}/model.yaml
+        fi
+
+        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
+        for trials in trials_all; do
+          python -W ignore TrainAndTest/train_egs/test_egs.py \
+            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+            --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+            --feat-format wav --nj 4 \
+            --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+            --xvector-dir ${xvector_dir} \
+            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+            --gpu-id ${gpu_id} \
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+            --cos-sim --test
+        done
+
+        for trials in original ; do # original easy hard
+          python -W ignore TrainAndTest/train_egs/test_egs.py \
+            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+            --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
+            --feat-format wav --nj 4 \
+            --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+            --xvector-dir ${xvector_dir} \
+            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+            --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+            --cos-sim --extract
+        done
+      done
+    done
+    done
+ done
+ exit
 fi
