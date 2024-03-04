@@ -217,6 +217,7 @@ class NoiseInject(nn.Module):
     """
 
     def __init__(self, drop_prob=[0.2, 0.4], linear_step=0,
+                 input_dim=256,
                  noise_type='none', noise_norm='none'):
         super(NoiseInject, self).__init__()
         self.drop_prob = drop_prob[0]
@@ -225,6 +226,11 @@ class NoiseInject(nn.Module):
         self.this_step = 0
         self.batch_prob = 0.8 if len(drop_prob) < 3 else drop_prob[2]
         self.noise_norm = noise_norm
+        if noise_norm == 'adaptive':
+            self.noise_norm_layer = nn.Sequential(
+                nn.Conv1d(in_channels=input_dim, out_channels=input_dim, kernel_size=1),
+                nn.Sigmoid()
+            )
         self.noise_type = noise_type
     
     def forward(self, x):
@@ -249,6 +255,10 @@ class NoiseInject(nn.Module):
                 magnitude = x.abs().mean(dim=2)
                 magnitude_mean = magnitude.reshape(magnitude.shape[0], -1).mean(dim=1)
                 magnitude = magnitude / magnitude_mean.unsqueeze(1).unsqueeze(1)
+                ones_prob = magnitude * ones_prob
+                
+            elif self.noise_norm == 'adaptive':
+                magnitude = self.noise_norm_layer(x)
                 ones_prob = magnitude * ones_prob
 
             if len(x.shape) == 4:
