@@ -216,7 +216,8 @@ class NoiseInject(nn.Module):
         The size of the block.
     """
 
-    def __init__(self, drop_prob=[0.2, 0.4], linear_step=0, noise_norm='none'):
+    def __init__(self, drop_prob=[0.2, 0.4], linear_step=0,
+                 noise_type='none', noise_norm='none'):
         super(NoiseInject, self).__init__()
         self.drop_prob = drop_prob[0]
         self.add_prob = drop_prob[1]
@@ -224,6 +225,7 @@ class NoiseInject(nn.Module):
         self.this_step = 0
         self.batch_prob = 0.8 if len(drop_prob) < 3 else drop_prob[2]
         self.noise_norm = noise_norm
+        self.noise_type = noise_type
     
     def forward(self, x):
         if self.training:
@@ -252,16 +254,23 @@ class NoiseInject(nn.Module):
             if len(x.shape) == 4:
                 ones_prob = ones_prob.unsqueeze(1)
 
+            if self.noise_type == 'time':
+                noise_shape = torch.Size((x.shape[0],1,x.shape[2]))
+            elif self.noise_type == 'frequency':
+                noise_shape = torch.Size((x.shape[0],x.shape[1],1))
+            else:
+                noise_shape = x.shape
+
             if self.drop_prob > 0:
                 # torch.randn(x.shape)
-                mul_noise = 2 * torch.cuda.FloatTensor(x.shape).uniform_() - 1
+                mul_noise = 2 * torch.cuda.FloatTensor(noise_shape).uniform_() - 1
                 mul_noise = self.drop_prob * np.random.beta(2, 5) * mul_noise * ones_prob
 
                 # mul_noise = mul_noise.to(x.device)
                 x = (1 + mul_noise) * x
 
             if self.add_prob > 0:
-                add_noise = torch.cuda.FloatTensor(x.shape).normal_()
+                add_noise = torch.cuda.FloatTensor(noise_shape).normal_()
                 add_noise = self.add_prob * np.random.beta(2, 5) * add_noise * ones_prob
                 
                 # add_noise = add_noise.to(x.device)
