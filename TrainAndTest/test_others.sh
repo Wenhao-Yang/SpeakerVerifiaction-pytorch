@@ -3757,8 +3757,8 @@ if [ $stage -le 605 ]; then
   sname=dev_half
   for epoch in avg3 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
 
-    for model_name in baseline channel_dropout noise1010 attenoise1010 noise0110 noise0210 noise2010 noise10010 noise1001 noise1002 noise1020 noise10100 noise10100 noise1010 noise1010_magnitude noise1010_time noise1010_frequency; do
-
+    for model_name in  noise1010 attenoise1010 noise0110 noise0210 noise2010 noise10010 noise1001 noise1002 noise1020 noise10100 noise10100 noise1010 noise1010_magnitude noise1010_time noise1010_frequency; do
+    # baseline channel_dropout
     common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_half_aug53
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
@@ -3766,26 +3766,21 @@ if [ $stage -le 605 ]; then
         if [[ $model_name == baseline ]];then
           model_dir=${common_path}/${seed}
           yaml_name=${common_path}/model.yaml
-
         elif [[ $model_name == channel_dropout ]];then
           model_dir=${common_path}_dp111/${seed}
           yaml_name=${common_path}_dp111/model.yaml
-          
         elif [[ $model_name == noise1010_magnitude ]];then
           model_dir=${common_path}_noise1010_prob10_magnitude/${seed}
           yaml_name=${common_path}_noise1010_prob10_magnitude/model.yaml
-
         elif [[ $model_name == noise1010_time ]];then
           model_dir=${common_path}_noise1010_prob10_time/${seed}
           yaml_name=${common_path}_noise1010_prob10_time/model.yaml
-
         elif [[ $model_name == noise1010_frequency ]];then
           model_dir=${common_path}_noise1010_prob10_frequency/${seed}
           yaml_name=${common_path}_noise1010_prob10_frequency/model.yaml
-          
         else
-          model_dir=${common_path}_${model_name}/${seed}
-          yaml_name=${common_path}_${model_name}/model.yaml
+          model_dir=${common_path}_${model_name}_prob10/${seed}
+          yaml_name=${common_path}_${model_name}_prob10/model.yaml
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}

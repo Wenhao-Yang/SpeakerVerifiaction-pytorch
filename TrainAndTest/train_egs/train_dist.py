@@ -17,6 +17,7 @@ from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
 
 import argparse
+import hashlib
 # import signal
 # import yaml
 import os
@@ -591,7 +592,21 @@ def main():
             import socket
             f.write('\nhostname: {}'.format(socket.gethostname()))
             f.write('\noriginal_yaml: {}'.format(args.train_config))
-
+        
+        model_yaml = config_args['check_path'] + '/model.yaml'
+        if not os.path.isfile(model_yaml):
+            shutil.copy(args.train_config, model_yaml)
+            with open(model_yaml, 'a') as f:
+                import socket
+                f.write('\nhostname: {}'.format(socket.gethostname()))
+                f.write('\noriginal_yaml: {}'.format(args.train_config))
+        else:
+            with open(new_yaml_name, 'rb') as f1, open(model_yaml, 'rb') as f2:
+                hash1 = hashlib.md5(f1.read()).hexdigest()
+                hash2 = hashlib.md5(f2.read()).hexdigest()
+                if hash1 != hash2:
+                    print('{} is not the same as model.yaml'.format(os.path.basename(new_yaml_name)))
+            
         writer = SummaryWriter(logdir=check_path, filename_suffix='SV')
         sys.stdout = NewLogger(
             os.path.join(check_path, 'log.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())))
