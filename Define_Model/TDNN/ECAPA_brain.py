@@ -527,7 +527,8 @@ class ECAPA_TDNN(torch.nn.Module):
             # if isinstance(self.dropouts[0], float):
             #     tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0:2]))
             # else:
-            tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0], noise_norm=noise_norm,
+            tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0], input_dim=channels[0],
+                                           noise_norm=noise_norm,
                                            noise_type=noise_type))
         elif 'magcauchy' in dropout_type:
             tdnn_layer1.append(MagCauchyNoiseInject(drop_prob=self.dropouts[0]))

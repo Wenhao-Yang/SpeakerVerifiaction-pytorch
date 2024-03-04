@@ -246,13 +246,13 @@ class NoiseInject(nn.Module):
 
                 ones_prob = magnitude * ones_prob
             elif self.noise_norm == 'time':
-                magnitude = x.abs().mean(dim=1)
+                magnitude = x.abs().mean(dim=1, keepdim=True)
                 magnitude_mean = magnitude.reshape(magnitude.shape[0], -1).mean(dim=1)
                 magnitude = magnitude / magnitude_mean.unsqueeze(1).unsqueeze(1)
                 ones_prob = magnitude * ones_prob
                 
             elif self.noise_norm == 'frequency':
-                magnitude = x.abs().mean(dim=2)
+                magnitude = x.abs().mean(dim=2, keepdim=True)
                 magnitude_mean = magnitude.reshape(magnitude.shape[0], -1).mean(dim=1)
                 magnitude = magnitude / magnitude_mean.unsqueeze(1).unsqueeze(1)
                 ones_prob = magnitude * ones_prob
