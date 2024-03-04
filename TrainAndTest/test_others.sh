@@ -3795,7 +3795,7 @@ if [ $stage -le 605 ]; then
             --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
             --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
             --feat-format wav --nj 4 \
-            --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+            --check-yaml Data/checkpoint/${yaml_name} \
             --xvector-dir ${xvector_dir} \
             --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
             --gpu-id ${gpu_id} \
@@ -3809,7 +3809,7 @@ if [ $stage -le 605 ]; then
             --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
             --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
             --feat-format wav --nj 4 \
-            --check-yaml Data/checkpoint/${model_dir}/${yaml_name} \
+            --check-yaml Data/checkpoint/${yaml_name} \
             --xvector-dir ${xvector_dir} \
             --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
             --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
