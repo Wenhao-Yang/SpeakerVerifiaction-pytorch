@@ -60,7 +60,7 @@ def main():
     avg = None
     assert num == len(path_list)
     for path in path_list:
-        print('Processing {}'.format(path))
+        # print('Processing {}'.format(path))
         states = torch.load(path, map_location=torch.device('cpu'))
         states = states['state_dict'] if 'state_dict' in states else states
         if avg is None:

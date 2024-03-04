@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=0
+stage=10
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -45,6 +45,32 @@ if [ $stage -le 0 ]; then
                 model_dir=${common_path}/wave_fb80_dist_aug53_radionoise/${seed}
             elif [[ $model_name == ecapa_aug53_radionoise10100 ]];then
                 model_dir=${common_path}/wave_fb80_dist_aug53_radionoise10100/${seed}
+            fi
+            
+            python -W ignore TrainAndTest/train_egs/average_model.py \
+                --check-path Data/checkpoint/${model_dir}
+        done
+    done
+ exit
+fi
+
+if [ $stage -le 10 ]; then
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_half_aug53
+    for model_name in baseline channel_dropout noise1010 attenoise1010 noise0110 noise0210 noise2010 noise10010 noise1001 noise1002 noise1020 noise10100 noise10100 noise1010 noise1010_magnitude noise1010_time noise1010_frequency; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
+        for seed in 1234 1235 1236 ; do
+            if [[ $model_name == baseline ]];then
+                model_dir=${common_path}/${seed}
+            elif [[ $model_name == channel_dropout ]];then
+                model_dir=${common_path}_dp111/${seed}
+            elif [[ $model_name == noise1010_magnitude ]];then
+                model_dir=${common_path}_noise1010_prob10_magnitude/${seed}
+            elif [[ $model_name == noise1010_time ]];then
+                model_dir=${common_path}/_noise1010_prob10_time/${seed}
+            elif [[ $model_name == noise1010_frequency ]];then
+                model_dir=${common_path}/_noise1010_prob10_frequency/${seed}
+            else
+                model_dir=${common_path}_aug53_${model_name}_prob10/${seed}
             fi
             
             python -W ignore TrainAndTest/train_egs/average_model.py \
