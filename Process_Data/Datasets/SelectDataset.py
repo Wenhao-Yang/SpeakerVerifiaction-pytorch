@@ -11,6 +11,7 @@
 
 from typing import Any
 import torch
+import torch.nn as nn
 import copy
 import os
 import pandas as pd
@@ -20,6 +21,7 @@ from tqdm import tqdm
 from torch.nn.parallel import DistributedDataParallel
 from scipy.linalg import lstsq
 from scipy.optimize import nnls
+from geomloss import SamplesLoss
 
 def main_process():
     if (torch.distributed.is_initialized() and torch.distributed.get_rank() == 0) or not torch.distributed.is_initialized():
@@ -801,3 +803,219 @@ class kCenterGreedy(SelectSubset):
                                             random_seed=self.random_seed,
                                             already_selected=self.already_selected, print_freq=100)
         return {"indices": selection_result}
+
+
+class OTSelect(SelectSubset):
+    def __init__(self, train_dir, args, fraction=0.5,
+                 random_seed=1234, repeat=4, select_aug=False,
+                 save_dir='', scores='max',
+                 model=None, balance=False, **kwargs):
+        
+        super(OTSelect, self).__init__(train_dir, args, fraction, random_seed, save_dir)
+        
+        # self.epochs = epochs
+        self.model = model
+        self.repeat = repeat
+        self.balance = balance
+        self.select_aug = select_aug
+        self.device = model.device
+        self.scores = scores     
+
+        self.random_seed += torch.distributed.get_rank()
+
+    def while_update(self, outputs, loss, targets, epoch, batch_idx, batch_size):
+        if batch_idx % self.args.print_freq == 0:
+            print('| Epoch [%3d/%3d] Iter[%3d/%3d]\t\tLoss: %.4f' % (
+                epoch, self.epochs, batch_idx + 1, (self.n_train // batch_size) + 1, loss.item()))
+
+    def before_run(self):
+        if isinstance(self.model, DistributedDataParallel):
+            self.model = self.model.module
+
+    def run(self):
+        # seeding
+        torch.manual_seed(self.random_seed)
+        np.random.seed(self.random_seed)
+        random.seed(self.random_seed)
+        
+        batch_size = self.args['batch_size'] // 2 if not self.select_aug else self.args['batch_size'] // 4
+        num_classes = self.args['num_classes']
+
+        # self.model.embedding_recorder.record_embedding = True  # recording embedding vector
+        self.model.eval()
+
+        
+        batch_loader = torch.utils.data.DataLoader(
+            self.train_dir, batch_size=batch_size, num_workers=self.args['nj'])
+        sample_num = self.n_train
+
+        if torch.distributed.get_rank() == 0 :
+            pbar = tqdm(enumerate(batch_loader), total=len(batch_loader), ncols=50)
+        else:
+            pbar = enumerate(batch_loader)
+
+        for i, (data, label) in pbar:
+            # self.model_optimizer.zero_grad()
+            if self.select_aug:
+                with torch.no_grad():
+                    wavs_aug_tot = []
+                    labels_aug_tot = []
+                    wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
+                    labels_aug_tot.append(label.cuda())
+
+                    wavs = data.squeeze().cuda()
+                    wav_label = label.squeeze().cuda()
+
+                    for augment in self.args['augment_pipeline']:
+                        # Apply augment
+                        wavs_aug = augment(wavs, torch.tensor([1.0]*len(wavs)).cuda())
+                        # Managing speed change
+                        if wavs_aug.shape[1] > wavs.shape[1]:
+                            wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
+                        else:
+                            zero_sig = torch.zeros_like(wavs)
+                            zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
+                            wavs_aug = zero_sig
+
+                        if 'concat_augment' in self.args and self.args['concat_augment']:
+                            wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
+                            labels_aug_tot.append(wav_label)
+                        else:
+                            wavs = wavs_aug
+                            wavs_aug_tot[0] = wavs_aug.unsqueeze(1).unsqueeze(1)
+                            labels_aug_tot[0] = wav_label
+                    
+                    data = torch.cat(wavs_aug_tot, dim=0)
+                    label = torch.cat(labels_aug_tot)
+
+            _, embedding = self.model(data.to(self.device))
+            # outputs = self.model(input)
+            # loss    = self.criterion(outputs.requires_grad_(True),
+            #                       targets.to(self.args.device)).sum()
+            # batch_num = classfier.shape[0]
+            with torch.no_grad():
+                # bias_parameters_grads = torch.autograd.grad(loss, classfier)[0]
+                embedding_vector = embedding
+                if self.select_aug:
+                    embedding_vector = embedding_vector.reshape(len(self.args['augment_pipeline']), -1, embedding_vector.shape[-1])
+                    embedding_vector = embedding_vector.mean(dim=0)
+
+                self.embeddings[i * batch_size:min((i + 1) * batch_size, sample_num)] += embedding_vector
+                
+            # if i > 100: 
+            #     break
+        # self.model.train()
+        # self.model.embedding_recorder.record_embedding = False
+
+    def select(self, model, **kwargs):
+        self.model = model
+
+        self.before_run()
+        embedding_dim = self.model.embedding_size #get_last_layer().in_features
+        
+        # Initialize a matrix to save norms of each sample on idependent runs
+        self.train_indx = np.arange(self.n_train)
+        self.embeddings = torch.zeros([self.n_train, embedding_dim],
+                                       requires_grad=False).to(self.device)
+        
+        self.norm_matrix = torch.zeros([self.n_train, self.repeat],
+                                       requires_grad=False).to(self.device)
+
+        for self.cur_repeat in range(self.repeat):
+            self.run()
+            self.random_seed = self.random_seed + 5
+
+        # norm_mean = torch.mean(self.norm_matrix, dim=1).cpu().detach().numpy()
+        embedding = self.embeddings / self.repeat
+
+        torch.distributed.barrier()
+        embeddings = [None for _ in range(torch.distributed.get_world_size())]
+        torch.distributed.all_gather_object(embedding, embeddings)
+        embedding = np.mean(embeddings, axis=0)
+        OT_solver = SamplesLoss("sinkhorn", p=2, blur=0.1)
+        lr = 0.2
+        batch_size = self.args['batch_size'] // 2 if not self.select_aug else self.args['batch_size'] // 4
+
+        wss = []
+        for self.cur_repeat in range(self.repeat):
+            np.random.seed(self.random_seed)
+            self.random_seed = self.random_seed - 5
+            
+            ws =  torch.ones(self.n_train, 1)
+            losses = []
+            total_set = set(np.arange(self.n_train))
+
+            for i in tqdm(range(128), ncols=50):
+                # select_ids = np.random.choice(np.arange(len(xvectors)), size=64)
+
+                if batch_size*i <= self.n_train:
+                    select_ids = (np.arange(batch_size) + batch_size*i) % self.n_train
+                else:
+                # p = ws.squeeze().exp().numpy() 
+                # p /= p.sum()
+                # select_ids = np.random.choice(np.arange(len(xvectors)), p=p, size=64)
+                    select_ids = np.random.choice(np.arange(self.n_train), size=batch_size, replace=False)
+
+                s_xvectors = embedding[select_ids]
+
+                x1 = torch.tensor(s_xvectors).to(self.device)
+                w = nn.Parameter(ws[select_ids]).to(self.device)
+                w = w/w.mean()
+
+                other_set = np.array(list(total_set.difference(set(select_ids))))
+                other_set = np.random.choice(other_set, size=int(batch_size*16), replace=False)
+
+                x2 = torch.tensor(embedding[other_set]).to(self.device)
+                # x2 = torch.tensor(xvectors).type(dtype)
+                # opt = torch.optim.Adam(params=[w], lr=0.001, weight_decay=0.0001)
+
+                # loss = []
+                for i in range(50):
+                    L_αβ = OT_solver(w*x1, x2)
+                    # L_αβ.backward()
+                    [g] = torch.autograd.grad(L_αβ, [w])
+                    w.data -= lr * g
+                    
+                    w = w.abs()
+                    w = w/w.mean()
+                    # loss.append(float(L_αβ.item()))
+                # losses.append(np.mean(loss))
+                    # if (i+1) % 20== 1:
+                    #     plt.plot(w.data.squeeze(), alpha=0.2)
+                ws[select_ids] = w.data.cpu()
+                
+            wss.append(ws)
+            
+        ws = torch.stack(wss, dim=0).mean(dim=0)
+
+        torch.distributed.barrier()
+        wss = [None for _ in range(torch.distributed.get_world_size())]
+        torch.distributed.all_gather_object(ws, wss)
+        ws = wss.mean(dim=0)
+
+        self.norm_mean = ws
+        if not self.balance:
+            if self.scores == 'max':
+                top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
+            elif self.scores == 'min':
+                top_examples = self.train_indx[np.argsort(self.norm_mean)][:self.coreset_size]
+        else:
+            top_examples = np.array([], dtype=np.int64)
+            uids = [utts[0] for utts in self.train_dir.base_utts]
+            sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
+            label = np.array([self.train_dir.spk_to_idx[sid] for sid in sids])
+            
+            for c in range(self.num_classes):
+                c_indx = self.train_indx[label == c]
+                budget = round(self.fraction * len(c_indx))
+                if self.scores == 'max':
+                    top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
+                elif self.scores == 'min':
+                    top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[:budget]])
+
+        self.save_subset(top_examples)
+        # subtrain_dir = copy.deepcopy(self.train_dir)
+        subtrain_dir = torch.utils.data.Subset(self.train_dir, top_examples)
+        self.iteration += 1
+
+        return subtrain_dir

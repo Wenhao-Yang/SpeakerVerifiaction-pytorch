@@ -13,7 +13,7 @@ from __future__ import print_function
 import pdb
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
-from Process_Data.Datasets.SelectDataset import GraNd, LossSelect, RandomSelect
+from Process_Data.Datasets.SelectDataset import GraNd, LossSelect, OTSelect, RandomSelect
 import torch._utils
 
 import argparse
@@ -329,6 +329,8 @@ def main():
         select_method = RandomSelect
     elif config_args['select_method'] == 'loss':
         select_method = LossSelect
+    elif config_args['select_method'] == 'optimal':
+        select_method = OTSelect
 
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
