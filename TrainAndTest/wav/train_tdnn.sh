@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=10
+stage=12
 waited=0
 while [ $(ps 19126 | wc -l) -eq 2 ]; do
   sleep 60
@@ -280,6 +280,32 @@ if [ $stage -le 11 ]; then
         --train-config TrainAndTest/wav/vox2_ecapa.yaml \
         --gpu-id 5,7 \
         --seed ${seed}
+    done
+    done
+  done
+  exit
+fi
+
+
+if [ $stage -le 12 ]; then
+  model=ECAPA
+  datasets=vox2
+  feat_type=wave
+  loss=arcsoft encod=ASTP2 embedding_size=256
+  for lamda_beta in 0.2;do
+    for seed in 1234 1235 1236 ; do
+    for data_type in hdf5 ; do
+    for ratio in 10 25 50 75 90 ; do
+    # for type in mani style align ;do
+    #  feat=fb${input_dim}
+
+     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+
+      # for add in time ; do
+          CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_brain_optimal.yaml --seed=${seed} --sample-ratio ${ratio}
+      # done
+
+    done
     done
     done
   done

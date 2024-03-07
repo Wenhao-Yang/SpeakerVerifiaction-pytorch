@@ -88,6 +88,73 @@ def all_seed(seed):
         torch.cuda.manual_seed_all(seed)
         cudnn.benchmark = True
 
+def test_results(best_res):
+    best_str  = 'EER(%):       {:>7.3f}  '.format(best_res['EER'])
+    best_str += 'Threshold: {:>7.4f}  '.format(best_res['Threshold'])
+    best_str += 'MinDcf-0.01:  {:.4f}  '.format(best_res['MinDCF_01'])
+    best_str += 'MinDcf-0.001: {:.4f}  '.format(best_res['MinDCF_001'])
+    best_str += 'Mix2,3: {:.4f}, {:.4f}'.format(best_res['mix2'], best_res['mix3'])
+        
+    print(best_str)
+    
+    return best_str
+
+
+def save_checkpoint(model, optimizer, scheduler,
+                    check_path, epoch):
+    model.eval()
+    
+    this_check_path = '{}/checkpoint_{}.pth'.format(
+        check_path, epoch)
+    model_state_dict = model.module.state_dict() \
+        if isinstance(model, DistributedDataParallel) else model.state_dict()
+        
+    torch.save({'epoch': epoch, 'state_dict': model_state_dict},
+                this_check_path)
+
+    this_optim_path = '{}/optim_{}.pth'.format(
+        check_path, epoch)
+    torch.save({'epoch': epoch,
+                'scheduler': scheduler.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                }, this_optim_path)
+
+
+def check_earlystop_break(early_stopping_scheduler,
+                    start, end, epoch, check_path, valid_test_result):
+    check_stop = torch.tensor(
+        int(early_stopping_scheduler.early_stop)).cuda()
+    dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
+    
+    top_k = early_stopping_scheduler.top_k() if on_main() else []
+    
+    if check_stop or epoch == end - 1:
+        end = epoch
+        if on_main():
+            
+            print('Best steps model : ', top_k)
+            best_step = early_stopping_scheduler.best_epoch
+            
+            if best_step % early_stopping_scheduler.train_lengths == 0:
+                best_epoch = int(best_step / early_stopping_scheduler.train_lengths)
+            else:
+                best_epoch = '{:.4f}'.format(best_step / early_stopping_scheduler.train_lengths)
+                
+            best_res = valid_test_result[best_epoch]
+            best_str = test_results(best_res=best_res)
+            
+            with open(os.path.join(check_path,
+                                   'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
+                f.write(best_str + '\n')
+
+            try:
+                shutil.copy('{}/checkpoint_{}.pth'.format(check_path, best_epoch),
+                            '{}/best.pth'.format(check_path))
+            except Exception as e:
+                print(e)
+        return True
+    
+    return False
 
 def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer):
     # switch to train mode

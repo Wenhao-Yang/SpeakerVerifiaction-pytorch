@@ -11,6 +11,7 @@
 """
 from __future__ import print_function
 import pdb
+from Define_Model.TDNN.ECAPA_brain import Classifier
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
 from Process_Data.Datasets.SelectDataset import GraNd, LossSelect, OTSelect, RandomSelect
@@ -38,20 +39,10 @@ from Define_Model.Optimizer import EarlyStopping
 from TrainAndTest.common_func import create_classifier, create_optimizer, create_scheduler
 from logger import NewLogger
 # import pytorch_lightning as pl
-from TrainAndTest.train_egs.train_dist import all_seed, train, valid_class, valid_test
+from TrainAndTest.train_egs.train_dist import all_seed, train, valid_class, valid_test, test_results
 
 warnings.filterwarnings("ignore")
 
-try:
-    torch._utils._rebuild_tensor_v2
-except AttributeError:
-    def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
-        tensor = torch._utils._rebuild_tensor(
-            storage, storage_offset, size, stride)
-        tensor.requires_grad = requires_grad
-        tensor._backward_hooks = backward_hooks
-        return tensor
-    torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 def main():
     parser = argparse.ArgumentParser(
@@ -61,6 +52,8 @@ def main():
     parser.add_argument('--train-config', default='', type=str,
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=123456,
+                        help='random seed (default: 0)')
+    parser.add_argument('--sample-ratio', type=int,
                         help='random seed (default: 0)')
 
     args = parser.parse_args()
@@ -76,7 +69,12 @@ def main():
         config_args = load_hyperpyyaml(f)
 
     # Create logger & Define visulaize SummaryWriter instance
-    check_path = config_args['check_path'] + '/' + str(args.seed)
+    check_path = config_args['check_path'] 
+    if args.sample_ratio < 100:
+        check_path += '_{}{}'.format(config_args['select_method'], args.sample_ratio) 
+    
+    check_path += '/' + str(args.seed)
+
     if torch.distributed.get_rank() == 0:
         if not os.path.exists(check_path):
             print('Making checkpath...', check_path)
@@ -105,10 +103,10 @@ def main():
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
     else:
-        create_classifier(model, **config_args)
+        if not isinstance(model.classifier, Classifier):
+            create_classifier(model, **config_args)
 
     start_epoch = 0
-    check_path = config_args['check_path'] + '/' + str(args.seed)
     if 'finetune' not in config_args or not config_args['finetune']:
         this_check_path = '{}/checkpoint_{}_{}.pth'.format(check_path, start_epoch,
                                                            time.strftime('%Y_%b_%d_%H:%M', time.localtime()))
@@ -237,9 +235,14 @@ def main():
     optimizer = create_optimizer(
         model_para, config_args['optimizer'], **opt_kwargs)
     scheduler = create_scheduler(optimizer, config_args, train_dir)
-    early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
-                                             min_delta=config_args['early_delta'],
-                                             top_k_epoch=config_args['top_k_epoch'] if 'top_k_epoch' in config_args else 5)
+
+    top_k_epoch = config_args['top_k_epoch'] if 'top_k_epoch' in config_args else 5
+    if 'early_stopping' in config_args and config_args['early_stopping']:
+        early_stopping_scheduler = EarlyStopping(patience=config_args['early_patience'],
+                                                min_delta=config_args['early_delta'],
+                                                top_k_epoch=top_k_epoch)
+    else:
+        early_stopping_scheduler = None
 
     # Save model config txt
     if torch.distributed.get_rank() == 0:
@@ -325,6 +328,7 @@ def main():
     
     if config_args['select_method'] == 'grand':
         select_method = GraNd
+
     elif config_args['select_method'] == 'random':
         select_method = RandomSelect
     elif config_args['select_method'] == 'loss':
@@ -343,20 +347,44 @@ def main():
             ('cos' if config_args['cos_sim'] else 'l2'))
         
     select_repeat = config_args['select_repeat'] if 'select_repeat' in config_args else 4
-    selector = select_method(train_dir, model=model,
-                             args=config_args, repeat=select_repeat,
-                             save_dir=config_args['check_path'],
-                             fraction=config_args['sample_ratio'])
+    spk_balance = False if 'select_balance' not in config_args else config_args['select_balance']
+    select_sample = 'top' if 'select_sample' not in config_args else config_args['select_sample']
+    stratas = 50 if 'stratas' not in config_args else config_args['stratas']
+    stratas_select = 'random' if 'stratas_select' not in config_args else config_args['stratas_select']
     
+    sample_ratio = args.sample_ratio / 100
+    selector = select_method(train_dir,
+                             args=config_args, repeat=select_repeat,
+                             random_seed=args.seed,
+                             balance=spk_balance,
+                             save_dir=check_path,
+                             select_sample=select_sample, stratas=stratas,
+                             stratas_select=stratas_select,
+                             fraction=sample_ratio)
+    
+    total_size = int(np.ceil(scheduler.total_size * sample_ratio))
+    train_loader = None
     try:
         for epoch in range(start, end):          
             # select coreset
-            if epoch % config_args['select_epoch'] == 1:
-                subtrain_dir = selector.select(model)
+            if 'full_epoch' in config_args and epoch <= config_args['full_epoch']:
+                subtrain_dir = train_dir
+                if train_loader == None:
+                    train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
+                    subtrain_dir, valid_dir, train_extract_dir, config_args, verbose=0)
+
+            elif ('full_epoch' in config_args and epoch == config_args['full_epoch']+1) or \
+                (epoch % config_args['select_epoch'] == 1):
+                
+                last_epoch = scheduler.last_epoch
+                scheduler.last_epoch = int(last_epoch / scheduler.total_size * total_size)
+                scheduler.total_size = total_size
+
+                subtrain_dir = selector.select(model=model)
                 
                 # print('subset length:', len(subtrain_dir))
                 train_loader, train_sampler, valid_loader, valid_sampler, train_extract_loader, train_extract_sampler = Sampler_Loaders(
-                    subtrain_dir, valid_dir, train_extract_dir, config_args)
+                    subtrain_dir, valid_dir, train_extract_dir, config_args, verbose=0)
 
             torch.distributed.barrier()
             # print('train_loader length:', len(train_loader))
@@ -390,20 +418,21 @@ def main():
                 writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             torch.distributed.barrier()
-            # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
-            #     select_samples(train_loader, model, config_args,
-            #                    config_args['select_score'])
 
             train(train_loader, model, optimizer,
                   epoch, scheduler, config_args, writer)
 
             valid_loss = valid_class(
                 valid_loader, model, epoch, config_args, writer)
-            valid_test_dict = valid_test(
-                train_extract_loader, model, epoch, xvector_dir, config_args, writer)
+            if early_stopping_scheduler != None or epoch == end - 1:
+                valid_test_dict = valid_test(
+                    train_extract_loader, model, epoch, xvector_dir, config_args, writer)
+            else:
+                valid_test_dict = {}
+
             valid_test_dict['Valid_Loss'] = valid_loss
 
-            if torch.distributed.get_rank() == 0 and config_args['early_stopping']:
+            if torch.distributed.get_rank() == 0 and early_stopping_scheduler != None:
                 valid_test_result.append(valid_test_dict)
 
                 early_stopping_scheduler(
@@ -421,12 +450,16 @@ def main():
                         if this_lr[0] <= 0.1 ** 3 * config_args['lr'] and all_lr[-5] > this_lr[0]:
                             early_stopping_scheduler.early_stop = False
 
-            if torch.distributed.get_rank() == 0:
+            elif early_stopping_scheduler == None:
+                valid_test_result.append(valid_test_dict)
+
+            if torch.distributed.get_rank() == 0 and early_stopping_scheduler != None:
                 top_k = early_stopping_scheduler.top_k()
             else:
                 top_k = []
+
             if torch.distributed.get_rank() == 0 and (epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
-                    end - 1) or early_stopping_scheduler.best_epoch == epoch or epoch in top_k):
+                    end - 1) or epoch in top_k):
 
                 model.eval()
                 this_check_path = '{}/checkpoint_{}.pth'.format(
@@ -444,39 +477,33 @@ def main():
                             'optimizer': optimizer.state_dict(),
                             }, this_optim_path)
 
-            check_stop = torch.tensor(
-                int(early_stopping_scheduler.early_stop)).cuda()
-            dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
+            if early_stopping_scheduler != None:
+                check_stop = torch.tensor(
+                    int(early_stopping_scheduler.early_stop)).cuda()
+                dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
+            else:
+                check_stop = False
 
             if check_stop or epoch == end - 1:
                 end = epoch
                 if torch.distributed.get_rank() == 0:
-                    print('Best Epochs : ', top_k)
-                    best_epoch = early_stopping_scheduler.best_epoch
-                    best_res = valid_test_result[int(best_epoch - start)]
-
-                    best_str = 'EER(%):       ' + \
-                        '{:>6.2f} '.format(best_res['EER'])
-                    best_str += '   Threshold: ' + \
-                        '{:>7.4f} '.format(best_res['Threshold'])
-                    best_str += ' MinDcf-0.01: ' + \
-                        '{:.4f} '.format(best_res['MinDCF_01'])
-                    best_str += ' MinDcf-0.001: ' + \
-                        '{:.4f} '.format(best_res['MinDCF_001'])
-                    best_str += ' Mix2,3: ' + \
-                        '{:.4f}, {:.4f}'.format(
-                            best_res['mix2'], best_res['mix3'])
-                    print(best_str)
+                    if early_stopping_scheduler != None:
+                        print('Best Epochs : ', top_k)
+                        best_epoch = early_stopping_scheduler.best_epoch
+                        best_res = valid_test_result[int(best_epoch - start)]
+                    else:
+                        valid_losses = [v['Valid_Loss'] for v in valid_test_result]
+                        tops = torch.tensor(valid_losses)
+                        top_k = torch.argsort(tops)[:top_k_epoch]
+        
+                        print('Best Epochs : ', top_k)
+                        best_res = valid_test_result[-1]
+                    
+                    best_str = test_results(best_res)
 
                     with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
                         f.write(best_str + '\n')
 
-                    try:
-                        shutil.copy('{}/checkpoint_{}.pth'.format(check_path,
-                                                                  early_stopping_scheduler.best_epoch),
-                                    '{}/best.pth'.format(check_path))
-                    except Exception as e:
-                        print(e)
                 break
 
             if config_args['scheduler'] == 'rop':
