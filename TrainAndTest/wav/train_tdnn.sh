@@ -304,7 +304,7 @@ if [ $stage -le 12 ]; then
       # for add in time ; do
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_brain_optimal.yaml --seed=${seed} --sample-ratio ${ratio}
 
-          CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_brain_optimal.yaml --seed=${seed} --sample-ratio ${ratio}
+          CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_brain_optimal_l2.yaml --seed=${seed} --sample-ratio ${ratio}
       # done
 
     done
