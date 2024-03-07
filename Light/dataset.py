@@ -242,7 +242,7 @@ def SubLoaders(train_dir, valid_dir, train_extract_dir, config_args):
     return train_loader, valid_loader, train_extract_loader
 
 
-def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
+def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args, verbose=1):
     kwargs = {'num_workers': config_args['nj'],
               'pin_memory': False}  # if args.cuda else {}
     extract_kwargs = {'num_workers': 4,
@@ -256,6 +256,7 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
     return_score = True if 'adaptive_select' not in config_args and 'sample_ratio' in config_args and config_args['sample_ratio'] > 0 else False
     train_paddfunc = PadCollate3d if return_domain or return_score else PadCollate
+    verbose=1 if torch.distributed.get_rank() == 0 and verbose>0 else 0
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
                                                collate_fn=train_paddfunc(dim=pad_dim,
@@ -265,7 +266,7 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args):
                                                                          max_chunk_size=max_chunk_size,
                                                                          chisquare=False if 'chisquare' not in config_args else
                                                                          config_args['chisquare'],
-                                                                         verbose=1 if torch.distributed.get_rank() == 0 else 0
+                                                                         verbose=verbose
                                                                          ),
                                                sampler=train_sampler,
                                                shuffle=config_args['shuffle'],  **kwargs)  #
