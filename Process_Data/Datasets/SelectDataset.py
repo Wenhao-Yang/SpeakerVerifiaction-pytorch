@@ -1206,7 +1206,6 @@ class OTSelect(SelectSubset):
         self.norm_mean = ws.squeeze().cpu().numpy()
         noise_size = self.args['noise_size'] if 'noise_size' in self.args else 0
         
-
         if not self.balance:
             noise_size = int(noise_size * len(self.train_indx))
             if self.scores == 'max':
