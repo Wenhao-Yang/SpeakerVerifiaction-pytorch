@@ -136,6 +136,8 @@ def SubScriptDatasets(config_args):
     ) and torch.distributed.get_rank() == 0 else 0
     segment_shift = config_args['segment_shift'] if 'segment_shift' in config_args else config_args['num_frames']
     min_frames = 50 if 'min_frames' not in config_args else config_args['min_frames']
+    return_idx = False if 'return_idx' not in config_args else config_args['return_idx']
+
     if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args:
         min_frames *= config_args['sr'] / 100
         min_frames = int(min_frames)
@@ -175,7 +177,7 @@ def SubScriptDatasets(config_args):
                                     transform=transform, num_valid=config_args['num_valid'], domain=domain,
                                     vad_select=vad_select, sample_type=sample_type,
                                     feat_type=feat_type, verbose=verbose,
-                                    save_dir=save_dir,
+                                    save_dir=save_dir, return_uid=return_idx,
                                     sample_score=sample_score,
                                     segment_len=config_args['num_frames'],
                                     segment_shift=segment_shift,
@@ -255,7 +257,9 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args, verbos
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dir)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
     return_score = True if 'adaptive_select' not in config_args and 'sample_ratio' in config_args and config_args['sample_ratio'] > 0 else False
-    train_paddfunc = PadCollate3d if return_domain or return_score else PadCollate
+    return_idx = False if 'return_idx' not in config_args else config_args['return_idx']
+
+    train_paddfunc = PadCollate3d if return_domain or return_score or return_idx else PadCollate
     verbose=1 if torch.distributed.get_rank() == 0 and verbose>0 else 0
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],

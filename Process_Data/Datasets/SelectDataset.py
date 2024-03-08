@@ -1234,3 +1234,63 @@ class OTSelect(SelectSubset):
         self.iteration += 1
 
         return subtrain_dir
+
+
+class Forgetting(SelectSubset):
+    def __init__(self, train_dir, args, fraction=0.5, random_seed=1234, repeat=1,
+                 select_aug=False, save_dir='',
+                 model=None, balance=False, **kwargs):
+
+        super(Forgetting, self).__init__(train_dir, args, fraction, random_seed, save_dir)
+
+        self.balance = balance
+        self.repeat = repeat
+        self.model = model
+        self.repeat = repeat
+        self.balance = balance
+        self.select_aug = select_aug
+        self.device = model.device if model != None else 'cpu'
+
+        self.random_seed += torch.distributed.get_rank()
+
+        self.forgetting_events = torch.zeros(self.n_train, requires_grad=False).to(self.args.device)
+        self.last_acc = torch.zeros(self.n_train, requires_grad=False).to(self.args.device)
+
+    def before_train(self):
+        self.train_loss = 0.
+        self.correct = 0.
+        self.total = 0.
+
+    def before_run(self):
+        if isinstance(self.model, DistributedDataParallel):
+            self.model = self.model.module
+
+        self.device = next(self.model.parameters()).device
+
+    def after_loss(self, outputs, loss, targets, batch_inds, epoch):
+
+        if epoch <= self.repeat:
+            with torch.no_grad():
+                cur_acc = (outputs == targets).clone().detach().requires_grad_(False).type(torch.float32)
+                self.forgetting_events[torch.tensor(batch_inds)[(self.last_acc[batch_inds]-cur_acc)>0.01]] += 1.
+                self.last_acc[batch_inds] = cur_acc
+
+    def select(self, **kwargs):
+        self.train_indx = np.arange(self.n_train)
+
+        if not self.balance:
+            top_examples = self.train_indx[np.argsort(self.forgetting_events.cpu().numpy())][::-1][:self.coreset_size]
+        else:
+            top_examples = np.array([], dtype=np.int64)
+            for c in range(self.num_classes):
+                c_indx = self.train_indx[self.dst_train.targets == c]
+                budget = round(self.fraction * len(c_indx))
+                top_examples = np.append(top_examples,
+                                    c_indx[np.argsort(self.forgetting_events[c_indx].cpu().numpy())[::-1][:budget]])
+
+        self.save_subset(top_examples)
+        # subtrain_dir = copy.deepcopy(self.train_dir)
+        subtrain_dir = torch.utils.data.Subset(self.train_dir, top_examples)
+        self.iteration += 1
+
+        return subtrain_dir

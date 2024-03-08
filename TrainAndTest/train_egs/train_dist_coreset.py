@@ -14,7 +14,7 @@ import pdb
 from Define_Model.TDNN.ECAPA_brain import Classifier
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
-from Process_Data.Datasets.SelectDataset import GraNd, LossSelect, OTSelect, RandomSelect
+from Process_Data.Datasets.SelectDataset import Forgetting, GraNd, LossSelect, OTSelect, RandomSelect
 import torch._utils
 
 import argparse
@@ -335,6 +335,8 @@ def main():
         select_method = LossSelect
     elif config_args['select_method'] == 'optimal':
         select_method = OTSelect
+    elif config_args['select_method'] == 'forget':
+        select_method = Forgetting
 
     if torch.distributed.get_rank() == 0:
         print('\nCurrent time is \33[91m{}\33[0m.'.format(str(time.asctime())))
@@ -362,8 +364,12 @@ def main():
                              stratas_select=stratas_select,
                              fraction=sample_ratio)
     
+    if config_args['select_method'] == 'forget':
+        config_args['forgetting_events'] = selector
+    
     total_size = int(np.ceil(scheduler.total_size * sample_ratio))
     train_loader = None
+    
     try:
         for epoch in range(start, end):          
             # select coreset

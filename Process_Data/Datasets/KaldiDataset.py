@@ -754,7 +754,7 @@ class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
                  vad_select=False, sample_type='instance', sr=16000, save_dir='',
-                 sample_score='',
+                 sample_score='', return_idx=False,
                  segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
 
         self.return_uid = return_uid
@@ -770,6 +770,7 @@ class ScriptTrainDataset(data.Dataset):
         self.segment_shift = segment_shift
         self.min_frames = min_frames
         self.sample_score = sample_score
+        self.return_idx = return_idx
 
         self.feat_type = feat_type
         self.sample_type = sample_type  # balance or instance
@@ -1121,6 +1122,8 @@ class ScriptTrainDataset(data.Dataset):
         if self.domain:
             label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
             return feature, label, label_b
+        elif self.return_idx:
+            return feature, label, idx
         else:
             return feature, label
 

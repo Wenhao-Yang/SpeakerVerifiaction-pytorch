@@ -172,6 +172,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
     output_softmax = nn.Softmax(dim=1)
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
+    return_idx = False if 'return_idx' not in config_args else config_args['return_idx']
+
     # lambda_ = (epoch / config_args['epochs']) ** 2
 
     if 'augment_pipeline' in config_args:
@@ -198,6 +200,9 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         if 'sample_score' in config_args and 'sample_ratio' in config_args:
             data, label, scores = data_cols
+            batch_weight = None
+        elif return_idx:
+            data, label, batch_idxs = data_cols
             batch_weight = None
         elif not return_domain:
             data, label = data_cols
@@ -379,6 +384,11 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         minibatch_correct = float(
             (predicted_one_labels.cpu() == label.cpu()).sum().item())
         minibatch_acc = minibatch_correct / len(predicted_one_labels)
+
+        if return_idx:
+            # return_idx.append((predicted_one_labels.cpu(), label.cpu()))
+            config_args['forgetting_events'].after_loss(predicted_one_labels, loss, label, batch_idxs, epoch)
+
         correct += minibatch_correct
 
         # if 'augment_prob' in config_args:
