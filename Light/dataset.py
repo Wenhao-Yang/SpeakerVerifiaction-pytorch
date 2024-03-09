@@ -177,7 +177,7 @@ def SubScriptDatasets(config_args):
                                     transform=transform, num_valid=config_args['num_valid'], domain=domain,
                                     vad_select=vad_select, sample_type=sample_type,
                                     feat_type=feat_type, verbose=verbose,
-                                    save_dir=save_dir, return_uid=return_idx,
+                                    save_dir=save_dir, return_idx=return_idx,
                                     sample_score=sample_score,
                                     segment_len=config_args['num_frames'],
                                     segment_shift=segment_shift,
