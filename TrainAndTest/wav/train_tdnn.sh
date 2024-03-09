@@ -293,9 +293,9 @@ if [ $stage -le 12 ]; then
   feat_type=wave
   loss=arcsoft encod=ASTP2 embedding_size=256
   for lamda_beta in 0.2;do
-    for seed in 1234 1235 1236 ; do
+    for seed in 1234 ; do #1235 1236 
     for data_type in hdf5 ; do
-    for ratio in 10 25 50 75 90 ; do
+    for ratio in 10  ; do #25 50 75 90
     # for type in mani style align ;do
     #  feat=fb${input_dim}
 

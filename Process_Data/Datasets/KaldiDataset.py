@@ -1123,7 +1123,7 @@ class ScriptTrainDataset(data.Dataset):
             label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
             return feature, label, label_b
         elif self.return_idx:
-            return feature, label, idx
+            return feature, label, torch.LongTensor([idx])
         else:
             return feature, label
 
