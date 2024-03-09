@@ -2,7 +2,7 @@
 
 stage=12
 waited=0
-while [ $(ps 19126 | wc -l) -eq 2 ]; do
+while [ $(ps 324613 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -293,7 +293,7 @@ if [ $stage -le 12 ]; then
   feat_type=wave
   loss=arcsoft encod=ASTP2 embedding_size=256
   for lamda_beta in 0.2;do
-    for seed in 1234 ; do #1235 1236 
+    for seed in 1235 1236; do 1234# 
     for data_type in hdf5 ; do
     for ratio in 10  ; do #25 50 75 90
     # for type in mani style align ;do
