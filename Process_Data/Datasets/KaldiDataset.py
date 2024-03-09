@@ -1094,7 +1094,7 @@ class ScriptTrainDataset(data.Dataset):
     
             return feature, label, uid
 
-        print('idx', idx)
+        print('idx idx idx', idx)
         this_utt = self.base_utts[idx]
         (uid, start, end) = this_utt[:3]
 
