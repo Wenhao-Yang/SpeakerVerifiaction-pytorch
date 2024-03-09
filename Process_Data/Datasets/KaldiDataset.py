@@ -1115,6 +1115,7 @@ class ScriptTrainDataset(data.Dataset):
         sid = self.utt2spk_dict[uid]
         label = self.spk_to_idx[sid]
         feature = self.transform(y)
+        
         if len(this_utt) > 3:
             # print(this_utt)
             score = torch.tensor(this_utt[3:]).float()
