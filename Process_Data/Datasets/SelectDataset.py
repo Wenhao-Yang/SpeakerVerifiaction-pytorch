@@ -174,6 +174,13 @@ class SelectSubset(object):
             train_utts = pd.DataFrame(sub_utts, columns=['idx', 'uids'])
             train_utts.to_csv(os.path.join(self.save_dir, 'subtrain.{}.csv'.format(self.iteration)),
                               index=None)
+            
+            sub_scores = self.norm_mean
+            train_utts = pd.DataFrame(self.train_dir.base_utts, columns=['uid', 'start', 'end'])
+            train_utts['scores'] = sub_scores
+
+            train_utts.to_csv(os.path.join(self.save_dir, 'subtrain.{}.scores.csv'.format(self.iteration)),
+                              index=None)
     
 
 class GraNd(SelectSubset):
@@ -1291,6 +1298,7 @@ class Forgetting(SelectSubset):
                 top_examples = np.append(top_examples,
                                     c_indx[np.argsort(self.forgetting_events[c_indx].cpu().numpy())[::-1][:budget]])
 
+        self.norm_mean = self.forgetting_events.cpu().numpy()
         self.save_subset(top_examples)
         # subtrain_dir = copy.deepcopy(self.train_dir)
         subtrain_dir = torch.utils.data.Subset(self.train_dir, top_examples)
