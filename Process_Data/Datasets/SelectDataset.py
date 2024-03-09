@@ -1270,10 +1270,11 @@ class Forgetting(SelectSubset):
     def after_loss(self, outputs, loss, targets, batch_inds, epoch):
 
         if epoch <= self.repeat:
+            batch_inds = batch_inds.squeeze()
             with torch.no_grad():
                 
                 cur_acc = (outputs == targets).clone().detach().requires_grad_(False).type(torch.float32).cpu()
-                print(batch_inds.shape, cur_acc.shape)
+                # print(batch_inds.shape, cur_acc.shape)
                 self.forgetting_events[torch.tensor(batch_inds)[(self.last_acc[batch_inds]-cur_acc)>0.01]] += 1.
                 self.last_acc[batch_inds] = cur_acc
 
