@@ -1253,8 +1253,8 @@ class Forgetting(SelectSubset):
 
         self.random_seed += torch.distributed.get_rank()
 
-        self.forgetting_events = torch.zeros(self.n_train, requires_grad=False).to(self.args.device)
-        self.last_acc = torch.zeros(self.n_train, requires_grad=False).to(self.args.device)
+        self.forgetting_events = torch.zeros(self.n_train, requires_grad=False)#.to(self.args.device)
+        self.last_acc = torch.zeros(self.n_train, requires_grad=False)#.to(self.args.device)
 
     def before_train(self):
         self.train_loss = 0.
@@ -1271,7 +1271,7 @@ class Forgetting(SelectSubset):
 
         if epoch <= self.repeat:
             with torch.no_grad():
-                cur_acc = (outputs == targets).clone().detach().requires_grad_(False).type(torch.float32)
+                cur_acc = (outputs == targets).clone().detach().requires_grad_(False).type(torch.float32).cpu()
                 self.forgetting_events[torch.tensor(batch_inds)[(self.last_acc[batch_inds]-cur_acc)>0.01]] += 1.
                 self.last_acc[batch_inds] = cur_acc
 
