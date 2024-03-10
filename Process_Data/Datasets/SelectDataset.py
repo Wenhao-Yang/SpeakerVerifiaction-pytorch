@@ -1240,7 +1240,7 @@ class OTSelect(SelectSubset):
         if not self.balance:
             noise_size = int(noise_size * len(self.train_indx))
             if self.scores == 'max':
-                print(self.norm_mean)
+                # print(self.norm_mean)
                 top_examples = self.train_indx[np.argsort(self.norm_mean)[::-1][noise_size:(noise_size+self.coreset_size)]]
             elif self.scores == 'min':
                 top_examples = self.train_indx[np.argsort(self.norm_mean)[noise_size:(noise_size+self.coreset_size)]]
