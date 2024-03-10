@@ -1124,6 +1124,7 @@ class OTSelect(SelectSubset):
     def select(self, model, **kwargs):
         top_examples = self.load_subset()
 
+        self.train_indx = np.arange(self.n_train)
         if top_examples == None:
             if not isinstance(self.norm_mean, torch.Tensor):
                 self.model = model
@@ -1131,7 +1132,7 @@ class OTSelect(SelectSubset):
                 embedding_dim = self.model.embedding_size #get_last_layer().in_features
                 
                 # Initialize a matrix to save norms of each sample on idependent runs
-                self.train_indx = np.arange(self.n_train)
+                
                 self.embeddings = torch.zeros([self.n_train, embedding_dim],
                                             requires_grad=False).to(self.device)
                 
