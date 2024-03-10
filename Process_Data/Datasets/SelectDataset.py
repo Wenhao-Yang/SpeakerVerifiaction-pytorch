@@ -156,12 +156,26 @@ class SelectSubset(object):
     
     def load_subset(self):
         csv_path = os.path.join(self.save_dir, 'subtrain.{}.csv'.format(self.iteration))
+        score_path = os.path.join(self.save_dir, 'subtrain.{}.scores.csv'.format(self.iteration))
+
         top_examples = None
+
         if self.save_dir != '' and os.path.exists(csv_path):
             try:
                 sub_utts = pd.read_csv(csv_path).to_numpy().tolist()
                 assert len(sub_utts[0]) == 2 and isinstance(sub_utts[0][0], int)
                 top_examples = np.array([t[0] for t in sub_utts])
+            except Exception as e:
+                pass
+
+        self.norm_mean = None
+        if self.save_dir != '' and os.path.exists(score_path):
+            try:
+                scores_utts = pd.read_csv(score_path).to_numpy()
+                # assert len(sub_utts[0]) == 2 and isinstance(sub_utts[0][0], int)
+                # top_examples = np.array([t[0] for t in sub_utts])
+                self.norm_mean = scores_utts[:, -1].astype(np.float32)
+
             except Exception as e:
                 pass
 
@@ -1108,111 +1122,114 @@ class OTSelect(SelectSubset):
         # self.model.embedding_recorder.record_embedding = False
 
     def select(self, model, **kwargs):
-        self.model = model
+        top_examples = self.load_subset()
 
-        self.before_run()
-        embedding_dim = self.model.embedding_size #get_last_layer().in_features
-        
-        # Initialize a matrix to save norms of each sample on idependent runs
-        self.train_indx = np.arange(self.n_train)
-        self.embeddings = torch.zeros([self.n_train, embedding_dim],
-                                       requires_grad=False).to(self.device)
-        
-        self.norm_matrix = torch.zeros([self.n_train, self.repeat],
-                                       requires_grad=False).to(self.device)
+        if top_examples == None:
+            if self.norm_mean == None:
+                self.model = model
+                self.before_run()
+                embedding_dim = self.model.embedding_size #get_last_layer().in_features
+                
+                # Initialize a matrix to save norms of each sample on idependent runs
+                self.train_indx = np.arange(self.n_train)
+                self.embeddings = torch.zeros([self.n_train, embedding_dim],
+                                            requires_grad=False).to(self.device)
+                
+                self.norm_matrix = torch.zeros([self.n_train, self.repeat],
+                                            requires_grad=False).to(self.device)
 
-        # for self.cur_repeat in range(self.repeat):
-        self.run()
-        # self.random_seed = self.random_seed + 5
+                # for self.cur_repeat in range(self.repeat):
+                self.run()
+                # self.random_seed = self.random_seed + 5
 
-        # norm_mean = torch.mean(self.norm_matrix, dim=1).cpu().detach().numpy()
-        embedding = self.embeddings.detach().cpu() / self.repeat
+                # norm_mean = torch.mean(self.norm_matrix, dim=1).cpu().detach().numpy()
+                embedding = self.embeddings.detach().cpu() / self.repeat
 
-        torch.distributed.barrier()
-        embeddings = [None for _ in range(torch.distributed.get_world_size())]
-        torch.distributed.all_gather_object(embeddings, embedding)
-        embedding = torch.stack(embeddings, dim=0).mean(dim=0)
+                torch.distributed.barrier()
+                embeddings = [None for _ in range(torch.distributed.get_world_size())]
+                torch.distributed.all_gather_object(embeddings, embedding)
+                embedding = torch.stack(embeddings, dim=0).mean(dim=0)
 
-        # OT_solver = SamplesLoss("sinkhorn", p=2, blur=0.1)
-        # lr = 1
-        batch_size = self.args['batch_size'] * 6 if not self.select_aug else self.args['batch_size'] * 2
-        metric = self.args['metric'] if 'metric' in self.args else 'cosine'
-        optimizer_time = self.args['optim_times'] if 'optim_times' in self.args else 1.5
+                # OT_solver = SamplesLoss("sinkhorn", p=2, blur=0.1)
+                # lr = 1
+                batch_size = self.args['batch_size'] * 6 if not self.select_aug else self.args['batch_size'] * 2
+                metric = self.args['metric'] if 'metric' in self.args else 'cosine'
+                optimizer_time = self.args['optim_times'] if 'optim_times' in self.args else 1.5
 
-        wss = []
-        for self.cur_repeat in range(self.repeat):
-            np.random.seed(self.random_seed)
-            self.random_seed = self.random_seed - 5
-            
-            ws =  torch.ones(self.n_train, 1)
-            # losses = []
-            total_set = set(np.arange(self.n_train))
+                wss = []
+                for self.cur_repeat in range(self.repeat):
+                    np.random.seed(self.random_seed)
+                    self.random_seed = self.random_seed - 5
+                    
+                    ws =  torch.ones(self.n_train, 1)
+                    # losses = []
+                    total_set = set(np.arange(self.n_train))
 
-            if torch.distributed.get_rank() == 0 :
-                pbar = tqdm(range(int(self.n_train/batch_size*optimizer_time)), ncols=50)
-            else:
-                pbar = range(int(self.n_train/batch_size*optimizer_time))
+                    if torch.distributed.get_rank() == 0 :
+                        pbar = tqdm(range(int(self.n_train/batch_size*optimizer_time)), ncols=50)
+                    else:
+                        pbar = range(int(self.n_train/batch_size*optimizer_time))
 
-            for i in pbar:
-                # select_ids = np.random.choice(np.arange(len(xvectors)), size=64)
+                    for i in pbar:
+                        # select_ids = np.random.choice(np.arange(len(xvectors)), size=64)
 
-                if batch_size*i <= self.n_train:
-                    select_ids = (np.arange(batch_size) + batch_size*i) % self.n_train
-                else:
-                # p = ws.squeeze().exp().numpy() 
-                # p /= p.sum()
-                # select_ids = np.random.choice(np.arange(len(xvectors)), p=p, size=64)
-                    select_ids = np.random.choice(np.arange(self.n_train), size=batch_size, replace=False)
+                        if batch_size*i <= self.n_train:
+                            select_ids = (np.arange(batch_size) + batch_size*i) % self.n_train
+                        else:
+                        # p = ws.squeeze().exp().numpy() 
+                        # p /= p.sum()
+                        # select_ids = np.random.choice(np.arange(len(xvectors)), p=p, size=64)
+                            select_ids = np.random.choice(np.arange(self.n_train), size=batch_size, replace=False)
 
-                s_xvectors = embedding[select_ids]
+                        s_xvectors = embedding[select_ids]
 
-                x1 = torch.tensor(s_xvectors).to(self.device)
-                # w = nn.Parameter(ws[select_ids]).to(self.device)
-                # w = w.abs()
-                # w = w/w.mean()
-                dloss = Dist_loss(ws[select_ids], metric=metric).to(x1.device)
+                        x1 = torch.tensor(s_xvectors).to(self.device)
+                        # w = nn.Parameter(ws[select_ids]).to(self.device)
+                        # w = w.abs()
+                        # w = w/w.mean()
+                        dloss = Dist_loss(ws[select_ids], metric=metric).to(x1.device)
 
-                other_set = np.array(list(total_set.difference(set(select_ids))))
-                other_set = np.random.choice(other_set, size=int(batch_size*4), replace=False)
+                        other_set = np.array(list(total_set.difference(set(select_ids))))
+                        other_set = np.random.choice(other_set, size=int(batch_size*4), replace=False)
 
-                x2 = torch.tensor(embedding[other_set]).to(self.device)
-                # x2 = torch.tensor(xvectors).type(dtype)
-                opt = torch.optim.Adam(dloss.parameters(), lr=1, weight_decay=0)
-                # opt = torch.optim.SGD(dloss.parameters(), lr=0.2, weight_decay=0)
-                # OT_solver = SamplesLoss("sinkhorn", p=2, blur=0.05,
-                #                         cost=lambda a, b: cost_func(a, b, p=2, metric='cosine'))
-                # loss = []
-                for i in range(10):
-                    # L_αβ = OT_solver(w*x1, x2)
-                    # # L_αβ.backward()
-                    # [g] = torch.autograd.grad(L_αβ, [w])
-                    # w.data -= lr * g
-                    # w = w.abs()
-                    # w = w/w.mean()
-                    L_αβ = dloss(x1, x2)
-                    L_αβ.backward()
-                    opt.step()
-                    opt.zero_grad()
+                        x2 = torch.tensor(embedding[other_set]).to(self.device)
+                        # x2 = torch.tensor(xvectors).type(dtype)
+                        opt = torch.optim.Adam(dloss.parameters(), lr=1, weight_decay=0)
+                        # opt = torch.optim.SGD(dloss.parameters(), lr=0.2, weight_decay=0)
+                        # OT_solver = SamplesLoss("sinkhorn", p=2, blur=0.05,
+                        #                         cost=lambda a, b: cost_func(a, b, p=2, metric='cosine'))
+                        # loss = []
+                        for i in range(10):
+                            # L_αβ = OT_solver(w*x1, x2)
+                            # # L_αβ.backward()
+                            # [g] = torch.autograd.grad(L_αβ, [w])
+                            # w.data -= lr * g
+                            # w = w.abs()
+                            # w = w/w.mean()
+                            L_αβ = dloss(x1, x2)
+                            L_αβ.backward()
+                            opt.step()
+                            opt.zero_grad()
 
-                    # loss.append(float(L_αβ.item()))
-                # losses.append(np.mean(loss))
-                    # if (i+1) % 20== 1:
-                    #     plt.plot(w.data.squeeze(), alpha=0.2)
-                # if (i+1) % 50 == 0:
-                #     break
-                w = torch.clamp(dloss.w.data.cpu(), min=0, max=2, out=None)
-                ws[select_ids] = w #dloss.w.data.abs().cpu()
-            
-            wss.append(ws)
-            
-        ws = torch.stack(wss, dim=0).mean(dim=0)
+                            # loss.append(float(L_αβ.item()))
+                        # losses.append(np.mean(loss))
+                            # if (i+1) % 20== 1:
+                            #     plt.plot(w.data.squeeze(), alpha=0.2)
+                        # if (i+1) % 50 == 0:
+                        #     break
+                        w = torch.clamp(dloss.w.data.cpu(), min=0, max=2, out=None)
+                        ws[select_ids] = w #dloss.w.data.abs().cpu()
 
-        torch.distributed.barrier()
-        wss = [None for _ in range(torch.distributed.get_world_size())]
-        torch.distributed.all_gather_object(wss, ws)
-        ws = torch.stack(wss, dim=0).mean(dim=0)
+                    wss.append(ws)
+                    
+                ws = torch.stack(wss, dim=0).mean(dim=0)
 
-        self.norm_mean = ws.squeeze().cpu().numpy()
+                torch.distributed.barrier()
+                wss = [None for _ in range(torch.distributed.get_world_size())]
+                torch.distributed.all_gather_object(wss, ws)
+                ws = torch.stack(wss, dim=0).mean(dim=0)
+
+                self.norm_mean = ws.squeeze().cpu().numpy()
         noise_size = self.args['noise_size'] if 'noise_size' in self.args else 0
         
         if not self.balance:
