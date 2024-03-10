@@ -76,7 +76,7 @@ if [ $stage -le 10 ]; then
     for data_type in hdf5 ; do
     # for type in mani style align ;do
     #  feat=fb${input_dim}
-      for ratio in 50 75 90 ; do #10 25 50 75 90
+      for ratio in 25 50 75 ; do #10 25 50 75 90
 
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
     #   CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 TrainAndTest/train_egs_dist.py
