@@ -1126,7 +1126,7 @@ class OTSelect(SelectSubset):
 
         self.train_indx = np.arange(self.n_train)
         if top_examples == None:
-            if not isinstance(self.norm_mean, np.array):
+            if not isinstance(self.norm_mean, np.ndarray):
                 self.model = model
                 self.before_run()
                 embedding_dim = self.model.embedding_size #get_last_layer().in_features
