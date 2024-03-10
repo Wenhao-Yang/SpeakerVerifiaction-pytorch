@@ -174,7 +174,7 @@ class SelectSubset(object):
                 scores_utts = pd.read_csv(score_path).to_numpy()
                 # assert len(sub_utts[0]) == 2 and isinstance(sub_utts[0][0], int)
                 # top_examples = np.array([t[0] for t in sub_utts])
-                self.norm_mean = scores_utts[:, -1].astype(np.float32)
+                self.norm_mean = torch.tensor(scores_utts[:, -1].astype(np.float32))
 
             except Exception as e:
                 pass
@@ -1125,7 +1125,7 @@ class OTSelect(SelectSubset):
         top_examples = self.load_subset()
 
         if top_examples == None:
-            if self.norm_mean == None:
+            if not isinstance(self.norm_mean, torch.Tensor):
                 self.model = model
                 self.before_run()
                 embedding_dim = self.model.embedding_size #get_last_layer().in_features
