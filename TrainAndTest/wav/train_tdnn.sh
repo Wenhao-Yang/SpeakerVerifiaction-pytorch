@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=12
+stage=10
 waited=0
 while [ $(ps 324613 | wc -l) -eq 2 ]; do
   sleep 60
