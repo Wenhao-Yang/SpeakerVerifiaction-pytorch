@@ -44,7 +44,7 @@ segment_shift: 32000
 # sample_type: instance
 # adaptive_select: True
 select_method: optimal
-select_save_dir: '/home/yangwenhao/project/SpeakerVerification-pytorch/Misc/deep_learning/data/vox2/subtrain.0.scores.csv'
+select_save_dir: '/home/yangwenhao/project/SpeakerVerification-pytorch/Misc/deep_learning/data/vox2'
 select_scores: 'max'
 # select_sample: ccs
 select_repeat: 2

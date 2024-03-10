@@ -1230,6 +1230,10 @@ class OTSelect(SelectSubset):
                 ws = torch.stack(wss, dim=0).mean(dim=0)
 
                 self.norm_mean = ws.squeeze().cpu().numpy()
+
+            # else:
+            #     print('Load scores from files ... ')
+
         noise_size = self.args['noise_size'] if 'noise_size' in self.args else 0
         
         if not self.balance:
