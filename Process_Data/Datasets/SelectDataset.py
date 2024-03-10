@@ -1006,9 +1006,15 @@ class Dist_loss(nn.Module):
         self.loss = SamplesLoss("sinkhorn", p=2, blur=0.05,
                                 cost=lambda a, b: cost_func(a, b, p=2, metric=metric))
                                 # SamplesLoss("sinkhorn", p=2, blur=0.1)
+    
+    def get_w(self):
+        w = torch.clamp(self.w, min=0.0, max=2, out=None)
+        w = w/w.mean()
+        return w
     def forward(self, x1, x2):
-        w =  torch.clamp(self.w, min=0, max=2, out=None)
+        # w =  torch.clamp(self.w, min=0, max=2, out=None)
         # w = w / w.mean()
+        w = self.get_w()
         
         return self.loss(w*x1, x2)
     
@@ -1156,6 +1162,7 @@ class OTSelect(SelectSubset):
                 batch_size = self.args['batch_size'] * 6 if not self.select_aug else self.args['batch_size'] * 2
                 metric = self.args['metric'] if 'metric' in self.args else 'cosine'
                 optimizer_time = self.args['optim_times'] if 'optim_times' in self.args else 1.5
+                step = 20
 
                 wss = []
                 for self.cur_repeat in range(self.repeat):
@@ -1200,7 +1207,7 @@ class OTSelect(SelectSubset):
                         # OT_solver = SamplesLoss("sinkhorn", p=2, blur=0.05,
                         #                         cost=lambda a, b: cost_func(a, b, p=2, metric='cosine'))
                         # loss = []
-                        for i in range(10):
+                        for i in range(step):
                             # L_αβ = OT_solver(w*x1, x2)
                             # # L_αβ.backward()
                             # [g] = torch.autograd.grad(L_αβ, [w])
@@ -1214,11 +1221,9 @@ class OTSelect(SelectSubset):
 
                             # loss.append(float(L_αβ.item()))
                         # losses.append(np.mean(loss))
-                            # if (i+1) % 20== 1:
-                            #     plt.plot(w.data.squeeze(), alpha=0.2)
                         # if (i+1) % 50 == 0:
                         #     break
-                        w = torch.clamp(dloss.w.data.cpu(), min=0, max=2, out=None)
+                        w = dloss.get_w().data.cpu()
                         ws[select_ids] = w #dloss.w.data.abs().cpu()
 
                     wss.append(ws)
