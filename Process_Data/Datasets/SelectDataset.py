@@ -979,7 +979,7 @@ def cost_func(a, b, p=2, metric='cosine'):
         elif a.dim() == 2:
             x_norm = a / (a.norm(dim=1)[:, None]+1e-12)
             y_norm = b / (b.norm(dim=1)[:, None]+1e-12)
-            M = (1 - torch.mm(x_norm, y_norm.transpose(0, 1))) / 2
+            M = 1 - torch.mm(x_norm, y_norm.transpose(0, 1))
         # M = pow(M, p)
         return M
 
@@ -993,8 +993,8 @@ class Dist_loss(nn.Module):
                                 cost=lambda a, b: cost_func(a, b, p=2, metric=metric))
                                 # SamplesLoss("sinkhorn", p=2, blur=0.1)
     def forward(self, x1, x2):
-        w = self.w.abs()
-        w = w / w.mean()
+        w =  torch.clamp(self.w, min=0, max=2, out=None)
+        # w = w / w.mean()
         
         return self.loss(w*x1, x2)
     
@@ -1135,7 +1135,7 @@ class OTSelect(SelectSubset):
 
         # OT_solver = SamplesLoss("sinkhorn", p=2, blur=0.1)
         # lr = 1
-        batch_size = self.args['batch_size'] * 4 if not self.select_aug else self.args['batch_size'] * 2
+        batch_size = self.args['batch_size'] * 6 if not self.select_aug else self.args['batch_size'] * 2
         metric = self.args['metric'] if 'metric' in self.args else 'cosine'
         optimizer_time = self.args['optim_times'] if 'optim_times' in self.args else 1.5
 
@@ -1177,8 +1177,8 @@ class OTSelect(SelectSubset):
 
                 x2 = torch.tensor(embedding[other_set]).to(self.device)
                 # x2 = torch.tensor(xvectors).type(dtype)
-                # opt = torch.optim.Adam(params=[w], lr=0.001, weight_decay=0.0001)
-                opt = torch.optim.SGD(dloss.parameters(), lr=0.2, weight_decay=0)
+                opt = torch.optim.Adam(dloss.parameters(), lr=1, weight_decay=0)
+                # opt = torch.optim.SGD(dloss.parameters(), lr=0.2, weight_decay=0)
                 # OT_solver = SamplesLoss("sinkhorn", p=2, blur=0.05,
                 #                         cost=lambda a, b: cost_func(a, b, p=2, metric='cosine'))
                 # loss = []
@@ -1200,8 +1200,10 @@ class OTSelect(SelectSubset):
                     #     plt.plot(w.data.squeeze(), alpha=0.2)
                 # if (i+1) % 50 == 0:
                 #     break
-                ws[select_ids] = dloss.w.data.abs().cpu()
-                wss.append(ws)
+                w = torch.clamp(dloss.w.data.cpu(), min=0, max=2, out=None)
+                ws[select_ids] = w #dloss.w.data.abs().cpu()
+            
+            wss.append(ws)
             
         ws = torch.stack(wss, dim=0).mean(dim=0)
 

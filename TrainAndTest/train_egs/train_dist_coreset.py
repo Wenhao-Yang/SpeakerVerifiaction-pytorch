@@ -353,13 +353,14 @@ def main():
     select_sample = 'top' if 'select_sample' not in config_args else config_args['select_sample']
     stratas = 50 if 'stratas' not in config_args else config_args['stratas']
     stratas_select = 'random' if 'stratas_select' not in config_args else config_args['stratas_select']
-    
+    select_scores = 'max' if 'select_scores' not in config_args else config_args['select_scores']
+
     sample_ratio = args.sample_ratio / 100
     selector = select_method(train_dir,
                              args=config_args, repeat=select_repeat,
                              random_seed=args.seed,
                              balance=spk_balance,
-                             save_dir=check_path,
+                             save_dir=check_path, scores=select_scores,
                              select_sample=select_sample, stratas=stratas,
                              stratas_select=stratas_select,
                              fraction=sample_ratio)
