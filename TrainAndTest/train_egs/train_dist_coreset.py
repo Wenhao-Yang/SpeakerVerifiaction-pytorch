@@ -465,8 +465,8 @@ def main():
             else:
                 top_k = []
 
-            if torch.distributed.get_rank() == 0 and (epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
-                    end - 1) or epoch in top_k):
+            if torch.distributed.get_rank() == 0 and (epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch >= (
+                    end - 4) or epoch in top_k):
 
                 model.eval()
                 this_check_path = '{}/checkpoint_{}.pth'.format(
