@@ -258,7 +258,9 @@ if [ $stage -le 10 ]; then
 #     CUDA_VISIBLE_DEVICES=4,5 python -m torch.distributed.launch --nproc_per_node=2 --master_port=417410 --nnodes=1 TrainAndTest/train_egs_dist_mixup.py --train-config=TrainAndTest/Wav/vox1_resnet_mixup_${type}.yaml --seed=${seed} --lamda-beta ${lamda_beta}
       # CUDA_VISIBLE_DEVICES=6,7 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/reweight/vox2_brain_fgrl82.yaml --seed=${seed}
 
-      CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox2_brain_optimal.yaml --seed=${seed} --sample-ratio ${ratio}
+      # CUDA_VISIBLE_DEVICES=0,5 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox2_brain_optimal.yaml --seed=${seed} --sample-ratio ${ratio}
+
+      CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox2_brain_random.yaml --seed=${seed} --sample-ratio ${ratio}
 
     done
     done
