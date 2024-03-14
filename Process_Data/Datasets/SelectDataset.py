@@ -184,6 +184,7 @@ class SelectSubset(object):
 
     def save_subset(self, top_examples):
         if self.save_dir != '' and main_process():
+            print(len(self.train_dir.base_utts), np.max(top_examples))
             sub_utts = [[t, self.train_dir.base_utts[t]] for t in top_examples]
             train_utts = pd.DataFrame(sub_utts, columns=['idx', 'uids'])
             train_utts.to_csv(os.path.join(self.save_dir, 'subtrain.{}.csv'.format(self.iteration)),
@@ -781,6 +782,7 @@ class RandomSelect(SelectSubset):
         torch.distributed.all_gather_object(norm_means, norm_mean)
         norm_mean = np.mean(norm_means, axis=0)
         self.norm_mean = norm_mean
+        print(norm_mean.shape)
 
         if not self.balance:
             top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
