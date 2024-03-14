@@ -36,7 +36,9 @@ from torch.nn.parallel import DistributedDataParallel
 import torch.distributed as dist
 
 from Define_Model.Optimizer import EarlyStopping
-from TrainAndTest.common_func import create_classifier, create_optimizer, create_scheduler
+from Define_Model.model import create_classifier, create_model
+from Define_Model.Optimizer import create_optimizer, create_scheduler
+
 from logger import NewLogger
 # import pytorch_lightning as pl
 from TrainAndTest.train_egs.train_dist import all_seed, train, valid_class, valid_test, test_results
