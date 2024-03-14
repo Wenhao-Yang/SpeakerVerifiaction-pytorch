@@ -862,65 +862,15 @@ def main():
             f.write('Optimizer: ' + str(optimizer) + '\n')
             f.write('Scheduler: ' + str(scheduler) + '\n')
 
-    if 'resume' in config_args:
-        if 'fintune' in config_args:
-            pass
-        else:
-            if os.path.isfile(config_args['resume']):
-                if torch.distributed.get_rank() == 0:
-                    print('=> loading  model   check: {}'.format(config_args['resume']))
-                checkpoint = torch.load(config_args['resume'])
-                start_epoch = checkpoint['epoch']
-
-                checkpoint_state_dict = checkpoint['state_dict']
-                if isinstance(checkpoint_state_dict, tuple):
-                    checkpoint_state_dict = checkpoint_state_dict[0]
-
-                filtered = {k: v for k, v in checkpoint_state_dict.items(
-                ) if 'num_batches_tracked' not in k}
-
-                # filtered = {k: v for k, v in checkpoint['state_dict'].items() if 'num_batches_tracked' not in k}
-                if list(filtered.keys())[0].startswith('module'):
-                    new_state_dict = OrderedDict()
-                    for k, v in filtered.items():
-                        # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                        new_state_dict[k[7:]] = v  # 新字典的key值对应的value为一一对应的值。
-
-                    model.load_state_dict(new_state_dict)
-                else:
-                    model_dict = model.state_dict()
-                    model_dict.update(filtered)
-                    model.load_state_dict(model_dict)
-
-                if 'scheduler' in checkpoint:
-                    scheduler.load_state_dict(checkpoint['scheduler'])
-                if 'optimizer' in checkpoint:
-                    optimizer.load_state_dict(checkpoint['optimizer'])
-                    # for state in optimizer.state.values():
-                    #     for k, v in state.items():
-                    #         if torch.is_tensor(v):
-                    #             state[k] = v.cuda()
-
-            if 'resume_optim' in config_args and os.path.isfile(config_args['resume_optim']):
-                if torch.distributed.get_rank() == 0:
-                    print('=> loading optmizer check {}'.format(config_args['resume_optim']))
-                optm_check = torch.load(config_args['resume_optim'])
-                if 'scheduler' in checkpoint:
-                    scheduler.load_state_dict(optm_check['scheduler'])
-                if 'optimizer' in checkpoint:
-                    optimizer.load_state_dict(optm_check['optimizer'])
-            # model.dropout.p = args.dropout_p
-            else:
-                if torch.distributed.get_rank() == 0:
-                    print('=> no checkpoint found at {}'.format(
-                        config_args['resume']))
+    if 'resume' in config_args and 'fintune' not in config_args:
+        resume_checkpoint(model, scheduler, optimizer, config_args)
 
     start = 1 + start_epoch
     if torch.distributed.get_rank() == 0:
         print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
 
-    if len(config_args['gpu_id']) > 1:
+    if torch.distributed.get_world_size() > 1:
         print("Continue with gpu: %s ..." % str(local_rank))
         # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(
@@ -1011,25 +961,11 @@ def main():
                 tops = torch.tensor(current_results)
                 top_k = tops[torch.argsort(tops[:, 0])][:top_k_epoch, 1].long().tolist()
 
-            if torch.distributed.get_rank() == 0 and (
-                    epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
+            if on_main() and (epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
                     end - 1) or epoch in top_k):
 
-                model.eval()
-                this_check_path = '{}/checkpoint_{}.pth'.format(
+                save_checkpoint(model, optimizer, scheduler,
                     check_path, epoch)
-                model_state_dict = model.module.state_dict() \
-                    if isinstance(model, DistributedDataParallel) else model.state_dict()
-                    
-                torch.save({'epoch': epoch, 'state_dict': model_state_dict},
-                           this_check_path)
-
-                this_optim_path = '{}/optim_{}.pth'.format(
-                    check_path, epoch)
-                torch.save({'epoch': epoch,
-                            'scheduler': scheduler.state_dict(),
-                            'optimizer': optimizer.state_dict(),
-                            }, this_optim_path)
                 
             if early_stopping_scheduler != None:
                 check_stop = torch.tensor(
