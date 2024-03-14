@@ -23,7 +23,7 @@ import time
 import warnings
 from collections import OrderedDict
 from hyperpyyaml import load_hyperpyyaml
-from Define_Model.model import AttrDict
+from Define_Model.TDNN.Slimmable import AttrDict
 from Light.model import SpeakerLoss
 # import kaldiio
 import numpy as np
@@ -43,8 +43,10 @@ from Light.dataset import Sampler_Loaders, SubDatasets, SubLoaders, SubScriptDat
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import KaldiExtractDataset, \
     ScriptVerifyDataset
-from TrainAndTest.common_func import create_classifier, create_optimizer, create_model, create_scheduler, verification_test, verification_extract, \
-    args_parse, args_model, save_model_args
+from TrainAndTest.common_func import verification_test, verification_extract, \
+    args_parse, args_model
+from Define_Model.model import save_model_args, create_classifier, create_model
+from Define_Model.Optimizer import create_scheduler, create_optimizer
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
