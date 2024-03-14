@@ -509,3 +509,34 @@ class LinearTransform(nn.Module):
         trans = self.linear_trans(x)
 
         return x + trans
+
+def get_encode_layer(encoder_type: str, encode_input_dim: int, hidden_dim: int,
+                     embedding_size: int, time_dim: int):
+    
+    if encoder_type == 'SAP':
+        encoder = SelfAttentionPooling(
+                input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim
+
+    elif encoder_type == 'SAP2':
+        encoder = SelfAttentionPooling_v2(input_dim=encode_input_dim,
+                                                hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim
+
+    elif encoder_type in ['ASTP', 'SASP']:
+        encoder = AttentionStatisticPooling(input_dim=encode_input_dim,
+                                                    hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim * 2
+    elif encoder_type in ['ASTP2', 'SASP2']:
+        encoder = AttentionStatisticPooling_v2(
+            input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim * 2
+    elif encoder_type == 'STAP':
+        encoder = StatisticPooling(input_dim=encode_input_dim)
+        encoder_output = encode_input_dim * 2
+    else:
+        encoder = nn.AdaptiveAvgPool2d((time_dim, None))
+        encoder_output = encode_input_dim * time_dim
+
+    return encoder, encoder_output
+    

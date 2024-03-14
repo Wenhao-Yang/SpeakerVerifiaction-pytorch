@@ -683,7 +683,6 @@ class SE_Res2Bottleneck(nn.Module):
 
         return out
 
-
 class SE_Res2Block(nn.Module):
     expansion: int = 1
 

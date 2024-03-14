@@ -28,6 +28,7 @@ from torchaudio.transforms import Spectrogram
 import torchvision
 import Process_Data.constants as c
 
+from Define_Model.NoiseInjection import AttentionDrop1d, NoiseInject, DropBlock1d, Dropout1d, DropAttention1d, AttentionNoiseInject, RadioNoiseInject
 
 class fDLR(nn.Module):
     def __init__(self, input_dim, sr, num_filter, exp=False, filter_fix=False):
@@ -2631,3 +2632,148 @@ class Wav2Down(nn.Module):
         tmp_gate = self.tmp_gate(x.transpose(1, 2)).transpose(1, 2)
         x = x * tmp_gate
         return x.transpose(1, 2)
+
+
+def get_activation(activation):
+    if activation == 'relu':
+        nonlinearity = nn.ReLU
+    elif activation in ['leakyrelu', 'leaky_relu']:
+        nonlinearity = nn.LeakyReLU
+    elif activation == 'prelu':
+        nonlinearity = nn.PReLU
+
+    return nonlinearity
+
+
+def get_filter_layer(filter: str, input_dim: int, sr: int, feat_dim: int, exp: bool, filter_fix: bool,
+                     stretch_ratio: list = [1.0], init_weight: str = 'mel', win_length=int(0.025*16000),
+                     nfft=512):
+    if filter == 'fDLR':
+        filter_layer = fDLR(input_dim=input_dim, sr=sr,
+                            num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+    elif filter == 'fBLayer':
+        filter_layer = fBLayer(input_dim=input_dim, sr=sr,
+                               num_filter=feat_dim, exp=exp, filter_fix=filter_fix)
+    elif filter == 'fBPLayer':
+        filter_layer = fBPLayer(input_dim=input_dim, sr=sr, num_filter=feat_dim, exp=exp,
+                                filter_fix=filter_fix)
+    elif filter == 'fLLayer':
+        filter_layer = fLLayer(input_dim=input_dim,
+                               num_filter=feat_dim, exp=exp)
+    elif filter == 'Avg':
+        filter_layer = nn.AvgPool2d(kernel_size=(1, 7), stride=(1, 3))
+    elif filter == 'fbank':
+        filter_layer = MelFbankLayer(
+            sr=sr, num_filter=feat_dim, stretch_ratio=stretch_ratio)
+    elif filter == 'spect':
+        filter_layer = SpectrogramLayer(sr=sr, stretch_ratio=stretch_ratio, 
+                                        win_length=win_length, n_fft=nfft)
+    elif filter == 'sparse':
+        filter_layer = SparseFbankLayer(sr=sr, num_filter=feat_dim, stretch_ratio=stretch_ratio,
+                                        init_weight=init_weight)
+    else:
+        filter_layer = None
+
+    return filter_layer
+
+
+def get_input_norm(input_norm: str, input_dim=None):
+    if input_norm == 'Mean':
+        inst_layer = Mean_Norm()
+    elif input_norm == 'SMean':
+        inst_layer = SlideMean_Norm()
+    elif input_norm == 'Mstd':
+        inst_layer = MeanStd_Norm()
+    elif input_norm == 'Inst':
+        inst_layer = Inst_Norm(dim=input_dim)
+    else:
+        inst_layer = None
+
+    return inst_layer
+
+
+def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
+                   weight_p: float, scale: float, weight_norm: str, mask_ckp='', **kwargs):
+    if mask == "time":
+        mask_layer = TimeMaskLayer(mask_len=mask_len[0])
+    elif mask == "freq":
+        mask_layer = FreqMaskLayer(mask_len=mask_len[0])
+    elif mask == "both":
+        mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
+    elif mask == 'specaug':
+        mask_layer = SpecAugmentLayer(frequency=mask_len[1], frame=mask_len[0])
+    elif mask == 'noise':
+        mask_layer = NoiseInject(drop_prob=mask_len)
+    elif mask == 'attenoise':
+        mask_layer = AttentionNoiseInject(drop_prob=mask_len)
+    elif mask == "time_freq":
+        mask_layer = nn.Sequential(
+            TimeMaskLayer(mask_len=mask_len[0]),
+            FreqMaskLayer(mask_len=mask_len[1])
+        )
+    elif mask == 'attention0':
+        mask_layer = AttentionweightLayer_v0(input_dim=input_dim, weight=init_weight,
+                                             weight_norm=weight_norm)
+    elif mask == 'attention':
+        mask_layer = AttentionweightLayer(
+            input_dim=input_dim, weight=init_weight)
+    elif mask == 'attention2':
+        mask_layer = AttentionweightLayer_v2(
+            input_dim=input_dim, weight=init_weight)
+    elif mask == 'attention3':
+        mask_layer = AttentionweightLayer_v3(
+            input_dim=input_dim, weight=init_weight)
+    elif mask == 'drop':
+        mask_layer = DropweightLayer(input_dim=input_dim, dropout_p=weight_p,
+                                     weight=init_weight, scale=scale)
+    elif mask == 'drop2':
+        mask_layer = DropweightLayer_v2(input_dim=input_dim, dropout_p=weight_p,
+                                        weight=init_weight, scale=scale)
+    elif mask == 'drop3':
+        mask_layer = DropweightLayer_v3(input_dim=input_dim, dropout_p=weight_p,
+                                        weight=init_weight, scale=scale)
+    elif mask == 'crl':
+        mask_layer = ReweightLayer(input_dim=input_dim, weight=init_weight)
+    elif mask == 'frl':
+        mask_layer = FrequencyReweightLayer(input_dim=input_dim)
+    elif mask == 'fdrl':
+        mask_layer = FrequencyDecayReweightLayer(input_dim=input_dim)
+    elif mask == 'fdrl2':
+        mask_layer = FrequencyDecayReweightLayer2(input_dim=input_dim)
+    elif mask == 'cdl':
+        mask_layer = RedropLayer(input_dim=input_dim, mask_len=mask_len[0],
+                                 weight=init_weight)
+    elif mask in ['frl2', 'frl21']:
+        mask_layer = FrequencyReweightLayer2(input_dim=input_dim)
+    elif mask == 'fgrl2':
+        mask_layer = FrequencyGenderReweightLayer2(input_dim=input_dim)
+    elif mask == 'fgrl22':
+        mask_layer = FrequencyGenderReweightLayer22(input_dim=input_dim)
+    elif mask == 'fgrl3':
+        mask_layer = FrequencyGenderReweightLayer3(input_dim=input_dim)
+    elif mask in ['fgrl4', 'fgrl42', 'fgrl4frl2']:
+        mask_layer = FrequencyGenderReweightLayer4(input_dim=input_dim)
+    elif mask == ['fgrl5', 'fgrl52']:
+        mask_layer = FrequencyGenderReweightLayer5(input_dim=input_dim)
+    elif mask == 'fgrl6':
+        mask_layer = FrequencyGenderReweightLayer6(input_dim=input_dim)
+    elif mask == 'fgrl62':
+        mask_layer = FrequencyGenderReweightLayer62(input_dim=input_dim)
+    elif mask == 'fgrl7':
+        mask_layer = FrequencyGenderReweightLayer7(ckp_path=mask_ckp, input_dim=input_dim)
+    elif mask == 'fgrl8':
+        mask_layer = FrequencyGenderReweightLayer8(ckp_path=mask_ckp, input_dim=input_dim)
+    elif mask == 'fgrl82':
+        mask_layer = FrequencyGenderReweightLayer82(ckp_path=mask_ckp, input_dim=input_dim)
+    elif mask == 'fgrl9':
+        mask_layer = FrequencyGenderReweightLayer9(ckp_path=mask_ckp, input_dim=input_dim)
+    elif mask == 'trl':
+        mask_layer = TimeReweightLayer(input_dim=input_dim)
+    elif mask == 'fnrl':
+        mask_layer = FrequencyNormReweightLayer(input_dim=input_dim)
+    elif mask == 'frrl':
+        mask_layer = FreqTimeReweightLayer(input_dim=input_dim)
+    else:
+        mask_layer = None
+
+    return mask_layer

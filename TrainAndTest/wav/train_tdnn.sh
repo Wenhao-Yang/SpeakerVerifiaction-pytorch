@@ -309,7 +309,7 @@ if [ $stage -le 12 ]; then
 
       # for add in time ; do
           # baseline for vox2 , aug53
-          CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst.yaml --seed=${seed}
+          CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53.yaml --seed=${seed}
 
           # baseline for vox2 , aug53
           # CUDA_VISIBLE_DEVICES=2,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox2_brain_inst_aug53.yaml --seed=${seed}

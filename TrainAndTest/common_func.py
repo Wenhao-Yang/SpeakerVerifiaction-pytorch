@@ -15,180 +15,15 @@ import pdb
 import time
 
 # import kaldi_io
-from hyperpyyaml import load_hyperpyyaml
 import kaldiio
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from torch.nn.parallel.distributed import DistributedDataParallel
-from torch.optim import lr_scheduler
+
 from tqdm import tqdm
 import Process_Data.constants as c
-
-from Define_Model.CNN import AlexNet
-from Define_Model.Optimizer import SAMSGD, SAM
-from Define_Model.Optimizer import SAMSGD
-from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, RepeatResNet, ResNet, SimpleResNet, GradResNet, \
-    TimeFreqResNet, MultiResNet
-from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear, MarginLinearDummy
-from Define_Model.TDNN.ARET import RET, RET_v2, RET_v3
-from Define_Model.TDNN.DTDNN import DTDNN
-from Define_Model.TDNN.ECAPA_TDNN import ECAPA_TDNN
-from Define_Model.TDNN import ECAPA_brain
-from Define_Model.TDNN.ETDNN import ETDNN_v4, ETDNN, ETDNN_v5
-from Define_Model.TDNN.FTDNN import FTDNN
-from Define_Model.TDNN.Slimmable import SlimmableTDNN
-from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6, MixTDNN_v5
-from Define_Model.demucs_feature import Demucs
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
-
-import yaml
-
-
-def create_optimizer(parameters, optimizer, **kwargs):
-    # setup optimizer
-    # parameters = filter(lambda p: p.requires_grad, parameters)
-    if optimizer == 'sgd':
-        opt = optim.SGD(parameters,
-                        lr=kwargs['lr'],
-                        momentum=kwargs['momentum'],
-                        dampening=kwargs['dampening'],
-                        weight_decay=kwargs['weight_decay'],
-                        nesterov=kwargs['nesterov'])
-
-    elif optimizer == 'adam':
-        opt = optim.Adam(parameters,
-                         lr=kwargs['lr'],
-                         weight_decay=kwargs['weight_decay'])
-
-    elif optimizer == 'adagrad':
-        opt = optim.Adagrad(parameters,
-                            lr=kwargs['lr'],
-                            lr_decay=kwargs['lr_decay'],
-                            weight_decay=kwargs['weight_decay'])
-    elif optimizer == 'RMSprop':
-        opt = optim.RMSprop(parameters,
-                            lr=kwargs['lr'],
-                            momentum=kwargs['momentum'],
-                            weight_decay=kwargs['weight_decay'])
-    elif optimizer == 'samsgd':
-        opt = SAMSGD(parameters,
-                     lr=kwargs['lr'],
-                     momentum=kwargs['momentum'],
-                     dampening=kwargs['dampening'],
-                     weight_decay=kwargs['weight_decay'])
-    elif optimizer == 'sam':
-        opt = SAM(parameters,
-                  lr=kwargs['lr'],
-                  momentum=kwargs['momentum'],
-                  dampening=kwargs['dampening'],
-                  weight_decay=kwargs['weight_decay'])
-
-    return opt
-
-
-def create_scheduler(optimizer, config_args, train_dir=None):
-    milestones = config_args['milestones']
-    if config_args['scheduler'] == 'exp':
-        gamma = np.power(config_args['base_lr'] / config_args['lr'],
-                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
-        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
-    elif config_args['scheduler'] == 'rop':
-        scheduler = lr_scheduler.ReduceLROnPlateau(
-            optimizer, patience=config_args['patience'], min_lr=1e-5)
-    elif config_args['scheduler'] == 'cyclic':
-        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
-        if 'step_size' in config_args:
-            step_size = config_args['step_size']
-        else:
-            step_size = config_args['cyclic_epoch'] * int(
-                np.ceil(len(train_dir) / config_args['batch_size']))
-
-            if torch.distributed.is_initialized() and torch.distributed.get_world_size() > 1:
-                step_size /= torch.distributed.get_world_size()
-
-            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
-                step_size = int(step_size * config_args['coreset_percent'])
-
-        if 'lr_list' in config_args:
-            max_lr  = config_args['lr_list']
-            base_lr = [config_args['base_lr']]*len(max_lr)
-        else:
-            base_lr = config_args['base_lr']
-            max_lr  = config_args['lr']
-
-        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=base_lr,
-                                          max_lr=max_lr,
-                                          step_size_up=step_size,
-                                          cycle_momentum=cycle_momentum,
-                                          mode='triangular2')
-    else:
-        scheduler = lr_scheduler.MultiStepLR(
-            optimizer, milestones=milestones, gamma=0.1)
-
-    return scheduler
-
-
-# ALSTM  ASiResNet34  ExResNet34  LoResNet  ResNet20  SiResNet34  SuResCNN10  TDNN
-__factory = {
-    'AlexNet': AlexNet,
-    'LoResNet': LocalResNet,
-    'ResNet20': ResNet20,
-    'SiResNet34': SimpleResNet,
-    'ThinResNet': ThinResNet,
-    'RepeatResNet': RepeatResNet,
-    'MultiResNet': MultiResNet,
-    'ResNet': ResNet,
-    'DTDNN': DTDNN,
-    'TDNN': TDNN_v2,
-    'TDNN_v4': TDNN_v4,
-    'TDNN_v5': TDNN_v5,
-    'TDNN_v6': TDNN_v6,
-    'MixTDNN_v5': MixTDNN_v5,
-    'SlimmableTDNN': SlimmableTDNN,
-    'ETDNN': ETDNN,
-    'ETDNN_v4': ETDNN_v4,
-    'ETDNN_v5': ETDNN_v5,
-    'FTDNN': FTDNN,
-    'ECAPA': ECAPA_TDNN,
-    'ECAPA_brain': ECAPA_brain.ECAPA_TDNN,
-    'RET': RET,
-    'RET_v2': RET_v2,
-    'RET_v3': RET_v3,
-    'GradResNet': GradResNet,
-    'TimeFreqResNet': TimeFreqResNet,
-    'Demucs': Demucs
-}
-
-
-def create_model(name, **kwargs):
-    if name not in __factory.keys():
-        raise KeyError("Unknown model: {}".format(name))
-
-    model = __factory[name](**kwargs)
-    create_classifier(model, **kwargs)
-
-    return model
-
-
-def create_classifier(encode_model, **kwargs):
-    if kwargs['loss_type'] in ['asoft', 'amsoft', 'damsoft', 'arcsoft', 'arcdist', 'minarcsoft', 'minarcsoft2', 'aDCF']:
-        if hasattr(encode_model, 'classifier') and isinstance(encode_model.classifier, ECAPA_brain.Classifier):
-            pass
-        else:
-            encode_model.classifier = AdditiveMarginLinear(feat_dim=kwargs['embedding_size'],
-                                                       normalize=kwargs['normalize'] if 'normalize' in kwargs else True,
-                                                       num_classes=kwargs['num_classes'])
-    elif 'sub' in kwargs['loss_type']:
-        encode_model.classifier = SubMarginLinear(feat_dim=kwargs['embedding_size'],
-                                                  num_classes=kwargs['num_classes'],
-                                                  num_center=kwargs['num_center'],
-                                                  output_subs=kwargs['output_subs'])
-    elif kwargs['loss_type'] in ['proser']:
-        encode_model.classifier = MarginLinearDummy(feat_dim=kwargs['embedding_size'],
-                                                    dummy_classes=kwargs['num_center'],
-                                                    num_classes=kwargs['num_classes'])
 
 
 class AverageMeter(object):
@@ -1256,28 +1091,6 @@ def argparse_adv(description: str = 'PyTorch Speaker Recognition'):
     args = parser.parse_args()
 
     return args
-
-
-def save_model_args(model_dict, save_path):
-    with open(save_path, 'w') as f:
-        yamlText = yaml.dump(model_dict)
-        f.write(yamlText)
-
-
-def load_model_args(model_yaml):
-    with open(model_yaml, 'r') as f:
-        model_args = load_hyperpyyaml(f)
-
-    if 'normalize' not in model_args:
-        model_args['normalize'] = True
-
-    return model_args
-
-
-class ModelArgs(object):
-    def __init__(self, config_args):
-        for i in config_args:
-            self.__setattr__(i, config_args[i])
 
 
 class Policy(object):

@@ -10,9 +10,12 @@
 @Overview:
 """
 from typing import Iterable
+import numpy as np
 
 import torch
 from torch.optim import SGD
+import torch.optim as optim
+from torch.optim import lr_scheduler
 
 __all__ = ["SAMSGD"]
 
@@ -150,7 +153,11 @@ class EarlyStopping():
     certain epochs.
     """
 
-    def __init__(self, patience=5, min_delta=1e-3, top_k_epoch=5, verbose=True):
+    def __init__(self, patience=5, min_delta=1e-3,
+                 top_k_epoch=5, total_epochs=0,
+                 config_args=None,
+                 train_lengths=None,
+                 verbose=True):
         """
         :param patience: how many epochs to wait before stopping when loss is
                not improving
@@ -161,14 +168,23 @@ class EarlyStopping():
         self.min_delta = min_delta
         self.counter = 0
         self.verbose = verbose
+        self.train_lengths = train_lengths
+        self.config_args = {}
+        if config_args != None:
+            self.config_args['scheduler'] = config_args['scheduler']
+        
+        self.total_epochs = total_epochs
         self.best_epoch = 0
         self.best_loss = None
         self.early_stop = False
         self.top_k_epoch = top_k_epoch
         self.top_lossepochs = []
+        self.learningrates = []
 
-    def __call__(self, val_loss, epoch):
+    def __call__(self, val_loss, epoch, lr=None):
         self.top_lossepochs.append([val_loss, epoch])
+        if lr != None:
+            self.learningrates.append(lr)
 
         if self.best_loss == None:
             self.best_loss = val_loss
@@ -188,6 +204,15 @@ class EarlyStopping():
                 print('INFO: Early stopping, top-k epochs: ',
                       self.top_k())
                 self.early_stop = True
+        
+        if 'scheduler' in self.config_args and self.config_args['scheduler'] != 'cyclic' and \
+            (isinstance(lr, float) and lr <= 0.1 ** 3 * self.learningrates[0]):
+            if len(self.learningrates) > 5:
+                if self.learningrates[-5] == lr[0]:
+                    self.early_stop = True
+
+                if self.learningrates[-5] > lr[0]:
+                    self.early_stop = False
 
     def top_k(self):
         tops = torch.tensor(self.top_lossepochs)
@@ -205,3 +230,80 @@ class TrainSave():
         self.lr       = []
         self.loss     = []
         self.accuracy = []
+        
+def create_optimizer(parameters, optimizer, **kwargs):
+    # setup optimizer
+    # parameters = filter(lambda p: p.requires_grad, parameters)
+    if optimizer == 'sgd':
+        opt = optim.SGD(parameters,
+                        lr=kwargs['lr'],
+                        momentum=kwargs['momentum'],
+                        dampening=kwargs['dampening'],
+                        weight_decay=kwargs['weight_decay'],
+                        nesterov=kwargs['nesterov'])
+
+    elif optimizer == 'adam':
+        opt = optim.Adam(parameters,
+                         lr=kwargs['lr'],
+                         weight_decay=kwargs['weight_decay'])
+
+    elif optimizer == 'adagrad':
+        opt = optim.Adagrad(parameters,
+                            lr=kwargs['lr'],
+                            lr_decay=kwargs['lr_decay'],
+                            weight_decay=kwargs['weight_decay'])
+    elif optimizer == 'RMSprop':
+        opt = optim.RMSprop(parameters,
+                            lr=kwargs['lr'],
+                            momentum=kwargs['momentum'],
+                            weight_decay=kwargs['weight_decay'])
+    elif optimizer == 'samsgd':
+        opt = SAMSGD(parameters,
+                     lr=kwargs['lr'],
+                     momentum=kwargs['momentum'],
+                     dampening=kwargs['dampening'],
+                     weight_decay=kwargs['weight_decay'])
+
+    return opt
+
+
+def create_scheduler(optimizer, config_args, train_dir=None):
+    milestones = config_args['milestones']
+    if config_args['scheduler'] == 'exp':
+        gamma = np.power(config_args['base_lr'] / config_args['lr'],
+                         1 / config_args['epochs']) if config_args['gamma'] == 0 else config_args['gamma']
+        scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
+    elif config_args['scheduler'] == 'rop':
+        scheduler = lr_scheduler.ReduceLROnPlateau(
+            optimizer, patience=config_args['patience'], min_lr=1e-5)
+    elif config_args['scheduler'] == 'cyclic':
+        cycle_momentum = False if config_args['optimizer'] == 'adam' else True
+        if 'step_size' in config_args:
+            step_size = config_args['step_size']
+        else:
+            step_size = config_args['cyclic_epoch'] * int(
+                np.ceil(len(train_dir) / config_args['batch_size']))
+
+            if torch.distributed.is_initialized() and torch.distributed.get_world_size() > 1:
+                step_size /= torch.distributed.get_world_size()
+
+            if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
+                step_size = int(step_size * config_args['coreset_percent'])
+
+        if 'lr_list' in config_args:
+            max_lr  = config_args['lr_list']
+            base_lr = [config_args['base_lr']]*len(max_lr)
+        else:
+            base_lr = config_args['base_lr']
+            max_lr  = config_args['lr']
+
+        scheduler = lr_scheduler.CyclicLR(optimizer, base_lr=base_lr,
+                                          max_lr=max_lr,
+                                          step_size_up=step_size,
+                                          cycle_momentum=cycle_momentum,
+                                          mode='triangular2')
+    else:
+        scheduler = lr_scheduler.MultiStepLR(
+            optimizer, milestones=milestones, gamma=0.1)
+
+    return scheduler

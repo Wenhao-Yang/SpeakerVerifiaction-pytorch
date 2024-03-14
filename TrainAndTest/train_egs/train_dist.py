@@ -48,8 +48,11 @@ import torch.distributed as dist
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import ScriptVerifyDataset
 import Process_Data.constants as C
-from TrainAndTest.common_func import create_classifier, create_optimizer, create_scheduler, create_model, verification_test, verification_extract, \
-    args_parse, args_model, save_model_args
+from Define_Model.model import create_classifier,  create_model
+from Define_Model.Optimizer import create_optimizer, create_scheduler
+from TrainAndTest.common_func import load_checkpoint, on_main, resume_checkpoint, verification_test, verification_extract, args_parse, args_model
+
+from Define_Model.model import save_model_args
 from logger import NewLogger
 # import pytorch_lightning as pl
 
@@ -185,6 +188,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             else:
                 augment_pipeline.append(augment.cuda())
 
+        # augment pipeline reverse
         if 'augment_prob' in config_args and isinstance(config_args['augment_prob'], list):
             p = np.array(config_args['augment_prob'])
             rp = 1/p
@@ -593,7 +597,9 @@ def valid_test(train_extract_loader, model, epoch, xvector_dir, config_args, wri
     # switch to evaluate mode
     model.eval()
 
-    this_xvector_dir = "%s/train/epoch_%s" % (xvector_dir, epoch)
+    this_xvector_dir = "%s/train/tmp_xvectors" % (xvector_dir)
+    if torch.distributed.get_rank() == 0 and os.path.exists(this_xvector_dir):
+        shutil.rmtree(this_xvector_dir)
     verification_extract(train_extract_loader, model, this_xvector_dir,
                          epoch, test_input=config_args['test_input'])
 
@@ -643,10 +649,10 @@ def main():
                         help='node rank for distributed training')
     parser.add_argument('--seed', type=int, default=123456,
                         help='random seed (default: 0)')
-
     args = parser.parse_args()
-    # print the experiment configuration
+    
     all_seed(args.seed)
+    
     torch.distributed.init_process_group(backend='nccl')
     local_rank = int(os.environ["LOCAL_RANK"])
     torch.cuda.set_device(local_rank)
@@ -711,8 +717,8 @@ def main():
 
     if 'classifier' in config_args:
         model.classifier = config_args['classifier']
-    # else:
-    #     create_classifier(model, **config_args)
+    else:
+        create_classifier(model, **config_args)
 
     start_epoch = 0
     check_path = config_args['check_path'] + '/' + str(args.seed)
@@ -724,35 +730,7 @@ def main():
 
     # Load checkpoint
     if 'fintune' in config_args:
-        if os.path.isfile(config_args['resume']):
-            if torch.distributed.get_rank() == 0:
-                print('=> loading checkpoint {}'.format(config_args['resume']))
-            checkpoint = torch.load(config_args['resume'])
-            start_epoch = checkpoint['epoch']
-
-            checkpoint_state_dict = checkpoint['state_dict']
-            if isinstance(checkpoint_state_dict, tuple):
-                checkpoint_state_dict = checkpoint_state_dict[0]
-            filtered = {k: v for k, v in checkpoint_state_dict.items(
-            ) if 'num_batches_tracked' not in k}
-            if list(filtered.keys())[0].startswith('module'):
-                new_state_dict = OrderedDict()
-                for k, v in filtered.items():
-                    # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
-                    new_state_dict[k[7:]] = v  # 新字典的key值对应的value为一一对应的值。
-
-                model.load_state_dict(new_state_dict)
-                del new_state_dict
-            else:
-                model_dict = model.state_dict()
-                model_dict.update(filtered)
-                model.load_state_dict(model_dict)
-                del model_dict
-
-            del checkpoint_state_dict, filtered, checkpoint
-            # model.dropout.p = args.dropout_p
-        else:
-            print('=> no checkpoint found at {}'.format(config_args['resume']))
+        load_checkpoint(model, config_args)
 
     model.loss = SpeakerLoss(config_args)
 
@@ -852,7 +830,6 @@ def main():
                                                 top_k_epoch=top_k_epoch)
     else:
         early_stopping_scheduler = None
-        
     # Save model config txt
     if torch.distributed.get_rank() == 0:
         with open(os.path.join(check_path,
@@ -886,8 +863,7 @@ def main():
     xvector_dir = check_path.replace('checkpoint', 'xvector')
     start_time = time.time()
 
-    all_lr = []
-    valid_test_result = {}
+    all_lr, valid_test_result = [],{}
 
     try:
         for epoch in range(start, end):
@@ -903,14 +879,13 @@ def main():
                 for aug in config_args['augment_pipeline']:
                     if hasattr(aug, 'add_noise'):
                         aug.add_noise.snr_high = this_snr
-                
                 snr_str = ' snr: {:.2f}'.format(this_snr)
             else:
                 snr_str = ''
 
             # if torch.distributed.get_rank() == 0:
             this_lr = [ param_group['lr'] for param_group in optimizer.param_groups]
-            all_lr.append(max(this_lr)) 
+            all_lr.append(max(this_lr))
             if torch.distributed.get_rank() == 0:
                 lr_string = '\33[1;34m \'{}\' learning rate: '.format(config_args['optimizer'])
                 lr_string += " ".join(['{:.8f} '.format(i) for i in this_lr])
@@ -919,9 +894,6 @@ def main():
                 writer.add_scalar('Train/lr', this_lr[0], epoch)
 
             torch.distributed.barrier()
-            # if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0 and epoch % config_args['select_interval'] == 1:
-            #     select_samples(train_loader, model, config_args,
-            #                    config_args['select_score'])
 
             train(train_loader, model, optimizer,
                   epoch, scheduler, config_args, writer)
@@ -937,7 +909,6 @@ def main():
             
             valid_test_dict['Valid_Loss'] = valid_loss
             valid_test_result[epoch] = valid_test_dict
-            
 
             if torch.distributed.get_rank() == 0 and early_stopping_scheduler != None:
                 early_stopping_scheduler(
@@ -961,46 +932,18 @@ def main():
                 tops = torch.tensor(current_results)
                 top_k = tops[torch.argsort(tops[:, 0])][:top_k_epoch, 1].long().tolist()
 
-            if on_main() and (epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch == (
-                    end - 1) or epoch in top_k):
-
+            if on_main() and (epoch % config_args['test_interval'] == 0 or epoch in config_args['milestones'] or epoch >= (
+                    end - 4) or epoch in top_k):
                 save_checkpoint(model, optimizer, scheduler,
                     check_path, epoch)
                 
             if early_stopping_scheduler != None:
-                check_stop = torch.tensor(
-                    int(early_stopping_scheduler.early_stop)).cuda()
-                dist.all_reduce(check_stop, op=dist.ReduceOp.SUM)
+                break_training = check_earlystop_break(early_stopping_scheduler,
+                    start, end, epoch, check_path, valid_test_result)
             else:
-                check_stop = False
+                break_training = False
 
-            if check_stop or epoch == end - 1:
-                end = epoch
-                if torch.distributed.get_rank() == 0:
-                    print('Best Epochs : ', top_k)
-                    
-                    if early_stopping_scheduler != None:
-                        best_epoch = top_k[0]
-                    else:
-                        best_epoch = end
-
-                    best_res = valid_test_result[best_epoch]
-
-                    best_str = 'EER(%):       ' + \
-                        '{:>6.2f} '.format(best_res['EER'])
-                    best_str += '   Threshold: ' + \
-                        '{:>7.4f} '.format(best_res['Threshold'])
-                    best_str += ' MinDcf-0.01: ' + \
-                        '{:.4f} '.format(best_res['MinDCF_01'])
-                    best_str += ' MinDcf-0.001: ' + \
-                        '{:.4f} '.format(best_res['MinDCF_001'])
-                    best_str += ' Mix2,3: ' + \
-                        '{:.4f}, {:.4f}'.format(
-                            best_res['mix2'], best_res['mix3'])
-                    print(best_str)
-
-                    with open(os.path.join(check_path, 'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
-                        f.write(best_str + '\n')
+            if break_training:
                 break
 
             if config_args['scheduler'] == 'rop':
@@ -1021,12 +964,11 @@ def main():
 
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
         writer.close()
-        # print("Running %.4f minutes for each epoch.\n" %
-        #       (t / 60 / (max(end - start, 1))))
+        print("Running %.4f minutes for each epoch.\n" %
+              (t / 60 / (max(end - start, 1))))
 
     time.sleep(5)
     exit(0)
-
 
 if __name__ == '__main__':
     main()
