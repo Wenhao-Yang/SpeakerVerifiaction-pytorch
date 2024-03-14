@@ -802,9 +802,6 @@ class RandomSelect(SelectSubset):
         self.iteration += 1
 
         return subtrain_dir
-    
-        # return {"indices": top_examples, "scores": self.norm_mean}
-
 
 
 def k_center_greedy(matrix, budget: int, metric, device, random_seed=None, index=None, already_selected=None,
