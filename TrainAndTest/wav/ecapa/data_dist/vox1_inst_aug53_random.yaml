@@ -45,6 +45,7 @@ segment_shift: 64000
 # sample_type: instance
 # adaptive_select: True
 select_method: random
+adaptive_lr: True
 # select_scores: 'max'
 # select_sample: ccs
 # select_repeat: 2

@@ -228,6 +228,9 @@ def main():
         model_para.append({'params': model.input_mask[0].parameters(), 'lr': init_lr,
                             'weight_decay': init_wd})
 
+    if 'adaptive_lr' in config_args and config_args['adaptive_lr']:
+        config_args['lr'] = 100 / args.sample_ratio * config_args['lr']
+        
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
                   'weight_decay': config_args['weight_decay'],
                   'dampening': config_args['dampening'],
