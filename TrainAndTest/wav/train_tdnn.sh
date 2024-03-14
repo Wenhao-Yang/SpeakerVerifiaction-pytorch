@@ -301,7 +301,7 @@ if [ $stage -le 12 ]; then
   for lamda_beta in 0.2;do
     for seed in 1234 ; do #1234# 
     for data_type in hdf5 ; do
-    for ratio in 10 ; do #10 25 50 75 90
+    for ratio in 10 25 50 75 ; do #10 25 50 75 90
     # for type in mani style align ;do
     #  feat=fb${input_dim}
 
@@ -309,7 +309,9 @@ if [ $stage -le 12 ]; then
 
       # for add in time ; do
           # baseline for vox2 , aug53
-          CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53.yaml --seed=${seed}
+          # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53.yaml --seed=${seed}
+
+          CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_random.yaml --seed=${seed} --sample-ratio ${ratio}
 
           # baseline for vox2 , aug53
           # CUDA_VISIBLE_DEVICES=2,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox2_brain_inst_aug53.yaml --seed=${seed}
