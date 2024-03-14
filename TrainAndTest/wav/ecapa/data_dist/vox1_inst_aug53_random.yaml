@@ -17,6 +17,7 @@ input_dim: 80
 feat: int
 wav_type: int
 subset: ""
+sample_type: instance
 
 train_dir: !ref <data_root_dir>/data/<datasets>/dev
 train_test_dir: !ref <data_root_dir>/data/<testset>/test
