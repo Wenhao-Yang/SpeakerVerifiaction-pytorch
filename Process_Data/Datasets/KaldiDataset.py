@@ -862,19 +862,16 @@ class ScriptTrainDataset(data.Dataset):
         speakers = [spk for spk in dataset.keys()]
         speakers.sort()
         self.num_spks = len(speakers)
+        spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
+
         if verbose > 0:
             print('==> There are {} speakers in Dataset.'.format(len(speakers)))
 
         if save_dir == '' or (not os.path.exists(os.path.join(save_dir, 'spk2idx'))):
-            spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
             if save_dir != '' and not os.path.exists(save_dir):
                 os.makedirs(save_dir)
-
             with open(os.path.join(save_dir, 'spk2idx'), 'w') as f:
                 json.dump(spk_to_idx, f)
-        else:
-            with open(os.path.join(save_dir, 'spk2idx'), 'r') as f:
-                spk_to_idx = json.load(f)
 
         idx_to_spk = {spk_to_idx[sid]: sid for sid in spk_to_idx}
         # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
