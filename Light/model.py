@@ -24,7 +24,8 @@ from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSo
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, MixupLoss
 import Process_Data.constants as C
 
-from TrainAndTest.common_func import AverageMeter, create_optimizer, create_scheduler
+from TrainAndTest.common_func import AverageMeter
+from Define_Model.Optimizer import create_optimizer, create_scheduler
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 
 
