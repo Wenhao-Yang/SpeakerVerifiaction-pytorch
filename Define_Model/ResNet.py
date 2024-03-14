@@ -35,7 +35,7 @@ from Define_Model.Pooling import SelfAttentionPooling, AttentionStatisticPooling
 from typing import Type, Any, Callable, Union, List, Optional
 from torch import Tensor
 
-from Define_Model.model import get_input_norm, get_mask_layer, get_filter_layer
+from Define_Model.FilterLayer import get_input_norm, get_mask_layer, get_filter_layer
 
 
 def conv1x1(in_planes, out_planes, stride=1):
