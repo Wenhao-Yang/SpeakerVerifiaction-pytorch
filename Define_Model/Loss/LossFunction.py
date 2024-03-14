@@ -16,6 +16,60 @@ from geomloss import SamplesLoss
 import numpy as np
 import torch.nn.functional as F
 
+from torch.autograd import Function
+from torch.nn import CosineSimilarity
+
+
+class PairwiseDistance(Function):
+    def __init__(self, p):
+        super(PairwiseDistance, self).__init__()
+        self.norm = p
+
+    def forward(self, x1, x2):
+        assert x1.size() == x2.size()
+        eps = 1e-4 / x1.size(1)
+        diff = torch.abs(x1 - x2)
+        # The distance will be (Sum(|x1-x2|**p)+eps)**1/p
+        out = torch.pow(diff, self.norm).sum(dim=1)
+        return torch.pow(out + eps, 1. / self.norm)
+
+
+class TripletMarginLoss(Function):
+    """Triplet loss function.
+    """
+
+    def __init__(self, margin):
+        super(TripletMarginLoss, self).__init__()
+        self.margin = margin
+        self.pdist = PairwiseDistance(2)  # norm 2
+
+    def forward(self, anchor, positive, negative):
+        d_p = self.pdist.forward(anchor, positive)
+        d_n = self.pdist.forward(anchor, negative)
+
+        dist_hinge = torch.clamp(self.margin + d_p - d_n, min=0.0)
+        loss = torch.mean(dist_hinge)
+        return loss
+
+
+class TripletMarginCosLoss(Function):
+    """Triplet loss function.
+    """
+
+    def __init__(self, margin):
+        super(TripletMarginCosLoss, self).__init__()
+        self.margin = margin
+        self.pdist = CosineSimilarity(dim=1, eps=1e-6)  # norm 2
+
+    def forward(self, anchor, positive, negative):
+        d_p = self.pdist.forward(anchor, positive)
+        d_n = self.pdist.forward(anchor, negative)
+
+        dist_hinge = torch.clamp(self.margin - d_p + d_n, min=0.0)
+        # loss = torch.sum(dist_hinge)
+        loss = torch.mean(dist_hinge)
+        return loss
+
 
 class CenterLoss(nn.Module):
     """Center loss.

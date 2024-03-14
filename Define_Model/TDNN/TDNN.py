@@ -30,8 +30,9 @@ from Define_Model.FilterLayer import fDLR, fBLayer, fBPLayer, fLLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, GhostVLAD_v2, GhostVLAD_v3, \
     SelfAttentionPooling, MaxStatisticPooling, AttentionStatisticPooling_v2, SelfAttentionPooling_v2
 from Define_Model.ResNet import conv1x1, conv5x5, conv3x3
-from Define_Model.model import get_activation, BasicBlock
-from Define_Model.model import get_input_norm, get_mask_layer, get_filter_layer
+from Define_Model.FilterLayer import get_activation
+from Define_Model.CNN import BasicBlock
+from Define_Model.FilterLayer import get_input_norm, get_mask_layer, get_filter_layer
 
 
 def channel_shuffle(x: Tensor, groups: int) -> Tensor:

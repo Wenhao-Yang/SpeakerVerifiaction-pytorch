@@ -29,7 +29,7 @@ from speechbrain.nnet.CNN import Conv1d as _Conv1d
 from speechbrain.nnet.normalization import BatchNorm1d as _BatchNorm1d
 from speechbrain.nnet.linear import Linear
 
-from Define_Model.model import get_filter_layer, get_input_norm, get_mask_layer
+from Define_Model.FilterLayer import get_filter_layer, get_input_norm, get_mask_layer
 
 
 # Skip transpose as much as possible for efficiency

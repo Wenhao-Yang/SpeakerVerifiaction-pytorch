@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from Define_Model.FilterLayer import Mean_Norm, TimeMaskLayer, FreqMaskLayer, TimeFreqMaskLayer
-from Define_Model.model import get_filter_layer, get_mask_layer, get_input_norm
+from Define_Model.FilterLayer import get_filter_layer, get_mask_layer, get_input_norm
 
 ''' Res2Conv1d + BatchNorm1d + ReLU
 '''

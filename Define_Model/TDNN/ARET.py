@@ -15,7 +15,7 @@ import torch.nn as nn
 from Define_Model.FilterLayer import L2_Norm, Mean_Norm, TimeMaskLayer, FreqMaskLayer, TimeFreqMaskLayer
 from Define_Model.Pooling import AttentionStatisticPooling, StatisticPooling, AttentionStatisticPooling_v2
 from Define_Model.TDNN.TDNN import TimeDelayLayer_v5, TimeDelayLayer_v6, ShuffleTDLayer, channel_shuffle
-from Define_Model.model import get_activation
+from Define_Model.FilterLayer import get_activation
 
 
 class TDNNBlock(nn.Module):
