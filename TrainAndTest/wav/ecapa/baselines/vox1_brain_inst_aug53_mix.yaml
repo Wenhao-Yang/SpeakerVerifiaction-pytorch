@@ -97,6 +97,7 @@ channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 #channels: [1024,1024,1024,1024,3072]
 encoder_type: "SASP2"
 num_classes: 1211
+domain_mix: True
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
@@ -105,7 +106,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   channels: [256, 256, 256, 256, 768]
-  domain_mix: True
+  domain_mix: !ref <domain_mix>
   num_classes: !ref <num_classes>
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
