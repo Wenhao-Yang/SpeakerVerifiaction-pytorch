@@ -375,13 +375,12 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 # print(labels_aug_tot)                
                 if 'train_second_dir' in config_args:
                     data_shape = data.shape
-                    data = data.reshape(len(wavs_aug_tot), -1, 1, wavs.shape[-1]).transpose(0,1)
+                    data = data.reshape(2, -1, 1, wavs.shape[-1]).transpose(0,1)
                     data = data.reshape(data_shape)
                     
-                    label = label.reshape(len(labels_aug_tot), -1).transpose(0,1).reshape(-1)
+                    label = label.reshape(2, -1).transpose(0,1).reshape(-1)
                     
                     # print(data)
-                    
                     print(label)
                 
         if torch.cuda.is_available():
