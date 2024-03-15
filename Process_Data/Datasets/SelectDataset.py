@@ -803,7 +803,26 @@ class RandomSelect(SelectSubset):
 
         return subtrain_dir
 
-
+def cost_func(a, b, p=2, metric='cosine'):
+    """ a, b in shape: (B, N, D) or (N, D)
+    """ 
+    assert type(a)==torch.Tensor and type(b)==torch.Tensor, 'inputs should be torch.Tensor'
+    if metric=='euclidean' and p==1:
+        return geomloss.utils.distances(a, b)
+    elif metric=='euclidean' and p==2:
+        return geomloss.utils.squared_distances(a, b)
+    else:
+        if a.dim() == 3:
+            x_norm = a / (a.norm(dim=2)[:, :, None]+1e-12)
+            y_norm = b / (b.norm(dim=2)[:, :, None]+1e-12)
+            M = 1 - torch.bmm(x_norm, y_norm.transpose(-1, -2))
+        elif a.dim() == 2:
+            x_norm = a / (a.norm(dim=1)[:, None]+1e-12)
+            y_norm = b / (b.norm(dim=1)[:, None]+1e-12)
+            M = 1 - torch.mm(x_norm, y_norm.transpose(0, 1))
+        # M = pow(M, p)
+        return M
+    
 def k_center_greedy(matrix, budget: int, metric, device, random_seed=None, index=None, already_selected=None,
                     print_freq: int = 20):
     if type(matrix) == torch.Tensor:
@@ -851,8 +870,8 @@ def k_center_greedy(matrix, budget: int, metric, device, random_seed=None, index
         mins = torch.min(dis_matrix[:num_of_already_selected, :], dim=0).values
 
         for i in range(budget):
-            if i % print_freq == 0:
-                print("| Selecting [%3d/%3d]" % (i + 1, budget))
+            # if i % print_freq == 0:
+            #     print("| Selecting [%3d/%3d]" % (i + 1, budget))
             p = torch.argmax(mins).item()
             select_result[p] = True
 
@@ -888,22 +907,23 @@ class kCenterGreedy(SelectSubset):
             
         self.already_selected = np.array(already_selected)
         self.min_distances = None
+        self.metric_ytpe = metric
 
-        if metric == "euclidean":
-            self.metric = euclidean_dist
-        elif callable(metric):
-            self.metric = metric
-        else:
-            self.metric = euclidean_dist
-            self.run = lambda : self.finish_run()
-            def _construct_matrix(index=None):
-                data_loader = torch.utils.data.DataLoader(
-                    self.dst_train if index is None else torch.utils.data.Subset(self.dst_train, index),
-                    batch_size=self.n_train if index is None else len(index),
-                    num_workers=self.args.workers)
-                inputs, _ = next(iter(data_loader))
-                return inputs.flatten(1).requires_grad_(False).to(self.args.device)
-            self.construct_matrix = _construct_matrix
+        if metric in set(["cosine", "euclidean"]):
+            self.metric = cost_func
+        # elif callable(metric):
+        #     self.metric = metric
+        # else:
+        #     self.metric = euclidean_dist
+        #     self.run = lambda : self.finish_run()
+        #     def _construct_matrix(index=None):
+        #         data_loader = torch.utils.data.DataLoader(
+        #             self.dst_train if index is None else torch.utils.data.Subset(self.dst_train, index),
+        #             batch_size=self.n_train if index is None else len(index),
+        #             num_workers=self.args.workers)
+        #         inputs, _ = next(iter(data_loader))
+        #         return inputs.flatten(1).requires_grad_(False).to(self.args.device)
+        #     self.construct_matrix = _construct_matrix
 
         self.balance = balance
 
@@ -919,31 +939,31 @@ class kCenterGreedy(SelectSubset):
         self.model.eval()
         batch_size = self.args['batch_size'] // 2 if not self.select_aug else self.args['batch_size'] // 4
 
-        
         with torch.no_grad():
-            with self.model.embedding_recorder:
-                sample_num = self.n_train if index is None else len(index)
-                matrix = []
+            matrix = []
+            batch_loader = torch.utils.data.DataLoader(self.train_dir if index is None else
+                                torch.utils.data.Subset(self.train_dir, index),
+                                batch_size=batch_size,
+                                num_workers=self.args['nj'])
 
-                batch_loader = torch.utils.data.DataLoader(self.train_dir if index is None else
-                                    torch.utils.data.Subset(self.train_dir, index),
-                                    batch_size=batch_size,
-                                    num_workers=self.args['nj'])
+            if torch.distributed.get_rank() == 0 :
+                pbar = tqdm(enumerate(batch_loader), total=len(batch_loader), ncols=50)
+            else:
+                pbar = enumerate(batch_loader)
 
-                if torch.distributed.get_rank() == 0 :
-                    pbar = tqdm(enumerate(batch_loader), total=len(batch_loader), ncols=50)
-                else:
-                    pbar = enumerate(batch_loader)
-
-                for i, (data, label) in pbar:
-                    _, embedding = self.model(data.to(self.device))
-                    matrix.append(embedding)
+            for i, (data, label) in pbar:
+                _, embedding = self.model(data.to(self.device))
+                matrix.append(embedding)
 
         return torch.cat(matrix, dim=0)
 
     def before_run(self):
-        self.emb_dim = self.model.get_last_layer().in_features
-
+        if isinstance(self.model, DistributedDataParallel):
+            self.device = self.model.device
+            self.model = self.model.module
+        
+        self.embedding_dim = self.model.embedding_size
+        # self.emb_dim = self.model.get_last_layer().in_features
 
     def select(self, model, **kwargs):
         self.model = model
@@ -971,30 +991,11 @@ class kCenterGreedy(SelectSubset):
         # del self.model_optimizer
         # del self.model
         selection_result = k_center_greedy(matrix, budget=self.coreset_size,
-                                            metric=self.metric, device=self.args.device,
+                                            metric=self.metric, device=self.device,
                                             random_seed=self.random_seed,
                                             already_selected=self.already_selected, print_freq=100)
+        
         return {"indices": selection_result}
-
-def cost_func(a, b, p=2, metric='cosine'):
-    """ a, b in shape: (B, N, D) or (N, D)
-    """ 
-    assert type(a)==torch.Tensor and type(b)==torch.Tensor, 'inputs should be torch.Tensor'
-    if metric=='euclidean' and p==1:
-        return geomloss.utils.distances(a, b)
-    elif metric=='euclidean' and p==2:
-        return geomloss.utils.squared_distances(a, b)
-    else:
-        if a.dim() == 3:
-            x_norm = a / (a.norm(dim=2)[:, :, None]+1e-12)
-            y_norm = b / (b.norm(dim=2)[:, :, None]+1e-12)
-            M = 1 - torch.bmm(x_norm, y_norm.transpose(-1, -2))
-        elif a.dim() == 2:
-            x_norm = a / (a.norm(dim=1)[:, None]+1e-12)
-            y_norm = b / (b.norm(dim=1)[:, None]+1e-12)
-            M = 1 - torch.mm(x_norm, y_norm.transpose(0, 1))
-        # M = pow(M, p)
-        return M
 
 
 class Dist_loss(nn.Module):
