@@ -648,7 +648,7 @@ class ECAPA_TDNN(torch.nn.Module):
             x = self.asp(x, lengths=lengths)
             x = self.asp_bn(x)
             
-            if self.domain_mix:
+            if self.domain_mix and self.training:
                 x = self.seperate(x)
 
             # Final linear transformation
@@ -663,6 +663,7 @@ class ECAPA_TDNN(torch.nn.Module):
         return self.embedding_size
     
     def seperate(self, x):
+        
         x_shape = x.shape
         # print(x_shape)
         # clean_xs, domain_xs = [], []
