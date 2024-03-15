@@ -1131,8 +1131,13 @@ class ScriptTrainDataset(data.Dataset):
             if len(self.suid2feat) > 0:
                 y1 = self.loader(
                 self.suid2feat[uid], start=start, stop=end)
+                if y1.shape[1] >= y.shape[1]:
+                    y0 = y1[:, :y.shape[1]]
+                else:
+                    y0 = np.zeros_like(y)
+                    y0[:, :y1.shape[1]] = y1[:,]
                 
-                y = np.array([y, y1], dtype=np.float32)
+                y = np.concatenate([y, y0], axis=0)
 
         sid = self.utt2spk_dict[uid]
         label = self.spk_to_idx[sid]
