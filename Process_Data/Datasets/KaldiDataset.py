@@ -754,7 +754,7 @@ class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
                  loader=np.load, return_uid=False, domain=False, rand_test=False,
                  vad_select=False, sample_type='instance', sr=16000, save_dir='',
-                 sample_score='', return_idx=False,
+                 sample_score='', return_idx=False, second_dir='', second_suffix='',
                  segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
 
         self.return_uid = return_uid
@@ -776,6 +776,7 @@ class ScriptTrainDataset(data.Dataset):
         self.sample_type = sample_type  # balance or instance
 
         feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
+        second_feat_scp = second_dir + '/feats.scp' if feat_type != 'wav' else second_dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
         utt2spk = dir + '/utt2spk'
         utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
@@ -890,6 +891,25 @@ class ScriptTrainDataset(data.Dataset):
                 if uid in invalid_uid:
                     continue
                 uid2feat[uid] = feat_offset
+                
+        suid2feat = {}
+        if os.path.exists(second_feat_scp):
+            with open(second_feat_scp, 'r') as f:
+                for line in f.readlines():
+                    uid_feat = line.split()
+                    if len(uid_feat) == 2:
+                        uid, feat_offset = uid_feat
+                    elif len(uid_feat) == 3:
+                        uid, _, feat_offset = uid_feat
+                    elif len(uid_feat) > 3:
+                        uid = uid_feat[0]
+                        feat_offset = uid_feat[4]
+                    uid = uid[:-len(second_suffix)]
+                    if uid in invalid_uid:
+                        continue
+                    suid2feat[uid] = feat_offset
+        
+        self.suid2feat = suid2feat
 
         if verbose > 0:
             print('    There are {} utterances in Trainset, where {} utterances are removed.'.format(len(uid2feat),
@@ -1107,6 +1127,12 @@ class ScriptTrainDataset(data.Dataset):
                 voice_idx = np.where(
                     kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
                 y = y[voice_idx]
+                
+            if len(self.suid2feat) > 0:
+                y1 = self.loader(
+                self.suid2feat[uid], start=start, stop=end)
+                
+                y = np.array([y, y1], dtype=np.float32)
 
         sid = self.utt2spk_dict[uid]
         label = self.spk_to_idx[sid]
