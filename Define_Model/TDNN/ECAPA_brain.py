@@ -671,7 +671,7 @@ class ECAPA_TDNN(torch.nn.Module):
         #     domain_x = x[(i*(self.batch_size*2)+self.batch_size): (i+1)*(self.batch_size*2)].clone()
         #     clean_xs.append(clean_x)
         #     domain_xs.append(domain_x)   
-        clean_xs, domain_xs = x.reshape(2, -1, x_shape[1], x_shape[2])#.clone()
+        clean_xs, domain_xs = x.reshape(2, -1, x_shape[1])#.clone()
         
         # beta distributions interpolation
         lambda1 = torch.tensor(stats.beta.rvs(1, 1, size=clean_xs.shape[0])).unsqueeze(0).unsqueeze(0)
