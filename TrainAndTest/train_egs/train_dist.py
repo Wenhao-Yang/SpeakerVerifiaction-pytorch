@@ -211,7 +211,10 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         elif not return_domain:
             data, label = data_cols
             if 'train_second_dir' in config_args:
-                print(data.shape, label.shape)
+                repeats = data.shape[-2]
+                
+                label = label.view((-1,1)).repeat(1, repeats+1).reshape(-1)
+                # print(data.shape, label.shape)
                 if data.shape[-2] > 1:
                     data = data.reshape(-1, 1, 1, data.shape[-1])
             
@@ -365,7 +368,18 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 #     n_augment = len(wavs_aug_tot)
                 #     new_label = [label] * n_augment
                 label = torch.cat(labels_aug_tot)
-
+                
+                if 'train_second_dir' in config_args:
+                    data_shape = data.shape
+                    data = data.reshape(len(wavs_aug_tot), -1, 1, wavs.shape[-1]).transpose(0,1)
+                    data = data.reshape(data_shape)
+                    
+                    label = label.reshape(len(labels_aug_tot), -1).transpose(0,1).reshape(-1)
+                    
+                    print(data)
+                    
+                    print(label)
+                
         if torch.cuda.is_available():
             label = label.cuda()
             data  = data.cuda()

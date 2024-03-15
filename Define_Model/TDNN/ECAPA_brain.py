@@ -18,6 +18,7 @@ Authors
 """
 
 # import os
+from scipy import stats
 import torch  # noqa: F401
 import numpy as np
 from scipy.stats import burr12
@@ -654,6 +655,25 @@ class ECAPA_TDNN(torch.nn.Module):
 
     def get_embedding_dim(self):
         return self.embedding_size
+    
+    def seperate(self, x):
+        clean_xs, domain_xs = [], []
+        for i in range(int(x.shape[0] / self.batch_size*0.5)):
+            clean_x  = x[i*(self.batch_size*2): (i*(self.batch_size*2)+self.batch_size)].clone()
+            domain_x = x[(i*(self.batch_size*2)+self.batch_size): (i+1)*(self.batch_size*2)].clone()
+            
+            clean_xs.append(clean_x)
+            domain_xs.append(domain_x)
+        
+        clean_xs = torch.cat(clean_xs, dim=0)
+        domain_xs = torch.cat(domain_xs, dim=0)
+        
+        # beta distributions interpolation
+        lambda1 = torch.tensor(stats.beta.rvs(1, 1, size=clean_xs.shape[0])).unsqueeze(0).unsqueeze(0)
+        mix_xs = clean_xs * lambda1 + domain_xs * (1-lambda1)
+        
+        return torch.cat([x, mix_xs], dim=0)
+        
 
     def get_grads(self) -> torch.Tensor:
         """
