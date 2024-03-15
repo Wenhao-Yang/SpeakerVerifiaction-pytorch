@@ -663,7 +663,8 @@ class ECAPA_TDNN(torch.nn.Module):
         return self.embedding_size
     
     def seperate(self, x):
-        x_shape = x.shape()
+        x_shape = x.shape
+        print(x_shape)
         # clean_xs, domain_xs = [], []
         # for i in range(int(x.shape[0] / self.batch_size*0.5)):
         #     clean_x  = x[i*(self.batch_size*2): (i*(self.batch_size*2)+self.batch_size)].clone()
