@@ -210,6 +210,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             batch_weight = None
         elif not return_domain:
             data, label = data_cols
+            print(data.shape)
             batch_weight = None
         else:
             data, label, domain_label = data_cols

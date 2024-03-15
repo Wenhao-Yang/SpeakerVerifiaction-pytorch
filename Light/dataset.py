@@ -137,6 +137,9 @@ def SubScriptDatasets(config_args):
     segment_shift = config_args['segment_shift'] if 'segment_shift' in config_args else config_args['num_frames']
     min_frames = 50 if 'min_frames' not in config_args else config_args['min_frames']
     return_idx = False if 'return_idx' not in config_args else config_args['return_idx']
+    
+    second_dir = '' if 'train_second_dir' not in config_args else config_args['train_second_dir']
+    second_suffix = '' if 'second_suffix' not in config_args else config_args['second_suffix']
 
     if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args:
         min_frames *= config_args['sr'] / 100
@@ -179,6 +182,7 @@ def SubScriptDatasets(config_args):
                                     feat_type=feat_type, verbose=verbose,
                                     save_dir=save_dir, return_idx=return_idx,
                                     sample_score=sample_score,
+                                    second_dir=second_dir, second_suffix=second_suffix,
                                     segment_len=config_args['num_frames'],
                                     segment_shift=segment_shift,
                                     min_frames=min_frames)
