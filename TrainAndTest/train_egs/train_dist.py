@@ -213,7 +213,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             if 'train_second_dir' in config_args:
                 repeats = data.shape[-2]
                 
-                label = label.view((-1,1)).repeat(1, repeats+1).reshape(-1)
+                label = label.view((-1,1)).repeat(1, repeats).reshape(-1)
                 # print(data.shape, label.shape)
                 if data.shape[-2] > 1:
                     data = data.reshape(-1, 1, 1, data.shape[-1])
