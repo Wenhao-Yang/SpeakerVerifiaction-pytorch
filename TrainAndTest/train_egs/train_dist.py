@@ -329,7 +329,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 # p = p / p.sum()
                 for data_idx, augment in zip(sample_idxs, augs):
                     # Apply augment
-                    print(data_idx)
+                    # print(data_idx)
                     wavs_aug = augment(wavs[data_idx], torch.tensor([1.0]*len(wavs[[data_idx]])).cuda())
                     # Managing speed change
                     if wavs_aug.shape[1] > wavs[data_idx].shape[1]:
@@ -369,8 +369,9 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 #     n_augment = len(wavs_aug_tot)
                 #     new_label = [label] * n_augment
                 label = torch.cat(labels_aug_tot)
-                print(len(labels_aug_tot), wavs.shape)
-                
+                # print(len(labels_aug_tot), wavs.shape)
+
+                print(labels_aug_tot)                
                 if 'train_second_dir' in config_args:
                     data_shape = data.shape
                     data = data.reshape(len(wavs_aug_tot), -1, 1, wavs.shape[-1]).transpose(0,1)
