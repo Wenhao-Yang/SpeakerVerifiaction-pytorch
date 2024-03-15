@@ -210,7 +210,11 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             batch_weight = None
         elif not return_domain:
             data, label = data_cols
-            print(data.shape)
+            if 'train_second_dir' in config_args:
+                print(data.shape, label.shape)
+                if data.shape[-2] > 1:
+                    data = data.reshape(-1, 1, 1, data.shape[-1])
+            
             batch_weight = None
         else:
             data, label, domain_label = data_cols
