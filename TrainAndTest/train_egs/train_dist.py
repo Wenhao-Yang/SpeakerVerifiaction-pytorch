@@ -368,6 +368,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 #     n_augment = len(wavs_aug_tot)
                 #     new_label = [label] * n_augment
                 label = torch.cat(labels_aug_tot)
+                print(label)
                 
                 if 'train_second_dir' in config_args:
                     data_shape = data.shape
@@ -376,7 +377,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     
                     label = label.reshape(len(labels_aug_tot), -1).transpose(0,1).reshape(-1)
                     
-                    print(data)
+                    # print(data)
                     
                     print(label)
                 
