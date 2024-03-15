@@ -378,6 +378,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                     data = data.reshape(2, -1, 1, wavs.shape[-1]).transpose(0,1)
                     data = data.reshape(data_shape)
                     label = label.reshape(2, -1).transpose(0,1).reshape(-1)
+                    label = torch.cat([label, label.reshape(2, -1)[0]])
                     # print(data)
                     # print(label)
                 
