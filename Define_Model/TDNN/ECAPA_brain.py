@@ -473,6 +473,7 @@ class ECAPA_TDNN(torch.nn.Module):
             dilations=[1, 2, 3, 4, 1],
             dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0,
             noise_norm='none', noise_type='none',
+            domain_mix=False,
             attention_channels=128,
             res2net_scale=8,
             se_channels=128,
@@ -506,6 +507,8 @@ class ECAPA_TDNN(torch.nn.Module):
         assert len(channels) == len(kernel_sizes)
         assert len(channels) == len(dilations)
         self.channels = channels
+        self.domain_mix = domain_mix
+        
         self.blocks = nn.ModuleList()
 
         # The initial TDNN layer
@@ -644,6 +647,9 @@ class ECAPA_TDNN(torch.nn.Module):
             # Attentive Statistical Pooling
             x = self.asp(x, lengths=lengths)
             x = self.asp_bn(x)
+            
+            if self.domain_mix:
+                x = self.seperate(x)
 
             # Final linear transformation
             embeddings = self.fc(x)
@@ -657,16 +663,14 @@ class ECAPA_TDNN(torch.nn.Module):
         return self.embedding_size
     
     def seperate(self, x):
-        clean_xs, domain_xs = [], []
-        for i in range(int(x.shape[0] / self.batch_size*0.5)):
-            clean_x  = x[i*(self.batch_size*2): (i*(self.batch_size*2)+self.batch_size)].clone()
-            domain_x = x[(i*(self.batch_size*2)+self.batch_size): (i+1)*(self.batch_size*2)].clone()
-            
-            clean_xs.append(clean_x)
-            domain_xs.append(domain_x)
-        
-        clean_xs = torch.cat(clean_xs, dim=0)
-        domain_xs = torch.cat(domain_xs, dim=0)
+        x_shape = x.shape()
+        # clean_xs, domain_xs = [], []
+        # for i in range(int(x.shape[0] / self.batch_size*0.5)):
+        #     clean_x  = x[i*(self.batch_size*2): (i*(self.batch_size*2)+self.batch_size)].clone()
+        #     domain_x = x[(i*(self.batch_size*2)+self.batch_size): (i+1)*(self.batch_size*2)].clone()
+        #     clean_xs.append(clean_x)
+        #     domain_xs.append(domain_x)   
+        clean_xs, domain_xs = x.reshape(2, -1, x_shape[1], x_shape[2])#.clone()
         
         # beta distributions interpolation
         lambda1 = torch.tensor(stats.beta.rvs(1, 1, size=clean_xs.shape[0])).unsqueeze(0).unsqueeze(0)

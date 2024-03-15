@@ -370,18 +370,16 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 #     new_label = [label] * n_augment
                 label = torch.cat(labels_aug_tot)
                 # print(len(labels_aug_tot), wavs.shape)
-                print(label)
+                # print(label)
                 
                 # print(labels_aug_tot)                
                 if 'train_second_dir' in config_args:
                     data_shape = data.shape
                     data = data.reshape(2, -1, 1, wavs.shape[-1]).transpose(0,1)
                     data = data.reshape(data_shape)
-                    
                     label = label.reshape(2, -1).transpose(0,1).reshape(-1)
-                    
                     # print(data)
-                    print(label)
+                    # print(label)
                 
         if torch.cuda.is_available():
             label = label.cuda()
