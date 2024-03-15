@@ -555,7 +555,7 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
 
             # pdb.set_trace()
             classfier, feats = model(data)
-            print(classfier.shape, feats.shape, label.shape)
+            # print(classfier.shape, feats.shape, label.shape)
             loss, other_loss = model.module.loss((classfier, feats), label, other=True)
 
             total_loss += float(loss.item())
