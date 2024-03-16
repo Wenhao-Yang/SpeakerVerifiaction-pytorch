@@ -265,9 +265,9 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args, verbos
 
     train_paddfunc = PadCollate3d if return_domain or return_score or return_idx else PadCollate
     verbose=1 if torch.distributed.get_rank() == 0 and verbose>0 else 0
-    drop_last = False if 'drop_last' not in config_args else config_args['drop_last']
-    if len(train_dir)%config_args['batch_size'] <= (0.1* config_args['batch_size']):
-        drop_last = True
+    # drop_last = False if 'drop_last' not in config_args else config_args['drop_last']
+    # if len(train_dir) % config_args['batch_size'] <= (0.1* config_args['batch_size']):
+    #     drop_last = True
 
     train_loader = torch.utils.data.DataLoader(train_dir, batch_size=config_args['batch_size'],
                                                collate_fn=train_paddfunc(dim=pad_dim,
@@ -279,7 +279,7 @@ def Sampler_Loaders(train_dir, valid_dir, train_extract_dir, config_args, verbos
                                                                          config_args['chisquare'],
                                                                          verbose=verbose
                                                                          ),
-                                               sampler=train_sampler, drop_last=drop_last,
+                                               sampler=train_sampler, drop_last=True,
                                                shuffle=config_args['shuffle'],  **kwargs)  #
 
     valid_sampler = torch.utils.data.distributed.DistributedSampler(
