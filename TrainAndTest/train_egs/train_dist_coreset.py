@@ -239,7 +239,7 @@ def main():
 
     optimizer = create_optimizer(
         model_para, config_args['optimizer'], **opt_kwargs)
-    scheduler = create_scheduler(optimizer, config_args, train_dir)
+    scheduler = create_scheduler(optimizer, config_args, train_loader)
 
     top_k_epoch = config_args['top_k_epoch'] if 'top_k_epoch' in config_args else 5
     if 'early_stopping' in config_args and config_args['early_stopping']:

@@ -267,7 +267,7 @@ def create_optimizer(parameters, optimizer, **kwargs):
     return opt
 
 
-def create_scheduler(optimizer, config_args, train_dir=None):
+def create_scheduler(optimizer, config_args, train_loader=None):
     milestones = config_args['milestones']
     if config_args['scheduler'] == 'exp':
         gamma = np.power(config_args['base_lr'] / config_args['lr'],
@@ -281,12 +281,7 @@ def create_scheduler(optimizer, config_args, train_dir=None):
         if 'step_size' in config_args:
             step_size = config_args['step_size']
         else:
-            batch_length = len(train_dir)
-            if torch.distributed.is_initialized() and torch.distributed.get_world_size() > 1:
-                batch_length /= torch.distributed.get_world_size()
-
-            step_size = config_args['cyclic_epoch'] * int(
-                np.floor(batch_length / config_args['batch_size']))
+            step_size = len(train_loader)
 
             if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
                 step_size = int(step_size * config_args['coreset_percent'])
