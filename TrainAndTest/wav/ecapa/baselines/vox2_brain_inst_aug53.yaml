@@ -42,7 +42,7 @@ frame_shift: 48000 # test shift
 
 # train dataset config
 num_frames: 64000
-segment_shift: 64000
+segment_shift: 48000
 
 # sample_type: instance
 input_per_spks: 768
@@ -55,7 +55,7 @@ feat_format: wav
 remove_vad: False
 
 ### Training settings
-epochs: 30
+epochs: 24
 
 # optimizer
 optimizer: adam
@@ -73,7 +73,7 @@ milestones: [10, 20, 30, 40]
 scheduler: cyclic
 lr: 0.001
 base_lr: 0.00000001
-cyclic_epoch: 5
+cyclic_epoch: 4
 # step_size: 65000
 cos_sim: True
 
@@ -167,9 +167,9 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst2_aug5<num_pipes>
 
-save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst
+save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2
 
 resume: !ref <check_path>/checkpoint_17.pth
 
