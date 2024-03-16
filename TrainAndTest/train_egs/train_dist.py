@@ -201,6 +201,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
+        if batch_idx <= 15902:
+            continue
 
         if 'sample_score' in config_args and 'sample_ratio' in config_args:
             data, label, scores = data_cols
@@ -238,6 +240,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 labels_aug_tot.append(label.cuda())
 
                 wavs = data.squeeze().cuda()
+                print(wavs.shape)
                 wav_label = label.squeeze().cuda()
 
                 # augment = np.random.choice(augment_pipeline)
