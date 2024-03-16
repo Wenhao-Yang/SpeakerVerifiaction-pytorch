@@ -845,6 +845,7 @@ def main():
 
     optimizer = create_optimizer(
         model_para, config_args['optimizer'], **opt_kwargs)
+    print(len(train_loader))
     scheduler = create_scheduler(optimizer, config_args, train_dir)
     
     top_k_epoch = config_args['top_k_epoch'] if 'top_k_epoch' in config_args else 5
