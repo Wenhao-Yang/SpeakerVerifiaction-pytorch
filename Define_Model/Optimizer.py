@@ -281,7 +281,7 @@ def create_scheduler(optimizer, config_args, train_loader=None):
         if 'step_size' in config_args:
             step_size = config_args['step_size']
         else:
-            step_size = len(train_loader)
+            step_size = len(train_loader) * config_args['cyclic_epoch']
 
             if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
                 step_size = int(step_size * config_args['coreset_percent'])
