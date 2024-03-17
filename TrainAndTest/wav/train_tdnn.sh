@@ -302,7 +302,7 @@ if [ $stage -le 12 ]; then
     for seed in 1236 ; do #1234# 
     for data_type in hdf5 ; do
 
-    CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53.yaml --seed=${seed}
+    CUDA_VISIBLE_DEVICES=0,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53.yaml --seed=${seed}
 
     for ratio in 10 ; do #10 25 50 75 90
     # for type in mani style align ;do
