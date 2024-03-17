@@ -281,7 +281,17 @@ def create_scheduler(optimizer, config_args, train_loader=None):
         if 'step_size' in config_args:
             step_size = config_args['step_size']
         else:
-            step_size = len(train_loader) * config_args['cyclic_epoch']
+            if isinstance(train_loader, torch.utils.data.DataLoader):
+                step_size = len(train_loader) * config_args['cyclic_epoch']
+            else:
+                step_size = len(train_loader) * config_args['cyclic_epoch']
+                if torch.distributed.is_initialized() and torch.distributed.get_world_size() > 1:
+                    step_size /= torch.distributed.get_world_size()
+                    
+                if step_size  % config_args['batch_size'] / config_args['batch_size'] <= 0.1:
+                    step_size = int(np.floor(step_size / config_args['batch_size']))
+                else:
+                    step_size = int(np.ceil(step_size / config_args['batch_size']))
 
             if 'coreset_percent' in config_args and config_args['coreset_percent'] > 0:
                 step_size = int(step_size * config_args['coreset_percent'])
