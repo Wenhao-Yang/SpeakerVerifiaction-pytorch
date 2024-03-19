@@ -966,6 +966,14 @@ def main():
                     start, end, epoch, check_path, valid_test_result)
             else:
                 break_training = False
+                if epoch == end - 1:
+                    best_str = test_results(best_res=valid_test_dict)
+                    
+                    with open(os.path.join(check_path,
+                                        'result.%s.txt' % time.strftime("%Y.%m.%d", time.localtime())), 'a+') as f:
+                        f.write(best_str + '\n')
+
+
 
             if break_training:
                 break
