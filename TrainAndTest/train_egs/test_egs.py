@@ -38,12 +38,12 @@ from tqdm import tqdm
 # import Define_Model
 from Define_Model.FilterLayer import FreqMaskIndexLayer
 from Define_Model.TDNN.Slimmable import FLAGS
-from Define_Model.model import PairwiseDistance
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
     ScriptVerifyDataset
 from Process_Data.audio_processing import ConcateOrgInput, ConcateVarInput, mvnormal, read_WaveFloat, read_WaveInt
-from TrainAndTest.common_func import create_classifier, create_model, verification_extract, load_model_args, args_model, args_parse
+from TrainAndTest.common_func import verification_extract, args_parse
+from Define_Model.model import create_classifier, create_model, load_model_args
 from logger import NewLogger
 
 warnings.filterwarnings("ignore")
