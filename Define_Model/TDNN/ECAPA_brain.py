@@ -665,13 +665,7 @@ class ECAPA_TDNN(torch.nn.Module):
     def seperate(self, x):
         
         x_shape = x.shape
-        # print(x_shape)
-        # clean_xs, domain_xs = [], []
-        # for i in range(int(x.shape[0] / self.batch_size*0.5)):
-        #     clean_x  = x[i*(self.batch_size*2): (i*(self.batch_size*2)+self.batch_size)].clone()
-        #     domain_x = x[(i*(self.batch_size*2)+self.batch_size): (i+1)*(self.batch_size*2)].clone()
-        #     clean_xs.append(clean_x)
-        #     domain_xs.append(domain_x)   
+
         clean_xs, domain_xs = x.reshape(2, -1, x_shape[1])#.clone()
         
         # beta distributions interpolation

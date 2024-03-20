@@ -19,6 +19,8 @@ import torch.nn.functional as F
 from torch.autograd import Function
 from torch.nn import CosineSimilarity
 
+from Process_Data.Datasets.SelectDataset import cost_func
+
 
 class PairwiseDistance(Function):
     def __init__(self, p):
@@ -511,24 +513,35 @@ class MMD_Loss(nn.Module):
 
 
 class Wasserstein_Loss(nn.Module):
-    def __init__(self, source_cls=1951):
+    def __init__(self, source_cls=0, metric='cosine'):
         super(Wasserstein_Loss, self).__init__()
+        if source_cls > 0:
+            self.target_label = 'greater'
+        else:
+            self.target_label = 'last_half'
+
         self.source_cls = source_cls
-        self.loss = SamplesLoss(loss="sinkhorn", p=2, blur=.05)
+        self.loss = SamplesLoss(loss="sinkhorn", p=2, blur=.05,
+                                cost=lambda a, b: cost_func(a, b, p=2, metric=metric))
 
     def forward(self, feats, label):
         # pdb.set_trace()
-        idx = torch.nonzero(torch.lt(label, self.source_cls)).squeeze()
-        if len(idx) == 0:
-            return self.loss(feats, feats)
+        if self.target_label == 'greater':
+            idx = torch.nonzero(torch.lt(label, self.source_cls)).squeeze()
+            if len(idx) == 0:
+                return self.loss(feats, feats)
 
-        vectors_s = feats.index_select(dim=0, index=idx)
+            vectors_s = feats.index_select(dim=0, index=idx)
 
-        idx = torch.nonzero(torch.ge(label, self.source_cls)).squeeze()
-        if len(idx) == 0:
-            return self.loss(feats, feats)
+            idx = torch.nonzero(torch.ge(label, self.source_cls)).squeeze()
+            if len(idx) == 0:
+                return self.loss(feats, feats)
 
-        vectors_t = feats.index_select(dim=0, index=idx)
+            vectors_t = feats.index_select(dim=0, index=idx)
+        elif self.target_label == 'last_half':
+            batchsize = feats.shape[0]
+            vectors_s = feats[:(batchsize//2)]
+            vectors_t = feats[-(batchsize//2):]
 
         return self.loss(vectors_s, vectors_t)
 

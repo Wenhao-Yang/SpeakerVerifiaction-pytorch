@@ -129,6 +129,9 @@ class SpeakerLoss(nn.Module):
                                             margin=config_args['m'])
             elif config_args['second_loss'] == 'gender':
                 ce_criterion = nn.CrossEntropyLoss()
+            elif config_args['second_loss'] == 'wasse':
+                metric = 'cosine' if 'second_metric' not in config_args else config_args['second_metric']  
+                ce_criterion = Wasserstein_Loss(source_cls=0, metric=metric)
             
             self.second_loss = config_args['second_loss']
         
@@ -180,7 +183,7 @@ class SpeakerLoss(nn.Module):
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, second_label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
-                elif self.second_loss in ['dist', 'ring', 'center']:
+                elif self.second_loss in ['dist', 'ring', 'center', 'wasse']:
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
