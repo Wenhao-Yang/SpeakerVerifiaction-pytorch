@@ -485,6 +485,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         correct) / total_datasize, total_loss / len(train_loader))
 
     if total_other_loss != 0:
+        print(other_loss, config_args['second_loss'])
         this_epoch_str += ' {} Loss: {:6f}'.format(
             config_args['second_loss'], total_other_loss / len(train_loader))
         
