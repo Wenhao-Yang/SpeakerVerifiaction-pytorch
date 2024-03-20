@@ -105,7 +105,7 @@ if [ $stage -le 20 ]; then
             if [[ $model_name == baseline ]];then
                 model_dir=${common_path}/${seed}
             elif [[ $model_name == sep ]];then
-                model_dir=${common_path}_noise1010_prob10_frequency/${seed}
+                model_dir=${common_path}sep/${seed}
             fi
             
             python -W ignore TrainAndTest/train_egs/average_model.py \
