@@ -425,7 +425,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         total_loss += float(loss.item())
         total_other_loss += other_loss
 
-        print(other_loss, total_other_loss, config_args['second_loss'])
         # if isinstance(augment_pipeline[0], AdaptiveBandPass):
         #     augment_pipeline[0].update(1/(float(loss.item())+1))
 
@@ -487,7 +486,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         correct) / total_datasize, total_loss / len(train_loader))
 
     if total_other_loss != 0:
-        
+        print('total: ', other_loss, total_other_loss, config_args['second_loss'])
         this_epoch_str += ' {} Loss: {:6f}'.format(
             config_args['second_loss'], total_other_loss / len(train_loader))
         
