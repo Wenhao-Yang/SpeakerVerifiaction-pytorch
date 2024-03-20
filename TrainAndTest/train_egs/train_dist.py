@@ -476,8 +476,12 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args else data.shape[-2]
 
             pbar.set_description(epoch_str)
-            pbar.set_postfix(batch_length=batch_length, accuracy='{:>6.2f}%'.format(
-                100. * minibatch_acc), average_loss='{:.4f}'.format(total_loss / (batch_idx + 1)))
+            batch_dict = OrderedDict({'batch_length': batch_length, 'accuracy': '{:>6.2f}%'.format(
+                100. * minibatch_acc), 'average_loss': '{:.4f}'.format(total_loss / (batch_idx + 1))})
+            if total_other_loss != 0:
+                batch_dict[config_args['second_loss']] = '{:.4f}'.format(total_other_loss / (batch_idx + 1))
+
+            pbar.set_postfix(batch_dict)
 
         # if (batch_idx + 1) == 20:
         #     break
@@ -486,7 +490,6 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         correct) / total_datasize, total_loss / len(train_loader))
 
     if total_other_loss != 0:
-        print('total: ', other_loss, total_other_loss, config_args['second_loss'])
         this_epoch_str += ' {} Loss: {:6f}'.format(
             config_args['second_loss'], total_other_loss / len(train_loader))
         
