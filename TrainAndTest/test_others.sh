@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=603
+stage=606
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3792,6 +3792,63 @@ if [ $stage -le 605 ]; then
         else
           model_dir=${common_path}_${model_name}_prob10/${seed}
           yaml_name=${common_path}_${model_name}_prob10/model.yaml
+        fi
+
+        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
+        for trials in trials_all; do
+          python -W ignore TrainAndTest/train_egs/test_egs.py \
+            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+            --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+            --feat-format wav --nj 4 \
+            --check-yaml Data/checkpoint/${yaml_name} \
+            --xvector-dir ${xvector_dir} \
+            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+            --gpu-id ${gpu_id} \
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+            --cos-sim --test
+        done
+
+        for trials in original ; do # original easy hard
+          python -W ignore TrainAndTest/train_egs/test_egs.py \
+            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+            --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
+            --feat-format wav --nj 4 \
+            --check-yaml Data/checkpoint/${yaml_name} \
+            --xvector-dir ${xvector_dir} \
+            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+            --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+            --cos-sim --extract
+        done
+      done
+    done
+    done
+ done
+ exit
+fi
+
+if [ $stage -le 606 ]; then
+  model=ThinResNet resnet_size=18
+  train_set=vox1 test_set=vox1 # #jukebox cnceleb
+  train_subset=
+  subset=test test_input=var test_subset=test
+  gpu_id=3
+  
+  sname=dev
+  for epoch in avg3 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+    for model_name in baseline sep ;do 
+    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+    echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
+      for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
+      for seed in 1234 ; do
+        if [[ $model_name == baseline ]];then
+          model_dir=${common_path}/${seed}
+          yaml_name=${common_path}/model.yaml
+        elif [[ $model_name == sep ]];then
+          model_dir=${common_path}sep/${seed}
+          yaml_name=${common_path}sep/model.yaml
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
