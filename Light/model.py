@@ -184,7 +184,9 @@ class SpeakerLoss(nn.Module):
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
                 elif self.second_loss in ['dist', 'ring', 'center', 'wasse']:
+                    
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
+                    print(loss_cent)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
 
