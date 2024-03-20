@@ -393,7 +393,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         loss, other_loss = model.module.loss((classfier, feats), label,
                                              batch_weight=batch_weight, epoch=epoch, other=True)
-        print(other_loss, config_args['second_loss'])
+        
         if np.isnan(loss.item()):
             optimizer.zero_grad()  # reset gradient
             torch.cuda.empty_cache()
@@ -424,6 +424,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         # print(loss.shape)
         total_loss += float(loss.item())
         total_other_loss += other_loss
+
+        print(other_loss, total_other_loss, config_args['second_loss'])
         # if isinstance(augment_pipeline[0], AdaptiveBandPass):
         #     augment_pipeline[0].update(1/(float(loss.item())+1))
 
