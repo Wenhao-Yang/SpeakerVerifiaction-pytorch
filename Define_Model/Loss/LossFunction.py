@@ -513,7 +513,8 @@ class MMD_Loss(nn.Module):
 
 
 class Wasserstein_Loss(nn.Module):
-    def __init__(self, source_cls=0, metric='cosine'):
+    def __init__(self, source_cls=0, metric='cosine',
+                 source_fix=False):
         super(Wasserstein_Loss, self).__init__()
         if source_cls > 0:
             self.target_label = 'greater'
@@ -523,6 +524,7 @@ class Wasserstein_Loss(nn.Module):
         self.source_cls = source_cls
         self.loss = SamplesLoss(loss="sinkhorn", p=2, blur=.05,
                                 cost=lambda a, b: cost_func(a, b, p=2, metric=metric))
+        self.source_fix = source_fix
 
     def forward(self, feats, label):
         # pdb.set_trace()
@@ -542,6 +544,9 @@ class Wasserstein_Loss(nn.Module):
             batchsize = feats.shape[0]
             vectors_s = feats[:(batchsize//2)]
             vectors_t = feats[-(batchsize//2):]
+
+        if self.source_fix:
+            vectors_s = vectors_s.detach()
 
         return self.loss(vectors_s, vectors_t)
 
