@@ -340,8 +340,8 @@ class ArcSoftmaxLoss(nn.Module):
             delt_theta = delt_theta * self.margin
         else:
             # weight_margin = weight_margin / weight_margin.max()  
-            weight_margin = weight_margin / weight_margin.mean()
-            delt_theta = (0.1 * weight_margin + self.margin-0.1) * delt_theta
+            weight_margin = torch.nn.functional.sigmoid(weight_margin - weight_margin.mean())
+            delt_theta = (0.1 * weight_margin + self.margin-0.05) * delt_theta
 
         # pdb.set_trace()
         if costh.is_cuda:
