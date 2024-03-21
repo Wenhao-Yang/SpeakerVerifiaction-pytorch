@@ -391,8 +391,16 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         data, label = Variable(data), Variable(label)
         classfier, feats = model(data)
 
-        loss, other_loss = model.module.loss((classfier, feats), label,
-                                             batch_weight=batch_weight, epoch=epoch, other=True)
+        if 'weight_margin' in config_args and config_args['weight_margin']:
+                weight_margin = feats.norm(p=2, dim=1).unsqueeze(1)
+        else:
+            weight_margin = None
+            
+        # print(classfier.shape, feats.shape, label.shape)
+        loss, other_loss = model.module.loss((classfier, feats), label, other=True,
+                                                weight_margin=weight_margin)
+        # loss, other_loss = model.module.loss((classfier, feats), label,
+        #                                      batch_weight=batch_weight, epoch=epoch, other=True)
         
         if np.isnan(loss.item()):
             optimizer.zero_grad()  # reset gradient

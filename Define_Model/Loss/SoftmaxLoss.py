@@ -331,16 +331,17 @@ class ArcSoftmaxLoss(nn.Module):
         if isinstance(lamda_beta, torch.Tensor):
             if len(lamda_beta.shape) == 1:
                 lamda_beta = lamda_beta.unsqueeze(1).cpu()
+        
+        delt_theta =  lamda_beta * torch.zeros(costh.size()).scatter_(1, lb_view.data, 1)
+        if costh.is_cuda:
+            delt_theta = Variable(delt_theta.cuda())
+
         if weight_margin == None:
-            delt_theta = lamda_beta * torch.zeros(costh.size()).scatter_(
-                1, lb_view.data, self.margin)
+            delt_theta = delt_theta * self.margin
         else:
             # weight_margin = weight_margin / weight_margin.max()  
             weight_margin = weight_margin / weight_margin.mean()
-
-            delt_theta = weight_margin * lamda_beta * torch.zeros(costh.size()).scatter_(
-                1, lb_view.data, 0.1) + lamda_beta * torch.zeros(costh.size()).scatter_(
-                1, lb_view.data, self.margin-0.1)
+            delt_theta = (0.1 * weight_margin + self.margin-0.1) * delt_theta
 
         # pdb.set_trace()
         if costh.is_cuda:
