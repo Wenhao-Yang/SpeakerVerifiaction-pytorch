@@ -3855,7 +3855,7 @@ if [ $stage -le 606 ]; then
         elif [[ $model_name == fix ]];then
           model_dir=${common_path}wasse1fix/${seed}
           yaml_name=${common_path}wasse1fix/model.yaml
-        elif [[ $model_name == fix ]];then
+        elif [[ $model_name == cosine ]];then
           model_dir=${common_path}cosine1/${seed}
           yaml_name=${common_path}cosine1/model.yaml
         fi
