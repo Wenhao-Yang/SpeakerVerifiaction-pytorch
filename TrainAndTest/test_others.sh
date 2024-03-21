@@ -3838,7 +3838,7 @@ if [ $stage -le 606 ]; then
   
   sname=dev
   for epoch in avg3 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in baseline sep ;do 
+    for model_name in wasse1 fix ;do 
     common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
@@ -3849,6 +3849,12 @@ if [ $stage -le 606 ]; then
         elif [[ $model_name == sep ]];then
           model_dir=${common_path}sep/${seed}
           yaml_name=${common_path}sep/model.yaml
+        elif [[ $model_name == wasse1 ]];then
+          model_dir=${common_path}wasse1/${seed}
+          yaml_name=${common_path}wasse1/model.yaml
+        elif [[ $model_name == fix ]];then
+          model_dir=${common_path}wasse1fix/${seed}
+          yaml_name=${common_path}wasse1fix/model.yaml
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
