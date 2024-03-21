@@ -560,8 +560,13 @@ def valid_class(valid_loader, model, epoch, config_args, writer):
 
             # pdb.set_trace()
             classfier, feats = model(data)
+            if 'weight_margin' in config_args and config_args['weight_margin']:
+                weight_margin = feats.norm(p=2, dim=1).unsqueeze(1)
+            else:
+                weight_margin = None
             # print(classfier.shape, feats.shape, label.shape)
-            loss, other_loss = model.module.loss((classfier, feats), label, other=True)
+            loss, other_loss = model.module.loss((classfier, feats), label, other=True,
+                                                 weight_margin=weight_margin)
 
             total_loss += float(loss.item())
             total_other_loss += other_loss

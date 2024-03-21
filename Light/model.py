@@ -158,9 +158,11 @@ class SpeakerLoss(nn.Module):
 
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']
+        self.weight_margin = False if 'weight_margin' not in config_args else config_args['weight_margin']
 
     def forward(self, outputs, label,
-                second_label=None, batch_weight=None, epoch=0,
+                second_label=None, batch_weight=None, weight_margin=None,
+                epoch=0,
                 half_data=0, lamda_beta=0, other=False):
         
         if isinstance(outputs, tuple):
@@ -178,7 +180,8 @@ class SpeakerLoss(nn.Module):
                     classfier, label, half_batch_size=half_data, lamda_beta=lamda_beta)
             else:
                 self.xe_criterion.reduction = self.reduction
-                loss = self.xe_criterion(classfier, label)
+                weight_margin = None if not self.weight_margin else weight_margin
+                loss = self.xe_criterion(classfier, label, weight_margin=weight_margin)
 
             if batch_weight != None:
                 loss = loss * batch_weight
