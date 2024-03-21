@@ -561,6 +561,7 @@ class Distance_Loss(nn.Module):
             self.target_label = 'last_half'
 
         self.source_cls = source_cls
+        self.metric = metric
 
         if metric == 'cosine':
             self.loss = torch.nn.CosineSimilarity(dim=1)
@@ -592,7 +593,10 @@ class Distance_Loss(nn.Module):
         if self.source_fix:
             vectors_s = vectors_s.detach()
 
-        return self.loss(vectors_s, vectors_t).mean()
+        if self.metric == 'cosine':
+            return 1 - self.loss(vectors_s, vectors_t).mean()
+        else:
+            return self.loss(vectors_s, vectors_t).mean()
     
 
 class AttentionMining(nn.Module):
