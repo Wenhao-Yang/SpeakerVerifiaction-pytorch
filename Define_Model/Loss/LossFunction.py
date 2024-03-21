@@ -551,6 +551,50 @@ class Wasserstein_Loss(nn.Module):
         return self.loss(vectors_s, vectors_t)
 
 
+class Distance_Loss(nn.Module):
+    def __init__(self, source_cls=0, metric='cosine',
+                 source_fix=False):
+        super(Distance_Loss, self).__init__()
+        if source_cls > 0:
+            self.target_label = 'greater'
+        else:
+            self.target_label = 'last_half'
+
+        self.source_cls = source_cls
+
+        if metric == 'cosine':
+            self.loss = torch.nn.CosineSimilarity(dim=1)
+        elif metric == 'l2':
+            self.loss = torch.nn.PairwiseDistance()
+        # lambda a, b: cost_func(a, b, p=2, metric=metric)
+        self.source_fix = source_fix
+
+    def forward(self, feats, label):
+        # pdb.set_trace()
+        if self.target_label == 'greater':
+            idx = torch.nonzero(torch.lt(label, self.source_cls)).squeeze()
+            if len(idx) == 0:
+                return self.loss(feats, feats)
+
+            vectors_s = feats.index_select(dim=0, index=idx)
+
+            idx = torch.nonzero(torch.ge(label, self.source_cls)).squeeze()
+            if len(idx) == 0:
+                return self.loss(feats, feats)
+
+            vectors_t = feats.index_select(dim=0, index=idx)
+
+        elif self.target_label == 'last_half':
+            batchsize = feats.shape[0]
+            vectors_s = feats[:(batchsize//2)]
+            vectors_t = feats[-(batchsize//2):]
+
+        if self.source_fix:
+            vectors_s = vectors_s.detach()
+
+        return self.loss(vectors_s, vectors_t).mean()
+    
+
 class AttentionMining(nn.Module):
     def __init__(self):
         super(AttentionMining, self).__init__()

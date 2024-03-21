@@ -18,7 +18,7 @@ from kaldiio import WriteHelper
 from pytorch_lightning import LightningModule
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from Define_Model.Loss.LossFunction import CenterLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
+from Define_Model.Loss.LossFunction import CenterLoss, Distance_Loss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss, DistributeLoss, MMD_Loss, aDCFLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSoftmaxLoss, DAMSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, MixupLoss
@@ -129,10 +129,16 @@ class SpeakerLoss(nn.Module):
                                             margin=config_args['m'])
             elif config_args['second_loss'] == 'gender':
                 ce_criterion = nn.CrossEntropyLoss()
+
             elif config_args['second_loss'] == 'wasse':
                 metric = 'cosine' if 'second_metric' not in config_args else config_args['second_metric']
                 source_fix = False if 'source_fix' not in config_args else config_args['source_fix']
                 ce_criterion = Wasserstein_Loss(source_cls=0, metric=metric, source_fix=source_fix)
+            elif config_args['second_loss'] == 'cosine':
+                metric = 'cosine' if 'second_metric' not in config_args else config_args['second_metric']
+                source_fix = False if 'source_fix' not in config_args else config_args['source_fix']
+                
+                ce_criterion = Distance_Loss(source_cls=0, metric=metric, source_fix=source_fix)
             
             self.second_loss = config_args['second_loss']
         
@@ -184,7 +190,7 @@ class SpeakerLoss(nn.Module):
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, second_label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
-                elif self.second_loss in ['dist', 'ring', 'center', 'wasse']:
+                elif self.second_loss in ['dist', 'ring', 'center', 'wasse', 'cosine']:
                     
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
                     other_loss += float(loss_cent)
