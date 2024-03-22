@@ -111,7 +111,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   #   channels: [256, 256, 256, 256, 768]
 
 
-domain_classifier:  !new:Define_Model.model.DomainDiscriminator
+domain_classifier: !new:Define_Model.model.DomainDiscriminator
   input_dim: !ref <embedding_size>
   num_classes: 2
 
