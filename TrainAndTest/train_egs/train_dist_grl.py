@@ -391,7 +391,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             second_label = second_label.cuda() 
 
         data, label = Variable(data), Variable(label)
-        classfier, feats = model(data)
+        (classfier, dclassfier), feats = model(data)
 
         if 'weight_margin' in config_args and config_args['weight_margin']:
             weight_margin = feats.norm(p=2, dim=1).unsqueeze(1)
@@ -400,7 +400,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
         # print(classfier.shape, feats.shape, label.shape)
         # second_label = torch.LongTensor([0,1]).reshape(-1,1).repeat(1,data.shape[0]//2).reshape(-1)
-        loss, other_loss = model.module.loss((classfier, feats), (label, second_label), other=True,
+        loss, other_loss = model.module.loss(((classfier, dclassfier), feats), (label, second_label), other=True,
                                              weight_margin=weight_margin)
         # loss, other_loss = model.module.loss((classfier, feats), label,
         #                                      batch_weight=batch_weight, epoch=epoch, other=True)
@@ -415,7 +415,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                 if torch.distributed.get_rank() == 0:
                     print('==> Loss value is NaN! for {} step'.format(loss_nan))
                 continue
-
+        
         predicted_labels = output_softmax(classfier.clone())
         predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
 
