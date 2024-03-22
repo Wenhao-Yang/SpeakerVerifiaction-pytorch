@@ -19,6 +19,7 @@ from hyperpyyaml import load_hyperpyyaml
 
 # Models
 from Define_Model.CNN import AlexNet
+from Define_Model.FilterLayer import RevGradLayer
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, RepeatResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
 from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear, MarginLinearDummy
@@ -111,6 +112,27 @@ class AttrDict(dict):
                 ret_str.append('{}: {}'.format(key, value))
         return '\n'.join(ret_str)
 
+class DomainDiscriminator(nn.Module):
+    def __init__(self, input_size, num_classes):
+        """
+        discriminator with A gradient reversal layer.
+
+        This layer has no parameters, and simply reverses the gradient
+        in the backward pass.
+        """
+        super(DomainDiscriminator, self).__init__()
+
+        self.classifier = nn.Sequential(
+            RevGradLayer(),
+            nn.Linear(input_size, input_size),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(input_size),
+            nn.Linear(input_size, num_classes),
+        )
+
+    def forward(self, x):
+        return self.classifier(x)
+    
 
 __factory = {
     'AlexNet': AlexNet,

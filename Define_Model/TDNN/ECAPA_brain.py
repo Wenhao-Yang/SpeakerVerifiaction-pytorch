@@ -561,8 +561,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     activation=activation,
                     groups=groups[i],
                     dropout_type=dropout_type, dropout_p=self.dropouts[i],
-                    linear_step=linear_step,
-                )
+                    linear_step=linear_step)
             )
 
         # Multi-layer feature aggregation
@@ -656,6 +655,10 @@ class ECAPA_TDNN(torch.nn.Module):
             # embeddings = x.transpose(1, 2).contiguous()
 
         logits = self.classifier(embeddings)
+        
+        if hasattr(self, 'domain_classifier') and self.training:
+            dlogits = self.domain_classifier(embeddings)
+            logits  = (logits, dlogits)
 
         return logits, embeddings
 

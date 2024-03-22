@@ -127,7 +127,7 @@ class SpeakerLoss(nn.Module):
             elif config_args['second_loss'] == 'dist':
                 ce_criterion = DistributeLoss(stat_type=config_args['stat_type'],
                                             margin=config_args['m'])
-            elif config_args['second_loss'] == 'gender':
+            elif config_args['second_loss'] in ['gender', 'crossentropy']:
                 ce_criterion = nn.CrossEntropyLoss()
 
             elif config_args['second_loss'] == 'wasse':
@@ -139,7 +139,7 @@ class SpeakerLoss(nn.Module):
                 source_fix = False if 'source_fix' not in config_args else config_args['source_fix']
                 
                 ce_criterion = Distance_Loss(source_cls=0, metric=metric, source_fix=source_fix)
-            
+
             self.second_loss = config_args['second_loss']
         
         else:
@@ -170,6 +170,12 @@ class SpeakerLoss(nn.Module):
         else:
             classfier = outputs
 
+        if isinstance(classfier, tuple) and isinstance(label, tuple):
+            classfier, second_classfier = classfier
+            label, second_label = label
+        else:
+            second_classfier, second_label = None, None
+
         other_loss = 0.
 
         if self.config_args['loss_type'] in ['soft', 'asoft']:
@@ -189,13 +195,17 @@ class SpeakerLoss(nn.Module):
                 self.xe_criterion.ce.reduction = 'mean'
 
             if self.ce_criterion != None:
-                if self.second_loss == 'gender' and second_label != None:
+                if self.second_loss in ['gender'] and second_label != None:
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, second_label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
                 elif self.second_loss in ['dist', 'ring', 'center', 'wasse', 'cosine']:
                     
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
+                    other_loss += float(loss_cent)
+                    loss = loss + loss_cent
+                if self.second_loss in ['crossentropy'] and second_classfier != None:
+                    loss_cent = self.loss_ratio * self.ce_criterion(second_classfier, second_label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
 
