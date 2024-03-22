@@ -399,7 +399,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             weight_margin = None
 
         # print(classfier.shape, feats.shape, label.shape)
-        second_label = torch.LongTensor([0,1]).reshape(-1,1).repeat(1,data.shape[0]//2).reshape(-1)
+        # second_label = torch.LongTensor([0,1]).reshape(-1,1).repeat(1,data.shape[0]//2).reshape(-1)
         loss, other_loss = model.module.loss((classfier, feats), (label, second_label), other=True,
                                              weight_margin=weight_margin)
         # loss, other_loss = model.module.loss((classfier, feats), label,
