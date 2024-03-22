@@ -112,7 +112,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
 
 
 domain_classifier: !new:Define_Model.model.DomainDiscriminator
-  input_dim: !ref <embedding_size>
+  input_size: !ref <embedding_size>
   num_classes: 2
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
