@@ -115,6 +115,7 @@ class AttrDict(dict):
                 ret_str.append('{}: {}'.format(key, value))
         return '\n'.join(ret_str)
 
+
 class DomainDiscriminator(nn.Module):
     def __init__(self, input_size, num_classes,
                  hidden_size=0, num_logits=0,
@@ -169,7 +170,6 @@ class DomainDiscriminator(nn.Module):
         self.classifier = nn.Sequential(*layers)
 
     def forward(self, x):
-        
         if isinstance(x, tuple):
             x, logits = x
             logits = F.softmax(logits, dim=1).detach()
