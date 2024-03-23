@@ -114,7 +114,9 @@ class AttrDict(dict):
         return '\n'.join(ret_str)
 
 class DomainDiscriminator(nn.Module):
-    def __init__(self, input_size, num_classes, warm_start=False):
+    def __init__(self, input_size, num_classes,
+                 hidden_size=0,
+                 warm_start=False, sigmoid=False):
         """
         discriminator with A gradient reversal layer.
 
@@ -130,10 +132,27 @@ class DomainDiscriminator(nn.Module):
         else:
             layers.append(RevGradLayer())
         
-        layers.extend([nn.Linear(input_size, input_size),
+        output_size =  hidden_size if hidden_size > 0 else input_size
+        layers.extend([
+            nn.Linear(input_size, output_size),
             nn.ReLU(inplace=True),
-            nn.BatchNorm1d(input_size),
-            nn.Linear(input_size, num_classes),])
+            nn.BatchNorm1d(output_size)
+        ])
+        
+        if hidden_size > 0:
+            layers.extend([
+                nn.Linear(output_size, output_size),
+                nn.ReLU(inplace=True),
+                nn.BatchNorm1d(output_size)
+            ])
+            
+        if sigmoid:
+            layers.extend([
+                nn.Linear(output_size, 1),
+                nn.Sigmoid()
+            ])
+        else:
+            layers.append(nn.Linear(output_size, num_classes))
         
         self.classifier = nn.Sequential(*layers)
 

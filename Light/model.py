@@ -129,7 +129,10 @@ class SpeakerLoss(nn.Module):
                                             margin=config_args['m'])
             elif config_args['second_loss'] in ['gender', 'crossentropy']:
                 ce_criterion = nn.CrossEntropyLoss()
-
+                
+            elif config_args['second_loss'] in ['binaryentropy']:
+                ce_criterion = nn.BCELoss()
+                
             elif config_args['second_loss'] == 'wasse':
                 metric = 'cosine' if 'second_metric' not in config_args else config_args['second_metric']
                 source_fix = False if 'source_fix' not in config_args else config_args['source_fix']
@@ -199,12 +202,13 @@ class SpeakerLoss(nn.Module):
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, second_label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
-                elif self.second_loss in ['dist', 'ring', 'center', 'wasse', 'cosine']:
                     
+                elif self.second_loss in ['dist', 'ring', 'center', 'wasse', 'cosine']:
                     loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
-                if self.second_loss in ['crossentropy'] and second_classfier != None:
+                    
+                if self.second_loss in ['crossentropy', 'binaryentropy'] and second_classfier != None:
                     loss_cent = self.loss_ratio * self.ce_criterion(second_classfier, second_label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
