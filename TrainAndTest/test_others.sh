@@ -3867,6 +3867,9 @@ if [ $stage -le 606 ]; then
         elif [[ $model_name == cosine ]];then
           model_dir=${common_path}cosine1/${seed}
           yaml_name=${common_path}cosine1/model.yaml
+        elif [[ $model_name == grl ]];then
+          model_dir=${common_path}grl/${seed}
+          yaml_name=${common_path}grl/model.yaml
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
