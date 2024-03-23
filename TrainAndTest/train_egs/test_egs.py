@@ -672,6 +672,9 @@ if __name__ == '__main__':
             create_classifier(model, **config_args)
         # model = create_model(args.model, **model_kwargs)
 
+        if 'domain_classifier' in config_args:
+            model.domain_classifier = config_args['domain_classifier']
+
         if args.verbose > 0:
             print('=> loading checkpoint {}'.format(args.resume))
         checkpoint = torch.load(args.resume)

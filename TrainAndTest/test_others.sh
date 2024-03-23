@@ -3837,10 +3837,17 @@ if [ $stage -le 606 ]; then
   gpu_id=3
   
   sname=dev
+  for chn in 256 384 ; do
+    if [[ $chn == 384 ]];then
+      chn_str=_chn384
+    elif [[ $chn == 256 ]];then
+      chn_str=
+    fi
+
   for epoch in avg3 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in baseline wasse1 ;do 
+    for model_name in grl ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
-    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+    common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3; do #test_radio_chn2
@@ -3891,6 +3898,7 @@ if [ $stage -le 606 ]; then
             --cos-sim --extract
         done
       done
+    done
     done
     done
  done
