@@ -2,7 +2,7 @@
 
 stage=12
 waited=0
-while [ $(ps 293827 | wc -l) -eq 2 ]; do
+while [ $(ps 73679 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -316,7 +316,7 @@ if [ $stage -le 12 ]; then
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mix.yaml --seed=${seed}
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mixwass.yaml --seed=${seed}
 
-          CUDA_VISIBLE_DEVICES=2,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_grl.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mixgrl.yaml --seed=${seed}
+          CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_grl.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mixgrl.yaml --seed=${seed}
 
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mix_margin.yaml --seed=${seed}
           
