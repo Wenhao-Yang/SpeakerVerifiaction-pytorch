@@ -657,7 +657,7 @@ class ECAPA_TDNN(torch.nn.Module):
         logits = self.classifier(embeddings)
         
         if hasattr(self, 'domain_classifier') and self.training:
-            dlogits = self.domain_classifier(embeddings)
+            dlogits = self.domain_classifier((embeddings, logits))
             logits  = (logits, dlogits)
 
         return logits, embeddings

@@ -33,6 +33,8 @@ from Define_Model.TDNN.Slimmable import SlimmableTDNN
 from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6, MixTDNN_v5
 from Define_Model.demucs_feature import Demucs
 from tllib.modules.grl import WarmStartGradientReverseLayer
+from tllib.alignment.cdan import RandomizedMultiLinearMap, MultiLinearMap
+import torch.nn.functional as F
 
 
 def get_layer_param(model):
@@ -115,8 +117,9 @@ class AttrDict(dict):
 
 class DomainDiscriminator(nn.Module):
     def __init__(self, input_size, num_classes,
-                 hidden_size=0,
-                 warm_start=False, sigmoid=False):
+                 hidden_size=0, num_logits=0,
+                 warm_start=False, sigmoid=False,
+                 mapping='none'):
         """
         discriminator with A gradient reversal layer.
 
@@ -125,6 +128,15 @@ class DomainDiscriminator(nn.Module):
         """
         super(DomainDiscriminator, self).__init__()
         self.warm_start = warm_start
+        self.mapping = mapping
+        
+        if self.mapping == 'rand':
+            self.map = RandomizedMultiLinearMap(features_dim=input_size,
+                                                num_classes=num_logits,
+                                                output_dim=input_size)
+        elif self.mapping == 'linear':
+            self.map = MultiLinearMap()
+            input_size = input_size * num_logits
         
         layers = []
         if self.warm_start:
@@ -153,10 +165,18 @@ class DomainDiscriminator(nn.Module):
             ])
         else:
             layers.append(nn.Linear(output_size, num_classes))
-        
+            
         self.classifier = nn.Sequential(*layers)
 
     def forward(self, x):
+        
+        if isinstance(x, tuple):
+            x, logits = x
+            logits = F.softmax(logits, dim=1).detach()
+            
+            if self.mapping != 'none':
+                x = self.map(x, logits)
+            
         return self.classifier(x)
     
 
