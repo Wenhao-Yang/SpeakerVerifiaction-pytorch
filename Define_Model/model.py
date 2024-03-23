@@ -120,6 +120,7 @@ class DomainDiscriminator(nn.Module):
     def __init__(self, input_size, num_classes,
                  hidden_size=0, num_logits=0,
                  warm_start=False, sigmoid=False,
+                 max_iters=1000,
                  mapping='none'):
         """
         discriminator with A gradient reversal layer.
@@ -141,7 +142,7 @@ class DomainDiscriminator(nn.Module):
         
         layers = []
         if self.warm_start:
-            layers.append(WarmStartGradientReverseLayer())
+            layers.append(WarmStartGradientReverseLayer(max_iters=max_iters))
         else:
             layers.append(RevGradLayer())
         
