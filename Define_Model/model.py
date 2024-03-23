@@ -32,6 +32,7 @@ from Define_Model.TDNN.FTDNN import FTDNN
 from Define_Model.TDNN.Slimmable import SlimmableTDNN
 from Define_Model.TDNN.TDNN import TDNN_v2, TDNN_v4, TDNN_v5, TDNN_v6, MixTDNN_v5
 from Define_Model.demucs_feature import Demucs
+from tllib.modules.grl import WarmStartGradientReverseLayer
 
 
 def get_layer_param(model):
@@ -113,7 +114,7 @@ class AttrDict(dict):
         return '\n'.join(ret_str)
 
 class DomainDiscriminator(nn.Module):
-    def __init__(self, input_size, num_classes):
+    def __init__(self, input_size, num_classes, warm_start=False):
         """
         discriminator with A gradient reversal layer.
 
@@ -121,14 +122,20 @@ class DomainDiscriminator(nn.Module):
         in the backward pass.
         """
         super(DomainDiscriminator, self).__init__()
-
-        self.classifier = nn.Sequential(
-            RevGradLayer(),
-            nn.Linear(input_size, input_size),
+        self.warm_start = warm_start
+        
+        layers = []
+        if self.warm_start:
+            layers.append(WarmStartGradientReverseLayer())
+        else:
+            layers.append(RevGradLayer())
+        
+        layers.extend([nn.Linear(input_size, input_size),
             nn.ReLU(inplace=True),
             nn.BatchNorm1d(input_size),
-            nn.Linear(input_size, num_classes),
-        )
+            nn.Linear(input_size, num_classes),])
+        
+        self.classifier = nn.Sequential(*layers)
 
     def forward(self, x):
         return self.classifier(x)
