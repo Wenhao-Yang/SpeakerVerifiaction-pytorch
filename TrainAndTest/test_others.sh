@@ -3834,10 +3834,10 @@ if [ $stage -le 606 ]; then
   train_set=vox1 test_set=vox1 # #jukebox cnceleb
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=3
+  gpu_id=2
   
   sname=dev
-  for chn in 256 384 ; do
+  for chn in 384 ; do
     if [[ $chn == 384 ]];then
       chn_str=_chn384
     elif [[ $chn == 256 ]];then
@@ -3845,7 +3845,7 @@ if [ $stage -le 606 ]; then
     fi
 
   for epoch in avg3 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in grl ;do 
+    for model_name in warm hidden ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
 
@@ -3870,6 +3870,12 @@ if [ $stage -le 606 ]; then
         elif [[ $model_name == grl ]];then
           model_dir=${common_path}grl/${seed}
           yaml_name=${common_path}grl/model.yaml
+        elif [[ $model_name == warm ]];then
+          model_dir=${common_path}grlwarm/${seed}
+          yaml_name=${common_path}grlwarm/model.yaml
+        elif [[ $model_name == hidden ]];then
+          model_dir=${common_path}grlwarmhidden/${seed}
+          yaml_name=${common_path}grlwarmhidden/model.yaml
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
