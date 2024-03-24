@@ -78,7 +78,7 @@ class InstBatchNorm1d(nn.Module):
     def __init__(self, in_channels):
         super(InstBatchNorm1d, self).__init__()
 
-        self.batch_norm = BatchNorm1d(in_channels//2)
+        self.batch_norm = BatchNorm1d(input_size=in_channels//2)
         self.inst_norm = nn.InstanceNorm1d(in_channels//2)
 
     def forward(self, x):
@@ -142,7 +142,7 @@ class TDNNBlock(nn.Module):
         elif norm == 'inbn':
             self.norm = InstBatchNorm1d(out_channels)
         else:
-            self.norm = BatchNorm1d(out_channels)
+            self.norm = BatchNorm1d(input_size=out_channels)
 
     def forward(self, x):
         """ Processes the input tensor x and returns an output tensor."""
