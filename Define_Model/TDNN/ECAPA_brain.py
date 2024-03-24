@@ -48,6 +48,49 @@ class BatchNorm1d(_BatchNorm1d):
         super().__init__(skip_transpose=True, *args, **kwargs)
 
 
+class InstBatchNorm1d(nn.Module):
+    """An implementation of TDNN.
+
+    Arguments
+    ----------
+    in_channels : int
+        Number of input channels.
+    out_channels : int
+        The number of output channels.
+    kernel_size : int
+        The kernel size of the TDNN blocks.
+    dilation : int
+        The dilation of the TDNN block.
+    activation : torch class
+        A class for constructing the activation layers.
+    groups: int
+        The groups size of the TDNN blocks.
+
+    Example
+    -------
+    >>> inp_tensor = torch.rand([8, 120, 64]).transpose(1, 2)
+    >>> layer = TDNNBlock(64, 64, kernel_size=3, dilation=1)
+    >>> out_tensor = layer(inp_tensor).transpose(1, 2)
+    >>> out_tensor.shape
+    torch.Size([8, 120, 64])
+    """
+
+    def __init__(self, in_channels):
+        super(InstBatchNorm1d, self).__init__()
+
+        self.batch_norm = BatchNorm1d(input_size=in_channels//2)
+        self.inst_norm = nn.InstanceNorm1d(input_size=in_channels//2)
+
+    def forward(self, x):
+        """ Processes the input tensor x and returns an output tensor."""
+        x1, x2 = x.chunk(2, dim=1)
+
+        x1 = self.batch_norm(x1)
+        x2 = self.inst_norm(x2)
+
+        return torch.cat([x1, x2], dim=1)
+
+
 class TDNNBlock(nn.Module):
     """An implementation of TDNN.
 
@@ -83,6 +126,7 @@ class TDNNBlock(nn.Module):
         dilation,
         activation=nn.ReLU,
         groups=1,
+        norm='batch'
     ):
         super(TDNNBlock, self).__init__()
         self.conv = Conv1d(
@@ -93,7 +137,12 @@ class TDNNBlock(nn.Module):
             groups=groups,
         )
         self.activation = activation()
-        self.norm = BatchNorm1d(input_size=out_channels)
+        if norm == 'inst':
+            self.norm = nn.InstanceNorm1d(out_channels)
+        elif norm == 'inbn':
+            self.norm = InstBatchNorm1d(out_channels)
+        else:
+            self.norm = BatchNorm1d(input_size=out_channels)
 
     def forward(self, x):
         """ Processes the input tensor x and returns an output tensor."""
@@ -381,7 +430,7 @@ class SERes2NetBlock(nn.Module):
         kernel_size=1,
         dilation=1,
         activation=torch.nn.ReLU,
-        groups=1,
+        groups=1, norm='batch',
         dropout_type='vanilla', dropout_p=0.0, linear_step=0
     ):
         super().__init__()
@@ -393,6 +442,7 @@ class SERes2NetBlock(nn.Module):
             dilation=1,
             activation=activation,
             groups=groups,
+            norm=norm,
         )
         self.res2net_block = Res2NetBlock(
             out_channels, out_channels, res2net_scale, kernel_size, dilation
@@ -471,6 +521,7 @@ class ECAPA_TDNN(torch.nn.Module):
             channels=[512, 512, 512, 512, 1536],
             kernel_sizes=[5, 3, 3, 3, 1],
             dilations=[1, 2, 3, 4, 1],
+            norm='batch',
             dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0,
             noise_norm='none', noise_type='none',
             domain_mix=False,
@@ -519,7 +570,8 @@ class ECAPA_TDNN(torch.nn.Module):
                     kernel_sizes[0],
                     dilations[0],
                     activation,
-                    groups[0],) 
+                    groups[0],
+                    norm=norm) 
             ]
         
         if 'attenoise' in dropout_type:
@@ -559,7 +611,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     kernel_size=kernel_sizes[i],
                     dilation=dilations[i],
                     activation=activation,
-                    groups=groups[i],
+                    groups=groups[i], norm=norm,
                     dropout_type=dropout_type, dropout_p=self.dropouts[i],
                     linear_step=linear_step)
             )
@@ -655,7 +707,7 @@ class ECAPA_TDNN(torch.nn.Module):
             # embeddings = x.transpose(1, 2).contiguous()
 
         logits = self.classifier(embeddings)
-        
+
         if hasattr(self, 'domain_classifier') and self.training:
             dlogits = self.domain_classifier((embeddings, logits))
             logits  = (logits, dlogits)
