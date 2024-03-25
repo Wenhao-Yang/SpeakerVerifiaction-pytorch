@@ -75,20 +75,27 @@ class InstBatchNorm1d(nn.Module):
     torch.Size([8, 120, 64])
     """
 
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, shuffle=False):
         super(InstBatchNorm1d, self).__init__()
 
         self.batch_norm = BatchNorm1d(input_size=in_channels//2)
         self.inst_norm = nn.InstanceNorm1d(in_channels//2)
+        self.shuffle = shuffle
 
     def forward(self, x):
         """ Processes the input tensor x and returns an output tensor."""
+        x_shape = x.shape
         x1, x2 = x.chunk(2, dim=1)
 
         x1 = self.batch_norm(x1)
         x2 = self.inst_norm(x2)
 
-        return torch.cat([x1, x2], dim=1)
+        x = torch.cat([x1, x2], dim=1)
+
+        if self.shuffle:
+            x = x.reshape(x_shape[0], 2, -1, x_shape[2]).transpose(1,2).reshape(x_shape[0], x_shape[1], x_shape[2])
+
+        return x
 
 
 class TDNNBlock(nn.Module):
@@ -126,7 +133,7 @@ class TDNNBlock(nn.Module):
         dilation,
         activation=nn.ReLU,
         groups=1,
-        norm='batch'
+        norm='batch', shuffle=False
     ):
         super(TDNNBlock, self).__init__()
         self.conv = Conv1d(
@@ -140,7 +147,7 @@ class TDNNBlock(nn.Module):
         if norm == 'inst':
             self.norm = nn.InstanceNorm1d(out_channels)
         elif norm == 'inbn':
-            self.norm = InstBatchNorm1d(out_channels)
+            self.norm = InstBatchNorm1d(out_channels, shuffle)
         else:
             self.norm = BatchNorm1d(input_size=out_channels)
 
@@ -430,7 +437,7 @@ class SERes2NetBlock(nn.Module):
         kernel_size=1,
         dilation=1,
         activation=torch.nn.ReLU,
-        groups=1, norm='batch',
+        groups=1, norm='batch', shuffle=False,
         dropout_type='vanilla', dropout_p=0.0, linear_step=0
     ):
         super().__init__()
@@ -442,7 +449,7 @@ class SERes2NetBlock(nn.Module):
             dilation=1,
             activation=activation,
             groups=groups,
-            norm=norm,
+            norm=norm, shuffle=shuffle
         )
         self.res2net_block = Res2NetBlock(
             out_channels, out_channels, res2net_scale, kernel_size, dilation
@@ -521,7 +528,7 @@ class ECAPA_TDNN(torch.nn.Module):
             channels=[512, 512, 512, 512, 1536],
             kernel_sizes=[5, 3, 3, 3, 1],
             dilations=[1, 2, 3, 4, 1],
-            norm='batch',
+            norm='batch', shuffle=False,
             dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0,
             noise_norm='none', noise_type='none',
             domain_mix=False,
@@ -571,7 +578,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     dilations[0],
                     activation,
                     groups[0],
-                    norm=norm) 
+                    norm=norm, shuffle=shuffle) 
             ]
         
         if 'attenoise' in dropout_type:
@@ -611,7 +618,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     kernel_size=kernel_sizes[i],
                     dilation=dilations[i],
                     activation=activation,
-                    groups=groups[i], norm=norm,
+                    groups=groups[i], norm=norm, shuffle=shuffle
                     dropout_type=dropout_type, dropout_p=self.dropouts[i],
                     linear_step=linear_step)
             )
@@ -623,7 +630,7 @@ class ECAPA_TDNN(torch.nn.Module):
             kernel_sizes[-1],
             dilations[-1],
             activation,
-            groups=groups[-1],
+            groups=groups[-1], norm=norm, shuffle=shuffle
         )
 
         # Attentive Statistical Pooling
