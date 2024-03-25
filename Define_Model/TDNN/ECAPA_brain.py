@@ -618,7 +618,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     kernel_size=kernel_sizes[i],
                     dilation=dilations[i],
                     activation=activation,
-                    groups=groups[i], norm=norm, shuffle=shuffle
+                    groups=groups[i], norm=norm, shuffle=shuffle,
                     dropout_type=dropout_type, dropout_p=self.dropouts[i],
                     linear_step=linear_step)
             )
