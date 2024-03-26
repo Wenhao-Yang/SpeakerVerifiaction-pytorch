@@ -3845,7 +3845,7 @@ if [ $stage -le 606 ]; then
     fi
 
   for epoch in avg3 ; do #1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in baseline ;do 
+    for model_name in shuffle ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
@@ -3856,6 +3856,9 @@ if [ $stage -le 606 ]; then
         if [[ $model_name == baseline ]];then
           model_dir=${common_path}/${seed}
           yaml_name=${common_path}/model.yaml
+        elif [[ $model_name == shuffle ]];then
+          model_dir=${common_path}_shuffle/${seed}
+          yaml_name=${common_path}_shuffle/model.yaml
         elif [[ $model_name == sep ]];then
           model_dir=${common_path}sep/${seed}
           yaml_name=${common_path}sep/model.yaml
