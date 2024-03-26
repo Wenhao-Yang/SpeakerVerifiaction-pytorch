@@ -89,7 +89,7 @@ class InstBatchNorm1d(nn.Module):
         """ Processes the input tensor x and returns an output tensor."""
         x_shape = x.shape
         x1 = x[:, :self.bath_size, :]
-        x2 = x[:, self.inst_size:, :]
+        x2 = x[:, -self.inst_size:, :]
 
         x1 = self.batch_norm(x1)
         x2 = self.inst_norm(x2)
