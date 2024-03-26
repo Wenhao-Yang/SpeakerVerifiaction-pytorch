@@ -20,7 +20,7 @@ wav_type: int
 subset: ""
 sample_type: instance
 
-train_dir: !ref <data_root_dir>/data/<datasets>/dev
+train_dir: !ref <data_root_dir>/data/<datasets>/dev_2radsnr05
 # <subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
 train_trials: trials
