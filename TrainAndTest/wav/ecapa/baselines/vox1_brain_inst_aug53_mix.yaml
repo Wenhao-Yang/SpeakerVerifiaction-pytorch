@@ -108,8 +108,9 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   channels: [384, 384, 384, 384, 1152]
   domain_mix: !ref <domain_mix>
   num_classes: !ref <num_classes>
-  shuffle: True
+  bath_ratio: 0.75
   norm: inbn
+#   shuffle: True
   #   channels: [256, 256, 256, 256, 768]
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
@@ -176,7 +177,7 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_inbn_<encoder_type>_em<embedding_size><loss_str>_chn384_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>_mix_shuffle
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_inbn_<encoder_type>_em<embedding_size><loss_str>_chn384_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>_mix075
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst
 
