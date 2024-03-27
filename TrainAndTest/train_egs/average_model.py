@@ -58,7 +58,7 @@ def main():
     print('average epoch ckp: ', epochs)
 
     avg = None
-    assert num == len(path_list)
+    assert num == len(path_list), print(num, path_list)
     for path in path_list:
         # print('Processing {}'.format(path))
         states = torch.load(path, map_location=torch.device('cpu'))
