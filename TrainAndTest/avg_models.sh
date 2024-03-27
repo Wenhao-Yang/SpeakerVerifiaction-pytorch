@@ -122,8 +122,9 @@ if [ $stage -le 20 ]; then
     # done
 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mixgrl
-    common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
-    for model_name in shuffle ; do
+    # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53/1234
+    for model_name in baseline ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
         for seed in 1234 ; do
             if [[ $model_name == baseline ]];then
