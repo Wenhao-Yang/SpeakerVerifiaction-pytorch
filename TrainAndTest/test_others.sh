@@ -3845,7 +3845,7 @@ if [ $stage -le 606 ]; then
     fi
 
   for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in instx1 ;do 
+    for model_name in inbnx1 ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
@@ -3888,9 +3888,9 @@ if [ $stage -le 606 ]; then
         elif [[ $model_name == inst05 ]];then
           model_dir=${common_path}_inst05/${seed}
           yaml_name=${common_path}_inst05/model.yaml
-        elif [[ $model_name == instx1 ]];then
-          model_dir=${common_path}_instx1/${seed}
-          yaml_name=${common_path}_instx1/model.yaml
+        elif [[ $model_name == inbnx1 ]];then
+          model_dir=${common_path}_inbnx1/${seed}
+          yaml_name=${common_path}_inbnx1/model.yaml
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
