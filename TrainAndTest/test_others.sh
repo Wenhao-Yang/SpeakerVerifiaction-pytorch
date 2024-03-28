@@ -3844,18 +3844,18 @@ if [ $stage -le 606 ]; then
       chn_str=
     fi
 
-  for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in baseline inst05;do 
+  for epoch in avg2 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+    for model_name in baseline ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
-    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53
+    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
-    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3  ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
-      # all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5
+      for test_subset in all  ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
+      # all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5 test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       for seed in 1234 ; do
         if [[ $model_name == baseline ]];then
           model_dir=${common_path}/${seed}
@@ -3904,7 +3904,7 @@ if [ $stage -le 606 ]; then
             --cos-sim --test
         done
 
-        for trials in original ; do # original easy hard
+        for trials in original easy hard ; do # original easy hard
           python -W ignore TrainAndTest/train_egs/test_egs.py \
             --train-dir ${lstm_dir}/data/${train_set}/${sname} \
             --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
