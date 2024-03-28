@@ -234,6 +234,16 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
             with torch.no_grad():
                 wavs_aug_tot = []
                 labels_aug_tot = []
+
+                if 'second_as_augment' in config_args and config_args['second_as_augment'] == True:
+                    data = data.reshape(-1, 1, 2, data.shape[-1])
+                    second_data  = data[:,:,1,:].unsqueeze(1)
+                    data = data[:,:,0,:].unsqueeze(1)
+                    wavs_aug_tot.append(second_data.cuda())
+
+                    label = label.reshape(-1, repeats)[:, 0]
+                    labels_aug_tot.append(label.cuda())
+
                 wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
                 labels_aug_tot.append(label.cuda())
 
