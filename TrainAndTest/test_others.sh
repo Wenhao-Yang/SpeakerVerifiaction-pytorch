@@ -3885,19 +3885,19 @@ if [ $stage -le 606 ]; then
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
-        # for trials in trials_all; do
-        #   python -W ignore TrainAndTest/train_egs/test_egs.py \
-        #     --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-        #     --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-        #     --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-        #     --feat-format wav --nj 4 \
-        #     --check-yaml Data/checkpoint/${yaml_name} \
-        #     --xvector-dir ${xvector_dir} \
-        #     --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-        #     --gpu-id ${gpu_id} \
-        #     --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-        #     --cos-sim --test
-        # done
+        for trials in trials_all; do
+          python -W ignore TrainAndTest/train_egs/test_egs.py \
+            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+            --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+            --feat-format wav --nj 4 \
+            --check-yaml Data/checkpoint/${yaml_name} \
+            --xvector-dir ${xvector_dir} \
+            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+            --gpu-id ${gpu_id} \
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+            --cos-sim --test
+        done
 
         for trials in original easy hard ; do # original easy hard
           python -W ignore TrainAndTest/train_egs/test_egs.py \
