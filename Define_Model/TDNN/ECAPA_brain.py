@@ -575,13 +575,15 @@ class ECAPA_TDNN(torch.nn.Module):
         if isinstance(bath_ratio, float):
             bath_ratio = [bath_ratio] * (len(channels)+1)
         elif len(bath_ratio) < len(channels) + 1:
-            norm.append(0.5)
+            while len(bath_ratio) < len(channels) + 1:
+                bath_ratio.append(0.5)
         self.bath_ratio = bath_ratio
 
         if isinstance(norm, str):
             norm = [norm] * (len(channels)+1)
         elif len(norm) < len(channels) + 1:
-            norm.append('batch')
+            while len(norm) < len(channels) + 1:
+                norm.append('batch')
         self.norm = norm
 
         # The initial TDNN layer

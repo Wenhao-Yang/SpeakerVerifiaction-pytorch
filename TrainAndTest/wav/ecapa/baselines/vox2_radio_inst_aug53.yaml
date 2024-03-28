@@ -93,9 +93,7 @@ activation: relu
 channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 #channels: [1024,1024,1024,1024,3072]
 encoder_type: "SASP2"
-norm: ['inbn', 'inbn','inbn','inbn','inbn','batch',]
-bath_ratio: 0.5
-affine: True
+
 num_classes: 5994
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
@@ -105,6 +103,9 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   num_classes: !ref <num_classes>
+  norm: ['inbn', 'inbn','inbn','inbn','inbn','batch',]
+  bath_ratio: 0.5
+  affine: True
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
