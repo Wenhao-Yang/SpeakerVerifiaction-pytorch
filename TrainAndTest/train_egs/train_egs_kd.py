@@ -222,7 +222,7 @@ def train(train_loader, model, teacher_model, ce, optimizer, epoch, scheduler):
             # loss = (1 - args.distil_weight) * loss
             teacher_loss += (args.distil_weight / (
                     1 - args.distil_weight) * args.temperature * args.temperature) * kd_loss(
-                soft_teacher_out, soft_student_out
+                soft_teacher_out.log(), soft_student_out
             )
 
         if 'attention' in args.kd_type:

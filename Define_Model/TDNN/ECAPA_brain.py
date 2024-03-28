@@ -75,14 +75,14 @@ class InstBatchNorm1d(nn.Module):
     torch.Size([8, 120, 64])
     """
 
-    def __init__(self, in_channels, shuffle=False, bath_ratio=0.5):
+    def __init__(self, in_channels, shuffle=False, bath_ratio=0.5, affine=False):
         super(InstBatchNorm1d, self).__init__()
 
         self.bath_ratio = bath_ratio
         self.bath_size  = int(in_channels * bath_ratio)
         self.inst_size = in_channels - self.bath_size
         self.batch_norm = BatchNorm1d(input_size=self.bath_size)
-        self.inst_norm = nn.InstanceNorm1d(self.inst_size)
+        self.inst_norm = nn.InstanceNorm1d(self.inst_size, affine=affine)
         self.shuffle = shuffle
 
     def forward(self, x):
@@ -137,7 +137,7 @@ class TDNNBlock(nn.Module):
         dilation,
         activation=nn.ReLU,
         groups=1,
-        norm='batch', shuffle=False, bath_ratio=0.5
+        norm='batch', shuffle=False, bath_ratio=0.5, affine=False
     ):
         super(TDNNBlock, self).__init__()
         self.conv = Conv1d(
@@ -151,7 +151,7 @@ class TDNNBlock(nn.Module):
         if norm == 'inst':
             self.norm = nn.InstanceNorm1d(out_channels)
         elif norm == 'inbn':
-            self.norm = InstBatchNorm1d(out_channels, shuffle, bath_ratio=bath_ratio)
+            self.norm = InstBatchNorm1d(out_channels, shuffle, bath_ratio=bath_ratio, affine=affine)
         else:
             self.norm = BatchNorm1d(input_size=out_channels)
 
@@ -441,7 +441,7 @@ class SERes2NetBlock(nn.Module):
         kernel_size=1,
         dilation=1,
         activation=torch.nn.ReLU,
-        groups=1, norm='batch', shuffle=False, bath_ratio=0.5,
+        groups=1, norm='batch', shuffle=False, bath_ratio=0.5, affine=False,
         dropout_type='vanilla', dropout_p=0.0, linear_step=0
     ):
         super().__init__()
@@ -453,7 +453,7 @@ class SERes2NetBlock(nn.Module):
             dilation=1,
             activation=activation,
             groups=groups,
-            norm=norm, shuffle=shuffle, bath_ratio=bath_ratio
+            norm=norm, shuffle=shuffle, bath_ratio=bath_ratio, affine=affine
         )
         self.res2net_block = Res2NetBlock(
             out_channels, out_channels, res2net_scale, kernel_size, dilation
@@ -532,7 +532,7 @@ class ECAPA_TDNN(torch.nn.Module):
             channels=[512, 512, 512, 512, 1536],
             kernel_sizes=[5, 3, 3, 3, 1],
             dilations=[1, 2, 3, 4, 1],
-            norm='batch', shuffle=False, bath_ratio=0.5,
+            norm='batch', shuffle=False, bath_ratio=0.5, affine=False,
             dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0,
             noise_norm='none', noise_type='none',
             domain_mix=False,
@@ -572,6 +572,17 @@ class ECAPA_TDNN(torch.nn.Module):
         self.domain_mix = domain_mix
         
         self.blocks = nn.ModuleList()
+        if isinstance(bath_ratio, float):
+            bath_ratio = [bath_ratio] * (len(channels)+1)
+        elif len(bath_ratio) < len(channels) + 1:
+            norm.append(0.5)
+        self.bath_ratio = bath_ratio
+
+        if isinstance(norm, str):
+            norm = [norm] * (len(channels)+1)
+        elif len(norm) < len(channels) + 1:
+            norm.append('batch')
+        self.norm = norm
 
         # The initial TDNN layer
         tdnn_layer1 = [
@@ -582,7 +593,7 @@ class ECAPA_TDNN(torch.nn.Module):
                     dilations[0],
                     activation,
                     groups[0],
-                    norm=norm, shuffle=shuffle, bath_ratio=bath_ratio) 
+                    norm=norm[0], shuffle=shuffle, bath_ratio=bath_ratio[0], affine=affine) 
             ]
         
         if 'attenoise' in dropout_type:
@@ -622,7 +633,8 @@ class ECAPA_TDNN(torch.nn.Module):
                     kernel_size=kernel_sizes[i],
                     dilation=dilations[i],
                     activation=activation,
-                    groups=groups[i], norm=norm, shuffle=shuffle, bath_ratio=bath_ratio,
+                    groups=groups[i],
+                    norm=norm[i], shuffle=shuffle, bath_ratio=bath_ratio[i], affine=affine,
                     dropout_type=dropout_type, dropout_p=self.dropouts[i],
                     linear_step=linear_step)
             )
@@ -634,7 +646,8 @@ class ECAPA_TDNN(torch.nn.Module):
             kernel_sizes[-1],
             dilations[-1],
             activation,
-            groups=groups[-1], norm=norm, shuffle=shuffle, bath_ratio=bath_ratio
+            groups=groups[-1],
+            norm=norm[-2], shuffle=shuffle, bath_ratio=bath_ratio[-2], affine=affine
         )
 
         # Attentive Statistical Pooling
@@ -643,14 +656,20 @@ class ECAPA_TDNN(torch.nn.Module):
             attention_channels=attention_channels,
             global_context=global_context,
         )
-        self.asp_bn = BatchNorm1d(input_size=channels[-1] * 2)
+
+        if self.norm[-1] == 'batch':
+            self.asp_bn = BatchNorm1d(input_size=channels[-1] * 2)
+        elif self.norm[-1] == 'inst':
+            self.asp_bn = nn.InstanceNorm1d(channels[-1] * 2)
+        elif self.norm[-1] == 'inbn':
+            self.asp_bn = InstBatchNorm1d(channels[-1] * 2, shuffle,
+                                          bath_ratio=bath_ratio[-1], affine=affine)
 
         # Final linear transformation
         # self.fc = Conv1d(
         #     in_channels=channels[-1] * 2,
         #     out_channels=embedding_size,
         #     kernel_size=1,)
-
         self.fc = nn.Linear(channels[-1] * 2, embedding_size)
 
         self.classifier = Classifier(
