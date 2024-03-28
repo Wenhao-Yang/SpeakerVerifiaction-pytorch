@@ -3852,7 +3852,7 @@ if [ $stage -le 606 ]; then
     common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in all_radsnr0 all_radsnr1 all_radsnr2 all_radsnr5 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
+      for test_subset in all_radsnr0 all_radsnr2 all_radsnr5 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       for seed in 1234 ; do
         if [[ $model_name == baseline ]];then
           model_dir=${common_path}/${seed}
@@ -3884,19 +3884,19 @@ if [ $stage -le 606 ]; then
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
-        for trials in trials_all; do
-          python -W ignore TrainAndTest/train_egs/test_egs.py \
-            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-            --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-            --feat-format wav --nj 4 \
-            --check-yaml Data/checkpoint/${yaml_name} \
-            --xvector-dir ${xvector_dir} \
-            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-            --gpu-id ${gpu_id} \
-            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-            --cos-sim --test
-        done
+        # for trials in trials_all; do
+        #   python -W ignore TrainAndTest/train_egs/test_egs.py \
+        #     --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+        #     --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+        #     --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+        #     --feat-format wav --nj 4 \
+        #     --check-yaml Data/checkpoint/${yaml_name} \
+        #     --xvector-dir ${xvector_dir} \
+        #     --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+        #     --gpu-id ${gpu_id} \
+        #     --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+        #     --cos-sim --test
+        # done
 
         for trials in original easy hard ; do # original easy hard
           python -W ignore TrainAndTest/train_egs/test_egs.py \
