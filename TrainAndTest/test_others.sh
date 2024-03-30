@@ -3844,7 +3844,7 @@ if [ $stage -le 606 ]; then
       chn_str=
     fi
 
-  for epoch in avg2 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+  for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     for model_name in group4 group16 group32 inbn05_shuffle2 dp05warm inbn05dpwarm ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
