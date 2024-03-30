@@ -121,7 +121,7 @@ class DomainDiscriminator(nn.Module):
     def __init__(self, input_size, num_classes,
                  hidden_size=0, num_logits=0,
                  warm_start=False, sigmoid=False,
-                 max_iters=1000, pooling='',
+                 max_iters=1000, pooling='', groups=1, 
                  mapping='none'):
         """
         discriminator with A gradient reversal layer.
@@ -142,11 +142,13 @@ class DomainDiscriminator(nn.Module):
             input_size = input_size * num_logits
 
         elif self.mapping in ['STAP', 'SAP', 'SASP2', 'SASP']:
+            assert num_logits > 0
             encode_layer, encoder_output = get_encode_layer(encoder_type=self.mapping,
-                                                            encode_input_dim=input_size//4, hidden_dim=hidden_size,
-                                                            embedding_size=input_size//4, time_dim=0)
+                                                            encode_input_dim=input_size//num_logits, hidden_dim=hidden_size,
+                                                            embedding_size=input_size//num_logits, time_dim=0)
             self.map = nn.Sequential(
-                nn.Conv1d(in_channels=input_size, out_channels=input_size//4, kernel_size=1, bias=False),
+                nn.Conv1d(in_channels=input_size, out_channels=input_size//num_logits, kernel_size=1,
+                          bias=False, groups=groups),
                 encode_layer,)
             input_size= encoder_output
         
