@@ -227,7 +227,7 @@ class StatisticPooling(nn.Module):
         super(StatisticPooling, self).__init__()
         self.input_dim = input_dim
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         """
         :param x:   [length,feat_dim] vector
         :return:   [feat_dim] vector
