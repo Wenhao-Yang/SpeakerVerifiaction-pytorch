@@ -98,8 +98,8 @@ channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 encoder_type: "SASP2"
 num_classes: 1211
 domain_mix: False
-domain_feat: 'concat'
-mapping: 'mfa'
+domain_feat: 'mfa'
+mapping: 'STAP'
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
