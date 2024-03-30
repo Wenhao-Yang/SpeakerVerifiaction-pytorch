@@ -313,7 +313,7 @@ if [ $stage -le 12 ]; then
           # baseline for vox2 , aug53
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53.yaml --seed=${seed}
 
-          # CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mix.yaml --seed=${seed}
+          CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mix.yaml --seed=${seed}
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mixwass.yaml --seed=${seed}
 
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_grl.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mixgrl.yaml --seed=${seed}
@@ -331,7 +331,7 @@ if [ $stage -le 12 ]; then
 
           # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox2_inst_aug53_random.yaml --seed=${seed} --sample-ratio ${ratio}
           # CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox2_radio_inst.yaml --seed=${seed}
-          CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox2_radio_inst_aug53.yaml --seed=${seed}
+          # CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox2_radio_inst_aug53.yaml --seed=${seed}
           
           # CUDA_VISIBLE_DEVICES=3,4 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_brain_optimal.yaml --seed=${seed} --sample-ratio ${ratio}
 
