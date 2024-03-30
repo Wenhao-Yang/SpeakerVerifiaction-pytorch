@@ -115,7 +115,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
 
 domain_classifier: !new:Define_Model.model.DomainDiscriminator
   input_size: 1152
-  hidden_size: 512
+  hidden_size: 0
   num_classes: 2
   sigmoid: False
   warm_start: True
