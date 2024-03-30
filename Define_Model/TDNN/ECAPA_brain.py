@@ -49,7 +49,7 @@ class BatchNorm1d(_BatchNorm1d):
 
 
 class InstBatchNorm1d(nn.Module):
-    """An implementation of TDNN.
+    """An implementation of InstBatchNorm1d.
 
     Arguments
     ----------
@@ -88,8 +88,11 @@ class InstBatchNorm1d(nn.Module):
     def forward(self, x):
         """ Processes the input tensor x and returns an output tensor."""
         x_shape = x.shape
-        x1 = x[:, :self.bath_size, :]
-        x2 = x[:, -self.inst_size:, :]
+        if self.shuffle:
+            # x = torch.nn.functional.channel_shuffle(x, 2)
+            x = x.reshape(x_shape[0], 2, -1, x_shape[2]).transpose(1,2).reshape(x_shape[0], x_shape[1], x_shape[2])
+        x1 = x[:, :self.bath_size]
+        x2 = x[:, -self.inst_size:]
 
         x1 = self.batch_norm(x1)
         x2 = self.inst_norm(x2)
@@ -97,7 +100,8 @@ class InstBatchNorm1d(nn.Module):
         x = torch.cat([x1, x2], dim=1)
 
         if self.shuffle:
-            x = x.reshape(x_shape[0], 2, -1, x_shape[2]).transpose(1,2).reshape(x_shape[0], x_shape[1], x_shape[2])
+            # x = torch.nn.functional.channel_shuffle(x, x_shape[1]//2)
+            x = x.reshape(x_shape[0], -1, 2, x_shape[2]).transpose(1,2).reshape(x_shape[0], x_shape[1], x_shape[2])
 
         return x
 
@@ -152,6 +156,8 @@ class TDNNBlock(nn.Module):
             self.norm = nn.InstanceNorm1d(out_channels)
         elif norm == 'inbn':
             self.norm = InstBatchNorm1d(out_channels, shuffle, bath_ratio=bath_ratio, affine=affine)
+        elif norm == 'group':
+            self.norm = nn.GroupNorm(int(bath_ratio), out_channels)
         else:
             self.norm = BatchNorm1d(input_size=out_channels)
 
@@ -663,6 +669,8 @@ class ECAPA_TDNN(torch.nn.Module):
             self.asp_bn = BatchNorm1d(input_size=channels[-1] * 2)
         elif self.norm[-1] == 'inst':
             self.asp_bn = nn.InstanceNorm1d(channels[-1] * 2)
+        elif self.norm[-1] == 'group':
+            self.asp_bn = nn.GroupNorm(int(bath_ratio[-1]), channels[-1] * 2)
         elif self.norm[-1] == 'inbn':
             self.asp_bn = InstBatchNorm1d(channels[-1] * 2, shuffle,
                                           bath_ratio=bath_ratio[-1], affine=affine)
@@ -730,7 +738,7 @@ class ECAPA_TDNN(torch.nn.Module):
             # Attentive Statistical Pooling
             x = self.asp(x, lengths=lengths)
             x = self.asp_bn(x)
-            
+
             if self.domain_mix and self.training:
                 x = self.seperate(x)
 
@@ -760,7 +768,7 @@ class ECAPA_TDNN(torch.nn.Module):
         mix_xs = clean_xs * lambda1 + domain_xs * (1-lambda1)
         
         return torch.cat([x, mix_xs], dim=0)
-        
+
 
     def get_grads(self) -> torch.Tensor:
         """
