@@ -20,6 +20,7 @@ from hyperpyyaml import load_hyperpyyaml
 # Models
 from Define_Model.CNN import AlexNet
 from Define_Model.FilterLayer import RevGradLayer
+from Define_Model.Pooling import get_encode_layer
 from Define_Model.ResNet import LocalResNet, ResNet20, ThinResNet, RepeatResNet, ResNet, SimpleResNet, GradResNet, \
     TimeFreqResNet, MultiResNet
 from Define_Model.Loss.SoftmaxLoss import AdditiveMarginLinear, SubMarginLinear, MarginLinearDummy
@@ -120,7 +121,7 @@ class DomainDiscriminator(nn.Module):
     def __init__(self, input_size, num_classes,
                  hidden_size=0, num_logits=0,
                  warm_start=False, sigmoid=False,
-                 max_iters=1000,
+                 max_iters=1000, pooling='',
                  mapping='none'):
         """
         discriminator with A gradient reversal layer.
@@ -139,6 +140,13 @@ class DomainDiscriminator(nn.Module):
         elif self.mapping == 'linear':
             self.map = MultiLinearMap()
             input_size = input_size * num_logits
+
+        elif self.mapping in ['STAP', 'SAP', 'SASP2', 'SASP']:
+            encode_layer, encoder_output = get_encode_layer(encoder_type=self.mapping,
+                                                            encode_input_dim=input_size, hidden_dim=hidden_size,
+                                                            embedding_size=input_size, time_dim=0)
+            self.map = encode_layer
+            input_size= encoder_output
         
         layers = []
         if self.warm_start:

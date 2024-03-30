@@ -540,7 +540,7 @@ class ECAPA_TDNN(torch.nn.Module):
             dilations=[1, 2, 3, 4, 1],
             norm='batch', shuffle=False, bath_ratio=0.5, affine=False,
             dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0,
-            noise_norm='none', noise_type='none',
+            noise_norm='none', noise_type='none', domain_feat='embeddings',
             domain_mix=False,
             attention_channels=128,
             res2net_scale=8,
@@ -550,6 +550,8 @@ class ECAPA_TDNN(torch.nn.Module):
 
         super().__init__()
         self.embedding_size = embedding_size
+        self.domain_feat = domain_feat
+
         if len(dropouts) == 3:
             self.dropouts = [0]
             self.dropouts.extend(dropouts)
@@ -681,7 +683,6 @@ class ECAPA_TDNN(torch.nn.Module):
         #     out_channels=embedding_size,
         #     kernel_size=1,)
         self.fc = nn.Linear(channels[-1] * 2, embedding_size)
-
         self.classifier = Classifier(
             input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
 
@@ -732,11 +733,11 @@ class ECAPA_TDNN(torch.nn.Module):
                 xl.append(x)
 
             # Multi-layer feature aggregation
-            x = torch.cat(xl[1:], dim=1)
-            x = self.mfa(x)
+            x_cat = torch.cat(xl[1:], dim=1)
+            x_mfa = self.mfa(x_cat)
 
             # Attentive Statistical Pooling
-            x = self.asp(x, lengths=lengths)
+            x = self.asp(x_mfa, lengths=lengths)
             x = self.asp_bn(x)
 
             if self.domain_mix and self.training:
@@ -744,12 +745,20 @@ class ECAPA_TDNN(torch.nn.Module):
 
             # Final linear transformation
             embeddings = self.fc(x)
-            # embeddings = x.transpose(1, 2).contiguous()
 
         logits = self.classifier(embeddings)
 
         if hasattr(self, 'domain_classifier') and self.training:
-            dlogits = self.domain_classifier((embeddings, logits))
+            if self.domain_feat == 'embeddings':
+                domain_embeddings = embeddings
+            elif self.domain_feat == 'concat':
+                domain_embeddings = x_cat
+            elif self.domain_feat == 'mfa':
+                domain_embeddings = x_mfa
+            else:
+                raise ValueError('domain_feat must be either "embeddings" or "logits"')
+            
+            dlogits = self.domain_classifier((domain_embeddings, logits))
             logits  = (logits, dlogits)
 
         return logits, embeddings
@@ -760,7 +769,6 @@ class ECAPA_TDNN(torch.nn.Module):
     def seperate(self, x):
         
         x_shape = x.shape
-
         clean_xs, domain_xs = x.reshape(2, -1, x_shape[1])#.clone()
         
         # beta distributions interpolation
