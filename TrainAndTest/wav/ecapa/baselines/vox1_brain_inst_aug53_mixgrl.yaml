@@ -99,7 +99,7 @@ encoder_type: "SASP2"
 num_classes: 1211
 domain_mix: False
 domain_feat: 'concat'
-mapping: 'STAP'
+mapping: 'mfa'
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
