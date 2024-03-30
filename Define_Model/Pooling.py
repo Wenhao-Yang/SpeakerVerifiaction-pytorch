@@ -223,9 +223,10 @@ class AttentionStatisticPooling_v2(nn.Module):
 
 class StatisticPooling(nn.Module):
 
-    def __init__(self, input_dim):
+    def __init__(self, input_dim, chn_dim=-1):
         super(StatisticPooling, self).__init__()
         self.input_dim = input_dim
+        self.chn_dim=chn_dim
 
     def forward(self, x, **kwargs):
         """
@@ -235,6 +236,9 @@ class StatisticPooling(nn.Module):
         x_shape = x.shape
         if len(x.shape) != 3:
             x = x.reshape(x_shape[0], x_shape[-2], -1)
+        
+        if self.chn_dim == 1:
+            x = x.transpose(1, 2)
 
         # assert x.shape[-1] == self.input_dim, print(x.shape[-1])
 
@@ -511,7 +515,7 @@ class LinearTransform(nn.Module):
         return x + trans
 
 def get_encode_layer(encoder_type: str, encode_input_dim: int, hidden_dim: int,
-                     embedding_size: int, time_dim: int):
+                     embedding_size: int, time_dim: int, chn_dim=1):
     
     if encoder_type == 'SAP':
         encoder = SelfAttentionPooling(
@@ -532,7 +536,7 @@ def get_encode_layer(encoder_type: str, encode_input_dim: int, hidden_dim: int,
             input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
         encoder_output = encode_input_dim * 2
     elif encoder_type == 'STAP':
-        encoder = StatisticPooling(input_dim=encode_input_dim)
+        encoder = StatisticPooling(input_dim=encode_input_dim, chn_dim=chn_dim)
         encoder_output = encode_input_dim * 2
     else:
         encoder = nn.AdaptiveAvgPool2d((time_dim, None))
