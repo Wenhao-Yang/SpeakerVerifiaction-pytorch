@@ -143,9 +143,11 @@ class DomainDiscriminator(nn.Module):
 
         elif self.mapping in ['STAP', 'SAP', 'SASP2', 'SASP']:
             encode_layer, encoder_output = get_encode_layer(encoder_type=self.mapping,
-                                                            encode_input_dim=input_size, hidden_dim=hidden_size,
-                                                            embedding_size=input_size, time_dim=0)
-            self.map = encode_layer
+                                                            encode_input_dim=input_size//2, hidden_dim=hidden_size,
+                                                            embedding_size=input_size//2, time_dim=0)
+            self.map = nn.Sequential(
+                nn.Conv1d(in_channels=input_size, out_channels=input_size//2, kernel_size=1, bias=False),
+                encode_layer,)
             input_size= encoder_output
         
         layers = []
