@@ -119,7 +119,7 @@ domain_classifier: !new:Define_Model.model.DomainDiscriminator
   num_classes: 2
   sigmoid: False
   warm_start: True
-  groups: 4
+  groups: 3
   max_iters: 4025
   num_logits: 2 #!ref <num_classes>
   mapping: !ref <mapping>
