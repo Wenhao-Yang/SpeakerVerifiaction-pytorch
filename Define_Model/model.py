@@ -185,7 +185,9 @@ class DomainDiscriminator(nn.Module):
             x, logits = x
             logits = F.softmax(logits, dim=1).detach()
             
-            if self.mapping != 'none':
+            if self.mapping in ['STAP', 'SAP', 'SASP2', 'SASP']:
+                x = self.map(x)
+            elif self.mapping != 'none':
                 x = self.map(x, logits)
             
         return self.classifier(x)
