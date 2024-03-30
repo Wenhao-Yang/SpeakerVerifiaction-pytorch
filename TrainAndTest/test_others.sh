@@ -3834,7 +3834,7 @@ if [ $stage -le 606 ]; then
   train_set=vox1 test_set=vox1 # #jukebox cnceleb
   train_subset=
   subset=test test_input=var test_subset=test
-  gpu_id=0
+  gpu_id=1
   
   sname=dev
   for chn in 256 ; do
@@ -3845,17 +3845,17 @@ if [ $stage -le 606 ]; then
     fi
 
   for epoch in avg2 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in inbn05 ;do 
+    for model_name in group4 group16 group32 inbn05_shuffle2 dp05warm inbn05dpwarm ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
-    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53
-    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53
+    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
+      for test_subset in test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       # all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5 
       # test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       for seed in 1234 ; do
@@ -3901,6 +3901,21 @@ if [ $stage -le 606 ]; then
         elif [[ $model_name == inbn05 ]];then
           model_dir=${common_path}_inbn05/${seed}
           yaml_name=${common_path}_inbn05/model.yaml
+        elif [[ $model_name == group4 ]];then
+          model_dir=${common_path}_group4/${seed}
+          yaml_name=${common_path}_group4/model.yaml
+        elif [[ $model_name == group16 ]];then
+          model_dir=${common_path}_group16/${seed}
+          yaml_name=${common_path}_group16/model.yaml
+        elif [[ $model_name == group32 ]];then
+          model_dir=${common_path}_group32/${seed}
+          yaml_name=${common_path}_group32/model.yaml
+        elif [[ $model_name == dp05warm ]];then
+          model_dir=${common_path}_dp05warm/${seed}
+          yaml_name=${common_path}_dp05warm/model.yaml
+        elif [[ $model_name == inbn05dpwarm ]];then
+          model_dir=${common_path}_inbn05dpwarm/${seed}
+          yaml_name=${common_path}_inbn05dpwarm/model.yaml
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
