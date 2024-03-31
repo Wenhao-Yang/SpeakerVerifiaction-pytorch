@@ -221,6 +221,9 @@ class SpeakerLoss(nn.Module):
                             loss_ratio = self.loss_ratio
                         #print(loss_ratio)
                         loss_cent = loss_ratio * self.ce_criterion(second_classfier, label)
+                        if np.isnan(loss_cent.item()):
+                            print(loss, loss_cent)
+
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
                     

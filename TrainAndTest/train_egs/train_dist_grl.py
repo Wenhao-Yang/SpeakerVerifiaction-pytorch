@@ -408,7 +408,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         #                                      batch_weight=batch_weight, epoch=epoch, other=True)
         
         if np.isnan(loss.item()):
-            print(loss, other_loss)
+            # print(loss, other_loss)
             optimizer.zero_grad()  # reset gradient
             torch.cuda.empty_cache()
             loss_nan += 1
