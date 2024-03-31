@@ -149,6 +149,8 @@ class SpeakerLoss(nn.Module):
             self.second_loss = 'none'
 
         self.second_loss_steps = 0 if 'second_loss_steps' not in config_args else config_args['second_loss_steps']
+        self.full_steps = config_args['full_epoch'] if 'full_epoch' in config_args else 0
+
         self.softmax = nn.Softmax(dim=1)
         self.ce_criterion = ce_criterion
         if 'mixup_type' in config_args and config_args['mixup_type'] != '':
@@ -230,11 +232,7 @@ class SpeakerLoss(nn.Module):
                         second_label = second_label.float().unsqueeze(1)
 
                     if self.second_loss_steps > 0:
-                        if 'full_epoch' in self.config_args:
-                            iteration = max(self.iteration - self.config_args['full_epoch'], 0)
-                        else:
-                            iteration = self.iteration
-
+                        iteration = max(self.iteration - self.full_steps, 0)
                         loss_ratio = self.loss_ratio * iteration / self.second_loss_steps
                     else:
                         loss_ratio = self.loss_ratio
