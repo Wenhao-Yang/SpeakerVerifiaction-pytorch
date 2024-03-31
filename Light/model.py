@@ -212,15 +212,19 @@ class SpeakerLoss(nn.Module):
                     if second_classfier == None:
                         loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
                     else:
-                        loss_cent = self.loss_ratio * self.ce_criterion(second_classfier, label)
+                        if self.second_loss_steps > 0:
+                            loss_ratio = self.loss_ratio * self.iteration / self.second_loss_steps
+                        else:
+                            loss_ratio = self.loss_ratio
+                    
+                        loss_cent = loss_ratio * self.ce_criterion(second_classfier, label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
                     
                 if self.second_loss in ['crossentropy', 'binaryentropy'] and second_classfier != None:
                     if self.second_loss == 'binaryentropy':
                         second_label = second_label.float().unsqueeze(1)
-
-
+                        
                     if self.second_loss_steps > 0:
                         loss_ratio = self.loss_ratio * self.iteration / self.second_loss_steps
                     else:
