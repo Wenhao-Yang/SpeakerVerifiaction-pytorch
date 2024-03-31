@@ -3837,7 +3837,7 @@ if [ $stage -le 606 ]; then
   gpu_id=1
   
   sname=dev
-  for chn in 256 ; do
+  for chn in 384 ; do
     if [[ $chn == 384 ]];then
       chn_str=_chn384
     elif [[ $chn == 256 ]];then
