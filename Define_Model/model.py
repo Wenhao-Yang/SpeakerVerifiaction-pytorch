@@ -177,7 +177,7 @@ class DomainDiscriminator(nn.Module):
                 nn.Linear(output_size, 1),
                 nn.Sigmoid()
             ])
-        else:
+        elif num_classes > 0:
             layers.append(nn.Linear(output_size, num_classes))
             
         self.classifier = nn.Sequential(*layers)
