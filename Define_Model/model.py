@@ -153,9 +153,9 @@ class DomainDiscriminator(nn.Module):
             input_size= encoder_output
         
         layers = []
-        if self.warm_start:
+        if self.warm_start and max_iters > 0:
             layers.append(WarmStartGradientReverseLayer(max_iters=max_iters))
-        else:
+        elif max_iters > 0:
             layers.append(RevGradLayer())
         
         output_size =  hidden_size if hidden_size > 0 else input_size
