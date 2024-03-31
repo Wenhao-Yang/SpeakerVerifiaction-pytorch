@@ -97,7 +97,6 @@ channels: 512,512,512,512,1536 #[512, 512, 512, 512, 1536]
 #channels: [1024,1024,1024,1024,3072]
 encoder_type: "SASP2"
 num_classes: 1211
-domain_mix: False
 domain_feat: 'concat'
 mapping: 'STAP'
 
@@ -184,6 +183,7 @@ lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
 second_loss: wasse
+domain_mix: True
 second_loss_steps: 12075
 margin: 0.2
 # m: 0.2
@@ -191,7 +191,7 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_chn384_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>_mix<second_loss>_<domain_feat>_<mapping>
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_chn384_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>_mix<second_loss>_<domain_feat>_<mapping>fix
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst
 
