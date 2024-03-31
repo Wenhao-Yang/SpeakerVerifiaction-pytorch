@@ -220,7 +220,7 @@ class SpeakerLoss(nn.Module):
                             loss_ratio = self.loss_ratio * iteration / self.second_loss_steps
                         else:
                             loss_ratio = self.loss_ratio
-                    
+                        print(loss_ratio)
                         loss_cent = loss_ratio * self.ce_criterion(second_classfier, label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
