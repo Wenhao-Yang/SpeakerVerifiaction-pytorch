@@ -318,7 +318,7 @@ if [ $stage -le 12 ]; then
 
           CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_grl.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mixgrl.yaml --seed=${seed}
 
-          CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_grl.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mixgrl_concat.yaml --seed=${seed}
+          # CUDA_VISIBLE_DEVICES=2,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41705 --nnodes=1 TrainAndTest/train_egs/train_dist_grl.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mixgrl_concat.yaml --seed=${seed}
 
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41785 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53_mix_margin.yaml --seed=${seed}
           

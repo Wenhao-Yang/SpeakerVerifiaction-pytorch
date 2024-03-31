@@ -201,8 +201,8 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
 
     # pdb.set_trace()
     for batch_idx, data_cols in pbar:
-        if batch_idx <= 3565:
-            continue
+        # if batch_idx <= 3565:
+        #     continue
 
         if 'sample_score' in config_args and 'sample_ratio' in config_args:
             data, label, scores = data_cols
