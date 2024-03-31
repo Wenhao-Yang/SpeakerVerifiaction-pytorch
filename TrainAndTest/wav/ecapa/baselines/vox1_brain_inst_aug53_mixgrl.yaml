@@ -178,7 +178,7 @@ concat_augment: True
 num_pipes: 3
 
 # loss
-loss_ratio: 1
+loss_ratio: 0.1
 lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
@@ -186,7 +186,7 @@ second_loss: wasse
 second_metric: euclidean
 domain_mix: True
 second_loss_steps: 12075
-full_epoch: 12075
+# full_epoch: 12075
 margin: 0.2
 # m: 0.2
 s: 30
