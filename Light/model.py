@@ -224,9 +224,14 @@ class SpeakerLoss(nn.Module):
                 if self.second_loss in ['crossentropy', 'binaryentropy'] and second_classfier != None:
                     if self.second_loss == 'binaryentropy':
                         second_label = second_label.float().unsqueeze(1)
-                        
+
                     if self.second_loss_steps > 0:
-                        loss_ratio = self.loss_ratio * self.iteration / self.second_loss_steps
+                        if 'full_epoch' in self.config_args:
+                            iteration = max(self.iteration - self.config_args['full_epoch'], 0)
+                        else:
+                            iteration = self.iteration
+
+                        loss_ratio = self.loss_ratio * iteration / self.second_loss_steps
                     else:
                         loss_ratio = self.loss_ratio
 
