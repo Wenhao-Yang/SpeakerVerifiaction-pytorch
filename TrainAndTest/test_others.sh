@@ -3845,7 +3845,7 @@ if [ $stage -le 606 ]; then
     fi
 
   for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in group4 group16 group32 inbn05_shuffle2 dp05warm inbn05dpwarm ;do 
+    for model_name in mfa concat ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
@@ -3916,6 +3916,12 @@ if [ $stage -le 606 ]; then
         elif [[ $model_name == inbn05dpwarm ]];then
           model_dir=${common_path}_inbn05dpwarm/${seed}
           yaml_name=${common_path}_inbn05dpwarm/model.yaml
+        elif [[ $model_name == mfa ]];then
+          model_dir=${common_path}crossentropy_mfa_STAP/${seed}
+          yaml_name=${common_path}crossentropy_mfa_STAP/model.yaml
+        elif [[ $model_name == concat ]];then
+          model_dir=${common_path}crossentropy_concat_STAP/${seed}
+          yaml_name=${common_path}crossentropy_concat_STAP/model.yaml
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
