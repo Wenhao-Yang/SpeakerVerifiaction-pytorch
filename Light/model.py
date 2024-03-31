@@ -148,6 +148,7 @@ class SpeakerLoss(nn.Module):
         else:
             self.second_loss = 'none'
 
+        self.second_loss_steps = 0 if 'second_loss_steps' not in config_args else config_args['second_loss_steps']
         self.softmax = nn.Softmax(dim=1)
         self.ce_criterion = ce_criterion
         if 'mixup_type' in config_args and config_args['mixup_type'] != '':
@@ -162,12 +163,16 @@ class SpeakerLoss(nn.Module):
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']
         self.weight_margin = False if 'weight_margin' not in config_args else config_args['weight_margin']
+        self.iteration = 0
 
     def forward(self, outputs, label,
                 second_label=None, batch_weight=None, weight_margin=None,
                 epoch=0,
                 half_data=0, lamda_beta=0, other=False):
         
+        if self.training:
+            self.iteration += 1
+
         if isinstance(outputs, tuple):
             classfier, feats = outputs
         else:
@@ -215,7 +220,13 @@ class SpeakerLoss(nn.Module):
                     if self.second_loss == 'binaryentropy':
                         second_label = second_label.float().unsqueeze(1)
 
-                    loss_cent = self.loss_ratio * self.ce_criterion(second_classfier, second_label)
+
+                    if self.second_loss_steps > 0:
+                        loss_ratio = self.loss_ratio * self.iteration / self.second_loss_steps
+                    else:
+                        loss_ratio = self.loss_ratio
+
+                    loss_cent = loss_ratio * self.ce_criterion(second_classfier, second_label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
 
