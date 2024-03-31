@@ -215,14 +215,11 @@ class SpeakerLoss(nn.Module):
                         loss_cent = self.loss_ratio * self.ce_criterion(feats, label)
                     else:
                         if self.second_loss_steps > 0:
-                            if 'full_epoch' in self.config_args:
-                                iteration = max(self.iteration - self.config_args['full_epoch'], 0)
-                            else:
-                                iteration = self.iteration
+                            iteration = max(self.iteration - self.full_steps, 0)
                             loss_ratio = self.loss_ratio * iteration / self.second_loss_steps
                         else:
                             loss_ratio = self.loss_ratio
-                        print(loss_ratio)
+                        #print(loss_ratio)
                         loss_cent = loss_ratio * self.ce_criterion(second_classfier, label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
