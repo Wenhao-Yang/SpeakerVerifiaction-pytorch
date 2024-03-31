@@ -243,7 +243,7 @@ class StatisticPooling(nn.Module):
         # assert x.shape[-1] == self.input_dim, print(x.shape[-1])
 
         mean_x = x.mean(dim=1)
-        std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
+        std_x = x.std(dim=1) #.add_(1e-12).sqrt()
         mean_std = torch.cat((mean_x, std_x), 1)
         return mean_std
 
