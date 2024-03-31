@@ -121,8 +121,8 @@ if [ $stage -le 20 ]; then
     #     done
     # done
 
-    # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mixgrl
-    common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+    # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
