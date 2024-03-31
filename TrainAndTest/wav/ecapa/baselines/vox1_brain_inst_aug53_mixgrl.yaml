@@ -178,7 +178,7 @@ concat_augment: True
 num_pipes: 3
 
 # loss
-loss_ratio: 1
+loss_ratio: 0.1
 lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
@@ -193,7 +193,7 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_chn384_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>_mix<second_loss>_<domain_feat>_<mapping>fix
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_chn384_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>_mix<second_loss><loss_ratio>_<domain_feat>_<mapping>fix
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst
 
