@@ -159,11 +159,12 @@ class DomainDiscriminator(nn.Module):
             layers.append(RevGradLayer())
         
         output_size =  hidden_size if hidden_size > 0 else input_size
-        layers.extend([
-            nn.Linear(input_size, output_size),
-            nn.ReLU(inplace=True),
-            nn.BatchNorm1d(output_size)
-        ])
+        if num_classes > 0:
+            layers.extend([
+                nn.Linear(input_size, output_size),
+                nn.ReLU(inplace=True),
+                nn.BatchNorm1d(output_size)
+            ])
         
         if hidden_size > 0:
             layers.extend([
