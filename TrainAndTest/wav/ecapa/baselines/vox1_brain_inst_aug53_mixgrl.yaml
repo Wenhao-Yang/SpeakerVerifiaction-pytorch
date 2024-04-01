@@ -118,8 +118,8 @@ domain_classifier: !new:Define_Model.model.DomainDiscriminator
   num_classes: 0
   sigmoid: False
   warm_start: True
-  groups: 3
-  max_iters: 4025
+  groups: 6
+  max_iters: 0
   num_logits: 2 #!ref <num_classes>
   mapping: !ref <mapping>
   # input_size: !ref <embedding_size>
