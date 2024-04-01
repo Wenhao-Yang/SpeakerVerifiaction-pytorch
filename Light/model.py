@@ -218,7 +218,8 @@ class SpeakerLoss(nn.Module):
                     else:
                         if self.second_loss_steps > 0:
                             iteration = max(self.iteration - self.full_steps, 0)
-                            loss_ratio = self.loss_ratio * iteration / self.second_loss_steps
+                            steps_ratio = min(iteration / self.second_loss_steps, 1)
+                            loss_ratio = self.loss_ratio * steps_ratio
                         else:
                             loss_ratio = self.loss_ratio
                         #print(loss_ratio)
