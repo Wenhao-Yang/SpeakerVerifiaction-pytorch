@@ -525,7 +525,7 @@ class Wasserstein_Loss(nn.Module):
         self.loss = SamplesLoss(loss="sinkhorn", p=2, blur=.05,
                                 cost=lambda a, b: cost_func(a, b, p=2, metric=metric))
         self.source_fix = source_fix
-        self.stable = stable
+        self.stable = float(stable)
 
     def forward(self, feats, label):
         # pdb.set_trace()
@@ -549,9 +549,9 @@ class Wasserstein_Loss(nn.Module):
         if self.source_fix:
             vectors_s = vectors_s.detach()
 
-        if self.stable:
-            vectors_s = vectors_s + torch.rand_like(vectors_s).to(vectors_s.device)*0.01
-            vectors_t = vectors_t + torch.rand_like(vectors_t).to(vectors_t.device)*0.01
+        if self.stable > 0:
+            vectors_s = vectors_s + torch.rand_like(vectors_s).to(vectors_s.device)*0.01*self.stable
+            vectors_t = vectors_t + torch.rand_like(vectors_t).to(vectors_t.device)*0.01*self.stable
 
         return self.loss(vectors_s, vectors_t)
 
