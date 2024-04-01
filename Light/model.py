@@ -222,6 +222,7 @@ class SpeakerLoss(nn.Module):
                         #print(loss_ratio)
                         loss_cent = loss_ratio * self.ce_criterion(second_classfier, label)
                         if np.isnan(loss_cent.item()):
+                            torch.save({'second_classfier': second_classfier}, 'tmp.feat.{}.pth'.format(torch.distributed.get_rank()))
                             print(loss, loss_cent)
 
                     other_loss += float(loss_cent)
