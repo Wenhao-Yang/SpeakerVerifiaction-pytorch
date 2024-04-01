@@ -185,6 +185,7 @@ loss_type: !ref <loss>
 second_loss: wasse
 second_metric: euclidean
 domain_mix: True
+stable: True
 second_loss_steps: 12075
 # full_epoch: 12075
 margin: 0.2
