@@ -85,7 +85,7 @@ if __name__ == "__main__":
                 if not os.path.isdir(parent_dir):
                     os.makedirs(parent_dir)
 
-            commd = 'sox {} {}'.format()
+            commd = 'sox {} {}'.format(wav, recieve_path)
             task_queue.put(commd)
 
     print('>>> Plan to convert flac %d utterances with %d jobs.\n' % (task_queue.qsize(), nj))
