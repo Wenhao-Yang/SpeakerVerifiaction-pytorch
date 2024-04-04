@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     uid2path = {}
     with open(args.data_dir, 'r') as f:
-        for l in f.readlines():
+        for l in tqdm(f.readlines(), ncols=50):
             lst = l.split()
             if len(lst) == 2:
                 uid, wav = lst
