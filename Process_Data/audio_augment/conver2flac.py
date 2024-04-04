@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(description='Computing Filter banks!')
 parser.add_argument('--nj', type=int, default=24,
                     help='number of jobs to make feats (default: 10)')
 
-parser.add_argument('--data-dir', type=str, default='/home/yangwenhao/project/lstm_speaker_verification/data/cnceleb/dev2/wav.scp',
+parser.add_argument('--data-dir', type=str, default='/home/yangwenhao/project/lstm_speaker_verification/data/cnceleb/dev2_radsnr1/wav.scp',
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument("--replace-str", type=str,
