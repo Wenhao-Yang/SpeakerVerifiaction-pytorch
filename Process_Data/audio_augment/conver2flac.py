@@ -13,7 +13,7 @@ import os
 import time
 from multiprocessing import Pool, Manager
 import argparse
-
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
 parser.add_argument('--nj', type=int, default=24,
@@ -87,6 +87,7 @@ if __name__ == "__main__":
 
             commd = 'sox {} {}'.format(wav, recieve_path)
             task_queue.put(commd)
+    print(commd)
 
     print('>>> Plan to convert flac %d utterances with %d jobs.\n' % (task_queue.qsize(), nj))
 
