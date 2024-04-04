@@ -23,7 +23,7 @@ parser.add_argument('--data-dir', type=str, default='/home/yangwenhao/project/ls
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument("--replace-str", type=str,
-                    default='/work/2023/yangwenhao/dataset/CN-Celeb2/data/,/data2022/yangwenhao/dataset/CN-Celeb2/data_radsnr1/') #'/wav/,/wav_nb_randsnr1_off4/'
+                    default='/work/2023/yangwenhao/dataset/CN-Celeb2/data_radsnr1/,/data2022/yangwenhao/dataset/CN-Celeb2/data_radsnr1/') #'/wav/,/wav_nb_randsnr1_off4/'
 
 args = parser.parse_args()
 
