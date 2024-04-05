@@ -12,7 +12,7 @@
 from __future__ import print_function
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
-from Process_Data.audio_processing import AdaptiveBandPass
+from Process_Data.audio_processing import AdaptiveBandPass, BandPass
 from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
 
@@ -183,7 +183,7 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         num_pipes = config_args['num_pipes'] if 'num_pipes' in config_args else 1
         augment_pipeline = []
         for _, augment in enumerate(config_args['augment_pipeline']):
-            if isinstance(augment, AdaptiveBandPass):
+            if isinstance(augment, AdaptiveBandPass) or isinstance(augment, BandPass):
                 augment_pipeline.append(augment)
             else:
                 augment_pipeline.append(augment.cuda())

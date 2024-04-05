@@ -102,7 +102,7 @@ class BandPass(object):
         for h in high:
             self.soss[h] = butter_bandpass([self.low, h], sr, order=order).astype(np.float32)
         
-    def __call__(self, waveform):
+    def __call__(self, waveform, length=None):
         if np.random.uniform(0, 1) < self.band_pass_prob:
             torch_cuda = isinstance(waveform, torch.cuda.FloatTensor)
             if torch_cuda:
@@ -115,6 +115,7 @@ class BandPass(object):
                 waveform = torch.tensor(waveform).cuda()
 
         return waveform
+
 
 def lowpass(waveform, cutoff, sr=16000):
     waveform = torchaudio.functional.resample(waveform, orig_freq=sr,
@@ -1303,7 +1304,6 @@ class PadCollate3d:
             xs = xs.contiguous()
 
         ys = torch.LongTensor(list(map(lambda x: x[1], batch)))
-        # print(batch[0])
         if isinstance(batch[0][2], torch.Tensor):
             zs = torch.stack(list(map(lambda x: x[2], batch)), dim=0)
         else:

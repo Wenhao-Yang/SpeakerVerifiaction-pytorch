@@ -143,7 +143,7 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_snr_high: 15
    noise_num_workers: 4
    rir_scale_factor: 1.0
-
+   
 augment_pipeline: [
    !ref <augment_wavedrop>,
    !ref <augment_speed>,
@@ -167,7 +167,7 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst2_aug5<num_pipes>
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst2_aug5<num_pipes>dp
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2
 

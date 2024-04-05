@@ -103,9 +103,9 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   num_classes: !ref <num_classes>
-  norm: ['inbn', 'inbn','inbn','inbn','inbn','batch',]
-  bath_ratio: 0.5
-  affine: True
+#   norm: ['inbn', 'inbn','inbn','inbn','inbn','batch',]
+#   bath_ratio: 0.5
+#   affine: True
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
@@ -148,12 +148,20 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_num_workers: 4
    rir_scale_factor: 1.0
 
+aug_bandpass: !new:Process_Data.audio_processing.BandPass
+   low: 30
+   high: [3000]
+   sr: 16000
+   band_pass_prob: 1
+   order: 8
+
 augment_pipeline: [
    !ref <augment_wavedrop>,
    !ref <augment_speed>,
    !ref <add_rev>,
    !ref <add_noise>,
    !ref <add_rev_noise>,
+   !ref <aug_bandpass>
 ]
 
 # augment_pipeline: [ ]
@@ -171,7 +179,7 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst2_radsnr05_aug5<num_pipes>_inbn05
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst2_radsnr05_aug5<num_pipes>bp
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05
 
