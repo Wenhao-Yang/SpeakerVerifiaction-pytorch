@@ -156,7 +156,7 @@ if [ $stage -le 20 ]; then
             
             python -W ignore TrainAndTest/train_egs/average_model.py \
                 --check-path Data/checkpoint/${model_dir} \
-                --num 3
+                --num 2
         done
     done
     exit
