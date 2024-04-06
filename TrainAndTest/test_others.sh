@@ -3998,7 +3998,7 @@ if [ $stage -le 607 ]; then
             --train-dir ${lstm_dir}/data/${train_set}/${sname} \
             --train-extract-dir ${lstm_dir}/data/${train_set}/${train_subset} \
             --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-            --feat-format wav --nj 4 \
+            --feat-format wav --nj 4 --batch-size 64 \
             --check-yaml Data/checkpoint/${yaml_name} \
             --xvector-dir ${xvector_dir} \
             --train-xvector-dir ${train_xvector_dir} \
