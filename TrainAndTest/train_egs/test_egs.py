@@ -314,9 +314,17 @@ if not args.valid:
     args.num_valid = 0
 
 if args.test_input == 'var':
+    # transform = transforms.Compose([
+    #     ConcateOrgInput(remove_vad=args.remove_vad),
+    # ])
+    
+    # transform for train extracting
     transform = transforms.Compose([
-        ConcateOrgInput(remove_vad=args.remove_vad),
+        ConcateVarInput(num_frames=args.chunk_size,
+                        frame_shift=args.frame_shift, remove_vad=args.remove_vad,
+                        feat_type=feat_type),
     ])
+
     transform_T = transforms.Compose([
         ConcateOrgInput(remove_vad=args.remove_vad),
     ])
@@ -652,7 +660,7 @@ if __name__ == '__main__':
                                transform=transform, num_valid=args.num_valid, verbose=args.verbose)
 
         if args.score_norm != '' and os.path.isdir(args.train_extract_dir):
-            train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform_T, 
+            train_extract_dir = KaldiExtractDataset(dir=args.train_extract_dir, transform=transform, 
                                                     filer_loader=file_loader, feat_type=feat_type,
                                                     verbose=args.verbose, trials_file='')
 
