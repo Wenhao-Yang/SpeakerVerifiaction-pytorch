@@ -3971,7 +3971,7 @@ if [ $stage -le 606 ]; then
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test  ; do 
-        for seed in 1234 ; do
+      for seed in 1234 ; do
           if [[ $model_name == baseline ]];then
             model_dir=${common_path}/${seed}
             yaml_name=${common_path}/model.yaml
@@ -3992,11 +3992,10 @@ if [ $stage -le 606 ]; then
               --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
               --cos-sim --test --score-norm ${score_norm} --cohort-size 100
           done
-        done
-    done
-    done
-    done
- done
+      done
+      done
+  done
+  done
 fi
 
 if [ $stage -le 607 ]; then
