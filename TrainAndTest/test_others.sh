@@ -3927,6 +3927,7 @@ if [ $stage -le 606 ]; then
           yaml_name=${common_path}wasse0.1_mfa_STAPfix/model.yaml
         fi
 
+        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}_${score_norm}
         train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch}_${score_norm}
         for trials in trials_all; do
           python -W ignore TrainAndTest/train_egs/test_egs.py \
@@ -3976,7 +3977,7 @@ if [ $stage -le 606 ]; then
             model_dir=${common_path}/${seed}
             yaml_name=${common_path}/model.yaml
           fi
-
+          xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}_${score_norm}
           train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch}_${score_norm}
           for trials in trials_all; do
             python -W ignore TrainAndTest/train_egs/test_egs.py \
