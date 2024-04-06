@@ -641,7 +641,10 @@ if __name__ == '__main__':
 
     start_time = time.time()
     test_xvector_dir  = os.path.join(args.xvector_dir, 'test')
-    train_xvector_dir = os.path.join(args.xvector_dir, 'train')
+    if args.train_xvector_dir == '':
+        train_xvector_dir = os.path.join(args.xvector_dir, 'train')
+    else:
+        train_xvector_dir = args.train_xvector_dir
 
     if args.valid or args.extract:
         train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.input_per_spks, loader=file_loader,
@@ -749,8 +752,10 @@ if __name__ == '__main__':
 
         if args.extract:
             if args.score_norm != '' and not os.path.exists(train_xvector_dir + + '/xvectors.scp'):
-                train_verify_loader = torch.utils.data.DataLoader(train_extract_dir, batch_size=args.test_batch_size,
+                train_verify_loader = torch.utils.data.DataLoader(train_extract_dir,
+                                                                  batch_size=args.test_batch_size,
                                                                   shuffle=False, **kwargs)
+                
                 verification_extract(train_verify_loader, model, xvector_dir=train_xvector_dir, epoch=start,
                                      test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                      mean_vector=args.mean_vector,

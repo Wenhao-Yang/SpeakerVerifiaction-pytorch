@@ -692,6 +692,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
     if 'Extraction' in description:
         parser.add_argument('--train-extract-dir', type=str,
                             help='path to dev dataset')
+        parser.add_argument('--train-xvector-dir', type=str, default='',
+                            help='path to dev dataset')
         parser.add_argument('--xvector-dir', type=str,
                             help='path to dev dataset')
 
