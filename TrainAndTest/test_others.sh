@@ -3966,7 +3966,7 @@ fi
 if [ $stage -le 607 ]; then
   model=ThinResNet resnet_size=18
   train_set=cnceleb test_set=cnceleb # #jukebox cnceleb
-  train_subset=dev12
+  train_subset=dev12_org_radsnr1
   subset=test test_input=var test_subset=test
   gpu_id=0
   
@@ -3981,6 +3981,7 @@ if [ $stage -le 607 ]; then
     for model_name in baseline ;do 
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_aug53
     common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_radsnr05_aug53
+    score_norm=as-norm
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test test_radsnr1  ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
@@ -3990,7 +3991,7 @@ if [ $stage -le 607 ]; then
           yaml_name=${common_path}/model.yaml
         fi
 
-        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}
+        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}_${score_norm}
         for trials in trials_all; do
           python -W ignore TrainAndTest/train_egs/test_egs.py \
             --train-dir ${lstm_dir}/data/${train_set}/${sname} \
@@ -4001,8 +4002,8 @@ if [ $stage -le 607 ]; then
             --xvector-dir ${xvector_dir} \
             --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
             --gpu-id ${gpu_id} \
-            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-            --cos-sim --test
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+            --cos-sim --test --score-norm ${score_norm}
         done
 
         for trials in original ; do # original easy hard
