@@ -751,7 +751,7 @@ if __name__ == '__main__':
                 os.getpid()).memory_info().rss / 1024 / 1024 / 1024))
 
         if args.extract:
-            if args.score_norm != '' and not os.path.exists(train_xvector_dir + + '/xvectors.scp'):
+            if args.score_norm != '' and not os.path.exists(train_xvector_dir + '/xvectors.scp'):
                 train_verify_loader = torch.utils.data.DataLoader(train_extract_dir,
                                                                   batch_size=args.test_batch_size,
                                                                   shuffle=False, **kwargs)
