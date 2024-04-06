@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=606
+stage=607
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3968,7 +3968,7 @@ if [ $stage -le 607 ]; then
   train_set=cnceleb test_set=cnceleb # #jukebox cnceleb
   train_subset=dev12
   subset=test test_input=var test_subset=test
-  gpu_id=2
+  gpu_id=0
   
   sname=dev
   for chn in 384 ; do
