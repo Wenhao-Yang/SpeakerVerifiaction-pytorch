@@ -29,10 +29,9 @@ def get_args():
                         help='nums for averaged model')
     parser.add_argument('--min_epoch', default=0, type=int,
                         help='min epoch used for averaging model')
-    parser.add_argument('--max_epoch',
-                        default=65536,  # Big enough
-                        type=int,
-                        help='max epoch used for averaging model')
+    parser.add_argument('--assigned-epoch', default='', 
+                        type=str,
+                        help='assign epochs for averaging, splited by ,')
     
     args = parser.parse_args()
     print(args)
@@ -42,6 +41,13 @@ def get_args():
 def main():
     args = get_args()
     num = args.num
+    assigned_epoch = args.assigned_epoch.split(',')
+    assigned_epochs = set([])
+    for e in assigned_epoch:
+        try:
+            assigned_epochs.add(int(e))
+        except Exception as e:
+            pass
 
     # path_list = glob.glob('{}/[!avg][!final][!convert]*.pt'.format(
     #     args.src_path))
@@ -53,8 +59,23 @@ def main():
     
     path_list = sorted(path_list, key=lambda p: int(re.split('\_|\.', p.split('/')[-1])[1]))
     epochs = sorted([int(re.split('\_|\.', p.split('/')[-1])[1]) for p in path_list])
-    path_list = path_list[-num:]
-    epochs = epochs[-num:]
+    
+    if len(assigned_epochs) > 0:
+        assigned_paths = []
+        assigned_idxs = []
+        for i,e in enumerate(epochs):
+            if e in assigned_epochs:
+                assigned_paths.append(path_list[i])
+                assigned_idxs.append(e)
+        
+        path_list = assigned_paths
+        epochs = assigned_idxs
+        assert len(path_list) == len(epochs), print(len(path_list), len(epochs))
+        num = len(path_list)
+    else:
+        path_list = path_list[-num:]
+        epochs = epochs[-num:]
+
     print('average epoch ckp: ', epochs)
 
     avg = None

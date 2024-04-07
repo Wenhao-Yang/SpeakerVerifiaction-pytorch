@@ -4020,7 +4020,7 @@ if [ $stage -le 607 ]; then
             --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
             --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
             --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-            --cos-sim --extract
+            --cos-sim --extract --score-norm ${score_norm} --cohort-size 100
         done
       done
     done
