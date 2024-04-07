@@ -3844,18 +3844,27 @@ if [ $stage -le 606 ]; then
       chn_str=
     fi
 
+  
   for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+  for model in baseline band fine;do
     for model_name in baseline ;do 
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53
-    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
+    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
     score_norm=as-norm
+    if [[ $model == baseline ]];then
+      common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist
+    elif [[ $model == band ]];then
+      common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_band05
+    elif [[ $model == fine ]];then
+      common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_finetune16
+    fi
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in all ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
+      for test_subset in all all_radsnr1 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       # all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5 
       # test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       for seed in 1234 ; do
@@ -3928,7 +3937,7 @@ if [ $stage -le 606 ]; then
         fi
 
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch} #_${score_norm}
-        train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch}_${score_norm}
+        train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch} #_${score_norm}
 
         for trials in trials_all; do
           python -W ignore TrainAndTest/train_egs/test_egs.py \
@@ -3964,23 +3973,35 @@ if [ $stage -le 606 ]; then
     done
     done
   done
+  done
 
   train_set=vox2 test_set=vox1 # #jukebox cnceleb
-  train_subset=dev_2radsnr05
+  train_subset=dev #_2radsnr05
   for epoch in avg2 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+  for model in aug aug_band aug_fine aug_band_fine; do
   for model_name in baseline ;do 
-    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
-    score_norm=as-norm
 
+    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
+    if [[ $model == aug ]];then
+      common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64
+    elif [[ $model == aug_band ]];then
+      common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64band
+    elif [[ $model == aug_fine ]];then
+      common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine16
+    elif [[ $model == aug_band_fine ]];then
+      common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64band_fine16
+    fi
+
+    score_norm=as-norm
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in all ; do 
-      for seed in 1234 ; do
+      for test_subset in all all_radsnr1 ; do 
+      for seed in 12346 ; do
           if [[ $model_name == baseline ]];then
             model_dir=${common_path}/${seed}
             yaml_name=${common_path}/model.yaml
           fi
           xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch} #_${score_norm}
-          train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch}_${score_norm}
+          train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch} #_${score_norm}
           for trials in trials_all; do
             python -W ignore TrainAndTest/train_egs/test_egs.py \
               --train-dir ${lstm_dir}/data/${train_set}/${sname} \
@@ -4013,6 +4034,7 @@ if [ $stage -le 606 ]; then
 
       done
       done
+  done
   done
   done
   exit
