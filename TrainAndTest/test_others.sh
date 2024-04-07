@@ -4030,8 +4030,8 @@ if [ $stage -le 607 ]; then
           yaml_name=${common_path}dp/model.yaml
         fi
 
-        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_var_${epoch}_${score_norm}
-        train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch}_${score_norm}
+        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}_${score_norm}
+        train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_var_${epoch}_${score_norm}
         for trials in trials_all; do
           python -W ignore TrainAndTest/train_egs/test_egs.py \
             --train-dir ${lstm_dir}/data/${train_set}/${sname} \
