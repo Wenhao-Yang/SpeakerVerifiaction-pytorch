@@ -801,7 +801,7 @@ if __name__ == '__main__':
             
             if not xvector_exists(test_xvector_dir, verfify_dir):
                 # extract(verify_loader, model, args.xvector_dir)
-                print('extracting ... ')
+                print('extracting ... ', test_xvector_dir)
             else:
                 print('skipping extraction ... ')
                 # verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
