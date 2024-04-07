@@ -4003,7 +4003,7 @@ if [ $stage -le 607 ]; then
   model=ThinResNet resnet_size=18
   train_set=cnceleb test_set=cnceleb # #jukebox cnceleb
   train_subset=dev12_org_radsnr1
-  subset=test test_input=var test_subset=test
+  subset=test test_input=fix test_subset=test
   gpu_id=0
   
   sname=dev
@@ -4030,22 +4030,22 @@ if [ $stage -le 607 ]; then
           yaml_name=${common_path}dp/model.yaml
         fi
 
-        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}_${score_norm}
+        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_var_${epoch}_${score_norm}
         train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch}_${score_norm}
-        # for trials in trials_all; do
-        #   python -W ignore TrainAndTest/train_egs/test_egs.py \
-        #     --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-        #     --train-extract-dir ${lstm_dir}/data/${train_set}/${train_subset} \
-        #     --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-        #     --feat-format wav --nj 4 --batch-size 64 \
-        #     --check-yaml Data/checkpoint/${yaml_name} \
-        #     --xvector-dir ${xvector_dir} \
-        #     --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
-        #     --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-        #     --gpu-id ${gpu_id} \
-        #     --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
-        #     --cos-sim --test
-        # done
+        for trials in trials_all; do
+          python -W ignore TrainAndTest/train_egs/test_egs.py \
+            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+            --train-extract-dir ${lstm_dir}/data/${train_set}/${train_subset} \
+            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+            --feat-format wav --nj 4 --batch-size 64 \
+            --check-yaml Data/checkpoint/${yaml_name} \
+            --xvector-dir ${xvector_dir} \
+            --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
+            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+            --gpu-id ${gpu_id} \
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+            --cos-sim --test
+        done
 
         for trials in original ; do # original easy hard --train-xvector-dir ${train_xvector_dir} \
           python -W ignore TrainAndTest/train_egs/test_egs.py \
