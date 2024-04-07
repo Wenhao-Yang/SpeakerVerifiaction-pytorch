@@ -152,6 +152,8 @@ if [ $stage -le 20 ]; then
                 model_dir=${common_path}crossentropy_concat_STAP/${seed}
             elif [[ $model_name == wassmfafix ]];then
                 model_dir=${common_path}wasse0.1_mfa_STAPfix/${seed}
+            elif [[ $model_name == bp ]];then
+                model_dir=${common_path}dp/${seed}
             fi
             
             python -W ignore TrainAndTest/train_egs/average_model.py \
