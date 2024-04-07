@@ -673,6 +673,7 @@ if __name__ == '__main__':
 
     start_time = time.time()
     test_xvector_dir  = os.path.join(args.xvector_dir, 'test')
+    
     if args.train_xvector_dir == '':
         train_xvector_dir = os.path.join(args.xvector_dir, 'train')
     else:
