@@ -518,15 +518,18 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     if args.score_suffix != '':
         test_set_name = '-'.join((test_set_name, args.score_suffix))
 
+    if args.score_norm in ["z-norm", "t-norm", "s-norm", "as-norm"]:
+        test_set_name = '-'.join((test_set_name, args.score_norm))
+
     result_str = ''
     if args.verbose > 0:
         result_str += 'For %s_distance, %d pairs:\n' % (dist_type, len(labels))
     result_str += '\33[91m'
-    tab_line = '+----------------------------+------------+------------+--------------+---------------+---------------------+\n'
+    tab_line = '+------------------------------------------+------------+------------+--------------+---------------+---------------------+\n'
     if args.verbose > 0:
         result_str +=  tab_line
 
-        result_str += '| {: <26s} |  {: >8s}  | {: >8s}  | {: >8s}  | {: >8s}  | {: >19s} |\n'.format('Test Set',
+        result_str += '| {: <40s} |  {: >8s}  | {: >8s}  | {: >8s}  | {: >8s}  | {: >19s} |\n'.format('Test Set',
                                                                                          'EER (%)',
                                                                                          'Threshold',
                                                                                          'MinDCF-0.01',
@@ -541,7 +544,7 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
     mindcf_001 = '{:.4f}'.format(mindcf_001)
     date = time.strftime("%Y%m%d %H:%M:%S", time.localtime())
 
-    result_str += '| {: <26s} |  {: >8s}  | {: >8s}  | {: >8s}  | {: >8s}  | {: >19s} |'.format(test_set_name,
+    result_str += '| {: <40s} |  {: >8s}  | {: >8s}  | {: >8s}  | {: >8s}  | {: >19s} |'.format(test_set_name,
                                                                                    eer,
                                                                                    threshold,
                                                                                    mindcf_01,
