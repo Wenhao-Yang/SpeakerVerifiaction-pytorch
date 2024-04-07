@@ -121,17 +121,39 @@ if [ $stage -le 20 ]; then
     #     done
     # done
 
-    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+    # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192_chn384_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_aug53
-    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_radsnr05_aug53
+    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_radsnr05_aug53
+    for model in band aug_fine aug aug_band aug_band_fine ; do
+    if [[ $model == band ]];then
+        # band
+        common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_band05
+        assigned_epoch=24,33,30
+    elif [[ $model == aug_fine ]];then
+        # aug+fine
+        common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine16
+        assigned_epoch=12,13
+    elif [[ $model == aug ]];then
+        # aug
+        common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64
+        assigned_epoch=11,12
+    elif [[ $model == aug_band ]];then
+        # aug+band
+        common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64band
+        assigned_epoch=41,29
+    elif [[ $model == aug_band_fine ]];then
+        # aug+band+fine
+        common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64band_fine16
+        assigned_epoch=50,44
+    fi
 
-    for model_name in bp ; do
+    for model_name in baseline ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
-        for seed in 1234 ; do
+        for seed in 123456 ; do
             if [[ $model_name == baseline ]];then
                 model_dir=${common_path}/${seed}
             elif [[ $model_name == shuffle ]];then
@@ -158,8 +180,9 @@ if [ $stage -le 20 ]; then
             
             python -W ignore TrainAndTest/train_egs/average_model.py \
                 --check-path Data/checkpoint/${model_dir} \
-                --num 2
+                --assigned-epoch ${assigned_epoch}
         done
+    done
     done
     exit
 fi
