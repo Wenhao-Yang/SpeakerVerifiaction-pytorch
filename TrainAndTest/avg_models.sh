@@ -128,11 +128,15 @@ if [ $stage -le 20 ]; then
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_aug53
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_radsnr05_aug53
-    for model in band aug_fine aug aug_band aug_band_fine ; do
+    for model in baseline band aug_fine aug aug_band aug_band_fine ; do
     if [[ $model == band ]];then
         # band
         common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_band05
         assigned_epoch=24,33,30
+    elif [[ $model == baseline ]];then
+        # aug+fine
+        common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist
+        assigned_epoch=12,11,23
     elif [[ $model == aug_fine ]];then
         # aug+fine
         common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine16
