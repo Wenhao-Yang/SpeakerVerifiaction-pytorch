@@ -4043,7 +4043,7 @@ if [ $stage -le 607 ]; then
             --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
             --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
             --gpu-id ${gpu_id} \
-            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
             --cos-sim --test
         done
 
