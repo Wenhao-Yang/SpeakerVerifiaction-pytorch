@@ -3954,7 +3954,7 @@ if [ $stage -le 606 ]; then
             --cos-sim --test
         done
 
-        for trials in easy hard; do # original easy hard
+        for trials in original easy hard; do # original easy hard
           python -W ignore TrainAndTest/train_egs/test_egs.py \
             --train-dir ${lstm_dir}/data/${train_set}/${sname} \
             --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
@@ -4017,7 +4017,7 @@ if [ $stage -le 606 ]; then
               --cos-sim --test 
           done
 
-          for trials in easy hard ; do # original easy hard
+          for trials in original easy hard ; do # original easy hard
             python -W ignore TrainAndTest/train_egs/test_egs.py \
               --train-dir ${lstm_dir}/data/${train_set}/${sname} \
               --train-extract-dir ${lstm_dir}/data/${train_set}/${train_subset} \
