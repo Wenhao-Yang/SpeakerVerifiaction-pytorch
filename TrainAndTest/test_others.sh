@@ -4002,7 +4002,7 @@ fi
 if [ $stage -le 607 ]; then
   model=ThinResNet resnet_size=18
   train_set=cnceleb test_set=cnceleb # #jukebox cnceleb
-  train_subset=dev12 #_org_radsnr1
+  train_subset=dev12_org_radsnr1
   subset=test test_input=var test_subset=test
   gpu_id=0
   
