@@ -564,8 +564,8 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
     train_xvectors_scp = os.path.join(train_xvectors_dir, 'xvectors.scp')
     test_xvectors_scp = os.path.join(test_xvectors_dir, 'xvectors.scp')
 
-    assert os.path.exists(train_xvectors_scp)
-    assert os.path.exists(test_xvectors_scp)
+    assert os.path.exists(train_xvectors_scp), print(train_xvectors_scp)
+    assert os.path.exists(test_xvectors_scp), print(train_xvectors_scp)
 
     train_stats = {}
 
