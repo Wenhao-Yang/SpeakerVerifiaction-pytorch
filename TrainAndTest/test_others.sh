@@ -3867,7 +3867,7 @@ if [ $stage -le 606 ]; then
       for test_subset in all all_radsnr1 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       # all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5 
       # test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
-      for seed in 1234 ; do
+      for seed in 123456 ; do
         if [[ $model_name == baseline ]];then
           model_dir=${common_path}/${seed}
           yaml_name=${common_path}/model.yaml
@@ -3995,7 +3995,7 @@ if [ $stage -le 606 ]; then
     score_norm=as-norm
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in all all_radsnr1 ; do 
-      for seed in 12346 ; do
+      for seed in 123456 ; do
           if [[ $model_name == baseline ]];then
             model_dir=${common_path}/${seed}
             yaml_name=${common_path}/model.yaml
