@@ -4002,7 +4002,7 @@ fi
 if [ $stage -le 607 ]; then
   model=ThinResNet resnet_size=18
   train_set=cnceleb test_set=cnceleb # #jukebox cnceleb
-  train_subset=dev12_org_radsnr1
+  train_subset=dev12 #_org_radsnr1
   subset=test test_input=fix test_subset=test
   gpu_id=0
   
@@ -4013,9 +4013,9 @@ if [ $stage -le 607 ]; then
       chn_str=_chn384      
     fi
 
-  for epoch in avg2 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+  for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
     for model_name in baseline ;do 
-    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_aug53
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_aug53
     common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_radsnr05_aug53
     score_norm=as-norm
 
