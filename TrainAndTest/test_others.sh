@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=607
+stage=606
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3855,7 +3855,7 @@ if [ $stage -le 606 ]; then
     score_norm=as-norm
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in test ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
+      for test_subset in all ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       # all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5 
       # test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       for seed in 1234 ; do
@@ -3937,26 +3937,26 @@ if [ $stage -le 606 ]; then
             --feat-format wav --nj 4 --batch-size 64 \
             --check-yaml Data/checkpoint/${yaml_name} \
             --xvector-dir ${xvector_dir} \
-            --train-xvector-dir ${train_xvector_dir} \
+            --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
             --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
             --gpu-id ${gpu_id} \
             --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
             --cos-sim --test --score-norm ${score_norm} --cohort-size 100
         done
 
-        # for trials in original ; do # original easy hard
-        #   python -W ignore TrainAndTest/train_egs/test_egs.py \
-        #     --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-        #     --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-        #     --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
-        #     --feat-format wav --nj 4 \
-        #     --check-yaml Data/checkpoint/${yaml_name} \
-        #     --xvector-dir ${xvector_dir} \
-        #     --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-        #     --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
-        #     --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-        #     --cos-sim --extract
-        # done
+        for trials in original ; do # original easy hard
+          python -W ignore TrainAndTest/train_egs/test_egs.py \
+            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+            --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
+            --feat-format wav --nj 4 \
+            --check-yaml Data/checkpoint/${yaml_name} \
+            --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
+            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+            --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
+            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+            --cos-sim --extract
+        done
       done
     done
     done
@@ -3971,7 +3971,7 @@ if [ $stage -le 606 ]; then
     score_norm=as-norm
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in test  ; do 
+      for test_subset in all ; do 
       for seed in 1234 ; do
           if [[ $model_name == baseline ]];then
             model_dir=${common_path}/${seed}
@@ -3987,16 +3987,33 @@ if [ $stage -le 606 ]; then
               --feat-format wav --nj 4 --batch-size 64 \
               --check-yaml Data/checkpoint/${yaml_name} \
               --xvector-dir ${xvector_dir} \
-              --train-xvector-dir ${train_xvector_dir} \
+              --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
               --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
               --gpu-id ${gpu_id} \
               --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 1 \
-              --cos-sim --test --score-norm ${score_norm} --cohort-size 100
+              --cos-sim --test 
           done
+
+          for trials in original ; do # original easy hard
+            python -W ignore TrainAndTest/train_egs/test_egs.py \
+              --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+              --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+              --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
+              --feat-format wav --nj 4 \
+              --check-yaml Data/checkpoint/${yaml_name} \
+              --xvector-dir ${xvector_dir} \
+              --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
+              --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+              --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
+              --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+              --cos-sim --extract
+          done
+
       done
       done
   done
   done
+  exit
 fi
 
 if [ $stage -le 607 ]; then

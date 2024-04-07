@@ -568,7 +568,7 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
     test_xvectors_scp = os.path.join(test_xvectors_dir, 'xvectors.scp')
 
     assert os.path.exists(train_xvectors_scp), print(train_xvectors_scp)
-    assert os.path.exists(test_xvectors_scp), print(train_xvectors_scp)
+    assert os.path.exists(test_xvectors_scp), print(test_xvectors_scp)
 
     train_stats = {}
 
@@ -627,6 +627,27 @@ def cohort(train_xvectors_dir, test_xvectors_dir):
     # pickle.dump(train_stats, test_xvectors_dir)
 
     return train_stats
+
+def xvector_exists(test_xvectors_dir, verfify_dir):
+    test_uids = verfify_dir.uids
+
+    test_xvectors_scp = os.path.join(test_xvectors_dir, 'xvectors.scp')
+    if not os.path.exists(test_xvectors_scp):
+        return False
+        #print(test_xvectors_scp)
+
+    exists_uids = set([])
+    with open(test_xvectors_scp, 'r') as f:
+        for l in f.readlines():
+            uid, offset = l.split()
+            exists_uids.add(uid)
+
+    for uid in test_uids:
+        if uid not in exists_uids:
+            return False
+        
+    return True
+
 
 
 if __name__ == '__main__':
@@ -771,17 +792,22 @@ if __name__ == '__main__':
                                      test_input=train_test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                      mean_vector=args.mean_vector,
                                      xvector=args.xvector, input_mean=args.input_mean)
+                
             verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
                                   feat_type=feat_type, trials_file=args.trials,
                                   verbose=args.verbose)
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
-
-            # extract(verify_loader, model, args.xvector_dir)
-            verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
-                                 test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
-                                 mean_vector=args.mean_vector,
-                                 xvector=args.xvector, input_mean=args.input_mean)
+            
+            if not xvector_exists(test_xvector_dir, verfify_dir):
+                # extract(verify_loader, model, args.xvector_dir)
+                print('extracting ... ')
+            else:
+                print('skipping extraction ... ')
+                # verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
+                #                     test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
+                #                     mean_vector=args.mean_vector,
+                #                     xvector=args.xvector, input_mean=args.input_mean)
 
     if args.test:
         file_loader = kaldiio.load_mat
