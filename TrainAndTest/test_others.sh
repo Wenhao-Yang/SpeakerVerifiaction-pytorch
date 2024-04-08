@@ -3837,12 +3837,12 @@ if [ $stage -le 606 ]; then
   gpu_id=0
   
   sname=dev
-  for chn in 384 ; do
-    if [[ $chn == 384 ]];then
-      chn_str=_chn384
-    elif [[ $chn == 256 ]];then
-      chn_str=
-    fi
+  # for chn in 384 ; do
+  #   if [[ $chn == 384 ]];then
+  #     chn_str=_chn384
+  #   elif [[ $chn == 256 ]];then
+  #     chn_str=
+  #   fi
 
   
   # for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
