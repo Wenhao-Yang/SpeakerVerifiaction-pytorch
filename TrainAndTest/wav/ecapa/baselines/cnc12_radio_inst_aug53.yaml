@@ -20,7 +20,7 @@ wav_type: int
 subset: ""
 sample_type: instance
 
-train_dir: !ref <data_root_dir>/data/<datasets>/dev12_org_radsnr1
+train_dir: !ref <data_root_dir>/data/<datasets>/dev12_org_radsnr05
 # <subset>_<feat>
 train_test_dir: !ref <data_root_dir>/data/<testset>/test<subset>
 train_trials: trials
@@ -144,12 +144,12 @@ add_rev_noise: !new:speechbrain.lobes.augment.EnvCorrupt
    noise_num_workers: 4
    rir_scale_factor: 1.0
 
-aug_bandpass: !new:Process_Data.audio_processing.BandPass
-   low: 30
-   high: [3000]
-   sr: 16000
-   band_pass_prob: 1
-   order: 8
+# aug_bandpass: !new:Process_Data.audio_processing.BandPass
+#    low: 30
+#    high: [3000]
+#    sr: 16000
+#    band_pass_prob: 1
+#    order: 8
 
 augment_pipeline: [
    !ref <augment_wavedrop>,
@@ -157,7 +157,6 @@ augment_pipeline: [
    !ref <add_rev>,
    !ref <add_noise>,
    !ref <add_rev_noise>,
-   !ref <aug_bandpass>
 ]
 
 # augment_pipeline: [ ]
@@ -175,7 +174,7 @@ s: 30
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst2_radsnr05_aug5<num_pipes>dp
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst2_radsnr05_aug5<num_pipes>
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/cnceleb/wave_fb80_inst2_radsnr05
 
