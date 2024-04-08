@@ -802,13 +802,14 @@ if __name__ == '__main__':
             
             if not xvector_exists(test_xvector_dir, verfify_dir):
                 # extract(verify_loader, model, args.xvector_dir)
-                print('extracting ... ', test_xvector_dir)
-            else:
-                print('skipping extraction ... ')
-                # verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
-                #                     test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
-                #                     mean_vector=args.mean_vector,
-                #                     xvector=args.xvector, input_mean=args.input_mean)
+                # print('extracting ... ', test_xvector_dir)
+                verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
+                                    test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
+                                    mean_vector=args.mean_vector,
+                                    xvector=args.xvector, input_mean=args.input_mean)
+            # else:
+            #     print('skipping extraction ... ')
+                
 
     if args.test:
         file_loader = kaldiio.load_mat
