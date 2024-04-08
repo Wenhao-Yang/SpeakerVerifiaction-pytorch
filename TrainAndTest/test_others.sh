@@ -4137,7 +4137,7 @@ if [ $stage -le 608 ]; then
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
       for test_subset in test test_radsnr1 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
-      for seed in 1234 ; do
+      for seed in 123456 ; do
         if [[ $model_name == baseline ]];then
           model_dir=${common_path}/${seed}
           yaml_name=${common_path}/model.yaml
