@@ -4129,7 +4129,7 @@ if [ $stage -le 608 ]; then
     for model_name in baseline ;do 
     
     common=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine162
-    for layer in 012 0123 01234 0123_22e43 0123_22e54 0123e3 025678 04567 0567 567 5678 all ; do
+    for layer in 1234 2345 3456 4567 ; do
     common_path=${common}_${layer}
 
     score_norm=as-norm
