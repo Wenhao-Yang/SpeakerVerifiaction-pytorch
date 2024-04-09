@@ -4116,7 +4116,7 @@ if [ $stage -le 608 ]; then
   train_set=vox2 test_set=vox1 # #jukebox cnceleb
   train_subset=dev #_org_radsnr1
   subset=test test_input=var test_subset=test
-  gpu_id=3
+  gpu_id=0
   
   sname=dev
   chn_str=
