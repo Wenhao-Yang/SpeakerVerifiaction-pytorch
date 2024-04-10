@@ -1220,10 +1220,14 @@ def resume_checkpoint(model, scheduler, optimizer,
             
             
 def load_checkpoint(model, config_args):
+    epoch = 0
     if os.path.isfile(config_args['resume']):
         if on_main():
             print('=> loading checkpoint {}'.format(config_args['resume']))
         checkpoint = torch.load(config_args['resume'])
+
+        if 'epoch' in checkpoint:
+            epoch = checkpoint['epoch']
 
         checkpoint_state_dict = checkpoint['state_dict']
         if isinstance(checkpoint_state_dict, tuple):
@@ -1249,3 +1253,5 @@ def load_checkpoint(model, config_args):
     else:
         if on_main():
             print('=> no checkpoint found at {}'.format(config_args['resume']))
+
+    return epoch
