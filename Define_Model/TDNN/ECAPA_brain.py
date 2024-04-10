@@ -621,7 +621,7 @@ class SERes2NetBottleblock(nn.Module):
             groups=groups,
         )
 
-        self.se_block = SEBlock(out_channels, se_channels, out_channels)
+        self.se_block = SEBlock(out_channels, se_channels//bottle_scale, out_channels)
 
         self.shortcut = None
         if in_channels != out_channels:
