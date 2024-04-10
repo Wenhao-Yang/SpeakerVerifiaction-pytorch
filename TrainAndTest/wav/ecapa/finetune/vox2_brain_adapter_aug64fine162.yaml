@@ -104,7 +104,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   input_norm: !ref <input_norm>
   num_classes: !ref <num_classes>
 
-scale: [16, 16, 16, 16, 16]
+scale: [16, 16, 16, 16, 48]
 layers: 5
 adapter_type: parallel
 adapter_rate : 1
