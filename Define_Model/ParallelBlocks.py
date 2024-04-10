@@ -300,7 +300,7 @@ class Adapter(nn.Module):
         # self.model_layer = total_layer
 
     def freeze(self):
-        for n,p in self.model.parameters():
+        for p in self.model.parameters():
             p.requires_grad = False
 
     def forward(self, x):
