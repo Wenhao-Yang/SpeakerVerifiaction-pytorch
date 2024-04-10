@@ -10,6 +10,7 @@
 @Overview:
 """
 import argparse
+from collections import OrderedDict
 import os
 import pdb
 import time
@@ -1224,7 +1225,7 @@ def load_checkpoint(model, config_args):
     if os.path.isfile(config_args['resume']):
         if on_main():
             print('=> loading checkpoint {}'.format(config_args['resume']))
-        checkpoint = torch.load(config_args['resume'])
+        checkpoint = torch.load(config_args['resume'], map_location='cpu')
 
         if 'epoch' in checkpoint:
             epoch = checkpoint['epoch']
