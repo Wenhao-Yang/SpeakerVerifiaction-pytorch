@@ -12,7 +12,7 @@
 from __future__ import print_function
 import copy
 from Define_Model.ParallelBlocks import Adapter, gumbel_softmax
-from Define_Model.model import create_classifier
+from Define_Model.model import create_classifier, get_trainable_param
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
 from TrainAndTest.train_egs.train_egs import select_samples
@@ -299,6 +299,8 @@ def main():
     if torch.distributed.get_rank() == 0:
         print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
+    if torch.distributed.get_rank() == 0:
+        print('Trainable #Param: ', get_trainable_param(model))
 
     if torch.distributed.get_world_size() > 1:
         print("Continue with gpu: %s ..." % str(local_rank))

@@ -48,7 +48,7 @@ import torch.distributed as dist
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import ScriptVerifyDataset
 import Process_Data.constants as C
-from Define_Model.model import create_classifier,  create_model
+from Define_Model.model import create_classifier,  create_model, get_trainable_param
 from Define_Model.Optimizer import create_optimizer, create_scheduler
 from TrainAndTest.common_func import load_checkpoint, on_main, resume_checkpoint, verification_test, verification_extract, args_parse, args_model
 
@@ -908,7 +908,9 @@ def main():
     if torch.distributed.get_rank() == 0:
         print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
-
+    if torch.distributed.get_rank() == 0:
+        print('Trainable #Param: ', get_trainable_param(model))
+        
     if torch.distributed.get_world_size() > 1:
         print("Continue with gpu: %s ..." % str(local_rank))
         # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
@@ -921,6 +923,8 @@ def main():
         print('Dropout is {}.'.format(model.dropout_p))
     except:
         pass
+    
+    
 
     xvector_dir = check_path.replace('checkpoint', 'xvector')
     start_time = time.time()

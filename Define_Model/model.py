@@ -41,6 +41,8 @@ import torch.nn.functional as F
 def get_layer_param(model):
     return sum([torch.numel(param) for param in model.parameters()])
 
+def get_trainable_param(model):
+    return sum([torch.numel(param) for param in filter(lambda p: p.requires_grad, model.parameters())])
 
 class ReLU20(nn.Hardtanh):
 
