@@ -178,13 +178,16 @@ def main():
         adapter_rate = config_args['adapter_rate']
     else:
         adapter_rate = 0
-        
+
     model = Adapter(model, scale=config_args['scale'],
                     layers=config_args['layers'], adapter_rate=adapter_rate,
                     adapter_type=config_args['adapter_type'])
     model.loss = SpeakerLoss(config_args)
 
     model_para = [{'params': model.parameters()}]
+
+    filter(lambda p: p.requires_grad, model.parameters())
+    
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert config_args['lr_ratio'] > 0
         model_para.append({'params': model.loss.xe_criterion.parameters(

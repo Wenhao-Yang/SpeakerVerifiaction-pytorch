@@ -236,9 +236,6 @@ class Adapter(nn.Module):
         elif self.adapter_type == 'concat':
             self.adapter_forward = self.concat_forward
 
-        for n,p in self.model.named_modules():
-            p.requires_grad = False
-            
         self.blocks = nn.ModuleList()
 
         # The initial TDNN layer
@@ -295,8 +292,16 @@ class Adapter(nn.Module):
                 nn.ReLU(),
                 nn.Linear(scale[4], embedding_size)
             )
-        self.classifier = copy.deepcopy(model.classifier)
+
+        if layers > 9:
+            self.classifier = copy.deepcopy(model.classifier)
+
+        self.freeze()
         # self.model_layer = total_layer
+
+    def freeze(self):
+        for n,p in self.model.named_modules():
+            p.requires_grad = False
 
     def forward(self, x):
         
@@ -340,7 +345,10 @@ class Adapter(nn.Module):
         if self.layers > 8:  
             embeddings = self.adapter_forward(self.fc, x_o, embeddings)
 
-        logits = self.classifier(embeddings)
+        logits = self.model.classifier(embeddings)
+
+        if self.layers > 9:  
+            logits = self.adapter_forward(self.classifier, embeddings, logits)
 
         return logits, embeddings
     
