@@ -401,13 +401,22 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
         data, label = Variable(data), Variable(label)
         classfier, feats = model(data)
 
+        embedding_norm = feats.norm(p=2, dim=1).unsqueeze(1)
+
         if 'weight_margin' in config_args and config_args['weight_margin']:
-                weight_margin = feats.norm(p=2, dim=1).unsqueeze(1)
+            weight_margin = embedding_norm + 1
+            weight_margin /= weight_margin.sum()
         else:
             weight_margin = None
 
+        if 'batch_weight' in config_args and config_args['batch_weight'] == 'embedding_norm':
+            model.module.loss.xe_criterion.ce.reduction = 'none'
+            batch_weight = embedding_norm.detach() + 1
+            batch_weight /= batch_weight.sum()
+
         # print(classfier.shape, feats.shape, label.shape)
         loss, other_loss = model.module.loss((classfier, feats), label, other=True,
+                                                batch_weight=batch_weight,
                                                 weight_margin=weight_margin)
         # loss, other_loss = model.module.loss((classfier, feats), label,
         #                                      batch_weight=batch_weight, epoch=epoch, other=True)

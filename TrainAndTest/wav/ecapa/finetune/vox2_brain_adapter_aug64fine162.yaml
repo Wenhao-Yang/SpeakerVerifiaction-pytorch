@@ -107,7 +107,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
 scale: [16, 16, 16, 16, 16]
 layers: 5
 adapter_type: parallel
-adapter_rate : 0.1
+adapter_rate : 1
 # adapter: !new:Define_Model.ParallelBlocks.Adapter
 #    model: !ref <embedding_model>
 #    scale: !ref <scale>

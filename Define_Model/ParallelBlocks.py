@@ -349,7 +349,9 @@ class Adapter(nn.Module):
         return block(x)
 
     def parallel_forward(self, block, x_o, x):
-        if self.adapter_rate > 0:
+        if self.adapter_rate == 1:
+            return x + block(x_o)
+        elif self.adapter_rate> 0:
             return x * (1-self.adapter_rate) + block(x_o) * self.adapter_rate
         else:
             return x + block(x_o)
