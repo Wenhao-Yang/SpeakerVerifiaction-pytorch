@@ -154,7 +154,6 @@ class TDNNBlock(nn.Module):
         """ Processes the input tensor x and returns an output tensor."""
         return self.norm(self.activation(self.conv(x)))
 
-
 class TDNNBottleBlock(nn.Module):
     """An implementation of TDNN.
 
@@ -200,6 +199,7 @@ class TDNNBottleBlock(nn.Module):
             dilation=dilation,
             groups=groups,
         )
+
         self.activation = activation()
         self.norm1 = BatchNorm1d(input_size=bottle_scale)
         
@@ -210,7 +210,14 @@ class TDNNBottleBlock(nn.Module):
             dilation=dilation,
             groups=groups,
         )
+
         self.norm2 = BatchNorm1d(input_size=out_channels)
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv1d):
+                nn.init.normal(m.weight, mean=0., std=.02)
+                if m.bias != None:
+                    nn.init.zeros_(m.bias)
 
     def forward(self, x):
         """ Processes the input tensor x and returns an output tensor."""
@@ -600,9 +607,11 @@ class SERes2NetBottleblock(nn.Module):
             activation=activation,
             groups=groups,
         )
+
         self.res2net_block = Res2NetBlock(
             bottle_scale, bottle_scale, res2net_scale, kernel_size, dilation
         )
+
         self.tdnn2 = TDNNBlock(
             bottle_scale,
             out_channels,
@@ -611,6 +620,7 @@ class SERes2NetBottleblock(nn.Module):
             activation=activation,
             groups=groups,
         )
+
         self.se_block = SEBlock(out_channels, se_channels, out_channels)
 
         self.shortcut = None
@@ -620,6 +630,13 @@ class SERes2NetBottleblock(nn.Module):
                 out_channels=out_channels,
                 kernel_size=1,
             )
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv1d):
+                nn.init.normal(m.weight, mean=0., std=.02)
+                if m.bias != None:
+                    nn.init.zeros_(m.bias)
+
 
     def forward(self, x, lengths=None):
         """ Processes the input tensor x and returns an output tensor."""

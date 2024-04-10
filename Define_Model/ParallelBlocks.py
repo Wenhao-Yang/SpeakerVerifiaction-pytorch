@@ -268,7 +268,7 @@ class Adapter(nn.Module):
             )
 
         # self.blocks = copy.deepcopy(model.blocks)
-        if layers > 5:
+        if layers > 4:
             self.mfa    = TDNNBottleBlock(
                         channels[-1],
                         scale[2],
@@ -279,21 +279,21 @@ class Adapter(nn.Module):
                         groups=groups[-1],
                         )
 
-        if layers > 6:   
+        if layers > 5:   
             self.asp    = AttentiveStatisticsPooling(channels[-1],
                 attention_channels=scale[3])
         
-        if layers > 7:
+        if layers > 6:
             self.asp_bn = BatchNorm1d(input_size=channels[-1] * 2)
         
-        if layers > 8:
+        if layers > 7:
             self.fc     = nn.Sequential(
                 nn.Linear(self.model.channels[-1] * 2, scale[4]),
                 nn.ReLU(),
                 nn.Linear(scale[4], embedding_size)
             )
 
-        if layers > 9:
+        if layers > 8:
             self.classifier = copy.deepcopy(model.classifier)
 
         self.freeze()
