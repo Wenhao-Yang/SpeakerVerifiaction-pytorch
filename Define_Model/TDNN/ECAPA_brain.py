@@ -166,6 +166,71 @@ class TDNNBlock(nn.Module):
         return self.norm(self.activation(self.conv(x)))
 
 
+class TDNNBottleBlock(nn.Module):
+    """An implementation of TDNN.
+
+    Arguments
+    ----------
+    in_channels : int
+        Number of input channels.
+    out_channels : int
+        The number of output channels.
+    kernel_size : int
+        The kernel size of the TDNN blocks.
+    dilation : int
+        The dilation of the TDNN block.
+    activation : torch class
+        A class for constructing the activation layers.
+    groups: int
+        The groups size of the TDNN blocks.
+
+    Example
+    -------
+    >>> inp_tensor = torch.rand([8, 120, 64]).transpose(1, 2)
+    >>> layer = TDNNBlock(64, 64, kernel_size=3, dilation=1)
+    >>> out_tensor = layer(inp_tensor).transpose(1, 2)
+    >>> out_tensor.shape
+    torch.Size([8, 120, 64])
+    """
+
+    def __init__(
+        self,
+        in_channels,
+        bottle_scale,
+        out_channels,
+        kernel_size,
+        dilation,
+        activation=nn.ReLU,
+        groups=1,
+    ):
+        super(TDNNBottleBlock, self).__init__()
+        self.conv1 = Conv1d(
+            in_channels=in_channels,
+            out_channels=bottle_scale,
+            kernel_size=kernel_size,
+            dilation=dilation,
+            groups=groups,
+        )
+        self.activation = activation()
+        self.norm1 = BatchNorm1d(input_size=bottle_scale)
+        
+        self.conv2 = Conv1d(
+            in_channels=bottle_scale,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            dilation=dilation,
+            groups=groups,
+        )
+        self.norm2 = BatchNorm1d(input_size=out_channels)
+
+    def forward(self, x):
+        """ Processes the input tensor x and returns an output tensor."""
+        # print(x.shape)
+        x = self.norm1(self.activation(self.conv1(x)))
+        x = self.norm2(self.activation(self.conv2(x)))
+        return x
+
+
 class Res2NetBlock(torch.nn.Module):
     """An implementation of Res2NetBlock w/ dilation.
 
@@ -270,10 +335,8 @@ class SEBlock(nn.Module):
         self.drop_after = False if 'before' in dropout_type else True
 
         if 'vanilla' in dropout_type:
-            # self.drop = Dropout1d(drop_prob=dropout_p, linear_step=linear_step)
             self.drop = nn.Dropout1d(dropout_p)
         elif 'magnitude' in dropout_type:
-            # self.drop = Dropout1d(drop_prob=dropout_p, linear_step=linear_step)
             self.drop = MagnitudeDropout1d(dropout_p)
         elif 'attention' in dropout_type:
             self.drop = DropAttention1d(dropout_p)
@@ -475,6 +538,90 @@ class SERes2NetBlock(nn.Module):
         self.se_block = SEBlock(out_channels, se_channels, out_channels,
                                 dropout_type=dropout_type, dropout_p=dropout_p,
                                 linear_step=linear_step)
+
+        self.shortcut = None
+        if in_channels != out_channels:
+            self.shortcut = Conv1d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=1,
+            )
+    def forward(self, x, lengths=None):
+        """ Processes the input tensor x and returns an output tensor."""
+        residual = x
+        if self.shortcut:
+            residual = self.shortcut(x)
+
+        x = self.tdnn1(x)
+        x = self.res2net_block(x)
+        x = self.tdnn2(x)
+        x = self.se_block(x, lengths)
+
+        return x + residual
+    
+    
+class SERes2NetBottleblock(nn.Module):
+    """An implementation of building block in ECAPA-TDNN, i.e.,
+    TDNN-Res2Net-TDNN-SEBlock.
+
+    Arguments
+    ----------
+    out_channels: int
+        The number of output channels.
+    res2net_scale: int
+        The scale of the Res2Net block.
+    kernel_size: int
+        The kernel size of the TDNN blocks.
+    dilation: int
+        The dilation of the Res2Net block.
+    activation : torch class
+        A class for constructing the activation layers.
+    groups: int
+    Number of blocked connections from input channels to output channels.
+
+    Example
+    -------
+    >>> x = torch.rand(8, 120, 64).transpose(1, 2)
+    >>> conv = SERes2NetBlock(64, 64, res2net_scale=4)
+    >>> out = conv(x).transpose(1, 2)
+    >>> out.shape
+    torch.Size([8, 120, 64])
+    """
+
+    def __init__(
+        self,
+        in_channels,
+        bottle_scale,
+        out_channels,
+        res2net_scale=4,
+        se_channels=64,
+        kernel_size=1,
+        dilation=1,
+        activation=torch.nn.ReLU,
+        groups=1,
+    ):
+        super().__init__()
+        self.out_channels = out_channels
+        self.tdnn1 = TDNNBlock(
+            in_channels,
+            bottle_scale,
+            kernel_size=1,
+            dilation=1,
+            activation=activation,
+            groups=groups,
+        )
+        self.res2net_block = Res2NetBlock(
+            bottle_scale, bottle_scale, res2net_scale, kernel_size, dilation
+        )
+        self.tdnn2 = TDNNBlock(
+            bottle_scale,
+            out_channels,
+            kernel_size=1,
+            dilation=1,
+            activation=activation,
+            groups=groups,
+        )
+        self.se_block = SEBlock(out_channels, se_channels, out_channels)
 
         self.shortcut = None
         if in_channels != out_channels:
