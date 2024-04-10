@@ -211,6 +211,7 @@ class Adapter(nn.Module):
                 kernel_sizes=[5, 3, 3, 3, 1],
                 dilations=[1, 2, 3, 4, 1],
                 attention_channels=128,
+                adapter_rate=0,
                 res2net_scale=8,
                 se_channels=128,embedding_size=192,
                 global_context=True, adapter_type='append',
@@ -224,6 +225,7 @@ class Adapter(nn.Module):
         self.layers = layers
         self.channels = channels
         self.scale = scale
+        self.adapter_rate = adapter_rate
 
         self.k = k
         self.adapter_type = adapter_type
@@ -311,7 +313,6 @@ class Adapter(nn.Module):
             x = self.model.blocks[i](x_o)
             if self.layers > i+1 and self.scale[i] > 0:   
                 x = self.adapter_forward(layer, x_o, x)
-            # fine_x = layer(x)
             # x = original_x + fine_x
             xl.append(x)
                 
@@ -348,8 +349,10 @@ class Adapter(nn.Module):
         return block(x)
 
     def parallel_forward(self, block, x_o, x):
-        return x * 0.99 +  block(x_o) * 0.01
-        # return (x * self.channels[0] + block(x_o) * self.scale[0]) / (self.channels[0] + self.scale[0])
+        if self.adapter_rate > 0:
+            return x * (1-self.adapter_rate) + block(x_o) * self.adapter_rate
+        else:
+            return x + block(x_o)
     
     def concat_forward(self, block, x_o, x):
         return torch.cat([x, block(x)], dim=1)

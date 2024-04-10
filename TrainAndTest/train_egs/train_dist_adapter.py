@@ -174,8 +174,13 @@ def main():
     if 'fintune' in config_args:
         start_epoch += load_checkpoint(model, config_args)
 
+    if 'adapter_rate' in config_args:
+        adapter_rate = config_args['adapter_rate']
+    else:
+        adapter_rate = 0
+        
     model = Adapter(model, scale=config_args['scale'],
-                    layers=config_args['layers'],
+                    layers=config_args['layers'], adapter_rate=adapter_rate,
                     adapter_type=config_args['adapter_type'])
     model.loss = SpeakerLoss(config_args)
 
