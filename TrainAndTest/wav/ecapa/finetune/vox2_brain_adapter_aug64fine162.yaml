@@ -108,11 +108,11 @@ scale: [32, 16, 16, 16, 16]
 layers: 5
 adapter_type: parallel
 
-adapter: !new:Define_Model.ParallelBlocks.Adapter
-   model: !ref <embedding_model>
-   scale: !ref <scale>
-   layers: !ref <layers>
-   adapter_type: !ref <adapter_type>
+# adapter: !new:Define_Model.ParallelBlocks.Adapter
+#    model: !ref <embedding_model>
+#    scale: !ref <scale>
+#    layers: !ref <layers>
+#    adapter_type: !ref <adapter_type>
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>

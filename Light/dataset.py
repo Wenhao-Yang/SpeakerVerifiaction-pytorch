@@ -114,10 +114,12 @@ def SubScriptDatasets(config_args):
     if 'bandpass' in config_args:
         band_pass_prob = config_args['band_pass_prob'] if 'band_pass_prob' in config_args else 0.2
         order = 15 if 'band_order' not in config_args else config_args['band_order']
+        within_batch = False if 'band_batch' not in config_args else config_args['band_batch']
 
         transform.transforms.insert(0, BandPass(low=config_args['bandpass'][0],
                                                 high=config_args['bandpass'][1:],
                                                 sr=config_args['sr'], order=order,
+                                                within_batch=within_batch,
                                                 band_pass_prob=band_pass_prob))
 
     if 'trans_fbank' in config_args and config_args['trans_fbank']:
@@ -137,7 +139,7 @@ def SubScriptDatasets(config_args):
     segment_shift = config_args['segment_shift'] if 'segment_shift' in config_args else config_args['num_frames']
     min_frames = 50 if 'min_frames' not in config_args else config_args['min_frames']
     return_idx = False if 'return_idx' not in config_args else config_args['return_idx']
-    
+
     second_dir = '' if 'train_second_dir' not in config_args else config_args['train_second_dir']
     second_suffix = '' if 'second_suffix' not in config_args else config_args['second_suffix']
 
@@ -156,20 +158,19 @@ def SubScriptDatasets(config_args):
                                      return_uid=False)
 
         valid_dir = LmdbValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
-                                    reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
-                                    verbose=verbose,
-                                    transform=transform)
+                                     reader=train_dir.reader, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
+                                     verbose=verbose,
+                                     transform=transform)
 
     elif 'feat_type' in config_args and config_args['feat_type'] == 'hdf5':
         print('Create HDF5 Dataset...')
-        train_dir = Hdf5TrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], 
+        train_dir = Hdf5TrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'],
                                      transform=transform, num_valid=config_args['num_valid'],
                                      feat_type='wav', sample_type=sample_type,
-                                     segment_len=config_args['num_frames'], 
-                                     segment_shift=segment_shift,
+                                     segment_len=config_args['num_frames'], segment_shift=segment_shift,
                                      min_frames=min_frames, verbose=verbose,
                                      return_uid=False)
-        
+
         valid_dir = Hdf5ValidDataset(train_dir.valid_set, spk_to_idx=train_dir.spk_to_idx,
                                     hdf5_file=train_dir.hdf5_file, valid_utt2spk_dict=train_dir.valid_utt2spk_dict,
                                     verbose=verbose,
@@ -179,8 +180,7 @@ def SubScriptDatasets(config_args):
         train_dir = ScriptTrainDataset(dir=config_args['train_dir'], samples_per_speaker=config_args['input_per_spks'], loader=file_loader,
                                     transform=transform, num_valid=config_args['num_valid'], domain=domain,
                                     vad_select=vad_select, sample_type=sample_type,
-                                    feat_type=feat_type, verbose=verbose,
-                                    save_dir=save_dir, return_idx=return_idx,
+                                    feat_type=feat_type, verbose=verbose, save_dir=save_dir, return_idx=return_idx,
                                     sample_score=sample_score,
                                     second_dir=second_dir, second_suffix=second_suffix,
                                     segment_len=config_args['num_frames'],
@@ -190,8 +190,8 @@ def SubScriptDatasets(config_args):
         valid_dir = ScriptValidDataset(valid_set=train_dir.valid_set, loader=file_loader, spk_to_idx=train_dir.spk_to_idx,
                                     dom_to_idx=train_dir.dom_to_idx, valid_utt2dom_dict=train_dir.valid_utt2dom_dict,
                                     valid_uid2feat=train_dir.valid_uid2feat,
-                                    valid_utt2spk_dict=train_dir.valid_utt2spk_dict, verbose=verbose,
                                     save_dir=save_dir,
+                                    valid_utt2spk_dict=train_dir.valid_utt2spk_dict, verbose=verbose,
                                     feat_type=feat_type,
                                     transform=transform, domain=domain)
 

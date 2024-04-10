@@ -56,7 +56,7 @@ from TrainAndTest.common_func import load_checkpoint, on_main, resume_checkpoint
 from Define_Model.Optimizer import create_optimizer, create_scheduler
 from logger import NewLogger
 
-from TrainAndTest.train_egs.train_dist import all_seed, test_results, save_checkpoint, check_earlystop_break, valid_test, valid_class #, train
+from TrainAndTest.train_egs.train_dist import all_seed, test_results, save_checkpoint, check_earlystop_break, valid_test, valid_class, train
 # import pytorch_lightning as pl
 warnings.filterwarnings("ignore")
 
@@ -70,177 +70,6 @@ except AttributeError:
         tensor._backward_hooks = backward_hooks
         return tensor
     torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
-
-def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer):
-    # switch to train mode
-    model.train()
-
-    correct = 0.
-    total_datasize = 0.
-    total_loss = 0.
-    orth_err = 0
-    total_other_loss = 0.
-
-    pbar = tqdm(enumerate(train_loader), total=len(train_loader), leave=True, ncols=150) if torch.distributed.get_rank(
-    ) == 0 else enumerate(train_loader)
-
-    output_softmax = nn.Softmax(dim=1)
-    return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
-    # lambda_ = (epoch / config_args['epochs']) ** 2
-
-    if 'augment_pipeline' in config_args:
-        num_pipes = config_args['num_pipes'] if 'num_pipes' in config_args else 1
-        augment_pipeline = []
-        for _, augment in enumerate(config_args['augment_pipeline']):
-            augment_pipeline.append(augment.cuda())
-
-    # pdb.set_trace()
-    for batch_idx, data_cols in pbar:
-
-        if not return_domain:
-            data, label = data_cols
-            batch_weight = None
-        else:
-            data, label, domain_label = data_cols
-            domain_weight = torch.Tensor(C.DOMAIN_WEIGHT).cuda()
-            domain_weight = torch.exp(6*(-domain_weight+0.75))
-            domain_weight /= domain_weight.min()
-
-            batch_weight = domain_weight[domain_label]
-            model.module.loss.xe_criterion.ce.reduction = 'none'
-
-        # print(data.shape)
-        # pdb.set_trace()
-        if 'augment_pipeline' in config_args:
-            with torch.no_grad():
-                wavs_aug_tot = []
-                wavs_aug_tot.append(data.cuda()) # data_shape [batch, 1,1,time]
-                wavs = data.squeeze().cuda()
-
-                # augment = np.random.choice(augment_pipeline)
-                # for count, augment in enumerate(augment_pipeline):
-                for augment in np.random.choice(augment_pipeline, size=num_pipes, replace=False):
-                    # Apply augment
-                    wavs_aug = augment(wavs, torch.tensor([1.0]*len(data)).cuda())
-                    # Managing speed change
-                    if wavs_aug.shape[1] > wavs.shape[1]:
-                        wavs_aug = wavs_aug[:, 0 : wavs.shape[1]]
-                    else:
-                        zero_sig = torch.zeros_like(wavs)
-                        zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
-                        wavs_aug = zero_sig
-
-                    if 'concat_augment' in config_args and config_args['concat_augment']:
-                        wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
-                    else:
-                        wavs = wavs_aug
-                        wavs_aug_tot[0] = wavs.unsqueeze(1).unsqueeze(1)
-                
-                data = torch.cat(wavs_aug_tot, dim=0)
-                n_augment = len(wavs_aug_tot)
-                label = torch.cat([label] * n_augment)
-
-        if torch.cuda.is_available():
-            label = label.cuda().long()
-            data = data.cuda()
-
-        data, label = Variable(data), Variable(label)
-        # pdb.set_trace()
-        # (classfier, other_loss), feats = model(data)
-        classfier, feats = model(data)
-        # print('label', label)
-        loss, other_loss = model.module.loss((classfier, feats), label, other=True)
-        # loss, other_loss = model.module.loss(classfier, feats, label,
-        #                                      batch_weight=batch_weight, epoch=epoch)
-        # loss = loss + other_loss
-
-        predicted_labels = output_softmax(classfier.clone())
-        predicted_one_labels = torch.max(predicted_labels, dim=1)[1]
-
-        minibatch_correct = float(
-            (predicted_one_labels.cpu() == label.cpu()).sum().item())
-        minibatch_acc = minibatch_correct / len(predicted_one_labels)
-        correct += minibatch_correct
-
-        total_datasize += len(predicted_one_labels)
-        # print(loss.shape)
-        total_loss += float(loss.item())
-        total_other_loss +=  float(other_loss)
-
-        if torch.distributed.get_rank() == 0:
-            writer.add_scalar('Train/All_Loss', float(loss.item()),
-                              int((epoch - 1) * len(train_loader) + batch_idx + 1))
-
-        if np.isnan(loss.item()):
-            raise ValueError('Loss value is NaN!')
-
-        # compute gradient and update weights
-        loss.backward()
-
-        if 'grad_clip' in config_args and config_args['grad_clip'] > 0:
-            this_lr = config_args['lr']
-            for param_group in optimizer.param_groups:
-                this_lr = min(param_group['lr'], this_lr)
-            torch.nn.utils.clip_grad_norm_(
-                model.parameters(), config_args['grad_clip'])
-
-        if ((batch_idx + 1) % config_args['accu_steps']) == 0:
-            # optimizer the net
-            optimizer.step()  # update parameters of net
-            optimizer.zero_grad()  # reset gradient
-
-            if config_args['model'] == 'FTDNN' and ((batch_idx + 1) % 4) == 0:
-                if isinstance(model, DistributedDataParallel):
-                    # The key method to constrain the first two convolutions, perform after every SGD step
-                    model.module.step_ftdnn_layers()
-                    orth_err += model.module.get_orth_errors()
-                else:
-                    # The key method to constrain the first two convolutions, perform after every SGD step
-                    model.step_ftdnn_layers()
-                    orth_err += model.get_orth_errors()
-
-        if config_args['loss_ratio'] != 0:
-            if config_args['loss_type'] in ['center', 'mulcenter', 'gaussian', 'coscenter']:
-                for param in model.module.loss.xe_criterion.parameters():
-                    param.grad.data *= (1. / config_args['loss_ratio'])
-
-        # optimizer.step()
-        if config_args['scheduler'] == 'cyclic':
-            scheduler.step()
-
-        # if torch.distributed.get_rank() == 0:
-        if torch.distributed.get_rank() == 0 and (batch_idx + 1) % config_args['log_interval'] == 0:
-            epoch_str = 'Train Epoch {} '.format(epoch)
-
-            if len(config_args['random_chunk']) == 2 and config_args['random_chunk'][0] <= \
-                    config_args['random_chunk'][
-                        1]:
-                batch_length = data.shape[-1] if config_args['feat_format'] == 'wav' and 'trans_fbank' not in config_args else data.shape[-2]
-
-            pbar.set_description(epoch_str)
-            batch_dict = OrderedDict({'batch_length': batch_length, 'accuracy': '{:>6.2f}%'.format(
-                100. * minibatch_acc), 'average_loss': '{:.4f}'.format(total_loss / (batch_idx + 1))})
-            if total_other_loss != 0:
-                batch_dict[config_args['second_loss']] = '{:.4f}'.format(total_other_loss / (batch_idx + 1))
-
-            pbar.set_postfix(batch_dict)
-
-    this_epoch_str = 'Epoch {:>2d}: \33[91mTrain Accuracy: {:.6f}%, Avg loss: {:6f}'.format(epoch, 100 * float(
-        correct) / total_datasize, total_loss / len(train_loader))
-
-    if total_other_loss != 0:
-        this_epoch_str += ' {} Loss: {:6f}'.format(
-            config_args['second_loss'], total_other_loss / len(train_loader))
-
-    this_epoch_str += '.\33[0m'
-
-    if torch.distributed.get_rank() == 0:
-        print(this_epoch_str)
-        writer.add_scalar('Train/Accuracy', correct / total_datasize, epoch)
-        writer.add_scalar('Train/Loss', total_loss / len(train_loader), epoch)
-
-    torch.cuda.empty_cache()
-
 
 # Training settings
 def main():
@@ -315,18 +144,18 @@ def main():
               ('cos' if config_args['cos_sim'] else 'l2'))
 
     # model = create_model(config_args['model'], **model_kwargs)
-    model = config_args['adapter']
+    # model = config_args['adapter']
     
     # Adapter(model, scale=config_args['scale'],
     #                 layers=config_args['layers'],
     #                 adapter_type=config_args['adapter_type'])
-    # if 'embedding_model' in config_args:
-    #     model = config_args['embedding_model']
+    if 'embedding_model' in config_args:
+        model = config_args['embedding_model']
 
-    # if 'classifier' in config_args:
-    #     model.classifier = config_args['classifier']
-    # else:
-    #     create_classifier(model, **config_args)
+    if 'classifier' in config_args:
+        model.classifier = config_args['classifier']
+    else:
+        create_classifier(model, **config_args)
 
     if 'agent_model' in config_args:
         agent_model = config_args['agent_model']
@@ -343,8 +172,11 @@ def main():
 
     # Load checkpoint
     if 'fintune' in config_args:
-        start_epoch += load_checkpoint(model.model, config_args)
-    
+        start_epoch += load_checkpoint(model, config_args)
+
+    model = Adapter(model, scale=config_args['scale'],
+                    layers=config_args['layers'],
+                    adapter_type=config_args['adapter_type'])
     model.loss = SpeakerLoss(config_args)
 
     model_para = [{'params': model.parameters()}]

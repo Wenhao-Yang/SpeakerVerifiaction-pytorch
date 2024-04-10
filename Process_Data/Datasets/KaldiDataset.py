@@ -1147,7 +1147,7 @@ class ScriptTrainDataset(data.Dataset):
             # print(this_utt)
             score = torch.tensor(this_utt[3:]).float()
             return feature, label, score
-        
+
         if self.domain:
             label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
             return feature, label, label_b
