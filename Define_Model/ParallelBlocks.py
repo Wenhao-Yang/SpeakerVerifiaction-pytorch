@@ -309,7 +309,8 @@ class Adapter(nn.Module):
             # action_mask = action.float().view(-1,1,1)
             x_o = x
             x = self.model.blocks[i](x_o)
-            x = self.adapter_forward(layer, x_o, x)
+            if self.layers > i+1 and self.scale[i] > 0:   
+                x = self.adapter_forward(layer, x_o, x)
             # fine_x = layer(x)
             # x = original_x + fine_x
             xl.append(x)
@@ -318,7 +319,7 @@ class Adapter(nn.Module):
         x_o = torch.cat(xl[1:], dim=1)
         
         x = self.model.mfa(x_o)
-        if self.layers > 5:   
+        if self.layers > 5 and self.scale[i] > 0:   
             x = self.adapter_forward(self.mfa, x_o, x)
 
         # Attentive Statistical Pooling

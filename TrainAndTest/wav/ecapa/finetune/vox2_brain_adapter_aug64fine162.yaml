@@ -114,7 +114,6 @@ adapter: !new:Define_Model.ParallelBlocks.Adapter
    layers: !ref <layers>
    adapter_type: !ref <adapter_type>
 
-
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
   speeds: [100]

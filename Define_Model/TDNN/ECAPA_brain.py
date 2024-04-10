@@ -55,17 +55,6 @@ class InstBatchNorm1d(nn.Module):
     ----------
     in_channels : int
         Number of input channels.
-    out_channels : int
-        The number of output channels.
-    kernel_size : int
-        The kernel size of the TDNN blocks.
-    dilation : int
-        The dilation of the TDNN block.
-    activation : torch class
-        A class for constructing the activation layers.
-    groups: int
-        The groups size of the TDNN blocks.
-
     Example
     -------
     >>> inp_tensor = torch.rand([8, 120, 64]).transpose(1, 2)
@@ -546,6 +535,7 @@ class SERes2NetBlock(nn.Module):
                 out_channels=out_channels,
                 kernel_size=1,
             )
+
     def forward(self, x, lengths=None):
         """ Processes the input tensor x and returns an output tensor."""
         residual = x
@@ -759,9 +749,6 @@ class ECAPA_TDNN(torch.nn.Module):
             else:
                 tdnn_layer1.append(AttentionNoiseInject(drop_prob=self.dropouts[0]))
         elif 'noiseinject' in dropout_type:
-            # if isinstance(self.dropouts[0], float):
-            #     tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0:2]))
-            # else:
             tdnn_layer1.append(NoiseInject(drop_prob=self.dropouts[0], input_dim=channels[0],
                                            noise_norm=noise_norm,
                                            noise_type=noise_type))
@@ -830,6 +817,7 @@ class ECAPA_TDNN(torch.nn.Module):
         #     out_channels=embedding_size,
         #     kernel_size=1,)
         self.fc = nn.Linear(channels[-1] * 2, embedding_size)
+
         self.classifier = Classifier(
             input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
 
