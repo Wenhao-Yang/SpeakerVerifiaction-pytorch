@@ -348,7 +348,8 @@ class Adapter(nn.Module):
         return block(x)
 
     def parallel_forward(self, block, x_o, x):
-        return (x * self.channels[0] + block(x_o) * self.scale[0]) / (self.channels[0] + self.scale[0])
+        return x * 0.99 +  block(x_o) * 0.01
+        # return (x * self.channels[0] + block(x_o) * self.scale[0]) / (self.channels[0] + self.scale[0])
     
     def concat_forward(self, block, x_o, x):
         return torch.cat([x, block(x)], dim=1)
