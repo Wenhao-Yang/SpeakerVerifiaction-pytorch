@@ -211,7 +211,7 @@ class Adapter(nn.Module):
                 kernel_sizes=[5, 3, 3, 3, 1],
                 dilations=[1, 2, 3, 4, 1],
                 attention_channels=128,
-                adapter_rate=0,
+                adapter_rate=0, adapter_steps=0,
                 res2net_scale=8,
                 se_channels=128,embedding_size=192,
                 global_context=True, adapter_type='append',
@@ -298,13 +298,17 @@ class Adapter(nn.Module):
 
         self.freeze()
         # self.model_layer = total_layer
+        self.iteration = 0
+        self.adapter_steps = adapter_steps
 
     def freeze(self):
         for p in self.model.parameters():
             p.requires_grad = False
 
     def forward(self, x):
-        
+        if self.training:
+            self.iteration += 1
+
         x = self.model.input_mask(x)
         if len(x.shape) == 4:
             x = x.squeeze(1).float()
@@ -358,8 +362,14 @@ class Adapter(nn.Module):
 
     def parallel_forward(self, block, x_o, x):
         if self.adapter_rate == 1:
-            return x + block(x_o)
-        elif self.adapter_rate> 0:
+            if self.adapter_steps > 0:
+                step_ratio = min(self.iteration / self.adapter_steps, 1)
+            else:
+                step_ratio = 1
+
+            return x + block(x_o) * step_ratio
+
+        elif self.adapter_rate > 0:
             return x * (1-self.adapter_rate) + block(x_o) * self.adapter_rate
         else:
             return x + block(x_o)

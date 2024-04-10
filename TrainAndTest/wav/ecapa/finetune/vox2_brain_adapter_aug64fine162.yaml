@@ -109,6 +109,7 @@ layers: 5
 adapter_type: parallel
 adapter_rate : 1
 find_unused_parameters: False
+adapter_steps: 6492
 # adapter: !new:Define_Model.ParallelBlocks.Adapter
 #    model: !ref <embedding_model>
 #    scale: !ref <scale>
@@ -195,7 +196,7 @@ mixup_type: ''
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug64fine162_ada<adapter_type><adapter_rate>_layer<layers>_scale16
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2ses<early_meta>/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_dist_aug64fine162_ada<adapter_type><adapter_rate>_layer<layers>_scale16_steps1
 
 # save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix2/arcsoft_adam_cyclic/vox2/wave_fb80_dist_finetune96
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine162
