@@ -92,12 +92,13 @@ def butter_bandpass_filter(data, cutoff, fs, order=15):
 
 class BandPass(object):
     def __init__(self, low=300, high=[3000],
-                 sr=16000, band_pass_prob=0.2, order=15，
+                 sr=16000, band_pass_prob=0.2, order=15,
                  within_batch=False) -> None:
         self.low = low
         self.high = high
         self.sr = sr
         self.band_pass_prob = band_pass_prob
+        self.within_batch = within_batch
 
         self.soss = {}
         for h in high:
