@@ -392,7 +392,7 @@ if [ $stage -le 13 ]; then
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 
           # baseline for vox2 , aug53
-          CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist_adapter.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_aug64fine162.yaml --seed=${seed}
+          CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41725 --nnodes=1 TrainAndTest/train_egs/train_dist_adapter.py --train-config=TrainAndTest/wav/ecapa/finetune/vox2_brain_adapter_aug64fine162.yaml --seed=${seed}
 
     done
     done

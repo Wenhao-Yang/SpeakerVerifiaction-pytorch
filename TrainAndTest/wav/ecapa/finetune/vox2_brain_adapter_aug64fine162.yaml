@@ -78,9 +78,9 @@ cyclic_epoch: 3
 # step_size: 65000
 cos_sim: True
 
-early_stopping: True
-early_patience: 20
-early_delta: 0.001
+# early_stopping: True
+# early_patience: 20
+# early_delta: 0.001
 early_meta: "mix8"
 
 ## model Setttings
