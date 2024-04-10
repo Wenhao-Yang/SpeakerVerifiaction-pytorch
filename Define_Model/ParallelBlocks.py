@@ -325,29 +325,29 @@ class Adapter(nn.Module):
         x_o = torch.cat(xl[1:], dim=1)
         
         x = self.model.mfa(x_o)
-        if self.layers > 5 and self.scale[i] > 0:   
+        if self.layers > 4 and self.scale[i] > 0:   
             x = self.adapter_forward(self.mfa, x_o, x)
 
         # Attentive Statistical Pooling
         x_o = x
         x = self.model.asp(x_o, lengths=None)
-        if self.layers > 6:  
+        if self.layers > 5:  
             x = self.adapter_forward(self.asp, x_o, x)
 
         x_o = x
         x = self.model.asp_bn(x_o)
-        if self.layers > 7:  
+        if self.layers > 6:  
             x = self.adapter_forward(self.asp_bn, x_o, x)
 
         # Final linear transformation
         x_o = x
         embeddings = self.model.fc(x_o)
-        if self.layers > 8:  
+        if self.layers > 7:  
             embeddings = self.adapter_forward(self.fc, x_o, embeddings)
 
         logits = self.model.classifier(embeddings)
 
-        if self.layers > 9:  
+        if self.layers > 8:  
             logits = self.adapter_forward(self.classifier, embeddings, logits)
 
         return logits, embeddings
