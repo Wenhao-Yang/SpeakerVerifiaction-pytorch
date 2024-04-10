@@ -108,6 +108,7 @@ scale: [16, 16, 16, 16, 16]
 layers: 5
 adapter_type: parallel
 adapter_rate : 1
+find_unused_parameters: False
 # adapter: !new:Define_Model.ParallelBlocks.Adapter
 #    model: !ref <embedding_model>
 #    scale: !ref <scale>

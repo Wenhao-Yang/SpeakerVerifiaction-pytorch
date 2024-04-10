@@ -304,6 +304,9 @@ def main():
         print("Continue with gpu: %s ..." % str(local_rank))
         # model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
         find_unused_parameters = False if 'agent_model' in config_args else True
+        if 'find_unused_parameters' in config_args:
+            find_unused_parameters = config_args['find_unused_parameters']
+
         model = DistributedDataParallel(
             model.cuda(), device_ids=[local_rank], find_unused_parameters=find_unused_parameters)
         # agent_model = DistributedDataParallel(
