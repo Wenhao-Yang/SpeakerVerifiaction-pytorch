@@ -184,9 +184,8 @@ def main():
                     adapter_type=config_args['adapter_type'])
     model.loss = SpeakerLoss(config_args)
 
-    model_para = [{'params': model.parameters()}]
-
-    filter(lambda p: p.requires_grad, model.parameters())
+    # model_para = [{'params': model.parameters()}]
+    model_para = [{'params': filter(lambda p: p.requires_grad, model.parameters())}]
     
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert config_args['lr_ratio'] > 0
