@@ -179,8 +179,10 @@ def main():
     else:
         adapter_rate = 0
 
+    adapter_steps = 0 if 'adapter_steps' not in config_args else config_args['adapter_steps']
     model = Adapter(model, scale=config_args['scale'],
                     layers=config_args['layers'], adapter_rate=adapter_rate,
+                    adapter_steps=adapter_steps,
                     adapter_type=config_args['adapter_type'])
     model.loss = SpeakerLoss(config_args)
 
