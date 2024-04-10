@@ -237,18 +237,19 @@ def main():
 
     elif 'second_wd' in config_args and config_args['second_wd'] > 0:
         # if config_args['loss_type in ['asoft', 'amsoft']:
-        classifier_params = list(map(id, model.classifier.parameters()))
-        rest_params = filter(lambda p: id(
-            p) not in classifier_params and p.requires_grad, model.parameters())
+        if hasattr(model, 'classifier'):
+            classifier_params = list(map(id, model.classifier.parameters()))
+            rest_params = filter(lambda p: id(
+                p) not in classifier_params and p.requires_grad, model.parameters())
 
-        init_lr = config_args['lr'] * \
-            config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
-        init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
-        if torch.distributed.get_rank() == 0:
-            print('Set the lr and weight_decay of classifier to %f and %f' %
-              (init_lr, init_wd))
-        model_para = [{'params': rest_params},
-                      {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
+            init_lr = config_args['lr'] * \
+                config_args['lr_ratio'] if config_args['lr_ratio'] > 0 else config_args['lr']
+            init_wd = config_args['second_wd'] if config_args['second_wd'] > 0 else config_args['weight_decay']
+            if torch.distributed.get_rank() == 0:
+                print('Set the lr and weight_decay of classifier to %f and %f' %
+                (init_lr, init_wd))
+            model_para = [{'params': rest_params},
+                        {'params': model.classifier.parameters(), 'lr': init_lr, 'weight_decay': init_wd}]
 
     if 'filter_wd' in config_args:
         # if config_args['filter'] in ['fDLR', 'fBLayer', 'fLLayer', 'fBPLayer', 'sinc2down']:
