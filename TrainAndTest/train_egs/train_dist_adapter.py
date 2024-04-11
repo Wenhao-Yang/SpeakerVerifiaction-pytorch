@@ -182,7 +182,7 @@ def main():
                     adapter_type=config_args['adapter_type'])
     
     if torch.distributed.get_rank() == 0:
-        print(' Setting adaptive rate to: {:.2f}'.format(model.adapter_rate))
+        print(' Setting adaptive rate to: ', model.adapter_rate)
         
     model.loss = SpeakerLoss(config_args)
 
