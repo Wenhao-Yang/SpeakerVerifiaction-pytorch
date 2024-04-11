@@ -796,7 +796,9 @@ def main():
 
     model.loss = SpeakerLoss(config_args)
 
-    model_para = [{'params': model.parameters()}]
+    # model_para = [{'params': model.parameters()}]
+    model_para = [{'params': filter(lambda p: p.requires_grad, model.parameters())}]
+
     if config_args['loss_type'] in ['center', 'variance', 'mulcenter', 'gaussian', 'coscenter', 'ring']:
         assert config_args['lr_ratio'] > 0
         model_para.append({'params': model.loss.xe_criterion.parameters(
@@ -826,6 +828,7 @@ def main():
                 if key in n:
                     this_key = name2lr[key]
             if this_key == 0:
+                p.requires_grad = False
                 continue
 
             if 'second_wd' in config_args and 'classifier' in n:
