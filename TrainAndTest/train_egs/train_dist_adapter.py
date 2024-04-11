@@ -12,7 +12,7 @@
 from __future__ import print_function
 import copy
 from Define_Model.ParallelBlocks import Adapter, gumbel_softmax
-from Define_Model.model import create_classifier, get_trainable_param
+from Define_Model.model import create_classifier, get_layer_param, get_trainable_param
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
 from TrainAndTest.train_egs.train_egs import select_samples
@@ -180,6 +180,10 @@ def main():
                     layers=config_args['layers'], adapter_rate=adapter_rate,
                     adapter_steps=adapter_steps,
                     adapter_type=config_args['adapter_type'])
+    
+    if torch.distributed.get_rank() == 0:
+        print(' Setting adaptive rate to: {:.2f}'.format(model.adapter_rate))
+        
     model.loss = SpeakerLoss(config_args)
 
     # model_para = [{'params': model.parameters()}]
@@ -298,7 +302,8 @@ def main():
         print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
     if torch.distributed.get_rank() == 0:
-        print('Trainable #Param: ', get_trainable_param(model))
+        print('#Param, Total: {} Trainable {}'.format(get_layer_param(model),
+                                                      get_trainable_param(model)))
 
     if torch.distributed.get_world_size() > 1:
         print("Continue with gpu: %s ..." % str(local_rank))

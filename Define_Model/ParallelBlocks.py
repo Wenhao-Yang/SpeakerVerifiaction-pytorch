@@ -15,6 +15,8 @@ import copy
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+from Define_Model.model import get_layer_param, get_trainable_param
+
 def sample_gumbel(shape, eps=1e-20):
     U = torch.cuda.FloatTensor(shape).uniform_()
     return -Variable(torch.log(-torch.log(U + eps) + eps))
@@ -225,9 +227,16 @@ class Adapter(nn.Module):
         self.layers = layers
         self.channels = channels
         self.scale = scale
-        self.adapter_rate = adapter_rate
+        if isinstance(adapter_rate, float):
+            if adapter_rate >= 0:
+                self.adapter_rate = [adapter_rate]*layers
+
+        elif isinstance(adapter_rate, list):
+            self.adapter_rate = adapter_rate
+            assert len(adapter_rate) >= layers, print(adapter_rate, layers)
 
         self.k = k
+
         self.adapter_type = adapter_type
         if self.adapter_type == 'append':
             self.adapter_forward = self.append_forward
@@ -267,6 +276,12 @@ class Adapter(nn.Module):
                 )
             )
 
+        trainable_fixed_rate = []
+        for b, mb in zip(self.blocks, self.model.blocks):
+            para_train = get_layer_param(b)
+            para_fix = get_layer_param(mb)
+            trainable_fixed_rate.append(para_train/(para_train+para_fix))
+
         # self.blocks = copy.deepcopy(model.blocks)
         if layers > 4:
             self.mfa    = TDNNBottleBlock(
@@ -278,23 +293,44 @@ class Adapter(nn.Module):
                         activation,
                         groups=groups[-1],
                         )
+            
+            para_train = get_layer_param(b)
+            para_fix = get_layer_param(mb)
+            trainable_fixed_rate.append(para_train/(para_train+para_fix))
 
         if layers > 5:   
             self.asp    = AttentiveStatisticsPooling(channels[-1],
                 attention_channels=scale[3])
+            
+            para_train = get_layer_param(self.asp)
+            para_fix = get_layer_param(self.model.asp)
+            trainable_fixed_rate.append(para_train/(para_train+para_fix))
         
         if layers > 6:
             self.asp_bn = BatchNorm1d(input_size=channels[-1] * 2)
-        
+            para_train = get_layer_param(self.asp_bn)
+            para_fix = get_layer_param(self.model.asp_bn)
+            trainable_fixed_rate.append(para_train/(para_train+para_fix))
+            
         if layers > 7:
             self.fc     = nn.Sequential(
                 nn.Linear(self.model.channels[-1] * 2, scale[4]),
                 nn.ReLU(),
                 nn.Linear(scale[4], embedding_size)
             )
+            para_train = get_layer_param(self.fc)
+            para_fix = get_layer_param(self.model.fc)
+            trainable_fixed_rate.append(para_train/(para_train+para_fix))
 
         if layers > 8:
             self.classifier = copy.deepcopy(model.classifier)
+
+            para_train = get_layer_param(self.classifier)
+            para_fix = get_layer_param(self.model.classifier)
+            trainable_fixed_rate.append(para_train/(para_train+para_fix))
+
+        if isinstance(adapter_rate, float) and adapter_rate == -1:
+            self.adapter_rate = trainable_fixed_rate
 
         self.freeze()
         # self.model_layer = total_layer
@@ -321,7 +357,7 @@ class Adapter(nn.Module):
             x_o = x
             x = self.model.blocks[i](x_o)
             if self.layers > i+1 and self.scale[i] > 0:   
-                x = self.adapter_forward(layer, x_o, x)
+                x = self.adapter_forward(layer, x_o, x, i)
             # x = original_x + fine_x
             xl.append(x)
                 
@@ -330,29 +366,28 @@ class Adapter(nn.Module):
         
         x = self.model.mfa(x_o)
         if self.layers > 4 and self.scale[i] > 0:   
-            x = self.adapter_forward(self.mfa, x_o, x)
+            x = self.adapter_forward(self.mfa, x_o, x, 4)
 
         # Attentive Statistical Pooling
         x_o = x
         x = self.model.asp(x_o, lengths=None)
         if self.layers > 5:  
-            x = self.adapter_forward(self.asp, x_o, x)
+            x = self.adapter_forward(self.asp, x_o, x, 5)
 
         x_o = x
         x = self.model.asp_bn(x_o)
         if self.layers > 6:  
-            x = self.adapter_forward(self.asp_bn, x_o, x)
+            x = self.adapter_forward(self.asp_bn, x_o, x, 6)
 
         # Final linear transformation
         x_o = x
         embeddings = self.model.fc(x_o)
         if self.layers > 7:  
-            embeddings = self.adapter_forward(self.fc, x_o, embeddings)
+            embeddings = self.adapter_forward(self.fc, x_o, embeddings, 7)
 
         logits = self.model.classifier(embeddings)
-
         if self.layers > 8:  
-            logits = self.adapter_forward(self.classifier, embeddings, logits)
+            logits = self.adapter_forward(self.classifier, embeddings, logits, 8)
 
         return logits, embeddings
     
@@ -360,17 +395,20 @@ class Adapter(nn.Module):
     def append_forward(self, block, x_o, x):
         return block(x)
 
-    def parallel_forward(self, block, x_o, x):
-        if self.adapter_rate == 1:
-            if self.adapter_steps > 0:
-                step_ratio = min(self.iteration / self.adapter_steps, 1)
-            else:
-                step_ratio = 1
+    def parallel_forward(self, block, x_o, x, idx):
+        adapter_rate = self.adapter_rate[idx]
 
+        if self.adapter_steps > 0:
+            step_ratio = min(self.iteration / self.adapter_steps, 1)
+        else:
+            step_ratio = 1
+
+        if adapter_rate == 1 :
             return x + block(x_o) * step_ratio
-
-        elif self.adapter_rate > 0:
-            return x * (1-self.adapter_rate) + block(x_o) * self.adapter_rate
+        
+        elif adapter_rate > 0:
+            return x * (1-adapter_rate*step_ratio) + block(x_o) * adapter_rate*step_ratio
+        
         else:
             return x + block(x_o)
     

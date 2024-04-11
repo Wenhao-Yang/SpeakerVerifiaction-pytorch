@@ -909,7 +909,8 @@ def main():
         print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
     if torch.distributed.get_rank() == 0:
-        print('Trainable #Param: ', get_trainable_param(model))
+        print('#Param, Total: {} Trainable {}'.format(get_layer_param(model),
+                                                      get_trainable_param(model)))
         
     if torch.distributed.get_world_size() > 1:
         print("Continue with gpu: %s ..." % str(local_rank))
@@ -923,8 +924,6 @@ def main():
         print('Dropout is {}.'.format(model.dropout_p))
     except:
         pass
-    
-    
 
     xvector_dir = check_path.replace('checkpoint', 'xvector')
     start_time = time.time()
