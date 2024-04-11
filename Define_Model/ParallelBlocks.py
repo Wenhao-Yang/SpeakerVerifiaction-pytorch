@@ -334,7 +334,7 @@ class Adapter(nn.Module):
             para_fix = get_layer_param(self.model.classifier)
             trainable_fixed_rate.append(para_train/(para_train+para_fix))
 
-        if isinstance(adapter_rate, float) and adapter_rate == -1:
+        if (isinstance(adapter_rate, float) or isinstance(adapter_rate, int)) and adapter_rate == -1:
             self.adapter_rate = trainable_fixed_rate
 
         self.freeze()
