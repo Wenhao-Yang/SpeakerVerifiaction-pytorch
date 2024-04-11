@@ -217,7 +217,7 @@ if [ $stage -le 22 ]; then
     assigned_epoch=15,16
     echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
         for seed in 123456 ; do
-            model_dir=${common_path}_${model_name}/${seed}            
+            model_dir=${common_path}${model_name}/${seed}            
         
             python -W ignore TrainAndTest/train_egs/average_model.py \
                 --check-path Data/checkpoint/${model_dir} \
