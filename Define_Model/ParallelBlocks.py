@@ -15,7 +15,12 @@ import copy
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from Define_Model.model import get_layer_param, get_trainable_param
+
+def get_layer_param(model):
+    return sum([torch.numel(param) for param in model.parameters()])
+
+def get_trainable_param(model):
+    return sum([torch.numel(param) for param in filter(lambda p: p.requires_grad, model.parameters())])
 
 def sample_gumbel(shape, eps=1e-20):
     U = torch.cuda.FloatTensor(shape).uniform_()
