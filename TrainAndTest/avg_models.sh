@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=20
+stage=22
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -206,6 +206,22 @@ if [ $stage -le 21 ]; then
             
             python -W ignore TrainAndTest/train_egs/average_model.py \
                 --check-path Data/checkpoint/${model_dir}
+        done
+    done
+ exit
+fi
+
+if [ $stage -le 22 ]; then
+    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine162_ada
+    for model_name in parallel0.1_layer5_scale163248 parallel0.25_layer5_scale163248 parallel0.1_layer5_scale326448 ; do
+    assigned_epoch=15,16
+    echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
+        for seed in 123456 ; do
+            model_dir=${common_path}_${model_name}/${seed}            
+        
+            python -W ignore TrainAndTest/train_egs/average_model.py \
+                --check-path Data/checkpoint/${model_dir} \
+                --assigned-epoch ${assigned_epoch}
         done
     done
  exit

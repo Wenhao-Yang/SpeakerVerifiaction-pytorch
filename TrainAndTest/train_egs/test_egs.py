@@ -37,6 +37,7 @@ from tqdm import tqdm
 # from Define_Model.Loss.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 # import Define_Model
 from Define_Model.FilterLayer import FreqMaskIndexLayer
+from Define_Model.ParallelBlocks import Adapter
 from Define_Model.TDNN.Slimmable import FLAGS
 from Eval.eval_metrics import evaluate_kaldi_eer, evaluate_kaldi_mindcf
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, ScriptValidDataset, KaldiExtractDataset, \
@@ -710,6 +711,13 @@ if __name__ == '__main__':
 
         if 'domain_classifier' in config_args:
             model.domain_classifier = config_args['domain_classifier']
+
+        if 'adapter_type' in config_args:
+            adapter_rate = config_args['adapter_rate'] if 'adapter_rate' in config_args else 0
+            model = Adapter(model, scale=config_args['scale'],
+                    layers=config_args['layers'], adapter_rate=adapter_rate,
+                    adapter_steps=0,
+                    adapter_type=config_args['adapter_type'])
 
         if args.verbose > 0:
             print('=> loading checkpoint {}'.format(args.resume))

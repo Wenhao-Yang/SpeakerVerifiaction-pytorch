@@ -174,11 +174,7 @@ def main():
     if 'fintune' in config_args:
         start_epoch += load_checkpoint(model, config_args)
 
-    if 'adapter_rate' in config_args:
-        adapter_rate = config_args['adapter_rate']
-    else:
-        adapter_rate = 0
-
+    adapter_rate = config_args['adapter_rate'] if 'adapter_rate' in config_args else 0
     adapter_steps = 0 if 'adapter_steps' not in config_args else config_args['adapter_steps']
     model = Adapter(model, scale=config_args['scale'],
                     layers=config_args['layers'], adapter_rate=adapter_rate,
