@@ -397,8 +397,23 @@ class Adapter(nn.Module):
         return logits, embeddings
     
 
-    def append_forward(self, block, x_o, x):
-        return block(x)
+    def append_forward(self, block, x_o, x, idx):
+        adapter_rate = self.adapter_rate[idx]
+
+        if self.adapter_steps > 0:
+            step_ratio = min(self.iteration / self.adapter_steps, 1)
+        else:
+            step_ratio = 1
+
+        if adapter_rate == 1 :
+            return block(x) * step_ratio
+        
+        elif adapter_rate > 0:
+            return x * (1-adapter_rate*step_ratio) + block(x) * adapter_rate*step_ratio
+        
+        else:
+            return x + block(x)
+
 
     def parallel_forward(self, block, x_o, x, idx):
         adapter_rate = self.adapter_rate[idx]
