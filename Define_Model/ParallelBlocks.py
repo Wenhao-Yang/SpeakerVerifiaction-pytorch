@@ -245,6 +245,7 @@ class Adapter(nn.Module):
         self.adapter_type = adapter_type
         if self.adapter_type == 'append':
             self.adapter_forward = self.append_forward
+            input_dim = channels[0]
         elif self.adapter_type == 'parallel':
             self.adapter_forward = self.parallel_forward
         elif self.adapter_type == 'concat':
@@ -253,6 +254,7 @@ class Adapter(nn.Module):
         self.blocks = nn.ModuleList()
 
         # The initial TDNN layer
+
         self.blocks.append(
             TDNNBottleBlock(
                 input_dim,
