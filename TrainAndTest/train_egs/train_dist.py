@@ -48,7 +48,7 @@ import torch.distributed as dist
 from Define_Model.Optimizer import EarlyStopping
 from Process_Data.Datasets.KaldiDataset import ScriptVerifyDataset
 import Process_Data.constants as C
-from Define_Model.model import create_classifier,  create_model, get_trainable_param
+from Define_Model.model import create_classifier,  create_model, get_layer_param, get_trainable_param
 from Define_Model.Optimizer import create_optimizer, create_scheduler
 from TrainAndTest.common_func import load_checkpoint, on_main, resume_checkpoint, verification_test, verification_extract, args_parse, args_model
 
