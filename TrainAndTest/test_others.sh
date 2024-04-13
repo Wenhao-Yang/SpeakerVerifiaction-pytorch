@@ -4205,7 +4205,7 @@ if [ $stage -le 609 ]; then
     common=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine #162
     for layer in 12345 ; do #1234 2345 3456 4567
     # common_path=${common}_${layer}
-    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine162_ada${model_name}
+    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine${model_name} #162_ada
 
     score_norm=as-norm
     cohort_size=1000
