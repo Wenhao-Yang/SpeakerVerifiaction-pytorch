@@ -4200,8 +4200,9 @@ if [ $stage -le 609 ]; then
     fi
 
   for epoch in avg2 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in parallel0.1_layer5_scale163248 parallel0.25_layer5_scale163248 parallel0.1_layer5_scale326448 ; do    
-    common=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine162
+    for model_name in 162_adaparallel-1_layer5_scale166464 162_adaparallel-1_layer5_scale16128128 322_adaparallel-1_layer5_scale166464 322_adaparallel-1_layer5_scale16128128 ; do 
+    # parallel0.1_layer5_scale163248 parallel0.25_layer5_scale163248 parallel0.1_layer5_scale326448   
+    common=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine #162
     for layer in 12345 ; do #1234 2345 3456 4567
     # common_path=${common}_${layer}
     common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine162_ada${model_name}
