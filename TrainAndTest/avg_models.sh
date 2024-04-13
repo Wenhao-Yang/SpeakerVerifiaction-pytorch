@@ -212,8 +212,8 @@ if [ $stage -le 21 ]; then
 fi
 
 if [ $stage -le 22 ]; then
-    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine162_ada
-    for model_name in parallel0.1_layer5_scale163248 parallel0.25_layer5_scale163248 parallel0.1_layer5_scale326448 ; do
+    common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine #162_ada
+    for model_name in 162_adaparallel-1_layer5_scale166464 162_adaparallel-1_layer5_scale16128128 322_adaparallel-1_layer5_scale166464 322_adaparallel-1_layer5_scale16128128 ; do #parallel0.1_layer5_scale163248 parallel0.25_layer5_scale163248 parallel0.1_layer5_scale326448
     assigned_epoch=15,16
     echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
         for seed in 123456 ; do
