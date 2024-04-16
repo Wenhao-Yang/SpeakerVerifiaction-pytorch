@@ -42,7 +42,7 @@ def argument_parser():
                         default='Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53/1234')
     
     parser.add_argument("--device", type=str, default='cuda:1') 
-    parser.add_argument("--epoch",  type=str, default='avg3')
+    parser.add_argument("--epochs",  type=str, default='avg3')
     parser.add_argument("--random-seed",  type=int, default=1234)
 
     parser.add_argument("--save-path", type=str, default='data/vox1_inst')
