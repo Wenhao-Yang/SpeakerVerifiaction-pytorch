@@ -771,6 +771,7 @@ class ScriptTrainDataset(data.Dataset):
         self.min_frames = min_frames
         self.sample_score = sample_score
         self.return_idx = return_idx
+        self.save_dir = save_dir
 
         self.feat_type = feat_type
         self.sample_type = sample_type  # balance or instance

@@ -134,8 +134,12 @@ def SubScriptDatasets(config_args):
     sample_score = config_args['sample_score'] if 'sample_score' in config_args else ''
 
     vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
-    verbose = 1 if torch.distributed.is_initialized(
-    ) and torch.distributed.get_rank() == 0 else 0
+    if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
+        verbose = 1
+    elif ['verbose'] in config_args:
+        verbose = config_args['verbose']   
+    else:
+        verbose = 0
     segment_shift = config_args['segment_shift'] if 'segment_shift' in config_args else config_args['num_frames']
     min_frames = 50 if 'min_frames' not in config_args else config_args['min_frames']
     return_idx = False if 'return_idx' not in config_args else config_args['return_idx']
