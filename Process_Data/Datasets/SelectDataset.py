@@ -130,11 +130,13 @@ def stratified_sampling(score, coreset_num, stratas=50,
 
 class SelectSubset(object):
     def __init__(self, train_dir, args, fraction=0.5,
-                 random_seed=None, save_dir='',**kwargs) -> None:
+                 random_seed=None, save_dir='', scores='max',
+                 **kwargs) -> None:
         if fraction <= 0.0 or fraction > 1.0:
             raise ValueError("Illegal Coreset Size.")
         
         self.train_dir = train_dir
+        self.scores = scores
         self.num_classes = len(train_dir.speakers)
         self.save_dir = save_dir
         if self.save_dir != '' and not os.path.exists(self.save_dir):
@@ -157,7 +159,8 @@ class SelectSubset(object):
         return
     
     def load_subset(self):
-        csv_path = os.path.join(self.save_dir, 'subtrain.{}.{}.csv'.format(self.iteration, self.fraction))
+        sub_str= '' if self.scores == 'max' else '.{}'.format(self.scores)
+        csv_path = os.path.join(self.save_dir, 'subtrain.{}.{}{}.csv'.format(self.iteration, self.fraction, sub_str))
         score_path = os.path.join(self.save_dir, 'subtrain.{}.scores.csv'.format(self.iteration))
 
         top_examples = None
