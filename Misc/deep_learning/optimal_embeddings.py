@@ -109,7 +109,7 @@ for epoch in epochs:
         model.load_state_dict(model_dict)
     
     # Extracting 
-    save_path = args.save_path + '_epoch{}'.format(epoch)
+    save_path = args.save_path + '_{}'.format(epoch)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
