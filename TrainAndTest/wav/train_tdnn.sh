@@ -2,7 +2,7 @@
 
 stage=5
 waited=0
-while [ $(ps 14149 | wc -l) -eq 2 ]; do
+while [ $(ps 268292 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -68,8 +68,8 @@ if [ $stage -le 5 ]; then
     for data_type in hdf5 ; do
     # for type in mani style align ;do
     #  feat=fb${input_dim}
-      for ratio in 10 25 ; do #10 25 50 75 90
-      for seed in 1235 1236; do
+      for ratio in 50 75 90 ; do #10 25 50 75 90
+      for seed in 1234 1235 1236; do
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
       CUDA_VISIBLE_DEVICES=0,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_mulop.yaml --seed=${seed} --sample-ratio ${ratio}
 
