@@ -337,7 +337,7 @@ def main():
         select_method = RandomSelect
     elif config_args['select_method'] == 'loss':
         select_method = LossSelect
-    elif config_args['select_method'] == 'optimal':
+    elif config_args['select_method'] in ['optimal', 'muloptimal']:
         select_method = OTSelect
     elif config_args['select_method'] == 'forget':
         select_method = Forgetting

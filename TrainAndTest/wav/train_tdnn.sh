@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=12
+stage=5
 waited=0
 while [ $(ps 14149 | wc -l) -eq 2 ]; do
   sleep 60
@@ -38,27 +38,43 @@ if [ $stage -le 0 ]; then
       --valid-dir ${lstm_dir}/data/${datasets}/egs/${feat_type}/train_${feat}_valid \
       --test-dir ${lstm_dir}/data/${datasets}/${feat_type}/test_${feat} \
       --batch-size 128 --input-norm ${input_norm} --input-dim 40 \
-      --test-input fix \
       --feat-format kaldi --nj 10 \
       --epochs 40 --patience 3 --lr 0.1 \
-      --random-chunk 6400 12800 --chunk-size 9600 \
+      --random-chunk 6400 12800 --chunk-size 9600 --num-valid 2 --test-input fix \
       --filter ${filter} --feat-dim ${feat_dim} \
       --optimizer ${optimizer} --scheduler ${scheduler} \
       --time-dim 1 --avg-size ${avgsize} \
       --milestones 10,20,30,40 \
       --check-path Data/checkpoint/${model_dir} \
       --resume Data/checkpoint/${model_dir}/checkpoint_9.pth \
-      --stride 1 \
-      --block-type ${block_type} \
-      --channels 128,128,128,128,375 \
+      --stride 1 --block-type ${block_type} --channels 128,128,128,128,375 \
       --encoder-type ${encoder_type} --embedding-size ${embedding_size} --alpha ${alpha} \
-      --num-valid 2 \
       --margin 0.2 --s 30 --m 3 --all-iteraion 0 \
-      --lr-ratio ${lr_ratio} \
-      --filter-wd 0.001 --weight-decay 0.0005 \
+      --lr-ratio ${lr_ratio} --filter-wd 0.001 --weight-decay 0.0005 \
       --dropout-p ${dropout_p} \
       --gpu-id 3 --cos-sim --extract \
       --loss-type ${loss}
+  done
+  exit
+fi
+
+if [ $stage -le 5 ]; then
+  model=ECAPA
+  datasets=vox2 feat_type=wave
+  loss=arcsoft encod=ASTP2 embedding_size=256
+  # _lrr${lr_ratio}_lsr${loss_ratio}
+  for lamda_beta in 0.2;do
+    for seed in 1234 1235 1236 ; do
+    for data_type in hdf5 ; do
+    # for type in mani style align ;do
+    #  feat=fb${input_dim}
+      for ratio in 10 25 50 ; do #10 25 50 75 90
+     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+      CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_mulop.yaml --seed=${seed} --sample-ratio ${ratio}
+
+    done
+    done
+    done
   done
   exit
 fi
