@@ -136,7 +136,7 @@ def SubScriptDatasets(config_args):
     vad_select = False if 'vad_select' not in config_args else config_args['vad_select']
     if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
         verbose = 1
-    elif ['verbose'] in config_args:
+    elif 'verbose' in config_args:
         verbose = config_args['verbose']   
     else:
         verbose = 0
