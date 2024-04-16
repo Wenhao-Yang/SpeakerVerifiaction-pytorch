@@ -10,6 +10,7 @@
 @Overview:
 """
 
+from collections import OrderedDict
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 
@@ -17,6 +18,7 @@ import os
 from hyperpyyaml import load_hyperpyyaml
 from Light.model import SpeakerLoss
 from geomloss import SamplesLoss
+import copy
 
 import torch
 import torch.nn as nn
@@ -38,12 +40,10 @@ def argument_parser():
                         default='Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53/1234')
     
     parser.add_argument("--device", type=str, default='cuda:1') 
-    
     parser.add_argument("--epoch",  type=str, default='avg3')
     parser.add_argument("--random-seed",  type=int, default=1234)
-    
-    parser.add_argument("--save-path", type=str, default='data/vox1_inst')
 
+    parser.add_argument("--save-path", type=str, default='data/vox1_inst')
 
     return parser.parse_args()
 
@@ -57,6 +57,9 @@ data_root    = args.data_root
 train_config = args.model_yaml
 
 # Dataset & Dataloader
+with open(train_config, 'r') as f:
+    config_args = load_hyperpyyaml(f)
+
 config_args['verbose'] = 1
 config_args['save_data_dir'] = data_root + '/' + config_args['save_data_dir']
 train_dir, valid_dir, train_extract_dir = SubScriptDatasets(config_args)
@@ -68,19 +71,15 @@ batch_loader = torch.utils.data.DataLoader(
     train_dir, batch_size=batch_size, num_workers=config_args['nj'])
 sample_num   = len(train_dir)
 
-
-
 epochs = args.epochs.split(',') #'avg3'
 
 for epoch in epochs:
-    with open(train_config, 'r') as f:
-        config_args = load_hyperpyyaml(f)
-
+    
     if 'embedding_model' in config_args:
-        model = config_args['embedding_model']
+        model = copy.deepcopy(config_args['embedding_model'])
 
     if 'classifier' in config_args:
-        model.classifier = config_args['classifier']
+        model.classifier = copy.deepcopy(config_args['classifier'])
 
     model.loss = SpeakerLoss(config_args)
     model      = model.cuda()
@@ -113,7 +112,6 @@ for epoch in epochs:
     grads         = torch.zeros([len(train_dir), embedding_dim], requires_grad=False)
     logits        = torch.zeros([len(train_dir), config_args['num_classes']], requires_grad=False)
 
-    
     pbar = tqdm(enumerate(batch_loader), ncols=50, total=len(batch_loader))
     model.eval()
 
@@ -139,7 +137,6 @@ for epoch in epochs:
         os.makedirs(save_path)
         
     try:
-
         torch.save({'grads': grads}, 
                    '{}/grads.pth'.format(save_path))
 
@@ -150,7 +147,11 @@ for epoch in epochs:
                    '{}/embeddings.pth'.format(save_path))
         
         print('Saving results to {save_path}'.format())
+
     except Exception as e:
-        print('Error saving')
+        print('Error saving ...')
         print(e)
+
+    
+        
         
