@@ -25,7 +25,7 @@ from scipy.optimize import nnls
 import geomloss
 from geomloss import SamplesLoss
 
-from Define_Model.ParallelBlocks import gumbel_softmax
+from Define_Model.ParallelBlocks import gumbel_softmax_sample
 
 def main_process():
     if (torch.distributed.is_initialized() and torch.distributed.get_rank() == 0) or not torch.distributed.is_initialized():
@@ -1025,26 +1025,52 @@ class Dist_loss(nn.Module):
         return self.loss(w*x1, x2)
 
 
+
+
+def gumbel_softmax(logits, num=1, temperature = 5):
+    """
+    input: [*, n_class]
+    return: [*, n_class] an one-hot vector
+    """
+    y = gumbel_softmax_sample(logits, temperature)
+    shape = y.size()
+    y_sort_idx = torch.argsort(y, dim=1)
+    # _, ind = y.max(dim=-1)
+    ind = y_sort_idx[:, -num:]
+    # print(y_sort_idx.shape, ind)
+    y_hard = torch.zeros_like(y).view(-1, shape[-1])
+    # y_hard.scatter_(1, ind.view(-1, 1), 1)
+    y_hard.scatter_(1, ind, 1)
+    y_hard = y_hard.view(*shape)
+    return (y_hard - y).detach() + y
+
 class MultiRatioDist_loss(nn.Module):
     def __init__(self, w, metric='cosine',
-                ratios=[0.1, 0.25, 0.5, 0.75, 0.9]):
+                ratios=[0.1, 0.25, 0.5, 0.75, 0.9],
+                sample_ratio=5):
         super(MultiRatioDist_loss, self).__init__()
-        w = w/w.mean()
+
         self.w = nn.Parameter(w)
         self.loss = SamplesLoss("sinkhorn", p=2, blur=0.05,
                                 cost=lambda a, b: cost_func(a, b, p=2, metric=metric))
                                 # SamplesLoss("sinkhorn", p=2, blur=0.1)
         self.ratios = ratios
+        self.sample_ratio = sample_ratio
         
     def forward(self, x1, x2):
 
         loss = 0
-        for idx in self.ratios:
-            idx = gumbel_softmax(self.w.reshape(1, -1), num=int(len(self.w)*0.5)).squeeze().reshape(-1,1)
+        if self.sample_ratio < len(self.ratios):
+            ratios = np.random.choice(self.ratios, self.sample_ratio, replace=False)
+        else:
+            ratios = self.ratios
+            
+        for r in ratios:
+            idx = gumbel_softmax(self.w.reshape(1, -1), num=int(len(self.w)*r)).squeeze().reshape(-1,1)
             x11 = x1*idx
             loss = loss + self.loss(x11, x2)
                 
-        return loss / len(self.ratios)
+        return loss / len(ratios)
          
 
 class OTSelect(SelectSubset):
