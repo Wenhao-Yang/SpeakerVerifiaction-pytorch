@@ -187,17 +187,18 @@ class SelectSubset(object):
     def save_subset(self, top_examples):
         if self.save_dir != '' and main_process():
             # print(len(self.train_dir.base_utts), np.max(top_examples))
-            sub_utts = [[t, self.train_dir.base_utts[t]] for t in top_examples]
-            train_utts = pd.DataFrame(sub_utts, columns=['idx', 'uids'])
-            train_utts.to_csv(os.path.join(self.save_dir, 'subtrain.{}.{}.csv'.format(self.iteration, self.fraction)),
-                              index=None)
+            fraction_f = os.path.join(self.save_dir, 'subtrain.{}.{}.csv'.format(self.iteration, self.fraction))
+            if not os.path.exists(fraction_f):
+                sub_utts = [[t, self.train_dir.base_utts[t]] for t in top_examples]
+                train_utts = pd.DataFrame(sub_utts, columns=['idx', 'uids'])
+                train_utts.to_csv(fraction_f, index=None)
             
             sub_scores = self.norm_mean
-            train_utts = pd.DataFrame(self.train_dir.base_utts, columns=['uid', 'start', 'end'])
-            train_utts['scores'] = sub_scores
-
-            train_utts.to_csv(os.path.join(self.save_dir, 'subtrain.{}.scores.csv'.format(self.iteration)),
-                              index=None)
+            scores_f = os.path.join(self.save_dir, 'subtrain.{}.scroes.csv'.format(self.iteration))
+            if not os.path.exists(scores_f):
+                train_utts = pd.DataFrame(self.train_dir.base_utts, columns=['uid', 'start', 'end'])
+                train_utts['scores'] = sub_scores
+                train_utts.to_csv(scores_f, index=None)
     
 
 class GraNd(SelectSubset):
