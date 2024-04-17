@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=609
+stage=606
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3845,140 +3845,140 @@ if [ $stage -le 606 ]; then
     fi
 
   
-  for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-  for model in baseline band fine;do
-    for model_name in baseline ;do 
-    # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
-    # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
-    # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
-    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53
-    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
-    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
-    score_norm=as-norm
-    if [[ $model == baseline ]];then
-      common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist
-    elif [[ $model == band ]];then
-      common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_band05
-    elif [[ $model == fine ]];then
-      common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_finetune16
-    fi
+  # for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
+  # for model in baseline band fine;do
+  #   for model_name in baseline ;do 
+  #   # common_path=ECAPA_brain/Mean_batch48_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+  #   # common_path=ECAPA_brain/Mean_batch48_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+  #   # common_path=ECAPA_brain/Mean_batch48_inbn_SASP2_em192${chn_str}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_mix
+  #   # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53
+  #   # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
+  #   # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
+  #   score_norm=as-norm
+  #   if [[ $model == baseline ]];then
+  #     common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist
+  #   elif [[ $model == band ]];then
+  #     common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_band05
+  #   elif [[ $model == fine ]];then
+  #     common_path=ECAPA_brain/Mean_batch192_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_finetune16
+  #   fi
 
-    echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in all all_radsnr1 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
-      # all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5 
-      # test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
-      for seed in 123456 ; do
-        if [[ $model_name == baseline ]];then
-          model_dir=${common_path}/${seed}
-          yaml_name=${common_path}/model.yaml
-        elif [[ $model_name == shuffle ]];then
-          model_dir=${common_path}_shuffle/${seed}
-          yaml_name=${common_path}_shuffle/model.yaml
-        elif [[ $model_name == sep ]];then
-          model_dir=${common_path}sep/${seed}
-          yaml_name=${common_path}sep/model.yaml
-        elif [[ $model_name == wasse1 ]];then
-          model_dir=${common_path}wasse1/${seed}
-          yaml_name=${common_path}wasse1/model.yaml
-        elif [[ $model_name == fix ]];then
-          model_dir=${common_path}wasse1fix/${seed}
-          yaml_name=${common_path}wasse1fix/model.yaml
-        elif [[ $model_name == cosine ]];then
-          model_dir=${common_path}cosine1/${seed}
-          yaml_name=${common_path}cosine1/model.yaml
-        elif [[ $model_name == grl ]];then
-          model_dir=${common_path}grl/${seed}
-          yaml_name=${common_path}grl/model.yaml
-        elif [[ $model_name == warm ]];then
-          model_dir=${common_path}grlwarm/${seed}
-          yaml_name=${common_path}grlwarm/model.yaml
-        elif [[ $model_name == hidden ]];then
-          model_dir=${common_path}grlwarmhidden/${seed}
-          yaml_name=${common_path}grlwarmhidden/model.yaml
-        elif [[ $model_name == inst05 ]];then
-          model_dir=${common_path}_inst05/${seed}
-          yaml_name=${common_path}_inst05/model.yaml
-        elif [[ $model_name == inbnx1 ]];then
-          model_dir=${common_path}_inbnx1/${seed}
-          yaml_name=${common_path}_inbnx1/model.yaml
-        elif [[ $model_name == inbnx2 ]];then
-          model_dir=${common_path}_inbnx2/${seed}
-          yaml_name=${common_path}_inbnx2/model.yaml
-        elif [[ $model_name == inbnx3 ]];then
-          model_dir=${common_path}_inbnx3/${seed}
-          yaml_name=${common_path}_inbnx3/model.yaml
-        elif [[ $model_name == inbn05 ]];then
-          model_dir=${common_path}_inbn05/${seed}
-          yaml_name=${common_path}_inbn05/model.yaml
-        elif [[ $model_name == group4 ]];then
-          model_dir=${common_path}_group4/${seed}
-          yaml_name=${common_path}_group4/model.yaml
-        elif [[ $model_name == group16 ]];then
-          model_dir=${common_path}_group16/${seed}
-          yaml_name=${common_path}_group16/model.yaml
-        elif [[ $model_name == group32 ]];then
-          model_dir=${common_path}_group32/${seed}
-          yaml_name=${common_path}_group32/model.yaml
-        elif [[ $model_name == dp05warm ]];then
-          model_dir=${common_path}_dp05warm/${seed}
-          yaml_name=${common_path}_dp05warm/model.yaml
-        elif [[ $model_name == inbn05dpwarm ]];then
-          model_dir=${common_path}_inbn05dpwarm/${seed}
-          yaml_name=${common_path}_inbn05dpwarm/model.yaml
-        elif [[ $model_name == mfa ]];then
-          model_dir=${common_path}crossentropy_mfa_STAP/${seed}
-          yaml_name=${common_path}crossentropy_mfa_STAP/model.yaml
-        elif [[ $model_name == concat ]];then
-          model_dir=${common_path}crossentropy_concat_STAP/${seed}
-          yaml_name=${common_path}crossentropy_concat_STAP/model.yaml
-        elif [[ $model_name == wassmfafix ]];then
-          model_dir=${common_path}wasse0.1_mfa_STAPfix/${seed}
-          yaml_name=${common_path}wasse0.1_mfa_STAPfix/model.yaml
-        fi
+  #   echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
+  #     for test_subset in all all_radsnr1 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
+  #     # all all_radsnr0 all_radsnr05 all_radsnr1 all_radsnr2 all_radsnr5 
+  #     # test test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
+  #     for seed in 123456 ; do
+  #       if [[ $model_name == baseline ]];then
+  #         model_dir=${common_path}/${seed}
+  #         yaml_name=${common_path}/model.yaml
+  #       elif [[ $model_name == shuffle ]];then
+  #         model_dir=${common_path}_shuffle/${seed}
+  #         yaml_name=${common_path}_shuffle/model.yaml
+  #       elif [[ $model_name == sep ]];then
+  #         model_dir=${common_path}sep/${seed}
+  #         yaml_name=${common_path}sep/model.yaml
+  #       elif [[ $model_name == wasse1 ]];then
+  #         model_dir=${common_path}wasse1/${seed}
+  #         yaml_name=${common_path}wasse1/model.yaml
+  #       elif [[ $model_name == fix ]];then
+  #         model_dir=${common_path}wasse1fix/${seed}
+  #         yaml_name=${common_path}wasse1fix/model.yaml
+  #       elif [[ $model_name == cosine ]];then
+  #         model_dir=${common_path}cosine1/${seed}
+  #         yaml_name=${common_path}cosine1/model.yaml
+  #       elif [[ $model_name == grl ]];then
+  #         model_dir=${common_path}grl/${seed}
+  #         yaml_name=${common_path}grl/model.yaml
+  #       elif [[ $model_name == warm ]];then
+  #         model_dir=${common_path}grlwarm/${seed}
+  #         yaml_name=${common_path}grlwarm/model.yaml
+  #       elif [[ $model_name == hidden ]];then
+  #         model_dir=${common_path}grlwarmhidden/${seed}
+  #         yaml_name=${common_path}grlwarmhidden/model.yaml
+  #       elif [[ $model_name == inst05 ]];then
+  #         model_dir=${common_path}_inst05/${seed}
+  #         yaml_name=${common_path}_inst05/model.yaml
+  #       elif [[ $model_name == inbnx1 ]];then
+  #         model_dir=${common_path}_inbnx1/${seed}
+  #         yaml_name=${common_path}_inbnx1/model.yaml
+  #       elif [[ $model_name == inbnx2 ]];then
+  #         model_dir=${common_path}_inbnx2/${seed}
+  #         yaml_name=${common_path}_inbnx2/model.yaml
+  #       elif [[ $model_name == inbnx3 ]];then
+  #         model_dir=${common_path}_inbnx3/${seed}
+  #         yaml_name=${common_path}_inbnx3/model.yaml
+  #       elif [[ $model_name == inbn05 ]];then
+  #         model_dir=${common_path}_inbn05/${seed}
+  #         yaml_name=${common_path}_inbn05/model.yaml
+  #       elif [[ $model_name == group4 ]];then
+  #         model_dir=${common_path}_group4/${seed}
+  #         yaml_name=${common_path}_group4/model.yaml
+  #       elif [[ $model_name == group16 ]];then
+  #         model_dir=${common_path}_group16/${seed}
+  #         yaml_name=${common_path}_group16/model.yaml
+  #       elif [[ $model_name == group32 ]];then
+  #         model_dir=${common_path}_group32/${seed}
+  #         yaml_name=${common_path}_group32/model.yaml
+  #       elif [[ $model_name == dp05warm ]];then
+  #         model_dir=${common_path}_dp05warm/${seed}
+  #         yaml_name=${common_path}_dp05warm/model.yaml
+  #       elif [[ $model_name == inbn05dpwarm ]];then
+  #         model_dir=${common_path}_inbn05dpwarm/${seed}
+  #         yaml_name=${common_path}_inbn05dpwarm/model.yaml
+  #       elif [[ $model_name == mfa ]];then
+  #         model_dir=${common_path}crossentropy_mfa_STAP/${seed}
+  #         yaml_name=${common_path}crossentropy_mfa_STAP/model.yaml
+  #       elif [[ $model_name == concat ]];then
+  #         model_dir=${common_path}crossentropy_concat_STAP/${seed}
+  #         yaml_name=${common_path}crossentropy_concat_STAP/model.yaml
+  #       elif [[ $model_name == wassmfafix ]];then
+  #         model_dir=${common_path}wasse0.1_mfa_STAPfix/${seed}
+  #         yaml_name=${common_path}wasse0.1_mfa_STAPfix/model.yaml
+  #       fi
 
-        xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch} #_${score_norm}
-        train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch} #_${score_norm}
+  #       xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch} #_${score_norm}
+  #       train_xvector_dir=Data/xvector/${model_dir}/${train_set}_${train_subset}_${test_input}_${epoch} #_${score_norm}
 
-        for trials in trials_all; do
-          python -W ignore TrainAndTest/train_egs/test_egs.py \
-            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-            --train-extract-dir ${lstm_dir}/data/${train_set}/${train_subset} \
-            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
-            --feat-format wav --nj 4 --batch-size 64 \
-            --check-yaml Data/checkpoint/${yaml_name} \
-            --xvector-dir ${xvector_dir} \
-            --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
-            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-            --gpu-id ${gpu_id} \
-            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-            --cos-sim --test
-        done
+  #       for trials in trials_all; do
+  #         python -W ignore TrainAndTest/train_egs/test_egs.py \
+  #           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+  #           --train-extract-dir ${lstm_dir}/data/${train_set}/${train_subset} \
+  #           --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials ${trials} \
+  #           --feat-format wav --nj 4 --batch-size 64 \
+  #           --check-yaml Data/checkpoint/${yaml_name} \
+  #           --xvector-dir ${xvector_dir} \
+  #           --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
+  #           --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+  #           --gpu-id ${gpu_id} \
+  #           --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+  #           --cos-sim --test
+  #       done
 
-        for trials in original easy hard; do # original easy hard
-          python -W ignore TrainAndTest/train_egs/test_egs.py \
-            --train-dir ${lstm_dir}/data/${train_set}/${sname} \
-            --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
-            --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
-            --feat-format wav --nj 4 \
-            --check-yaml Data/checkpoint/${yaml_name} \
-            --xvector-dir ${xvector_dir} \
-            --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
-            --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
-            --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
-            --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
-            --cos-sim --extract
-        done
-      done
-    done
-    done
-    done
-  done
-  done
+  #       for trials in original easy hard; do # original easy hard
+  #         python -W ignore TrainAndTest/train_egs/test_egs.py \
+  #           --train-dir ${lstm_dir}/data/${train_set}/${sname} \
+  #           --train-extract-dir ${lstm_dir}/data/${train_set}/dev \
+  #           --test-dir ${lstm_dir}/data/${test_set}/${test_subset} --trials trials_${trials} \
+  #           --feat-format wav --nj 4 \
+  #           --check-yaml Data/checkpoint/${yaml_name} \
+  #           --xvector-dir ${xvector_dir} \
+  #           --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
+  #           --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
+  #           --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
+  #           --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
+  #           --cos-sim --extract
+  #       done
+  #     done
+  #   done
+  #   done
+  #   done
+  # done
+  # done
 
   train_set=vox2 test_set=vox1 # #jukebox cnceleb
   train_subset=dev #_2radsnr05
   for epoch in avg2 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-  for model in aug aug_band aug_fine; do
+  for model in aug ; do
   for model_name in baseline ;do 
 
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
@@ -3994,7 +3994,7 @@ if [ $stage -le 606 ]; then
 
     score_norm=as-norm
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in all all_radsnr1 ; do 
+      for test_subset in  test_sox8k16k test_sox8k16k_aero ; do 
       for seed in 123456 ; do
           if [[ $model_name == baseline ]];then
             model_dir=${common_path}/${seed}
@@ -4010,14 +4010,14 @@ if [ $stage -le 606 ]; then
               --feat-format wav --nj 4 --batch-size 64 \
               --check-yaml Data/checkpoint/${yaml_name} \
               --xvector-dir ${xvector_dir} \
-              --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
               --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
               --gpu-id ${gpu_id} \
               --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
               --cos-sim --test 
           done
+          # --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
 
-          for trials in original easy hard ; do # original easy hard
+          for trials in original ; do # original easy hard
             python -W ignore TrainAndTest/train_egs/test_egs.py \
               --train-dir ${lstm_dir}/data/${train_set}/${sname} \
               --train-extract-dir ${lstm_dir}/data/${train_set}/${train_subset} \
@@ -4025,11 +4025,12 @@ if [ $stage -le 606 ]; then
               --feat-format wav --nj 4 \
               --check-yaml Data/checkpoint/${yaml_name} \
               --xvector-dir ${xvector_dir} \
-              --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
               --resume Data/checkpoint/${model_dir}/checkpoint_${epoch}.pth \
               --gpu-id ${gpu_id} --score-suffix ${trials}-${epoch} \
               --test-input ${test_input} --chunk-size 48000 --frame-shift 32000 --verbose 0 \
               --cos-sim --extract
+
+              # --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
           done
 
       done
