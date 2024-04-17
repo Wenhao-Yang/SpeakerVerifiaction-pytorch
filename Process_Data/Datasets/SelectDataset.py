@@ -496,56 +496,60 @@ class LossSelect(SelectSubset):
     def select(self, model, **kwargs):
         top_examples = self.load_subset()
 
-        if top_examples == None:
-            self.model = model
-            self.before_run()
-            
-            # Initialize a matrix to save norms of each sample on idependent runs
-            self.train_indx = np.arange(self.n_train)
-            self.norm_matrix = torch.zeros([self.n_train, self.repeat],
-                                        requires_grad=False).to(self.device)
-            
-            if self.stratas_select == 'kmeans':
-                self.embeddings = torch.zeros([self.n_train, self.repeat, self.embedding_dim],
-                                        requires_grad=False)
-            else:
-                self.embeddings = None
-            
-            for self.cur_repeat in range(self.repeat):
-                self.run()
-                self.random_seed = self.random_seed + 5
+        self.train_indx = np.arange(self.n_train)
+        if not isinstance(top_examples, np.ndarray):
+            if not isinstance(self.norm_mean, np.ndarray):
 
-            norm_mean = torch.mean(self.norm_matrix, dim=1).cpu().detach().numpy()
-            
-            torch.distributed.barrier()
-            norm_means = [None for _ in range(torch.distributed.get_world_size())]
-            torch.distributed.all_gather_object(norm_means, norm_mean)
-            norm_mean = np.mean(norm_means, axis=0)
-            self.norm_mean = norm_mean
-
-            if self.select_sample == 'ccs':
-                if self.embeddings != None:
-                    self.embeddings = torch.mean(self.embeddings, dim=1)
-                    
-                top_examples = np.array(stratified_sampling(self.norm_mean, self.coreset_size,
-                                                            self.stratas,
-                                                            embeddings=self.embeddings,
-                                                            stratas_select=self.stratas_select))
-            elif self.select_sample == 'top':
-                if not self.balance:
-                    top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
+        # if top_examples == None:
+                self.model = model
+                self.before_run()
+                
+                # Initialize a matrix to save norms of each sample on idependent runs
+                self.train_indx = np.arange(self.n_train)
+                self.norm_matrix = torch.zeros([self.n_train, self.repeat],
+                                            requires_grad=False).to(self.device)
+                
+                if self.stratas_select == 'kmeans':
+                    self.embeddings = torch.zeros([self.n_train, self.repeat, self.embedding_dim],
+                                            requires_grad=False)
                 else:
-                    top_examples = np.array([], dtype=np.int64)
-                    uids = [utts[0] for utts in self.train_dir.base_utts]
-                    sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
-                    label = [self.train_dir.spk_to_idx[sid] for sid in sids] 
-                    
-                    for c in range(self.num_classes):
-                        c_indx = self.train_indx[label == c]
-                        budget = round(self.fraction * len(c_indx))
-                        top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
+                    self.embeddings = None
+                
+                for self.cur_repeat in range(self.repeat):
+                    self.run()
+                    self.random_seed = self.random_seed + 5
 
-            self.save_subset(top_examples)
+                norm_mean = torch.mean(self.norm_matrix, dim=1).cpu().detach().numpy()
+                
+                torch.distributed.barrier()
+                norm_means = [None for _ in range(torch.distributed.get_world_size())]
+                torch.distributed.all_gather_object(norm_means, norm_mean)
+                norm_mean = np.mean(norm_means, axis=0)
+                self.norm_mean = norm_mean
+
+                if self.select_sample == 'ccs':
+                    if self.embeddings != None:
+                        self.embeddings = torch.mean(self.embeddings, dim=1)
+                        
+                    top_examples = np.array(stratified_sampling(self.norm_mean, self.coreset_size,
+                                                                self.stratas,
+                                                                embeddings=self.embeddings,
+                                                                stratas_select=self.stratas_select))
+                elif self.select_sample == 'top':
+                    if not self.balance:
+                        top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
+                    else:
+                        top_examples = np.array([], dtype=np.int64)
+                        uids = [utts[0] for utts in self.train_dir.base_utts]
+                        sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
+                        label = [self.train_dir.spk_to_idx[sid] for sid in sids] 
+                        
+                        for c in range(self.num_classes):
+                            c_indx = self.train_indx[label == c]
+                            budget = round(self.fraction * len(c_indx))
+                            top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
+
+                self.save_subset(top_examples)
         # subtrain_dir = copy.deepcopy(self.train_dir)
         subtrain_dir = torch.utils.data.Subset(self.train_dir, top_examples)
         self.iteration += 1
@@ -1023,8 +1027,6 @@ class Dist_loss(nn.Module):
         w = self.get_w()
         
         return self.loss(w*x1, x2)
-
-
 
 
 def gumbel_softmax(logits, num=1, temperature = 5):
