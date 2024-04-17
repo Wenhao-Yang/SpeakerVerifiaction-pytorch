@@ -3973,7 +3973,7 @@ if [ $stage -le 606 ]; then
   #   done
   #   done
   # done
-  # done
+  done
 
   train_set=vox2 test_set=vox1 # #jukebox cnceleb
   train_subset=dev #_2radsnr05
