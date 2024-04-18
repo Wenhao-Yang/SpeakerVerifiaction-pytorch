@@ -228,8 +228,13 @@ def main():
         model_para.append({'params': model.input_mask[0].parameters(), 'lr': init_lr,
                             'weight_decay': init_wd})
 
-    if 'adaptive_lr' in config_args and config_args['adaptive_lr']:
-        config_args['lr'] = 100 / args.sample_ratio * config_args['lr']
+    if 'adaptive_lr' in config_args:
+        if config_args['adaptive_lr'] == True:
+            config_args['lr'] = 100 / args.sample_ratio * config_args['lr']
+        elif config_args['adaptive_lr'] == 'log':
+            config_args['lr'] = (np.log(100 / args.sample_ratio) + 1) * config_args['lr']
+        elif config_args['adaptive_lr'] == 'log2':
+            config_args['lr'] = (np.log2(100 / args.sample_ratio) +1 ) * config_args['lr']
         
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
                   'weight_decay': config_args['weight_decay'],
