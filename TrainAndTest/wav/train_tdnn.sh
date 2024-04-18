@@ -63,6 +63,7 @@ if [ $stage -le 5 ]; then
   datasets=vox2 feat_type=wave
   loss=arcsoft encod=ASTP2 embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
+  gpu_id=2,4
   for lamda_beta in 0.2;do
     
     for data_type in hdf5 ; do
@@ -71,9 +72,9 @@ if [ $stage -le 5 ]; then
       for ratio in 10 25 ; do #10 25 50 75 90
       for seed in 1237 1238; do #1234 1235 1236 
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-      CUDA_VISIBLE_DEVICES=0,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_mulop.yaml --seed=${seed} --sample-ratio ${ratio}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_mulop.yaml --seed=${seed} --sample-ratio ${ratio}
 
-      CUDA_VISIBLE_DEVICES=0,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_random.yaml --seed=${seed} --sample-ratio ${ratio}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41715 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_random.yaml --seed=${seed} --sample-ratio ${ratio}
 
       # CUDA_VISIBLE_DEVICES=0,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_losses.yaml --seed=${seed} --sample-ratio ${ratio}
 
