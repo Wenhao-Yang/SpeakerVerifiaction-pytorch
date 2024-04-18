@@ -42,7 +42,7 @@ def argument_parser():
                         default='Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53/1234')
     
     parser.add_argument("--device", type=str, default='cuda:1') 
-    parser.add_argument("--epochs",  type=str, default='avg3')
+    parser.add_argument("--epochs",  type=str, default='3')
     parser.add_argument("--random-seed",  type=int, default=1234)
 
     parser.add_argument("--save-path", type=str, default='data/vox1_inst')
@@ -116,18 +116,21 @@ for epoch in epochs:
     grads_f = '{}/grads.pth'.format(save_path)
     logits_f = '{}/logits.pth'.format(save_path)
     embeddings_f = '{}/embeddings.pth'.format(save_path)
+    logits_grads_f = '{}/logits_grads.pth'.format(save_path)
 
-    if os.path.exists(grads_f) and os.path.exists(logits_f) and os.path.exists(embeddings_f):
+    if os.path.exists(grads_f) and os.path.exists(logits_f) and os.path.exists(embeddings_f) and os.path.exists(logits_grads_f):
         grads = torch.load(grads_f)['grads']
         logits = torch.load(logits_f)['logits']
         embeddings = torch.load(embeddings_f)['embeddings']
 
         print('Loading vectors to {}'.format(save_path))
     else:
+        print('Extracting vectors to {}'.format(save_path))
         embedding_dim = config_args['embedding_size']
         embeddings    = torch.zeros([len(train_dir), embedding_dim], requires_grad=False)
         grads         = torch.zeros([len(train_dir), embedding_dim], requires_grad=False)
         logits        = torch.zeros([len(train_dir), config_args['num_classes']], requires_grad=False)
+        logits_grads  = torch.zeros([len(train_dir), config_args['num_classes']], requires_grad=False)
 
         pbar = tqdm(enumerate(batch_loader), ncols=50, total=len(batch_loader))
         model.eval()
@@ -139,21 +142,31 @@ for epoch in epochs:
                                 batch_weight=None, other=True)
 
             with torch.no_grad():
-                grad = torch.autograd.grad(loss, [embedding])[0]
+                grad, logits_grad = torch.autograd.grad(loss, [embedding, logit])
 
                 grad = grad.detach().cpu()
                 embedding = embedding.detach().cpu()
                 logit = logit.detach().cpu()
+                logit_grad = logits_grad.detach().cpu()
 
                 embeddings[i * batch_size:min((i+1) * batch_size, sample_num)] += embedding
                 grads[i * batch_size:min((i+1) * batch_size, sample_num)] += grad
                 logits[i * batch_size:min((i+1) * batch_size, sample_num)] += logit
+                logits_grads[i * batch_size:min((i+1) * batch_size, sample_num)] += logit_grad
             
         try:
-            torch.save({'grads': grads}, grads_f)
-            torch.save({'logits': logits}, logits_f)
-            torch.save({'embeddings': embeddings}, embeddings_f)
+            if not os.path.exists(grads_f):
+                torch.save({'grads': grads}, grads_f)
+                
+            if not os.path.exists(embeddings_f):
+                torch.save({'embeddings': embeddings}, embeddings_f)
             
+            if not os.path.exists(logits_f):
+                torch.save({'logits': logits}, logits_f)
+
+            if not os.path.exists(logits_grads_f):
+                torch.save({'logits_grads': logits_grads}, logits_grads_f)
+                
             print('Saving results to {}'.format(save_path))
 
         except Exception as e:
@@ -173,7 +186,8 @@ for epoch in epochs:
     lr = 0.1
     optimize_vector = 'embeddings'
     
-    for optimize_vector in ['embeddings', 'grads', 'logits']:
+    # for optimize_vector in ['embeddings', 'grads', 'logits', 'logits_grads']:
+    for optimize_vector in ['logits_grads']:
         print('Computing optimial distance scores ... ', optimize_vector)
         for cur_repeat in range(repeat):
             np.random.seed(random_seed)
@@ -213,6 +227,8 @@ for epoch in epochs:
                     s_xvectors = logits[select_ids]
                 elif optimize_vector == 'grads':
                     s_xvectors = grads[select_ids]
+                elif optimize_vector == 'logits_grads':
+                    s_xvectors = logits_grads[select_ids]
                     
                 x1 = s_xvectors.clone().cuda() #.to(device)
                 
@@ -229,6 +245,8 @@ for epoch in epochs:
                         x2 = logits[other_set].clone().to(device)
                     elif optimize_vector == 'grads':
                         x2 = grads[other_set].clone().to(device)
+                    elif optimize_vector == 'logits_grads':
+                        x2 = logits_grads[other_set].clone().to(device)
                         
                     L_αβ = dloss(x1, x2)
                     L_αβ.backward()
