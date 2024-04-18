@@ -1305,6 +1305,34 @@ class OTSelect(SelectSubset):
                 top_examples = self.train_indx[np.argsort(self.norm_mean)[::-1][noise_size:(noise_size+self.coreset_size)]]
             elif self.scores == 'min':
                 top_examples = self.train_indx[np.argsort(self.norm_mean)[noise_size:(noise_size+self.coreset_size)]]
+
+            elif 'sample' in self.scores:
+                batch_size = self.args['batch_size'] * 10
+                # sample_size = self.fraction * batch_size
+
+                sample_num = self.n_train
+                idxs = []
+                for i in range(int(np.ceil(sample_num/batch_size))):
+                    start = i*batch_size
+                    end = min(sample_num, (i+1) * batch_size)
+                    sample_size = int(np.ceil(self.fraction * (end - start)))
+
+                    samples_p = torch.tensor(self.norm_mean[start:end]).squeeze()
+                    samples_p = torch.softmax(samples_p, dim=0).numpy()
+
+                    if 'min' in self.scores:
+                        this_sample = np.random.choice(np.arange(start, end), p=samples_p,
+                                    size=end - start - sample_size, replace=False) 
+                        this_sample = np.array(list(set(np.arange(start, end)) - set(this_sample)))
+                    else:
+                        this_sample = np.random.choice(np.arange(start, end), p=samples_p,
+                                    size=sample_size, replace=False) 
+
+                    idxs.append(this_sample)
+
+                idxs = np.concatenate(idxs)[:self.coreset_size]
+                top_examples = self.train_indx[idxs]
+
         else:
             top_examples = np.array([], dtype=np.int64)
             uids = [utts[0] for utts in self.train_dir.base_utts]
