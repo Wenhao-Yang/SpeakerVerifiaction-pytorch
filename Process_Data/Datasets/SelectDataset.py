@@ -9,6 +9,7 @@
 @Overview: 
 '''
 
+from glob import glob
 from typing import Any
 import torch
 import torch.nn as nn
@@ -143,7 +144,12 @@ class SelectSubset(object):
             os.makedirs(self.save_dir)
         
         self.fraction = fraction
+        self.seed = random_seed
+
         self.random_seed = random_seed
+        if torch.distributed.is_initialized():
+            self.random_seed += torch.distributed.get_rank()
+
         self.index = []
         self.args = args
 
@@ -158,16 +164,37 @@ class SelectSubset(object):
     def select(self, **kwargs):
         return
     
+    def sample_csv(self):
+
+        sample_csv_name = '-'.join(['Sample', self.__class__.__name__, str(int(self.fraction*100)), self.scores, str(self.iteration), '*'])
+        sample_csv_path = os.path.join(self.save_dir, '{}.csv'.format(sample_csv_name))
+
+        if 'sample' in self.scores:
+            sample_fix = False
+        else:
+            sample_fix = True
+
+        self.sample_fix = sample_fix
+
+        if sample_fix:
+            sample_csv_path = sample_csv_path.replace('*', str(self.seed))
+        else:
+            sample_csv_path = sample_csv_path.replace('*', str(len(glob(sample_csv_path))))            
+
+        return sample_csv_path
+    
+    
     def load_subset(self):
-        sub_str= '' if self.scores == 'max' else '.{}'.format(self.scores)
-        csv_path = os.path.join(self.save_dir, 'subtrain.{}.{}{}.csv'.format(self.iteration, self.fraction, sub_str))
+
+        sample_csv_path = self.sample_csv()
+
         score_path = os.path.join(self.save_dir, 'subtrain.{}.scores.csv'.format(self.iteration))
 
         top_examples = None
 
-        if self.save_dir != '' and os.path.exists(csv_path):
+        if self.save_dir != '' and os.path.exists(sample_csv_path) and self.sample_fix:
             try:
-                sub_utts = pd.read_csv(csv_path).to_numpy().tolist()
+                sub_utts = pd.read_csv(sample_csv_path).to_numpy().tolist()
                 assert len(sub_utts[0]) == 2 and isinstance(sub_utts[0][0], int)
                 top_examples = np.array([t[0] for t in sub_utts])
             except Exception as e:
@@ -177,8 +204,6 @@ class SelectSubset(object):
         if self.save_dir != '' and os.path.exists(score_path):
             try:
                 scores_utts = pd.read_csv(score_path).to_numpy()
-                # assert len(sub_utts[0]) == 2 and isinstance(sub_utts[0][0], int)
-                # top_examples = np.array([t[0] for t in sub_utts])
                 self.norm_mean = scores_utts[:, -1].astype(np.float32)
 
             except Exception as e:
@@ -190,7 +215,8 @@ class SelectSubset(object):
     def save_subset(self, top_examples):
         if self.save_dir != '' and main_process():
             # print(len(self.train_dir.base_utts), np.max(top_examples))
-            fraction_f = os.path.join(self.save_dir, 'subtrain.{}.{}.csv'.format(self.iteration, self.fraction))
+
+            fraction_f = self.sample_csv()
             if not os.path.exists(fraction_f):
                 sub_utts = [[t, self.train_dir.base_utts[t]] for t in top_examples]
                 train_utts = pd.DataFrame(sub_utts, columns=['idx', 'uids'])
@@ -238,10 +264,10 @@ class GraNd(SelectSubset):
         self.embedding_dim = self.model.embedding_size
 
     def run(self):
-        # seeding
-        torch.manual_seed(self.random_seed)
-        np.random.seed(self.random_seed)
-        random.seed(self.random_seed)
+        # # seeding
+        # torch.manual_seed(self.random_seed)
+        # np.random.seed(self.random_seed)
+        # random.seed(self.random_seed)
         
         batch_size = self.args['batch_size'] // 2 if not self.select_aug else self.args['batch_size'] // 4
         num_classes = self.args['num_classes']
@@ -328,6 +354,10 @@ class GraNd(SelectSubset):
         # self.model.embedding_recorder.record_embedding = False
 
     def select(self, model, **kwargs):
+        torch.manual_seed(self.random_seed)
+        np.random.seed(self.random_seed)
+        random.seed(self.random_seed)
+
         top_examples = self.load_subset()
 
         if top_examples == None:
@@ -347,7 +377,7 @@ class GraNd(SelectSubset):
             
             for self.cur_repeat in range(self.repeat):
                 self.run()
-                self.random_seed = self.random_seed + 5
+                # self.random_seed = self.random_seed + 5
 
             norm_mean = torch.mean(self.norm_matrix, dim=1).cpu().detach().numpy()
             
@@ -406,8 +436,6 @@ class LossSelect(SelectSubset):
         self.stratas = stratas
         self.stratas_select = stratas_select
 
-        self.random_seed += torch.distributed.get_rank()
-
     def while_update(self, outputs, loss, targets, epoch, batch_idx, batch_size):
         if batch_idx % self.args.print_freq == 0:
             print('| Epoch [%3d/%3d] Iter[%3d/%3d]\t\tLoss: %.4f' % (
@@ -422,9 +450,6 @@ class LossSelect(SelectSubset):
 
     def run(self):
         # seeding
-        torch.manual_seed(self.random_seed)
-        np.random.seed(self.random_seed)
-        random.seed(self.random_seed)
         
         batch_size = self.args['batch_size'] // 2 if not self.select_aug else self.args['batch_size'] // 4
         num_classes = self.args['num_classes']
@@ -494,6 +519,10 @@ class LossSelect(SelectSubset):
 
 
     def select(self, model, **kwargs):
+        torch.manual_seed(self.random_seed)
+        np.random.seed(self.random_seed)
+        random.seed(self.random_seed)
+    
         top_examples = self.load_subset()
 
         self.train_indx = np.arange(self.n_train)
@@ -517,7 +546,7 @@ class LossSelect(SelectSubset):
                 
                 for self.cur_repeat in range(self.repeat):
                     self.run()
-                    self.random_seed = self.random_seed + 5
+                    # self.random_seed = self.random_seed + 5
 
                 norm_mean = torch.mean(self.norm_matrix, dim=1).cpu().detach().numpy()
                 
@@ -774,15 +803,12 @@ class RandomSelect(SelectSubset):
         self.model = model
         self.repeat = repeat
         self.balance = balance
-        self.random_seed += torch.distributed.get_rank()
         
     def select(self, model, **kwargs):
-        
         torch.manual_seed(self.random_seed)
         np.random.seed(self.random_seed)
         random.seed(self.random_seed)
-        self.random_seed = self.random_seed + 5
-        
+                        
         # Initialize a matrix to save norms of each sample on idependent runs
         self.train_indx = np.arange(self.n_train)
         norm_mean = np.random.uniform(0, 1, self.n_train)
@@ -812,6 +838,7 @@ class RandomSelect(SelectSubset):
         self.iteration += 1
 
         return subtrain_dir
+    
 
 def cost_func(a, b, p=2, metric='cosine'):
     """ a, b in shape: (B, N, D) or (N, D)
@@ -1091,8 +1118,6 @@ class OTSelect(SelectSubset):
         self.device = model.device if model != None else 'cpu'
         self.scores = scores     
 
-        self.random_seed += torch.distributed.get_rank()
-
     def while_update(self, outputs, loss, targets, epoch, batch_idx, batch_size):
         if batch_idx % self.args.print_freq == 0:
             print('| Epoch [%3d/%3d] Iter[%3d/%3d]\t\tLoss: %.4f' % (
@@ -1106,11 +1131,7 @@ class OTSelect(SelectSubset):
         # self.model.device
 
     def run(self):
-        # seeding
-        torch.manual_seed(self.random_seed)
-        np.random.seed(self.random_seed)
-        random.seed(self.random_seed)
-        
+
         batch_size = self.args['batch_size'] if not self.select_aug else self.args['batch_size'] // 2
         num_classes = self.args['num_classes']
         optim_embeddings = self.args['optim_embeddings'] if 'optim_embeddings' in self.args else True
@@ -1184,6 +1205,11 @@ class OTSelect(SelectSubset):
         # self.model.embedding_recorder.record_embedding = False
 
     def select(self, model, **kwargs):
+        # seeding
+        torch.manual_seed(self.random_seed)
+        np.random.seed(self.random_seed)
+        random.seed(self.random_seed)
+
         top_examples = self.load_subset()
 
         self.train_indx = np.arange(self.n_train)
@@ -1203,7 +1229,6 @@ class OTSelect(SelectSubset):
 
                 # for self.cur_repeat in range(self.repeat):
                 self.run()
-                # self.random_seed = self.random_seed + 5
 
                 # norm_mean = torch.mean(self.norm_matrix, dim=1).cpu().detach().numpy()
                 embedding = self.embeddings.detach().cpu() / self.repeat
@@ -1222,9 +1247,7 @@ class OTSelect(SelectSubset):
 
                 wss = []
                 for self.cur_repeat in range(self.repeat):
-                    np.random.seed(self.random_seed)
-                    self.random_seed = self.random_seed - 5
-                    
+
                     ws =  torch.ones(self.n_train, 1)
                     # losses = []
                     total_set = set(np.arange(self.n_train))
@@ -1371,8 +1394,6 @@ class Forgetting(SelectSubset):
         self.balance = balance
         self.select_aug = select_aug
         self.device = model.device if model != None else 'cpu'
-
-        self.random_seed += torch.distributed.get_rank()
 
         self.forgetting_events = torch.zeros(self.n_train, requires_grad=False)#.to(self.args.device)
         self.last_acc = torch.zeros(self.n_train, requires_grad=False)#.to(self.args.device)
