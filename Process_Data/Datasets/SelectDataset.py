@@ -23,6 +23,7 @@ from torch.nn.parallel import DistributedDataParallel
 from sklearn.cluster import KMeans
 from scipy.linalg import lstsq
 from scipy.optimize import nnls
+from TrainAndTest.common_func import on_main
 import geomloss
 from geomloss import SamplesLoss
 
@@ -169,17 +170,13 @@ class SelectSubset(object):
         sample_csv_name = '-'.join(['Sample', self.__class__.__name__, str(int(self.fraction*100)), self.scores, str(self.iteration), '*'])
         sample_csv_path = os.path.join(self.save_dir, '{}.csv'.format(sample_csv_name))
 
-        if 'sample' in self.scores:
-            sample_fix = False
-        else:
-            sample_fix = True
-
+        sample_fix = False if 'sample' in self.scores else True
         self.sample_fix = sample_fix
 
-        if sample_fix:
-            sample_csv_path = sample_csv_path.replace('*', str(self.seed))
-        else:
-            sample_csv_path = sample_csv_path.replace('*', str(len(glob(sample_csv_path))))            
+        # if sample_fix:
+        sample_csv_path = sample_csv_path.replace('*', str(self.seed))
+        # else:
+        #     sample_csv_path = sample_csv_path.replace('*', str(len(glob(sample_csv_path))))            
 
         return sample_csv_path
     
@@ -193,6 +190,8 @@ class SelectSubset(object):
         top_examples = None
 
         if self.save_dir != '' and os.path.exists(sample_csv_path) and self.sample_fix:
+            if on_main():
+                print('Loading subset from {}'.format(sample_csv_path))
             try:
                 sub_utts = pd.read_csv(sample_csv_path).to_numpy().tolist()
                 assert len(sub_utts[0]) == 2 and isinstance(sub_utts[0][0], int)
@@ -218,6 +217,8 @@ class SelectSubset(object):
 
             fraction_f = self.sample_csv()
             if not os.path.exists(fraction_f):
+                if on_main():
+                    print('Saving subset to {}'.format(fraction_f))
                 sub_utts = [[t, self.train_dir.base_utts[t]] for t in top_examples]
                 train_utts = pd.DataFrame(sub_utts, columns=['idx', 'uids'])
                 train_utts.to_csv(fraction_f, index=None)
@@ -420,11 +421,11 @@ class GraNd(SelectSubset):
 class LossSelect(SelectSubset):
     def __init__(self, train_dir, args, fraction=0.5,
                  random_seed=1234, repeat=4, select_aug=False,
-                 save_dir='', select_sample='top', stratas=50,
+                 save_dir='', scores='top', stratas=50,
                  stratas_select='random',
                  model=None, balance=False, **kwargs):
         
-        super(LossSelect, self).__init__(train_dir, args, fraction, random_seed, save_dir)
+        super(LossSelect, self).__init__(train_dir, args, fraction, random_seed, save_dir, scores)
         
         # self.epochs = epochs
         self.model = model
@@ -432,7 +433,6 @@ class LossSelect(SelectSubset):
         self.balance = balance
         self.select_aug = select_aug
         self.device = model.device if model != None else None
-        self.select_sample = select_sample
         self.stratas = stratas
         self.stratas_select = stratas_select
 
@@ -556,29 +556,42 @@ class LossSelect(SelectSubset):
                 norm_mean = np.mean(norm_means, axis=0)
                 self.norm_mean = norm_mean
 
-                if self.select_sample == 'ccs':
-                    if self.embeddings != None:
-                        self.embeddings = torch.mean(self.embeddings, dim=1)
-                        
-                    top_examples = np.array(stratified_sampling(self.norm_mean, self.coreset_size,
-                                                                self.stratas,
-                                                                embeddings=self.embeddings,
-                                                                stratas_select=self.stratas_select))
-                elif self.select_sample == 'top':
-                    if not self.balance:
-                        top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
-                    else:
-                        top_examples = np.array([], dtype=np.int64)
-                        uids = [utts[0] for utts in self.train_dir.base_utts]
-                        sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
-                        label = [self.train_dir.spk_to_idx[sid] for sid in sids] 
-                        
-                        for c in range(self.num_classes):
-                            c_indx = self.train_indx[label == c]
-                            budget = round(self.fraction * len(c_indx))
-                            top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
+            if self.scores == 'ccs':
+                if self.embeddings != None:
+                    self.embeddings = torch.mean(self.embeddings, dim=1)
+                    
+                top_examples = np.array(stratified_sampling(self.norm_mean, self.coreset_size,
+                                                            self.stratas,
+                                                            embeddings=self.embeddings,
+                                                            stratas_select=self.stratas_select))
+            elif self.scores == 'max':
+                if not self.balance:
+                    top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
+                else:
+                    top_examples = np.array([], dtype=np.int64)
+                    uids = [utts[0] for utts in self.train_dir.base_utts]
+                    sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
+                    label = [self.train_dir.spk_to_idx[sid] for sid in sids] 
+                    
+                    for c in range(self.num_classes):
+                        c_indx = self.train_indx[label == c]
+                        budget = round(self.fraction * len(c_indx))
+                        top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
+            elif self.scores == 'min':
+                if not self.balance:
+                    top_examples = self.train_indx[np.argsort(self.norm_mean)][:self.coreset_size]
+                else:
+                    top_examples = np.array([], dtype=np.int64)
+                    uids = [utts[0] for utts in self.train_dir.base_utts]
+                    sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
+                    label = [self.train_dir.spk_to_idx[sid] for sid in sids] 
+                    
+                    for c in range(self.num_classes):
+                        c_indx = self.train_indx[label == c]
+                        budget = round(self.fraction * len(c_indx))
+                        top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[:budget]])
 
-                self.save_subset(top_examples)
+            self.save_subset(top_examples)
         # subtrain_dir = copy.deepcopy(self.train_dir)
         subtrain_dir = torch.utils.data.Subset(self.train_dir, top_examples)
         self.iteration += 1
@@ -796,9 +809,11 @@ class GradMatch(SelectSubset):
 class RandomSelect(SelectSubset):
     def __init__(self, train_dir, args, fraction=0.5,
                  random_seed=1234, repeat=4, save_dir='',
+                 scores='none',
                  model=None, balance=False, **kwargs):
         
-        super(RandomSelect, self).__init__(train_dir, args, fraction, random_seed, save_dir)
+        super(RandomSelect, self).__init__(train_dir, args, fraction,
+                                           random_seed, save_dir, scores)
         
         self.model = model
         self.repeat = repeat
@@ -1108,7 +1123,7 @@ class OTSelect(SelectSubset):
                  save_dir='', scores='max',
                  model=None, balance=False, **kwargs):
         
-        super(OTSelect, self).__init__(train_dir, args, fraction, random_seed, save_dir)
+        super(OTSelect, self).__init__(train_dir, args, fraction, random_seed, save_dir, scores)
         
         # self.epochs = epochs
         self.model = model
@@ -1116,7 +1131,6 @@ class OTSelect(SelectSubset):
         self.balance = balance
         self.select_aug = select_aug
         self.device = model.device if model != None else 'cpu'
-        self.scores = scores     
 
     def while_update(self, outputs, loss, targets, epoch, batch_idx, batch_size):
         if batch_idx % self.args.print_freq == 0:
@@ -1220,7 +1234,6 @@ class OTSelect(SelectSubset):
                 embedding_dim = self.model.embedding_size #get_last_layer().in_features
                 
                 # Initialize a matrix to save norms of each sample on idependent runs
-                
                 self.embeddings = torch.zeros([self.n_train, embedding_dim],
                                             requires_grad=False).to(self.device)
                 
@@ -1319,60 +1332,60 @@ class OTSelect(SelectSubset):
             # else:
             #     print('Load scores from files ... ')
 
-        noise_size = self.args['noise_size'] if 'noise_size' in self.args else 0
-        
-        if not self.balance:
-            noise_size = int(noise_size * len(self.train_indx))
-            if self.scores == 'max':
-                # print(self.norm_mean)
-                top_examples = self.train_indx[np.argsort(self.norm_mean)[::-1][noise_size:(noise_size+self.coreset_size)]]
-            elif self.scores == 'min':
-                top_examples = self.train_indx[np.argsort(self.norm_mean)[noise_size:(noise_size+self.coreset_size)]]
-
-            elif 'sample' in self.scores:
-                batch_size = self.args['batch_size'] * 10
-                # sample_size = self.fraction * batch_size
-
-                sample_num = self.n_train
-                idxs = []
-                for i in range(int(np.ceil(sample_num/batch_size))):
-                    start = i*batch_size
-                    end = min(sample_num, (i+1) * batch_size)
-                    sample_size = int(np.ceil(self.fraction * (end - start)))
-
-                    samples_p = torch.tensor(self.norm_mean[start:end]).squeeze()
-                    samples_p = torch.softmax(samples_p, dim=0).numpy()
-
-                    if 'min' in self.scores:
-                        this_sample = np.random.choice(np.arange(start, end), p=samples_p,
-                                    size=end - start - sample_size, replace=False) 
-                        this_sample = np.array(list(set(np.arange(start, end)) - set(this_sample)))
-                    else:
-                        this_sample = np.random.choice(np.arange(start, end), p=samples_p,
-                                    size=sample_size, replace=False) 
-
-                    idxs.append(this_sample)
-
-                idxs = np.concatenate(idxs)[:self.coreset_size]
-                top_examples = self.train_indx[idxs]
-
-        else:
-            top_examples = np.array([], dtype=np.int64)
-            uids = [utts[0] for utts in self.train_dir.base_utts]
-            sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
-            label = np.array([self.train_dir.spk_to_idx[sid] for sid in sids])
+            noise_size = self.args['noise_size'] if 'noise_size' in self.args else 0
             
-            for c in range(self.num_classes):
-                c_indx = self.train_indx[label == c]
-                c_noise_size = int(noise_size * len(c_indx))
-                budget = round(self.fraction * len(c_indx))
+            if not self.balance:
+                noise_size = int(noise_size * len(self.train_indx))
                 if self.scores == 'max':
-                    top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
+                    # print(self.norm_mean)
+                    top_examples = self.train_indx[np.argsort(self.norm_mean)[::-1][noise_size:(noise_size+self.coreset_size)]]
                 elif self.scores == 'min':
-                    top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
+                    top_examples = self.train_indx[np.argsort(self.norm_mean)[noise_size:(noise_size+self.coreset_size)]]
+
+                elif 'sample' in self.scores:
+                    batch_size = self.args['batch_size'] * 10
+                    # sample_size = self.fraction * batch_size
+
+                    sample_num = self.n_train
+                    idxs = []
+                    for i in range(int(np.ceil(sample_num/batch_size))):
+                        start = i*batch_size
+                        end = min(sample_num, (i+1) * batch_size)
+                        sample_size = int(np.ceil(self.fraction * (end - start)))
+
+                        samples_p = torch.tensor(self.norm_mean[start:end]).squeeze()
+                        samples_p = torch.softmax(samples_p, dim=0).numpy()
+
+                        if 'min' in self.scores:
+                            this_sample = np.random.choice(np.arange(start, end), p=samples_p,
+                                        size=end - start - sample_size, replace=False) 
+                            this_sample = np.array(list(set(np.arange(start, end)) - set(this_sample)))
+                        else:
+                            this_sample = np.random.choice(np.arange(start, end), p=samples_p,
+                                        size=sample_size, replace=False) 
+
+                        idxs.append(this_sample)
+
+                    idxs = np.concatenate(idxs)[:self.coreset_size]
+                    top_examples = self.train_indx[idxs]
+
+            else:
+                top_examples = np.array([], dtype=np.int64)
+                uids = [utts[0] for utts in self.train_dir.base_utts]
+                sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
+                label = np.array([self.train_dir.spk_to_idx[sid] for sid in sids])
+                
+                for c in range(self.num_classes):
+                    c_indx = self.train_indx[label == c]
+                    c_noise_size = int(noise_size * len(c_indx))
+                    budget = round(self.fraction * len(c_indx))
+                    if self.scores == 'max':
+                        top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
+                    elif self.scores == 'min':
+                        top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
         
-        # print(top_examples.shape)
-        self.save_subset(top_examples)
+            # print(top_examples.shape)
+            self.save_subset(top_examples)
         # subtrain_dir = copy.deepcopy(self.train_dir)
         subtrain_dir = torch.utils.data.Subset(self.train_dir, top_examples)
         self.iteration += 1
