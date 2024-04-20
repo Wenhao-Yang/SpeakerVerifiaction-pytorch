@@ -1387,7 +1387,7 @@ class OTSelect(SelectSubset):
                     elif self.scores == 'min':
                         top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
 
-            print("top_examples before: ", torch.distributed.get_rank(), top_examples[10:])
+            print("top_examples before: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape)
             torch.distributed.barrier()
             select_examples = [None for _ in range(torch.distributed.get_world_size())]
             torch.distributed.all_gather_object(select_examples, top_examples)
@@ -1395,7 +1395,7 @@ class OTSelect(SelectSubset):
             select_examples = np.array(list(set(select_examples)))
             np.random.shuffle(select_examples)
             top_examples = top_examples[:self.coreset_size]
-            print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:])
+            print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape, select_examples.shape)
             
             # print(top_examples.shape)
             self.save_subset(top_examples)
