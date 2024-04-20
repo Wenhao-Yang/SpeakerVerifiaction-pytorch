@@ -1336,43 +1336,43 @@ class OTSelect(SelectSubset):
             #     print('Load scores from files ... ')
 
             noise_size = self.args['noise_size'] if 'noise_size' in self.args else 0
-            
-            if not self.balance:
-                noise_size = int(noise_size * len(self.train_indx))
-                if self.scores == 'max':
-                    # print(self.norm_mean)
-                    top_examples = self.train_indx[np.argsort(self.norm_mean)[::-1][noise_size:(noise_size+self.coreset_size)]]
-                elif self.scores == 'min':
-                    top_examples = self.train_indx[np.argsort(self.norm_mean)[noise_size:(noise_size+self.coreset_size)]]
+            if on_main():
+                if not self.balance:
+                    noise_size = int(noise_size * len(self.train_indx))
+                    if self.scores == 'max':
+                        # print(self.norm_mean)
+                        top_examples = self.train_indx[np.argsort(self.norm_mean)[::-1][noise_size:(noise_size+self.coreset_size)]]
+                    elif self.scores == 'min':
+                        top_examples = self.train_indx[np.argsort(self.norm_mean)[noise_size:(noise_size+self.coreset_size)]]
 
-                elif 'sample' in self.scores:
-                    batch_size = self.args['batch_size'] * 10
-                    # sample_size = self.fraction * batch_size
+                    elif 'sample' in self.scores:
+                        batch_size = self.args['batch_size'] * 10
+                        # sample_size = self.fraction * batch_size
 
-                    sample_num = self.n_train
-                    idxs = []
-                    for i in range(int(np.ceil(sample_num/batch_size))):
-                        start = i*batch_size
-                        end = min(sample_num, (i+1) * batch_size)
-                        sample_size = int(np.ceil(self.fraction * (end - start)))
+                        sample_num = self.n_train
+                        idxs = []
+                        for i in range(int(np.ceil(sample_num/batch_size))):
+                            start = i*batch_size
+                            end = min(sample_num, (i+1) * batch_size)
+                            sample_size = int(np.ceil(self.fraction * (end - start)))
 
-                        samples_p = torch.tensor(self.norm_mean[start:end]).squeeze()
-                        samples_p = torch.softmax(samples_p, dim=0).numpy()
+                            samples_p = torch.tensor(self.norm_mean[start:end]).squeeze()
+                            samples_p = torch.softmax(samples_p, dim=0).numpy()
 
-                        if 'min' in self.scores:
-                            this_sample = np.random.choice(np.arange(start, end), p=samples_p,
-                                        size=end - start - sample_size, replace=False) 
-                            this_sample = np.array(list(set(np.arange(start, end)) - set(this_sample)))
-                        else:
-                            this_sample = np.random.choice(np.arange(start, end), p=samples_p,
-                                        size=sample_size, replace=False) 
+                            if 'min' in self.scores:
+                                this_sample = np.random.choice(np.arange(start, end), p=samples_p,
+                                            size=end - start - sample_size, replace=False) 
+                                this_sample = np.array(list(set(np.arange(start, end)) - set(this_sample)))
+                            else:
+                                this_sample = np.random.choice(np.arange(start, end), p=samples_p,
+                                            size=sample_size, replace=False) 
 
-                        idxs.append(this_sample)
+                            idxs.append(this_sample)
 
-                    idxs = np.concatenate(idxs)[:self.coreset_size]
-                    top_examples = self.train_indx[idxs]
+                        idxs = np.concatenate(idxs)[:self.coreset_size]
+                        top_examples = self.train_indx[idxs]
 
-            else:
+                else:
                 top_examples = np.array([], dtype=np.int64)
                 uids = [utts[0] for utts in self.train_dir.base_utts]
                 sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
@@ -1386,16 +1386,29 @@ class OTSelect(SelectSubset):
                         top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
                     elif self.scores == 'min':
                         top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
+            else:
+                top_examples = None
+            # print("top_examples before: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape)
+            # torch.distributed.barrier()
+            # select_examples = [None for _ in range(torch.distributed.get_world_size())]
+            # torch.distributed.all_gather_object(select_examples, top_examples)
+            # select_examples = np.concatenate(select_examples, axis=0)
+            # select_examples = np.array(list(set(select_examples)))
+            # np.random.shuffle(select_examples)
+            # top_examples = top_examples[:self.coreset_size]
+            # print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape, select_examples.shape)
 
-            print("top_examples before: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape)
-            torch.distributed.barrier()
-            select_examples = [None for _ in range(torch.distributed.get_world_size())]
-            torch.distributed.all_gather_object(select_examples, top_examples)
-            select_examples = np.concatenate(select_examples, axis=0)
-            select_examples = np.array(list(set(select_examples)))
-            np.random.shuffle(select_examples)
-            top_examples = top_examples[:self.coreset_size]
-            print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape, select_examples.shape)
+            if torch.distributed.get_rank() == 0:
+                # Assumes world_size of 3.
+                objects = [top_examples]*torch.distributed.get_world_size() # any picklable object
+            else:
+                objects = [None]*torch.distributed.get_world_size()
+            
+            output_list = [None]
+            torch.distributed.scatter_object_list(output_list, objects, src=0)
+            # Rank i gets objects[i]. For example, on rank 2:
+            top_examples = output_list[0]
+            print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape)
             
             # print(top_examples.shape)
             self.save_subset(top_examples)
