@@ -200,11 +200,11 @@ class SelectSubset(object):
                 pass
 
         self.norm_mean = None
+        print('score_path:', score_path)
         if self.save_dir != '' and os.path.exists(score_path):
             try:
                 scores_utts = pd.read_csv(score_path).to_numpy()
                 self.norm_mean = scores_utts[:, -1].astype(np.float32)
-
             except Exception as e:
                 pass
 
@@ -1227,7 +1227,7 @@ class OTSelect(SelectSubset):
         top_examples = self.load_subset()
 
         self.train_indx = np.arange(self.n_train)
-        print('self.norm_mean: ', type(self.norm_mean))
+        # print('self.norm_mean: ', type(self.norm_mean))
         if not isinstance(top_examples, np.ndarray):
             if not isinstance(self.norm_mean, np.ndarray):
                 self.model = model
