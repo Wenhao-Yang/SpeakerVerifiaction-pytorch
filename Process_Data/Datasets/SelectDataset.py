@@ -1227,6 +1227,7 @@ class OTSelect(SelectSubset):
         top_examples = self.load_subset()
 
         self.train_indx = np.arange(self.n_train)
+        print('self.norm_mean: ', type(self.norm_mean))
         if not isinstance(top_examples, np.ndarray):
             if not isinstance(self.norm_mean, np.ndarray):
                 self.model = model
