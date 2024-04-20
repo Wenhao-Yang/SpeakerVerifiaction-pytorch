@@ -1373,19 +1373,19 @@ class OTSelect(SelectSubset):
                         top_examples = self.train_indx[idxs]
 
                 else:
-                top_examples = np.array([], dtype=np.int64)
-                uids = [utts[0] for utts in self.train_dir.base_utts]
-                sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
-                label = np.array([self.train_dir.spk_to_idx[sid] for sid in sids])
-                
-                for c in range(self.num_classes):
-                    c_indx = self.train_indx[label == c]
-                    c_noise_size = int(noise_size * len(c_indx))
-                    budget = round(self.fraction * len(c_indx))
-                    if self.scores == 'max':
-                        top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
-                    elif self.scores == 'min':
-                        top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
+                    top_examples = np.array([], dtype=np.int64)
+                    uids = [utts[0] for utts in self.train_dir.base_utts]
+                    sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
+                    label = np.array([self.train_dir.spk_to_idx[sid] for sid in sids])
+                    
+                    for c in range(self.num_classes):
+                        c_indx = self.train_indx[label == c]
+                        c_noise_size = int(noise_size * len(c_indx))
+                        budget = round(self.fraction * len(c_indx))
+                        if self.scores == 'max':
+                            top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
+                        elif self.scores == 'min':
+                            top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
             else:
                 top_examples = None
             # print("top_examples before: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape)
