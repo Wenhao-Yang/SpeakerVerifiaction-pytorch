@@ -1395,13 +1395,6 @@ class OTSelect(SelectSubset):
             torch.distributed.all_gather_object(select_examples, top_examples)
             top_examples = select_examples[0]
 
-            print("top_examples: ", torch.distributed.get_rank(), top_examples)
-            # select_examples = np.concatenate(select_examples, axis=0)
-            # select_examples = np.array(list(set(select_examples)))
-            # np.random.shuffle(select_examples)
-            # top_examples = top_examples[:self.coreset_size]
-            # print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape, select_examples.shape)
-
             # print(top_examples.shape)
             self.save_subset(top_examples)
         # subtrain_dir = copy.deepcopy(self.train_dir)
