@@ -1389,12 +1389,13 @@ class OTSelect(SelectSubset):
             else:
                 top_examples = None
 
-            print("top_examples before: ", torch.distributed.get_rank())
+            # print("top_examples before: ", torch.distributed.get_rank())
             torch.distributed.barrier()
             select_examples = [None for _ in range(torch.distributed.get_world_size())]
             torch.distributed.all_gather_object(select_examples, top_examples)
+            top_examples = select_examples[0]
 
-            print("top_examples: ", torch.distributed.get_rank(), select_examples)
+            print("top_examples: ", torch.distributed.get_rank(), top_examples)
             # select_examples = np.concatenate(select_examples, axis=0)
             # select_examples = np.array(list(set(select_examples)))
             # np.random.shuffle(select_examples)
