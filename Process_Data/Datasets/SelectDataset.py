@@ -12,6 +12,7 @@
 from glob import glob
 from typing import Any
 import torch
+import torch.distributed
 import torch.nn as nn
 import copy
 import os
@@ -1385,7 +1386,16 @@ class OTSelect(SelectSubset):
                         top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
                     elif self.scores == 'min':
                         top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
-        
+
+            print("top_examples: ", torch.distributed.get_rank(), top_examples[10:])
+            torch.distributed.barrier()
+            select_examples = [None for _ in range(torch.distributed.get_world_size())]
+            torch.distributed.all_gather_object(select_examples, top_examples)
+            select_examples = torch.cat(select_examples, dim=0).numpy()
+            select_examples = np.array(list(set(select_examples)))
+            np.random.shuffle(select_examples)
+            top_examples = top_examples[:self.coreset_size]
+            
             # print(top_examples.shape)
             self.save_subset(top_examples)
         # subtrain_dir = copy.deepcopy(self.train_dir)
