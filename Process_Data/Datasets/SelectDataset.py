@@ -1388,29 +1388,19 @@ class OTSelect(SelectSubset):
                             top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
             else:
                 top_examples = None
-            # print("top_examples before: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape)
-            # torch.distributed.barrier()
-            # select_examples = [None for _ in range(torch.distributed.get_world_size())]
-            # torch.distributed.all_gather_object(select_examples, top_examples)
+
+            print("top_examples before: ", torch.distributed.get_rank())
+            torch.distributed.barrier()
+            select_examples = [None for _ in range(torch.distributed.get_world_size())]
+            torch.distributed.all_gather_object(select_examples, top_examples)
+
+            print("top_examples: ", torch.distributed.get_rank(), select_examples)
             # select_examples = np.concatenate(select_examples, axis=0)
             # select_examples = np.array(list(set(select_examples)))
             # np.random.shuffle(select_examples)
             # top_examples = top_examples[:self.coreset_size]
             # print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape, select_examples.shape)
 
-            if torch.distributed.get_rank() == 0:
-                # Assumes world_size of 3.
-                # objects = [torch.LongTensor(top_examples)]*torch.distributed.get_world_size() # any picklable object
-                objects = ["foo", 12]
-            else:
-                objects = [None, None] #*torch.distributed.get_world_size()
-            
-            output_list = [None]
-            torch.distributed.scatter_object_list(output_list, objects, src=0)
-            # Rank i gets objects[i]. For example, on rank 2:
-            top_examples = output_list[0]
-            print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], output_list)
-            
             # print(top_examples.shape)
             self.save_subset(top_examples)
         # subtrain_dir = copy.deepcopy(self.train_dir)
