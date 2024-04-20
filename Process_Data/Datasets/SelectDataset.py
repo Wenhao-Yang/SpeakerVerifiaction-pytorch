@@ -1400,15 +1400,16 @@ class OTSelect(SelectSubset):
 
             if torch.distributed.get_rank() == 0:
                 # Assumes world_size of 3.
-                objects = [torch.LongTensor(top_examples)]*torch.distributed.get_world_size() # any picklable object
+                # objects = [torch.LongTensor(top_examples)]*torch.distributed.get_world_size() # any picklable object
+                objects = ["foo", 12]
             else:
-                objects = [None]*torch.distributed.get_world_size()
+                objects = [None, None] #*torch.distributed.get_world_size()
             
             output_list = [None]
             torch.distributed.scatter_object_list(output_list, objects, src=0)
             # Rank i gets objects[i]. For example, on rank 2:
             top_examples = output_list[0]
-            print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], top_examples.shape)
+            print("top_examples after: ", torch.distributed.get_rank(), top_examples[10:], output_list)
             
             # print(top_examples.shape)
             self.save_subset(top_examples)
