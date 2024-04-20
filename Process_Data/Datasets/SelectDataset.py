@@ -1391,7 +1391,7 @@ class OTSelect(SelectSubset):
             torch.distributed.barrier()
             select_examples = [None for _ in range(torch.distributed.get_world_size())]
             torch.distributed.all_gather_object(select_examples, top_examples)
-            select_examples = torch.cat(select_examples, dim=0).numpy()
+            select_examples = np.concatenate(select_examples, axis=0)
             select_examples = np.array(list(set(select_examples)))
             np.random.shuffle(select_examples)
             top_examples = top_examples[:self.coreset_size]
