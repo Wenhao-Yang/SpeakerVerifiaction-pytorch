@@ -200,7 +200,8 @@ class SelectSubset(object):
                 pass
 
         self.norm_mean = None
-        print('score_path:', score_path)
+        if on_main():
+            print(f' {self.__class__.__name__} Loading scores {score_path}')
         if self.save_dir != '' and os.path.exists(score_path):
             try:
                 scores_utts = pd.read_csv(score_path).to_numpy()
@@ -218,7 +219,7 @@ class SelectSubset(object):
             fraction_f = self.sample_csv()
             if not os.path.exists(fraction_f):
                 if on_main():
-                    print('Saving subset to {}'.format(fraction_f))
+                    print(f' {self.__class__.__name__} Saving subset to {fraction_f}')
                 sub_utts = [[t, self.train_dir.base_utts[t]] for t in top_examples]
                 train_utts = pd.DataFrame(sub_utts, columns=['idx', 'uids'])
                 train_utts.to_csv(fraction_f, index=None)
