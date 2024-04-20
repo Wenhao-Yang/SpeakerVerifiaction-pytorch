@@ -52,6 +52,7 @@ select_scores: 'samplemin'
 # optim_times: 1.5
 # noise_size: 0.001
 # sample_ratio: 0.25
+scores: logits
 full_epoch: 0
 select_epoch: 30
 # stratas_select: kmeans
@@ -186,10 +187,10 @@ lamda_beta: 0.2
 # 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>_oneshot2_lr_<select_scores>_logits
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug5<num_pipes>_oneshotavg3_lr_<select_scores>_<scores>
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst
-select_save_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_oneshot_lr_muloptimal_logits
+select_save_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_oneshotavg3_lr_muloptimal_<scores>
 
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_40.pth
