@@ -1400,7 +1400,8 @@ class OTSelect(SelectSubset):
 
             if torch.distributed.get_rank() == 0:
                 # Assumes world_size of 3.
-                objects = [top_examples]*torch.distributed.get_world_size() # any picklable object
+                torch.LongTensor()
+                objects = [torch.LongTensor(top_examples)]*torch.distributed.get_world_size() # any picklable object
             else:
                 objects = [None]*torch.distributed.get_world_size()
             
