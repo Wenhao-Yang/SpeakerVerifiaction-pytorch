@@ -192,8 +192,7 @@ class SelectSubset(object):
     def load_subset(self):
 
         sample_csv_path = self.sample_csv()
-
-        score_path = os.path.join(self.save_dir, 'subtrain.{}.scores.csv'.format(self.iteration))
+        score_path = os.path.join(self.save_dir, 'subtrain.{}.scores.csv'.format(self.seed))
 
         top_examples = None
 
@@ -210,6 +209,7 @@ class SelectSubset(object):
         self.norm_mean = None
         if on_main():
             print(f' {self.__class__.__name__} Loading scores {score_path}')
+        
         if self.save_dir != '' and os.path.exists(score_path):
             try:
                 scores_utts = pd.read_csv(score_path).to_numpy()
@@ -233,7 +233,7 @@ class SelectSubset(object):
                 train_utts.to_csv(fraction_f, index=None)
             
             sub_scores = self.norm_mean
-            scores_f = os.path.join(self.save_dir, 'subtrain.{}.scroes.csv'.format(self.iteration))
+            scores_f = os.path.join(self.save_dir, 'subtrain.{}.scroes.csv'.format(self.seed))
             if not os.path.exists(scores_f):
                 train_utts = pd.DataFrame(self.train_dir.base_utts, columns=['uid', 'start', 'end'])
                 train_utts['scores'] = sub_scores
