@@ -168,7 +168,14 @@ class SelectSubset(object):
     
     def sample_csv(self):
 
-        sample_csv_name = '-'.join(['Sample', self.__class__.__name__, str(int(self.fraction*100)), self.scores, str(self.iteration), '*'])
+        name_lst = ['Sample', self.__class__.__name__, str(int(self.fraction*100)), self.scores, str(self.iteration)]
+        
+        if self.balance:
+            name_lst.append('balance')
+
+        name_lst.append('*') # for seed
+
+        sample_csv_name = '-'.join(name_lst)
         sample_csv_path = os.path.join(self.save_dir, '{}.csv'.format(sample_csv_name))
 
         sample_fix = False if 'sample' in self.scores else True
