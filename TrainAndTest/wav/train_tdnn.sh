@@ -76,7 +76,9 @@ if [ $stage -le 5 ]; then
 
       CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${master_port} --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_mulop_min.yaml --seed=${seed} --sample-ratio ${ratio}
 
-      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${master_port} --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_mulop_min5.yaml --seed=${seed} --sample-ratio ${ratio}
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${master_port} --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_mulop_midmax.yaml --seed=${seed} --sample-ratio ${ratio}
+
+      CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${master_port} --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_mulop_meanmax.yaml --seed=${seed} --sample-ratio ${ratio}
 
       # CUDA_VISIBLE_DEVICES=${gpu_id} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${master_port} --nnodes=1 TrainAndTest/train_egs/train_dist_coreset.py --train-config=TrainAndTest/wav/ecapa/data_dist/vox1_inst_aug53_random.yaml --seed=${seed} --sample-ratio ${ratio}
 

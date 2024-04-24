@@ -1393,9 +1393,21 @@ class OTSelect(SelectSubset):
                             top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
                         elif self.scores == 'min':
                             top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
-                        elif self.scores == 'minmax':
+                        elif self.scores == 'meanmin':
                             c_scores = self.norm_mean[c_indx]
                             c_scores = np.abs(c_scores - c_scores.mean())
+                            top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
+                        elif self.scores == 'meanmax':
+                            c_scores = self.norm_mean[c_indx]
+                            c_scores = 1 - np.abs(c_scores - c_scores.mean())
+                            top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
+                        elif self.scores == 'medmin':
+                            c_scores = self.norm_mean[c_indx]
+                            c_scores = np.abs(c_scores - np.median(c_scores))
+                            top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
+                        elif self.scores == 'medmax':
+                            c_scores = self.norm_mean[c_indx]
+                            c_scores = 1 - np.abs(c_scores - np.median(c_scores))
                             top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
 
                         elif 'sample' in self.scores:
