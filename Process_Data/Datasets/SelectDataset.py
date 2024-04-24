@@ -1401,11 +1401,11 @@ class OTSelect(SelectSubset):
                             c_scores = self.norm_mean[c_indx]
                             c_scores = 1 - np.abs(c_scores - c_scores.mean())
                             top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
-                        elif self.scores == 'medmin':
+                        elif self.scores == 'midmin':
                             c_scores = self.norm_mean[c_indx]
                             c_scores = np.abs(c_scores - np.median(c_scores))
                             top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
-                        elif self.scores == 'medmax':
+                        elif self.scores == 'midmax':
                             c_scores = self.norm_mean[c_indx]
                             c_scores = 1 - np.abs(c_scores - np.median(c_scores))
                             top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
