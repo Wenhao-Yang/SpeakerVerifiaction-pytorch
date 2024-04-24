@@ -46,7 +46,7 @@ segment_shift: 64000
 # adaptive_select: True
 select_method: optimal
 adaptive_lr: True
-select_scores: 'min'
+select_scores: 'max'
 select_balance: True
 # select_sample: ccs
 # select_repeat: 2
