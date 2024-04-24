@@ -1393,6 +1393,19 @@ class OTSelect(SelectSubset):
                             top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
                         elif self.scores == 'min':
                             top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
+                        elif 'sample' in self.scores:
+                            c_scores = self.norm_mean[c_indx]
+                            samples_p = c_scores/c_scores.sum()
+
+                            if 'min' in self.scores:
+                                this_sample = np.random.choice(np.arange(len(c_scores)), p=samples_p,
+                                            size=len(c_scores) - budget, replace=False) 
+                                this_sample = np.array(list(set(np.arange(start, end)) - set(this_sample)))
+                            else:
+                                this_sample = np.random.choice(np.arange(len(c_scores)), p=samples_p,
+                                            size=budget, replace=False) 
+                                
+                            top_examples = np.append(top_examples, this_sample)
             else:
                 top_examples = None
 
