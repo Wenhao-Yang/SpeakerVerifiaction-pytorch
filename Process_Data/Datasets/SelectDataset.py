@@ -857,7 +857,7 @@ class RandomSelect(SelectSubset):
                 
                 c_indx = self.train_indx[label == c]
                 budget = round(self.fraction * len(c_indx))
-                print(budget, end=' ')
+                print(c, len(c_indx), self.fraction, budget, end=' ')
                 top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
 
             print('balance: ', top_examples.shape)
