@@ -852,12 +852,13 @@ class RandomSelect(SelectSubset):
             uids = [utts[0] for utts in self.train_dir.base_utts]
             sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
             label = [self.train_dir.spk_to_idx[sid] for sid in sids] 
+            print(label)
             
             for c in range(self.num_classes):
                 
                 c_indx = self.train_indx[label == c]
                 budget = round(self.fraction * len(c_indx))
-                print(c, len(c_indx), self.fraction, budget, end=' ')
+                print(c, len(c_indx), self.fraction, budget, end=', ')
                 top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
 
             print('balance: ', top_examples.shape)
