@@ -45,7 +45,7 @@ segment_shift: 64000
 # sample_type: instance
 # adaptive_select: True
 select_method: optimal
-adaptive_lr: True
+# adaptive_lr: True
 select_scores: 'midmax'
 select_balance: True
 score_power: 0.5
