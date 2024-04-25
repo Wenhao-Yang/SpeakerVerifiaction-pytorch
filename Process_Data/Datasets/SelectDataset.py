@@ -842,7 +842,6 @@ class RandomSelect(SelectSubset):
         torch.distributed.all_gather_object(norm_means, norm_mean)
         norm_mean = np.mean(norm_means, axis=0)
         self.norm_mean = norm_mean
-        # print(norm_mean.shape)
 
         if not self.balance:
             top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
@@ -852,14 +851,10 @@ class RandomSelect(SelectSubset):
             sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
             label = np.array([self.train_dir.spk_to_idx[sid] for sid in sids])
                         
-            for c in range(self.num_classes):
-                
+            for c in range(self.num_classes):                
                 c_indx = self.train_indx[label == c]
                 budget = round(self.fraction * len(c_indx))
-                print(c, len(c_indx), self.fraction, budget, end=', ')
                 top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
-
-            print('balance: ', top_examples.shape)
 
         self.save_subset(top_examples)
         subtrain_dir = torch.utils.data.Subset(self.train_dir, top_examples)
