@@ -847,6 +847,7 @@ class RandomSelect(SelectSubset):
         if not self.balance:
             top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
         else:
+            print('balance ')
             top_examples = np.array([], dtype=np.int64)
             uids = [utts[0] for utts in self.train_dir.base_utts]
             sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
@@ -856,6 +857,8 @@ class RandomSelect(SelectSubset):
                 c_indx = self.train_indx[label == c]
                 budget = round(self.fraction * len(c_indx))
                 top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][:budget]])
+
+            print('balance: ', top_examples.shape)
 
         self.save_subset(top_examples)
         subtrain_dir = torch.utils.data.Subset(self.train_dir, top_examples)
