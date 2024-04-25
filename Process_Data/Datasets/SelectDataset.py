@@ -173,6 +173,9 @@ class SelectSubset(object):
         if self.balance:
             name_lst.append('balance')
 
+        if hasattr(self, 'score_power') and self.score_power != 1.0:
+            name_lst.append(f'power_{self.score_power:.2f}')
+
         name_lst.append('*') # for seed
 
         sample_csv_name = '-'.join(name_lst)
@@ -1128,7 +1131,7 @@ class MultiRatioDist_loss(nn.Module):
 class OTSelect(SelectSubset):
     def __init__(self, train_dir, args, fraction=0.5,
                  random_seed=1234, repeat=1, select_aug=False,
-                 save_dir='', scores='max',
+                 save_dir='', scores='max', score_power=1,
                  model=None, balance=False, **kwargs):
         
         super(OTSelect, self).__init__(train_dir, args, fraction, random_seed, save_dir, scores)
@@ -1139,6 +1142,7 @@ class OTSelect(SelectSubset):
         self.balance = balance
         self.select_aug = select_aug
         self.device = model.device if model != None else 'cpu'
+        self.score_power = score_power
 
     def while_update(self, outputs, loss, targets, epoch, batch_idx, batch_size):
         if batch_idx % self.args.print_freq == 0:
@@ -1388,29 +1392,28 @@ class OTSelect(SelectSubset):
                         c_indx = self.train_indx[label == c]
                         c_noise_size = int(noise_size * len(c_indx))
                         budget = round(self.fraction * len(c_indx))
+
+                        c_scores = self.norm_mean[c_indx]
+                        c_scores = np.power(c_scores, self.score_power)
+
                         if self.scores == 'max':
-                            top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[::-1][c_noise_size:(c_noise_size+budget)]])
+                            top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[::-1][c_noise_size:(c_noise_size+budget)]])
                         elif self.scores == 'min':
-                            top_examples = np.append(top_examples, c_indx[np.argsort(self.norm_mean[c_indx])[c_noise_size:(c_noise_size+budget)]])
+                            top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
                         elif self.scores == 'meanmin':
-                            c_scores = self.norm_mean[c_indx]
                             c_scores = np.abs(c_scores - c_scores.mean())
                             top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
                         elif self.scores == 'meanmax':
-                            c_scores = self.norm_mean[c_indx]
                             c_scores = 1 - np.abs(c_scores - c_scores.mean())
                             top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
                         elif self.scores == 'midmin':
-                            c_scores = self.norm_mean[c_indx]
                             c_scores = np.abs(c_scores - np.median(c_scores))
                             top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
                         elif self.scores == 'midmax':
-                            c_scores = self.norm_mean[c_indx]
                             c_scores = 1 - np.abs(c_scores - np.median(c_scores))
                             top_examples = np.append(top_examples, c_indx[np.argsort(c_scores)[c_noise_size:(c_noise_size+budget)]])
 
                         elif 'sample' in self.scores:
-                            c_scores = self.norm_mean[c_indx]
                             samples_p = c_scores/c_scores.sum()
 
                             if 'min' in self.scores:
