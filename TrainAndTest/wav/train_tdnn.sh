@@ -64,7 +64,7 @@ if [ $stage -le 5 ]; then
   loss=arcsoft encod=ASTP2 embedding_size=256
   # _lrr${lr_ratio}_lsr${loss_ratio}
   # gpu_id=0,3 master_port=41705
-  gpu_id=2,3 master_port=41715
+  gpu_id=1,3 master_port=41715
   for lamda_beta in 0.2;do
     for data_type in hdf5 ; do
     # for type in mani style align ;do
