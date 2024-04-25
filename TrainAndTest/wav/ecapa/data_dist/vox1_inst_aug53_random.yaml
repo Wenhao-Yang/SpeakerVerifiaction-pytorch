@@ -191,7 +191,7 @@ check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst
 
-select_save_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_oneshot_lr_random
+select_save_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug53_oneshot2_random
 
 #_mixup<lamda_beta>_<mixup_type>
 resume: !ref <check_path>/checkpoint_40.pth

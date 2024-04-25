@@ -51,7 +51,7 @@ def kmeans_select(embeddings, select_size):
     kmeans = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(embeddings.numpy())
     sub_label = kmeans.labels_
     uniq_sub_label = np.unique(sub_label)
-    subselect_size = int(np.ceil(select_size / len(uniq_sub_label)))
+    subselect_size = round(select_size / len(uniq_sub_label))
     
     select_idx = []
     for i in uniq_sub_label:
@@ -1358,10 +1358,10 @@ class OTSelect(SelectSubset):
 
                         sample_num = self.n_train
                         idxs = []
-                        for i in range(int(np.ceil(sample_num/batch_size))):
+                        for i in range(round(sample_num/batch_size)):
                             start = i*batch_size
                             end = min(sample_num, (i+1) * batch_size)
-                            sample_size = int(np.ceil(self.fraction * (end - start)))
+                            sample_size = round(self.fraction * (end - start))
 
                             samples_p = torch.tensor(self.norm_mean[start:end]).squeeze()
                             samples_p = torch.softmax(samples_p, dim=0).numpy()
