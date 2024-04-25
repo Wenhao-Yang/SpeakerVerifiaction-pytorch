@@ -847,13 +847,11 @@ class RandomSelect(SelectSubset):
         if not self.balance:
             top_examples = self.train_indx[np.argsort(self.norm_mean)][::-1][:self.coreset_size]
         else:
-            print('balance ')
             top_examples = np.array([], dtype=np.int64)
             uids = [utts[0] for utts in self.train_dir.base_utts]
             sids = [self.train_dir.utt2spk_dict[uid] for uid in uids]
-            label = [self.train_dir.spk_to_idx[sid] for sid in sids] 
-            print(label)
-            
+            label = np.array([self.train_dir.spk_to_idx[sid] for sid in sids])
+                        
             for c in range(self.num_classes):
                 
                 c_indx = self.train_indx[label == c]
