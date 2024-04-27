@@ -234,7 +234,7 @@ def main():
         elif config_args['adaptive_lr'] == 'log':
             config_args['lr'] = (np.log(100 / args.sample_ratio) + 1) * config_args['lr']
         elif config_args['adaptive_lr'] == 'log2':
-            config_args['lr'] = (np.log2(100 / args.sample_ratio) +1 ) * config_args['lr']
+            config_args['lr'] = (np.log2(100 / args.sample_ratio) + 1 ) * config_args['lr']
         
     opt_kwargs = {'lr': config_args['lr'], 'lr_decay': config_args['lr_decay'],
                   'weight_decay': config_args['weight_decay'],
