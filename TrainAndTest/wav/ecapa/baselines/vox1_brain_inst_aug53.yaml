@@ -102,7 +102,7 @@ embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   input_dim: !ref <input_dim>
   input_norm: !ref <input_norm>
   channels: [256, 256, 256, 256, 768]
-  groups: [32, 32, 32, 32, 32]
+  groups: [16, 32, 32, 32, 32]
   num_classes: !ref <num_classes>
 
 augment_wavedrop: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
