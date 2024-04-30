@@ -908,12 +908,11 @@ def main():
         resume_checkpoint(model, scheduler, optimizer, config_args)
 
     start = 1 + start_epoch
-    if torch.distributed.get_rank() == 0:
-        print('Start epoch is : ' + str(start))
     end = start + config_args['epochs']
     if torch.distributed.get_rank() == 0:
-        print('#Param, Total: {} Trainable {}'.format(get_layer_param(model),
-                                                      get_trainable_param(model)))
+        print(' #Epochs,  {}  to  {} ...'.format(start, end))
+        print(' #Params, Total: {} Trainable {}'.format(format(get_layer_param(model), ",d"),
+                                                      format(get_trainable_param(model), ",d")))
         
     if torch.distributed.get_world_size() > 1:
         print("Continue with gpu: %s ..." % str(local_rank))
