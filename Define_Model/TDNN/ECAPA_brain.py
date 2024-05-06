@@ -1030,26 +1030,38 @@ class ECAPA_TDNN(torch.nn.Module):
                 x = self.mix(x, proser, lamda_beta)
 
             xl = []
-            for layer in self.blocks:
+            for j, layer in enumerate(self.blocks):
                 try:
                     x = layer(x, lengths=lengths)
                 except TypeError:
                     x = layer(x)
+                
+                if proser != None and layer_mix == j+2:
+                    x = self.mix(x, proser, lamda_beta)
+
                 xl.append(x)
 
             # Multi-layer feature aggregation
             x_cat = torch.cat(xl[1:], dim=1)
             x_mfa = self.mfa(x_cat)
+            if proser != None and layer_mix == 6:
+                x = self.mix(x, proser, lamda_beta)
 
             # Attentive Statistical Pooling
             x = self.asp(x_mfa, lengths=lengths)
             x = self.asp_bn(x)
+
+            if proser != None and layer_mix == 7:
+                x = self.mix(x, proser, lamda_beta)
 
             if self.domain_mix and self.training:
                 x = self.seperate(x)
 
             # Final linear transformation
             embeddings = self.fc(x)
+
+            if proser != None and layer_mix == 8:
+                embeddings = self.mix(embeddings, proser, lamda_beta)
 
         logits = self.classifier(embeddings)
 
