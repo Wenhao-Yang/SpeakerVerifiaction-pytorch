@@ -96,7 +96,7 @@ encoder_type: "SASP2"
 attention_channels: 128
 num_classes: 3633
 num_real_classes: 1211
-mix: 'mixup'
+mix: 'cutmixup'
 
 embedding_model: !new:Define_Model.TDNN.ECAPA_brain.ECAPA_TDNN
   filter: "fbank"
@@ -188,12 +188,12 @@ lamda_beta: 0.2
 proser_gamma: 1
 mixup_layer: 0
 mixup_type: !ref <mix>
-ingore_other: True
+# ingore_other: True
 mix_ratio: 1
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug7<num_pipes>_remixingore
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug7<num_pipes>_remix
 #<attention_channels>
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst
