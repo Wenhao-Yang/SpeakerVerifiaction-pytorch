@@ -86,7 +86,7 @@ cos_sim: True
 model: ECAPA_brain
 kernel_size:
 alpha: 0
-embedding_size: 192
+embedding_size: 256
 batch_size: 96
 dropout_p: 0.0
 activation: relu
@@ -186,7 +186,7 @@ margin: 0.2
 s: 30
 lamda_beta: 0.2
 proser_gamma: 1
-mixup_layer: [0, 8]
+mixup_layer: 0
 mixup_type: !ref <mix>
 # ingore_other: True
 mix_ratio: 1

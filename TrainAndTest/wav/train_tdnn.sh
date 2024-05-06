@@ -2,7 +2,7 @@
 
 stage=20
 waited=0
-while [ $(ps 414662 | wc -l) -eq 2 ]; do
+while [ $(ps 394396 | wc -l) -eq 2 ]; do
   sleep 60
   waited=$(expr $waited + 1)
   echo -en "\033[1;4;31m Having waited for ${waited} minutes!\033[0m\r"
@@ -467,7 +467,7 @@ if [ $stage -le 20 ]; then
 
           CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixup.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
-          CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixup_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+          # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixup_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
           # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_cutmix.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
     done
