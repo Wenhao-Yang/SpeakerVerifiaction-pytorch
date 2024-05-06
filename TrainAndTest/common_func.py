@@ -211,17 +211,16 @@ def verification_extract(extract_loader, model, xvector_dir, epoch, test_input='
         torch.distributed.all_gather_object(all_uid2vectors, uid2vectors)
         if torch.distributed.get_rank() == 0:
             # pdb.set_trace()
-            writer = kaldiio.WriteHelper(
-                'ark,scp:%s,%s' % (ark_file, scp_file))
-            uid2vectors = np.concatenate(all_uid2vectors)
-            for uid, uid_vec in uid2vectors:
-                writer(str(uid), uid_vec)
+            with kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file)) as writer:
+                uid2vectors = np.concatenate(all_uid2vectors)
+                for uid, uid_vec in uid2vectors:
+                    writer(str(uid), uid_vec)
 
         torch.distributed.barrier()
     else:
-        writer = kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file))
-        for uid, uid_vec in uid2vectors:
-            writer(str(uid), uid_vec)
+        with kaldiio.WriteHelper('ark,scp:%s,%s' % (ark_file, scp_file)) as writer:
+            for uid, uid_vec in uid2vectors:
+                writer(str(uid), uid_vec)
 
     torch.cuda.empty_cache()
 
