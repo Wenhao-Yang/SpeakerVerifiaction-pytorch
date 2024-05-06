@@ -320,8 +320,12 @@ class ArcSoftmaxLoss(nn.Module):
         self.all_iteraion = all_iteraion
         self.smooth_ratio = smooth_ratio
 
-    def forward(self, costh, label, lamda_beta=1, weight_margin=None):
-        self.iteraion += 1
+    def forward(self, costh, label, 
+                lamda_beta=1,        # the lamda for overall margin m 
+                weight_margin=None): # the weight for each margin within batch
+        
+        if self.training:
+            self.iteraion += 1
 
         lb_view = label.view(-1, 1)
         theta = costh.acos()
@@ -345,24 +349,15 @@ class ArcSoftmaxLoss(nn.Module):
             weight_margin = torch.nn.functional.sigmoid(weight_margin - weight_margin.mean()).detach()
             delt_theta = (0.1 * weight_margin + self.margin-0.05) * delt_theta
 
-        # pdb.set_trace()
         if costh.is_cuda:
             delt_theta = Variable(delt_theta.cuda())
-            # print('delt_theta max is ', delt_theta.max())
-            # print('theta + delt_theta max is ', (theta + delt_theta).max())
 
         costh_m = (theta + delt_theta).cos()
-        # print('costh_m max is ', costh_m.max())
-        # if self.iteraion < self.all_iteraion:
-        #     self.iteraion += 1
-
         costh_m_s = self.s * costh_m
         if self.dynamic_s:
             max_cos = costh.max(dim=1, keepdim=True).values
             costh_m_s = costh_m_s * torch.exp(-max_cos*max_cos*max_cos*max_cos)
-        # print('costh_m_s max is ', costh_m_s.max())
         self.ce.reduction = self.reduction
-
         loss = self.ce(costh_m_s, label)
 
         return loss
@@ -867,21 +862,42 @@ class ProserLoss(nn.Module):
 
 class MixupLoss(nn.Module):
 
-    def __init__(self, loss, gamma=1, margin_lamda=False):
+    def __init__(self, loss, gamma=1, margin_lamda=False,
+                 ingore_other=False):
         super(MixupLoss, self).__init__()
         self.loss = loss
         self.gamma = gamma
         self.margin_lamda = margin_lamda
+        self.ingore_other = ingore_other   # ignore other positive class while compute the loss
 
-    def forward(self, costh, label, half_batch_size=0, lamda_beta=0):
+    def forward(self, costh, label,
+                half_batch_size=0, lamda_beta=0):
         margin_lamda = lamda_beta if self.margin_lamda else 1
         if half_batch_size > 0 :
             loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
 
-            loss = loss + self.gamma * (
-                lamda_beta * self.loss(costh[-half_batch_size:],
-                                    label[half_batch_size:int(2 * half_batch_size)], lamda_beta=margin_lamda)
-                        + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:], lamda_beta=margin_lamda))
+            if not self.ingore_other:
+                loss = loss + self.gamma * (
+                    lamda_beta * self.loss(costh[-half_batch_size:],
+                                        label[half_batch_size:int(2 * half_batch_size)], lamda_beta=margin_lamda)
+                            + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:], lamda_beta=margin_lamda))
+            else:
+                costh_a = costh[-half_batch_size:]
+                label_a = label[half_batch_size:int(2 * half_batch_size)]
+                label_b = label[-half_batch_size:]
+
+                mask_a = torch.ones_like(costh_a).scatter_(1, label_b.unsqueeze(1), 0)
+                mask_b = torch.ones_like(costh_a).scatter_(1, label_a.unsqueeze(1), 0)
+                if costh.is_cuda:
+                    mask_a = mask_a.cuda()
+                    mask_b = mask_b.cuda()
+
+                costh_a = costh_a * mask_a
+                costh_b = costh_a * mask_b
+
+                loss = loss + self.gamma * (
+                    lamda_beta * self.loss(costh_a, label_a, lamda_beta=margin_lamda)
+                            + (1 - lamda_beta) * self.loss(costh_b, label_b, lamda_beta=margin_lamda))
 
             return loss / (1 + self.gamma)
         else:

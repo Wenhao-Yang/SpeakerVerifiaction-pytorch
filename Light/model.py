@@ -156,13 +156,13 @@ class SpeakerLoss(nn.Module):
         self.softmax = nn.Softmax(dim=1)
         self.ce_criterion = ce_criterion
         if 'mixup_type' in config_args and config_args['mixup_type'] != '':
-            if 'margin_lamda' in config_args:
-                margin_lamda = config_args['margin_lamda']
-            else:
-                margin_lamda = False
+            margin_lamda = False if 'margin_lamda' not in config_args else config_args['margin_lamda']
+            ingore_other = False if 'ingore_other' not in config_args else config_args['ingore_other']
 
             xe_criterion = MixupLoss(
-                xe_criterion, gamma=config_args['proser_gamma'], margin_lamda=margin_lamda)
+                xe_criterion, gamma=config_args['proser_gamma'],
+                margin_lamda=margin_lamda,
+                ingore_other=ingore_other)
 
         self.xe_criterion = xe_criterion
         self.loss_ratio = config_args['loss_ratio']

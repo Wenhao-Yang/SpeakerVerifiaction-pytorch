@@ -199,7 +199,6 @@ class TDNNBottleBlock(nn.Module):
             dilation=dilation,
             groups=groups,
         )
-
         self.activation = activation()
         self.norm1 = BatchNorm1d(input_size=bottle_scale)
         
@@ -210,7 +209,6 @@ class TDNNBottleBlock(nn.Module):
             dilation=dilation,
             groups=groups,
         )
-
         self.norm2 = BatchNorm1d(input_size=out_channels)
 
         for m in self.modules():
@@ -443,13 +441,29 @@ class AttentiveStatisticsPooling(nn.Module):
 
         # Expand the temporal context of the pooling layer by allowing the
         # self-attention to look at global properties of the utterance.
-        if self.global_context:
+        if self.global_context == True:
             # torch.std is unstable for backward computation
             # https://github.com/pytorch/pytorch/issues/4320
             total = mask.sum(dim=2, keepdim=True).float()
             mean, std = _compute_statistics(x, mask / total)
             mean = mean.unsqueeze(2).repeat(1, 1, L)
             std = std.unsqueeze(2).repeat(1, 1, L)
+            attn = torch.cat([x, mean, std], dim=1)
+        elif self.global_context == 'window':
+            total = mask.sum(dim=2, keepdim=True).float()
+            means, stds = [], []
+            for i in range(int(np.ceil(x.shape[-1]/25))):
+                start = i*25
+                end = min((i+1)*25, x.shape[-1])
+                mean, std = _compute_statistics(x[:, :, start:end], mask[:, :, start:end] / total)
+                mean = mean.unsqueeze(2).repeat(1, 1, end-start)
+                std = std.unsqueeze(2).repeat(1, 1, end-start)
+                means.append(mean)
+                stds.append(std)
+
+            mean = torch.cat(means, dim=-1)
+            std = torch.cat(stds, dim=-1)
+
             attn = torch.cat([x, mean, std], dim=1)
         else:
             attn = x
@@ -464,7 +478,123 @@ class AttentiveStatisticsPooling(nn.Module):
         mean, std = _compute_statistics(x, attn)
         # Append mean and std of the batch
         pooled_stats = torch.cat((mean, std), dim=1)
-        pooled_stats = pooled_stats  # .unsqueeze(2)
+        # pooled_stats = pooled_stats  # .unsqueeze(2)
+
+        return pooled_stats
+
+
+class AttentiveMultiStatisticsPooling(nn.Module):
+    """This class implements an attentive statistic pooling layer for each channel.
+    It returns the concatenated mean and std of the input tensor.
+
+    Arguments
+    ---------
+    channels: int
+        The number of input channels.
+    attention_channels: int
+        The number of attention channels.
+
+    Example
+    -------
+    >>> inp_tensor = torch.rand([8, 120, 64]).transpose(1, 2)
+    >>> asp_layer = AttentiveStatisticsPooling(64)
+    >>> lengths = torch.rand((8,))
+    >>> out_tensor = asp_layer(inp_tensor, lengths).transpose(1, 2)
+    >>> out_tensor.shape
+    torch.Size([8, 1, 128])
+    """
+
+    def __init__(self, channels, attention_channels=128, global_context=True,
+                 stddev=True,):
+        super().__init__()
+
+        self.eps = 1e-12
+        self.stddev = stddev
+        self.global_context = global_context
+        if global_context:
+            self.tdnn = TDNNBlock(channels * 3, attention_channels, 1, 1)
+        else:
+            self.tdnn = TDNNBlock(channels, attention_channels, 1, 1)
+        self.tanh = nn.Sigmoid()
+        self.conv = Conv1d(
+            in_channels=attention_channels, out_channels=channels, kernel_size=1
+        )
+
+    def forward(self, x, lengths=None):
+        """Calculates mean and std for a batch (input tensor).
+
+        Arguments
+        ---------
+        x : torch.Tensor
+            Tensor of shape [N, C, L].
+        """
+        L = x.shape[-1]
+
+        def _compute_statistics(x, m, dim=2, eps=self.eps):
+            mean = (m * x).sum(dim)
+            std = torch.sqrt(
+                (m * (x - mean.unsqueeze(dim)).pow(2)).sum(dim).clamp(eps)
+            )
+            return mean, std
+
+        if lengths is None:
+            lengths = torch.ones(x.shape[0], device=x.device)
+
+        # Make binary mask of shape [N, 1, L]
+        mask = length_to_mask(lengths * L, max_len=L, device=x.device)
+        mask = mask.unsqueeze(1)
+
+        # Expand the temporal context of the pooling layer by allowing the
+        # self-attention to look at global properties of the utterance.
+        if self.global_context == True:
+            # torch.std is unstable for backward computation
+            # https://github.com/pytorch/pytorch/issues/4320
+            total = mask.sum(dim=2, keepdim=True).float()
+            mean, std = _compute_statistics(x, mask / total)
+            mean = mean.unsqueeze(2).repeat(1, 1, L)
+            std = std.unsqueeze(2).repeat(1, 1, L)
+            attn = torch.cat([x, mean, std], dim=1)
+        elif self.global_context == 'window':
+            total = mask.sum(dim=2, keepdim=True).float()
+            means, stds = [], []
+            for i in range(int(np.ceil(x.shape[-1]/25))):
+                start = i*25
+                end = min((i+1)*25, x.shape[-1])
+                mean, std = _compute_statistics(x[:, :, start:end],
+                                                mask[:, :, start:end] / total)
+                mean = mean.unsqueeze(2).repeat(1, 1, end-start)
+                std = std.unsqueeze(2).repeat(1, 1, end-start)
+                means.append(mean)
+                stds.append(std)
+
+            mean = torch.cat(means, dim=-1)
+            std = torch.cat(stds, dim=-1)
+
+            attn = torch.cat([x, mean, std], dim=1)
+        else:
+            attn = x
+
+        # Apply layers
+        attn = self.tanh(self.tdnn(attn))
+        attn1 = self.conv(attn)
+        attn2 = self.conv(1-attn)
+
+        # Filter out zero-paddings
+        attn1 = attn1.masked_fill(mask == 0, float("-inf"))
+        attn1 = F.softmax(attn1, dim=2)
+        mean1, std1 = _compute_statistics(x, attn1)
+
+        attn2 = attn2.masked_fill(mask == 0, float("-inf"))
+        attn2 = F.softmax(attn2, dim=2)
+        mean2, std2 = _compute_statistics(x, attn2)
+        # Append mean and std of the batch
+        if self.stddev == True :
+            pooled_stats = torch.cat((mean1, std1), dim=1) + torch.cat((mean2, std2), dim=1)
+        elif self.stddev == 'half' :
+            pooled_stats = torch.cat((mean1, std1), dim=1) + 0.5 * torch.cat((mean2, std2), dim=1)
+        else:
+            pooled_stats = torch.cat((mean1, mean2), dim=1)
+        # pooled_stats = pooled_stats  # .unsqueeze(2)
 
         return pooled_stats
 
@@ -607,11 +737,9 @@ class SERes2NetBottleblock(nn.Module):
             activation=activation,
             groups=groups,
         )
-
         self.res2net_block = Res2NetBlock(
             bottle_scale, bottle_scale, res2net_scale, kernel_size, dilation
         )
-
         self.tdnn2 = TDNNBlock(
             bottle_scale,
             out_channels,
@@ -620,7 +748,6 @@ class SERes2NetBottleblock(nn.Module):
             activation=activation,
             groups=groups,
         )
-
         self.se_block = SEBlock(out_channels, bottle_scale, out_channels)
 
         self.shortcut = None
@@ -692,19 +819,37 @@ class ECAPA_TDNN(torch.nn.Module):
             channels=[512, 512, 512, 512, 1536],
             kernel_sizes=[5, 3, 3, 3, 1],
             dilations=[1, 2, 3, 4, 1],
+            encoder_type='SASP2', encoder_bias=False, stddev=True,
             norm='batch', shuffle=False, bath_ratio=0.5, affine=False,
             dropouts=[0, 0, 0], dropout_type='vanilla', linear_step=0,
-            noise_norm='none', noise_type='none', domain_feat='embeddings',
+            noise_norm='none', noise_type='none',
+            domain_feat='embeddings',
             domain_mix=False,
             attention_channels=128,
             res2net_scale=8,
             se_channels=128,
             global_context=True,
+            mix='mixup',
             groups=[1, 1, 1, 1, 1], **kwargs):
 
         super().__init__()
         self.embedding_size = embedding_size
         self.domain_feat = domain_feat
+        self.mix_type = mix
+        self.encoder_type = encoder_type
+        mix_types = {
+            "mixup": self.mixup,
+            "manifold": self.mixup,
+            # "addup": self.addup,
+            # "style": self.mixstyle,
+            # "align": self.alignmix,
+            # "style_time": self.mixstyle_time,
+            # "style_base": self.mixbase,
+            "cutmix": self.cutmix,
+            "cutmixup": self.cutmixup,
+            # "cutmixstyle": self.cutmixstylebase,
+        }
+        self.mix = mix_types[mix]
 
         if len(dropouts) == 3:
             self.dropouts = [0]
@@ -839,7 +984,8 @@ class ECAPA_TDNN(torch.nn.Module):
             input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
 
     def forward(self, x, lengths=None, last=False,
-                freeze=False):
+                freeze=False,
+                lamda_beta=0.2, mixup_alpha=-1, proser=None,):
         """Returns the embedding vector.
 
         Arguments
@@ -847,6 +993,11 @@ class ECAPA_TDNN(torch.nn.Module):
         x : torch.Tensor
             Tensor of shape (batch, time, channel).
         """
+        if isinstance(mixup_alpha, float) or isinstance(mixup_alpha, int):
+            layer_mix = mixup_alpha
+        elif isinstance(mixup_alpha, list):
+            layer_mix = np.random.choice(mixup_alpha)
+
         if freeze:
             with torch.no_grad():
                 x = self.input_mask(x)
@@ -868,13 +1019,15 @@ class ECAPA_TDNN(torch.nn.Module):
                 x = self.asp_bn(x)
                 embeddings = self.fc(x)
         else:
-            # Minimize transpose for efficiency
+            if proser != None and layer_mix == 0:
+                x = self.mix(x, proser, lamda_beta)
             x = self.input_mask(x)
-            # if proser != None and layer_mix == 1:
-            #     x = self.mixup(x, proser, lamda_beta)
             if len(x.shape) == 4:
                 x = x.squeeze(1).float()
             x = x.transpose(1, 2)
+
+            if proser != None and layer_mix == 1:
+                x = self.mix(x, proser, lamda_beta)
 
             xl = []
             for layer in self.blocks:
@@ -940,6 +1093,89 @@ class ECAPA_TDNN(torch.nn.Module):
             if pp.requires_grad: # only using the parameter that require the gradient
                 grads.append(pp.grad.view(-1))
         return torch.cat(grads)
+    
+    def mixup(self, x, idx_tensor, lamda_beta):
+        mix_size = idx_tensor.shape[0]
+        half_feats = x[-mix_size:]
+        x = torch.cat(
+            [x[:-mix_size], lamda_beta * half_feats +
+                (1 - lamda_beta) * half_feats[idx_tensor]],
+            dim=0)
+
+        return x
+    
+    def cutmix(self, x, idx_tensor, lamda_beta):
+        x_shape = x.shape
+        if len(x_shape) == 2:
+            x = x.unsqueeze(1)
+        elif len(x_shape) == 4:
+            x = x.squeeze(1)
+
+        mix_size = idx_tensor.shape[0]
+        half_feats = x[-mix_size:]
+
+        lam_t = int(half_feats.shape[2] * (1.0 - lamda_beta))
+        if lam_t > 0:
+            if lam_t < half_feats.shape[2]:
+                t_start = np.random.randint(0, half_feats.shape[2]-lam_t)
+            else:
+                t_start = 0
+
+            half_feats_shuf = half_feats[idx_tensor].clone().detach()
+            if lam_t > 0:
+                end_t = t_start + lam_t
+                half_feats[:, :, t_start:end_t] = half_feats_shuf[:, :, t_start:end_t]
+
+            x = torch.cat(
+                [x[:-mix_size], half_feats],
+                dim=0)
+            
+        if len(x_shape) == 2:
+            x = x.squeeze(1)
+        elif len(x_shape) == 4:
+            x = x.unsqueeze(1)
+
+        return x
+
+    def cutmixup(self, x, idx_tensor, lamda_beta):
+        x_shape = x.shape
+        if len(x_shape) == 2:
+            x = x.unsqueeze(1)
+        elif len(x_shape) == 4:
+            x = x.squeeze(1)
+
+        mix_size = idx_tensor.shape[0]
+        half_feats = x[-mix_size:]
+
+        mix_lamda_beta = torch.ones(1,1,x.shape[2]).float().to(x.device) * lamda_beta
+        cut_lamda_beta = torch.ones(1,1,x.shape[2]).float().to(x.device)
+
+        lam_t = int(half_feats.shape[2] * (1.0 - lamda_beta))
+        if lam_t > 0:
+            if lam_t < half_feats.shape[2]:
+                t_start = np.random.randint(0, half_feats.shape[2]-lam_t)
+            else:
+                t_start = 0
+
+            half_feats_shuf = half_feats[idx_tensor].clone().detach()
+            if lam_t > 0:
+                end_t = t_start + lam_t
+                cut_lamda_beta[:, :, t_start:end_t] *= 0 
+
+            tensor_lamda_beta = mix_lamda_beta + cut_lamda_beta
+            tensor_lamda_beta /= 2
+
+            half_feats = half_feats * tensor_lamda_beta + half_feats_shuf*(1-tensor_lamda_beta)
+            x = torch.cat(
+                [x[:-mix_size], half_feats],
+                dim=0)
+        
+        if len(x_shape) == 2:
+            x = x.squeeze(1)
+        elif len(x_shape) == 4:
+            x = x.unsqueeze(1)
+
+        return x
 
 
 class ECAPA_DBTDNN(torch.nn.Module):
