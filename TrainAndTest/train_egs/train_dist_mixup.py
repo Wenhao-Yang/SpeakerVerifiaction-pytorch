@@ -15,7 +15,7 @@ from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
 from Process_Data.audio_processing import AdaptiveBandPass, BandPass
 from TrainAndTest.common_func import on_main, resume_checkpoint
-from TrainAndTest.train_egs.train_dist_deplab6 import save_checkpoint, test_results
+from TrainAndTest.train_egs.train_dist import save_checkpoint, test_results
 from speechbrain.lobes.augment import TimeDomainSpecAugment
 
 from TrainAndTest.train_egs.train_dist import all_seed, check_earlystop_break, valid_class, valid_test
