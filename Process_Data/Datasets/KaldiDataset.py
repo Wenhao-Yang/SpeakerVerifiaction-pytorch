@@ -697,7 +697,7 @@ class ScriptVerifyDataset(data.Dataset):
         if verbose > 1:
             print('    There are {} pairs in trials with {} positive pairs.'.format(len(trials_pair), positive_pairs))
             
-        if verbose > 0 and skip_pairs > 0:
+        if skip_pairs > 0:
             print('    Skpipped {} pairs.'.format(skip_pairs))
 
         self.uid2feat = uid2feat

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=22
+stage=23
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -222,6 +222,29 @@ if [ $stage -le 22 ]; then
             python -W ignore TrainAndTest/train_egs/average_model.py \
                 --check-path Data/checkpoint/${model_dir} \
                 --assigned-epoch ${assigned_epoch}
+        done
+    done
+ exit
+fi
+
+
+if [ $stage -le 23 ]; then
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug74
+    for model_name in mixup08 ; do
+    echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
+        for seed in 1234 ; do
+            if [[ $model_name == baseline ]];then
+                model_dir=${common_path}/${seed}
+            elif [[ $model_name == mixup08 ]];then
+                model_dir=${common_path}_remix_mixup08_lamda0.2_mixrt1.00/${seed}
+            elif [[ $model_name == margin_mixup08 ]];then
+                model_dir=${common_path}_remix_margin_mixup08_lamda0.2_mixrt1.00/${seed}
+            else
+                model_dir=${common_path}_${model_name}_prob10/${seed}
+            fi
+            
+            python -W ignore TrainAndTest/train_egs/average_model.py \
+                --check-path Data/checkpoint/${model_dir}
         done
     done
  exit
