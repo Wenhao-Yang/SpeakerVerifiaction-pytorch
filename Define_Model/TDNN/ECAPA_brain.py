@@ -154,6 +154,7 @@ class TDNNBlock(nn.Module):
         """ Processes the input tensor x and returns an output tensor."""
         return self.norm(self.activation(self.conv(x)))
 
+
 class TDNNBottleBlock(nn.Module):
     """An implementation of TDNN.
 

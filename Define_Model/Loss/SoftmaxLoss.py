@@ -873,17 +873,21 @@ class MixupLoss(nn.Module):
     def forward(self, costh, label,
                 half_batch_size=0, lamda_beta=0):
         margin_lamda = lamda_beta if self.margin_lamda else 1
+        
         if half_batch_size > 0 :
-            loss = self.loss(costh[:half_batch_size], label[:half_batch_size])
+            clean_costh = costh[:-half_batch_size]
+            clean_label = label[:len(clean_costh)]
+            loss = self.loss(clean_costh, clean_label)
 
             if not self.ingore_other:
+                mix_costh = costh[-half_batch_size:]
                 loss = loss + self.gamma * (
-                    lamda_beta * self.loss(costh[-half_batch_size:],
-                                        label[half_batch_size:int(2 * half_batch_size)], lamda_beta=margin_lamda)
-                            + (1 - lamda_beta) * self.loss(costh[-half_batch_size:], label[-half_batch_size:], lamda_beta=margin_lamda))
+                    lamda_beta * self.loss(mix_costh,
+                                        label[int(-2*half_batch_size):int(-half_batch_size)], lamda_beta=margin_lamda)
+                            + (1-lamda_beta) * self.loss(mix_costh, label[-half_batch_size:], lamda_beta=margin_lamda))
             else:
                 costh_a = costh[-half_batch_size:]
-                label_a = label[half_batch_size:int(2 * half_batch_size)]
+                label_a = label[int(-2*half_batch_size):int(-half_batch_size)]
                 label_b = label[-half_batch_size:]
 
                 mask_a = torch.ones_like(costh_a).scatter_(1, label_b.unsqueeze(1), 0)

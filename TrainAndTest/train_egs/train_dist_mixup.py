@@ -88,6 +88,7 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
     return_domain = True if 'domain' in config_args and config_args['domain'] == True else False
     mix_epoch = config_args['mix_epoch'] if 'mix_epoch' in config_args else config_args['epochs']
     return_idx = False if 'return_idx' not in config_args else config_args['return_idx']
+    mix_sample = 'replace' if 'mix_sample' not in config_args else config_args['mix_sample']
 
     if 'augment_pipeline' in config_args:
         num_pipes = config_args['num_pipes'] if 'num_pipes' in config_args else 1
@@ -310,6 +311,11 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
         if torch.cuda.is_available():
             label = label.cuda()
             data = data.cuda()
+        
+        if mix_sample == 'replace':
+            pass
+        elif mix_sample == 'concat':
+            data = torch.cat([data, data[-half_data:]], dim=0)
 
         data, label = Variable(data), Variable(label)
         classfier, feats = model(data, proser=rand_idx,
@@ -329,6 +335,7 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
                 label[:half_data]).cpu().sum().float() + \
                 (1 - lamda_beta) * predicted_one_labels.eq(
                 label[-half_data:]).cpu().sum().float()
+        
         elif half_data != 0:
             minibatch_correct = predicted_one_labels[:-half_data].eq(
                 label[:int(-2*half_data)]).cpu().sum().float() + \
