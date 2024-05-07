@@ -842,7 +842,7 @@ class ECAPA_TDNN(torch.nn.Module):
             "mixup": self.mixup,
             "manifold": self.mixup,
             # "addup": self.addup,
-            # "style": self.mixstyle,
+            "style": self.mixstyle,
             # "align": self.alignmix,
             # "style_time": self.mixstyle_time,
             # "style_base": self.mixbase,
@@ -1190,7 +1190,37 @@ class ECAPA_TDNN(torch.nn.Module):
 
         return x
 
+    def mixstyle(self, x, shuf_half_idx_ten, lamda_beta):
+        x_shape = x.shape
+        if len(x_shape) == 2:
+            x = x.unsqueeze(1)
+        elif len(x_shape) == 4:
+            x = x.squeeze(1)
 
+        mix_size = shuf_half_idx_ten.shape[0]
+        half_feats = x[-mix_size:]
+
+        mu  = half_feats.mean(dim=2, keepdim=True)
+        var = half_feats.var(dim=2, keepdim=True)
+        sig = (var + 1e-6).sqrt()
+        # mu, sig = mu.detach(), sig.detach()
+        x_normed = (half_feats - mu) / sig
+
+        mu2, sig2 = mu[shuf_half_idx_ten], sig[shuf_half_idx_ten]
+        mu_mix  = mu  * lamda_beta + mu2  * (1-lamda_beta)
+        sig_mix = sig * lamda_beta + sig2 * (1-lamda_beta)
+
+        x = torch.cat(
+            [x[:-mix_size], x_normed*sig_mix + mu_mix],
+            dim=0)
+        
+        if len(x_shape) == 2:
+            x = x.squeeze(1)
+        elif len(x_shape) == 4:
+            x = x.unsqueeze(1)
+
+        return x
+    
 class ECAPA_DBTDNN(torch.nn.Module):
     """An implementation of the speaker embedding model in a paper.
     "ECAPA-TDNN: Emphasized Channel Attention, Propagation and Aggregation in

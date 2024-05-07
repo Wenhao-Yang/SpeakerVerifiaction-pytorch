@@ -300,6 +300,7 @@ def train_mix(train_loader, model, optimizer, epoch, scheduler, config_args, wri
                 perm_a = perm_a[torch.randperm(perm_a.shape[0])]
                 rand_idx = torch.cat([perm_b, perm_a], 0)
                 label = torch.cat([label, label[-half_data:][rand_idx]], dim=0)
+                
             elif config_args['mixup_type'] != '':
                 rand_idx = torch.randperm(half_data)
                 label = torch.cat([label, label[-half_data:][rand_idx]], dim=0)
