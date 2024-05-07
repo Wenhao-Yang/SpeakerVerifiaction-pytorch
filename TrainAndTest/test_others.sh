@@ -4272,7 +4272,7 @@ if [ $stage -le 620 ]; then
     fi
 
   for epoch in avg3 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-    for model_name in mixup ; do 
+    for model_name in style2 ; do 
     embedding_size=256 #192
     common_path=ECAPA_brain/Mean_batch96_SASP2_em${embedding_size}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug74 #162
     # for layer in 1234 ; do #1234 2345 3456 4567
@@ -4296,6 +4296,9 @@ if [ $stage -le 620 ]; then
         elif [[ $model_name == mixup08 ]];then
             model_dir=${common_path}_remix_mixup08_lamda0.2_mixrt1.00/${seed}
             yaml_name=${common_path}_remix_mixup08_lamda0.2_mixrt1.00/model.yaml
+        elif [[ $model_name == style2 ]];then
+            model_dir=${common_path}_remix_style2_lamda0.2_mixrt1.00/${seed}
+            yaml_name=${common_path}_remix_style2_lamda0.2_mixrt1.00/model.yaml
         fi     
         
         xvector_dir=Data/xvector/${model_dir}/${testset}_${test_subset}_${test_input}_${epoch}

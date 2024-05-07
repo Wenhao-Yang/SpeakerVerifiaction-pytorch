@@ -231,7 +231,7 @@ fi
 if [ $stage -le 23 ]; then
     embedding_size=256 #192
     common_path=ECAPA_brain/Mean_batch96_SASP2_em${embedding_size}_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst_aug74
-    for model_name in mixup ; do
+    for model_name in style2 ; do #mixup
     echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
         for seed in 1234 ; do
             if [[ $model_name == baseline ]];then
@@ -242,6 +242,8 @@ if [ $stage -le 23 ]; then
                 model_dir=${common_path}_remix_mixup08_lamda0.2_mixrt1.00/${seed}
             elif [[ $model_name == margin_mixup08 ]];then
                 model_dir=${common_path}_remix_margin_mixup08_lamda0.2_mixrt1.00/${seed}
+            elif [[ $model_name == style2 ]];then
+                model_dir=${common_path}_remix_style2_lamda0.2_mixrt1.00/${seed}
             else
                 model_dir=${common_path}_${model_name}_prob10/${seed}
             fi
