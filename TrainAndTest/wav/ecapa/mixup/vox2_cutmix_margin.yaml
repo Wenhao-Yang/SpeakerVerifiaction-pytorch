@@ -123,8 +123,8 @@ augment_speed2: !new:speechbrain.lobes.augment.TimeDomainSpecAugment
   sample_rate: !ref <sr>
   speeds: [110]
 
-rir_folder: /home/yangwenhao/project/lstm_speaker_verification/data/rir #!ref <data_folder> # Change it if needed
-# rir_folder: '/data2022/yangwenhao/dataset'
+# rir_folder: /home/yangwenhao/project/lstm_speaker_verification/data/rir #!ref <data_folder> # Change it if needed
+rir_folder: '/data2022/yangwenhao/dataset'
 # musan_lst: '/home/yangwenhao/project/SpeakerVerification-pytorch/Misc/audio_processing/musan_4s_nospeech.csv'
 add_rev: !new:speechbrain.lobes.augment.EnvCorrupt
    openrir_folder: !ref <rir_folder>
