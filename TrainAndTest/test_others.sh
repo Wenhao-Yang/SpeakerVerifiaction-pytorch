@@ -4284,7 +4284,7 @@ if [ $stage -le 620 ]; then
 
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
 
-      for test_subset in test test_mulsnr0 test_mulsnr2 test_mulsnr0-5 test_catmulsnr1  test_catmulsnr14 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
+      for test_subset in test_catmulsnr142 ; do #test_radio_chn2 test_radchn2_dist1 test_radchn2_dist3
       for seed in 1234 ; do
 
         if [[ $model_name == baseline ]];then
