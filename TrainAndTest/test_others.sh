@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=620
+stage=606
 waited=0
 while [ `ps 99278 | wc -l` -eq 2 ]; do
   sleep 60
@@ -3978,7 +3978,7 @@ if [ $stage -le 606 ]; then
   train_set=vox2 test_set=vox1 # #jukebox cnceleb
   train_subset=dev #_2radsnr05
   for epoch in avg2 ; do # avg2 1 2 5 6 9 10 12 13 17 20 21 25 26 27 29 30 33 37 40 41
-  for model in aug ; do
+  for model in chn1024 ; do
   for model_name in baseline ;do 
 
     # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_radsnr05_aug53
@@ -3990,12 +3990,14 @@ if [ $stage -le 606 ]; then
       common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64fine16
     elif [[ $model == aug_band_fine ]];then
       common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2sesmix8/arcsoft_adam_cyclic/vox2/wave_fb80_dist_aug64band_fine16
+    elif [[ $model == chn1024 ]];then
+      common_path=ECAPA_brain/Mean_batch64_SASP2_em192_chn1024_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
     fi
 
     score_norm=as-norm
     echo -e "\n\033[1;4;31m Stage${stage}: Test ${model_name} in ${test_set} \033[0m\n"
-      for test_subset in  test_sox8k16k test_sox8k16k_aero ; do 
-      for seed in 123456 ; do
+      for test_subset in all ; do #test_sox8k16k test_sox8k16k_aero
+      for seed in 1234 ; do
           if [[ $model_name == baseline ]];then
             model_dir=${common_path}/${seed}
             yaml_name=${common_path}/model.yaml
@@ -4017,7 +4019,7 @@ if [ $stage -le 606 ]; then
           done
           # --train-xvector-dir ${train_xvector_dir} --score-norm ${score_norm} --cohort-size 1000 \
 
-          for trials in original ; do # original easy hard
+          for trials in original easy hard ; do # original easy hard
             python -W ignore TrainAndTest/train_egs/test_egs.py \
               --train-dir ${lstm_dir}/data/${train_set}/${sname} \
               --train-extract-dir ${lstm_dir}/data/${train_set}/${train_subset} \
