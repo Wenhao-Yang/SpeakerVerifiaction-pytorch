@@ -467,10 +467,11 @@ if [ $stage -le 20 ]; then
 
           # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixup.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
-          CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixstyle.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+          # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixstyle.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
           # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixup_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
           # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_cutmix.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+          CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox2_cutmix_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
     done
     done
