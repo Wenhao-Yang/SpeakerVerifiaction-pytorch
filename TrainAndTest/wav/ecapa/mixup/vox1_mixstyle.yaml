@@ -186,7 +186,7 @@ margin: 0.2
 s: 30
 lamda_beta: 0.2
 proser_gamma: 1
-mixup_layer: 2
+mixup_layer: 6
 mixup_type: !ref <mix>
 # ingore_other: True
 mix_ratio: 1
