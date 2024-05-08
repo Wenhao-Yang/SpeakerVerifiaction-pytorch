@@ -528,6 +528,9 @@ def main():
         model.classifier = config_args['classifier']
     else:
         create_classifier(model, **config_args)
+    
+    if 'domain_classifier' in config_args:
+        model.domain_classifier = config_args['domain_classifier']
 
     start_epoch = 0
     if 'finetune' not in config_args or not config_args['finetune']:
