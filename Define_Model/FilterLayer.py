@@ -2699,7 +2699,7 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
     elif mask == "freq":
         mask_layer = FreqMaskLayer(mask_len=mask_len[0])
     elif mask == "both":
-        mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
+        mask_layer = TimeFreqMaskLayer(mask_len=mask_len, mask_prob=weight_p)
     elif mask == 'specaug':
         mask_layer = SpecAugmentLayer(frequency=mask_len[1], frame=mask_len[0])
     elif mask == 'noise':
