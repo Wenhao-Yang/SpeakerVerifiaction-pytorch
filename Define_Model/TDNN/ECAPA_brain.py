@@ -1177,6 +1177,8 @@ class ECAPA_TDNN(torch.nn.Module):
 
             tensor_lamda_beta = mix_lamda_beta + cut_lamda_beta
             tensor_lamda_beta /= 2
+            # t_lamda_beta = np.random.uniform(0, 1)
+            # tensor_lamda_beta = t_lamda_beta * mix_lamda_beta + (1-t_lamda_beta)*cut_lamda_beta
 
             half_feats = half_feats * tensor_lamda_beta + half_feats_shuf*(1-tensor_lamda_beta)
             x = torch.cat(
