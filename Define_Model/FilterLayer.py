@@ -767,36 +767,36 @@ class FreqMaskIndexLayer(nn.Module):
 
 
 class TimeFreqMaskLayer(nn.Module):
-    def __init__(self, mask_len=[5, 10], normalized=True):
+    def __init__(self, mask_len=[5, 10], normalized=True,
+                 mask_prob = 0.2):
         super(TimeFreqMaskLayer, self).__init__()
         self.mask_len = mask_len
         self.normalized = normalized
+        self.mask_prob = mask_prob
 
     def forward(self, x):
-        if not self.training or torch.Tensor(1).uniform_(0, 1) < 0.5:
-            return x
+        if self.training and torch.Tensor(1).uniform_(0, 1) < self.mask_prob:
 
-        # assert self.mask_len < x.shape[-2]
+            # assert self.mask_len < x.shape[-2]
+            this_len = np.random.randint(low=0, high=self.mask_len[0])
+            start    = np.random.randint(0, x.shape[-2] - this_len)
+            x_shape = len(x.shape)
 
-        this_len = np.random.randint(low=0, high=self.mask_len[0])
-        start = np.random.randint(0, x.shape[-2] - this_len)
-        x_shape = len(x.shape)
+            time_mean = x.mean(dim=-2, keepdim=True)
+            freq_mean = x.mean(dim=-1, keepdim=True)
 
-        time_mean = x.mean(dim=-2, keepdim=True)
-        freq_mean = x.mean(dim=-1, keepdim=True)
+            if x_shape == 4:
+                x[:, :, start:(start + this_len), :] = time_mean
+            elif x_shape == 3:
+                x[:, start:(start + this_len), :] = time_mean
 
-        if x_shape == 4:
-            x[:, :, start:(start + this_len), :] = time_mean
-        elif x_shape == 3:
-            x[:, start:(start + this_len), :] = time_mean
+            this_len = np.random.randint(low=0, high=self.mask_len[1])
+            start    = np.random.randint(0, x.shape[-1] - this_len)
 
-        this_len = np.random.randint(low=0, high=self.mask_len[1])
-        start = np.random.randint(0, x.shape[-1] - this_len)
-
-        if x_shape == 4:
-            x[:, :, :, start:(start + this_len)] = freq_mean
-        elif x_shape == 3:
-            x[:, :, start:(start + this_len)] = freq_mean
+            if x_shape == 4:
+                x[:, :, :, start:(start + this_len)] = freq_mean
+            elif x_shape == 3:
+                x[:, :, start:(start + this_len)] = freq_mean
 
         return x
 
@@ -2699,7 +2699,7 @@ def get_mask_layer(mask: str, mask_len: list, input_dim: int, init_weight: str,
     elif mask == "freq":
         mask_layer = FreqMaskLayer(mask_len=mask_len[0])
     elif mask == "both":
-        mask_layer = TimeFreqMaskLayer(mask_len=mask_len)
+        mask_layer = TimeFreqMaskLayer(mask_len=mask_len, mask_prob=weight_p)
     elif mask == 'specaug':
         mask_layer = SpecAugmentLayer(frequency=mask_len[1], frame=mask_len[0])
     elif mask == 'noise':
