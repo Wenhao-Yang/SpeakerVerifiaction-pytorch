@@ -192,12 +192,12 @@ if [ $stage -le 20 ]; then
 fi
 
 if [ $stage -le 21 ]; then
-    # common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
-    common_path=ECAPA_brain/Mean_batch64_SASP2_em192_chn1024_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
-    for model_name in baseline ; do
+    common_path=ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
+    # common_path=ECAPA_brain/Mean_batch64_SASP2_em192_chn1024_official_2s/arcsoft_adam_cyclic/vox2/wave_fb80_inst2_aug53
+    for model_name in both band02 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
         for seed in 1234 ; do
-            if [[ $model_name == baseline ]];then
+            if [[ $model_name == b* ]];then
                 model_dir=${common_path}/${seed}
             elif [[ $model_name == noise1010_frequency ]];then
                 model_dir=${common_path}_noise1010_prob10_frequency/${seed}
@@ -206,8 +206,8 @@ if [ $stage -le 21 ]; then
             fi
             
             python -W ignore TrainAndTest/train_egs/average_model.py \
-                --check-path Data/checkpoint/${model_dir} \
-                --assigned-epoch 11,12
+                --check-path Data/checkpoint/${model_dir}
+                # --assigned-epoch 11,12
         done
     done
  exit
