@@ -197,8 +197,10 @@ if [ $stage -le 21 ]; then
     for model_name in both band02 ; do
     echo -e "\n\033[1;4;31m Stage${stage}: Average model: ${model_name} \033[0m\n"
         for seed in 1234 ; do
-            if [[ $model_name == b* ]];then
+            if [[ $model_name == baseline ]];then
                 model_dir=${common_path}/${seed}
+            elif [[ $model_name == b* ]];then
+                model_dir=${common_path}_${model_name}/${seed}
             elif [[ $model_name == noise1010_frequency ]];then
                 model_dir=${common_path}_noise1010_prob10_frequency/${seed}
             else
