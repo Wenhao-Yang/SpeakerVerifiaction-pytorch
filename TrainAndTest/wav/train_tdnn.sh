@@ -356,7 +356,7 @@ if [ $stage -le 12 ]; then
     #  feat=fb${input_dim}
 
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
-      gpu_id=2,3 port=41705
+      gpu_id=3,4 port=41705
       # for add in time ; do
           # baseline for vox2 , aug53
           # CUDA_VISIBLE_DEVICES=1,3 OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=41735 --nnodes=1 TrainAndTest/train_egs/train_dist.py --train-config=TrainAndTest/wav/ecapa/baselines/vox1_brain_inst_aug53.yaml --seed=${seed}
