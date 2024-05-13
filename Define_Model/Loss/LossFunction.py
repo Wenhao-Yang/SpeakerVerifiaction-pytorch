@@ -926,7 +926,7 @@ class KnowledgeDistillationLoss(nn.Module):
         self.logits_scale = logits_scale
 
         if 'vanilla' in self.kd_type[0]:
-            self.logits_loss = nn.KLDivLoss(reduce='none')
+            self.logits_loss = nn.KLDivLoss(reduction='none')
             # loss_kd = F.kl_div(log_pred_student, pred_teacher, reduction="none").sum(1).mean()
         else:
             self.logits_loss = None
