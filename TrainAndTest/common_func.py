@@ -747,6 +747,8 @@ def args_parse(description: str = 'PyTorch Speaker Recognition: Classification')
                             default=['conv1', 'layer1.0.conv2', 'conv2',
                                      'layer2.0.conv2', 'conv3', 'layer3.0.conv2'],
                             nargs='+', metavar='CAML', help='The channels of convs layers)')
+        parser.add_argument('--internal-batch', type=int, default=10,
+                            help='Dimensionality of the embedding')
         parser.add_argument('--layer-weight', action='store_true',
                             default=False, help='backward after softmax normalization')
         parser.add_argument('--start-epochs', type=int, default=36, metavar='E',
@@ -1227,7 +1229,10 @@ def load_checkpoint(model, config_args):
         checkpoint = torch.load(config_args['resume'], map_location='cpu')
 
         if 'epoch' in checkpoint:
-            epoch = checkpoint['epoch']
+            if isinstance(checkpoint['epoch'], int) or isinstance(checkpoint['epoch'], float):
+                epoch = checkpoint['epoch']
+            elif isinstance(checkpoint['epoch'], list):
+                epoch = checkpoint['epoch'][-1]
 
         checkpoint_state_dict = checkpoint['state_dict']
         if isinstance(checkpoint_state_dict, tuple):

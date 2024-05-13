@@ -866,8 +866,6 @@ class ScriptTrainDataset(data.Dataset):
         self.num_spks = len(speakers)
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
 
-        if verbose > 0:
-            print('==> There are {} speakers in Dataset.'.format(len(speakers)))
 
         if save_dir == '' or (not os.path.exists(os.path.join(save_dir, 'spk2idx'))):
             if save_dir != '' and not os.path.exists(save_dir):
@@ -911,10 +909,6 @@ class ScriptTrainDataset(data.Dataset):
                     suid2feat[uid] = feat_offset
         
         self.suid2feat = suid2feat
-
-        if verbose > 0:
-            print('    There are {} utterances in Trainset, where {} utterances are removed.'.format(len(uid2feat),
-                                                                                                          len(invalid_uid)))
         self.valid_set = None
         self.valid_uid2feat = None
         self.valid_utt2spk_dict = None
@@ -976,10 +970,6 @@ class ScriptTrainDataset(data.Dataset):
                     if self.domain:
                         valid_utt2dom_dict[uid] = utt2dom_dict[uid]
 
-            if verbose > 0:
-                print('    Spliting {} utterances for Validation.'.format(
-                    len(valid_uid2feat)))
-                
             self.valid_set = valid_set
             self.valid_uid2feat = valid_uid2feat
             self.valid_utt2spk_dict = valid_utt2spk_dict
@@ -994,11 +984,11 @@ class ScriptTrainDataset(data.Dataset):
 
         if self.sample_score != '' or save_dir != '' and os.path.exists(save_csv):
             if verbose > 0:
-                print('    Loading training samples from:\n\t {} '.format(save_csv))
+                print('Loading training samples from:\n\t {} '.format(save_csv))
             train_base_utts = pd.read_csv(save_csv).to_numpy().tolist()
         else:
-            if verbose > 0:
-                print('    Generate samples, segment length: {}, shift: {}'.format(segment_len, segment_shift))
+            if verbose > 1:
+                print(f'    Segment length: {segment_len}, shift: {segment_shift}')
             
             train_base_utts = []
             for sid in speakers:
@@ -1062,6 +1052,9 @@ class ScriptTrainDataset(data.Dataset):
         self.loader = loader
         self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[-1]
         self.transform = transform
+        if verbose > 0:
+            print(f'==> Total:   {len(speakers)} spks, {len(uid2feat)} utterances, {len(invalid_uid)} utterances are removed.')
+            print(f'    #Devset:  {len(train_base_utts)},  #Validset: {len(valid_uid2feat)}')
 
         if sample_type == 'instance':
             if verbose > 1:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=12
+stage=40
 waited=0
 while [ $(ps 352905 | wc -l) -eq 2 ]; do
   sleep 60
@@ -475,6 +475,26 @@ if [ $stage -le 20 ]; then
           # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixup_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
           # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_cutmix.yaml --seed=${seed} --lamda-beta ${lamda_beta}
           CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox2_cutmix_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+
+    done
+    done
+  done
+  exit
+fi
+
+if [ $stage -le 40 ]; then
+  model=ECAPA
+  datasets=vox2 feat_type=wave
+  loss=arcsoft encod=ASTP2 embedding_size=256
+  for lamda_beta in 0.2;do
+    for seed in 1234 ; do #1234# 
+    for data_type in hdf5 ; do
+    # for type in mani style align ;do
+    gpuid=0,1
+    port=41725
+     echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
+
+          CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_kd.py --train-config=TrainAndTest/wav/ecapa/kd/vox1_inst_aug_vanilla.yaml --seed=${seed}
 
     done
     done

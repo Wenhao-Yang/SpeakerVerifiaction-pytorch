@@ -333,12 +333,14 @@ if args.test_input == 'var':
 elif args.test_input == 'fix':
     transform = transforms.Compose([
         ConcateVarInput(num_frames=args.chunk_size,
-                        frame_shift=args.frame_shift, remove_vad=args.remove_vad,
+                        frame_shift=args.frame_shift,
+                        remove_vad=args.remove_vad,
                         feat_type=feat_type),
     ])
     transform_T = transforms.Compose([
         ConcateVarInput(num_frames=args.chunk_size,
-                        frame_shift=args.frame_shift, remove_vad=args.remove_vad,
+                        frame_shift=args.frame_shift,
+                        remove_vad=args.remove_vad,
                         feat_type=feat_type),
     ])
 else:
@@ -559,7 +561,6 @@ def test(test_loader, xvector_dir, test_cohort_scores=None):
 
     result_file = os.path.join(xvector_dir, '%sresult.' %
                                args.score_norm + time_stamp)
-    # result_file = os.path.join(xvector_dir, 'result.' + time_stamp)
     with open(result_file, 'w') as f:
         f.write(result_str)
 
@@ -650,7 +651,6 @@ def xvector_exists(test_xvectors_dir, verfify_dir):
     return True
 
 
-
 if __name__ == '__main__':
 
     # Views the training images and displays the distance on anchor-negative and anchor-positive
@@ -674,7 +674,6 @@ if __name__ == '__main__':
 
     start_time = time.time()
     test_xvector_dir  = os.path.join(args.xvector_dir, 'test')
-    
     if args.train_xvector_dir == '':
         train_xvector_dir = os.path.join(args.xvector_dir, 'train')
     else:
@@ -801,31 +800,25 @@ if __name__ == '__main__':
                                      test_input=train_test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                      mean_vector=args.mean_vector,
                                      xvector=args.xvector, input_mean=args.input_mean)
-                
             verfify_dir = KaldiExtractDataset(dir=args.test_dir, transform=transform_T, filer_loader=file_loader,
                                   feat_type=feat_type, trials_file=args.trials,
                                   verbose=args.verbose)
             verify_loader = torch.utils.data.DataLoader(verfify_dir, batch_size=args.test_batch_size, shuffle=False,
                                                         **kwargs)
-            
             if not xvector_exists(test_xvector_dir, verfify_dir):
-                # extract(verify_loader, model, args.xvector_dir)
-                # print('extracting ... ', test_xvector_dir)
                 verification_extract(verify_loader, model, xvector_dir=test_xvector_dir, epoch=start,
                                     test_input=args.test_input, ark_num=50000, gpu=True, verbose=args.verbose,
                                     mean_vector=args.mean_vector,
                                     xvector=args.xvector, input_mean=args.input_mean)
-            # else:
-            #     print('skipping extraction ... ')
-                
 
     if args.test:
         file_loader = kaldiio.load_mat
         # file_loader = read_vec_flt
         return_uid = True if args.score_norm != '' else False
-        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,  xvectors_dir=test_xvector_dir,
+        test_dir = ScriptVerifyDataset(dir=args.test_dir, trials_file=args.trials,
+                                         xvectors_dir=test_xvector_dir,
                                        loader=file_loader, return_uid=return_uid,
-                                       verbose=1)
+                                       verbose=args.verbose)
 
         test_loader = torch.utils.data.DataLoader(test_dir,
                                                   batch_size=1 if not args.mean_vector else args.test_batch_size * 128,

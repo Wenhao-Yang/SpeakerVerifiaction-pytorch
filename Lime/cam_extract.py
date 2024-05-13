@@ -23,6 +23,7 @@ from collections import OrderedDict
 from Process_Data.Datasets.LmdbDataset import Hdf5DelectDataset
 import Process_Data.constants as c
 import h5py
+from hyperpyyaml import load_hyperpyyaml
 
 import numpy as np
 import torch
@@ -41,8 +42,8 @@ from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput, read_WaveInt
-from TrainAndTest.common_func import create_model, load_model_args, args_model, args_parse
-
+from TrainAndTest.common_func import args_model, args_parse
+from Define_Model.model import create_classifier, create_model, load_model_args
 # Version conflict
 try:
     torch._utils._rebuild_tensor_v2
@@ -214,13 +215,13 @@ def padding_baselines(data, baselines):
 
 
 def train_extract(train_loader, model, file_dir, set_name, 
-                  baselines=None, save_per_num=2500):
+                  baselines=None, save_per_num=2500, internal_batch=5):
     # switch to evaluate mode
     model.eval()
 
     # input_grads = []
     # inputs_uids = []
-    pbar = tqdm(enumerate(train_loader), total=len(train_loader))
+    pbar = tqdm(enumerate(train_loader), total=len(train_loader), ncols=150)
     global out_feature_grads
     global in_feature_grads
     global in_layer_feat
@@ -447,7 +448,8 @@ def train_extract(train_loader, model, file_dir, set_name,
                                     range(1, args.steps + 1)]
 
                     the_grads, _ = calculate_outputs_and_gradients(
-                        scaled_inputs, model, label)
+                        scaled_inputs, model, label,
+                        internal_batch=internal_batch)
                     
                     if args.cam == 'integrad':
                         the_grads = (the_grads[:-1] + the_grads[1:]) / 2.0
@@ -481,7 +483,7 @@ def train_extract(train_loader, model, file_dir, set_name,
             in_layer_grad = []
             out_layer_grad = []
             # df.create_dataset(uid[0], data=data)
-            gf.create_dataset(uid[0], data=grad)
+            gf.create_dataset(uid[0], data=grad, compression="gzip")
             # inputs_uids.append([uid[0], int(label.numpy()[0])])
 
             model.zero_grad()
@@ -580,28 +582,38 @@ def main():
         print('Parsed options: \n {}'.format(options_str))
 
     # instantiate model and initialize weights
-    if args.check_yaml != None and os.path.exists(args.check_yaml):
-        if args.verbose > 0:
-            print('\nLoading model check yaml from: \n\t{}'.format(args.check_yaml.lstrip('Data/checkpoint/')))
-        model_kwargs = load_model_args(args.check_yaml)
-    else:
-        print('Error in finding check yaml file:\n{}'.format(args.check_yaml))
-        exit(0)
-        # model_kwargs = args_model(args, train_dir)
+    # if args.check_yaml != None and os.path.exists(args.check_yaml):
+    #     if args.verbose > 0:
+    #         print('\nLoading model check yaml from: \n\t{}'.format(args.check_yaml.lstrip('Data/checkpoint/')))
+    #     model_kwargs = load_model_args(args.check_yaml)
+    # else:
+    #     print('Error in finding check yaml file:\n{}'.format(args.check_yaml))
+    #     exit(0)
+    #     # model_kwargs = args_model(args, train_dir)
 
-    if 'embedding_model' in model_kwargs:
-        model = model_kwargs['embedding_model']
-        if 'classifier' in model_kwargs:
-            model.classifier = model_kwargs['classifier']
-    else:
-        if args.verbose > 0: 
-            keys = list(model_kwargs.keys())
-            keys.sort()
-            model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
-            print('Model options: \n{ %s }' % (', '.join(model_options)))
-            print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
+    # if 'embedding_model' in model_kwargs:
+    #     model = model_kwargs['embedding_model']
+    #     if 'classifier' in model_kwargs:
+    #         model.classifier = model_kwargs['classifier']
+    # else:
+    #     if args.verbose > 0: 
+    #         keys = list(model_kwargs.keys())
+    #         keys.sort()
+    #         model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    #         print('Model options: \n{ %s }' % (', '.join(model_options)))
+    #         print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
-        model = create_model(args.model, **model_kwargs)
+    #     model = create_model(args.model, **model_kwargs)
+    with open(args.check_yaml, 'r') as f:
+        config_args = load_hyperpyyaml(f)
+
+    if 'embedding_model' in config_args:
+        model = config_args['embedding_model']
+
+    if 'classifier' in config_args:
+        model.classifier = config_args['classifier']
+    else:
+        create_classifier(model, **config_args)
 
     train_loader = DataLoader(train_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     # veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
@@ -655,7 +667,12 @@ def main():
             baselines = [] 
             with open(args.baseline_file, 'r') as f:
                 for l in f.readlines():
-                    _, upath = l.split()
+                    lst = l.split()
+                    if len(lst) == 2:
+                        upath = lst[1]
+                    elif len(lst) == 15:
+                        upath = lst[4]
+                        
                     the_data = read_WaveInt(upath)
                     the_data = trans(torch.tensor(the_data).reshape(1, 1, -1).float())
                     baselines.append(the_data)
@@ -706,7 +723,8 @@ def main():
             os.makedirs(file_dir)
 
         train_extract(train_loader, model, file_dir,
-                          '%s_train' % args.train_set_name, baselines=baselines)
+                          '%s_train' % args.train_set_name, baselines=baselines,
+                          internal_batch=args.internal_batch)
 
 
 if __name__ == '__main__':

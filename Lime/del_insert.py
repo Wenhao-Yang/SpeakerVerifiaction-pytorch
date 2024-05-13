@@ -19,6 +19,7 @@ import pickle
 import random
 import time
 from collections import OrderedDict
+from hyperpyyaml import load_hyperpyyaml
 
 import numpy as np
 import torch
@@ -32,14 +33,16 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pandas as pd
 from Define_Model.FilterLayer import FreqMaskIndexLayer
+import torchmetrics
 
 from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 # from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptEvalDataset, ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import CAMNormInput, ConcateOrgInput, mvnormal, ConcateVarInput, read_WaveInt
-from TrainAndTest.common_func import args_parse, create_model, load_model_args, args_model
-
+from TrainAndTest.common_func import args_parse
+#, create_model, load_model_args, args_model
+from Define_Model.model import create_classifier, create_model, save_model_args, load_model_args
 # Version conflict
 try:
     torch._utils._rebuild_tensor_v2
@@ -99,14 +102,15 @@ else:
     grad_reverse = False
 
 valid_dir = ScriptEvalDataset(select_dir=args.select_input_dir, grad_reverse=grad_reverse,
-                              valid_dir=args.eval_dir, transform=transform)
+                              valid_dir=args.eval_dir, transform=transform,
+                              verbose=args.verbose)
 
-def valid_eval(valid_loader, model, file_dir, set_name):
+def valid_eval(valid_loader, model, file_dir, set_name, config_args):
     # switch to evaluate mode
     model.eval()
 
     # label_pred = []
-    pbar = tqdm(enumerate(valid_loader))
+    pbar = tqdm() if args.verbose > 0 else enumerate(valid_loader)
     output_softmax = nn.Softmax(dim=1)
     correct = .0
     total = .0
@@ -126,6 +130,14 @@ def valid_eval(valid_loader, model, file_dir, set_name):
 
     result_file = file_dir + '/result{}.json'.format(result_file_suffix)
 
+    # top_1_accuracy = torchmetrics.Accuracy(task="multiclass",
+    #                                        num_classes=config_args['num_classes'],
+    #                                        top_k=1)
+    top_accuracy = torchmetrics.Accuracy(task="multiclass",
+                                         num_classes=config_args['num_classes'],
+                                         top_k=5)
+    # accuracy(preds, target)
+    preds, target = [], []
     with torch.no_grad():
         for batch_idx, (data, label) in pbar:
             logit, _ = model(data.cuda())
@@ -135,24 +147,30 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             else:
                 classifed = logit
             classifed = output_softmax(classifed)
+            preds.append(classifed.cpu())
+            target.append(label.cpu())
 
             # pdb.set_trace()
             total += 1
             predicted = torch.max(classifed, dim=1)[1]
             correct += (predicted.cpu() == label.cpu()).sum().item()
 
-            if batch_idx % args.log_interval == 0:
+            if batch_idx % args.log_interval == 0 and args.verbose > 0:
                 pbar.set_description('Eval: [{:8d} ({:3.0f}%)] '.format(
                     batch_idx + 1,
                     100. * batch_idx / len(valid_loader)))
+
+        preds = torch.cat(preds, dim=0)
+        target = torch.cat(target, dim=0)
+        top_acc = float(top_accuracy(preds, target))*100
 
         if args.test_mask:
             mask_str = args.mask_sub.split(',')
             start = int(mask_str[0])
             end = int(mask_str[1])
-            this_result = [start, end, correct/total*100, args.mask_type]
+            this_result = [start, end, correct/total*100, args.mask_type, top_acc]
         else:
-            this_result = [args.pro_type, args.threshold, correct/total*100]
+            this_result = [args.pro_type, args.threshold, correct/total*100, top_acc]
 
         if not os.path.exists(result_file):
             results = [this_result]
@@ -184,9 +202,10 @@ def valid_eval(valid_loader, model, file_dir, set_name):
             this_str = args.pro_type
             conf_str = '{:.4f}'.format(args.threshold)
 
+        print(f'{this_str}_{args.init_input} [{conf_str}] Accuracy: {this_result[2]:>8.4f}%, Top5_Accuracy: {this_result[-1]:>8.4f}%')
         if args.verbose > 0:
-            print('Saving Type {}_{} <{}> Accuracy: {:.4f}% in \n\t{}\n'.format(this_str, args.init_input, conf_str, this_result[2],
-                                                                       result_file.lstrip('Data/gradient/')))
+            save_f = result_file.lstrip('Data/gradient/')
+            print(f'\t{save_f}\n')
 
         torch.cuda.empty_cache()
 
@@ -211,19 +230,30 @@ def main():
     else:
         print('Error in finding check yaml file:\n{}'.format(args.check_yaml))
         exit(0)
-    if 'embedding_model' in model_kwargs:
-        model = model_kwargs['embedding_model']
-        if 'classifier' in model_kwargs:
-            model.classifier = model_kwargs['classifier']
-    else:
-        if args.verbose > 0: 
-            keys = list(model_kwargs.keys())
-            keys.sort()
-            model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
-            print('Model options: \n{ %s }' % (', '.join(model_options)))
-            print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
-        model = create_model(args.model, **model_kwargs)
+    # if 'embedding_model' in model_kwargs:
+    #     model = model_kwargs['embedding_model']
+    #     if 'classifier' in model_kwargs:
+    #         model.classifier = model_kwargs['classifier']
+    # else:
+    #     if args.verbose > 0: 
+    #         keys = list(model_kwargs.keys())
+    #         keys.sort()
+    #         model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    #         print('Model options: \n{ %s }' % (', '.join(model_options)))
+    #         print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
+
+    #     model = create_model(args.model, **model_kwargs)
+    with open(args.check_yaml, 'r') as f:
+        config_args = load_hyperpyyaml(f)
+
+    if 'embedding_model' in config_args:
+        model = config_args['embedding_model']
+
+    if 'classifier' in config_args:
+        model.classifier = config_args['classifier']
+    else:
+        create_classifier(model, **config_args)
 
 
     valid_loader = DataLoader(valid_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
@@ -283,6 +313,7 @@ def main():
                 baselines = torch.cat(baselines, dim=-2).mean(dim=-2, keepdim=True) 
                 if args.verbose > 1:
                     print('Baselines shape: ', baselines.shape)
+
             start = int(mask_str[0])
             end   = int(mask_str[1])
             transform.transforms.append(FreqMaskIndexLayer(start=start, mask_len=end,
@@ -296,7 +327,8 @@ def main():
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
 
-        valid_eval(valid_loader, model, file_dir, '%s_valid'% args.train_set_name)
+        valid_eval(valid_loader, model, file_dir, '%s_valid'% args.train_set_name,
+                   config_args)
 
 
 if __name__ == '__main__':

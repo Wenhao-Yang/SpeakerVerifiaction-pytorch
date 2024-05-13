@@ -39,8 +39,7 @@ from Define_Model.SoftmaxLoss import AngleLinear, AdditiveMarginLinear
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput, read_WaveFloat, read_WaveInt
-from TrainAndTest.common_func import create_model, load_model_args, args_model, args_parse
-
+from TrainAndTest.common_func import args_parse
 # Version conflict
 try:
     torch._utils._rebuild_tensor_v2
@@ -95,7 +94,7 @@ train_dir = ScriptTrainDataset(dir=args.train_dir, samples_per_speaker=args.inpu
                                loader=file_loader, transform=transform, return_uid=True)
 
 def train_extract(train_loader, file_dir):
-    pbar = tqdm(enumerate(train_loader), total=len(train_loader))
+    pbar = tqdm(enumerate(train_loader), total=len(train_loader), ncols=50)
    
     data_file = file_dir + '/data.h5py'
     inputs_uids = []

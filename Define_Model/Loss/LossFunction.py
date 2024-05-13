@@ -798,6 +798,13 @@ class AttentionTransferLoss(nn.Module):
         self.norm_type = norm_type
 
     def at(self, x):
+        if len(x.shape) == 3:
+            x = x.unsqueeze(-1)
+        elif len(x.shape) == 4:
+            pass
+        else:
+            raise ValueError('x.shape should be 3 or 4')
+
         if self.attention_type == 'both':
             return F.normalize(x.pow(2).mean(1).view(x.size(0), -1))
         elif self.attention_type == 'time':
@@ -887,23 +894,6 @@ class AttentionTransferLoss(nn.Module):
 
         return loss
 
-
-class TripletMarginLoss(nn.Module):
-    """Triplet loss function.
-    """
-    def __init__(self, margin):
-        super(TripletMarginLoss, self).__init__()
-        self.margin = margin
-        self.pdist = PairwiseDistance(2)  # norm 2
-
-    def forward(self, anchor, positive, negative):
-        d_p = self.pdist.forward(anchor, positive)
-        d_n = self.pdist.forward(anchor, negative)
-
-        dist_hinge = torch.clamp(self.margin + d_p - d_n, min=0.0)
-        loss = torch.mean(dist_hinge)
-        return loss
-
 class TripletMarginCosLoss(nn.Module):
     """Triplet loss function.
     """
@@ -919,4 +909,58 @@ class TripletMarginCosLoss(nn.Module):
         dist_hinge = torch.clamp(self.margin - d_p + d_n, min=0.0)
         # loss = torch.sum(dist_hinge)
         loss = torch.mean(dist_hinge)
+        return loss
+
+
+class KnowledgeDistillationLoss(nn.Module):
+    def __init__(self, kd_type='vanilla',
+                 norm_type='input',
+                 attention_type='both',
+                 temperature=1,
+                 logits_scale=1):
+        
+        super(KnowledgeDistillationLoss, self).__init__()
+        self.kd_type = kd_type.split('-')
+        self.norm_type = norm_type
+        self.temperature = temperature
+        self.logits_scale = logits_scale
+
+        if 'vanilla' in self.kd_type[0]:
+            self.logits_loss = nn.KLDivLoss()
+        else:
+            self.logits_loss = None
+
+        if len(self.kd_type) > 1:
+            if 'mse' in self.kd_type[1]:
+                self.feat_loss = nn.MSELoss()
+            elif 'cosine' in self.kd_type[1]:
+                self.feat_loss = nn.CosineSimilarity(dim=1)
+            elif 'l2' in self.kd_type[1]:
+                self.feat_loss = nn.PairwiseDistance(p=2)
+            elif 'attention' in self.kd_type[1]:
+                self.feat_loss = AttentionTransferLoss(attention_type=attention_type,
+                                     norm_type=norm_type)
+            else:
+                self.feat_loss = None
+        
+    def forward(self, classifiers, feats):
+        loss = 0.
+
+        classifiers, t_classifiers = classifiers
+        feats, t_feats = feats
+
+        if self.logits_loss != None:
+            if isinstance(self.logits_loss, nn.KLDivLoss):
+                soft_teacher = F.softmax(t_classifiers / self.temperature * self.logits_scale)
+                soft_student = F.softmax(classifiers  / self.temperature * self.logits_scale)
+                loss += self.logits_loss(soft_teacher.log(), soft_student) * self.temperature ** 2
+            
+        if self.feat_loss != None:
+            if 'cosine' in self.kd_type[1]:
+                loss += 1 - self.feat_loss(feats, t_feats).mean()
+            elif 'l2' in self.kd_type[1]:
+                loss +=self.feat_loss(feats, t_feats).mean()
+            else:
+                loss += self.feat_loss(feats, t_feats)      
+
         return loss

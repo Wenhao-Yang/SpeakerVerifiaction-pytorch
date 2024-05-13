@@ -1275,7 +1275,7 @@ class Hdf5TrainDataset(Dataset):
         # reader =  h5py.File(self.hdf5_file, 'r') as reader:
         # y = self.loader(self.reader, uid, start=start, stop=end)
         y = self.loader(self.hdf5_file, uid, start=start, stop=end)
-            # y = np.concatenate((y, feature), axis=self.c_axis)
+        # y = np.concatenate((y, feature), axis=self.c_axis)
         feature = self.transform(y.reshape(1, -1))
         # print(sid)
         label = sid

@@ -11,6 +11,7 @@
 import time
 import numpy as np
 import torch.nn as nn
+import torch.nn.functional as F
 import torch
 import os
 import pdb
@@ -18,7 +19,7 @@ from kaldiio import WriteHelper
 from pytorch_lightning import LightningModule
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from Define_Model.Loss.LossFunction import CenterLoss, Distance_Loss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
+from Define_Model.Loss.LossFunction import AttentionTransferLoss, CenterLoss, Distance_Loss,  KnowledgeDistillationLoss, Wasserstein_Loss, MultiCenterLoss, CenterCosLoss, RingLoss, \
     VarianceLoss, DistributeLoss, MMD_Loss, aDCFLoss
 from Define_Model.Loss.SoftmaxLoss import AngleSoftmaxLoss, AMSoftmaxLoss, ArcSoftmaxLoss, DAMSoftmaxLoss, \
     GaussianLoss, MinArcSoftmaxLoss, MinArcSoftmaxLoss_v2, MixupLoss
@@ -144,6 +145,17 @@ class SpeakerLoss(nn.Module):
                 source_fix = False if 'source_fix' not in config_args else config_args['source_fix']
                 
                 ce_criterion = Distance_Loss(source_cls=0, metric=metric, source_fix=source_fix)
+            elif 'kd' in config_args['second_loss']:
+                attention_type = 'both' if 'attention_type' not in config_args else config_args['attention_type']
+                norm_type = 'input' if 'norm_type' not in config_args else config_args['norm_type']
+                temperature = 1 if 'temperature' not in config_args else config_args['temperature']
+                logits_scale = 1 if 'kd_scale' not in config_args else config_args['kd_scale']
+
+                ce_criterion = KnowledgeDistillationLoss(kd_type=config_args['second_loss'][3:],
+                                                         norm_type=norm_type,
+                                                         attention_type=attention_type,
+                                                         temperature=temperature,
+                                                         logits_scale=logits_scale)
 
             self.second_loss = config_args['second_loss']
         
@@ -177,8 +189,12 @@ class SpeakerLoss(nn.Module):
         if self.training:
             self.iteration += 1
 
+        t_classfier, t_feats = None, None
         if isinstance(outputs, tuple):
             classfier, feats = outputs
+            if isinstance(classfier, tuple) and isinstance(feats, tuple):
+                classfier, t_classfier = classfier
+                feats, t_feats = feats
         else:
             classfier = outputs
 
@@ -195,7 +211,8 @@ class SpeakerLoss(nn.Module):
         elif self.config_args['loss_type'] in ['amsoft', 'arcsoft', 'minarcsoft', 'minarcsoft2', 'subarc', ]:
             if isinstance(self.xe_criterion, MixupLoss):
                 loss = self.xe_criterion(
-                    classfier, label, half_batch_size=half_data, lamda_beta=lamda_beta)
+                    classfier, label,
+                    half_batch_size=half_data, lamda_beta=lamda_beta)
             else:
                 self.xe_criterion.reduction = self.reduction
                 weight_margin = None if not self.weight_margin else weight_margin
@@ -231,20 +248,20 @@ class SpeakerLoss(nn.Module):
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
                     
-                if self.second_loss in ['crossentropy', 'binaryentropy'] and second_classfier != None:
-                    if self.second_loss == 'binaryentropy':
+                elif self.second_loss in ['crossentropy', 'binaryentropy', 'binaryce'] and second_classfier != None:
+                    if self.second_loss in ['binaryentropy', 'binaryce']:
                         second_label = second_label.float().unsqueeze(1)
 
-                    if self.second_loss_steps > 0:
-                        iteration = max(self.iteration - self.full_steps, 0)
-                        loss_ratio = self.loss_ratio * iteration / self.second_loss_steps
-                    else:
-                        loss_ratio = self.loss_ratio
-
-                    loss_cent = loss_ratio * self.ce_criterion(second_classfier, second_label)
+                    loss_cent = self.loss_ratio * self.ce_criterion(second_classfier, second_label)
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
-
+                    
+                elif 'kd' in self.second_loss:
+                    loss_cent = self.loss_ratio * self.ce_criterion((classfier, t_classfier),
+                                                  (feats, t_feats))
+                    
+                    other_loss += float(loss_cent)
+                    loss = loss + loss_cent
         # if self.lncl:
         #     predicted_labels = self.softmax(classfier.clone())
         #     predicted_one_labels = torch.max(predicted_labels, dim=1)[1]

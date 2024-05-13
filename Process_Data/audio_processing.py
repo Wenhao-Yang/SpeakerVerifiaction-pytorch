@@ -151,7 +151,7 @@ class AdaptiveBandPass(object):
         self.band_pass_prob = band_pass_prob
 
         self.soss = {}
-        self.high_p       = np.ones(len(high))
+        self.high_p     = np.ones(len(high))
         self.high_count = np.ones(len(high))
         
         for h in high:
@@ -1041,7 +1041,7 @@ class MelSpectrogram(torch.nn.Module):
                  onesided: bool = True,
                  norm: Optional[str] = None,
                  mel_scale: str = "htk",
-                ) -> None:
+                 ) -> None:
         super(MelSpectrogram, self).__init__()
         self.sample_rate = sample_rate
         self.stretch_ratio = stretch_ratio

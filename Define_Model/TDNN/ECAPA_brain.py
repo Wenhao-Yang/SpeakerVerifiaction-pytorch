@@ -985,7 +985,7 @@ class ECAPA_TDNN(torch.nn.Module):
             input_size=embedding_size, lin_neurons=embedding_size, out_neurons=num_classes)
 
     def forward(self, x, lengths=None, last=False,
-                freeze=False,
+                freeze=False, feature_map='',
                 lamda_beta=0.2, mixup_alpha=-1, proser=None,):
         """Returns the embedding vector.
 
@@ -1078,6 +1078,9 @@ class ECAPA_TDNN(torch.nn.Module):
             
             dlogits = self.domain_classifier((domain_embeddings, logits))
             logits  = (logits, dlogits)
+        
+        if feature_map == 'attention':
+            embeddings = xl
 
         return logits, embeddings
 
