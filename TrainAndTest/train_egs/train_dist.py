@@ -13,6 +13,8 @@ from __future__ import print_function
 from Light.dataset import Sampler_Loaders, SubScriptDatasets
 from Light.model import SpeakerLoss
 from Process_Data.audio_processing import AdaptiveBandPass, BandPass
+from speechbrain.lobes.augment import TimeDomainSpecAugment
+
 from TrainAndTest.train_egs.train_egs import select_samples
 import torch._utils
 
@@ -349,13 +351,21 @@ def train(train_loader, model, optimizer, epoch, scheduler, config_args, writer)
                         zero_sig[:, 0 : wavs_aug.shape[1]] = wavs_aug
                         wavs_aug = zero_sig
 
+                    label_offset = 0
+                    if isinstance(augment, TimeDomainSpecAugment):
+                        if len(augment.speed_perturb.speeds) == 1:
+                            if augment.speed_perturb.speeds[0] < 95:
+                                label_offset = int(1 * config_args['num_real_classes'])
+                            elif augment.speed_perturb.speeds[0] > 105:
+                                label_offset = int(2 * config_args['num_real_classes'])
+
                     if 'concat_augment' in config_args and config_args['concat_augment']:
                         wavs_aug_tot.append(wavs_aug.unsqueeze(1).unsqueeze(1))
-                        labels_aug_tot.append(wav_label[data_idx])
+                        labels_aug_tot.append(wav_label[data_idx] + label_offset)
                     else:
                         wavs = wavs_aug
                         wavs_aug_tot[0] = wavs_aug.unsqueeze(1).unsqueeze(1)
-                        labels_aug_tot[0] = wav_label[data_idx]
+                        labels_aug_tot[0] = wav_label[data_idx] + label_offset
 
                 # if 'rest_prob' in config_args:
                 #     for aug_i in range(len(wavs_aug_tot)-1):
