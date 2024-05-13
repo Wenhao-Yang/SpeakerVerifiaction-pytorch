@@ -926,7 +926,8 @@ class KnowledgeDistillationLoss(nn.Module):
         self.logits_scale = logits_scale
 
         if 'vanilla' in self.kd_type[0]:
-            self.logits_loss = nn.KLDivLoss()
+            self.logits_loss = nn.KLDivLoss(reduce='none')
+            # loss_kd = F.kl_div(log_pred_student, pred_teacher, reduction="none").sum(1).mean()
         else:
             self.logits_loss = None
 
@@ -952,14 +953,14 @@ class KnowledgeDistillationLoss(nn.Module):
         if self.logits_loss != None:
             if isinstance(self.logits_loss, nn.KLDivLoss):
                 soft_teacher = F.softmax(t_classifiers / self.temperature * self.logits_scale)
-                soft_student = F.softmax(classifiers  / self.temperature * self.logits_scale)
-                loss += self.logits_loss(soft_teacher.log(), soft_student) * self.temperature ** 2
+                soft_student = F.log_softmax(classifiers  / self.temperature * self.logits_scale)
+                loss += self.logits_loss(soft_student, soft_teacher).sum(1).mean() * self.temperature ** 2
             
         if self.feat_loss != None:
             if 'cosine' in self.kd_type[1]:
                 loss += 1 - self.feat_loss(feats, t_feats).mean()
             elif 'l2' in self.kd_type[1]:
-                loss +=self.feat_loss(feats, t_feats).mean()
+                loss += self.feat_loss(feats, t_feats).mean()
             else:
                 loss += self.feat_loss(feats, t_feats)      
 
