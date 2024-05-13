@@ -256,7 +256,7 @@ class SpeakerLoss(nn.Module):
                     other_loss += float(loss_cent)
                     loss = loss + loss_cent
                     
-                elif 'kd' in self.second_loss:
+                elif 'kd' in self.second_loss and t_classfier is not None:
                     loss_cent = self.loss_ratio * self.ce_criterion((classfier, t_classfier),
                                                   (feats, t_feats))
                     
