@@ -493,7 +493,7 @@ class SequentialASTPooling(nn.Module):
     
     def forward(self, x, lengths=None):
         embeddings = []
-        for i in range(torch.round(x.shape[-1]/self.context_frames)):
+        for i in range(int(round(x.shape[-1]/self.context_frames))):
             
             end = min((i+1)*self.context_frames, x.shape[-1])
             start = max(0, end-self.context_frames)
