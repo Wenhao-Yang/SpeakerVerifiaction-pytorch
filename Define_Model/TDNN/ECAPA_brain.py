@@ -1129,7 +1129,8 @@ class ECAPA_TDNN(torch.nn.Module):
             embeddings.append(emb)
             logits.append(self.classifier(emb))
         
-        logits = torch.stack(logits, dim=-1).sum(dim=-1)
+        logits = torch.stack(logits, dim=-1)
+        logits = (logits * F.softmax(logits, dim=-1)).sum(-1)
         embeddings = torch.stack(embeddings, dim=-1)
 
         if embedding_sum:

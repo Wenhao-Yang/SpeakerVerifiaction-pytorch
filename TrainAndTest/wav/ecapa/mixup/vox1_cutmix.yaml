@@ -182,7 +182,7 @@ lr_ratio: 0
 loss_lambda: False
 loss_type: !ref <loss>
 margin: 0.2
-s: 15
+s: 30
 lamda_beta: 1
 proser_gamma: 1
 mixup_layer: 0
@@ -193,7 +193,7 @@ margin_lamda: True
 
 # Checkpoints
 loss_str: ""
-check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug7<num_pipes>_remix_margin15
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size><loss_str>_official_2s/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type>_fb<input_dim>_inst_aug7<num_pipes>_remix_margin
 #<attention_channels>
 
 save_data_dir: Data/checkpoint/ECAPA_brain/Mean_batch96_SASP2_em192_official_2s/arcsoft_adam_cyclic/vox1/wave_fb80_inst
