@@ -849,7 +849,7 @@ class ECAPA_TDNN(torch.nn.Module):
             attention_channels=128,
             res2net_scale=8,
             se_channels=128,
-            global_context=True,
+            global_context=True, context_frames=100,
             mix='mixup',
             groups=[1, 1, 1, 1, 1], **kwargs):
 
@@ -983,7 +983,7 @@ class ECAPA_TDNN(torch.nn.Module):
             self.asp = SequentialASTPooling(
                 channels[-1],
                 attention_channels=attention_channels,
-                global_context=global_context,
+                context_frames=context_frames,
             )
 
         else:
