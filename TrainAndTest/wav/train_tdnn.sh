@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=12
+stage=20
 waited=0
 while [ $(ps 352905 | wc -l) -eq 2 ]; do
   sleep 60
@@ -466,7 +466,7 @@ if [ $stage -le 20 ]; then
     for seed in 1234 ; do #1234# 
     for data_type in hdf5 ; do
     # for type in mani style align ;do
-    gpuid=4,5
+    gpuid=2,3
     port=41725
      echo -e "\n\033[1;4;31m Stage ${stage}: Training ${model}_${encod} in ${datasets}_${feat} with ${loss}\033[0m\n"
 
@@ -475,8 +475,8 @@ if [ $stage -le 20 ]; then
           # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixstyle.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
           # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_mixup_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
-          # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_cutmix.yaml --seed=${seed} --lamda-beta ${lamda_beta}
-          CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox2_cutmix_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+          CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox1_cutmix.yaml --seed=${seed} --lamda-beta ${lamda_beta}
+          # CUDA_VISIBLE_DEVICES=${gpuid} OMP_NUM_THREADS=8 torchrun --nproc_per_node=2 --master_port=${port} --nnodes=1 TrainAndTest/train_egs/train_dist_mixup.py --train-config=TrainAndTest/wav/ecapa/mixup/vox2_cutmix_margin.yaml --seed=${seed} --lamda-beta ${lamda_beta}
 
     done
     done

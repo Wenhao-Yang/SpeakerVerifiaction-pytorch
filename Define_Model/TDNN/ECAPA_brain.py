@@ -484,6 +484,26 @@ class AttentiveStatisticsPooling(nn.Module):
         return pooled_stats
 
 
+class SequentialASTPooling(nn.Module):
+
+    def __init__(self, channels, attention_channels=128, context_frames=100):
+        super().__init__()
+        self.pooling = AttentiveStatisticsPooling(channels, attention_channels)
+        self.context_frames = context_frames
+    
+    def forward(self, x, lengths=None):
+        embeddings = []
+        for i in range(torch.round(x.shape[-1]/self.context_frames)):
+            
+            end = min((i+1)*self.context_frames, x.shape[-1])
+            start = max(0, end-self.context_frames)
+
+            embeddings.append(self.pooling(x[:, :, start:end], lengths))
+        
+        return embeddings
+
+
+
 class AttentiveMultiStatisticsPooling(nn.Module):
     """This class implements an attentive statistic pooling layer for each channel.
     It returns the concatenated mean and std of the input tensor.
@@ -834,6 +854,7 @@ class ECAPA_TDNN(torch.nn.Module):
             groups=[1, 1, 1, 1, 1], **kwargs):
 
         super().__init__()
+        self.num_classes = num_classes
         self.embedding_size = embedding_size
         self.domain_feat = domain_feat
         self.mix_type = mix
@@ -958,11 +979,19 @@ class ECAPA_TDNN(torch.nn.Module):
         )
 
         # Attentive Statistical Pooling
-        self.asp = AttentiveStatisticsPooling(
-            channels[-1],
-            attention_channels=attention_channels,
-            global_context=global_context,
-        )
+        if self.encoder_type == 'SASTP':
+            self.asp = SequentialASTPooling(
+                channels[-1],
+                attention_channels=attention_channels,
+                global_context=global_context,
+            )
+
+        else:
+            self.asp = AttentiveStatisticsPooling(
+                channels[-1],
+                attention_channels=attention_channels,
+                global_context=global_context,
+            )
 
         if self.norm[-1] == 'batch':
             self.asp_bn = BatchNorm1d(input_size=channels[-1] * 2)
@@ -1050,6 +1079,11 @@ class ECAPA_TDNN(torch.nn.Module):
 
             # Attentive Statistical Pooling
             x = self.asp(x_mfa, lengths=lengths)
+            if isinstance(x, list):
+                logits, embeddings = self.sequential_classify(x)
+                
+                return logits, embeddings
+            
             x = self.asp_bn(x)
 
             if proser != None and layer_mix == 7:
@@ -1083,6 +1117,26 @@ class ECAPA_TDNN(torch.nn.Module):
             embeddings = xl
 
         return logits, embeddings
+    
+    def sequential_classify(self, statistics, embedding_sum=True):
+
+        logits = []
+        embeddings = []
+
+        for x in statistics:
+            x = self.asp_bn(x)
+            emb = self.fc(x)
+            embeddings.append(emb)
+            logits.append(self.classifier(emb))
+        
+        logits = torch.stack(logits, dim=-1).sum(dim=-1)
+        embeddings = torch.stack(embeddings, dim=-1)
+
+        if embedding_sum:
+            embeddings = embeddings.sum(dim=-1)
+
+        return logits, embeddings
+
 
     def get_embedding_dim(self):
         return self.embedding_size
