@@ -1,0 +1,10 @@
+自然景观：sky-other-merged,tree-merged,river,water-other, boat, grass-merged, sea,bird,flower, rock-merged, sand,snow, mountain-merged,dirt-merged, gravel
+建筑设施：building-other-merged,chair,wall-other-merged,floor-other-merged,ceiling-merged, window-other, wall-wood, bridge,wall-brick,wall-stone,stairs,house,roof,wall-tile,platform, towel,net
+公共设施：fence-merged,bench,counter,light,horse,fire hydrant,toilet, stop sign, parking meter
+交通设施：pavement-merged,road,traffic light,bicycle,airplane,train,railroad,bus,motorcycle,truck,car
+室内设施：dining table,table-merged,potted plant,vase,door-stuff,clock,floor-wood,tv,curtain, shelf,rug-merged, cabinet-merged,bed,couch,mirror-stuff,refrigerator,oven,window-blind,pillow,blanket,microwave,toaster,sink
+人物：person, handbag, backpack,tie,suitcase,laptop
+日常生活：paper-merged,cardboard,umbrella,bottle,book,teddy bear,cell phone,dog,cat, scissors,keyboard,toothbrush,hair drier, remote
+餐饮美食：bowl,cup,food-other-merged,spoon,cake,sandwich,carrot,hot dog,donut,knife,broccoli,wine glass,pizza,fork, fruit, orange,banana,apple
+户外运动：kite,skateboard,tent,sports ball, frisbee,surfboard,tennis racket,skis,snowboard,baseball bat, baseball glove
+城市事件：banner,bear,playingfield,sheep,elephant,cow,giraffe,zebra,mouse

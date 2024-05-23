@@ -9,43 +9,21 @@
 @Time: 2020/4/15 10:57 PM
 @Overview:
 """
-<<<<<<< HEAD
-=======
 
->>>>>>> Server/Server
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
-class SelfVadPooling(nn.Module):
-    def __init__(self, input_dim, input_length=300):
-        super(SelfVadPooling, self).__init__()
-        self.conv1 = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
-        self.fc1 = nn.Linear(input_dim, 1)
-        self.bn1 = nn.BatchNorm1d(1)
-        #
-        # self.conv2 = nn.Conv1d(1, 1, kernel_size=5, stride=1, padding=2)
-        # self.fc2 = nn.Linear(input_length, 1)
-        # self.bn2 = nn.BatchNorm1d(1)
-
-        self.activation = nn.Hardtanh(min_val=0.001, max_val=1.0)
-        # nn.init.constant(self.fc1.weight, 0.1)
+class SqueezePooling(nn.Module):
+    def __init__(self):
+        super(SqueezePooling, self).__init__()
 
     def forward(self, x):
-        x_energy = self.fc1(x).squeeze(-1)  # .log()
-        x_energy = self.bn1(x_energy)
-        vad = self.conv1(x_energy).unsqueeze(-1)
-        vad_weight = self.activation(vad)
+        x = x.view(x.size(0), -1)
 
-        # x_freq = self.fc2(x.transpose(2, 3)).squeeze(-1).log()
-        # x_freq = self.bn2(x_freq)
-        # freq = self.conv2(x_freq).unsqueeze(2)
-        # freq_weight = self.activation(freq)
-
-        # x_weight = 2. * x_weight - x_weight.pow(2)
-        return x * vad_weight  # * freq_weight
+        return x  # * freq_weight
 
 
 class SelfVadPooling(nn.Module):
@@ -93,27 +71,77 @@ class SelfAttentionPooling(nn.Module):
         :return:   [batch, feat_dim] vector
         """
         x_shape = x.shape
-        x = x.squeeze()
-        if x_shape[0] == 1:
-            x = x.unsqueeze(0)
-
-<<<<<<< HEAD
-        assert len(x.shape) == 3, print(x.shape)
-        if x.shape[-2] == self.input_dim:
-            x = x.transpose(-1, -2)
-        # print(x.shape)
-=======
         if len(x.shape) == 4:
-            x = x.reshape(x_shape[0], -1, x_shape[2])# , print(x.shape)
-        if x.shape[-2] == self.input_dim:
-            x = x.transpose(-1, -2)
->>>>>>> Server/Server
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
+        assert x.shape[-1] == self.input_dim
+
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
         alpha = self.attention_soft(vf)
 
         alpha_ht = x.mul(alpha)
         mean = torch.sum(alpha_ht, dim=-2)
+
+        return mean
+
+
+class SelfAttentionPooling_v2(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super(SelfAttentionPooling_v2, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.input_dim = input_dim
+        self.attention_linear = nn.Linear(input_dim, self.hidden_dim)
+        self.Tanh = nn.Tanh()
+        self.attention_vector = nn.Linear(self.hidden_dim, input_dim)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        """
+        :param x:   [batch, length, feat_dim] vector
+        :return:   [batch, feat_dim] vector
+        """
+        x_shape = x.shape
+        if len(x.shape) == 4:
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
+
+        # assert x.shape[-1] == self.input_dim, print(x.shape, self.input_dim)
+
+        alpha = self.Tanh(self.attention_linear(x))
+        alpha = self.softmax(self.attention_vector(alpha))
+
+        mean = torch.sum(alpha * x, dim=1)
+
+        return mean
+
+
+class SelfAttentionPooling_v3(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super(SelfAttentionPooling_v3, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.input_dim = input_dim
+        self.attention_linear = nn.Linear(input_dim, self.hidden_dim)
+        self.Tanh = nn.Tanh()
+        self.attention_vector = nn.Linear(self.hidden_dim, 1)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        """
+        :param x:   [batch, length, feat_dim] vector
+        :return:   [batch, feat_dim] vector
+        """
+        x_shape = x.shape
+        if len(x.shape) == 4:
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
+
+        assert x.shape[-1] == self.input_dim
+
+        alpha = self.Tanh(self.attention_linear(x))
+        alpha = self.softmax(self.attention_vector(alpha))
+
+        mean = torch.sum(alpha * x, dim=1)
 
         return mean
 
@@ -134,13 +162,11 @@ class AttentionStatisticPooling(nn.Module):
         :return:   [feat_dim] vector
         """
         x_shape = x.shape
-        x = x.squeeze()
-        if x_shape[0] == 1:
-            x = x.unsqueeze(0)
+        if len(x_shape) == 4:
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
 
-        assert len(x.shape) == 3, print(x.shape)
-        if x.shape[-2] == self.input_dim:
-            x = x.transpose(-1, -2)
+        assert x.shape[-1] == self.input_dim
 
         fx = self.attention_activation(self.attention_linear(x))
         vf = fx.matmul(self.attention_vector)
@@ -159,11 +185,77 @@ class AttentionStatisticPooling(nn.Module):
         return mean_sigma
 
 
+class AttentionStatisticPooling_v2(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super(AttentionStatisticPooling_v2, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.input_dim = input_dim
+        self.attention_linear = nn.Linear(input_dim, self.hidden_dim)
+        self.attention_vector = nn.Linear(self.hidden_dim, input_dim)
+        self.Tanh = nn.Tanh()
+        self.softmax = torch.nn.Softmax(dim=1)
+
+    def forward(self, x):
+        """
+        :param x:   [batch, channels, length, feat_dim] or [batch, length, feat_dim]
+        :return:   [feat_dim] vector
+        """
+        x_shape = x.shape
+        if len(x_shape) == 4:
+            x = x.transpose(1, 2)
+            x = x.reshape(x_shape[0], x_shape[2], -1)
+
+        assert x.shape[-1] == self.input_dim
+
+        alpha = self.Tanh(self.attention_linear(x))
+        alpha = self.softmax(self.attention_vector(alpha))
+
+        mean = torch.sum(alpha * x, dim=1)
+
+        # pdb.set_trace()
+        residuals = torch.sum(alpha * x ** 2, dim=1) - mean ** 2
+        std = torch.sqrt(residuals.clamp(min=1e-9))
+
+        mean_sigma = torch.cat((mean, std), 1)
+
+        return mean_sigma
+
+
 class StatisticPooling(nn.Module):
 
-    def __init__(self, input_dim):
+    def __init__(self, input_dim, chn_dim=-1):
         super(StatisticPooling, self).__init__()
         self.input_dim = input_dim
+        self.chn_dim=chn_dim
+
+    def forward(self, x, **kwargs):
+        """
+        :param x:   [length,feat_dim] vector
+        :return:   [feat_dim] vector
+        """
+        x_shape = x.shape
+        if len(x.shape) != 3:
+            x = x.reshape(x_shape[0], x_shape[-2], -1)
+        
+        if self.chn_dim == 1:
+            x = x.transpose(1, 2)
+
+        # assert x.shape[-1] == self.input_dim, print(x.shape[-1])
+
+        mean_x = x.mean(dim=1)
+        std_x = x.std(dim=1) #.add_(1e-12).sqrt()
+        mean_std = torch.cat((mean_x, std_x), 1)
+        return mean_std
+
+
+class MaxStatisticPooling(nn.Module):
+
+    def __init__(self, input_dim, kernel_size=5):
+        super(MaxStatisticPooling, self).__init__()
+        self.kernel_size = kernel_size
+        self.input_dim = input_dim
+
+        self.max_pooling = nn.MaxPool1d(kernel_size=kernel_size, padding=int((kernel_size-1)/2), stride=1)
 
     def forward(self, x):
         """
@@ -171,25 +263,19 @@ class StatisticPooling(nn.Module):
         :return:   [feat_dim] vector
         """
         x_shape = x.shape
-<<<<<<< HEAD
-        x = x.squeeze()
-        if x_shape[0] == 1:
-            x = x.unsqueeze(0)
-
-        assert len(x.shape) == 3, print(x.shape)
-        if x.shape[-2] == self.input_dim:
-            x = x.transpose(-1, -2)
-=======
         if len(x.shape) != 3:
             x = x.reshape(x_shape[0], x_shape[-2], -1)
 
         assert x.shape[-1] == self.input_dim, print(x.shape[-1])
->>>>>>> Server/Server
+        x = self.max_pooling(x.transpose(1, 2)).transpose(1, 2)
 
         mean_x = x.mean(dim=1)
         std_x = x.var(dim=1, unbiased=False).add_(1e-12).sqrt()
         mean_std = torch.cat((mean_x, std_x), 1)
         return mean_std
+
+    def __repr__(self):
+        return "MaxStatisticPooling(input_dim=%f, kernel_size=%d)" % (self.input_dim, self.kernel_size)
 
 
 class AdaptiveStdPool2d(nn.Module):
@@ -239,15 +325,6 @@ class AdaptiveStdPool2d(nn.Module):
 
                 x_output.append(means)
                 x_output.append(stds)
-<<<<<<< HEAD
-
-            output.append(torch.cat(x_output, dim=2))
-        output = torch.cat(output, dim=3)
-
-        # print(output.isnan())
-
-        return output
-=======
 
             output.append(torch.cat(x_output, dim=2))
         output = torch.cat(output, dim=3)
@@ -436,4 +513,34 @@ class LinearTransform(nn.Module):
         trans = self.linear_trans(x)
 
         return x + trans
->>>>>>> Server/Server
+
+def get_encode_layer(encoder_type: str, encode_input_dim: int, hidden_dim: int,
+                     embedding_size: int, time_dim: int, chn_dim=1):
+    
+    if encoder_type == 'SAP':
+        encoder = SelfAttentionPooling(
+                input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim
+
+    elif encoder_type == 'SAP2':
+        encoder = SelfAttentionPooling_v2(input_dim=encode_input_dim,
+                                                hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim
+
+    elif encoder_type in ['ASTP', 'SASP']:
+        encoder = AttentionStatisticPooling(input_dim=encode_input_dim,
+                                                    hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim * 2
+    elif encoder_type in ['ASTP2', 'SASP2']:
+        encoder = AttentionStatisticPooling_v2(
+            input_dim=encode_input_dim, hidden_dim=int(embedding_size / 2))
+        encoder_output = encode_input_dim * 2
+    elif encoder_type == 'STAP':
+        encoder = StatisticPooling(input_dim=encode_input_dim, chn_dim=chn_dim)
+        encoder_output = encode_input_dim * 2
+    else:
+        encoder = nn.AdaptiveAvgPool2d((time_dim, None))
+        encoder_output = encode_input_dim * time_dim
+
+    return encoder, encoder_output
+    

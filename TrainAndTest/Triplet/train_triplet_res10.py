@@ -1,6 +1,6 @@
 """
 @Overview:
-Implement Training ResNet 10 for Speaker Verification!
+Implement Training ResNets 10 for Speaker Verification!
     Enrollment set files will be in the 'Data/enroll_set.npy' and the classes-to-index file is 'Data/enroll_classes.npy'
     Test set files are in the 'Data/test_set.npy' and the utterances-to-index file is 'Data/test_classes.npy'.
 

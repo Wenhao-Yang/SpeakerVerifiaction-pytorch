@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-stage=100
+stage=206
 if [ $stage -le 0 ]; then
   for model in LoResNet10; do
     python Lime/visual_gradient.py \
@@ -166,4 +166,157 @@ if [ $stage -le 100 ]; then
     --feat-dim 161 \
     --acoustic-feature spectrogram
 
+fi
+
+if [ $stage -le 110 ]; then
+
+  python Lime/Plot/visual_gradient.py \
+    --extract-path Data/gradient/LoResNet8/vox2/klsp_egs_baseline/arcsoft/Mean_cbam_None_dp01_alpha0_em256_var/epoch_50_var_50/epoch_50 \
+    --feat-dim 161 \
+    --acoustic-feature spectrogram
+
+fi
+if [ $stage -le 111 ]; then
+  for s in dev dev_aug_com;do
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/LoResNet8/vox1/klsp_egs_baseline/arcsoft/None_cbam_em256_alpha0_dp25_wd5e4_${s}_var/epoch_40_var_40/epoch_40 \
+      --feat-dim 161 \
+      --acoustic-feature spectrogram
+  done
+fi
+
+
+if [ $stage -le 112 ]; then
+  for s in dev ;do
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/TDNN_v5/vox2/klfb_egs_baseline/arcsoft_sgd_exp/inputMean_STAP_em512_wde4_var/epoch_50_var_gradient/epoch_50 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
+  done
+fi
+
+if [ $stage -le 113 ]; then
+  for s in dev ;do
+#    python Lime/Plot/visual_gradient.py \
+#      --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs12_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_60_var_gradient/epoch_60 \
+#      --feat-dim 40 \
+#      --acoustic-feature fbank
+
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/TDNN_v5/cnceleb/klfb_egs_baseline/arcsoft/Mean_STAP_em512_wd5e4_var/epoch_50_var_gradient/epoch_50 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
+  done
+  exit
+fi
+
+if [ $stage -le 114 ]; then
+  for s in dev ;do
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/TDNN_v5/vox1/klfb_egs_baseline/arcsoft/featfb40_inputMean_STAP_em512_wd5e4_var/epoch_50_var_gradient/epoch_50 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
+  done
+fi
+
+if [ $stage -le 200 ]; then
+  for s in dev ;do
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/ThinResNet34/vox1/klfb_egs_baseline/arcsoft_sgd_rop/Mean_basic_none1_SAP2_dp125_alpha0_em256_wd5e4_var/epoch_50_var_gradient/epoch_50 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
+  done
+  exit
+fi
+
+if [ $stage -le 201 ]; then
+  for s in dev ;do
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/ThinResNet34/vox2/klfb_egs_baseline/arcsoft_sgd_rop/chn32_Mean_basic_downNone_none1_SAP2_dp01_alpha0_em256_wde4_var/epoch_60_var_gradient/epoch_60 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
+  done
+  exit
+fi
+
+if [ $stage -le 202 ]; then
+  for s in dev ;do
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/ThinResNet18/cnceleb/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/epoch_60_var_gradient/epoch_60 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
+  done
+  exit
+fi
+
+if [ $stage -le 203 ]; then
+  for s in dev ;do
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/ThinResNet18/cnceleb/klfb_egs12_baseline/arcsoft_sgd_rop/chn32_Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wde4_var/epoch_73_var_gradient/epoch_73 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
+  done
+  exit
+fi
+
+if [ $stage -le 204 ]; then
+  for s in dev ;do
+    python Lime/Plot/visual_gradient.py \
+      --extract-path Data/gradient/ThinResNet18/aishell2/klfb_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk3_none1_SAP2_dp01_alpha0_em256_wd5e4_var/epoch_60_var_gradient/epoch_60 \
+      --feat-dim 40 \
+      --acoustic-feature fbank
+  done
+  exit
+fi
+
+if [ $stage -le 205 ]; then
+#  for s in dev ;do
+  for cam in acc_input ; do
+    for grad_clip in relu ; do
+      for weight in mean max ; do
+        for seed in 123457 123458;do
+          if [ $seed -eq 123456 ];then
+            epoch=41 #15 #41 #32 #27
+          elif [ $seed -eq 123457 ]; then
+            epoch=40 #31 #35 #31
+          else
+            epoch=53 #19
+          fi
+          # Data/gradient/ThinResNet34/aishell2/klsp_egs_baseline/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde4_var/${seed}/epoch_best_var_${cam}_softmax/epoch_${epoch}
+          extract_path=Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/${seed}/epoch_best_var_acc_input_softmax_zero/epoch_${epoch}
+          python Lime/Plot/visual_gradient.py \
+            --extract-path ${extract_path} \
+            --feat-dim 161 \
+            --grad-weight ${weight} \
+            --grad-clip ${grad_clip} \
+            --acoustic-feature spectrogram
+        done
+      done
+    done
+  done
+  exit
+fi
+
+if [ $stage -le 206 ]; then
+#  for s in dev ;do
+  for seed in 123456 123457 123458 ;do
+    if [ $seed -le 123456 ];then
+      epoch=41
+    elif [ $seed -le 123457 ]; then
+      epoch=40
+    else
+      epoch=53
+    fi
+    for grad_clip in relu ; do
+      for weight in mean max ; do
+        python Lime/Plot/visual_gradient.py \
+          --extract-path Data/gradient/ThinResNet34/vox2/klsp_egs_rvec/arcsoft_sgd_rop/Mean_batch256_basic_downk1_avg5_SAP2_em256_dp01_alpha0_none1_wde5_var/epoch_best_var_layer_cam_softmax_zero/${seed}/epoch_${epoch} \
+          --feat-dim 161 \
+          --grad-weight ${weight} \
+          --grad-clip ${grad_clip} \
+          --acoustic-feature spectrogram
+      done
+    done
+  done
+  exit
 fi

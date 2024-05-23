@@ -8,6 +8,7 @@ from operator import itemgetter
 
 =======
 import os
+import pdb
 from operator import itemgetter
 import pandas as pd
 >>>>>>> Server/Server:Eval/eval_metrics.py
@@ -168,15 +169,16 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
         else:
             non_target.append(distance)
 
-    new_distances = np.array(new_distances)
-    target = np.sort(target)
-    non_target = np.sort(non_target)
+    new_distances = np.array(new_distances).astype(np.float)
+    target = np.sort(target).astype(np.float)
+    non_target = np.sort(non_target).astype(np.float)
 
     target_size = target.size
     nontarget_size = non_target.size
     # pdb.set_trace()
     target_position = 0
-    while target_position + 1 < target_size:
+    steps = max(1, int(target_size / 1e4))
+    while target_position + steps < target_size:
         # for target_position in range(target_size):
         nontarget_n = nontarget_size * target_position * 1.0 / target_size
         nontarget_position = int(nontarget_size - 1 - nontarget_n)
@@ -189,14 +191,19 @@ def evaluate_kaldi_eer(distances, labels, cos=True, re_thre=False):
         if (non_target[nontarget_position] < target[target_position]):
             # print('target[{}]={} is < non_target[{}]={}.'.format(target_position, target[target_position], nontarget_position, non_target[nontarget_position]))
             break
-        target_position += 1
+        target_position += steps
 
     eer_threshold = target[target_position]
     eer = target_position * 1.0 / target_size
 
     # max_threshold = np.max(distances)
     # thresholds = np.arange(0, max_threshold, 0.001)
-    thresholds = np.sort(np.unique(target))
+    all_thre = (target.max() - target.min()) / 0.0001
+    if all_thre < target_size:
+        thresholds = np.arange(target.min(), target.max(), step=0.0001).astype(np.float)
+    else:
+        thresholds = np.sort(np.unique(target))
+
     tpr, fpr, best_accuracy = calculate_roc(thresholds, new_distances, labels)
 
     # return eer threshold.
@@ -313,22 +320,14 @@ def plot_DET_curve(pf_max=0.3):
     # 刻度设置
     pticks = [0.00005, 0.0001, 0.0002, 0.0005, 0.001, 0.002,
               0.005, 0.01, 0.02, 0.03, 0.05, 0.07,
-<<<<<<< HEAD:eval_metrics.py
-              0.1, 0.15, 0.25, 0.6, 0.8, 0.9,
-=======
-              0.1, 0.15, 0.25, 0.4, 0.8, 0.9,
->>>>>>> Server/Server:Eval/eval_metrics.py
+              0.1, 0.15, 0.25, 0.4, 0.6, 0.8, 0.9,
               0.95, 0.98, 0.99, 0.995, 0.998, 0.999,
               0.9995, 0.9998, 0.9999, 0.99995, 0.99998, 0.99999]
 
     # 刻度*100
     xlabels = [' 0.005', ' 0.01 ', ' 0.02 ', ' 0.05 ', '  0.1 ', '  0.2 ',
                ' 0.5  ', '  1   ', '  2   ', '  3   ', '  5   ', '  7   ',
-<<<<<<< HEAD:eval_metrics.py
-               '  10  ', '  15  ', '  25  ', '  60  ', '  80  ', '  90  ',
-=======
-               '  10  ', '  15  ', '  25  ', '  40  ', '  80  ', '  90  ',
->>>>>>> Server/Server:Eval/eval_metrics.py
+               '  10  ', '  15  ', '  25  ', '  40  ', '  60  ', '  80  ', '  90  ',
                '  95  ', '  98  ', '  99  ', ' 99.5 ', ' 99.8 ', ' 99.9 ',
                ' 99.95', ' 99.98', ' 99.99', '99.995', '99.998', '99.999']
 
@@ -358,22 +357,21 @@ def plot_DET_curve(pf_max=0.3):
     plt.xlabel('False Alarm probability (in %)')
 =======
     plt.figure(figsize=(12, 12))
-    plt.rc('font', family='Times New Roman')
-    plt.title('DET', fontsize=22)
+    # plt.rc('font', family='Times New Roman')
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # 步骤一（替换sans-serif字体）
+    plt.rcParams['axes.unicode_minus'] = False
+    plt.title('Detection Error Tradeoff(DET)', fontsize=22)
     plt.xlim(norm.ppf(pfa_min), norm.ppf(pfa_max))
 
     plt.xticks(norm.ppf(pticks[tmin_fa:tmax_fa]), xlabels[tmin_fa:tmax_fa])
-    plt.xlabel('False Alarm probability (in %)', fontsize=18)
+    plt.xlabel('False Positive probability (%)', fontsize=18)
     plt.xticks(fontsize=16)
 >>>>>>> Server/Server:Eval/eval_metrics.py
 
     # FAR
     plt.ylim(norm.ppf(pmiss_min), norm.ppf(pmiss_max))
     plt.yticks(norm.ppf(pticks[tmin_miss:tmax_miss]), ylabels[tmin_miss:tmax_miss])
-<<<<<<< HEAD:eval_metrics.py
-    plt.ylabel('Miss probability (in %)')
-=======
-    plt.ylabel('Miss probability (in %)', fontsize=18)
+    plt.ylabel('False Negative probability (%)', fontsize=18)
     plt.yticks(fontsize=16)
 >>>>>>> Server/Server:Eval/eval_metrics.py
     plt.grid()
@@ -387,22 +385,37 @@ def plot_DET_curve(pf_max=0.3):
 =======
 
 def save_det(save_path, score_files=[], names=[], pf_max=0.3):
+    alpha = 0.8 if len(score_files) > 1 else 0
     if len(score_files) > 0 and len(score_files) == len(names):
         det_plt = plot_DET_curve(pf_max=pf_max)
 
         for i, scf in enumerate(score_files):
             if os.path.exists(scf):
-
+                print(scf)
                 scores, labels = [], []
                 with open(scf, 'r') as f:
                     for line in f.readlines():
                         score, label = line.split()
-                        scores.append(float(score))
-                        labels.append(int(label))
+                        try:
+                            s = float(score)
+
+                            if label in ['True', 'False']:
+                                l = 1 if label == 'True' else 0
+                            else:
+                                l = int(label)
+                        except:
+                            if score in ['True', 'False']:
+                                l = 1 if score == 'True' else 0
+                            else:
+                                l = int(score)
+                            s = float(label)
+                        scores.append(s)
+                        labels.append(l)
 
                 fnrs, fprs, _ = ComputeErrorRates(scores, labels)
                 x, y = norm.ppf(fnrs), norm.ppf(fprs)
-                det_plt.plot(x, y, label=names[i], color=cValue_1[i])
+
+                det_plt.plot(x, y, label=names[i], color=cValue_1[i], alpha=alpha)
 
         det_plt.legend(loc='upper right', fontsize=18)
         det_plt.savefig(save_path + "/det.png")

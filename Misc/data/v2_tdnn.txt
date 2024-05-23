@@ -1,0 +1,67 @@
+Train EER: 4.1198%, Threshold: 0.3127, mindcf-0.01: 0.3960, mindcf-0.001: 0.6685, mix: 1.0907. 
+Train EER: 3.5467%, Threshold: 0.2905, mindcf-0.01: 0.3483, mindcf-0.001: 0.4931, mix: 0.6091. 
+Train EER: 3.3245%, Threshold: 0.2899, mindcf-0.01: 0.3367, mindcf-0.001: 0.5023, mix: 0.5623. 
+Train EER: 3.1972%, Threshold: 0.2774, mindcf-0.01: 0.3288, mindcf-0.001: 0.4103, mix: 0.4314. 
+Train EER: 3.2450%, Threshold: 0.2810, mindcf-0.01: 0.3304, mindcf-0.001: 0.4710, mix: 0.5050. 
+Train EER: 3.0382%, Threshold: 0.2810, mindcf-0.01: 0.3408, mindcf-0.001: 0.4424, mix: 0.4580. 
+Train EER: 3.1654%, Threshold: 0.2853, mindcf-0.01: 0.3204, mindcf-0.001: 0.3927, mix: 0.3983. 
+Train EER: 3.1336%, Threshold: 0.2685, mindcf-0.01: 0.3254, mindcf-0.001: 0.3901, mix: 0.3978. 
+Train EER: 3.5790%, Threshold: 0.2775, mindcf-0.01: 0.2941, mindcf-0.001: 0.3623, mix: 0.3814. 
+Train EER: 3.1813%, Threshold: 0.2535, mindcf-0.01: 0.2881, mindcf-0.001: 0.3874, mix: 0.3551. 
+Train EER: 3.1336%, Threshold: 0.2673, mindcf-0.01: 0.2793, mindcf-0.001: 0.3270, mix: 0.2862. 
+Train EER: 3.2052%, Threshold: 0.2670, mindcf-0.01: 0.3374, mindcf-0.001: 0.4385, mix: 0.4742. 
+Train EER: 3.3563%, Threshold: 0.2753, mindcf-0.01: 0.3025, mindcf-0.001: 0.4542, mix: 0.4613. 
+Train EER: 3.1724%, Threshold: 0.2609, mindcf-0.01: 0.3064, mindcf-0.001: 0.4027, mix: 0.3914. 
+Train EER: 3.3404%, Threshold: 0.2727, mindcf-0.01: 0.3098, mindcf-0.001: 0.3685, mix: 0.3813. 
+Train EER: 2.7519%, Threshold: 0.2452, mindcf-0.01: 0.2569, mindcf-0.001: 0.3481, mix: 0.2461. 
+Train EER: 2.8155%, Threshold: 0.2369, mindcf-0.01: 0.2671, mindcf-0.001: 0.3494, mix: 0.2627. 
+Train EER: 2.8075%, Threshold: 0.2385, mindcf-0.01: 0.2715, mindcf-0.001: 0.4186, mix: 0.3190. 
+Train EER: 2.8871%, Threshold: 0.2376, mindcf-0.01: 0.2555, mindcf-0.001: 0.3590, mix: 0.2648. 
+Train EER: 2.8950%, Threshold: 0.2400, mindcf-0.01: 0.2827, mindcf-0.001: 0.3787, mix: 0.3099. 
+Train EER: 2.8155%, Threshold: 0.2344, mindcf-0.01: 0.2614, mindcf-0.001: 0.3780, mix: 0.2782. 
+Train EER: 2.8712%, Threshold: 0.2373, mindcf-0.01: 0.2564, mindcf-0.001: 0.3964, mix: 0.2918. 
+Train EER: 2.8609%, Threshold: 0.2363, mindcf-0.01: 0.2564, mindcf-0.001: 0.3413, mix: 0.2504. 
+Train EER: 2.8314%, Threshold: 0.2316, mindcf-0.01: 0.2433, mindcf-0.001: 0.3977, mix: 0.2740. 
+Train EER: 3.0143%, Threshold: 0.2392, mindcf-0.01: 0.2695, mindcf-0.001: 0.4208, mix: 0.3418. 
+Train EER: 2.9189%, Threshold: 0.2318, mindcf-0.01: 0.2652, mindcf-0.001: 0.3937, mix: 0.3048. 
+Train EER: 2.9427%, Threshold: 0.2326, mindcf-0.01: 0.2671, mindcf-0.001: 0.4024, mix: 0.3162. 
+Train EER: 2.9745%, Threshold: 0.2314, mindcf-0.01: 0.2823, mindcf-0.001: 0.3842, mix: 0.3227. 
+Train EER: 2.9745%, Threshold: 0.2326, mindcf-0.01: 0.2677, mindcf-0.001: 0.3918, mix: 0.3120. 
+Train EER: 2.9570%, Threshold: 0.2298, mindcf-0.01: 0.2597, mindcf-0.001: 0.3849, mix: 0.2956. 
+Train EER: 2.9745%, Threshold: 0.2343, mindcf-0.01: 0.2680, mindcf-0.001: 0.3997, mix: 0.3186. 
+Train EER: 2.9109%, Threshold: 0.2318, mindcf-0.01: 0.2601, mindcf-0.001: 0.3431, mix: 0.2598. 
+Train EER: 2.9416%, Threshold: 0.2305, mindcf-0.01: 0.2581, mindcf-0.001: 0.4006, mix: 0.3042. 
+
+Valid Accuracy: 93.852186%, Avg loss: 2.057341.
+Valid Accuracy: 96.146146%, Avg loss: 1.512291.
+Valid Accuracy: 96.971972%, Avg loss: 1.263158.
+Valid Accuracy: 97.097097%, Avg loss: 1.232574.
+Valid Accuracy: 97.222222%, Avg loss: 1.249967.
+Valid Accuracy: 97.564231%, Avg loss: 1.142989.
+Valid Accuracy: 97.522523%, Avg loss: 1.119707.
+Valid Accuracy: 97.597598%, Avg loss: 1.183673.
+Valid Accuracy: 97.539206%, Avg loss: 1.163710.
+Valid Accuracy: 97.572573%, Avg loss: 1.069350.
+Valid Accuracy: 97.897898%, Avg loss: 0.979682.
+Valid Accuracy: 97.706039%, Avg loss: 1.113549.
+Valid Accuracy: 97.689356%, Avg loss: 1.100830.
+Valid Accuracy: 97.847848%, Avg loss: 1.041510.
+Valid Accuracy: 97.789456%, Avg loss: 1.067256.
+Valid Accuracy: 98.923924%, Avg loss: 0.494724.
+Valid Accuracy: 99.015682%, Avg loss: 0.471055.
+Valid Accuracy: 99.065732%, Avg loss: 0.428031.
+Valid Accuracy: 99.090757%, Avg loss: 0.471657.
+Valid Accuracy: 99.082416%, Avg loss: 0.458625.
+Valid Accuracy: 99.165832%, Avg loss: 0.391994.
+Valid Accuracy: 99.149149%, Avg loss: 0.449497.
+Valid Accuracy: 99.074074%, Avg loss: 0.433249.
+Valid Accuracy: 99.132466%, Avg loss: 0.411301.
+Valid Accuracy: 99.090757%, Avg loss: 0.467428.
+Valid Accuracy: 99.366033%, Avg loss: 0.332908.
+Valid Accuracy: 99.240908%, Avg loss: 0.348286.
+Valid Accuracy: 99.282616%, Avg loss: 0.360892.
+Valid Accuracy: 99.240908%, Avg loss: 0.375377.
+Valid Accuracy: 99.265933%, Avg loss: 0.385165.
+Valid Accuracy: 99.307641%, Avg loss: 0.330426.
+Valid Accuracy: 99.282616%, Avg loss: 0.381304.
+Valid Accuracy: 99.199199%, Avg loss: 0.416010.

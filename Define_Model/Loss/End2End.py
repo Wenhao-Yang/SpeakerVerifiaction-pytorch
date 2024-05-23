@@ -17,7 +17,7 @@ import random
 from sklearn import metrics
 
 # https://github.com/clovaai/voxceleb_trainer
-from TrainAndTest.common_func import correct_output
+from TrainAndTest.common_func import correct_output, accuracy
 
 
 class AngleProtoLoss(nn.Module):
@@ -42,9 +42,11 @@ class AngleProtoLoss(nn.Module):
 
         label = torch.from_numpy(numpy.asarray(range(0, stepsize))).cuda()
         loss = self.criterion(cos_sim_matrix, label)
-        prec = correct_output(cos_sim_matrix.detach().cpu(), label.detach().cpu(), topk=(1,))
 
-        return loss, prec[0]
+        prec_acc = accuracy(cos_sim_matrix.detach().cpu(), label.detach().cpu(), topk=(1,))
+        # prec = correct_output(cos_sim_matrix.detach().cpu(), label.detach().cpu(), topk=(1,))
+
+        return loss, prec_acc[0]
 
 
 class GE2ELoss(nn.Module):

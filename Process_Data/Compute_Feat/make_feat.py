@@ -25,27 +25,11 @@ import numpy as np
 from kaldiio import WriteHelper
 
 from Process_Data.audio_augment.common import RunCommand
-from Process_Data.audio_processing import Make_Fbank, Make_Spect, Make_MFCC
+from Process_Data.audio_processing import Make_Fbank, Make_Spect, Make_MFCC, Make_HST
 from logger import NewLogger
 
 parser = argparse.ArgumentParser(description='Computing Filter banks!')
 parser.add_argument('--nj', type=int, default=16, metavar='E', help='number of jobs to make feats (default: 10)')
-<<<<<<< HEAD
-parser.add_argument('--data-dir', type=str,
-                    default='/home/yangwenhao/local/project/lstm_speaker_verification/data/Vox1_reverb_fb64/dev',
-                    help='number of jobs to make feats (default: 10)')
-parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
-                    help='number of jobs to make feats (default: 10)')
-parser.add_argument('--out-dir', type=str, required=True, help='number of jobs to make feats (default: 10)')
-parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
-parser.add_argument('--feat-format', type=str, default='kaldi', choices=['kaldi', 'npy'],
-                    help='number of jobs to make feats (default: 10)')
-
-parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
-                    help='number of jobs to make feats (default: 10)')
-
-parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
-=======
 parser.add_argument('--data-dir', type=str, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--data-format', type=str, default='wav', choices=['flac', 'wav'],
                     help='number of jobs to make feats (default: 10)')
@@ -53,33 +37,25 @@ parser.add_argument('--out-dir', type=str, required=True, help='number of jobs t
 parser.add_argument('--out-set', type=str, default='dev_reverb', help='number of jobs to make feats (default: 10)')
 parser.add_argument('--feat-format', type=str, required=True, choices=['kaldi', 'npy', 'kaldi_cmp'],
                     help='number of jobs to make feats (default: 10)')
-parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc'],
+parser.add_argument('--feat-type', type=str, default='fbank', choices=['fbank', 'spectrogram', 'mfcc', 'hst'],
                     help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--log-scale', action='store_true', default=False, help='log power spectogram')
 parser.add_argument('--energy', action='store_true', default=False, help='log power spectogram')
 
->>>>>>> Server/Server
 parser.add_argument('--filter-type', type=str, default='mel', help='number of jobs to make feats (default: 10)')
 
 parser.add_argument('--filters', type=int, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--multi-weight', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--numcep', type=int, default=24, help='number of cepstrum bin to make feats (default: 24)')
-parser.add_argument('--windowsize', type=float, default=0.02, choices=[0.02, 0.025],
+parser.add_argument('--windowsize', type=float, default=0.02, choices=[0.02, 0.025, 0.0625, 0.125],
                     help='number of jobs to make feats (default: 10)')
 parser.add_argument('--stride', type=float, default=0.01, help='number of jobs to make feats (default: 10)')
 
-<<<<<<< HEAD
-parser.add_argument('--bandpass', action='store_true', default=False,
-                    help='using butter bandpass filter for input wav signal')
-parser.add_argument('--lowfreq', type=int, default=300, help='number of jobs to make feats (default: 10)')
-parser.add_argument('--highfreq', type=int, default=3000, help='number of jobs to make feats (default: 10)')
-=======
 parser.add_argument('--bandpass', action='store_true', default=False, help='using butter bandpass filter for signal')
 parser.add_argument('--lowfreq', type=int, default=0, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--highfreq', type=int, default=0, help='number of jobs to make feats (default: 10)')
->>>>>>> Server/Server
-parser.add_argument('--nfft', type=int, required=True, help='number of jobs to make feats (default: 10)')
+parser.add_argument('--nfft', type=int, help='number of jobs to make feats (default: 10)')
 parser.add_argument('--normalize', action='store_true', default=False, help='using Cosine similarity')
 parser.add_argument('--compress', action='store_true', default=False, help='using Cosine similarity')
 
@@ -96,10 +72,13 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
     feat_scp = os.path.join(out_dir, 'feat.%d.temp.scp' % proid)
 
     utt2dur = os.path.join(out_dir, 'utt2dur.%d' % proid)
+    utt2other = os.path.join(out_dir, 'utt2other.%d' % proid)
+
     utt2num_frames = os.path.join(out_dir, 'utt2num_frames.%d' % proid)
 
     feat_scp_f = open(feat_scp, 'w')
     utt2dur_f = open(utt2dur, 'w')
+    utt2other_f = open(utt2other, 'w')
 
     utt2num_frames_f = open(utt2num_frames, 'w')
     feat_dir = os.path.join(ark_dir, ark_prefix)
@@ -109,13 +88,10 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
     if args.feat_format == 'kaldi':
         feat_ark = os.path.join(feat_dir, 'feat.%d.ark' % proid)
         feat_ark_f = open(feat_ark, 'wb')
-<<<<<<< HEAD
-=======
     elif args.feat_format == 'kaldi_cmp':
         feat_scp_f.close()  # kaldiio
         feat_ark = os.path.join(out_dir, '%s_feat.%d.ark' % (ark_prefix, proid))
         writer = WriteHelper('ark,scp:%s,%s' % (feat_ark, feat_scp), compression_method=1)
->>>>>>> Server/Server
 
     temp_dir = out_dir + '/temp'
     if not os.path.exists(temp_dir):
@@ -124,11 +100,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
     while True:
         lock.acquire()  # 加上锁
         if not t_queue.empty():
-<<<<<<< HEAD
-            comms = task_queue.get()
-=======
             comms = t_queue.get()
->>>>>>> Server/Server
             lock.release()  # 释放锁
 
             for comm in comms:
@@ -137,16 +109,6 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                 try:
                     if len(pair) > 2:
                         command = ' '.join(pair[1:])
-<<<<<<< HEAD
-                        if command.endswith('|'):
-                            command = command.rstrip('|')
-                        spid, stdout, error = RunCommand(command)
-                        # os.waitpid(spid, 0)
-
-                        temp_wav = temp_dir + '/%s.%s' % (key, args.data_format)
-                        with open(temp_wav, 'wb') as wav_f:
-                            wav_f.write(stdout)
-=======
 
                         temp_wav = temp_dir + '/%s.%s' % (key, args.data_format)
                         if command.endswith('|'):
@@ -159,7 +121,6 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
 
                         # with open(temp_wav, 'wb') as wav_f:
                         #     wav_f.write(stdout)
->>>>>>> Server/Server
                         if args.feat_type == 'fbank':
                             feat, duration = Make_Fbank(filename=temp_wav, filtertype=args.filter_type, use_energy=True,
                                                         lowfreq=args.lowfreq, log_scale=args.log_scale,
@@ -168,14 +129,6 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                                                         multi_weight=args.multi_weight)
                         elif args.feat_type == 'spectrogram':
                             feat, duration = Make_Spect(wav_path=temp_wav, windowsize=args.windowsize,
-<<<<<<< HEAD
-                                                        lowfreq=args.lowfreq, stride=args.stride, duration=True,
-                                                        nfft=args.nfft, normalize=args.normalize)
-                        elif args.feat_type == 'mfcc':
-                            feat, duration = Make_MFCC(filename=temp_wav, numcep=args.numcep, nfilt=args.filters,
-                                                       lowfreq=args.lowfreq, normalize=args.normalize, duration=True,
-                                                       use_energy=True)
-=======
                                                         bandpass=args.bandpass, lowfreq=args.lowfreq,
                                                         highfreq=args.highfreq,
                                                         log_scale=args.log_scale,
@@ -185,15 +138,14 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                             feat, duration = Make_MFCC(filename=temp_wav, numcep=args.numcep, nfilt=args.filters,
                                                        lowfreq=args.lowfreq, normalize=args.normalize, duration=True,
                                                        use_energy=args.energy)
->>>>>>> Server/Server
+                        elif args.feat_type == 'hst':
+                            feat, duration = Make_HST(filename=temp_wav, winlen=args.windowsize, winstep=args.stride,
+                                                      numcep=args.filters, duration=True)
 
                         os.remove(temp_wav)
 
                     else:
-<<<<<<< HEAD
-=======
 
->>>>>>> Server/Server
                         if args.feat_type == 'fbank':
                             feat, duration = Make_Fbank(filename=pair[1], filtertype=args.filter_type, use_energy=True,
                                                         nfft=args.nfft, windowsize=args.windowsize,
@@ -210,11 +162,13 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                         elif args.feat_type == 'mfcc':
                             feat, duration = Make_MFCC(filename=pair[1], numcep=args.numcep, nfilt=args.filters,
                                                        lowfreq=args.lowfreq,
-<<<<<<< HEAD
-                                                       normalize=args.normalize, duration=True, use_energy=True)
-=======
                                                        normalize=args.normalize, duration=True, use_energy=args.energy)
->>>>>>> Server/Server
+                        elif args.feat_type == 'hst':
+                            feats, duration = Make_HST(filename=pair[1], winlen=args.windowsize, winstep=args.stride,
+                                                       numcep=args.filters, duration=True)
+                            (feat, s_list) = feats
+                            utt2other_f.write('%s %s\n' % (key, str(s_list)))
+
                         # feat = np.load(pair[1]).astype(np.float32)
 
                     feat = feat.astype(np.float32)
@@ -223,12 +177,9 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
                         offsets = feat_ark + ':' + str(feat_ark_f.tell() - len(feat.tobytes()) - 15)
                         # print(offsets)
                         feat_scp_f.write(key + ' ' + offsets + '\n')
-<<<<<<< HEAD
-=======
                     elif args.feat_format == 'kaldi_cmp':
                         writer(str(key), feat)
                         # print(str(key))
->>>>>>> Server/Server
                     elif args.feat_format == 'npy':
                         npy_path = os.path.join(feat_dir, '%s.npy' % key)
                         np.save(npy_path, feat)
@@ -236,16 +187,14 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
 
                     utt2dur_f.write('%s %.6f\n' % (key, duration))
                     utt2num_frames_f.write('%s %d\n' % (key, len(feat)))
+
                 except Exception as e:
                     print(e)
-<<<<<<< HEAD
-=======
                     print(command)
 
                     print('line: ', e.__traceback__.tb_lineno)  # 发生异常所在的行数
                     print('file: ', e.__traceback__.tb_frame.f_globals["__file__"])  # 发生异常所在的文件
 
->>>>>>> Server/Server
                     e_queue.put(key)
 
             # if t_queue.qsize() % 100 == 0:
@@ -268,6 +217,7 @@ def MakeFeatsProcess(lock, out_dir, ark_dir, ark_prefix, proid, t_queue, e_queue
         writer.close()
 
     utt2num_frames_f.close()
+    utt2other_f.close()
 
     new_feat_scp = os.path.join(out_dir, 'feat.%d.scp' % proid)
     if args.feat_format == 'kaldi' and args.compress:
@@ -334,15 +284,9 @@ if __name__ == "__main__":
             sid = ids[0]
             uids = ids[1:]
             spk2utt[sid] = uids
-<<<<<<< HEAD
 
         assert len(spk2utt.keys()) > 0
 
-=======
-
-        assert len(spk2utt.keys()) > 0
-
->>>>>>> Server/Server
     num_utt = len(uid2path.keys())
     start_time = time.time()
 
@@ -358,13 +302,8 @@ if __name__ == "__main__":
             pairs.append(uid2path[uid])
 
         task_queue.put(pairs)
-<<<<<<< HEAD
-    print('Plan to make feats for %d speakers with %d utterances in %s with %d jobs.\n' % (
-    task_queue.qsize(), num_utt, str(time.asctime()), nj))
-=======
     print('>>> Plan to make feats for %d speakers with %d utterances with %d jobs.\n' % (
         task_queue.qsize(), num_utt, nj))
->>>>>>> Server/Server
 
     pool = Pool(processes=nj)  # 创建nj个进程
     for i in range(0, nj):
@@ -418,6 +357,19 @@ if __name__ == "__main__":
                 numofutt += 1
     if numofutt != num_utt:
         print('Errors in %s ?' % utt2dur)
+
+    numofutt = 0
+    all_scp_path = [os.path.join(Split_dir, '%d/utt2other.%d' % (i, i)) for i in range(nj)]
+    utt2other = os.path.join(out_dir, 'utt2other')
+    with open(utt2other, 'w') as utt2other_f:
+        for item in all_scp_path:
+            if not os.path.exists(item):
+                continue
+            for txt in open(str(item), 'r').readlines():
+                utt2other_f.write(txt)
+                numofutt += 1
+    if numofutt != num_utt and numofutt > 0:
+        print('Errors in %s ?' % utt2other_f)
 
     numofutt = 0
     all_scp_path = [os.path.join(Split_dir, '%d/utt2num_frames.%d' % (i, i)) for i in range(nj)]

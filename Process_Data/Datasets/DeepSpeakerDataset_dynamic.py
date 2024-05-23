@@ -6,7 +6,7 @@ import math
 import os
 import pathlib
 import random
-import kaldi_io
+# import kaldi_io
 import Process_Data.constants as c
 import torch
 import numpy as np
@@ -23,19 +23,22 @@ def find_classes(voxceleb):
     class_to_idx = {classes[i]: i for i in range(len(classes))}
     return classes, class_to_idx
 
+
 def find_speakers(voxceleb):
     classes = list(set([datum['subset'] for datum in voxceleb]))
     classes.sort()
     class_to_idx = {classes[i]: i for i in range(len(classes))}
     return classes, class_to_idx
 
+
 def create_indices(_features):
     inds = dict()
-    for idx, (feature_path,label) in enumerate(_features):
+    for idx, (feature_path, label) in enumerate(_features):
         if label not in inds:
             inds[label] = []
         inds[label].append(feature_path)
     return inds
+
 
 def generate_triplets_call(indices, n_classes):
     """
@@ -61,7 +64,7 @@ def generate_triplets_call(indices, n_classes):
         n2 = np.random.randint(0, len(indices[c1]) - 1)
         while n1 == n2:
             n2 = np.random.randint(0, len(indices[c1]) - 1)
-    if len(indices[c2]) ==1:
+    if len(indices[c2]) == 1:
         n3 = 0
     else:
         n3 = np.random.randint(0, len(indices[c2]) - 1)
@@ -73,7 +76,7 @@ class DeepSpeakerDataset(data.Dataset):
     This dataset class is for triplet training.
     """
 
-    def __init__(self, voxceleb, dir, n_triplets,loader, transform=None, *arg, **kw):
+    def __init__(self, voxceleb, dir, n_triplets, loader, transform=None, *arg, **kw):
 
         print('Looking for audio [wav] files in {}.'.format(dir))
 
@@ -105,8 +108,6 @@ class DeepSpeakerDataset(data.Dataset):
         #print('Generating {} triplets'.format(self.n_triplets))
         self.indices = create_indices(features)
 
-
-
     def __getitem__(self, index):
         '''
 
@@ -131,6 +132,7 @@ class DeepSpeakerDataset(data.Dataset):
 
     def __len__(self):
         return self.n_triplets
+
 
 class DeepSpeakerEnrollDataset(data.Dataset):
 
@@ -162,7 +164,6 @@ class DeepSpeakerEnrollDataset(data.Dataset):
 
         self.indices = create_indices(features)
 
-
     def __getitem__(self, index):
         '''
         Args:
@@ -189,6 +190,7 @@ class DeepSpeakerEnrollDataset(data.Dataset):
     def __len__(self):
         return len(self.features)
 
+
 class ClassificationDataset(data.Dataset):
     def __init__(self, voxceleb, dir, loader, transform=None, return_uid=False, *arg, **kw):
         print('Looking for audio [npy] features files in {}.'.format(dir))
@@ -211,7 +213,7 @@ class ClassificationDataset(data.Dataset):
                 vox_path_item = pathlib.Path(vox_path)
                 null_spks.append(vox_path_item.parent.parent.name)
 
-            item = (dir + "/" + str(vox_item['filename'])+'.wav', class_to_idx[vox_item['speaker_id']])
+            item = (dir + "/" + str(vox_item['filename']) + '.wav', class_to_idx[vox_item['speaker_id']])
             features.append(item)
 
         null_spks = list(set(null_spks))
@@ -269,6 +271,7 @@ class ClassificationDataset(data.Dataset):
 
     def __len__(self):
         return len(self.features)
+
 
 class ValidationDataset(data.Dataset):
     '''
@@ -344,8 +347,8 @@ class ValidationDataset(data.Dataset):
     def __len__(self):
         return len(self.features)
 
-class SpeakerTrainDataset(Dataset): #定义pytorch的训练数据及类
-    def __init__(self, dataset, dir, loader, transform, feat_dim=161, samples_per_speaker=8):#每个epoch每个人的语音采样数
+class SpeakerTrainDataset(Dataset): # 定义pytorch的训练数据及类
+    def __init__(self, dataset, dir, loader, transform, feat_dim=161, samples_per_speaker=8): # 每个epoch每个人的语音采样数
         self.dataset = dataset
         self.dir = dir
         current_sid = -1
@@ -364,9 +367,9 @@ class SpeakerTrainDataset(Dataset): #定义pytorch的训练数据及类
         self.loader = loader
 
     def __len__(self):
-        return self.samples_per_speaker * self.n_classes#返回一个epoch的采样数
+        return self.samples_per_speaker * self.n_classes # 返回一个epoch的采样数
 
-    def __getitem__(self, sid):#定义采样方式，sid为说话人id
+    def __getitem__(self, sid): # 定义采样方式，sid为说话人id
         sid %= self.n_classes
         spk = self.index_to_classes[sid]
         utts = self.dataset[spk]
@@ -396,6 +399,7 @@ class SpeakerTrainDataset(Dataset): #定义pytorch的训练数据及类
 
         return feature, label
 
+
 class SampleTrainDataset(data.Dataset):
 
     def __init__(self, vox_duration, dir, loader, transform=None, return_uid=False, *arg, **kw):
@@ -410,7 +414,6 @@ class SampleTrainDataset(data.Dataset):
             for ky in vox_item:
                 if isinstance(vox_item[ky], np.bytes_):
                     vox_item[ky] = vox_item[ky].decode('utf-8')
-
 
         classes, class_to_idx = find_classes(vox_duration)
         # features is the tuple of (filename, (start, stop), spk_id/name)
@@ -501,4 +504,3 @@ class SampleTrainDataset(data.Dataset):
 
     def __len__(self):
         return len(self.features)
-

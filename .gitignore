@@ -14,6 +14,7 @@ Data/
 *.wav
 
 *.bin
+.ipynb_checkpoints
 Lime/SuResCNN10/data
 *.pickle
 *.egs
@@ -31,3 +32,16 @@ Misc_de
 /test.v11.log.np.jpg
 Lime/Plot/.ipynb_checkpoints
 Score/data/covar.csv
+RIRS_NOISES
+test.scp
+Misc/data/dev_spk20/dev_spk10_pca64_1/baseline.tar.gz
+Misc/OptimalTransport/test.jpg
+Misc/OptimalTransport/color_transfer.py
+Misc/data/colors
+Misc/mipi/data
+.ipynb_checkpoints
+TrainAndTest/wav/ecapa/light.txt
+TrainAndTest/wav/ecapa/pytorch.txt
+TrainAndTest/wav/ecapa/Untitled-1.py
+Misc/audio_processing/radio/tmp
+.DS_Store

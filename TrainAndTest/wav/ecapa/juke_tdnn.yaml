@@ -1,0 +1,136 @@
+# @Author: yangwenhao
+# @Contact: 874681044@qq.com
+# @Software: VS Code
+# @File: vox2_resnet_student.yaml
+# @Time: 2023/08/01 20:31
+# @Overview:
+
+data_root_dir: /home/yangwenhao/project/lstm_speaker_verification
+
+## Dataset
+seed: 123456
+datasets: jukebox
+testset: jukebox
+feat_type: wave
+loss: arcsoft
+input_dim: 80
+feat: int
+wav_type: int
+subset: ""
+
+train_dir: !ref <data_root_dir>/data/<datasets>/dev
+train_test_dir: !ref <data_root_dir>/data/<testset>/test
+train_trials_path: !ref <data_root_dir>/data/<testset>/test/trials
+train_trials: trials
+num_valid: 0.05
+test_dir: !ref <data_root_dir>/data/<testset>/test
+trials: trials
+input_norm: Mean
+
+test_input: fix
+log_scale: False
+sr: 16000
+# transform
+chunk_size: 64000
+
+# padding
+random_chunk: [32000, 64000]
+frame_shift: 48000 # test shift
+
+# train dataset config
+num_frames: 64000
+segment_shift: 32000
+
+# sample_type: instance
+input_per_spks: 768
+extract: True
+nj: 8
+shuffle: False
+batch_shuffle: True
+
+feat_format: wav
+remove_vad: False
+
+### Training settings
+epochs: 40
+
+# optimizer
+optimizer: sgd
+lr_decay: 0
+weight_decay: 0.0001
+dampening: 0
+nesterov: False
+momentum: 0.9
+accu_steps: 1
+
+# Scheduler
+patience: 3
+milestones: [10, 20, 30, 40]
+val_check_interval: 5994
+scheduler: rop
+lr: 0.1
+base_lr: 0.00001
+cos_sim: True
+
+early_stopping: True
+early_patience: 15
+early_delta: 0.001
+early_meta: "mix8"
+
+## model Setttings
+encoder_type: "STAP"
+downsample: "k1"
+model: TDNN
+alpha: 0
+embedding_size: 256
+batch_size: 128
+dropout_p: 0.1
+activation: relu
+num_classes: 670
+
+embedding_model: !new:Define_Model.TDNN.TDNN.TDNN_v5
+  filter: "fbank"
+  sr: 16000
+  win_length: 400
+  nfft: 512
+  feat_dim: !ref <input_dim>
+  input_dim: !ref <input_dim>
+  input_norm: !ref <input_norm>
+  alpha: !ref <alpha>
+  channels: [512, 512, 512, 512, 1500]
+  encoder_type: !ref <encoder_type>
+  embedding_size: !ref <embedding_size>
+  num_classes: !ref <num_classes>
+  activation: relu
+
+classifier: !new:Define_Model.Loss.SoftmaxLoss.AdditiveMarginLinear
+  feat_dim: !ref <embedding_size>
+  num_classes: !ref <num_classes>
+
+# loss
+loss_ratio: 1
+lr_ratio: 0
+loss_lambda: False
+loss_type: !ref <loss>
+margin: 0.15
+# m: 0.2
+s: 30
+lamda_beta: 0.2
+# mixup_type: input
+# stat_type: margin1
+
+# Checkpoints
+loss_str: ""
+check_path: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em<embedding_size>_dp01_alpha<alpha>_wde4_varesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb<input_dim>_dist15
+#_mixup<lamda_beta>_<mixup_type>
+
+save_data_dir: !ref Data/checkpoint/<model>/<input_norm>_batch<batch_size>_<encoder_type>_em512_dp01_alpha<alpha>_wde4_varesmix8/<loss>_<optimizer>_<scheduler>/<datasets>/<feat_type><subset>_fb40_dist
+
+resume: !ref <check_path>/checkpoint_40.pth
+# resume: Data/checkpoint/ThinResNet34/Mean_batch128_cbam_downk3_avg5_SAP2_em256_dp01_alpha0_none1_chn32_wd5e4_vares_dist/arcsoft_sgd_rop/vox1/wave_light/lightning_logs/version_0/checkpoints/last.ckpt
+
+veri_pairs: 9600
+gpu_id: 0,1
+
+test_interval: 4
+log_interval: 10

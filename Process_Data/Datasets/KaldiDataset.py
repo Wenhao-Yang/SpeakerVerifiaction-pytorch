@@ -9,17 +9,20 @@
 @Time: 2019/12/10 下午9:28
 @Overview:
 """
+import json
 import os
 import pathlib
 import pdb
 import random
-
-import kaldi_io
+import pandas as pd
+# import kaldi_io
+import kaldiio
 import numpy as np
 import torch
 import torch.utils.data as data
-from kaldi_io import read_mat
+# from kaldi_io import read_mat
 from tqdm import tqdm
+import h5py
 
 import Process_Data.constants as c
 
@@ -47,15 +50,17 @@ def write_vec_ark(uid, feats, write_path, set_id):
     scp_file = write_path + '/xvec.{}.scp'.format(set_id)
 
     # write scp and ark file
-    with open(scp_file, 'w') as scp, open(ark_file, 'wb') as ark:
+    with kaldiio.WriteHelper('ark,scp:%s,%s'%(ark_file, scp_file)) as writer:
+    # with open(scp_file, 'w') as scp, open(ark_file, 'wb') as ark:
         for i in range(len(uid)):
             vec = feats[i]
-            len_vec = len(vec.tobytes())
-            key = uid[i]
-
-            kaldi_io.write_vec_flt(ark, vec, key=key)
-            # print(ark.tell())
-            scp.write(str(uid[i]) + ' ' + str(ark_file) + ':' + str(ark.tell()-len_vec-10) + '\n')
+            # len_vec = len(vec.tobytes())
+            # key = uid[i]
+            # kaldiio..write_vec_flt(ark, vec, key=key)
+            # # print(ark.tell())
+            # scp.write(str(uid[i]) + ' ' + str(ark_file) +
+            #           ':' + str(ark.tell()-len_vec-10) + '\n')
+            writer(uid[i], vec)
 
     print('\nark,scp files are in: {}, {}.'.format(ark_file, scp_file))
 
@@ -89,7 +94,7 @@ class KaldiTrainDataset(data.Dataset):
                 spk_utt = line.split(' ')
                 spk_name = spk_utt[0]
                 if spk_name not in dataset.keys():
-                    spk_utt[-1]=spk_utt[-1].rstrip('\n')
+                    spk_utt[-1] = spk_utt[-1].rstrip('\n')
                     dataset[spk_name] = spk_utt[1:]
 
         utt2spk_dict = {}
@@ -109,8 +114,10 @@ class KaldiTrainDataset(data.Dataset):
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-        uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+        uid2feat = {}
+        pbar = tqdm(enumerate(kaldiio.load_scp(feat_scp)), ncols=100)
+
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -129,10 +136,12 @@ class KaldiTrainDataset(data.Dataset):
                     utt = dataset[spk].pop(j)
                     valid_set[spk].append(utt)
 
-                    valid_uid2feat[valid_set[spk][-1]] = uid2feat.pop(valid_set[spk][-1])
+                    valid_uid2feat[valid_set[spk][-1]
+                                   ] = uid2feat.pop(valid_set[spk][-1])
                     valid_utt2spk_dict[utt] = utt2spk_dict[utt]
 
-        print('\tSpliting {} utterances for Validation.\n'.format(len(valid_uid2feat)))
+        print('\tSpliting {} utterances for Validation.\n'.format(
+            len(valid_uid2feat)))
 
         self.feat_dim = uid2feat[dataset[speakers[0]][0]].shape[1]
         self.speakers = speakers
@@ -165,7 +174,8 @@ class KaldiTrainDataset(data.Dataset):
                 start = int(random.uniform(0, len(feature)))
             else:
                 start = 0
-            stop = int(min(len(feature) - 1, max(1.0, start + frames - n_samples)))
+            stop = int(
+                min(len(feature) - 1, max(1.0, start + frames - n_samples)))
             try:
                 y = np.concatenate((y, feature[start:stop]), axis=0)
             except:
@@ -237,7 +247,7 @@ class KaldiTestDataset(data.Dataset):
         print('==> There are {} speakers in Test Dataset.'.format(len(speakers)))
 
         uid2feat = {}
-        for utt_id, feat in kaldi_io.read_mat_scp(feat_scp):
+        for utt_id, feat in kaldiio.load_scp(feat_scp):
             uid2feat[utt_id] = feat
         print('\tThere are {} utterances in Test Dataset.'.format(len(uid2feat)))
 
@@ -297,7 +307,7 @@ class TrainDataset(data.Dataset):
                 spk_utt = line.split(' ')
                 spk_name = spk_utt[0]
                 if spk_name not in dataset.keys():
-                    spk_utt[-1]=spk_utt[-1].rstrip('\n')
+                    spk_utt[-1] = spk_utt[-1].rstrip('\n')
                     dataset[spk_name] = spk_utt[1:]
         utt2spk_dict = {}
         with open(utt2spk, 'r') as u:
@@ -316,8 +326,9 @@ class TrainDataset(data.Dataset):
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-        uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+        uid2feat = {}
+        pbar = tqdm(enumerate(kaldiio.load_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -336,10 +347,12 @@ class TrainDataset(data.Dataset):
                     utt = dataset[spk].pop(j)
                     valid_set[spk].append(utt)
 
-                    valid_uid2feat[valid_set[spk][-1]] = uid2feat.pop(valid_set[spk][-1])
+                    valid_uid2feat[valid_set[spk][-1]
+                                   ] = uid2feat.pop(valid_set[spk][-1])
                     valid_utt2spk_dict[utt] = utt2spk_dict[utt]
 
-        print('==>Spliting {} utterances for Validation.\n'.format(len(valid_uid2feat)))
+        print('==>Spliting {} utterances for Validation.\n'.format(
+            len(valid_uid2feat)))
         utt_lst = []
         for uid in list(utt2spk_dict.keys()):
             if uid not in valid_uid2feat.keys():
@@ -396,7 +409,7 @@ class KaldiTupleDataset(data.Dataset):
                 spk_utt = line.split(' ')
                 spk_name = spk_utt[0]
                 if spk_name not in dataset.keys():
-                    spk_utt[-1]=spk_utt[-1].rstrip('\n')
+                    spk_utt[-1] = spk_utt[-1].rstrip('\n')
                     dataset[spk_name] = spk_utt[1:]
 
         utt2spk_dict = {}
@@ -416,9 +429,9 @@ class KaldiTupleDataset(data.Dataset):
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
         idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-
-        uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
-        pbar = tqdm(enumerate(kaldi_io.read_mat_scp(feat_scp)))
+        # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+        uid2feat = {}
+        pbar = tqdm(enumerate(kaldiio.load_scp(feat_scp)), ncols=100)
         for idx, (utt_id, feat) in pbar:
             uid2feat[utt_id] = feat
 
@@ -437,10 +450,12 @@ class KaldiTupleDataset(data.Dataset):
                     utt = dataset[spk].pop(j)
                     valid_set[spk].append(utt)
 
-                    valid_uid2feat[valid_set[spk][-1]] = uid2feat.pop(valid_set[spk][-1])
+                    valid_uid2feat[valid_set[spk][-1]
+                                   ] = uid2feat.pop(valid_set[spk][-1])
                     valid_utt2spk_dict[utt] = utt2spk_dict[utt]
 
-        print('\tSpliting {} utterances for Validation.\n'.format(len(valid_uid2feat)))
+        print('\tSpliting {} utterances for Validation.\n'.format(
+            len(valid_uid2feat)))
 
         tuple_lst = []
         train_trials_f = open(train_trials, 'w')
@@ -469,11 +484,13 @@ class KaldiTupleDataset(data.Dataset):
                 nagative_spks = speakers.copy()
                 nagative_spks.pop(i)
 
-                nagative_spks = np.random.choice(nagative_spks, size=nagative_pair, replace=False)
+                nagative_spks = np.random.choice(
+                    nagative_spks, size=nagative_pair, replace=False)
                 for nagative_spk in nagative_spks:
                     negative_trials = []
                     negative_trials.append(eval_utt)
-                    nagative_enroll = np.random.choice(dataset[nagative_spk], size=num_enroll)
+                    nagative_enroll = np.random.choice(
+                        dataset[nagative_spk], size=num_enroll)
                     for x in nagative_enroll:
                         negative_trials.append(x)
 
@@ -488,7 +505,6 @@ class KaldiTupleDataset(data.Dataset):
         train_trials_f.close()
 
         print('\tGenerate {} tuples for training.\n'.format(len(tuple_lst)))
-
 
         self.feat_dim = uid2feat[dataset[speakers[0]][0]].shape[1]
         self.speakers = speakers
@@ -526,12 +542,15 @@ class KaldiTupleDataset(data.Dataset):
 
 
 class KaldiExtractDataset(data.Dataset):
-    def __init__(self, dir, transform, filer_loader, trials_file='trials', extract_trials=True):
+    def __init__(self, dir, transform, filer_loader, trials_file='trials',
+                 extract_trials=True, vad_select=False, feat_type='kaldi',
+                 verbose=0):
 
-        feat_scp = dir + '/feats.scp'
+        feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
         trials = dir + '/%s' % trials_file
+        vad_scp = dir + '/vad.scp'
 
-        if os.path.exists(trials) and extract_trials:
+        if os.path.isfile(trials) and extract_trials:
             assert os.path.exists(feat_scp), feat_scp
 
             trials_utts = set()
@@ -549,30 +568,67 @@ class KaldiExtractDataset(data.Dataset):
 
             uid2feat = {}
             with open(feat_scp, 'r') as u:
-                all_cls = tqdm(u.readlines())
+                all_cls = tqdm(
+                    u.readlines(), ncols=100) if verbose > 0 else u.readlines()
                 for line in all_cls:
-                    utt_path = line.split(' ')
+                    # utt_path = line.split(' ')
+                    utt_path = line.split()
+
+                    if len(utt_path) == 2:
+                        upath_idx = 1 
+                    elif len(utt_path) == 15: 
+                        upath_idx = 4 
+                    else:
+                        upath_idx = -11
+
                     uid = utt_path[0]
+
                     if uid in trials_utts:
-                        uid2feat[uid] = utt_path[-1]
+                        uid2feat[uid] = utt_path[upath_idx]
 
         else:
-            print("    trials not exist!")
+            if verbose > 0:
+                print("    trials not exist, extract xvector for all utterances!")
             uid2feat = {}
             with open(feat_scp, 'r') as u:
-                all_cls = tqdm(u.readlines())
+                all_cls = tqdm(
+                    u.readlines(), ncols=100) if verbose > 0 else u.readlines()
                 for line in all_cls:
-                    utt_path = line.split(' ')
+                    # utt_path = line.split(' ')
+                    utt_path = line.split()
+
+                    if len(utt_path) == 2:
+                        upath_idx = 1 
+                    elif len(utt_path) == 15: 
+                        upath_idx = 4 
+                    else:
+                        upath_idx = -11
+                            
                     uid = utt_path[0]
-                    uid2feat[uid] = utt_path[-1]
+                    uid2feat[uid] = utt_path[upath_idx]
+
+        uid2vad = {}
+        if vad_select:
+            if verbose > 0:
+                print("    Select voiced frames to extracting xvectors!")
+            assert os.path.exists(vad_scp), vad_scp
+            # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+            with open(vad_scp, 'r') as f:
+                for line in f.readlines():
+                    uid_vad = line.split()
+                    uid, vad_offset = uid_vad
+                    uid2vad[uid] = vad_offset
 
         # pdb.set_trace()
         utts = list(uid2feat.keys())
         utts.sort()
         # assert len(utts) == len(trials_utts)
-        print('==> There are {} utterances in Verifcation set to extract vectors.'.format(len(utts)))
+        if verbose > 0:
+            print('==> There are {} utterances in Verifcation set to extract vectors.'.format(
+                len(utts)))
 
         self.uid2feat = uid2feat
+        self.uid2vad = uid2vad
         self.transform = transform
         self.uids = utts
         self.file_loader = filer_loader
@@ -580,6 +636,11 @@ class KaldiExtractDataset(data.Dataset):
     def __getitem__(self, index):
         uid = self.uids[index]
         y = self.file_loader(self.uid2feat[uid])
+
+        if uid in self.uid2vad:
+            voice_idx = np.where(kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+            y = y[voice_idx]
+
         feature = self.transform(y)
 
         return feature, uid
@@ -589,7 +650,8 @@ class KaldiExtractDataset(data.Dataset):
 
 
 class ScriptVerifyDataset(data.Dataset):
-    def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load, return_uid=False):
+    def __init__(self, dir, xvectors_dir, trials_file='trials', loader=np.load,
+                 return_uid=False, verbose=0):
 
         feat_scp = xvectors_dir + '/xvectors.scp'
         trials = dir + '/%s' % trials_file
@@ -607,30 +669,36 @@ class ScriptVerifyDataset(data.Dataset):
 
         utts = set(uid2feat.keys())
 
-        # print('\n==> There are {} utterances in Verification trials.'.format(len(uid2feat)))
+        if verbose > 1:
+            print('\n==> There are {} utterances in Verification set.'.format(len(uid2feat)))
 
         trials_pair = []
         positive_pairs = 0
         skip_pairs = 0
+        assert os.path.exists(trials)
         with open(trials, 'r') as t:
             all_pairs = t.readlines()
             for line in all_pairs:
                 pair = line.split()
-                if pair[2] == 'nontarget' or pair[2] == '0':
+                if pair[2] in ['nontarget', '0']:
                     pair_true = False
                 else:
                     pair_true = True
                     positive_pairs += 1
+
                 if pair[0] in utts and pair[1] in utts:
                     trials_pair.append((pair[0], pair[1], pair_true))
                 else:
                     skip_pairs += 1
 
         trials_pair = np.array(trials_pair)
-        trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
-
-        # print('    There are {} pairs in trials with {} positive pairs'.format(len(trials_pair),
-        #                                                                        positive_pairs))
+        assert len(trials_pair) > 0
+        # trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
+        if verbose > 1:
+            print('    There are {} pairs in trials with {} positive pairs.'.format(len(trials_pair), positive_pairs))
+            
+        if skip_pairs > 0:
+            print('    Skpipped {} pairs.'.format(skip_pairs))
 
         self.uid2feat = uid2feat
         self.trials_pair = trials_pair
@@ -647,7 +715,7 @@ class ScriptVerifyDataset(data.Dataset):
         data_a = self.loader(feat_a)
         data_b = self.loader(feat_b)
 
-        if label == 'True' or label == True:
+        if label in ['True', True]:
             label = True
         else:
             label = False
@@ -663,38 +731,19 @@ class ScriptVerifyDataset(data.Dataset):
         if num > len(self.trials_pair):
             print('%d is greater than the total number of pairs')
 
-        elif num * 0.3 > self.numofpositive:
-            indices = list(range(self.numofpositive, len(self.trials_pair)))
-            random.shuffle(indices)
-            indices = indices[:(num - self.numofpositive)]
-            positive_idx = list(range(self.numofpositive))
-
-            positive_pairs = self.trials_pair[positive_idx].copy()
-            nagative_pairs = self.trials_pair[indices].copy()
-
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
         else:
-            indices = list(range(self.numofpositive, len(self.trials_pair)))
-            random.shuffle(indices)
-            indices = indices[:(num - int(0.3 * num))]
-
-            positive_idx = list(range(self.numofpositive))
-            random.shuffle(positive_idx)
-            positive_idx = positive_idx[:int(0.3 * num)]
-            positive_pairs = self.trials_pair[positive_idx].copy()
-            nagative_pairs = self.trials_pair[indices].copy()
-
-            self.numofpositive = len(positive_pairs)
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = self.trials_pair[:num]
 
         assert len(self.trials_pair) == num
         num_positive = 0
         for x, y, z in self.trials_pair:
-            if z == 'True':
+            if z in ['True', True]:
                 num_positive += 1
 
-        assert len(self.trials_pair) == num, '%d != %d' % (len(self.trials_pair), num)
-        assert self.numofpositive == num_positive, '%d != %d' % (self.numofpositive, num_positive)
+        assert len(self.trials_pair) == num, '%d != %d' % (
+            len(self.trials_pair), num)
+        assert self.numofpositive == num_positive, '%d != %d' % (
+            self.numofpositive, num_positive)
         print('%d positive pairs remain.' % num_positive)
 
     def __len__(self):
@@ -703,29 +752,70 @@ class ScriptVerifyDataset(data.Dataset):
 
 class ScriptTrainDataset(data.Dataset):
     def __init__(self, dir, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
-                 loader=np.load, return_uid=False, domain=False, rand_test=False):
+                 loader=np.load, return_uid=False, domain=False, rand_test=False,
+                 vad_select=False, sample_type='instance', sr=16000, save_dir='',
+                 sample_score='', return_idx=False, second_dir='', second_suffix='',
+                 segment_len=c.N_SAMPLES, segment_shift=c.N_SAMPLES, verbose=1, min_frames=0):
+
         self.return_uid = return_uid
         self.domain = domain
         self.rand_test = rand_test
+        
+        if segment_len == c.N_SAMPLES and feat_type == 'wav':
+            segment_len = segment_len * sr / 100
+        if segment_shift == c.N_SAMPLES and feat_type == 'wav':
+            segment_shift = segment_shift * sr / 100
+        
+        self.segment_len = segment_len
+        self.segment_shift = segment_shift
+        self.min_frames = min_frames
+        self.sample_score = sample_score
+        self.return_idx = return_idx
+        self.save_dir = save_dir
+
+        self.feat_type = feat_type
+        self.sample_type = sample_type  # balance or instance
 
         feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
+        second_feat_scp = second_dir + '/feats.scp' if feat_type != 'wav' else second_dir + '/wav.scp'
         spk2utt = dir + '/spk2utt'
         utt2spk = dir + '/utt2spk'
-        utt2num_frames = dir + '/utt2num_frames'
+        utt2num_frames = dir + '/utt2num_frames' if feat_type != 'wav' else dir + '/utt2dur'
         utt2dom = dir + '/utt2dom'
+        vad_scp = dir + '/vad.scp'
 
         assert os.path.exists(feat_scp), feat_scp
         assert os.path.exists(spk2utt), spk2utt
 
-        invalid_uid = []
+        invalid_uid = set([])
+        base_utts = []
+
+        uid2vad = {}
+        if vad_select:
+            assert os.path.exists(vad_scp), vad_scp
+            # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+            with open(vad_scp, 'r') as f:
+                for line in f.readlines():
+                    uid_vad = line.split()
+                    uid, vad_offset = uid_vad
+                    uid2vad[uid] = vad_offset
+
         total_frames = 0
+        self.utt2num_frames = {}
+        # if self.sample_type != 'balance':
         if os.path.exists(utt2num_frames):
             with open(utt2num_frames, 'r') as f:
                 for l in f.readlines():
                     uid, num_frames = l.split()
-                    total_frames += int(num_frames)
-                    if int(num_frames) < 50:
-                        invalid_uid.append(uid)
+                    if uid in uid2vad:
+                        num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
+                    if feat_type == 'wav':
+                        num_frames = float(num_frames) * sr
+
+                    num_frames = int(num_frames)
+                    self.utt2num_frames[uid] = num_frames
+                    if num_frames < self.min_frames:
+                        invalid_uid.add(uid)
 
         dataset = {}
         with open(spk2utt, 'r') as u:
@@ -734,29 +824,26 @@ class ScriptTrainDataset(data.Dataset):
                 spk_utt = line.split()
                 spk_name = spk_utt[0]
                 if spk_name not in dataset:
-                    dataset[spk_name] = [x for x in spk_utt[1:] if x not in invalid_uid]
+                    dataset[spk_name] = [
+                        x for x in spk_utt[1:] if x not in invalid_uid]
 
         utt2spk_dict = {}
         with open(utt2spk, 'r') as u:
-            all_cls = u.readlines()
-            for line in all_cls:
-                utt_spk = line.split()
-                uid = utt_spk[0]
-                if uid in invalid_uid:
-                    continue
+            for line in u.readlines():
+                uid, sid = line.split()
+                # if uid in invalid_uid:
+                #     continue
                 if uid not in utt2spk_dict:
-                    utt2spk_dict[uid] = utt_spk[-1]
+                    utt2spk_dict[uid] = sid
 
         self.dom_to_idx = None
         self.utt2dom_dict = None
         dom_to_idx = None
         if self.domain:
             assert os.path.exists(utt2dom), utt2dom
-
             utt2dom_dict = {}
             with open(utt2dom, 'r') as u:
-                all_cls = u.readlines()
-                for line in all_cls:
+                for line in u.readlines():
                     utt_dom = line.split()
                     uid = utt_dom[0]
                     if uid in invalid_uid:
@@ -769,173 +856,338 @@ class ScriptTrainDataset(data.Dataset):
             domains.sort()
             dom_to_idx = {domains[i]: i for i in range(len(domains))}
             self.dom_to_idx = dom_to_idx
-            print("Domain idx: ", str(self.dom_to_idx))
+            if verbose > 1:
+                print("Domain idx: ", str(self.dom_to_idx))
             self.utt2dom_dict = utt2dom_dict
 
         # pdb.set_trace()
-
         speakers = [spk for spk in dataset.keys()]
         speakers.sort()
-        print('==> There are {} speakers in Dataset.'.format(len(speakers)))
+        self.num_spks = len(speakers)
         spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
 
-        idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
 
-        uid2feat = {}  # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+        if save_dir == '' or (not os.path.exists(os.path.join(save_dir, 'spk2idx'))):
+            if save_dir != '' and not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+            with open(os.path.join(save_dir, 'spk2idx'), 'w') as f:
+                json.dump(spk_to_idx, f)
+
+        idx_to_spk = {spk_to_idx[sid]: sid for sid in spk_to_idx}
+        # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+        uid2feat = {}
         with open(feat_scp, 'r') as f:
             for line in f.readlines():
-                uid, feat_offset = line.split()
+                uid_feat = line.split()
+                if len(uid_feat) == 2:
+                    uid, feat_offset = uid_feat
+                elif len(uid_feat) == 3:
+                    uid, _, feat_offset = uid_feat
+                elif len(uid_feat) > 3:
+                    uid = uid_feat[0]
+                    feat_offset = uid_feat[4]
+
                 if uid in invalid_uid:
                     continue
                 uid2feat[uid] = feat_offset
-
-        print('    There are {} utterances in Train Dataset, where {} utterances are removed.'.format(len(uid2feat),
-                                                                                                      len(invalid_uid)))
+                
+        suid2feat = {}
+        if os.path.exists(second_feat_scp):
+            with open(second_feat_scp, 'r') as f:
+                for line in f.readlines():
+                    uid_feat = line.split()
+                    if len(uid_feat) == 2:
+                        uid, feat_offset = uid_feat
+                    elif len(uid_feat) == 3:
+                        uid, _, feat_offset = uid_feat
+                    elif len(uid_feat) > 3:
+                        uid = uid_feat[0]
+                        feat_offset = uid_feat[4]
+                    uid = uid[:-len(second_suffix)]
+                    if uid in invalid_uid:
+                        continue
+                    suid2feat[uid] = feat_offset
+        
+        self.suid2feat = suid2feat
         self.valid_set = None
         self.valid_uid2feat = None
         self.valid_utt2spk_dict = None
         self.valid_utt2dom_dict = None
+        self.valid_base_utts = None
 
         if num_valid > 0:
             valid_set = {}
             valid_uid2feat = {}
             valid_utt2spk_dict = {}
             valid_utt2dom_dict = {}
+            valid_base_utts = []
 
-            for spk in speakers:
-                if spk not in valid_set.keys():
-                    valid_set[spk] = []
-                    for i in range(num_valid):
-                        if len(dataset[spk]) <= 1:
-                            break
-                        j = np.random.randint(len(dataset[spk]))
-                        utt = dataset[spk].pop(j)
-                        valid_set[spk].append(utt)
+            if save_dir == '' or (not os.path.exists(os.path.join(save_dir, 'valid.csv'))):
+                for spk in speakers:
+                    if spk not in valid_set.keys():
+                        valid_set[spk] = []
+                        if isinstance(num_valid, float) and num_valid < 1.0:
+                            numofutt = len(dataset[spk]) - int(np.ceil((1-num_valid) * len(dataset[spk])))
+                        else:
+                            numofutt = num_valid
 
-                        valid_uid2feat[valid_set[spk][-1]] = uid2feat.pop(valid_set[spk][-1])
-                        valid_utt2spk_dict[utt] = utt2spk_dict[utt]
-                        if self.domain:
-                            valid_utt2dom_dict[utt] = utt2dom_dict[utt]
+                        if numofutt >= 0.5*len(dataset[spk]):
+                            continue
 
-            print('    Spliting {} utterances for Validation.'.format(len(valid_uid2feat)))
+                        for i in range(numofutt):
+                            j = np.random.randint(len(dataset[spk]))
+                            utt = dataset[spk].pop(j)
+                            valid_set[spk].append(utt)
+
+                            valid_uid2feat[valid_set[spk][-1]
+                                        ] = uid2feat.pop(valid_set[spk][-1])
+                            valid_utt2spk_dict[utt] = utt2spk_dict[utt]
+                            if self.domain:
+                                valid_utt2dom_dict[utt] = utt2dom_dict[utt]
+
+                for utt in valid_uid2feat:
+                    num_frames = self.utt2num_frames[utt]
+                    this_numofseg = int(np.ceil(float(num_frames-segment_len+segment_shift) / segment_shift))
+
+                    for i in range(this_numofseg):
+                        start = int(i * segment_shift)
+                        end = int(min(start+segment_len, num_frames))
+                        start = int(max(end - num_frames, 0))
+
+                        if (end - start) >= (segment_len*0.125) :
+                            valid_base_utts.append((utt, start, end))
+
+                valid_utts = pd.DataFrame(valid_base_utts, columns=['uid', 'start', 'end'])
+                if save_dir != '':
+                    valid_utts.to_csv(os.path.join(save_dir, 'valid.csv'), index=None)
+            else:
+                valid_base_utts = pd.read_csv(os.path.join(save_dir, 'valid.csv')).to_numpy().tolist()
+                valid_uids = set([utt for utt, start, end in valid_base_utts])
+                for uid in valid_uids:
+                    valid_set.setdefault(utt2spk_dict[uid], []).extend([uid])
+                    valid_utt2spk_dict[uid] = utt2spk_dict[uid]
+                    valid_uid2feat[uid] = uid2feat[uid]
+                    if self.domain:
+                        valid_utt2dom_dict[uid] = utt2dom_dict[uid]
+
             self.valid_set = valid_set
             self.valid_uid2feat = valid_uid2feat
             self.valid_utt2spk_dict = valid_utt2spk_dict
+            self.valid_uids = set(list(valid_utt2spk_dict.keys()))
             self.valid_utt2dom_dict = valid_utt2dom_dict
+            self.valid_base_utts = valid_base_utts
 
+        if self.sample_score == '':
+            save_csv = os.path.join(save_dir, 'train.csv')
+        else:
+            save_csv = os.path.join(save_dir, 'train.{}.csv'.format(self.sample_score))
 
+        if self.sample_score != '' or save_dir != '' and os.path.exists(save_csv):
+            if verbose > 0:
+                print('Loading training samples from:\n\t {} '.format(save_csv))
+            train_base_utts = pd.read_csv(save_csv).to_numpy().tolist()
+        else:
+            if verbose > 1:
+                print(f'    Segment length: {segment_len}, shift: {segment_shift}')
+            
+            train_base_utts = []
+            for sid in speakers:
+                for uid in dataset[sid]:
+                    num_frames = self.utt2num_frames[uid]
+                    this_numofseg = int(np.ceil(float(num_frames-segment_len+segment_shift) / segment_shift))
+
+                    for i in range(this_numofseg):
+                        start = int(i * segment_shift)
+                        end = int(min(start+segment_len, num_frames))
+                        start = int(max(end - segment_len, 0))
+
+                        if (end - start) >= (segment_len*0.125):
+                            train_base_utts.append((uid, start, end))
+
+            # self.base_utts = train_base_utts
+            if verbose > 0:
+                print('    There are {} basic segments for training .'.format(len(train_base_utts)))
+            # random.shuffle(train_base_utts)
+            if self.sample_type != 'instance':
+                while len(train_base_utts) < samples_per_speaker * self.num_spks:
+                    sid_idx = len(train_base_utts) % self.num_spks
+                    sid = idx_to_spk[sid_idx]
+                    uid = np.random.choice(dataset[sid])
+
+                    this_frames = self.utt2num_frames[uid]
+
+                    if this_frames <= self.segment_len:
+                        start = 0 
+                        end = this_frames
+                    else:
+                        start = np.random.randint(0, this_frames-self.segment_len)
+                        end = start + self.segment_len
+
+                    if (end - start) >= self.min_frames:
+                        train_base_utts.append((uid, start, end))
+
+                assert len(train_base_utts) >= samples_per_speaker * self.num_spks, print(len(train_base_utts), samples_per_speaker * self.num_spks)
+            random.shuffle(train_base_utts)
+            if save_dir != '':
+                if not os.path.exists(save_dir):
+                    os.makedirs(save_dir)
+
+                if torch.distributed.is_initialized() and torch.distributed.get_rank() != 0:
+                    pass
+                else:
+                    train_utts = pd.DataFrame(train_base_utts, columns=['uid', 'start', 'end'])
+                    train_utts.to_csv(os.path.join(save_dir, 'train.csv'), index=None)
+                    if verbose > 0:
+                        print('    Saving train.csv to {}.'.format(os.path.join(save_dir, 'train.csv')))
+
+        self.base_utts = train_base_utts
         self.speakers = speakers
+        self.utt2spk_dict = utt2spk_dict
         self.dataset = dataset
         self.uid2feat = uid2feat
+        self.uid2vad = uid2vad
         self.spk_to_idx = spk_to_idx
         self.idx_to_spk = idx_to_spk
-        self.num_spks = len(speakers)
         self.num_doms = len(self.dom_to_idx) if dom_to_idx != None else 0
-
         self.loader = loader
         self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[-1]
         self.transform = transform
-        if samples_per_speaker == 0:
-            samples_per_speaker = np.power(2, np.ceil(np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
-            print('    The number of sampling utterances for each speakers is decided by the number of total frames.')
+        if verbose > 0:
+            print(f'==> Total:   {len(speakers)} spks, {len(uid2feat)} utterances, {len(invalid_uid)} utterances are removed.')
+            print(f'    #Devset:  {len(train_base_utts)},  #Validset: {len(valid_uid2feat)}')
+
+        if sample_type == 'instance':
+            if verbose > 1:
+                print(
+                    '    The number of samples is related to the number of total frames.')
+
+        elif samples_per_speaker == 0:
+            samples_per_speaker = np.power(2, np.ceil(
+                np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
+            if verbose > 1:
+                print(
+                    '    The number of samples for each speakers is decided by the number of total frames.')
+        else:
+            samples_per_speaker = max(
+                np.ceil(len(base_utts) / len(speakers)), samples_per_speaker)
+            if verbose > 1:
+                print(
+                    '    The number of samples for each speakers is add to the number of total frames.')
+
         self.samples_per_speaker = int(samples_per_speaker)
         self.c_axis = 0 if feat_type != 'wav' else 1
         self.feat_shape = (0, self.feat_dim) if feat_type != 'wav' else (1, 0)
-        print('    Sample {} random utterances for each speakers.'.format(self.samples_per_speaker))
+        if verbose > 0:
+            if sample_type == 'instance':
+                print('    Sample {} segments for speakers.'.format(len(train_base_utts)))
+            else:
+                print('    Sample {} * {} = {} segments for speakers.'.format(
+                    self.samples_per_speaker, len(self.speakers), self.samples_per_speaker * len(self.speakers)))
 
-        if self.return_uid or self.domain:
+        if self.return_uid:
             self.utt_dataset = []
-            for i in range(self.samples_per_speaker * self.num_spks):
+            for i in range(self.num_spks):
+                # self.samples_per_speaker
                 sid = i % self.num_spks
                 spk = self.idx_to_spk[sid]
                 utts = self.dataset[spk]
-                uid = utts[random.randrange(0, len(utts))]
-                self.utt_dataset.append([uid, sid])
+                
+                uids = utts[:self.samples_per_speaker]
+                for uid in uids:
+                    self.utt_dataset.append([uid, sid])
 
-    def __getitem__(self, sid):
+    def __getitem__(self, idx):
         # start_time = time.time()
-        if self.return_uid or self.domain:
-            uid, label = self.utt_dataset[sid]
+        if self.return_uid:
+            uid, label = self.utt_dataset[idx]
             y = self.loader(self.uid2feat[uid])
             feature = self.transform(y)
+    
+            return feature, label, uid
 
-            if self.domain:
-                label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
-                return feature, label, label_b
-            else:
-                return feature, label, uid
+        this_utt = self.base_utts[idx]
+        (uid, start, end) = this_utt[:3]
 
-        rand_idxs = [sid]
-        sid %= self.num_spks
-        spk = self.idx_to_spk[sid]
-        utts = self.dataset[spk]
-        num_utt = len(utts)
+        sid = self.utt2spk_dict[uid]
+        label = self.spk_to_idx[sid]
 
-        y = np.array([[]]).reshape(0, self.feat_dim)
-<<<<<<< HEAD:Process_Data/KaldiDataset.py
-        uid = utts[np.random.randint(0, num_utt)]
-=======
-        rand_utt_idx = np.random.randint(0, num_utt)
-        rand_idxs.append(rand_utt_idx)
-        uid = utts[rand_utt_idx]
->>>>>>> Server/Server:Process_Data/Datasets/KaldiDataset.py
+        if self.feat_type != 'wav':
+            y = self.loader(self.uid2feat[uid])
+        else:
+            y = self.loader(
+                self.uid2feat[uid], start=start, stop=end)
 
-        feature = self.loader(self.uid2feat[uid])
-        y = np.concatenate((y, feature), axis=0)
+            if uid in self.uid2vad:
+                voice_idx = np.where(
+                    kaldiio.load_mat(self.uid2vad[uid]) == 1)[0]
+                y = y[voice_idx]
+                
+            if len(self.suid2feat) > 0:
+                y1 = self.loader(
+                self.suid2feat[uid], start=start, stop=end)
+                if y1.shape[1] >= y.shape[1]:
+                    y0 = y1[:, :y.shape[1]]
+                else:
+                    y0 = np.zeros_like(y)
+                    y0[:, :y1.shape[1]] = y1[:,]
+                
+                y = np.concatenate([y, y0], axis=0)
 
-        while len(y) < c.N_SAMPLES:
-<<<<<<< HEAD:Process_Data/KaldiDataset.py
-            uid = utts[np.random.randint(0, num_utt)]
-=======
-            rand_utt_idx = np.random.randint(0, num_utt)
-            rand_idxs.append(rand_utt_idx)
-
-            uid = utts[rand_utt_idx]
-
->>>>>>> Server/Server:Process_Data/Datasets/KaldiDataset.py
-            feature = self.loader(self.uid2feat[uid])
-            y = np.concatenate((y, feature), axis=0)
-
-            # transform features if required
-        if self.rand_test:
-            while len(rand_idxs) < 4:
-                rand_idxs.append(-1)
-
-            start, length = self.transform(y)
-            rand_idxs.append(start)
-            rand_idxs.append(length)
-
-            # [uttid uttid -1 -1 start lenght]
-            return torch.tensor(rand_idxs).reshape(1, -1), sid
-
+        sid = self.utt2spk_dict[uid]
+        label = self.spk_to_idx[sid]
         feature = self.transform(y)
-        label = sid
 
-        return feature, label
+        if len(this_utt) > 3:
+            # print(this_utt)
+            score = torch.tensor(this_utt[3:]).float()
+            return feature, label, score
+
+        if self.domain:
+            label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
+            return feature, label, label_b
+        elif self.return_idx:
+            return feature, label, torch.LongTensor([idx])
+        else:
+            return feature, label
 
     def __len__(self):
-        return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
+        if self.return_uid:
+            return len(self.utt_dataset)
+        
+        elif self.sample_type == 'instance':
+            return len(self.base_utts)
+        # elif self.sample_type == 'half_balance':
+        #     return max(len(self.base_utts), self.samples_per_speaker * len(self.speakers))
+        else:
+            # 返回一个epoch的采样数
+            return self.samples_per_speaker * len(self.speakers)
 
 
 class ScriptValidDataset(data.Dataset):
     def __init__(self, valid_set, spk_to_idx, valid_uid2feat, valid_utt2spk_dict,
                  transform, dom_to_idx=None, valid_utt2dom_dict=None, loader=np.load,
-                 return_uid=False, domain=False):
+                 save_dir='', valid_base_utts=None, feat_type='kaldi',
+                 return_uid=False, domain=False, verbose=1):
         speakers = [spk for spk in valid_set.keys()]
         speakers.sort()
-
+        self.feat_type = feat_type
         self.dom_to_idx = dom_to_idx
         self.utt2dom_dict = valid_utt2dom_dict
 
+        if valid_base_utts == None:
+            if os.path.exists(os.path.join(save_dir, 'valid.csv')):
+                valid_base_utts = pd.read_csv(os.path.join(save_dir, 'valid.csv')).to_numpy().tolist()
+        
+        self.valid_base_utts = valid_base_utts
         self.speakers = speakers
-        self.dataset = valid_set
         self.valid_set = valid_set
         self.uid2feat = valid_uid2feat
         self.domain = domain
 
         uids = list(valid_uid2feat.keys())
         uids.sort()
-        print('Examples uids: ', uids[:5])
+        if verbose > 0:
+            print('Examples uids: ', uids[:4])
 
         self.uids = uids
         self.utt2spk_dict = valid_utt2spk_dict
@@ -947,10 +1199,18 @@ class ScriptValidDataset(data.Dataset):
         self.return_uid = return_uid
 
     def __getitem__(self, index):
-        uid = self.uids[index]
-        spk = self.utt2spk_dict[uid]
-        y = self.loader(self.uid2feat[uid])
+        if self.valid_base_utts != None:
+            (uid, start, end) = self.valid_base_utts[index]
+            if self.feat_type != 'wav':
+                y = self.loader(self.uid2feat[uid])
+            else:
+                y = self.loader(
+                    self.uid2feat[uid], start=start, stop=end)
+        else:
+            uid = self.uids[index]
+            y = self.loader(self.uid2feat[uid])
 
+        spk = self.utt2spk_dict[uid]
         feature = self.transform(y)
         label = self.spk_to_idx[spk]
 
@@ -961,6 +1221,51 @@ class ScriptValidDataset(data.Dataset):
             return feature, label, uid
 
         return feature, label
+
+    def __len__(self):
+        if self.valid_base_utts != None:
+            return len(self.valid_base_utts)
+        else:
+            return len(self.uids)
+
+
+class ScriptEvalDataset(data.Dataset):
+    # dataset for inset and delete
+    def __init__(self, select_dir, valid_dir, transform, grad_reverse=False,
+                 feat_type='kaldi', return_uid=False, verbose=1):
+        
+        uid_file = os.path.join(select_dir, 'uid_idx.json')
+        with open(uid_file, 'r') as f:
+            uids = json.load(f)
+
+        self.data_file = os.path.join(select_dir, 'data.h5py')
+        self.grad_file = os.path.join(valid_dir, 'grad.h5py')
+
+        # uids.sort()
+        if verbose > 0:
+            print('Examples uids: ', uids[:2])
+
+        self.uids = uids
+        self.grad_reverse = grad_reverse
+        self.transform = transform
+
+    def __getitem__(self, index):
+        uid, idx = self.uids[index]
+
+        with h5py.File(self.data_file, 'r') as r:
+            data = r.get(uid)[:]
+
+        with h5py.File(self.grad_file, 'r') as r:
+            grad = r.get(uid)[:]
+
+        if len(data.shape) == len(grad.shape) and data.shape[0] > grad.shape[0]:
+            data = data[:grad.shape[0]]
+
+        if self.grad_reverse:
+            grad = 1 - grad
+        data = self.transform((data, grad))
+        return data, idx
+        
 
     def __len__(self):
         return len(self.uids)
@@ -1016,7 +1321,8 @@ class ScriptTestDataset(data.Dataset):
         trials_pair = np.array(trials_pair)
         trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
 
-        print('==>There are {} pairs in test Dataset with {} positive pairs'.format(len(trials_pair), positive_pairs))
+        print('==>There are {} pairs in test Dataset with {} positive pairs'.format(
+            len(trials_pair), positive_pairs))
 
         self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[1]
         self.speakers = speakers
@@ -1070,7 +1376,8 @@ class ScriptTestDataset(data.Dataset):
             positive_pairs = self.trials_pair[positive_idx].copy()
             nagative_pairs = self.trials_pair[indices].copy()
 
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = np.concatenate(
+                (positive_pairs, nagative_pairs), axis=0)
         else:
             indices = list(range(self.numofpositive, len(self.trials_pair)))
             random.shuffle(indices)
@@ -1083,7 +1390,8 @@ class ScriptTestDataset(data.Dataset):
             nagative_pairs = self.trials_pair[indices].copy()
 
             self.numofpositive = len(positive_pairs)
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = np.concatenate(
+                (positive_pairs, nagative_pairs), axis=0)
 
         assert len(self.trials_pair) == num
         num_positive = 0
@@ -1091,13 +1399,318 @@ class ScriptTestDataset(data.Dataset):
             if z == 'True':
                 num_positive += 1
 
-        assert len(self.trials_pair) == num, '%d != %d' % (len(self.trials_pair), num)
-        assert self.numofpositive == num_positive, '%d != %d' % (self.numofpositive, num_positive)
+        assert len(self.trials_pair) == num, '%d != %d' % (
+            len(self.trials_pair), num)
+        assert self.numofpositive == num_positive, '%d != %d' % (
+            self.numofpositive, num_positive)
         print('    %d positive pairs remain.' % num_positive)
-
 
     def __len__(self):
         return len(self.trials_pair)
+
+
+class AugTrainDataset(data.Dataset):
+    def __init__(self, dir, sets, samples_per_speaker, transform, num_valid=5, feat_type='kaldi',
+                 loader=np.load, return_uid=False, domain=False, rand_test=False, verbose=1):
+        self.return_uid = return_uid
+        self.domain = domain
+        self.rand_test = rand_test
+        self.sets = sets
+
+        feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
+        spk2utt = dir + '/spk2utt'
+        utt2spk = dir + '/utt2spk'
+        utt2num_frames = dir + '/utt2num_frames'
+        utt2dom = dir + '/utt2dom'
+
+        assert os.path.exists(feat_scp), feat_scp
+        assert os.path.exists(spk2utt), spk2utt
+
+        invalid_uid = []
+        total_frames = 0
+        # if os.path.exists(utt2num_frames):
+        #     with open(utt2num_frames, 'r') as f:
+        #         for l in f.readlines():
+        #             uid, num_frames = l.split()
+        #             total_frames += int(num_frames)
+        #             if int(num_frames) < 50:
+        #                 invalid_uid.append(uid)
+
+        dataset = {}
+        with open(spk2utt, 'r') as u:
+            all_cls = u.readlines()
+            for line in all_cls:
+                spk_utt = line.split()
+                spk_name = spk_utt[0]
+                if spk_name not in dataset:
+                    # dataset[spk_name] = [x for x in spk_utt[1:] if x not in invalid_uid]
+                    uniqe_utt = []
+                    for x in spk_utt[1:]:
+                        if x.split('-')[-1] not in self.sets:
+                            uniqe_utt.append(x)
+
+                    dataset[spk_name] = uniqe_utt
+
+        utt2spk_dict = {}
+        with open(utt2spk, 'r') as u:
+            all_cls = u.readlines()
+            for line in all_cls:
+                utt_spk = line.split()
+                uid = utt_spk[0]
+                if uid in invalid_uid:
+                    continue
+                if uid not in utt2spk_dict:
+                    utt2spk_dict[uid] = utt_spk[-1]
+
+        self.dom_to_idx = None
+        self.utt2dom_dict = None
+        dom_to_idx = None
+        if self.domain:
+            assert os.path.exists(utt2dom), utt2dom
+
+            utt2dom_dict = {}
+            with open(utt2dom, 'r') as u:
+                all_cls = u.readlines()
+                for line in all_cls:
+                    utt_dom = line.split()
+                    uid = utt_dom[0]
+                    if uid in invalid_uid:
+                        continue
+                    if uid not in utt2dom_dict:
+                        utt2dom_dict[uid] = utt_dom[-1]
+
+            all_domains = [utt2dom_dict[u] for u in utt2dom_dict.keys()]
+            domains = list(set(all_domains))
+            domains.sort()
+            dom_to_idx = {domains[i]: i for i in range(len(domains))}
+            self.dom_to_idx = dom_to_idx
+            if verbose > 1:
+                print("Domain idx: ", str(self.dom_to_idx))
+            self.utt2dom_dict = utt2dom_dict
+
+        # pdb.set_trace()
+
+        speakers = [spk for spk in dataset.keys()]
+        speakers.sort()
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(speakers)))
+        spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
+        idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
+
+        # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+        uid2feat = {}
+        with open(feat_scp, 'r') as f:
+            for line in f.readlines():
+                uid, feat_offset = line.split()
+                if uid in invalid_uid:
+                    continue
+                uid2feat[uid] = feat_offset
+
+        if verbose > 0:
+            print('    There are {} utterances in Train Dataset, where {} utterances are removed.'.format(len(uid2feat),
+                                                                                                          len(invalid_uid)))
+        self.valid_set = None
+        self.valid_uid2feat = uid2feat
+        self.valid_utt2spk_dict = None
+        self.valid_utt2dom_dict = None
+
+        if num_valid > 0:
+            valid_set = {}
+            valid_uid2feat = {}
+            valid_utt2spk_dict = {}
+            valid_utt2dom_dict = {}
+
+            for spk in speakers:
+                if spk not in valid_set.keys():
+                    valid_set[spk] = []
+                    for i in range(num_valid):
+                        if len(dataset[spk]) <= 1:
+                            break
+                        j = np.random.randint(len(dataset[spk]))
+                        utt = dataset[spk].pop(j)
+                        valid_set[spk].append(utt)
+
+                        valid_utt2spk_dict[utt] = utt2spk_dict[utt]
+                        if self.domain:
+                            valid_utt2dom_dict[utt] = utt2dom_dict[utt]
+
+            if verbose > 0:
+                print('    Spliting {} utterances for Validation.'.format(
+                    len(valid_uid2feat)))
+            self.valid_set = valid_set
+            self.valid_uid2feat = uid2feat
+            self.valid_utt2spk_dict = valid_utt2spk_dict
+            self.valid_utt2dom_dict = valid_utt2dom_dict
+
+        self.speakers = speakers
+        self.dataset = dataset
+        self.uid2feat = uid2feat
+        self.spk_to_idx = spk_to_idx
+        self.idx_to_spk = idx_to_spk
+        self.num_spks = len(speakers)
+        self.num_doms = len(self.dom_to_idx) if dom_to_idx != None else 0
+
+        self.loader = loader
+        self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[-1]
+        self.transform = transform
+        if samples_per_speaker == 0:
+            samples_per_speaker = np.power(2, np.ceil(
+                np.log2(total_frames * 2 / c.NUM_FRAMES_SPECT / self.num_spks)))
+            if verbose > 1:
+                print(
+                    '    The number of sampling utterances for each speakers is decided by the number of total frames.')
+        self.samples_per_speaker = int(samples_per_speaker)
+        self.c_axis = 0 if feat_type != 'wav' else 1
+        self.feat_shape = (0, self.feat_dim) if feat_type != 'wav' else (1, 0)
+        if verbose > 0:
+            print('    Sample {} random utterances for each speakers.'.format(
+                self.samples_per_speaker))
+
+        if self.return_uid or self.domain:
+            self.utt_dataset = []
+            for i in range(self.samples_per_speaker * self.num_spks):
+                sid = i % self.num_spks
+                spk = self.idx_to_spk[sid]
+                utts = self.dataset[spk]
+                uid = utts[random.randrange(0, len(utts))]
+                self.utt_dataset.append([uid, sid])
+
+    def __getitem__(self, sid):
+        # start_time = time.time()
+        if self.return_uid or self.domain:
+            uid, label = self.utt_dataset[sid]
+            y = self.loader(self.uid2feat[uid])
+            feature = self.transform(y)
+
+            if self.domain:
+                label_b = self.dom_to_idx[self.utt2dom_dict[uid]]
+                return feature, label, label_b
+            else:
+                return feature, label, uid
+
+        rand_idxs = [sid]
+        sid %= self.num_spks
+        spk = self.idx_to_spk[sid]
+        utts = self.dataset[spk]
+        num_utt = len(utts)
+
+        y1 = np.array([[]]).reshape(0, self.feat_dim)
+        y2 = np.array([[]]).reshape(0, self.feat_dim)
+
+        rand_utt_idx = np.random.randint(0, num_utt)
+        rand_idxs.append(rand_utt_idx)
+        uid = utts[rand_utt_idx]
+        this_set = random.choice(self.sets)
+        uid_aug = utts[rand_utt_idx] + '-' + \
+            this_set if this_set != 'none' else utts[rand_utt_idx]
+
+        feature = self.loader(self.uid2feat[uid])
+        y1 = np.concatenate((y1, feature), axis=0)
+
+        feature = self.loader(self.uid2feat[uid_aug])
+        y2 = np.concatenate((y2, feature), axis=0)
+
+        while len(y1) < c.N_SAMPLES:
+            rand_utt_idx = np.random.randint(0, num_utt)
+            rand_idxs.append(rand_utt_idx)
+
+            uid = utts[rand_utt_idx]
+            this_set = random.choice(self.sets)
+            uid_aug = utts[rand_utt_idx] + '-' + \
+                this_set if this_set != 'none' else utts[rand_utt_idx]
+
+            feature = self.loader(self.uid2feat[uid])
+            y1 = np.concatenate((y1, feature), axis=0)
+
+            feature = self.loader(self.uid2feat[uid_aug])
+            y2 = np.concatenate((y2, feature), axis=0)
+
+            # transform features if required
+        # if self.rand_test:
+        #     while len(rand_idxs) < 4:
+        #         rand_idxs.append(-1)
+        #
+        #     start, length = self.transform(y)
+        #     rand_idxs.append(start)
+        #     rand_idxs.append(length)
+        #
+        #     # [uttid uttid -1 -1 start lenght]
+        #     return torch.tensor(rand_idxs).reshape(1, -1), sid
+
+        feature1 = self.transform(y1)
+        feature2 = self.transform(y2)
+
+        # print(feature1.shape)
+        feature = np.concatenate([feature1, feature2], axis=0)
+        # label = sid
+
+        return feature, sid
+
+    def __len__(self):
+        return self.samples_per_speaker * len(self.speakers)  # 返回一个epoch的采样数
+
+
+class AugValidDataset(data.Dataset):
+    def __init__(self, valid_set, sets, spk_to_idx, valid_uid2feat, valid_utt2spk_dict,
+                 transform, dom_to_idx=None, valid_utt2dom_dict=None, loader=np.load,
+                 return_uid=False, domain=False, verbose=1):
+        speakers = [spk for spk in valid_set.keys()]
+        speakers.sort()
+
+        self.dom_to_idx = dom_to_idx
+        self.utt2dom_dict = valid_utt2dom_dict
+
+        self.speakers = speakers
+        self.dataset = valid_set
+        self.valid_set = valid_set
+        self.uid2feat = valid_uid2feat
+        self.domain = domain
+        self.sets = sets
+
+        uids = []
+        for spk in self.dataset:
+            for u in self.dataset[spk]:
+                uids.append(u)
+
+        uids.sort()
+        if verbose > 0:
+            print('Examples uids: ', uids[:5])
+
+        self.uids = uids
+        self.utt2spk_dict = valid_utt2spk_dict
+        self.spk_to_idx = spk_to_idx
+        self.num_spks = len(speakers)
+
+        self.loader = loader
+        self.transform = transform
+        self.return_uid = return_uid
+
+    def __getitem__(self, index):
+        uid = self.uids[index]
+        this_set = random.choice(self.sets)
+        uid_aug = uid + '-' + this_set if this_set != 'none' else uid
+
+        spk = self.utt2spk_dict[uid]
+        y1 = self.loader(self.uid2feat[uid])
+        y2 = self.loader(self.uid2feat[uid_aug])
+
+        feature1 = self.transform(y1)
+        feature2 = self.transform(y2)
+
+        # feature = torch.cat([feature1, feature2], dim=1)
+        feature = np.concatenate([feature1, feature2], axis=0)
+        label = self.spk_to_idx[spk]
+
+        if self.domain:
+            return feature, label, self.dom_to_idx[self.utt2dom_dict[uid]]
+
+        if self.return_uid:
+            return feature, label, uid
+
+        return feature, label
+
+    def __len__(self):
+        return len(self.uids)
 
 
 class SitwTestDataset(data.Dataset):
@@ -1105,7 +1718,7 @@ class SitwTestDataset(data.Dataset):
 
     """
 
-    def __init__(self, sitw_dir, sitw_set, transform, loader=read_mat, return_uid=False, set_suffix='no_sil'):
+    def __init__(self, sitw_dir, sitw_set, transform, loader=kaldiio.load_mat, return_uid=False, set_suffix='no_sil'):
         # sitw_set: dev, eval
         feat_scp = sitw_dir + '/%s%s/feats.scp' % (sitw_set, set_suffix)
         spk2utt = sitw_dir + '/%s%s/spk2utt' % (sitw_set, set_suffix)
@@ -1141,7 +1754,7 @@ class SitwTestDataset(data.Dataset):
         trials_pair = trials_pair[trials_pair[:, 2].argsort()[::-1]]
 
         print('==>There are %d pairs in sitw %s Dataset %d of them are positive.' % (
-        len(trials_pair), sitw_set, numofpositive))
+            len(trials_pair), sitw_set, numofpositive))
         # pdb.set_trace()
         self.feat_dim = loader(uid2feat[trials_pair[0][0]]).shape[1]
 
@@ -1184,7 +1797,8 @@ class SitwTestDataset(data.Dataset):
             positive_pairs = self.trials_pair[positive_idx].copy()
             nagative_pairs = self.trials_pair[indices].copy()
 
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = np.concatenate(
+                (positive_pairs, nagative_pairs), axis=0)
         else:
             indices = list(range(self.numofpositive, len(self.trials_pair)))
             random.shuffle(indices)
@@ -1197,7 +1811,8 @@ class SitwTestDataset(data.Dataset):
             nagative_pairs = self.trials_pair[indices].copy()
 
             self.numofpositive = len(positive_pairs)
-            self.trials_pair = np.concatenate((positive_pairs, nagative_pairs), axis=0)
+            self.trials_pair = np.concatenate(
+                (positive_pairs, nagative_pairs), axis=0)
 
         assert len(self.trials_pair) == num
         num_positive = 0
@@ -1205,8 +1820,10 @@ class SitwTestDataset(data.Dataset):
             if z == 'True':
                 num_positive += 1
 
-        assert len(self.trials_pair) == num, '%d != %d' % (len(self.trials_pair), num)
-        assert self.numofpositive == num_positive, '%d != %d' % (self.numofpositive, num_positive)
+        assert len(self.trials_pair) == num, '%d != %d' % (
+            len(self.trials_pair), num)
+        assert self.numofpositive == num_positive, '%d != %d' % (
+            self.numofpositive, num_positive)
         print('%d positive pairs remain.' % num_positive)
 
     def __len__(self):
@@ -1245,6 +1862,201 @@ class my_data_prefetcher:
 
         return data
 
+
+class PairTrainDataset(data.Dataset):
+    def __init__(self, dir, miss_trials, transform, feat_type='kaldi',
+                 loader=np.load, return_uid=False, domain=False, rand_test=False,
+                 vad_select=False, target_ratio=0.5,
+                 segment_len=c.N_SAMPLES, verbose=1):
+        self.return_uid = return_uid
+        self.domain = domain
+        self.rand_test = rand_test
+        self.segment_len = segment_len
+
+        feat_scp = dir + '/feats.scp' if feat_type != 'wav' else dir + '/wav.scp'
+        spk2utt = dir + '/spk2utt'
+        utt2spk = dir + '/utt2spk'
+        utt2num_frames = dir + '/utt2num_frames'
+        utt2dom = dir + '/utt2dom'
+        vad_scp = dir + '/vad.scp'
+
+        assert os.path.exists(feat_scp), feat_scp
+        assert os.path.exists(spk2utt), spk2utt
+
+        invalid_uid = []
+        base_utts = []
+
+        uid2vad = {}
+        if vad_select:
+            assert os.path.exists(vad_scp), vad_scp
+            # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+            with open(vad_scp, 'r') as f:
+                for line in f.readlines():
+                    uid, vad_offset = line.split()
+
+                    if uid in invalid_uid:
+                        continue
+
+                    uid2vad[uid] = vad_offset
+
+        total_frames = 0
+        if os.path.exists(utt2num_frames):
+            with open(utt2num_frames, 'r') as f:
+                for l in f.readlines():
+                    uid, num_frames = l.split()
+
+                    if uid in uid2vad:
+                        num_frames = np.sum(kaldiio.load_mat(uid2vad[uid]))
+                    else:
+                        num_frames = int(num_frames)
+
+                    total_frames += num_frames
+                    this_numofseg = int(
+                        np.ceil(float(num_frames) / segment_len))
+
+                    for i in range(this_numofseg):
+                        end = min((i + 1) * segment_len, num_frames)
+                        start = min(end - segment_len, 0)
+                        base_utts.append((uid, start, end))
+            if verbose > 0:
+                print('    There are {} basic segments.'.format(len(base_utts)))
+
+                # if int(num_frames) < 50:
+                #     invalid_uid.append(uid)
+        self.base_utts = base_utts
+        # dataset = {}
+        # with open(spk2utt, 'r') as u:
+        #     all_cls = u.readlines()
+        #     for line in all_cls:
+        #         spk_utt = line.split()
+        #         spk_name = spk_utt[0]
+        #         if spk_name not in dataset:
+        #             dataset[spk_name] = [x for x in spk_utt[1:] if x not in invalid_uid]
+
+        utt2spk_dict = {}
+        speakers = set([])
+
+        with open(utt2spk, 'r') as u:
+            for line in u.readlines():
+                uid, sid = line.split()
+                speakers.add(sid)
+                if uid in invalid_uid:
+                    continue
+                if uid not in utt2spk_dict:
+                    utt2spk_dict[uid] = sid
+
+        speakers = list(speakers)
+        speakers.sort()
+
+        self.dom_to_idx = None
+        self.utt2dom_dict = None
+        dom_to_idx = None
+        if self.domain:
+            assert os.path.exists(utt2dom), utt2dom
+
+            utt2dom_dict = {}
+            with open(utt2dom, 'r') as u:
+                for line in u.readlines():
+                    utt_dom = line.split()
+                    uid = utt_dom[0]
+                    if uid in invalid_uid:
+                        continue
+                    if uid not in utt2dom_dict:
+                        utt2dom_dict[uid] = utt_dom[-1]
+
+            all_domains = [utt2dom_dict[u] for u in utt2dom_dict.keys()]
+            domains = list(set(all_domains))
+            domains.sort()
+            dom_to_idx = {domains[i]: i for i in range(len(domains))}
+            self.dom_to_idx = dom_to_idx
+            if verbose > 1:
+                print("Domain idx: ", str(self.dom_to_idx))
+            self.utt2dom_dict = utt2dom_dict
+
+        # pdb.set_trace()
+
+        if verbose > 0:
+            print('==> There are {} speakers in Dataset.'.format(len(speakers)))
+        spk_to_idx = {speakers[i]: i for i in range(len(speakers))}
+        idx_to_spk = {i: speakers[i] for i in range(len(speakers))}
+
+        # 'Eric_McCormack-Y-qKARMSO7k-0001.wav': feature[frame_length, feat_dim]
+        uid2feat = {}
+        with open(feat_scp, 'r') as f:
+            for line in f.readlines():
+                uid_feat = line.split()
+                if len(uid_feat) == 2:
+                    uid, feat_offset = uid_feat
+                else:
+                    uid, _, feat_offset = uid_feat
+                if uid in invalid_uid:
+                    continue
+                uid2feat[uid] = feat_offset
+
+        dataset = []
+        target = []
+        nontarget = []
+        with open(miss_trials, 'r') as f:
+            for l in f.readlines():
+                # pdb.set_trace()
+                enroll_uid, eval_uid, truth = l.split()
+                if enroll_uid in uid2feat and eval_uid in uid2feat:
+                    # dataset.append((enroll_uid, eval_uid, truth))
+                    if truth == 'target':
+                        target.append((enroll_uid, eval_uid, truth))
+                    else:
+                        nontarget.append((enroll_uid, eval_uid, truth))
+
+        i = 0
+        random.shuffle(nontarget)
+        for enroll_uid, eval_uid, truth in target:
+            dataset.append((enroll_uid, eval_uid, truth))
+            for j in range(int((1 - target_ratio) / target_ratio)):
+                i += j
+                i = i % len(nontarget)
+                dataset.append(nontarget[i])
+
+        if verbose > 0:
+            print('    There are {} pairs in Train Dataset, {} of them are unique.'.format(len(dataset),
+                                                                                           len(target) + len(
+                                                                                               nontarget)))
+
+        self.speakers = speakers
+        self.utt2spk_dict = utt2spk_dict
+        self.dataset = dataset
+        self.uid2feat = uid2feat
+        self.uid2vad = uid2vad
+        self.spk_to_idx = spk_to_idx
+        self.idx_to_spk = idx_to_spk
+        self.num_spks = len(speakers)
+        self.num_doms = len(self.dom_to_idx) if dom_to_idx != None else 0
+
+        self.loader = loader
+        self.feat_dim = loader(uid2feat[list(uid2feat.keys())[0]]).shape[-1]
+        self.transform = transform
+
+        self.c_axis = 0 if feat_type != 'wav' else 1
+        self.feat_shape = (0, self.feat_dim) if feat_type != 'wav' else (1, 0)
+        # if verbose > 0:
+        #     print('    Sample {} random utterances for each speakers.'.format(self.samples_per_speaker))
+
+    def __getitem__(self, sid):
+        # start_time = time.time()
+
+        enroll_uid, eval_uid, truth = self.dataset[sid]
+        enroll_sid = self.utt2spk_dict[enroll_uid]
+        eval_sid = self.utt2spk_dict[eval_uid]
+
+        enroll_feature = self.transform(self.loader(self.uid2feat[enroll_uid]))
+        eval_feature = self.transform(self.loader(self.uid2feat[eval_uid]))
+
+        label = 1 if truth in ['True', 'true', 'target'] else 0
+
+        return enroll_feature, eval_feature, label, self.spk_to_idx[enroll_sid], self.spk_to_idx[eval_sid]
+
+    def __len__(self):
+        return len(self.dataset)  # 返回一个epoch的采样数
+
 # uid = ['A.J._Buckley-1zcIwhmdeo4-0001.wav', 'A.J._Buckley-1zcIwhmdeo4-0002.wav', 'A.J._Buckley-1zcIwhmdeo4-0003.wav', 'A.J._Buckley-7gWzIy6yIIk-0001.wav']
 # xvector = np.random.randn(4, 512).astype(np.float32)
 #
@@ -1252,4 +2064,3 @@ class my_data_prefetcher:
 # scp_file = '../Data/xvector.scp'
 #
 # write_xvector_ark(uid, xvector, ark_file, scp_file)
-

@@ -475,7 +475,7 @@ class PldaEstimator(object):
         # print()
         # print("Objective function is ", self.ComputeObjf())
 
-    def ResetPerIterStats(self):
+    def ResetPerIterStats(self, verbose=1):
         self.within_var_stats_ = Resize((self.Dim(), self.Dim()))
         self.within_var_count_ = 0.0
         self.between_var_stats_ = Resize((self.Dim(), self.Dim()))
@@ -483,8 +483,9 @@ class PldaEstimator(object):
 
         # KALDI_LOG << "Trace of within-class variance is " << within_var_.Trace();
         # KALDI_LOG << "Trace of between-class variance is " << between_var_.Trace();
-        print("Trace of within-class variance: %.4f between-class variance: %.4f" % (
-        self.within_var_.trace(), self.between_var_.trace()))
+        if verbose > 1:
+            print("Trace of within-class variance: %.4f between-class variance: %.4f" % (
+                self.within_var_.trace(), self.between_var_.trace()))
 
     # gets stats from intra-class variation (stats_.offset_scatter_).
     def GetStatsFromIntraClass(self):
@@ -544,18 +545,20 @@ class PldaEstimator(object):
         # KALDI_LOG << "Trace of within-class variance is " << within_var_.Trace();
         # KALDI_LOG << "Trace of between-class variance is " << between_var_.Trace();
 
-    def Estimate(self, config, plda):
-        pbar = tqdm(range(config.num_em_iters))
+    def Estimate(self, config, plda, verbose=1):
+        pbar = tqdm(range(config.num_em_iters), ncols=100)
         for i in pbar:
-            pbar.set_description("Plda estimation iteration {:>2d} of {} ".format(i, config.num_em_iters))
+            if verbose > 1:
+                pbar.set_description("Plda estimation iteration {:>2d} of {} ".format(i, config.num_em_iters))
             self.EstimateOneIter()
         self.GetOutput(plda)
 
     # Copy to output.
-    def GetOutput(self, plda):
+    def GetOutput(self, plda, verbose=1):
         plda.mean_ = 1. / self.stats_.class_weight_ * self.stats_.sum_
 
-        print("Norm of mean of iVector distribution is ", np.linalg.norm(plda.mean_))
+        if verbose > 1:
+            print("Norm of mean of iVector distribution is ", np.linalg.norm(plda.mean_))
         # print("Norm of mean of iVector distribution is ", plda.mean_.Norm(2.0))
         # 计算使得within_var_对角化的变换矩阵transform1
         # within_var_ = C * C^T
@@ -575,7 +578,7 @@ class PldaEstimator(object):
 
         assert (s.min() >= 0.0)
         n = ApplyFloor(s, 0.0)  # 特征值大于零，返回设置为0的数目n
-        if (n > 0):
+        if (n > 0) and verbose > 1:
             print("Floored %d eigenvalues of between-class variance to zero." % n)
 
         # Sort from greatest to smallest eigenvalue.
@@ -597,7 +600,9 @@ class PldaEstimator(object):
 
         # print(plda.transform_)
         # print(plda.psi_ )
-        print("Diagonal of between-class variance in normalized space is:\n", s)
+
+        if verbose > 1:
+            print("Diagonal of between-class variance in normalized space is:\n", s)
         plda.ComputeDerivedVars()
 
         # print("within var is: ", self.within_var_)

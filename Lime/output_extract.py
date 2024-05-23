@@ -35,10 +35,9 @@ from Define_Model.model import PairwiseDistance
 from Process_Data.Datasets.KaldiDataset import ScriptTrainDataset, \
     ScriptTestDataset, ScriptValidDataset
 from Process_Data.audio_processing import ConcateOrgInput, mvnormal, ConcateVarInput
-from TrainAndTest.common_func import create_model
+from TrainAndTest.common_func import create_model, load_model_args, args_model
 
 # Version conflict
-
 try:
     torch._utils._rebuild_tensor_v2
 except AttributeError:
@@ -55,7 +54,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # Training settings
-parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition')
+parser = argparse.ArgumentParser(description='PyTorch Speaker Recognition: Gradient')
 # Data options
 parser.add_argument('--train-dir', type=str, help='path to dataset')
 parser.add_argument('--test-dir', type=str, help='path to voxceleb1 test dataset')
@@ -99,7 +98,8 @@ parser.add_argument('--transform', type=str, default="None", help='add a transfo
 
 parser.add_argument('--channels', default='64,128,256', type=str,
                     metavar='CHA', help='The channels of convs layers)')
-parser.add_argument('--fast', action='store_true', default=False, help='max pooling for fast')
+parser.add_argument('--fast', type=str, default='None', help='max pooling for fast')
+parser.add_argument('--downsample', type=str, default='None', help='replace batchnorm with instance norm')
 
 parser.add_argument('--kernel-size', default='5,5', type=str, metavar='KE',
                     help='kernel size of conv filters')
@@ -111,6 +111,8 @@ parser.add_argument('--avg-size', type=int, default=4, metavar='ES', help='Dimen
 parser.add_argument('--loss-type', type=str, default='soft', help='path to voxceleb1 test dataset')
 parser.add_argument('--dropout-p', type=float, default=0., metavar='BST',
                     help='input batch size for testing (default: 64)')
+parser.add_argument('--normalize', action='store_false', default=True,
+                    help='normalize vectors in final layer')
 
 # args for additive margin-softmax
 parser.add_argument('--margin', type=float, default=0.3, metavar='MARGIN',
@@ -125,7 +127,7 @@ parser.add_argument('--lambda-min', type=int, default=5, metavar='S',
 parser.add_argument('--lambda-max', type=float, default=0.05, metavar='S',
                     help='random seed (default: 0)')
 
-parser.add_argument('--alpha', default=12, type=float,
+parser.add_argument('--alpha', default=0, type=float,
                     metavar='l2 length', help='acoustic feature dimension')
 parser.add_argument('--cos-sim', action='store_true', default=True, help='using Cosine similarity')
 parser.add_argument('--embedding-size', type=int, metavar='ES', help='Dimensionality of the embedding')
@@ -351,45 +353,27 @@ def main():
     print('Parsed options: {}'.format(vars(args)))
 
     # instantiate model and initialize weights
-    kernel_size = args.kernel_size.split(',')
-    kernel_size = [int(x) for x in kernel_size]
-    if args.padding == '':
-        padding = [int((x - 1) / 2) for x in kernel_size]
+    if os.path.exists(args.model_yaml):
+        model_kwargs = load_model_args(args.model_yaml)
     else:
-        padding = args.padding.split(',')
-        padding = [int(x) for x in padding]
+        model_kwargs = args_model(args, train_dir)
 
-    kernel_size = tuple(kernel_size)
-    padding = tuple(padding)
-    stride = args.stride.split(',')
-    stride = [int(x) for x in stride]
-
-    channels = args.channels.split(',')
-    channels = [int(x) for x in channels]
-
-    model_kwargs = {'input_dim': args.input_dim, 'feat_dim': args.feat_dim, 'kernel_size': kernel_size,
-                    'mask': args.mask_layer, 'mask_len': args.mask_len, 'block_type': args.block_type,
-                    'filter': args.filter, 'inst_norm': args.inst_norm, 'input_norm': args.input_norm,
-                    'stride': stride, 'fast': args.fast, 'avg_size': args.avg_size, 'time_dim': args.time_dim,
-                    'padding': padding, 'encoder_type': args.encoder_type, 'vad': args.vad,
-                    'transform': args.transform, 'embedding_size': args.embedding_size, 'ince': args.inception,
-                    'resnet_size': args.resnet_size, 'num_classes': train_dir.num_spks,
-                    'channels': channels, 'alpha': args.alpha, 'dropout_p': args.dropout_p}
-
-    print('Model options: {}'.format(model_kwargs))
+    keys = list(model_kwargs.keys())
+    keys.sort()
+    model_options = ["\'%s\': \'%s\'" % (str(k), str(model_kwargs[k])) for k in keys]
+    print('Model options: \n{ %s }' % (', '.join(model_options)))
+    print('Testing with %s distance, ' % ('cos' if args.cos_sim else 'l2'))
 
     model = create_model(args.model, **model_kwargs)
-    if args.loss_type == 'asoft':
-        model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
-    elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
-        model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
+    # if args.loss_type == 'asoft':
+    #     model.classifier = AngleLinear(in_features=args.embedding_size, out_features=train_dir.num_spks, m=args.m)
+    # elif args.loss_type == 'amsoft' or args.loss_type == 'arcsoft':
+    #     model.classifier = AdditiveMarginLinear(feat_dim=args.embedding_size, n_classes=train_dir.num_spks)
 
     train_loader = DataLoader(train_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     veri_loader = DataLoader(veri_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
     valid_loader = DataLoader(valid_part, batch_size=args.batch_size, shuffle=False, **kwargs)
     test_loader = DataLoader(test_dir, batch_size=args.batch_size, shuffle=False, **kwargs)
-    # sitw_test_loader = DataLoader(sitw_test_part, batch_size=args.batch_size, shuffle=False, **kwargs)
-    # sitw_dev_loader = DataLoader(sitw_dev_part, batch_size=args.batch_size, shuffle=False, **kwargs)
 
     resume_path = args.check_path + '/checkpoint_{}.pth'
     print('=> Saving output in {}\n'.format(args.extract_path))
@@ -414,13 +398,11 @@ def main():
                 for k, v in filtered.items():
                     name = k[7:]  # remove `module.`，表面从第7个key值字符取到最后一个字符，去掉module.
                     new_state_dict[name] = v  # 新字典的key值对应的value为一一对应的值。
-
                 model.load_state_dict(new_state_dict)
             else:
                 model_dict = model.state_dict()
                 model_dict.update(filtered)
                 model.load_state_dict(model_dict)
-
         else:
             print('=> no checkpoint found at %s' % resume_path.format(e))
             continue
@@ -436,10 +418,10 @@ def main():
             #     np.save(file_dir + '/model.conv1.npy', model_conv1)
 
             train_extract(train_loader, model, file_dir, '%s_train'%args.train_set_name)
-            train_extract(valid_loader, model, file_dir, '%s_valid'%args.train_set_name)
-            test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
+            # train_extract(valid_loader, model, file_dir, '%s_valid'%args.train_set_name)
+            # test_extract(veri_loader, model, file_dir, '%s_veri'%args.train_set_name)
 
-        test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
+        # test_extract(test_loader, model, file_dir, '%s_test'%args.test_set_name)
 
 
 if __name__ == '__main__':
