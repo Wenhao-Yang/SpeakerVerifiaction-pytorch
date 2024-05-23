@@ -1,134 +1,144 @@
-# Speaker Recognition Systems - Pytorch Implementation
+<h1 align="center">
+  <br>
+  <br>
+  Deep Speaker Recognition - Pytorch Implementation
+  <br>
+</h1>
 
-At the beginning, this project was forked and started from
-the [qqueing/DeepSpeaker-pytorch](https://github.com/qqueing/DeepSpeaker-pytorch).
+<p align="center">
+  <a href="">
+    <img src="https://img.shields.io/badge/python-3.x-blue"
+         alt="Gitter">
+  </a>
+  <a href="https://github.com/ryanvolz/radioconda"><img src="https://img.shields.io/badge/kaldi-blue"></a>
+  <a href="https://github.com/ryanvolz/radioconda"><img src="https://img.shields.io/badge/speechbrain-green"></a>
+  <a href="https://github.com/ryanvolz/radioconda"><img src="https://img.shields.io/badge/geomloss-green"></a>
+  <a href="https://github.com/ryanvolz/radioconda"><img src="https://img.shields.io/badge/captum-green"></a>
+  
 
-### 1. Datasets
+  </a>
+</p>
 
-Prepare data in [kaldi]() way, make features in Process_Data and store shuffled features with random length in egs.
-Other stages are processed in this [resposity]().
+<p align="center">
+  <a href="#how-to-use">Install</a> •
+  <a href="#key-features">Features</a> •
+  <a href="#dataset">Dataset</a> •
+  <a href="#neural-networks">Neural Networks</a> •
+  <!-- <a href="#credits">Credits</a> • -->
+  <a href="#related">Related</a> •
+  <a href="#license">License</a>
+</p>
 
-- Development:
+This is the respository for investigation of deep speaker recognition. The implementation is based on Pytorch with kaldi audio processing. 
+
+
+## How To Install
+
+```shell
+# Clone this respository
+git clone https://github.com/Wenhao-Yang/SpeakerVerifiaction-pytorch
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+## Key-Features
+
+> - Knowledge Distillation
+> - Mixup-based Augmentation
+> - Domain Adversarial Learning
+
+## Datasets
+
+Prepare data in [kaldi](https://github.com/kaldi-asr/kaldi) way, make features in Process_Data and store shuffled features with random length in egs. Other stages are processed in this [resposity]().
+
+- Development & Test:
 
 > Voxceleb1、Voxceleb2、Aishell1&2、CN-celeb1&2、aidatatang_200zh、MAGICDATA、TAL_CSASR
-> ChiME5、VOiCES、CommonVoice、AMI
+> ChiME5、VOiCES、CommonVoice、AMI、SITW、Librispeech、TIMIT
 
 - Augmentation:
+  
 > MUSAN、RIRS
 
-- Test:
 
-> SITW、Librispeech、TIMIT
+#### Pre-Processing
 
-#### 1.1 Pre-Processing
+> - Resample
+> - Butter Bandpass Filtering
+> - Augmentation
+> - LMS Filtering ( Defected )
 
-- Resample
+#### Accoustic Features
 
-- Butter Bandpass Filtering
+> - MFCC
+> - Fbank
+> - Spectrogram
 
-- Augmentation
+# Neural-Networks
 
-- LMS Filtering ( Defected )
-
-#### 1.2 Accoustic Features
-
-- MFCC
-
-- Fbank
-
-- Spectrogram
-
-### 2. Deep Speaker Verification Systems
-
-#### 2.1 Neural Networks
-
-- TDNN
+#### TDNN-based models
 
 The TDNN_v2 is implemented from 'https://github.com/cvqluu/TDNN/blob/master/tdnn.py'. The TDNN_v4 layer is implemented using nn.Conv2d. The TDNN_v5 layer implemented using nn.Conv1d
 
-> ETDNN
->
-> FTDNN
->
-> DTDNN
->
-> Aggregated-Residual TDNN
->
-> ECAPA TDNN
->
-> ResCNN
->
-> LSTM
+> - ETDNN
+> - FTDNN
+> - DTDNN
+> - Aggregated-Residual TDNN
+> - ECAPA-TDNN
+> - LSTM
 
-LSTM and Attention-based LSTM
+#### ResNet-based models
 
-Input 40-dimensional MFCC.
+> - ResNet34
+> - ResCNN
 
-- ResNet
+### Loss Type
 
-ResNet34
+#### Discriminative
 
-#### 2.2 Loss Type
+> - A-Softmax
+> - AM-Softmax
+> - AAM-Softmax
+> - Center Loss
+> - Ring Loss
 
-##### Classification
+#### End-to-End
 
-- A-Softmax
+> - Generalized End-to-End Loss
+> - Triplet Loss
+> - Contrastive Loss
+> - Prototypical Loss
+> - Angular Prototypical Loss
 
-- AM-Softmax
+### Pooling Type
 
-- AAM-Softmax
+> - Self-Attention
+> - Statistic Pooling
+> - Attention Statistic Pooling
+> - GhostVALD Pooling
 
-- Center Loss
+### Score with Normalization
 
-- Ring Loss
+> - Cosine
+> - PLDA
+> - DET
+> - t-sne
 
-##### End-to-End
+<!-- ### Disrization
+- Hierarchical Agglomerative Clustering -->
 
-- Generalized End-to-End Loss
+### Class Activation Mapping Analysis
 
-- Triplet Loss
+> - Gradient
+> - Grad-CAM
+> - Grad-CAM++
+> - Full-Grad
+> - Integrated Gradients
 
-- Contrastive Loss
+### To do list
 
-- Prototypical Loss
-
-- Angular Prototypical Loss
-
-#### 2.3 Pooling Type
-
-- Self-Attention
-
-- Statistic Pooling
-
-- Attention Statistic Pooling
-
-- GhostVALD Pooling
-
-### 3. Score
-
-- Cosine
-
-- PLDA
-
-- DET
-
-- t-sne
-
-### 4. Disrization
-
-- Hierarchical Agglomerative Clustering
-
-### 5. Neural Network Analysis
-
-- Gradient
-
-- Grad-CAM
-
-- Grad-CAM++
-
-- Full-Grad
-
-### . To do list
+- [ ] Self-supervised Pre-Trained Speech Representation Models
 
 ### X. Miscellaneous
 
@@ -210,14 +220,20 @@ Work accomplished so far:
   |  aishell2 test  |   10.8300%    |   0.2786811   |    0.8212      |     0.9527     |   20210515   |
   |   aidata test   |   10.0972%    |   0.2952531   |    0.7859      |     0.9520     |   20210515   |
 
-#### 5.2 Baseline
+<!-- #### 5.2 Baseline -->
 
-### 6. Reference:
 
-> [1] Cai, Weicheng, Jinkun Chen, and Ming Li. "Analysis of Length Normalization in End-to-End Speaker Verification System.." conference of the international speech communication association (2018): 3618-3622.
+# Related 
+
+At the beginning, this project was forked and started from
+the [qqueing/DeepSpeaker-pytorch](https://github.com/qqueing/DeepSpeaker-pytorch).
+
+## Reference
+
+> [1] D. Snyder, D. Garcia-Romero, G. Sell, D. Povey and S. Khudanpur, "X-Vectors: Robust DNN Embeddings for Speaker Recognition," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), Calgary, AB, Canada, 2018, pp. 5329-5333
+> [2] Cai, Weicheng, Jinkun Chen, and Ming Li. "Analysis of Length Normalization in End-to-End Speaker Verification System.." conference of the international speech communication association (2018): 3618-3622.
 >
 > [2] ...
-
 
 
 
